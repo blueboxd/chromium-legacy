@@ -267,6 +267,10 @@ class PrerenderManager : public content::RenderProcessHostObserver,
   // Returns a list of all WebContents being prerendered.
   std::vector<content::WebContents*> GetAllPrerenderingContents() const;
 
+  // Returns a list of all WebContents being NoStatePrefetched.
+  std::vector<content::WebContents*>
+  GetAllNoStatePrefetchingContentsForTesting() const;
+
   // Checks whether |url| has been recently navigated to.
   bool HasRecentlyBeenNavigatedTo(Origin origin, const GURL& url);
 

@@ -47,7 +47,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
 
     // base::ProfileBuilder
     base::ModuleCache* GetModuleCache() override;
-    void OnSampleCompleted(std::vector<base::Frame> frames) override;
+    void OnSampleCompleted(std::vector<base::Frame> frames,
+                           base::TimeTicks sample_timestamp) override;
     void OnProfileCompleted(base::TimeDelta profile_duration,
                             base::TimeDelta sampling_period) override {}
 

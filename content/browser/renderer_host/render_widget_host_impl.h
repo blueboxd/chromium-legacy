@@ -11,7 +11,6 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -31,7 +30,6 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
@@ -85,10 +83,6 @@ class WebInputEvent;
 class WebMouseEvent;
 }
 
-namespace cc {
-struct BeginFrameAck;
-}  // namespace cc
-
 namespace gfx {
 class Image;
 class Range;
@@ -97,10 +91,6 @@ class Vector2dF;
 
 namespace ui {
 enum class DomCode;
-}
-
-namespace viz {
-class ServerSharedBitmapManager;
 }
 
 namespace content {
@@ -158,7 +148,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public RenderProcessHostImpl::PriorityClient,
       public RenderProcessHostObserver,
       public SyntheticGestureController::Delegate,
-      public viz::mojom::CompositorFrameSink,
       public IPC::Listener,
       public RenderFrameMetadataProvider::Observer {
  public:
@@ -678,24 +667,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool HasGestureStopped() override;
 
-  // viz::mojom::CompositorFrameSink implementation.
-  void SetNeedsBeginFrame(bool needs_begin_frame) override;
-  void SetWantsAnimateOnlyBeginFrames() override;
-  void SubmitCompositorFrame(
-      const viz::LocalSurfaceId& local_surface_id,
-      viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list,
-      uint64_t submit_time) override;
-  void SubmitCompositorFrameSync(
-      const viz::LocalSurfaceId& local_surface_id,
-      viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list,
-      uint64_t submit_time,
-      const SubmitCompositorFrameSyncCallback callback) override;
-  void DidNotProduceFrame(const viz::BeginFrameAck& ack) override;
-  void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
-                               const viz::SharedBitmapId& id) override;
-  void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
+  // Begin frames related functionality is only used by Android WebView.
+  void SetNeedsBeginFrame(bool needs_begin_frame);
 
   // Signals that a frame with token |frame_token| was finished processing. If
   // there are any queued messages belonging to it, they will be processed.
@@ -908,7 +881,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                    std::vector<IPC::Message> messages);
   void OnForceRedrawComplete(int snapshot_id);
   void OnFirstVisuallyNonEmptyPaint();
-  void OnCommitAndDrawCompositorFrame();
   void OnHasTouchEventHandlers(bool has_handlers);
   void OnIntrinsicSizingInfoChanged(blink::WebIntrinsicSizingInfo info);
   void OnAnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
@@ -1248,18 +1220,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
 #endif
 
-  mojo::Receiver<viz::mojom::CompositorFrameSink>
-      compositor_frame_sink_receiver_;
-  mojo::Remote<viz::mojom::CompositorFrameSinkClient>
-      renderer_compositor_frame_sink_;
-
-  // Stash a request to create a CompositorFrameSink if it arrives before
-  // we have a view. This is only used if |enable_viz_| is true.
+  // Stash a request to create a CompositorFrameSink if it arrives before we
+  // have a view.
   base::OnceCallback<void(const viz::FrameSinkId&)> create_frame_sink_callback_;
 
   std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue_;
-
-  bool enable_viz_ = false;
 
   // If the |associated_widget_input_handler_| is set it should always be
   // used to ensure in order delivery of related messages that may occur
@@ -1273,17 +1238,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   base::Optional<uint16_t> screen_orientation_angle_for_testing_;
   base::Optional<ScreenOrientationValues> screen_orientation_type_for_testing_;
-
-  // When the viz display compositor is in the browser process, this is used to
-  // register and unregister the bitmaps (stored in |owned_bitmaps_| reported to
-  // this class from the renderer.
-  viz::ServerSharedBitmapManager* shared_bitmap_manager_ = nullptr;
-  // The set of SharedBitmapIds that have been reported as allocated to this
-  // interface. On closing this interface, the display compositor should drop
-  // ownership of the bitmaps with these ids to avoid leaking them. This is only
-  // used when SharedBitmaps are reported to this class because the display
-  // compositor is in the browser process.
-  std::set<viz::SharedBitmapId> owned_bitmaps_;
 
   bool force_enable_zoom_ = false;
 

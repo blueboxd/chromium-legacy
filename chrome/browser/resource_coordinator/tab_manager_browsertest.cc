@@ -325,10 +325,12 @@ class TabManagerTestWithTwoTabs : public TabManagerTest {
   void SetUpOnMainThread() override {
     TabManagerTest::SetUpOnMainThread();
 
+    ASSERT_TRUE(embedded_test_server()->Start());
+
     // Open 2 tabs with default URLs in a focused tab strip.
     GetTabLifecycleUnitSource()->SetFocusedTabStripModelForTesting(tsm());
-    OpenTwoTabs(GURL(chrome::kChromeUIAboutURL),
-                GURL(chrome::kChromeUICreditsURL));
+    OpenTwoTabs(embedded_test_server()->GetURL("/title2.html"),
+                embedded_test_server()->GetURL("/title3.html"));
   }
 
  private:

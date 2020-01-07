@@ -74,10 +74,6 @@ struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   static const ClipboardFormatType& GetIDListType();
 #endif
 
-#if defined(OS_ANDROID)
-  static const ClipboardFormatType& GetBookmarkType();
-#endif
-
   // ClipboardFormatType can be used in a set on some platforms.
   bool operator<(const ClipboardFormatType& other) const;
 

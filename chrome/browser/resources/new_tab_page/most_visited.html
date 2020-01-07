@@ -69,7 +69,6 @@
 
   .tile-title {
     color: var(--tile-title-color);
-    direction: ltr;
     font-weight: 500;
     margin-top:  16px;
     overflow: hidden;
@@ -77,6 +76,14 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     width: 88px;
+  }
+
+  .title-rtl {
+    direction: rtl;
+  }
+
+  .title-ltr {
+    direction: ltr;
   }
 
   .tile.dragging {
@@ -138,7 +145,9 @@
         <div class="tile-icon">
           <img src$="[[getFaviconUrl_(item.url)]]" draggable="false"></img>
         </div>
-        <div class="tile-title">[[item.title]]</div>
+        <div class$="tile-title [[getTileTitleDirectionClass_(item)]]">
+          [[item.title]]
+        </div>
       </a>
     </template>
   </dom-repeat>
@@ -152,8 +161,9 @@
   <cr-dialog id="dialog" on-close="onDialogClose_">
     <div slot="title">[[dialogTitle_]]</div>
     <div slot="body">
-      <cr-input id="dialogInputName" label="$i18n{nameField}"
-          value="{{dialogTileTitle_}}" autofocus spellcheck="false"></cr-input>
+      <cr-input id="dialogInputName" class$="[[dialogTileTitleDirectionClass_]]"
+          label="$i18n{nameField}" value="{{dialogTileTitle_}}"
+          spellcheck="false" autofocus></cr-input>
       <cr-input id="dialogInputUrl" label="$i18n{urlField}"
           value="{{dialogTileUrl_}}" invalid="[[dialogTileUrlInvalid_]]"
           error-message="$i18n{invalidUrl}" spellcheck="false" type="url">

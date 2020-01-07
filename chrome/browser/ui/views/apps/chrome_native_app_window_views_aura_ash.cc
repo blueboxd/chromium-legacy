@@ -89,6 +89,12 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
   // Fullscreen doesn't always imply immersive mode (see
   // ShouldEnableImmersive()).
   window->SetProperty(ash::kImmersiveImpliedByFullscreen, false);
+  // TODO(https://crbug.com/997480): Determine if all non-resizable windows
+  // should have this behavior, or just the feedback app.
+  if (app_window->extension_id() == extension_misc::kFeedbackExtensionId) {
+    window->SetProperty(ash::kBackdropWindowMode,
+                        ash::BackdropWindowMode::kAutoSemiOpaque);
+  }
   observed_window_.Add(window);
 }
 

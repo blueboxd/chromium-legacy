@@ -16,7 +16,6 @@
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/mouse_watcher.h"
 
 class Browser;
@@ -41,7 +40,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
                           public views::AnimationDelegateViews,
                           public DownloadShelf,
                           public views::ButtonListener,
-                          public views::LinkListener,
                           public views::MouseWatcherListener {
  public:
   DownloadShelfView(Browser* browser, BrowserView* parent);
@@ -63,10 +61,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // views::AnimationDelegateViews.
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
-
-  // views::LinkListener.
-  // Invoked when the user clicks the 'show all downloads' link button.
-  void LinkClicked(views::Link* source, int event_flags) override;
 
   // views::ButtonListener:
   // Invoked when the user clicks the close button. Asks the browser to

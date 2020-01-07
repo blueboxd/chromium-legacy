@@ -52,14 +52,19 @@ ServiceWorkerEventQueue::StayAwakeToken::~StayAwakeToken() {
 }
 
 ServiceWorkerEventQueue::ServiceWorkerEventQueue(
+    BeforeStartEventCallback before_start_event_callback,
     base::RepeatingClosure idle_callback)
-    : ServiceWorkerEventQueue(std::move(idle_callback),
+    : ServiceWorkerEventQueue(std::move(before_start_event_callback),
+                              std::move(idle_callback),
                               base::DefaultTickClock::GetInstance()) {}
 
 ServiceWorkerEventQueue::ServiceWorkerEventQueue(
+    BeforeStartEventCallback before_start_event_callback,
     base::RepeatingClosure idle_callback,
     const base::TickClock* tick_clock)
-    : idle_callback_(std::move(idle_callback)), tick_clock_(tick_clock) {}
+    : before_start_event_callback_(std::move(before_start_event_callback)),
+      idle_callback_(std::move(idle_callback)),
+      tick_clock_(tick_clock) {}
 
 ServiceWorkerEventQueue::~ServiceWorkerEventQueue() {
   in_dtor_ = true;
@@ -156,6 +161,8 @@ void ServiceWorkerEventQueue::StartEvent(std::unique_ptr<Event> event) {
                     tick_clock_->NowTicks() +
                         event->custom_timeout.value_or(kEventTimeout),
                     WTF::Bind(std::move(event->abort_callback), event_id)));
+  if (before_start_event_callback_)
+    before_start_event_callback_.Run(event->type == Event::Type::Offline);
   std::move(event->start_callback).Run(event_id);
 }
 

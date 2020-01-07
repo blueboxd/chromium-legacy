@@ -64,7 +64,7 @@ const int kMaxCombinedBreadcrumbLength = 255;
 
 #pragma mark - BreadcrumbManagerObserving protocol
 
-- (void)breadcrumbManager:(BreadcrumbManagerKeyedService*)manager
+- (void)breadcrumbManager:(BreadcrumbManager*)manager
               didAddEvent:(NSString*)event {
   NSString* eventWithSeperator = [NSString stringWithFormat:@"%@\n", event];
   [_breadcrumbsString insertString:eventWithSeperator atIndex:0];

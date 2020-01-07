@@ -1870,19 +1870,16 @@ if (enable_java_templates) {
   #     variables and an onResourcesLoaded() method.
   #
   # Output variables:
-  #   zip_path: (optional)
+  #   resources_zip:
   #     Path to a .resources.zip that will simply contain all the
   #     input resources, collected in a single archive.
   #
-  #   r_text_out_path: (optional): Path for the generated R.txt file.
+  #   r_text_out_path: Path for the generated R.txt file.
   #
   #   srcjar_path: (optional) Path to a generated .srcjar containing the
   #                           generated R.java source file.
   #
   template("prepare_resources") {
-    if (defined(invoker.srcjar_path)) {
-      _srcjar_path = invoker.srcjar_path
-    }
     action_with_pydeps(target_name) {
       set_sources_assignment_filter([])
       forward_variables_from(invoker,
@@ -1895,7 +1892,11 @@ if (enable_java_templates) {
       script = "//build/android/gyp/prepare_resources.py"
 
       depfile = "$target_gen_dir/${invoker.target_name}.d"
-      outputs = []
+      outputs = [
+        invoker.resources_zip,
+        invoker.resources_zip + ".info",
+        invoker.r_text_out_path,
+      ]
 
       _android_aapt_path = android_default_aapt_path
 
@@ -1919,6 +1920,10 @@ if (enable_java_templates) {
         "--extra-res-packages=@FileArg($_rebased_build_config:deps_info:extra_package_names)",
         "--extra-r-text-files=@FileArg($_rebased_build_config:deps_info:extra_r_text_files)",
         "--res-sources-path=$_rebased_res_sources_path",
+        "--resource-zip-out",
+        rebase_path(invoker.resources_zip, root_build_dir),
+        "--r-text-out",
+        rebase_path(invoker.r_text_out_path, root_build_dir),
       ]
 
       if (defined(invoker.android_manifest)) {
@@ -1932,30 +1937,11 @@ if (enable_java_templates) {
         ]
       }
 
-      if (defined(invoker.zip_path)) {
-        outputs += [
-          invoker.zip_path,
-          invoker.zip_path + ".info",
-        ]
-        args += [
-          "--resource-zip-out",
-          rebase_path(invoker.zip_path, root_build_dir),
-        ]
-      }
-
-      if (defined(invoker.r_text_out_path)) {
-        outputs += [ invoker.r_text_out_path ]
-        args += [
-          "--r-text-out",
-          rebase_path(invoker.r_text_out_path, root_build_dir),
-        ]
-      }
-
-      if (defined(_srcjar_path)) {
-        outputs += [ _srcjar_path ]
+      if (defined(invoker.srcjar_path)) {
+        outputs += [ invoker.srcjar_path ]
         args += [
           "--srcjar-out",
-          rebase_path(_srcjar_path, root_build_dir),
+          rebase_path(invoker.srcjar_path, root_build_dir),
         ]
       }
 
@@ -2542,6 +2528,7 @@ if (enable_java_templates) {
   #   dex_path: Path to classes.dex file to include (optional).
   #   packaged_resources_path: Path to .ap_ to use.
   #   output_apk_path: Output path for the generated .apk.
+  #   min_sdk_version: The minimum Android SDK version this target supports.
   #   native_lib_placeholders: List of placeholder filenames to add to the apk
   #     (optional).
   #   secondary_native_lib_placeholders: List of placeholder filenames to add to
@@ -2616,9 +2603,17 @@ if (enable_java_templates) {
         invoker.keystore_name,
         "--key-passwd",
         invoker.keystore_password,
+        "--min-sdk-version=${invoker.min_sdk_version}",
       ]
+      if (is_official_build) {
+        args += [ "--best-compression" ]
+      }
       if (defined(invoker.uncompress_dex) && invoker.uncompress_dex) {
         args += [ "--uncompress-dex" ]
+      }
+      if (defined(invoker.uncompress_shared_libraries) &&
+          invoker.uncompress_shared_libraries) {
+        args += [ "--uncompress-shared-libraries=True" ]
       }
       if (defined(invoker.assets_build_config)) {
         inputs += [ invoker.assets_build_config ]
@@ -2671,11 +2666,6 @@ if (enable_java_templates) {
       }
       if (_secondary_native_lib_placeholders != []) {
         args += [ "--secondary-native-lib-placeholders=$_secondary_native_lib_placeholders" ]
-      }
-
-      if (defined(invoker.uncompress_shared_libraries) &&
-          invoker.uncompress_shared_libraries) {
-        args += [ "--uncompress-shared-libraries=True" ]
       }
     }
   }
@@ -3667,6 +3657,7 @@ template("create_android_app_bundle_module") {
       "--secondary-native-lib-placeholders=@FileArg($_rebased_build_config" +
           ":native:secondary_native_library_placeholders)",
       "--android-abi=$android_app_abi",
+      "--min-sdk-version=${invoker.min_sdk_version}",
       "--uncompress-shared-libraries=@FileArg(" +
           "$_rebased_build_config:native:uncompress_shared_libraries)",
     ]

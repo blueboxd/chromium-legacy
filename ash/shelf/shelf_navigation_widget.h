@@ -68,7 +68,8 @@ class ASH_EXPORT ShelfNavigationWidget : public views::Widget,
   void OnTabletModeEnded() override;
 
   // ShellObserver:
-  void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  void OnShelfAlignmentChanged(aura::Window* root_window,
+                               ShelfAlignment old_alignment) override;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;

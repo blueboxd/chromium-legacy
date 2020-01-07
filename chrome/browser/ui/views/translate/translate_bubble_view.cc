@@ -471,10 +471,6 @@ void TranslateBubbleView::OnPerformAction(views::Combobox* combobox) {
   HandleComboboxPerformAction(static_cast<ComboboxID>(combobox->GetID()));
 }
 
-void TranslateBubbleView::LinkClicked(views::Link* source, int event_flags) {
-  HandleLinkClicked(static_cast<LinkID>(source->GetID()));
-}
-
 void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
   // Recreate the menu model as translated languages can change while the menu
   // is not showing, which invalidates these text strings.
@@ -731,17 +727,6 @@ void TranslateBubbleView::ConfirmAdvancedOptions() {
     }
   }
   translate::ReportUiAction(translate::DONE_BUTTON_CLICKED);
-}
-
-void TranslateBubbleView::HandleLinkClicked(
-    TranslateBubbleView::LinkID sender_id) {
-  switch (sender_id) {
-    case LINK_ID_ADVANCED: {
-      SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
-      translate::ReportUiAction(translate::ADVANCED_LINK_CLICKED);
-      break;
-    }
-  }
 }
 
 void TranslateBubbleView::HandleComboboxPerformAction(

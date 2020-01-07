@@ -30,6 +30,7 @@ include_rules = [
     "+media/base/video_transformation.h",
     "+mojo/public",
     "+net/cert",
+    "+net/dns/public",
     "+net/http",
     "+services/network/public/cpp/cors/cors_error_status.h",
     "+services/network/public/cpp/cors/preflight_result.h",

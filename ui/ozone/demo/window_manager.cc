@@ -69,8 +69,8 @@ void WindowManager::OnConfigurationChanged() {
   }
 
   is_configuring_ = true;
-  delegate_->GetDisplays(base::BindRepeating(&WindowManager::OnDisplaysAquired,
-                                             base::Unretained(this)));
+  delegate_->GetDisplays(base::BindOnce(&WindowManager::OnDisplaysAquired,
+                                        base::Unretained(this)));
 }
 
 void WindowManager::OnDisplaySnapshotsInvalidated() {}

@@ -26,8 +26,8 @@ const int32_t kRectX = 1;
 const int32_t kRectY = 2;
 const int32_t kRectWidth = 7;
 const int32_t kRectHeight = 8;
-const float k4DIdentityMatrix[16] = {1, 0, 0, 0, 0, 1, 0, 0,
-                                     0, 0, 1, 0, 0, 0, 0, 1};
+const std::array<float, 16> k4DIdentityMatrix = {1, 0, 0, 0, 0, 1, 0, 0,
+                                                 0, 0, 1, 0, 0, 0, 0, 1};
 
 bool SemanticNodesAreEqual(const Node& first, const Node& second) {
   if (first.node_id() != second.node_id())
@@ -128,10 +128,8 @@ TEST_F(AXTreeConverterTest, AllFieldsSetAndEqual) {
   Attributes attributes;
   attributes.set_label(kLabel1);
   fuchsia::ui::gfx::BoundingBox box;
-  float min[3] = {kRectX, kRectY + kRectHeight, 0.0f};
-  float max[3] = {kRectHeight, kRectY, 0.0f};
-  box.min = scenic::NewVector3(min);
-  box.max = scenic::NewVector3(max);
+  box.min = scenic::NewVector3({kRectX, kRectY + kRectHeight, 0.0f});
+  box.max = scenic::NewVector3({kRectHeight, kRectY, 0.0f});
   fuchsia::ui::gfx::Matrix4Value mat =
       scenic::NewMatrix4Value(k4DIdentityMatrix);
   auto expected_node = CreateSemanticNode(
@@ -179,8 +177,8 @@ TEST_F(AXTreeConverterTest, FieldMismatch) {
   Attributes attributes;
   attributes.set_label(kLabel1);
   fuchsia::ui::gfx::BoundingBox box;
-  float min[3] = {kRectX, kRectY + kRectHeight, 0.0f};
-  float max[3] = {kRectHeight, kRectY, 0.0f};
+  std::array<float, 3> min = {kRectX, kRectY + kRectHeight, 0.0f};
+  std::array<float, 3> max = {kRectHeight, kRectY, 0.0f};
   box.min = scenic::NewVector3(min);
   box.max = scenic::NewVector3(max);
   fuchsia::ui::gfx::Matrix4Value mat =

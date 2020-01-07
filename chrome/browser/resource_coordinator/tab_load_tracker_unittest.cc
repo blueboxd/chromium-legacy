@@ -536,7 +536,7 @@ TEST_F(TabLoadTrackerTest, PrerenderContentsDoesNotChangeUiTabCounts) {
   // Prerender some contents.
   prerender::test_utils::RestorePrerenderMode restore_prerender_mode;
   prerender::PrerenderManager::SetMode(
-      prerender::PrerenderManager::DEPRECATED_PRERENDER_MODE_ENABLED);
+      prerender::PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(profile());
   GURL url("http://www.example.com");
@@ -545,8 +545,9 @@ TEST_F(TabLoadTrackerTest, PrerenderContentsDoesNotChangeUiTabCounts) {
       prerender_manager->AddPrerenderFromOmnibox(
           url, contents1()->GetController().GetDefaultSessionStorageNamespace(),
           kSize));
+  EXPECT_NE(nullptr, prerender_handle);
   const std::vector<content::WebContents*> contentses =
-      prerender_manager->GetAllPrerenderingContents();
+      prerender_manager->GetAllNoStatePrefetchingContentsForTesting();
   ASSERT_EQ(1U, contentses.size());
 
   // Check that the visibility and loading state for a prerender WebContents is

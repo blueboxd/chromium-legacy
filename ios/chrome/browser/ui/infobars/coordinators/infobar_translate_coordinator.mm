@@ -420,18 +420,6 @@ NSString* const kTranslateNotificationSnackbarCategory =
   // TODO(crbug.com/1014959): implement else logic. Should aything be done?
 }
 
-#pragma mark - InfobarTranslateLanguageSelectionDelegate
-
-- (void)didSelectSourceLanguageIndex:(int)languageIndex
-                            withName:(NSString*)languageName {
-  // TODO(crbug.com/1014959): Implement.
-}
-
-- (void)didSelectTargetLanguageIndex:(int)languageIndex
-                            withName:(NSString*)languageName {
-  // TODO(crbug.com/1014959): Implement.
-}
-
 #pragma mark - Private
 
 // Helper method for performInfobarAction, which also allows for

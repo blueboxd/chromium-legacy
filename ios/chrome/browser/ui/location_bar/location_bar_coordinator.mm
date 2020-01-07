@@ -183,9 +183,8 @@ const int kLocationAuthorizationStatusCount = 5;
   [self.viewController setBadgeView:self.badgeViewController.view];
   [self.badgeViewController didMoveToParentViewController:self.viewController];
   // Create BadgeMediator and set the viewController as its consumer.
-  self.badgeMediator =
-      [[BadgeMediator alloc] initWithConsumer:self.badgeViewController
-                                 webStateList:self.webStateList];
+  self.badgeMediator = [[BadgeMediator alloc] initWithBrowser:self.browser];
+  self.badgeMediator.consumer = self.badgeViewController;
   self.badgeMediator.dispatcher =
       static_cast<id<InfobarCommands, BrowserCoordinatorCommands>>(
           self.dispatcher);
@@ -218,6 +217,7 @@ const int kLocationAuthorizationStatusCount = 5;
   [self.omniboxPopupCoordinator stop];
   [self.omniboxCoordinator stop];
   [self.badgeMediator disconnect];
+  self.badgeMediator = nil;
   _editController.reset();
 
   self.viewController = nil;

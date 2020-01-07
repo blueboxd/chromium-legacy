@@ -8,8 +8,6 @@
 
 namespace chromeos {
 
-const char kSupervisedUserTokenFilename[] = "token";
-
 const char kCryptohomeSupervisedUserKeyLabel[] = "managed";
 const char kCryptohomeMasterKeyLabel[] = "master";
 const char kLegacyCryptohomeSupervisedUserKeyLabel[] = "default-0";

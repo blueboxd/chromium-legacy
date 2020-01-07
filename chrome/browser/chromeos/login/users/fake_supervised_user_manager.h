@@ -42,10 +42,6 @@ class FakeSupervisedUserManager : public SupervisedUserManager {
   void SetPasswordInformation(
       const std::string& user_id,
       const base::DictionaryValue* password_info) override {}
-  void LoadSupervisedUserToken(Profile* profile,
-                               const LoadTokenCallback& callback) override;
-  void ConfigureSyncWithToken(Profile* profile,
-                              const std::string& token) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeSupervisedUserManager);

@@ -69,7 +69,7 @@ void GAIAInfoUpdateService::Update() {
   auto maybe_account_info =
       identity_manager_
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              identity_manager_->GetUnconsentedPrimaryAccountInfo().account_id);
+              unconsented_primary_account_info.account_id);
   if (maybe_account_info.has_value())
     Update(maybe_account_info.value());
 }
@@ -139,7 +139,13 @@ void GAIAInfoUpdateService::OnPrimaryAccountSet(
 
 void GAIAInfoUpdateService::OnPrimaryAccountCleared(
     const CoreAccountInfo& previous_primary_account_info) {
-  ClearProfileEntry();
+  // Do not clear the profile if there is an unconsented primary account.
+  if (!ShouldUpdate()) {
+    ClearProfileEntry();
+    return;
+  }
+  DCHECK_EQ(identity_manager_->GetUnconsentedPrimaryAccountInfo().gaia,
+            previous_primary_account_info.gaia);
 }
 
 void GAIAInfoUpdateService::OnUnconsentedPrimaryAccountChanged(

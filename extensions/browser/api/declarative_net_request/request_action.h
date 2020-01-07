@@ -26,10 +26,12 @@ struct RequestAction {
     // Block the network request and collapse the corresponding DOM element.
     COLLAPSE,
     // Allow the network request, preventing it from being intercepted by other
-    // matching rules. Only used for tracking a matched allow rule.
+    // matching rules.
     ALLOW,
     // Redirect the network request.
     REDIRECT,
+    // Upgrade the scheme of the network request.
+    UPGRADE,
     // Remove request/response headers.
     REMOVE_HEADERS,
   };
@@ -45,14 +47,13 @@ struct RequestAction {
 
   Type type = Type::BLOCK;
 
-  // Valid iff |type| is |REDIRECT|.
+  // Valid iff |IsRedirectOrUpgrade()| is true.
   base::Optional<GURL> redirect_url;
 
   // The ID of the matching rule for this action.
   uint32_t rule_id;
 
-  // The priority of the matching rule for this action. Only really valid for
-  // redirect actions.
+  // The priority of the matching rule for this action.
   uint32_t rule_priority;
 
   // The source type of the matching rule for this action.
@@ -70,6 +71,13 @@ struct RequestAction {
   // TODO(crbug.com/983761): Move the tracking of actions matched to
   // ActionTracker.
   mutable bool tracked = false;
+
+  bool IsBlockOrCollapse() const {
+    return type == Type::BLOCK || type == Type::COLLAPSE;
+  }
+  bool IsRedirectOrUpgrade() const {
+    return type == Type::REDIRECT || type == Type::UPGRADE;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(RequestAction);
 };

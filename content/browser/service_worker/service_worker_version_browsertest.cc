@@ -718,7 +718,8 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
     request->method = "GET";
     fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
         std::move(request), resource_type, std::string() /* client_id */,
-        version_, std::move(prepare_callback), std::move(fetch_callback));
+        version_, std::move(prepare_callback), std::move(fetch_callback),
+        /*is_offline_cpability_check=*/false);
     fetch_dispatcher_->Run();
   }
 

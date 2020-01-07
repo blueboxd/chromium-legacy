@@ -21,7 +21,6 @@ class WebContents;
 namespace views {
 class ImageView;
 class Label;
-class Link;
 }  // namespace views
 
 // View used to display the cookie controls ui.
@@ -85,7 +84,7 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
   views::ImageView* header_view_ = nullptr;
   views::Label* text_ = nullptr;
   views::View* extra_view_ = nullptr;
-  views::Link* show_cookies_link_ = nullptr;
+  views::View* show_cookies_link_ = nullptr;
 
   ScopedObserver<CookieControlsController, CookieControlsView> observer_{this};
 

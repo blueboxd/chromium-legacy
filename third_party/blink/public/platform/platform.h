@@ -578,7 +578,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual bool IsWebRtcSrtpEncryptedHeadersEnabled() { return false; }
 
-  virtual base::Optional<std::string> WebRtcStunProbeTrialParameter() {
+  virtual base::Optional<WebString> WebRtcStunProbeTrialParameter() {
     return base::nullopt;
   }
 

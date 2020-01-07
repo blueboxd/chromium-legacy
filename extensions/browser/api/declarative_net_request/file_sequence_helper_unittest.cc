@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/features/feature_channel.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
@@ -87,9 +88,9 @@ class FileSequenceHelperTest : public ExtensionsTest {
            base::Optional<std::string> expected_error, LoadRequestData data,
            base::Optional<std::string> error) {
           EXPECT_EQ(1u, data.rulesets.size());
+          EXPECT_EQ(expected_error, error) << error.value_or("no actual error");
           EXPECT_EQ(expected_did_load_successfully,
                     data.rulesets[0].did_load_successfully());
-          EXPECT_EQ(expected_error, error) << error.value_or("no actual error");
           run_loop->Quit();
         },
         &run_loop, expected_did_load_successfully, expected_error);
@@ -268,14 +269,14 @@ TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
     rule.action->type = std::string("redirect");
     rule.action->redirect.emplace();
     rule.action->redirect->url = std::string("http://google.com");
+    rule.priority.reset();
     api_rules.clear();
     api_rules.push_back(GetAPIRule(rule));
     TestAddDynamicRules(
         source.Clone(), std::move(api_rules),
         ReadJSONRulesResult::Status::kSuccess,
         UpdateDynamicRulesStatus::kErrorInvalidRules,
-        ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY,
-                  kMinValidID + 1)
+        ParseInfo(ParseResult::ERROR_EMPTY_RULE_PRIORITY, kMinValidID + 1)
             .GetErrorDescription(),
         false /* expected_did_load_successfully */);
   }

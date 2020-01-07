@@ -1071,7 +1071,7 @@ struct ParamTraits<util::StrongAlias<TagType, UnderlyingType>> {
     UnderlyingType value;
     if (!ReadParam(m, iter, &value))
       return false;
-    *r = param_type::StrongAlias(value);
+    *r = param_type(value);
     return true;
   }
   static void Log(const param_type& p, std::string* l) {

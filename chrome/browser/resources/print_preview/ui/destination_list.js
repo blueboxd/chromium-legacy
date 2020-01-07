@@ -15,6 +15,8 @@ import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/po
 
 import {Destination} from '../data/destination.js';
 
+const DESTINATION_ITEM_HEIGHT = 32;
+
 Polymer({
   is: 'print-preview-destination-list',
 
@@ -34,8 +36,6 @@ Polymer({
       type: Boolean,
       value: false,
     },
-
-    listName: String,
 
     /** @private {!Array<!Destination>} */
     matchingDestinations_: {
@@ -57,19 +57,20 @@ Polymer({
   },
 
   observers: [
-    'updateMatchingDestinations_(destinations.*, searchQuery)',
-    'matchingDestinationsChanged_(' +
-        'matchingDestinations_.*, loadingDestinations)',
-    'updateThrobberHidden_(matchingDestinations_.*, loadingDestinations)',
+    'updateMatchingDestinations_(' +
+        'destinations.*, searchQuery, loadingDestinations)',
   ],
 
-  // This is a workaround to ensure that the iron-list correctly updates the
-  // displayed destination information when the elements in the
-  // |matchingDestinations_| array change, instead of using stale information
-  // (a known iron-list issue). The event needs to be fired while the list is
-  // visible, so firing it immediately when the change occurs does not always
-  // work.
-  forceIronResize: function() {
+  /**
+   * This is a workaround to ensure that the iron-list correctly updates the
+   * displayed destination information when the elements in the
+   * |matchingDestinations_| array change, instead of using stale information
+   * (a known iron-list issue). The event needs to be fired while the list is
+   * visible, so firing it immediately when the change occurs does not always
+   * work.
+   * @private
+   */
+  forceIronResize_: function() {
     this.$.list.fire('iron-resize');
   },
 
@@ -79,18 +80,30 @@ Polymer({
       return;
     }
 
+    const matchingDestinations = this.searchQuery ?
+        this.destinations.filter(
+            d => d.matches(/** @type {!RegExp} */ (this.searchQuery))) :
+        this.destinations.slice();
+
+    const maxDisplayedItems = this.offsetHeight / DESTINATION_ITEM_HEIGHT;
+    const isListFullHeight = maxDisplayedItems <= matchingDestinations.length;
+    const listHeight = isListFullHeight ?
+        this.offsetHeight :
+        matchingDestinations.length * DESTINATION_ITEM_HEIGHT;
+
+    // Update the throbber and "No destinations" message.
+    this.hasDestinations_ =
+        matchingDestinations.length > 0 || this.loadingDestinations;
+    this.throbberHidden_ =
+        !this.loadingDestinations || isListFullHeight || !this.hasDestinations_;
+
+    // Update the height before updating the list.
+    this.$.list.style.height = `${listHeight}px`;
     this.updateList(
         'matchingDestinations_', destination => destination.key,
-        this.searchQuery ?
-            this.destinations.filter(
-                d => d.matches(/** @type {!RegExp} */ (this.searchQuery))) :
-            this.destinations.slice());
-  },
+        matchingDestinations);
 
-  /** @private */
-  matchingDestinationsChanged_: function() {
-    const count = this.matchingDestinations_.length;
-    this.hasDestinations_ = count > 0 || this.loadingDestinations;
+    this.forceIronResize_();
   },
 
   /**
@@ -115,20 +128,4 @@ Polymer({
 
     this.fire('destination-selected', e.target);
   },
-
-  /** @private */
-  updateThrobberHidden_: function() {
-    if (!this.loadingDestinations) {
-      this.throbberHidden_ = true;
-    } else if (!this.matchingDestinations_) {
-      this.throbberHidden_ = false;
-    } else {
-      const maxDisplayedItems = this.offsetHeight / 32;
-      this.throbberHidden_ =
-          maxDisplayedItems <= this.matchingDestinations_.length;
-    }
-    afterNextRender(this, () => {
-      this.forceIronResize();
-    });
-  }
 });

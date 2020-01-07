@@ -41,7 +41,7 @@ class MEDIA_EXPORT AudioRenderer {
   virtual void Initialize(DemuxerStream* stream,
                           CdmContext* cdm_context,
                           RendererClient* client,
-                          const PipelineStatusCB& init_cb) = 0;
+                          PipelineStatusCallback init_cb) = 0;
 
   // Returns the TimeSource associated with audio rendering.
   virtual TimeSource* GetTimeSource() = 0;

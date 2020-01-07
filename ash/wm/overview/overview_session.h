@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/scoped_overview_hide_windows.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -145,7 +146,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void ResetSplitViewDragIndicatorsWindowDraggingStates();
 
   // See |OverviewGrid::RearrangeDuringDrag|.
-  void RearrangeDuringDrag(aura::Window* dragged_window);
+  void RearrangeDuringDrag(OverviewItem* dragged_item);
 
   // Updates the appearance of each drop target to visually indicate when the
   // dragged window is being dragged over it.
@@ -304,7 +305,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // ShelObserver:
   void OnShellDestroying() override;
-  void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  void OnShelfAlignmentChanged(aura::Window* root_window,
+                               ShelfAlignment old_alignment) override;
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;

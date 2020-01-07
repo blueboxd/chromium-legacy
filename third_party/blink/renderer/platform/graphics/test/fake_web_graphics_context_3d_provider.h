@@ -75,7 +75,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override { return nullptr; }
 
   bool BindToCurrentThread() override { return false; }
-  void SetLostContextCallback(base::Closure) override {}
+  void SetLostContextCallback(base::RepeatingClosure) override {}
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t id)>) override {}
   cc::ImageDecodeCache* ImageDecodeCache(SkColorType color_type) override {

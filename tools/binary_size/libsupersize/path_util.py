@@ -163,16 +163,15 @@ def GetNmPath(tool_prefix):
   return tool_prefix + 'nm'
 
 
-def GetApkAnalyzerPath(output_directory):
-  build_vars = _LoadBuildVars(output_directory)
-  sdk_analyzer = os.path.normpath(os.path.join(
-      output_directory, build_vars['android_sdk_root'], 'tools', 'bin',
-      'apkanalyzer'))
-  if os.path.exists(sdk_analyzer):
-    return sdk_analyzer
-  # Older SDKs do not contain the tool, so fall back to the one we know exists.
-  return os.path.join(SRC_ROOT, 'third_party', 'android_sdk', 'public',
-                      'tools', 'bin', 'apkanalyzer')
+def GetApkAnalyzerPath():
+  default_path = FromSrcRootRelative(
+      os.path.join('third_party', 'android_sdk', 'public', 'cmdline-tools',
+                   'latest', 'bin', 'apkanalyzer'))
+  return os.environ.get('APK_ANALYZER', default_path)
+
+
+def GetJavaHome():
+  return FromSrcRootRelative(os.path.join('third_party', 'jdk', 'current'))
 
 
 def GetObjDumpPath(tool_prefix):

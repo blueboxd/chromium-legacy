@@ -216,5 +216,19 @@ TEST(IPCMessageUtilsTest, FlatMap) {
   EXPECT_EQ(input, output);
 }
 
+TEST(IPCMessageUtilsTest, StrongAlias) {
+  using TestType = util::StrongAlias<class Tag, int>;
+  TestType input(42);
+
+  base::Pickle pickle;
+  IPC::WriteParam(&pickle, input);
+
+  base::PickleIterator iter(pickle);
+  TestType output;
+  EXPECT_TRUE(IPC::ReadParam(&pickle, &iter, &output));
+
+  EXPECT_EQ(input, output);
+}
+
 }  // namespace
 }  // namespace IPC

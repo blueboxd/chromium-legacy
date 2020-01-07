@@ -462,13 +462,15 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     const std::string& client_id,
     scoped_refptr<ServiceWorkerVersion> version,
     base::OnceClosure prepare_callback,
-    FetchCallback fetch_callback)
+    FetchCallback fetch_callback,
+    bool is_offline_capability_check)
     : request_(std::move(request)),
       client_id_(client_id),
       version_(std::move(version)),
       resource_type_(resource_type),
       prepare_callback_(std::move(prepare_callback)),
-      fetch_callback_(std::move(fetch_callback)) {
+      fetch_callback_(std::move(fetch_callback)),
+      is_offline_capability_check_(is_offline_capability_check) {
   DCHECK(!request_->blob);
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
@@ -596,7 +598,18 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   auto params = blink::mojom::DispatchFetchEventParams::New();
   params->request = std::move(request_);
   params->client_id = client_id_;
-  params->preload_handle = std::move(preload_handle_);
+  if (is_offline_capability_check_) {
+    // TODO(crbug.com/1031950): We have to set up |preload_handle_| correctly so
+    // that event.preloadResponse is valid one if navigation preload is enabled.
+
+    // At present, an offline-capability-check fetch event is not calling
+    // MayStartNavigationPreload() so |preload_handle_| is null here.
+    DCHECK(!preload_handle_);
+  } else {
+    params->preload_handle = std::move(preload_handle_);
+  }
+  params->is_offline_capability_check = is_offline_capability_check_;
+
   // TODO(https://crbug.com/900700): Make the remote connected to a receiver
   // which is passed to blink::PerformanceResourceTiming.
   params->worker_timing_remote = mojo::NullRemote();

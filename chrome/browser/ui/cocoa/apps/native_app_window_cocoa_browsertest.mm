@@ -482,7 +482,9 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Frameless) {
 
   // Windows created with NSBorderlessWindowMask by default don't have shadow,
   // but packaged apps should always have one.
-  EXPECT_TRUE([ns_window hasShadow]);
+  // This specific check is disabled because shadows are disabled on the
+  // bots - see https://crbug.com/899286.
+  // EXPECT_TRUE([ns_window hasShadow]);
 
   // Since the window has no constraints, it should have all of the following
   // style mask bits.

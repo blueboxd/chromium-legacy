@@ -32,6 +32,7 @@ import java.util.Set;
  */
 public class TabSuggestionMessageService extends MessageService implements TabSuggestionsObserver {
     static final int CLOSE_SUGGESTION_ACTION_ENABLING_THRESHOLD = 1;
+    private static boolean sSuggestionAvailableForTesting;
 
     /**
      * This is the data type that this MessageService is serving to its Observer.
@@ -209,6 +210,7 @@ public class TabSuggestionMessageService extends MessageService implements TabSu
             Callback<TabSuggestionFeedback> tabSuggestionFeedback) {
         if (tabSuggestions.size() == 0) return;
 
+        sSuggestionAvailableForTesting = true;
         mCurrentBestTabSuggestion = tabSuggestions.get(0);
         mCurrentTabSuggestionFeedback = tabSuggestionFeedback;
         sendAvailabilityNotification(new TabSuggestionMessageData(
@@ -218,6 +220,12 @@ public class TabSuggestionMessageService extends MessageService implements TabSu
     @Override
     public void onTabSuggestionInvalidated() {
         mCurrentBestTabSuggestion = null;
+        sSuggestionAvailableForTesting = false;
         sendInvalidNotification();
+    }
+
+    @VisibleForTesting
+    public static boolean isSuggestionAvailableForTesting() {
+        return sSuggestionAvailableForTesting;
     }
 }

@@ -4637,7 +4637,7 @@ void WebContentsImpl::OnThemeColorChanged(RenderViewHostImpl* source) {
   if (source->did_first_visually_non_empty_paint() &&
       last_sent_theme_color_ != source->theme_color()) {
     for (auto& observer : observers_)
-      observer.DidChangeThemeColor(source->theme_color());
+      observer.DidChangeThemeColor();
     last_sent_theme_color_ = source->theme_color();
   }
 }
@@ -5139,7 +5139,7 @@ void WebContentsImpl::DidFirstVisuallyNonEmptyPaint(
   if (source->theme_color() != last_sent_theme_color_) {
     // Theme color should have updated by now if there was one.
     for (auto& observer : observers_)
-      observer.DidChangeThemeColor(source->theme_color());
+      observer.DidChangeThemeColor();
     last_sent_theme_color_ = source->theme_color();
   }
 }

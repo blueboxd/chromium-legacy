@@ -31,7 +31,7 @@ class MetricsProvider {
   // Called during service initialization to allow the provider to start any
   // async initialization tasks.  The service will wait for the provider to
   // call |done_callback| before generating logs for the current session.
-  virtual void AsyncInit(const base::Closure& done_callback);
+  virtual void AsyncInit(base::OnceClosure done_callback);
 
   // Called when a new MetricsLog is created.
   virtual void OnDidCreateMetricsLog();

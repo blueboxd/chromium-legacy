@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "net/base/escape.h"
 
 namespace extensions {
@@ -48,8 +49,8 @@ FlatStringListOffset BuildVectorOfSharedStrings(
 std::vector<std::unique_ptr<url_pattern_index::UrlPatternIndexBuilder>>
 CreateIndexBuilders(flatbuffers::FlatBufferBuilder* builder) {
   std::vector<std::unique_ptr<url_pattern_index::UrlPatternIndexBuilder>>
-      result(flat::ActionIndex_count);
-  for (size_t i = 0; i < flat::ActionIndex_count; ++i) {
+      result(flat::IndexType_count);
+  for (size_t i = 0; i < flat::IndexType_count; ++i) {
     result[i] =
         std::make_unique<url_pattern_index::UrlPatternIndexBuilder>(builder);
   }
@@ -191,30 +192,24 @@ void FlatRulesetIndexer::AddUrlRule(const IndexedRule& indexed_rule) {
             ? builder_.CreateSharedString(*indexed_rule.regex_substitution)
             : FlatStringOffset();
     regex_rules_.push_back(flat::CreateRegexRule(
-        builder_, offset, GetActionType(indexed_rule),
+        builder_, offset, ConvertToFlatActionType(indexed_rule.action_type),
         GetRemoveHeadersMask(indexed_rule), regex_substitution_offset));
   }
 
-  // Store additional metadata required for a redirect rule.
-  if (indexed_rule.action_type == dnr_api::RULE_ACTION_TYPE_REDIRECT) {
-    if (indexed_rule.redirect_url) {
-      DCHECK(!indexed_rule.redirect_url->empty());
-      FlatStringOffset redirect_url_offset =
-          builder_.CreateSharedString(*indexed_rule.redirect_url);
-      metadata_.push_back(flat::CreateUrlRuleMetadata(
-          builder_, indexed_rule.id, redirect_url_offset,
-          FlatOffset<flat::UrlTransform>()));
-    } else if (indexed_rule.url_transform) {
-      FlatOffset<flat::UrlTransform> transform_offset =
-          BuildTransformOffset(&builder_, *indexed_rule.url_transform);
-      metadata_.push_back(flat::CreateUrlRuleMetadata(
-          builder_, indexed_rule.id, FlatStringOffset() /* redirect_url */,
-          transform_offset));
-    } else {
-      // This was already indexed as part of |regex_rules_|.
-      DCHECK(indexed_rule.regex_substitution);
-    }
+  FlatStringOffset redirect_url_offset;
+  FlatOffset<flat::UrlTransform> transform_offset;
+  if (indexed_rule.redirect_url) {
+    DCHECK(!indexed_rule.redirect_url->empty());
+    redirect_url_offset =
+        builder_.CreateSharedString(*indexed_rule.redirect_url);
+  } else if (indexed_rule.url_transform) {
+    transform_offset =
+        BuildTransformOffset(&builder_, *indexed_rule.url_transform);
   }
+  metadata_.push_back(flat::CreateUrlRuleMetadata(
+      builder_, indexed_rule.id,
+      ConvertToFlatActionType(indexed_rule.action_type), redirect_url_offset,
+      transform_offset));
 }
 
 void FlatRulesetIndexer::Finish() {
@@ -249,26 +244,6 @@ base::span<const uint8_t> FlatRulesetIndexer::GetData() {
   return base::make_span(builder_.GetBufferPointer(), builder_.GetSize());
 }
 
-flat::ActionType FlatRulesetIndexer::GetActionType(
-    const IndexedRule& indexed_rule) const {
-  switch (indexed_rule.action_type) {
-    case dnr_api::RULE_ACTION_TYPE_BLOCK:
-      return flat::ActionType_block;
-    case dnr_api::RULE_ACTION_TYPE_ALLOW:
-      return flat::ActionType_allow;
-    case dnr_api::RULE_ACTION_TYPE_REDIRECT:
-      return flat::ActionType_redirect;
-    case dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS:
-      return flat::ActionType_remove_headers;
-    case dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME:
-      return flat::ActionType_upgrade_scheme;
-    case dnr_api::RULE_ACTION_TYPE_NONE:
-      break;
-  }
-  NOTREACHED();
-  return flat::ActionType_block;
-}
-
 uint8_t FlatRulesetIndexer::GetRemoveHeadersMask(
     const IndexedRule& indexed_rule) const {
   uint8_t mask = 0;
@@ -295,15 +270,12 @@ std::vector<FlatRulesetIndexer::UrlPatternIndexBuilder*>
 FlatRulesetIndexer::GetBuilders(const IndexedRule& indexed_rule) {
   switch (indexed_rule.action_type) {
     case dnr_api::RULE_ACTION_TYPE_BLOCK:
-      return {index_builders_[flat::ActionIndex_block].get()};
     case dnr_api::RULE_ACTION_TYPE_ALLOW:
-      return {index_builders_[flat::ActionIndex_allow].get()};
     case dnr_api::RULE_ACTION_TYPE_REDIRECT:
-      return {index_builders_[flat::ActionIndex_redirect].get()};
+    case dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME:
+      return {index_builders_[flat::IndexType_before_request].get()};
     case dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS:
       return GetRemoveHeaderBuilders(indexed_rule.remove_headers_set);
-    case dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME:
-      return {index_builders_[flat::ActionIndex_upgrade_scheme].get()};
     case dnr_api::RULE_ACTION_TYPE_NONE:
       break;
   }
@@ -325,15 +297,15 @@ FlatRulesetIndexer::GetRemoveHeaderBuilders(
         break;
       case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
         result.push_back(
-            index_builders_[flat::ActionIndex_remove_cookie_header].get());
+            index_builders_[flat::IndexType_remove_cookie_header].get());
         break;
       case dnr_api::REMOVE_HEADER_TYPE_REFERER:
         result.push_back(
-            index_builders_[flat::ActionIndex_remove_referer_header].get());
+            index_builders_[flat::IndexType_remove_referer_header].get());
         break;
       case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
         result.push_back(
-            index_builders_[flat::ActionIndex_remove_set_cookie_header].get());
+            index_builders_[flat::IndexType_remove_set_cookie_header].get());
         break;
     }
   }

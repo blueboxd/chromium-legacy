@@ -147,7 +147,7 @@ TEST_F(MinidumpUploaderTest, AvoidsLockingWithoutDumps) {
     MinidumpUploader* const minidump_uploader_;
   };
   MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
-                            base::Bind(&CreateFakePrefService, true));
+                            base::BindOnce(&CreateFakePrefService, true));
   // Will lock for the first run to initialize file state.
   ASSERT_TRUE(uploader.UploadAllMinidumps());
 
@@ -162,7 +162,7 @@ TEST_F(MinidumpUploaderTest, RemovesDumpsWithoutOptIn) {
   // Write a dump info entry.
   GenerateDumpWithFiles(minidump_path, logfile_path);
   MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
-                            base::Bind(&CreateFakePrefService, false));
+                            base::BindOnce(&CreateFakePrefService, false));
 
   // MinidumpUploader should not call upon CastCrashdumpUploader.
   ASSERT_TRUE(uploader.UploadAllMinidumps());
@@ -184,7 +184,7 @@ TEST_F(MinidumpUploaderTest, SavesDumpInfoWithUploadFailure) {
   std::unique_ptr<DumpInfo> dump(
       GenerateDumpWithFiles(minidump_path, logfile_path));
   MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
-                            base::Bind(&CreateFakePrefService, true));
+                            base::BindOnce(&CreateFakePrefService, true));
 
   // Induce an upload failure.
   EXPECT_CALL(mock_crash_uploader(),
@@ -213,21 +213,23 @@ TEST_F(MinidumpUploaderTest, SavesRemainingDumpInfoWithMidwayUploadFailure) {
   GenerateDumpWithFiles(minidump_path, logfile_path);
   std::unique_ptr<DumpInfo> dump2(
       GenerateDumpWithFiles(minidump_path2, logfile_path2));
-  MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
-                            base::Bind(&CreateFakePrefService, true));
+  {
+    MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
+                              base::BindOnce(&CreateFakePrefService, true));
 
-  // First allow a successful upload, then induce failure.
-  EXPECT_CALL(mock_crash_uploader(),
-              AddAttachment("log_file", logfile_path.value()))
-      .WillOnce(Return(true));
-  EXPECT_CALL(mock_crash_uploader(),
-              AddAttachment("log_file", logfile_path2.value()))
-      .WillOnce(Return(true));
-  EXPECT_CALL(mock_crash_uploader(), SetParameter(_, _)).Times(AtLeast(0));
-  EXPECT_CALL(mock_crash_uploader(), Upload(_))
-      .WillOnce(Return(true))
-      .WillOnce(Return(false));
-  ASSERT_TRUE(uploader.UploadAllMinidumps());
+    // First allow a successful upload, then induce failure.
+    EXPECT_CALL(mock_crash_uploader(),
+                AddAttachment("log_file", logfile_path.value()))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_crash_uploader(),
+                AddAttachment("log_file", logfile_path2.value()))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_crash_uploader(), SetParameter(_, _)).Times(AtLeast(0));
+    EXPECT_CALL(mock_crash_uploader(), Upload(_))
+        .WillOnce(Return(true))
+        .WillOnce(Return(false));
+    ASSERT_TRUE(uploader.UploadAllMinidumps());
+  }
 
   // Info should exist in the lockfile, but should only be non-uploaded dump.
   DumpList dumps;
@@ -240,13 +242,18 @@ TEST_F(MinidumpUploaderTest, SavesRemainingDumpInfoWithMidwayUploadFailure) {
   ASSERT_TRUE(base::PathExists(minidump_path2));
   ASSERT_TRUE(base::PathExists(logfile_path2));
 
-  // Finally, upload successfully.
-  EXPECT_CALL(mock_crash_uploader(),
-              AddAttachment("log_file", logfile_path2.value()))
-      .WillOnce(Return(true));
-  EXPECT_CALL(mock_crash_uploader(), SetParameter(_, _)).Times(AtLeast(0));
-  EXPECT_CALL(mock_crash_uploader(), Upload(_)).WillOnce(Return(true));
-  ASSERT_TRUE(uploader.UploadAllMinidumps());
+  {
+    MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
+                              base::BindOnce(&CreateFakePrefService, true));
+
+    // Finally, upload successfully.
+    EXPECT_CALL(mock_crash_uploader(),
+                AddAttachment("log_file", logfile_path2.value()))
+        .WillOnce(Return(true));
+    EXPECT_CALL(mock_crash_uploader(), SetParameter(_, _)).Times(AtLeast(0));
+    EXPECT_CALL(mock_crash_uploader(), Upload(_)).WillOnce(Return(true));
+    ASSERT_TRUE(uploader.UploadAllMinidumps());
+  }
 
   // Ensure all dump files have been removed, lockfile has been emptied.
   int64_t size = -1;
@@ -265,7 +272,7 @@ TEST_F(MinidumpUploaderTest, FailsUploadWithMissingMinidumpFile) {
   // Write one entry with appropriate files.
   GenerateDumpWithFiles(minidump_path, logfile_path);
   MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
-                            base::Bind(&CreateFakePrefService, true));
+                            base::BindOnce(&CreateFakePrefService, true));
 
   // No CastCrashdumpUploader methods should be called.
   ASSERT_TRUE(base::DeleteFile(minidump_path, false));
@@ -287,7 +294,7 @@ TEST_F(MinidumpUploaderTest, UploadsWithoutMissingLogFile) {
   // Write one entry with appropriate files.
   GenerateDumpWithFiles(minidump_path, logfile_path);
   MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
-                            base::Bind(&CreateFakePrefService, true));
+                            base::BindOnce(&CreateFakePrefService, true));
 
   // Delete logfile, crash uploader should still work as intended.
   ASSERT_TRUE(base::DeleteFile(logfile_path, false));
@@ -323,7 +330,7 @@ TEST_F(MinidumpUploaderTest, DeletesLingeringFiles) {
   // Write a real entry.
   GenerateDumpWithFiles(minidump_path, logfile_path);
   MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
-                            base::Bind(&CreateFakePrefService, true));
+                            base::BindOnce(&CreateFakePrefService, true));
 
   EXPECT_CALL(mock_crash_uploader(),
               AddAttachment("log_file", logfile_path.value()))
@@ -348,7 +355,7 @@ TEST_F(MinidumpUploaderTest, SchedulesRebootWhenRatelimited) {
   const base::FilePath& logfile_path = minidump_dir_.Append("lmao");
 
   MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
-                            base::Bind(&CreateFakePrefService, true));
+                            base::BindOnce(&CreateFakePrefService, true));
   // Generate max dumps.
   for (int i = 0; i < SynchronizedMinidumpManager::kRatelimitPeriodMaxDumps + 1;
        i++)
@@ -376,7 +383,7 @@ TEST_F(MinidumpUploaderTest, SchedulesRebootWhenRatelimited) {
   // Generate one dump for a second pass.
   GenerateDumpWithFiles(minidump_path, logfile_path);
   MinidumpUploader uploader2(&sys_info_dummy(), "", &mock_crash_uploader(),
-                             base::Bind(&CreateFakePrefService, true));
+                             base::BindOnce(&CreateFakePrefService, true));
 
   // MinidumpUploader should not call CastCrashdumpUploader (due to ratelimit).
   // Reboot should NOT be scheduled, as this is second ratelimit.
@@ -393,7 +400,7 @@ TEST_F(MinidumpUploaderTest, SchedulesRebootWhenRatelimited) {
 
 TEST_F(MinidumpUploaderTest, UploadInitializesFileState) {
   MinidumpUploader uploader(&sys_info_dummy(), "", &mock_crash_uploader(),
-                            base::Bind(&CreateFakePrefService, true));
+                            base::BindOnce(&CreateFakePrefService, true));
   ASSERT_TRUE(base::IsDirectoryEmpty(minidump_dir_));
   ASSERT_TRUE(uploader.UploadAllMinidumps());
   base::File lockfile(lockfile_, base::File::FLAG_OPEN | base::File::FLAG_READ);

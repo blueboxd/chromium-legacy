@@ -208,10 +208,9 @@ void MessagePumpCFRunLoopBase::ScheduleWork() {
 // Must be called on the run loop thread.
 void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
     const TimeTicks& delayed_work_time) {
-  ScheduleDelayedWorkImpl(delayed_work_time - TimeTicks::Now());
-}
+  TimeDelta delta = delayed_work_time - TimeTicks::Now();
+  delayed_work_fire_time_ = CFAbsoluteTimeGetCurrent() + delta.InSecondsF();
 
-void MessagePumpCFRunLoopBase::ScheduleDelayedWorkImpl(TimeDelta delta) {
   // Flip the timer's validation bit just before setting the new fire time. Do
   // this now because CFRunLoopTimerSetNextFireDate() likely checks the validity
   // of a timer before proceeding to set its fire date. Making the timer valid
@@ -228,8 +227,7 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWorkImpl(TimeDelta delta) {
 //  } else {
 //    CFRunLoopTimerSetTolerance(delayed_work_timer_, 0);
 //  }
-  CFRunLoopTimerSetNextFireDate(
-      delayed_work_timer_, CFAbsoluteTimeGetCurrent() + delta.InSecondsF());
+  CFRunLoopTimerSetNextFireDate(delayed_work_timer_, delayed_work_fire_time_);
 }
 
 void MessagePumpCFRunLoopBase::SetTimerSlack(TimerSlack timer_slack) {
@@ -245,6 +243,7 @@ void MessagePumpCFRunLoopBase::Detach() {}
 // Must be called on the run loop thread.
 MessagePumpCFRunLoopBase::MessagePumpCFRunLoopBase(int initial_mode_mask)
     : delegate_(NULL),
+      delayed_work_fire_time_(kCFTimeIntervalMax),
       timer_slack_(base::TIMER_SLACK_NONE),
       nesting_level_(0),
       run_nesting_level_(0),
@@ -428,6 +427,9 @@ void MessagePumpCFRunLoopBase::RunDelayedWorkTimer(CFRunLoopTimerRef timer,
                                                    void* info) {
   MessagePumpCFRunLoopBase* self = static_cast<MessagePumpCFRunLoopBase*>(info);
 
+  // The timer won't fire again until it's reset.
+  self->delayed_work_fire_time_ = kCFTimeIntervalMax;
+
   // The message pump's timer needs to fire at changing and unpredictable
   // intervals. Creating a new timer for each firing time is very expensive, so
   // the message pump instead uses a repeating timer with a very large repeat
@@ -453,11 +455,11 @@ void MessagePumpCFRunLoopBase::RunDelayedWorkTimer(CFRunLoopTimerRef timer,
   // timer's new firing time.
   self->SetDelayedWorkTimerValid(false);
 
-  // The timer fired, assume we have work and let RunWork() figure out what to
-  // do and what to schedule after.
-  base::mac::CallWithEHFrame(^{
-    self->RunWork();
-  });
+  // CFRunLoopTimers fire outside of the priority scheme for CFRunLoopSources.
+  // In order to establish the proper priority in which work and delayed work
+  // are processed one for one, the timer used to schedule delayed work must
+  // signal a CFRunLoopSource used to dispatch both work and delayed work.
+  CFRunLoopSourceSignal(self->work_source_);
 }
 
 // Called from the run loop.
@@ -469,10 +471,10 @@ void MessagePumpCFRunLoopBase::RunWorkSource(void* info) {
   });
 }
 
-// Called by MessagePumpCFRunLoopBase::RunWorkSource and RunDelayedWorkTimer.
+// Called by MessagePumpCFRunLoopBase::RunWorkSource.
 bool MessagePumpCFRunLoopBase::RunWork() {
   if (!delegate_) {
-    // This point can be reached with a nullptr |delegate_| if Run is not on the
+    // This point can be reached with a NULL delegate_ if Run is not on the
     // stack but foreign code is spinning the CFRunLoop.  Arrange to come back
     // here when a delegate is available.
     delegateless_work_ = true;
@@ -488,16 +490,40 @@ bool MessagePumpCFRunLoopBase::RunWork() {
   // released promptly even in the absence of UI events.
   MessagePumpScopedAutoreleasePool autorelease_pool(this);
 
-  Delegate::NextWorkInfo next_work_info = delegate_->DoSomeWork();
+  // Call DoWork and DoDelayedWork once, and if something was done, arrange to
+  // come back here again as long as the loop is still running.
+  bool did_work = delegate_->DoWork();
+  bool resignal_work_source = did_work;
 
-  if (next_work_info.is_immediate()) {
-    CFRunLoopSourceSignal(work_source_);
-    return true;
+  TimeTicks next_time;
+  if (keep_running())
+    delegate_->DoDelayedWork(&next_time);
+  if (!did_work) {
+    // Determine whether there's more delayed work, and if so, if it needs to
+    // be done at some point in the future or if it's already time to do it.
+    // Only do these checks if did_work is false. If did_work is true, this
+    // function, and therefore any additional delayed work, will get another
+    // chance to run before the loop goes to sleep.
+    bool more_delayed_work = !next_time.is_null();
+    if (more_delayed_work) {
+      TimeDelta delay = next_time - TimeTicks::Now();
+      if (delay > TimeDelta()) {
+        // There's more delayed work to be done in the future.
+        ScheduleDelayedWork(next_time);
+      } else {
+        // There's more delayed work to be done, and its time is in the past.
+        // Arrange to come back here directly as long as the loop is still
+        // running.
+        resignal_work_source = true;
+      }
+    }
   }
 
-  if (!next_work_info.delayed_run_time.is_max())
-    ScheduleDelayedWorkImpl(next_work_info.remaining_delay());
-  return false;
+  if (resignal_work_source) {
+    CFRunLoopSourceSignal(work_source_);
+  }
+
+  return resignal_work_source;
 }
 
 // Called from the run loop.
@@ -510,27 +536,32 @@ void MessagePumpCFRunLoopBase::RunIdleWorkSource(void* info) {
 }
 
 // Called by MessagePumpCFRunLoopBase::RunIdleWorkSource.
-void MessagePumpCFRunLoopBase::RunIdleWork() {
+bool MessagePumpCFRunLoopBase::RunIdleWork() {
   if (!delegate_) {
-    // This point can be reached with a nullptr delegate_ if Run is not on the
+    // This point can be reached with a NULL delegate_ if Run is not on the
     // stack but foreign code is spinning the CFRunLoop.  Arrange to come back
     // here when a delegate is available.
     delegateless_idle_work_ = true;
-    return;
+    return false;
   }
   if (!keep_running())
-    return;
+    return false;
+
   // The NSApplication-based run loop only drains the autorelease pool at each
   // UI event (NSEvent).  The autorelease pool is not drained for each
   // CFRunLoopSource target that's run.  Use a local pool for any autoreleased
   // objects if the app is not currently handling a UI event to ensure they're
   // released promptly even in the absence of UI events.
   MessagePumpScopedAutoreleasePool autorelease_pool(this);
+
   // Call DoIdleWork once, and if something was done, arrange to come back here
   // again as long as the loop is still running.
   bool did_work = delegate_->DoIdleWork();
-  if (did_work)
+  if (did_work) {
     CFRunLoopSourceSignal(idle_work_source_);
+  }
+
+  return did_work;
 }
 
 // Called from the run loop.
@@ -543,22 +574,27 @@ void MessagePumpCFRunLoopBase::RunNestingDeferredWorkSource(void* info) {
 }
 
 // Called by MessagePumpCFRunLoopBase::RunNestingDeferredWorkSource.
-void MessagePumpCFRunLoopBase::RunNestingDeferredWork() {
+bool MessagePumpCFRunLoopBase::RunNestingDeferredWork() {
   if (!delegate_) {
-    // This point can be reached with a nullptr |delegate_| if Run is not on the
+    // This point can be reached with a NULL delegate_ if Run is not on the
     // stack but foreign code is spinning the CFRunLoop.  There's no sense in
     // attempting to do any work or signalling the work sources because
     // without a delegate, work is not possible.
-    return;
+    return false;
   }
 
-  if (RunWork()) {
+  // Immediately try work in priority order.
+  if (!RunWork()) {
+    if (!RunIdleWork()) {
+      return false;
+    }
+  } else {
     // Work was done.  Arrange for the loop to try non-nestable idle work on
     // a subsequent pass.
     CFRunLoopSourceSignal(idle_work_source_);
-  } else {
-    RunIdleWork();
   }
+
+  return true;
 }
 
 // Called before the run loop goes to sleep or exits, or processes sources.

@@ -839,11 +839,7 @@ if (enable_java_templates) {
   #     variables = ["color=red"]
   #   }
   template("jinja_template_resources") {
-    # JUnit tests use resource zip files. These must not be put in gen/
-    # directory or they will not be available to tester bots.
-    _resources_zip_rebased_path = rebase_path(target_gen_dir, root_gen_dir)
-    _resources_zip = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
-
+    _resources_zip = "$target_out_dir/${target_name}.resources.zip"
     _generating_target_name = "${target_name}__template"
 
     action_with_pydeps(_generating_target_name) {
@@ -901,11 +897,6 @@ if (enable_java_templates) {
   #   alternative_android_sdk_dep: Optional. Alternative Android system
   #     android java target to use.
   #   resource_dirs: List of directories containing resources for this target.
-  #   generated_resource_dirs (deprecated):
-  #     **This is deprecated, you only need to specify generated files directly
-  #     in |generated_resource_files|**
-  #   generated_resource_files: List of all resource files for this target
-  #     which are *generated* by a dependency.
   #   android_manifest: AndroidManifest.xml for this target (optional). Will be
   #     merged into apks that directly or indirectly depend on this target.
   #   android_manifest_dep: Target that generates AndroidManifest (if applicable)
@@ -943,18 +934,10 @@ if (enable_java_templates) {
       not_needed(invoker, [ "v14_skip" ])
     }
 
-    # TODO(https://crbug.com/1026378): remove unneeded generated_resource_dirs
-    if (defined(invoker.generated_resource_dirs)) {
-      not_needed(invoker, [ "generated_resource_dirs" ])
-    }
-
     _pass_resource_files = defined(invoker.sources)
     _res_sources_path = "$target_gen_dir/${invoker.target_name}.res.sources"
 
-    # JUnit tests use resource zip files. These must not be put in gen/
-    # directory or they will not be available to tester bots.
-    _resources_zip_rebased_path = rebase_path(target_gen_dir, root_gen_dir)
-    _zip_path = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
+    _resources_zip = "$target_out_dir/$target_name.resources.zip"
     _r_text_out_path = _base_path + "_R.txt"
     _build_config = _base_path + ".build_config"
     _build_config_target_name = "$target_name$build_config_target_suffix"
@@ -989,16 +972,14 @@ if (enable_java_templates) {
       }
       _resource_files = rebase_path(_sources_build_rel, ".", root_build_dir)
     }
-    if (defined(invoker.generated_resource_files)) {
-      _resource_files += invoker.generated_resource_files
-    }
+
     _rebased_resource_files = rebase_path(_resource_files, root_build_dir)
     write_file(_res_sources_path, _rebased_resource_files)
 
     write_build_config(_build_config_target_name) {
       type = "android_resources"
       build_config = _build_config
-      resources_zip = _zip_path
+      resources_zip = _resources_zip
       res_sources_path = _res_sources_path
 
       if (defined(_srcjar_path)) {
@@ -1039,7 +1020,7 @@ if (enable_java_templates) {
       sources = _resource_files
 
       build_config = _build_config
-      zip_path = _zip_path
+      resources_zip = _resources_zip
       r_text_out_path = _r_text_out_path
 
       if (defined(invoker.r_text_file)) {
@@ -1196,11 +1177,7 @@ if (enable_java_templates) {
   template("java_strings_grd") {
     forward_variables_from(invoker, [ "testonly" ])
 
-    # JUnit tests use resource zip files. These must not be put in gen/
-    # directory or they will not be available to tester bots.
-    _resources_zip_rebased_path = rebase_path(target_gen_dir, root_gen_dir)
-    _resources_zip = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
-
+    _resources_zip = "$target_out_dir/$target_name.resources.zip"
     _grit_target_name = "${target_name}__grit"
     _grit_output_dir = "$target_gen_dir/${target_name}_grit_output"
 
@@ -1261,11 +1238,7 @@ if (enable_java_templates) {
   template("java_strings_grd_prebuilt") {
     forward_variables_from(invoker, [ "testonly" ])
 
-    # JUnit tests use resource zip files. These must not be put in gen/
-    # directory or they will not be available to tester bots.
-    _resources_zip_rebased_path = rebase_path(target_gen_dir, root_gen_dir)
-    _resources_zip = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
-
+    _resources_zip = "$target_out_dir/$target_name.resources.zip"
     _zip_target_name = "${target_name}__zip"
 
     zip(_zip_target_name) {
@@ -2993,9 +2966,9 @@ if (enable_java_templates) {
                                [
                                  "disable_checkdiscard",
                                  "disable_r8_outlining",
-                                 "min_sdk_version",
                                  "dexlayout_profile",
                                ])
+        min_sdk_version = _min_sdk_version
         proguard_enabled = _proguard_enabled
         build_config = _build_config
         deps = [
@@ -3256,6 +3229,7 @@ if (enable_java_templates) {
         keystore_name = _keystore_name
         keystore_path = _keystore_path
         keystore_password = _keystore_password
+        min_sdk_version = _min_sdk_version
         uncompress_shared_libraries = _uncompress_shared_libraries
 
         deps = _deps + [ ":$_build_config_target" ]
@@ -4322,15 +4296,9 @@ if (enable_java_templates) {
         if (!_ignore_manifest) {
           android_manifest = "${_output_path}/AndroidManifest.xml"
         }
-        resource_dirs = []
-        generated_resource_dirs = []
-        if (!_strip_resources && _scanned_files.resources != []) {
-          generated_resource_dirs += [ "${_output_path}/res" ]
-        }
-        generated_resource_files = []
+        sources = []
         if (!_strip_resources) {
-          generated_resource_files =
-              rebase_path(_scanned_files.resources, "", _output_path)
+          sources = rebase_path(_scanned_files.resources, "", _output_path)
         }
         if (!_strip_resources && _scanned_files.has_r_text_file) {
           r_text_file = "${_output_path}/R.txt"
@@ -4785,6 +4753,7 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "is_multi_abi",
+                                 "min_sdk_version",
                                  "uncompress_dex",
                                ])
         module_name = _module.name

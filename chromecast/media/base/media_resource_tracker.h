@@ -48,8 +48,8 @@ class MediaResourceTracker {
   };
 
   MediaResourceTracker(
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner);
 
   // Media resource acquire implementation. Must call on ui thread; runs
   // CastMediaShlib::Initialize on media thread.  Safe to call even if media lib

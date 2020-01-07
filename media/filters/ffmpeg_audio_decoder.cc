@@ -369,6 +369,11 @@ int FFmpegAudioDecoder::GetAudioBuffer(struct AVCodecContext* s,
   AVSampleFormat format = static_cast<AVSampleFormat>(frame->format);
   SampleFormat sample_format =
       AVSampleFormatToSampleFormat(format, s->codec_id);
+  if (sample_format == kUnknownSampleFormat) {
+    DLOG(ERROR) << "Unknown sample format: " << format;
+    return AVERROR(EINVAL);
+  }
+
   int channels = DetermineChannels(frame);
   if (channels <= 0 || channels >= limits::kMaxChannels) {
     DLOG(ERROR) << "Requested number of channels (" << channels

@@ -11,9 +11,9 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCal
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
-import org.chromium.chrome.browser.ui.widget.displaystyle.HorizontalDisplayStyle;
-import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
-import org.chromium.chrome.browser.ui.widget.displaystyle.VerticalDisplayStyle;
+import org.chromium.components.browser_ui.widget.displaystyle.HorizontalDisplayStyle;
+import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
+import org.chromium.components.browser_ui.widget.displaystyle.VerticalDisplayStyle;
 
 /**
  * JUnit specific utility classes for testing suggestions code. Other utility code is in

@@ -21,6 +21,10 @@ namespace blink {
 struct IndexedDBDatabaseMetadata;
 }
 
+namespace leveldb {
+class DB;
+}
+
 namespace content {
 
 // Holds a queue of PreCloseTask's to be run after an IndexedDBBackingStore no
@@ -32,6 +36,11 @@ namespace content {
 // Owned by IndexedDBBackingStore.
 class CONTENT_EXPORT IndexedDBPreCloseTaskQueue {
  public:
+  // This function should fetch all database metadata for the origin. The
+  // returned status signifies if the metadata was read successfully.
+  using MetadataFetcher = base::OnceCallback<leveldb::Status(
+      std::vector<blink::IndexedDBDatabaseMetadata>*)>;
+
   enum class StopReason {
     // A new connection was made to the closing backing store.
     NEW_CONNECTION,
@@ -48,11 +57,19 @@ class CONTENT_EXPORT IndexedDBPreCloseTaskQueue {
   // used on the same SequencedTaskRunner.
   class CONTENT_EXPORT PreCloseTask {
    public:
+    explicit PreCloseTask(leveldb::DB* database);
     virtual ~PreCloseTask();
+
+    leveldb::DB* database() { return database_; }
+
+    // Implementations should override if they need database metadata. If
+    // overridden to return true, the metadata will be loaded and SetMetadata()
+    // will be called once before the first call to RunRound().
+    virtual bool RequiresMetadata() const;
 
     // Called before RunRound. |metadata| is guaranteed to outlive this task.
     virtual void SetMetadata(
-        std::vector<blink::IndexedDBDatabaseMetadata> const* metadata) = 0;
+        const std::vector<blink::IndexedDBDatabaseMetadata>* metadata);
 
     // Tells the task to stop before completion. It will be destroyed after this
     // call. Can be called at any time.
@@ -61,6 +78,14 @@ class CONTENT_EXPORT IndexedDBPreCloseTaskQueue {
     // Runs a round of work. Tasks are expected to keep round execution time
     // small. Returns if the task is complete and can be destroyed.
     virtual bool RunRound() = 0;
+
+   private:
+    friend class IndexedDBPreCloseTaskQueue;
+
+    bool set_metadata_was_called_ = false;
+    // Raw pointer is safe because |database_| is owned by the
+    // IndexedDBOriginState.
+    leveldb::DB* const database_;
   };
 
   // |on_complete| must not contain a refptr to the IndexedDBBackingStore, as
@@ -80,10 +105,9 @@ class CONTENT_EXPORT IndexedDBPreCloseTaskQueue {
   // immediately called.
   void StopForNewConnection();
 
-  // Starts running tasks. Can only be called once.
-  void Start(
-      base::OnceCallback<leveldb::Status(
-          std::vector<blink::IndexedDBDatabaseMetadata>*)> metadata_fetcher);
+  // Starts running tasks. Can only be called once. MetadataFetcher is expected
+  // to load the metadata from the database on disk.
+  void Start(MetadataFetcher metadata_fetcher);
 
  private:
   void OnComplete();
@@ -93,6 +117,11 @@ class CONTENT_EXPORT IndexedDBPreCloseTaskQueue {
 
   void RunLoop();
 
+  bool has_metadata_ = false;
+  // This callback is populated when |Start| is called, and executed if a
+  // pre-close task requires metadata (see RequiresMetadata). This happens
+  // before that task is run.
+  MetadataFetcher metadata_fetcher_;
   std::vector<blink::IndexedDBDatabaseMetadata> metadata_;
 
   bool started_ = false;

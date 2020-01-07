@@ -17,6 +17,7 @@
 #include "url/gurl.h"
 
 namespace content {
+class InternetDisconnectedWebURLLoaderFactory;
 class ResourceDispatcher;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
@@ -72,6 +73,7 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
   blink::WebString GetAcceptLanguages() const override;
   mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
       int request_id) override;
+  void SetIsOfflineMode(bool) override;
 
  private:
   ~ServiceWorkerFetchContextImpl() override;
@@ -103,6 +105,10 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
 
   // Responsible for regular loads from the service worker (i.e., Fetch API).
   std::unique_ptr<blink::WebURLLoaderFactory> web_url_loader_factory_;
+  // Responsible for loads which always fail as INTERNET_DISCONNECTED
+  // error, which is used in offline mode.
+  std::unique_ptr<InternetDisconnectedWebURLLoaderFactory>
+      internet_disconnected_web_url_loader_factory_;
   // Responsible for script loads from the service worker (i.e., the
   // classic/module main script, module imported scripts, or importScripts()).
   std::unique_ptr<blink::WebURLLoaderFactory> web_script_loader_factory_;
@@ -129,6 +135,7 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
   blink::AcceptLanguagesWatcher* accept_languages_watcher_ = nullptr;
 
   int32_t service_worker_route_id_;
+  bool is_offline_mode_ = false;
 };
 
 }  // namespace content

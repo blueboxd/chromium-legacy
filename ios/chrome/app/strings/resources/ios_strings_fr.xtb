@@ -245,7 +245,7 @@
 <translation id="4276041135170112053">Corriger maintenant.</translation>
 <translation id="4281844954008187215">Conditions d'utilisation</translation>
 <translation id="430793432425771671">Tout synchroniser</translation>
-<translation id="430967081421617822">Toutes les périodes</translation>
+<translation id="430967081421617822">Toutes les données</translation>
 <translation id="4334428914252001502">1 article non lu.</translation>
 <translation id="4338650699862464074">Envoie à Google les URL des pages que vous consultez.</translation>
 <translation id="4359125752503270327">Cette page va s'ouvrir dans une autre application.</translation>
@@ -462,7 +462,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7133798577887235672">Nom complet</translation>
 <translation id="7136892417564438900">Appareil photo non disponible</translation>
 <translation id="7159472599653637159">Voir version mobile</translation>
-<translation id="7173114856073700355">Ouvrir les paramètres</translation>
+<translation id="7173114856073700355">Paramètres</translation>
 <translation id="7192050974311852563">Démarrer la journalisation</translation>
 <translation id="7203585745079012652">Énoncer les réponses</translation>
 <translation id="7265758999917665941">Jamais pour ce site</translation>
@@ -575,7 +575,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="9037965129289936994">Afficher l'original</translation>
 <translation id="9039373489628511875">Bande passante</translation>
 <translation id="9055772144595778347">Connexion impossible</translation>
-<translation id="9065203028668620118">Édition</translation>
+<translation id="9065203028668620118">Modifier</translation>
 <translation id="9079935439869366234">Tout marquer comme non lu</translation>
 <translation id="9081058212938299310">Changer le mot de passe pour <ph name="USERNAME" /> ?</translation>
 <translation id="9083392325882095631">1 élément</translation>

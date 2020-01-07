@@ -1152,10 +1152,10 @@ const base::Value* DeviceSettingsProvider::Get(const std::string& path) const {
 }
 
 DeviceSettingsProvider::TrustedStatus
-DeviceSettingsProvider::PrepareTrustedValues(base::OnceClosure callback) {
+DeviceSettingsProvider::PrepareTrustedValues(base::OnceClosure* callback) {
   TrustedStatus status = RequestTrustedEntity();
-  if (status == TEMPORARILY_UNTRUSTED && !callback.is_null())
-    callbacks_.push_back(std::move(callback));
+  if (status == TEMPORARILY_UNTRUSTED && *callback)
+    callbacks_.push_back(std::move(*callback));
   return status;
 }
 

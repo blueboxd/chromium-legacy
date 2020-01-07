@@ -14,7 +14,6 @@ class Profile;
 
 namespace views {
 class Checkbox;
-class Link;
 }
 
 class FirstRunDialog : public views::DialogDelegateView,

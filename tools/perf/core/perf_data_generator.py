@@ -392,14 +392,6 @@ BUILDERS = {
         'type': TEST_TYPES.GTEST,
       },
       {
-        'isolate': 'angle_perftests',
-        'num_shards': 1,
-        'type': TEST_TYPES.GTEST,
-        'extra_args': [
-            '--shard-timeout=300'
-        ],
-      },
-      {
         'isolate': 'base_perftests',
         'num_shards': 1,
         'type': TEST_TYPES.GTEST,
@@ -766,6 +758,11 @@ BUILDERS = {
         'extra_args': [
           '--assert-gpu-compositing',
         ],
+      },
+      {
+        'isolate': 'dawn_perf_tests',
+        'num_shards': 1,
+        'type': TEST_TYPES.GTEST,
       },
     ],
     'platform': 'mac',

@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/macros.h"
 
 namespace base {
 
@@ -17,6 +18,16 @@ constexpr FilePath::CharType kScopedDirPrefix[] =
 }  // namespace
 
 ScopedTempDir::ScopedTempDir() = default;
+
+ScopedTempDir::ScopedTempDir(ScopedTempDir&& other) noexcept
+    : path_(other.Take()) {}
+
+ScopedTempDir& ScopedTempDir::operator=(ScopedTempDir&& other) {
+  if (!path_.empty() && !Delete())
+    DLOG(WARNING) << "Could not delete temp dir in operator=().";
+  path_ = other.Take();
+  return *this;
+}
 
 ScopedTempDir::~ScopedTempDir() {
   if (!path_.empty() && !Delete())
@@ -75,9 +86,7 @@ bool ScopedTempDir::Delete() {
 }
 
 FilePath ScopedTempDir::Take() {
-  FilePath ret = path_;
-  path_ = FilePath();
-  return ret;
+  return std::exchange(path_, FilePath());
 }
 
 const FilePath& ScopedTempDir::GetPath() const {

@@ -82,6 +82,8 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
   if (!create_buffer)
     return;
 
+  CHECK_NE(sample_format, kUnknownSampleFormat);
+
   int data_size_per_channel = frame_count * bytes_per_channel;
   if (IsPlanar(sample_format)) {
     DCHECK(!IsBitstreamFormat()) << sample_format_;

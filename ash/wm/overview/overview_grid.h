@@ -143,9 +143,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
       bool animate);
 
   // Updates overview bounds and hides the drop target when a preview area is
-  // shown or the drag is currently outside of |root_window_|.
+  // shown or the drag is currently outside of |root_window_|. For dragging from
+  // the top or from the shelf, pass null for |dragged_item|.
   void RearrangeDuringDrag(
-      aura::Window* dragged_window,
+      OverviewItem* dragged_item,
       SplitViewDragIndicators::WindowDraggingState window_dragging_state);
 
   // Sets the dragged window on |split_view_drag_indicators_|.
@@ -160,8 +161,8 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   bool MaybeUpdateDesksWidgetBounds();
 
   // Updates the appearance of the drop target to visually indicate when the
-  // dragged window is being dragged over it. For dragging from the top, pass
-  // null for |dragged_item|.
+  // dragged window is being dragged over it. For dragging from the top or from
+  // the shelf, pass null for |dragged_item|.
   void UpdateDropTargetBackgroundVisibility(
       OverviewItem* dragged_item,
       const gfx::PointF& location_in_screen);

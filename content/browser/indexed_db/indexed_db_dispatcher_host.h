@@ -41,9 +41,7 @@ class IndexedDBTransaction;
 
 // Constructed on UI thread.  All remaining calls (including destruction) should
 // happen on the IDB sequenced task runner.
-class CONTENT_EXPORT IndexedDBDispatcherHost
-    : public blink::mojom::IDBFactory,
-      public RenderProcessHostObserver {
+class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
  public:
   // Only call the constructor from the UI thread.
   IndexedDBDispatcherHost(
@@ -105,11 +103,6 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   // |output_infos|.  |output_infos| must be the same length as |blob_infos|.
   void CreateAllBlobs(const std::vector<IndexedDBBlobInfo>& blob_infos,
                       std::vector<blink::mojom::IDBBlobInfoPtr>* output_infos);
-
-  // Called by UI thread. Used to kill outstanding bindings and weak pointers
-  // in callbacks.
-  void RenderProcessExited(RenderProcessHost* host,
-                           const ChildProcessTerminationInfo& info) override;
 
  private:
   class IDBSequenceHelper;

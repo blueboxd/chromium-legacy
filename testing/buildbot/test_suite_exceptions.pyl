@@ -106,12 +106,12 @@
       # chromium.fyi
       'linux-code-coverage': {
         'swarming': {
-          'shards': 21,
+          'shards': 50,
         },
       },
       'linux-chromeos-code-coverage': {
         'swarming': {
-          'shards': 21,
+          'shards': 50,
         },
       },
       'mac-code-coverage': {
@@ -556,6 +556,17 @@
           'shards': 3,
         },
       },
+      # chromium.fyi
+      'linux-code-coverage': {
+        'swarming': {
+          'shards': 12,
+        },
+      },
+      'linux-chromeos-code-coverage': {
+        'swarming': {
+          'shards': 12,
+        },
+      },
     },
   },
   'content_shell_crash_test': {
@@ -688,22 +699,6 @@
       # chromium.memory
       # TODO(kbr): figure out a better way to specify blocks of
       # arguments like this for tests on multiple machines.
-      'Linux ASan LSan Tests (1)': {
-        'args': [
-          '--use-gpu-in-tests',
-          '--no-xvfb',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '10de:1cb3',
-              'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu',
-            },
-          ],
-        },
-        'use_xvfb': False,
-      },
       'Linux ASan LSan Tests (1)': {
         'args': [
           '--use-gpu-in-tests',
@@ -902,6 +897,17 @@
         'args': [
           '--gtest_filter=-SadTabViewInteractiveUITest.ReloadMultipleSadTabs',
         ],
+      },
+      # chromium.fyi
+      'linux-code-coverage': {
+        'swarming': {
+          'shards': 10,
+        },
+      },
+      'linux-chromeos-code-coverage': {
+        'swarming': {
+          'shards': 10,
+        },
       },
     },
   },
@@ -1111,7 +1117,6 @@
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
-      'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
     'modifications': {
@@ -1143,7 +1148,6 @@
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
-      'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
   },
@@ -1164,7 +1168,6 @@
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
-      'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
   },
@@ -1183,7 +1186,6 @@
       'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
-      'Mac ASan 64 Tests (1)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
@@ -1209,7 +1211,6 @@
       'Mac10.11 Tests',
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
-      'Mac ASan 64 Tests (1)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
     ],
@@ -1570,6 +1571,17 @@
       },
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100, # https://crbug.com/840369
+      },
+      # chromium.fyi
+      'linux-code-coverage': {
+        'swarming': {
+          'shards': 4,
+        },
+      },
+      'linux-chromeos-code-coverage': {
+        'swarming': {
+          'shards': 4,
+        },
       },
     },
   },

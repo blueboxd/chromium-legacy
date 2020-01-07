@@ -73,7 +73,7 @@ bool IsDumpObsolete(const DumpInfo& dump) {
 MinidumpUploader::MinidumpUploader(CastSysInfo* sys_info,
                                    const std::string& server_url,
                                    CastCrashdumpUploader* const uploader,
-                                   const PrefServiceGeneratorCallback callback)
+                                   PrefServiceGeneratorCallback callback)
     : release_channel_(sys_info->GetSystemReleaseChannel()),
       product_name_(sys_info->GetProductName()),
       device_model_(sys_info->GetDeviceModel()),
@@ -87,14 +87,14 @@ MinidumpUploader::MinidumpUploader(CastSysInfo* sys_info,
       reboot_scheduled_(false),
       filestate_initialized_(false),
       uploader_(uploader),
-      pref_service_generator_(callback) {}
+      pref_service_generator_(std::move(callback)) {}
 
 MinidumpUploader::MinidumpUploader(CastSysInfo* sys_info,
                                    const std::string& server_url)
     : MinidumpUploader(sys_info,
                        server_url,
                        nullptr,
-                       base::Bind(&CreatePrefService)) {}
+                       base::BindOnce(&CreatePrefService)) {}
 
 MinidumpUploader::~MinidumpUploader() {}
 
@@ -126,7 +126,8 @@ bool MinidumpUploader::DoWork() {
 
   int num_uploaded = 0;
 
-  std::unique_ptr<PrefService> pref_service = pref_service_generator_.Run();
+  std::unique_ptr<PrefService> pref_service =
+      std::move(pref_service_generator_).Run();
   const std::string& client_id(
       pref_service->GetString(::metrics::prefs::kMetricsClientID));
   std::string virtual_channel(pref_service->GetString(kVirtualChannel));

@@ -603,6 +603,21 @@ std::vector<WebContents*> PrerenderManager::GetAllPrerenderingContents() const {
   return result;
 }
 
+std::vector<WebContents*>
+PrerenderManager::GetAllNoStatePrefetchingContentsForTesting() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::vector<WebContents*> result;
+
+  for (const auto& prerender : active_prerenders_) {
+    WebContents* contents = prerender->contents()->prerender_contents();
+    if (contents && prerender->contents()->prerender_mode() == PREFETCH_ONLY) {
+      result.push_back(contents);
+    }
+  }
+
+  return result;
+}
+
 bool PrerenderManager::HasRecentlyBeenNavigatedTo(Origin origin,
                                                   const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

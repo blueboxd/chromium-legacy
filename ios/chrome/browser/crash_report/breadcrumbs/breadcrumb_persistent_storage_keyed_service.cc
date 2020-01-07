@@ -6,7 +6,7 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_util.h"
 
 namespace {
@@ -53,7 +53,7 @@ BreadcrumbPersistentStorageKeyedService::GetStoredEvents() {
 }
 
 void BreadcrumbPersistentStorageKeyedService::ObserveBreadcrumbManager(
-    BreadcrumbManagerKeyedService* manager) {
+    BreadcrumbManager* manager) {
   if (observered_manager_) {
     observered_manager_->RemoveObserver(this);
   }
@@ -98,7 +98,7 @@ void BreadcrumbPersistentStorageKeyedService::WriteBreadcrumbEvent(
 }
 
 void BreadcrumbPersistentStorageKeyedService::EventAdded(
-    BreadcrumbManagerKeyedService* manager,
+    BreadcrumbManager* manager,
     const std::string& event) {
   WriteBreadcrumbEvent(event);
   persisted_events_file_->Flush();

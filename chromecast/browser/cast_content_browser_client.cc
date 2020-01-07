@@ -600,7 +600,7 @@ base::OnceClosure CastContentBrowserClient::SelectClientCertificate(
           web_contents->GetMainFrame()->GetProcess()->GetID(),
           web_contents->GetMainFrame()->GetRoutingID(),
           base::SequencedTaskRunnerHandle::Get(),
-          base::Bind(
+          base::BindOnce(
               &content::ClientCertificateDelegate::ContinueWithCertificate,
               base::Owned(delegate.release()))));
   return base::OnceClosure();
@@ -612,8 +612,8 @@ void CastContentBrowserClient::SelectClientCertificateOnIOThread(
     int render_process_id,
     int render_frame_id,
     scoped_refptr<base::SequencedTaskRunner> original_runner,
-    const base::Callback<void(scoped_refptr<net::X509Certificate>,
-                              scoped_refptr<net::SSLPrivateKey>)>&
+    base::OnceCallback<void(scoped_refptr<net::X509Certificate>,
+                            scoped_refptr<net::SSLPrivateKey>)>
         continue_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   CastNetworkDelegate* network_delegate =
@@ -622,8 +622,8 @@ void CastContentBrowserClient::SelectClientCertificateOnIOThread(
                                       render_process_id, render_frame_id,
                                       false)) {
     original_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(continue_callback, DeviceCert(), DeviceKey()));
+        FROM_HERE, base::BindOnce(std::move(continue_callback), DeviceCert(),
+                                  DeviceKey()));
     return;
   } else {
     LOG(ERROR) << "Invalid host for client certificate request: "
@@ -632,7 +632,8 @@ void CastContentBrowserClient::SelectClientCertificateOnIOThread(
                << " and render_frame_id: " << render_frame_id;
   }
   original_runner->PostTask(
-      FROM_HERE, base::BindOnce(continue_callback, nullptr, nullptr));
+      FROM_HERE,
+      base::BindOnce(std::move(continue_callback), nullptr, nullptr));
 }
 
 bool CastContentBrowserClient::CanCreateWindow(

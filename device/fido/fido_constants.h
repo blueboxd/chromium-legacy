@@ -108,6 +108,7 @@ enum class CtapDeviceResponseCode : uint8_t {
   kCtap2ErrPinPolicyViolation = 0x37,
   kCtap2ErrPinTokenExpired = 0x38,
   kCtap2ErrRequestTooLarge = 0x39,
+  kCtap2ErrUvBlocked = 0x3C,
   kCtap2ErrOther = 0x7F,
   kCtap2ErrSpecLast = 0xDF,
   kCtap2ErrExtensionFirst = 0xE0,
@@ -280,6 +281,7 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 extern const char kCredentialManagementPreviewMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentPreviewMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kUvTokenMapKey[];
 
 // HID transport specific constants.
 constexpr uint32_t kHidBroadcastChannel = 0xffffffff;

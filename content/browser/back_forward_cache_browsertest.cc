@@ -389,18 +389,12 @@ class ThemeColorObserver : public WebContentsObserver {
  public:
   explicit ThemeColorObserver(WebContents* contents)
       : WebContentsObserver(contents) {}
-  void DidChangeThemeColor(base::Optional<SkColor> color) override {
-    observed_ = true;
-    color_ = color;
-  }
-
-  const base::Optional<SkColor>& color() const { return color_; }
+  void DidChangeThemeColor() override { observed_ = true; }
 
   bool did_fire() const { return observed_; }
 
  private:
   bool observed_ = false;
-  base::Optional<SkColor> color_;
 };
 
 class DOMContentLoadedObserver : public WebContentsObserver {
@@ -4046,7 +4040,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_TRUE(observer.did_fire());
-  EXPECT_EQ(observer.color(), 0xFFFF0000u);
   EXPECT_EQ(web_contents()->GetThemeColor(), 0xFFFF0000u);
 }
 

@@ -87,7 +87,9 @@ class BASE_EXPORT StackTrace {
   // Copying and assignment are allowed with the default functions.
 
   // Gets an array of instruction pointer values. |*count| will be set to the
-  // number of elements in the returned array.
+  // number of elements in the returned array. Addresses()[0] will contain an
+  // address from the leaf function, and Addresses()[count-1] will contain an
+  // address from the root function (i.e.; the thread's entry point).
   const void* const* Addresses(size_t* count) const;
 
   // Prints the stack trace to stderr.

@@ -15,11 +15,13 @@ WebURLError::WebURLError(int reason, const WebURL& url)
 
 WebURLError::WebURLError(int reason,
                          int extended_reason,
+                         net::ResolveErrorInfo resolve_error_info,
                          HasCopyInCache has_copy_in_cache,
                          IsWebSecurityViolation is_web_security_violation,
                          const WebURL& url)
     : reason_(reason),
       extended_reason_(extended_reason),
+      resolve_error_info_(resolve_error_info),
       has_copy_in_cache_(has_copy_in_cache == HasCopyInCache::kTrue),
       is_web_security_violation_(is_web_security_violation ==
                                  IsWebSecurityViolation::kTrue),

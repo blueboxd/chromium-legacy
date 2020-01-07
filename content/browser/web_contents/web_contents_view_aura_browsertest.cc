@@ -656,6 +656,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, OnPerformDrop_DeepScanOK) {
   run_loop.Run();
 
   EXPECT_TRUE(drag_dest_delegate_.GetOnDropCalled());
+  EXPECT_FALSE(drag_dest_delegate_.GetOnDragLeaveCalled());
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, OnPerformDrop_DeepScanBad) {
@@ -689,6 +690,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, OnPerformDrop_DeepScanBad) {
   run_loop.Run();
 
   EXPECT_FALSE(drag_dest_delegate_.GetOnDropCalled());
+  EXPECT_TRUE(drag_dest_delegate_.GetOnDragLeaveCalled());
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {

@@ -6723,7 +6723,7 @@ bool AXPlatformNodeWin::IsInaccessibleDueToAncestor() const {
   AXPlatformNodeWin* parent = static_cast<AXPlatformNodeWin*>(
       AXPlatformNode::FromNativeViewAccessible(GetParent()));
   while (parent) {
-    if (parent->ShouldHideChildren())
+    if (parent->ShouldHideChildrenForUIA())
       return true;
     parent = static_cast<AXPlatformNodeWin*>(
         FromNativeViewAccessible(parent->GetParent()));
@@ -6731,7 +6731,7 @@ bool AXPlatformNodeWin::IsInaccessibleDueToAncestor() const {
   return false;
 }
 
-bool AXPlatformNodeWin::ShouldHideChildren() const {
+bool AXPlatformNodeWin::ShouldHideChildrenForUIA() const {
   switch (GetData().role) {
     case ax::mojom::Role::kButton:
     case ax::mojom::Role::kImage:
@@ -6741,6 +6741,7 @@ bool AXPlatformNodeWin::ShouldHideChildren() const {
     case ax::mojom::Role::kProgressIndicator:
     case ax::mojom::Role::kScrollBar:
     case ax::mojom::Role::kSlider:
+    case ax::mojom::Role::kTextField:
       return true;
     default:
       return false;
@@ -7493,7 +7494,7 @@ AXPlatformNodeWin* AXPlatformNodeWin::GetLowestAccessibleElement() {
   AXPlatformNodeWin* parent = static_cast<AXPlatformNodeWin*>(
       AXPlatformNode::FromNativeViewAccessible(GetParent()));
   while (parent) {
-    if (parent->ShouldHideChildren())
+    if (parent->ShouldHideChildrenForUIA())
       return parent;
     parent = static_cast<AXPlatformNodeWin*>(
         AXPlatformNode::FromNativeViewAccessible(parent->GetParent()));

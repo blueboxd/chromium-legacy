@@ -14,11 +14,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom-forward.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
+class StoragePartition;
 struct StorageUsageInfo;
 }
 
@@ -35,7 +37,8 @@ class BrowsingDataIndexedDBHelper
 
   // Create a BrowsingDataIndexedDBHelper instance for the indexed databases
   // stored in |context|'s associated profile's user data directory.
-  explicit BrowsingDataIndexedDBHelper(content::IndexedDBContext* context);
+  explicit BrowsingDataIndexedDBHelper(
+      content::StoragePartition* storage_partition);
 
   // Starts the fetching process, which will notify its completion via
   // |callback|. This must be called only on the UI thread.
@@ -46,15 +49,20 @@ class BrowsingDataIndexedDBHelper
  protected:
   virtual ~BrowsingDataIndexedDBHelper();
 
-  scoped_refptr<content::IndexedDBContext> indexed_db_context_;
+  content::StoragePartition* storage_partition_;
 
  private:
   friend class base::RefCountedThreadSafe<BrowsingDataIndexedDBHelper>;
 
   // Enumerates all indexed database files in the IndexedDB thread.
-  void FetchIndexedDBInfoInIndexedDBThread(FetchCallback callback);
+  void IndexedDBUsageInfoReceived(
+      FetchCallback callback,
+      std::vector<storage::mojom::IndexedDBStorageUsageInfoPtr> origins);
+
   // Delete a single indexed database in the IndexedDB thread.
-  void DeleteIndexedDBInIndexedDBThread(const GURL& origin);
+  void DeleteIndexedDBInIndexedDBThread(
+      scoped_refptr<content::IndexedDBContext> context,
+      const GURL& origin);
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataIndexedDBHelper);
 };
@@ -66,7 +74,7 @@ class CannedBrowsingDataIndexedDBHelper
     : public BrowsingDataIndexedDBHelper {
  public:
   explicit CannedBrowsingDataIndexedDBHelper(
-      content::IndexedDBContext* context);
+      content::StoragePartition* storage_partition);
 
   // Add a indexed database to the set of canned indexed databases that is
   // returned by this helper.

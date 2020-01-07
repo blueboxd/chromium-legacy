@@ -83,7 +83,7 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="2926340305933667314">Det gick inte att inaktivera fjärråtkomst till den här datorn. Försök igen senare.</translation>
 <translation id="2930135165929238380">Vissa obligatoriska komponenter saknas. Öppna chrome://plugins och kontrollera att Native Client har aktiverats.</translation>
 <translation id="2939145106548231838">Autentisera till värd</translation>
-<translation id="3020807351229499221">Det gick inte att uppdatera PIN-koden. Försök igen senare.</translation>
+<translation id="3020807351229499221">Det gick inte att uppdatera pinkoden. Försök igen senare.</translation>
 <translation id="3025388528294795783">Hjälp oss att lösa problemet och berätta vad som har gått fel.</translation>
 <translation id="3027681561976217984">Tryckläge</translation>
 <translation id="3106379468611574572">Fjärrdatorn svarar inte på anslutningsbegäran. Kontrollera att den är ansluten till Internet och försök igen.</translation>
@@ -98,7 +98,7 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="332624996707057614">Ändra datorns namn</translation>
 <translation id="3339299787263251426">Säker åtkomst till datorn via internet</translation>
 <translation id="3360306038446926262">Fönster</translation>
-<translation id="3362124771485993931">Ange PIN-koden igen</translation>
+<translation id="3362124771485993931">Ange pinkoden igen</translation>
 <translation id="337167041784729019">Visa statistik</translation>
 <translation id="3385242214819933234">Ogiltig ägare till värden.</translation>
 <translation id="3403830762023901068">Enligt policyinställningarna får du inte dela den här datorn som en Chromoting-värd. Kontakta systemadministratören om du behöver hjälp.</translation>
@@ -128,7 +128,7 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="4126409073460786861">När konfigureringen är klar uppdaterar du den här sidan. Sedan kan du ansluta till datorn genom att välja enheten och ange pinkoden</translation>
 <translation id="4145029455188493639">Inloggad som <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Vissa obligatoriska komponenter saknas. Kontrollera att du har installerat den senaste versionen av programvaran och försök igen.</translation>
-<translation id="4156740505453712750">Om du vill skydda åtkomsten till den här datorn väljer du en PIN-kod som består av <ph name="BOLD_START" />minst sex siffror<ph name="BOLD_END" />. PIN-koden krävs när du ansluter från en annan plats.</translation>
+<translation id="4156740505453712750">Om du vill skydda åtkomsten till den här datorn väljer du en pinkod som består av <ph name="BOLD_START" />minst sex siffror<ph name="BOLD_END" />. Pinkoden krävs när du ansluter från en annan plats.</translation>
 <translation id="4169432154993690151">Ge Chrome Remote Desktop åtkomst till kameran om du vill välja profilbild</translation>
 <translation id="4176825807642096119">Åtkomstkod</translation>
 <translation id="4207623512727273241">Kör installationsprogrammet innan du fortsätter.</translation>
@@ -163,7 +163,7 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="4795786176190567663">Du har inte behörighet att utföra den åtgärden.</translation>
 <translation id="4798680868612952294">Musalternativ</translation>
 <translation id="4804818685124855865">Koppla från</translation>
-<translation id="4808503597364150972">Ange din PIN-kod för <ph name="HOSTNAME" />.</translation>
+<translation id="4808503597364150972">Ange din pinkod för <ph name="HOSTNAME" />.</translation>
 <translation id="4812684235631257312">Värd</translation>
 <translation id="4867841927763172006">Skicka PrtScn</translation>
 <translation id="4913529628896049296">väntar på anslutning ...</translation>
@@ -176,14 +176,14 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="5070121137485264635">Fjärrvärden kräver att du autentiserar via en tredje parts webbplats. Om du vill fortsätta måste du ge Chrome Remote Desktop ytterligare behörigheter att komma åt den här adressen:</translation>
 <translation id="507204348399810022">Är du säker på att du vill inaktivera fjärranslutningar till <ph name="HOSTNAME" />?</translation>
 <translation id="5081343395220691640">Det gick inte att kommunicera med servern: <ph name="ERROR" /></translation>
-<translation id="5156271271724754543">Ange samma PIN-kod i båda rutorna.</translation>
+<translation id="5156271271724754543">Ange samma pinkod i båda rutorna.</translation>
 <translation id="5170982930780719864">Ogiltigt värd-id.</translation>
 <translation id="518094545883702183">Den här informationen används bara för att diagnostisera det som felrapporten gäller. Bara den som arbetar med ärendet kan se den och den sparas i högst 30 dagar.</translation>
 <translation id="5204575267916639804">Vanliga frågor</translation>
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="5234764350956374838">Ta bort permanent</translation>
 <translation id="5254120496627797685">Om du lämnar sidan avslutas sessionen i Chrome Remote Desktop.</translation>
-<translation id="5308380583665731573">Ansluta</translation>
+<translation id="5308380583665731573">Anslut</translation>
 <translation id="5327248766486351172">Namn</translation>
 <translation id="533625276787323658">Det finns inget att ansluta till</translation>
 <translation id="5363265567587775042">Be användaren vars dator du vill använda att klicka på <ph name="SHARE" /> och ge dig åtkomstkoden.</translation>
@@ -194,7 +194,7 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="544077782045763683">Värdenheten har stängts av.</translation>
 <translation id="5510035215749041527">Koppla från nu</translation>
 <translation id="5593560073513909978">Tjänsten är inte tillgänglig för närvarande. Försök igen senare.</translation>
-<translation id="5601503069213153581">PIN-kod</translation>
+<translation id="5601503069213153581">Pinkod</translation>
 <translation id="5619148062500147964">Till den här datorn</translation>
 <translation id="5625493749705183369">Få åtkomst till andra datorer eller ge andra åtkomst till din dator över internet på ett säkert sätt.</translation>
 <translation id="5702987232842159181">Ansluten:</translation>
@@ -219,7 +219,7 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="6178645564515549384">Lokal meddelandevärd för fjärrhjälp</translation>
 <translation id="618120821413932081">Uppdaterar fjärrskrivbordets upplösning så att det passar fönstret</translation>
 <translation id="6193698048504518729">Anslut till <ph name="HOSTNAME" /></translation>
-<translation id="6198252989419008588">Byt PIN</translation>
+<translation id="6198252989419008588">Byt pinkod</translation>
 <translation id="6204583485351780592"><ph name="HOSTNAME" /> (inaktuellt)</translation>
 <translation id="6221358653751391898">Du är inte inloggad i Chrome. Logga in och försök igen.</translation>
 <translation id="6223301979382383752">Öppna inställningarna för skärminspelning</translation>
@@ -235,7 +235,7 @@ Du beviljar behörigheten genom att klicka på <ph name="BUTTON_NAME" /> nedan o
 
 Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och markerar den på nytt.</translation>
 <translation id="6441316101718669559">Integrering med skrivbordet stöds inte på den här plattformen. Du kan använda appen ändå, men användarupplevelsen försämras.</translation>
-<translation id="652218476070540101">PIN-koden för den här datorn uppdateras …</translation>
+<translation id="652218476070540101">Pinkoden för den här datorn uppdateras …</translation>
 <translation id="6527303717912515753">Dela</translation>
 <translation id="6541219117979389420">Programloggar kan innehålla privata uppgifter, som din identitet (e-postadress) och namn på och egenskaper hos filer och mappar på Google Drive.</translation>
 <translation id="6542902059648396432">Rapportera ett problem …</translation>
@@ -244,7 +244,7 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="6583902294974160967">Support</translation>
 <translation id="6612717000975622067">Skicka Ctrl-Alt-Del</translation>
 <translation id="6654753848497929428">Dela</translation>
-<translation id="6668065415969892472">PIN-koden har uppdaterats.</translation>
+<translation id="6668065415969892472">Pinkoden har uppdaterats.</translation>
 <translation id="6681800064886881394">Upphovsrätt 2013 Google Inc. Med ensamrätt.</translation>
 <translation id="6705482892455291412">När den andra parten har angett koden blir du ombedd att godkänna anslutningen och börja delningssessionen.</translation>
 <translation id="6746493157771801606">Rensa historik</translation>
@@ -268,7 +268,7 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="7116737094673640201">Välkommen till Chrome Remote Desktop</translation>
 <translation id="7144878232160441200">Försök igen</translation>
 <translation id="7149517134817561223">Program som används för att skicka kommandon till värddatorn för Chrome Remote Desktop.</translation>
-<translation id="7215059001581613786">Ange en PIN-kod som består av minst sex siffror.</translation>
+<translation id="7215059001581613786">Ange en pinkod som består av minst sex siffror.</translation>
 <translation id="7312846573060934304">Värden är offline.</translation>
 <translation id="7319983568955948908">Sluta dela</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>

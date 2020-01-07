@@ -151,10 +151,6 @@
 
   self.adaptor = [[TabGridAdaptor alloc] init];
   self.adaptor.tabGridViewController = self.baseViewController;
-  self.adaptor.adaptedDispatcher =
-      static_cast<id<ApplicationCommands, OmniboxFocuser, ToolbarCommands>>(
-          self.dispatcher);
-  self.adaptor.tabGridPager = baseViewController;
 
   self.regularTabsMediator = [[TabGridMediator alloc]
       initWithConsumer:baseViewController.regularTabsConsumer];

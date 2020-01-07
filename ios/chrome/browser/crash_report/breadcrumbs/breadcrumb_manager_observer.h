@@ -10,15 +10,15 @@
 #include "base/macros.h"
 #include "base/observer_list_types.h"
 
-class BreadcrumbManagerKeyedService;
+class BreadcrumbManager;
 
 class BreadcrumbManagerObserver : public base::CheckedObserver {
  public:
   // Called when a new |event| has been added to |manager|. Similar to
-  // |BreadcrumbManagerKeyedService::GetEvents|, |event| will have the timestamp
-  // at which it was logged prepended to the string which was passed to
-  // |BreadcrumbManagerKeyedService::AddEvent|.
-  virtual void EventAdded(BreadcrumbManagerKeyedService* manager,
+  // |BreadcrumbManager::GetEvents|, |event| will have the timestamp at which it
+  // was logged prepended to the string which was passed to
+  // |BreadcrumbManager::AddEvent|.
+  virtual void EventAdded(BreadcrumbManager* manager,
                           const std::string& event) {}
 
  protected:

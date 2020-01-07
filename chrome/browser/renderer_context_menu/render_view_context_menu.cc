@@ -473,18 +473,6 @@ bool IsCommandForOpenLink(int id) {
           id <= IDC_OPEN_LINK_IN_PROFILE_LAST);
 }
 
-// Usually a new tab is expected where this function is used,
-// however users should be able to open a tab in background
-// or in a new window.
-WindowOpenDisposition ForceNewTabDispositionFromEventFlags(
-    int event_flags) {
-  WindowOpenDisposition disposition =
-      ui::DispositionFromEventFlags(event_flags);
-  return disposition == WindowOpenDisposition::CURRENT_TAB
-             ? WindowOpenDisposition::NEW_FOREGROUND_TAB
-             : disposition;
-}
-
 // Returns the preference of the profile represented by the |context|.
 PrefService* GetPrefs(content::BrowserContext* context) {
   return user_prefs::UserPrefs::Get(context);
@@ -2316,8 +2304,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_RELOAD:
-      embedder_web_contents_->GetController().Reload(
-          content::ReloadType::NORMAL, true);
+      chrome::Reload(GetBrowser(), WindowOpenDisposition::CURRENT_TAB);
       break;
 
     case IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP:
@@ -2400,7 +2387,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
       OpenURL(selection_navigation_url_, GURL(),
-              ForceNewTabDispositionFromEventFlags(event_flags),
+              ui::DispositionFromEventFlags(
+                  event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB),
               ui::PAGE_TRANSITION_LINK);
       break;
 
@@ -2724,8 +2712,8 @@ void RenderViewContextMenu::ExecProtocolHandler(int event_flags,
 
   base::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.ContextMenu_Open"));
-  WindowOpenDisposition disposition =
-      ForceNewTabDispositionFromEventFlags(event_flags);
+  WindowOpenDisposition disposition = ui::DispositionFromEventFlags(
+      event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   OpenURL(handlers[handler_index].TranslateUrl(params_.link_url),
           GetDocumentURL(params_),
           disposition,
@@ -3027,8 +3015,8 @@ void RenderViewContextMenu::ExecTranslate() {
 }
 
 void RenderViewContextMenu::ExecLanguageSettings(int event_flags) {
-  WindowOpenDisposition disposition =
-      ForceNewTabDispositionFromEventFlags(event_flags);
+  WindowOpenDisposition disposition = ui::DispositionFromEventFlags(
+      event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   GURL url = chrome::GetSettingsUrl(chrome::kLanguageOptionsSubPage);
   OpenURL(url, GURL(), disposition, ui::PAGE_TRANSITION_LINK);
 }
@@ -3036,8 +3024,8 @@ void RenderViewContextMenu::ExecLanguageSettings(int event_flags) {
 void RenderViewContextMenu::ExecProtocolHandlerSettings(int event_flags) {
   base::RecordAction(
       UserMetricsAction("RegisterProtocolHandler.ContextMenu_Settings"));
-  WindowOpenDisposition disposition =
-      ForceNewTabDispositionFromEventFlags(event_flags);
+  WindowOpenDisposition disposition = ui::DispositionFromEventFlags(
+      event_flags, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   GURL url = chrome::GetSettingsUrl(chrome::kHandlerSettingsSubPage);
   OpenURL(url, GURL(), disposition, ui::PAGE_TRANSITION_LINK);
 }

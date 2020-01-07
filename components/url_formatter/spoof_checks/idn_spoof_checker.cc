@@ -9,6 +9,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local_storage.h"
 #include "build/build_config.h"
 #include "net/base/lookup_string_in_fixed_set.h"
@@ -209,12 +210,20 @@ IDNSpoofChecker::IDNSpoofChecker() {
        // (Potential set: [ሀሁሃሠሡሰሱሲስበቡቢተቱቲታነከኩኪካኬክዐዑዕዖዘዙዚዛዝዞጠጡጢጣጦፐፒꬁꬂꬅ])
        "[[:Ethi:]]",
        "[ሀሠሰስበነተከዐዕዘጠፐꬅ]",
-       {"er", "et"}}};
+       {"er", "et"}},
+      {// Greek
+       "[[:Grek:]]",
+       // This ignores variants such as ά, έ, ή, ί.
+       "[αικνρυωηοτ]",
+       {"gr"}},
+  };
   for (const WholeScriptConfusableData& data : kWholeScriptConfusables) {
     auto all_letters = std::make_unique<icu::UnicodeSet>(
         icu::UnicodeString::fromUTF8(data.script_regex), status);
+    DCHECK(U_SUCCESS(status));
     auto latin_lookalikes = std::make_unique<icu::UnicodeSet>(
         icu::UnicodeString::fromUTF8(data.latin_lookalike_letters), status);
+    DCHECK(U_SUCCESS(status));
     auto script = std::make_unique<WholeScriptConfusable>(
         std::move(all_letters), std::move(latin_lookalikes), data.allowed_tlds);
     wholescriptconfusables_.push_back(std::move(script));

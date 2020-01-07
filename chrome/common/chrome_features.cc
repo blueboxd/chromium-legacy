@@ -142,7 +142,7 @@ const base::Feature kThirdPartyModulesBlocking{
 const base::Feature kTLS13HardeningForLocalAnchors{
     "TLS13HardeningForLocalAnchors", base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+#if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 // Enables the dual certificate verification trial feature.
 // https://crbug.com/649026
 const base::Feature kCertDualVerificationTrialFeature{
@@ -507,7 +507,7 @@ const base::Feature kAcknowledgeNtpOverrideOnDeactivate{
 // not shown on the omnibox, since its functionality is replaced by the
 // setting.
 const base::Feature kMixedContentSiteSetting{"MixedContentSiteSetting",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if !defined(OS_ANDROID)
 const base::Feature kOnConnectNative{"OnConnectNative",
@@ -815,7 +815,7 @@ const base::Feature kSmartDim{"SmartDim", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable USBGuard at the lockscreen on Chrome OS.
 // TODO(crbug.com/874630): Remove this kill-switch
-const base::Feature kUsbguard{"USBGuard", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUsbguard{"USBGuard", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable USB Bouncer for managing a device whitelist for USBGuard on Chrome OS.
 const base::Feature kUsbbouncer{"USBBouncer",

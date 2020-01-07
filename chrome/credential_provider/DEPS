@@ -5,6 +5,7 @@ include_rules = [
   "+components/crash",
   "+google_apis",
   "+third_party/boringssl/src/include",
+  "+third_party/re2",
 ]
 
 specific_include_rules = {

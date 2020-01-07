@@ -29,13 +29,16 @@ class SelectedKeywordView : public IconLabelBubbleView {
                       Profile* profile);
   ~SelectedKeywordView() override;
 
-  // Resets the icon for this chip to its default (it may have been changed
-  // for an extension).
+  // Sets the icon for this chip to |image|.
+  void SetCustomImage(const gfx::ImageSkia& image);
+
+  // Resets the icon for this chip to its default.
   void ResetImage();
 
   // IconLabelBubbleView:
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
+  void OnThemeChanged() override;
   SkColor GetForegroundColor() const override;
 
   // The current keyword, or an empty string if no keyword is displayed.
@@ -67,6 +70,9 @@ class SelectedKeywordView : public IconLabelBubbleView {
   views::Label partial_label_;
 
   Profile* profile_;
+
+  // True when the chip icon has been changed via SetCustomImage().
+  bool using_custom_image_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SelectedKeywordView);
 };

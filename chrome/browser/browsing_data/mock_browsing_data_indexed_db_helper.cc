@@ -16,9 +16,7 @@
 MockBrowsingDataIndexedDBHelper::MockBrowsingDataIndexedDBHelper(
     Profile* profile)
     : BrowsingDataIndexedDBHelper(
-        content::BrowserContext::GetDefaultStoragePartition(profile)->
-            GetIndexedDBContext()) {
-}
+          content::BrowserContext::GetDefaultStoragePartition(profile)) {}
 
 MockBrowsingDataIndexedDBHelper::~MockBrowsingDataIndexedDBHelper() {
 }

@@ -488,7 +488,8 @@ void InspectorHighlight::AppendDistanceInfo(Node* node) {
       MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
   for (size_t i = 0; i < style->length(); ++i) {
     AtomicString name(style->item(i));
-    const CSSValue* value = style->GetPropertyCSSValue(cssPropertyID(name));
+    const CSSValue* value =
+        style->GetPropertyCSSValue(cssPropertyID(&node->GetDocument(), name));
     if (!value)
       continue;
     if (value->IsColorValue()) {

@@ -253,7 +253,7 @@ TEST_F(WebAudioSourceProviderImplTest, ProvideInput) {
 TEST_F(WebAudioSourceProviderImplTest, CopyAudioCB) {
   testing::InSequence s;
   wasp_impl_->Initialize(params_, &fake_callback_);
-  wasp_impl_->SetCopyAudioCallback(base::Bind(
+  wasp_impl_->SetCopyAudioCallback(WTF::BindRepeating(
       &WebAudioSourceProviderImplTest::OnAudioBus, base::Unretained(this)));
 
   const auto bus1 = media::AudioBus::Create(params_);

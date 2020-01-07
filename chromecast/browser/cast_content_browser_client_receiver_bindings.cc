@@ -107,8 +107,9 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
     blink::AssociatedInterfaceRegistry* associated_registry,
     content::RenderProcessHost* render_process_host) {
   registry->AddInterface(
-      base::Bind(&media::MediaCapsImpl::AddReceiver,
-                 base::Unretained(cast_browser_main_parts_->media_caps())),
+      base::BindRepeating(
+          &media::MediaCapsImpl::AddReceiver,
+          base::Unretained(cast_browser_main_parts_->media_caps())),
       base::ThreadTaskRunnerHandle::Get());
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
@@ -117,8 +118,8 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
   }
 
   registry->AddInterface(
-      base::Bind(&MemoryPressureControllerImpl::AddReceiver,
-                 base::Unretained(memory_pressure_controller_.get())),
+      base::BindRepeating(&MemoryPressureControllerImpl::AddReceiver,
+                          base::Unretained(memory_pressure_controller_.get())),
       base::ThreadTaskRunnerHandle::Get());
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 }

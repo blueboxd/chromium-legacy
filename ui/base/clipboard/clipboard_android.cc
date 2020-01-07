@@ -479,7 +479,7 @@ void ClipboardAndroid::WriteBookmark(const char* title_data,
                                      size_t title_len,
                                      const char* url_data,
                                      size_t url_len) {
-  g_map.Get().Set(ClipboardFormatType::GetBookmarkType().ToString(),
+  g_map.Get().Set(ClipboardFormatType::GetUrlWType().ToString(),
                   std::string(url_data, url_len));
 }
 

@@ -44,8 +44,9 @@ class TestExtensionSystem : public MockExtensionSystem {
   // MockExtensionSystem:
   void RegisterExtensionWithRequestContexts(
       const Extension* extension,
-      const base::Closure& callback) override {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+      base::OnceClosure callback) override {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     std::move(callback));
   }
   RuntimeData* runtime_data() override { return &runtime_data_; }
 

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/ctap_make_credential_request.h"
+#include "device/fido/mac/credential_store.h"
 #include "device/fido/mac/operation.h"
 #include "device/fido/mac/touch_id_context.h"
 
@@ -52,8 +53,7 @@ class API_AVAILABLE(macosx(10.12.2))
       base::Optional<AuthenticatorMakeCredentialResponse>)>;
 
   MakeCredentialOperation(CtapMakeCredentialRequest request,
-                          std::string profile_id,
-                          std::string keychain_access_group,
+                          TouchIdCredentialStore* credential_store,
                           Callback callback);
   ~MakeCredentialOperation() override;
 
@@ -63,21 +63,11 @@ class API_AVAILABLE(macosx(10.12.2))
  private:
   void PromptTouchIdDone(bool success);
 
-  // DefaultKeychainQuery returns a default keychain query dictionary that has
-  // the keychain item class, keychain access group and RP ID filled out (but
-  // not the credential ID). More fields can be set on the return value to
-  // refine the query.
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> DefaultKeychainQuery() const;
-
-  // The secret parameter passed to |CredentialMetadata| operations to encrypt
-  // or encode credential metadata for storage in the macOS keychain.
-  const std::string metadata_secret_;
-  const std::string keychain_access_group_;
-
   const std::unique_ptr<TouchIdContext> touch_id_context_ =
       TouchIdContext::Create();
 
   const CtapMakeCredentialRequest request_;
+  TouchIdCredentialStore* const credential_store_;
   Callback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MakeCredentialOperation);

@@ -620,7 +620,7 @@ void MakeCredentialRequestHandler::OnHavePINToken(
     return;
   }
 
-  observer()->FinishCollectPIN();
+  observer()->FinishCollectToken();
   state_ = State::kWaitingForSecondTouch;
   CtapMakeCredentialRequest request(request_);
   request.pin_auth = response->PinAuth(request.client_data_hash);

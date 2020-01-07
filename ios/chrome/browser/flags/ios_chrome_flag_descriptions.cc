@@ -307,6 +307,10 @@ const char kOmniboxOnDeviceHeadSuggestionsDescription[] =
     "Shows Google head non personalized search suggestions provided by a "
     "compact on device model";
 
+const char kPageInfoRefactoringName[] = "New design of the page info";
+const char kPageInfoRefactoringDescription[] =
+    "Uses the new design for the page security info.";
+
 const char kPasswordLeakDetectionName[] = "Password Leak Detection";
 const char kPasswordLeakDetectionDescription[] =
     "Enables the detection of leaked passwords.";

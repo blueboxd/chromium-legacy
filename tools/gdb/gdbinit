@@ -99,7 +99,7 @@ gdb.execute("set environment CHROMIUM_GDBINIT_SOURCED=1")
 # use try..except to avoid displaying errors in earlier GDB versions.
 try:
   # unlimited means "number of cores"
-  gdb.execute("maint set worket-threads unlimited")
+  gdb.execute("maint set worker-threads unlimited")
 except:
   pass
 

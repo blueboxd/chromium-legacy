@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/task_environment.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -229,7 +230,16 @@ TEST_F(FileProxyTest, CreateTemporary) {
   EXPECT_EQ("test", data);
 
   // Make sure we can & do delete the created file to prevent leaks on the bots.
-  EXPECT_TRUE(base::DeleteFile(path_, false));
+  // Try a few times because files may be locked by anti-virus or other.
+  bool deleted_temp_file = false;
+  for (int i = 0; !deleted_temp_file && i < 3; ++i) {
+    if (base::DeleteFile(path_, false))
+      deleted_temp_file = true;
+    else
+      // Wait one second and then try again
+      PlatformThread::Sleep(TimeDelta::FromSeconds(1));
+  }
+  EXPECT_TRUE(deleted_temp_file);
 }
 
 TEST_F(FileProxyTest, SetAndTake) {

@@ -43,11 +43,11 @@ class TabRestoreServiceDelegateImplIOS : public sessions::LiveTabContext,
   bool IsTabPinned(int index) const override;
   base::Optional<tab_groups::TabGroupId> GetTabGroupForTab(
       int index) const override;
-  tab_groups::TabGroupVisualData* GetVisualDataForGroup(
-      tab_groups::TabGroupId group) const override;
+  const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
+      const tab_groups::TabGroupId& group) const override;
   void SetVisualDataForGroup(
-      tab_groups::TabGroupId group,
-      tab_groups::TabGroupVisualData visual_data) override;
+      const tab_groups::TabGroupId& group,
+      const tab_groups::TabGroupVisualData& visual_data) override;
   const gfx::Rect GetRestoredBounds() const override;
   ui::WindowShowState GetRestoredState() const override;
   std::string GetWorkspace() const override;
@@ -57,7 +57,7 @@ class TabRestoreServiceDelegateImplIOS : public sessions::LiveTabContext,
       int selected_navigation,
       const std::string& extension_app_id,
       base::Optional<tab_groups::TabGroupId> group,
-      const tab_groups::TabGroupVisualData group_visual_data,
+      const tab_groups::TabGroupVisualData& group_visual_data,
       bool select,
       bool pin,
       bool from_last_session,

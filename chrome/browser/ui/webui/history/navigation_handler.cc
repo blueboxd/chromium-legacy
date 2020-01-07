@@ -46,11 +46,9 @@ void NavigationHandler::HandleNavigateToUrl(const base::ListValue* args) {
   bool middle_button = (button == 1.0);
 
   WindowOpenDisposition disposition = ui::DispositionFromClick(
-      middle_button, alt_key, ctrl_key, meta_key, shift_key);
-  if (disposition == WindowOpenDisposition::CURRENT_TAB &&
-      target_string == "_blank")
-    disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-
+      middle_button, alt_key, ctrl_key, meta_key, shift_key,
+      (target_string == "_blank") ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                                  : WindowOpenDisposition::CURRENT_TAB);
   web_ui()->GetWebContents()->OpenURL(
       content::OpenURLParams(GURL(url_string), content::Referrer(), disposition,
                              ui::PAGE_TRANSITION_LINK, false));

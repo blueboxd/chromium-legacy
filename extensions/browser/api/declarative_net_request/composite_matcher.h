@@ -18,51 +18,42 @@
 namespace extensions {
 namespace declarative_net_request {
 
-class ActionTracker;
 struct RequestAction;
 
 // Per extension instance which manages the different rulesets for an extension
 // while respecting their priorities.
 class CompositeMatcher {
  public:
-  struct RedirectActionInfo {
-    RedirectActionInfo(base::Optional<RequestAction> action, bool notify);
-    ~RedirectActionInfo();
-    RedirectActionInfo(RedirectActionInfo&& other);
-    RedirectActionInfo& operator=(RedirectActionInfo&& other);
+  struct ActionInfo {
+    ActionInfo(base::Optional<RequestAction> action, bool notify);
+    ~ActionInfo();
+    ActionInfo(ActionInfo&& other);
+    ActionInfo& operator=(ActionInfo&& other);
 
-    // The action to be taken for this request. If specified, the action type
-    // must be |REDIRECT|.
+    // The action to be taken for this request.
     base::Optional<RequestAction> action;
 
     // Whether the extension should be notified that the request was unable to
     // be redirected as the extension lacks the appropriate host permission for
-    // the request.
+    // the request. Can only be true for redirect actions.
     bool notify_request_withheld = false;
 
-    DISALLOW_COPY_AND_ASSIGN(RedirectActionInfo);
+    DISALLOW_COPY_AND_ASSIGN(ActionInfo);
   };
 
   using MatcherList = std::vector<std::unique_ptr<RulesetMatcher>>;
 
   // Each RulesetMatcher should have a distinct ID and priority.
-  explicit CompositeMatcher(MatcherList matchers,
-                            ActionTracker* action_tracker);
+  explicit CompositeMatcher(MatcherList matchers);
   ~CompositeMatcher();
 
   // Adds the |new_matcher| to the list of matchers. If a matcher with the
   // corresponding ID is already present, updates the matcher.
   void AddOrUpdateRuleset(std::unique_ptr<RulesetMatcher> new_matcher);
 
-  // Returns a RequestAction if the network request specified by |params| should
-  // be blocked.
-  base::Optional<RequestAction> GetBlockOrCollapseAction(
-      const RequestParams& params) const;
-
-  // Returns a RedirectActionInfo struct containing a RequestAction if the
-  // request is to be redirected, and whether the extension should be notified
-  // if its access to the request is withheld.
-  RedirectActionInfo GetRedirectAction(
+  // Returns a RequestAction for the network request specified by |params|, or
+  // base::nullopt if there is no matching rule.
+  ActionInfo GetBeforeRequestAction(
       const RequestParams& params,
       PermissionsData::PageAccess page_access) const;
 
@@ -85,21 +76,12 @@ class CompositeMatcher {
   // Sorts |matchers_| in descending order of priority.
   void SortMatchersByPriority();
 
-  // Check if |matcher| has an allow action for |params| and tracks the action
-  // if needed.
-  bool HasAllowAction(const RulesetMatcher& matcher,
-                      const RequestParams& params) const;
-
   // Sorted by priority in descending order.
   MatcherList matchers_;
 
   // Denotes the cached return value for |HasAnyExtraHeadersMatcher|. Care must
   // be taken to reset this as this object is modified.
   mutable base::Optional<bool> has_any_extra_headers_matcher_;
-
-  // Used to track when allow rules are matched; can be null during unit tests.
-  // Owned by RulesMonitorService.
-  ActionTracker* action_tracker_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CompositeMatcher);
 };

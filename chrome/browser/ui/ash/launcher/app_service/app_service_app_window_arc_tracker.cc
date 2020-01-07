@@ -22,75 +22,11 @@
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_info.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-constexpr size_t kMaxIconPngSize = 64 * 1024;  // 64 kb
-
-}  // namespace
-
-// The information about the ARC application window which has to be kept
-// even when its AppWindow is not present.
-class AppServiceAppWindowArcTracker::ArcAppWindowInfo {
- public:
-  ArcAppWindowInfo(const arc::ArcAppShelfId& app_shelf_id,
-                   const std::string& launch_intent,
-                   const std::string& package_name)
-      : app_shelf_id_(app_shelf_id),
-        launch_intent_(launch_intent),
-        package_name_(package_name) {}
-  ~ArcAppWindowInfo() = default;
-
-  ArcAppWindowInfo(const ArcAppWindowInfo&) = delete;
-  ArcAppWindowInfo& operator=(const ArcAppWindowInfo&) = delete;
-
-  void SetDescription(const std::string& title,
-                      const std::vector<uint8_t>& icon_data_png) {
-    DCHECK(base::IsStringUTF8(title));
-    title_ = title;
-
-    // Chrome has custom Play Store icon. Don't overwrite it.
-    if (app_shelf_id_.app_id() == arc::kPlayStoreAppId)
-      return;
-    if (icon_data_png.size() < kMaxIconPngSize)
-      icon_data_png_ = icon_data_png;
-    else
-      VLOG(1) << "Task icon size is too big " << icon_data_png.size() << ".";
-  }
-
-  void set_window(aura::Window* window) { window_ = window; }
-
-  aura::Window* window() { return window_; }
-
-  const arc::ArcAppShelfId& app_shelf_id() const { return app_shelf_id_; }
-
-  const ash::ShelfID shelf_id() const {
-    return ash::ShelfID(app_shelf_id_.ToString());
-  }
-
-  const std::string& launch_intent() const { return launch_intent_; }
-
-  const std::string& package_name() const { return package_name_; }
-
-  const std::string& title() const { return title_; }
-
-  const std::vector<uint8_t>& icon_data_png() const { return icon_data_png_; }
-
- private:
-  const arc::ArcAppShelfId app_shelf_id_;
-  const std::string launch_intent_;
-  const std::string package_name_;
-  // Keeps overridden window title.
-  std::string title_;
-  // Keeps overridden window icon.
-  std::vector<uint8_t> icon_data_png_;
-
-  aura::Window* window_ = nullptr;
-};
 
 AppServiceAppWindowArcTracker::AppServiceAppWindowArcTracker(
     AppServiceAppWindowLauncherController* app_service_controller)

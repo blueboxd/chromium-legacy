@@ -84,6 +84,7 @@ public class LocationBarLayout extends FrameLayout
 
     protected ImageButton mDeleteButton;
     protected ImageButton mMicButton;
+    private boolean mShouldShowMicButtonWhenUnfocused;
     protected UrlBar mUrlBar;
     private final boolean mIsTablet;
 
@@ -100,24 +101,21 @@ public class LocationBarLayout extends FrameLayout
     private WindowAndroid mWindowAndroid;
     private WindowDelegate mWindowDelegate;
 
-    protected String mSearchEngineUrl = "";
     private String mOriginalUrl = "";
 
-    protected boolean mUrlFocusChangeInProgress;
+    private boolean mUrlFocusChangeInProgress;
     protected boolean mNativeInitialized;
-    protected boolean mShouldShowSearchEngineLogo;
-    protected boolean mIsSearchEngineGoogle;
     private boolean mUrlHasFocus;
     private boolean mUrlFocusedFromFakebox;
     private boolean mUrlFocusedWithoutAnimations;
-    private boolean mVoiceSearchEnabled;
+    protected boolean mVoiceSearchEnabled;
 
     private OmniboxPrerender mOmniboxPrerender;
 
     protected float mUrlFocusChangePercent;
     protected LinearLayout mUrlActionContainer;
 
-    protected LocationBarVoiceRecognitionHandler mVoiceRecognitionHandler;
+    private LocationBarVoiceRecognitionHandler mVoiceRecognitionHandler;
 
     protected CompositeTouchDelegate mCompositeTouchDelegate;
 
@@ -327,7 +325,7 @@ public class LocationBarLayout extends FrameLayout
 
         updateVisualsForState();
 
-        updateMicButtonVisibility(mUrlFocusChangePercent);
+        updateMicButtonVisibility();
     }
 
     /**
@@ -418,7 +416,7 @@ public class LocationBarLayout extends FrameLayout
             // The accessibility bounding box is not properly updated when focusing the Omnibox
             // from the NTP fakebox.  Clearing/re-requesting focus triggers the bounding box to
             // be recalculated.
-            if (didFocusUrlFromFakebox() && !inProgress && mUrlHasFocus
+            if (didFocusUrlFromFakebox() && mUrlHasFocus
                     && AccessibilityUtil.isAccessibilityEnabled()) {
                 String existingText = mUrlCoordinator.getTextWithoutAutocomplete();
                 mUrlBar.clearFocus();
@@ -443,12 +441,12 @@ public class LocationBarLayout extends FrameLayout
      * Triggered when the URL input field has gained or lost focus.
      * @param hasFocus Whether the URL field has gained focus.
      */
-    public void onUrlFocusChange(boolean hasFocus) {
+    protected void onUrlFocusChange(boolean hasFocus) {
         mUrlHasFocus = hasFocus;
         updateButtonVisibility();
         updateShouldAnimateIconChanges();
 
-        if (hasFocus) {
+        if (mUrlHasFocus) {
             if (mNativeInitialized) RecordUserAction.record("FocusLocation");
             UrlBarData urlBarData = mToolbarDataProvider.getUrlBarData();
             if (urlBarData.editingText != null) {
@@ -486,9 +484,9 @@ public class LocationBarLayout extends FrameLayout
 
         mStatusViewCoordinator.onUrlFocusChange(mUrlHasFocus);
 
-        if (!mUrlFocusedWithoutAnimations) handleUrlFocusAnimation(hasFocus);
+        if (!mUrlFocusedWithoutAnimations) handleUrlFocusAnimation(mUrlHasFocus);
 
-        if (hasFocus && mToolbarDataProvider.hasTab() && !mToolbarDataProvider.isIncognito()) {
+        if (mUrlHasFocus && mToolbarDataProvider.hasTab() && !mToolbarDataProvider.isIncognito()) {
             if (mNativeInitialized
                     && TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()) {
                 GeolocationHeader.primeLocationForGeoHeader();
@@ -776,7 +774,7 @@ public class LocationBarLayout extends FrameLayout
 
             RecordUserAction.record("MobileOmniboxDeleteUrl");
             return;
-        } else if (v == mMicButton && mVoiceRecognitionHandler != null) {
+        } else if (v == mMicButton) {
             RecordUserAction.record("MobileOmniboxVoiceSearch");
             mVoiceRecognitionHandler.startVoiceRecognition(
                     LocationBarVoiceRecognitionHandler.VoiceInteractionSource.OMNIBOX);
@@ -972,12 +970,8 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
-        mSearchEngineUrl = searchEngineUrl;
-        mIsSearchEngineGoogle = isSearchEngineGoogle;
-        mShouldShowSearchEngineLogo = shouldShowSearchEngineLogo;
-
         mStatusViewCoordinator.updateSearchEngineStatusIcon(
-                mShouldShowSearchEngineLogo, mIsSearchEngineGoogle, mSearchEngineUrl);
+                shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
     }
 
     @Override
@@ -1063,14 +1057,21 @@ public class LocationBarLayout extends FrameLayout
 
     /**
      * Updates the display of the mic button.
-     *
-     * @param urlFocusChangePercent The completion percentage of the URL focus change animation.
      */
-    protected void updateMicButtonVisibility(float urlFocusChangePercent) {
+    protected void updateMicButtonVisibility() {
         boolean visible = !shouldShowDeleteButton();
         boolean showMicButton = mVoiceSearchEnabled && visible
-                && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress || urlFocusChangePercent > 0f);
+                && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress || mUrlFocusChangePercent > 0f
+                        || mShouldShowMicButtonWhenUnfocused);
         mMicButton.setVisibility(showMicButton ? VISIBLE : GONE);
+    }
+
+    /**
+     * Value determines if mic button should be shown when location bar is not focused. By default
+     * mic button is not shown. It is only shown for SearchActivityLocationBarLayout.
+     */
+    protected void setShouldShowMicButtonWhenUnfocused(boolean shouldShowMicButtonWhenUnfocused) {
+        mShouldShowMicButtonWhenUnfocused = shouldShowMicButtonWhenUnfocused;
     }
 
     /**

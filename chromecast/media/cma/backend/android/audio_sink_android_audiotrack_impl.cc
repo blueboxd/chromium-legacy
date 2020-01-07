@@ -257,7 +257,7 @@ void AudioSinkAndroidAudioTrackImpl::ScheduleWaitForEosTask() {
           base::android::AttachCurrentThread(), j_audio_sink_audiotrack_impl_);
   LOG(INFO) << __func__ << "(" << this << "): Hit EOS, playout time left is "
             << playout_time_left_us << "us";
-  wait_for_eos_task_.Reset(base::Bind(
+  wait_for_eos_task_.Reset(base::BindOnce(
       &AudioSinkAndroidAudioTrackImpl::OnPlayoutDone, base::Unretained(this)));
   base::TimeDelta delay =
       base::TimeDelta::FromMicroseconds(playout_time_left_us);

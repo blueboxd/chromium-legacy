@@ -104,7 +104,8 @@ void LayoutWorkletGlobalScope::registerLayout(
   Vector<AtomicString> custom_invalidation_properties;
 
   if (!V8ObjectParser::ParseCSSPropertyList(
-          current_context, layout_ctor->CallbackObject(), "inputProperties",
+          current_context, GetFrame()->GetDocument(),
+          layout_ctor->CallbackObject(), "inputProperties",
           &native_invalidation_properties, &custom_invalidation_properties,
           &exception_state))
     return;
@@ -113,8 +114,9 @@ void LayoutWorkletGlobalScope::registerLayout(
   Vector<AtomicString> child_custom_invalidation_properties;
 
   if (!V8ObjectParser::ParseCSSPropertyList(
-          current_context, layout_ctor->CallbackObject(),
-          "childInputProperties", &child_native_invalidation_properties,
+          current_context, GetFrame()->GetDocument(),
+          layout_ctor->CallbackObject(), "childInputProperties",
+          &child_native_invalidation_properties,
           &child_custom_invalidation_properties, &exception_state))
     return;
 

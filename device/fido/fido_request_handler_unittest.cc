@@ -159,7 +159,7 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
 
   void SetMightCreateResidentCredential(bool v) override {}
 
-  void FinishCollectPIN() override { NOTREACHED(); }
+  void FinishCollectToken() override { NOTREACHED(); }
 
  private:
   TransportAvailabilityNotificationReceiver

@@ -72,7 +72,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   virtual bool ShouldShowLabel() const;
 
   void SetLabel(const base::string16& label);
-  void SetImage(const gfx::ImageSkia& image);
   void SetFontList(const gfx::FontList& font_list);
 
   const views::ImageView* GetImageView() const { return image(); }
@@ -142,6 +141,8 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   const gfx::FontList& font_list() const { return label()->font_list(); }
 
+  void SetImage(const gfx::ImageSkia& image);
+
   gfx::Size GetSizeForLabelWidth(int label_width) const;
 
   // Set up for icons that animate their labels in. Animating out is initiated
@@ -189,6 +190,7 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
     // views::View:
     void OnPaint(gfx::Canvas* canvas) override;
+    void OnThemeChanged() override;
 
     // Updates the opacity based on the ink drop's state.
     void UpdateOpacity();

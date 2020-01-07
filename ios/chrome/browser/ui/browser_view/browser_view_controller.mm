@@ -1267,7 +1267,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.dispatcher cancelOmniboxEdit];
   }
   [_dialogPresenter cancelAllDialogs];
-  [self.dispatcher hidePageInfo];
   [self.bubblePresenter dismissBubbles];
   if (_voiceSearchController)
     _voiceSearchController->DismissMicPermissionsHelp();

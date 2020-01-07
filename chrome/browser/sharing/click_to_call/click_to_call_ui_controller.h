@@ -52,7 +52,6 @@ class ClickToCallUiController
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
   SharingFeatureName GetFeatureMetricsPrefix() const override;
-  void OnHelpTextClicked(SharingDialogType dialog_type) override;
   void OnDialogShown(bool has_devices, bool has_apps) override;
 
  protected:

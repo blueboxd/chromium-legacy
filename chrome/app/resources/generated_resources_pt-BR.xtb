@@ -49,7 +49,6 @@
 <translation id="1056775291175587022">Nenhuma rede encontrada</translation>
 <translation id="1056898198331236512">Aviso</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1060881073479695738">Apps da Play Store</translation>
 <translation id="1061745542578250838">O arquivo <ph name="FILE_NAME" /> apresenta conteúdo sensível e foi bloqueado.</translation>
 <translation id="1061904396131502319">Está quase na hora de fazer uma pausa</translation>
 <translation id="1067048845568873861">Criado em</translation>
@@ -1569,6 +1568,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="3172808215939929606">Esta página foi traduzida</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
 <translation id="3179982752812949580">Fonte do texto</translation>
+<translation id="3181825792072797598">Ativar a Sincronização</translation>
 <translation id="3181954750937456830">Navegação segura: protege você e seu dispositivo de sites perigosos</translation>
 <translation id="3182749001423093222">Verificação ortográfica</translation>
 <translation id="3183139917765991655">Importador de perfil</translation>
@@ -4655,6 +4655,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7684718995427157417">Para criar e testar seus apps, ative o Android Debug Bridge (ADB). Essa ação permite a instalação de apps para Android que não foram verificados pelo Google. Para desativá-lo, será necessária uma redefinição para a configuração original.</translation>
 <translation id="7685049629764448582">Memória JavaScript</translation>
 <translation id="7685087414635069102">PIN necessário</translation>
+<translation id="768549422429443215">Adicionar idiomas ou reordenar lista.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Confirmar nova senha</translation>
 <translation id="7690378713476594306">Escolher na lista</translation>
@@ -5521,7 +5522,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Ver mais…</translation>
 <translation id="885246833287407341">Argumentos de função da API</translation>
-<translation id="8853586775156634952">O card será salvo apenas neste dispositivo</translation>
+<translation id="8853586775156634952">O cartão será salvo apenas neste dispositivo</translation>
 <translation id="8855501062415172277">O arquivo <ph name="FILE_NAME" /> apresenta conteúdo sensível.</translation>
 <translation id="8855977033756560989">Esse dispositivo Chromebook Enterprise vem com o Upgrade do Chrome Enterprise Para aproveitar ao máximo os recursos corporativos, inscreva esse dispositivo com uma conta de administrador do Google.</translation>
 <translation id="885701979325669005">Armazenamento</translation>

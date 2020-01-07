@@ -131,7 +131,7 @@ void TabRestoreServiceHelper::BrowserClosing(LiveTabContext* context) {
   }
 
   for (const tab_groups::TabGroupId& group : seen_groups) {
-    tab_groups::TabGroupVisualData* visual_data =
+    const tab_groups::TabGroupVisualData* visual_data =
         context->GetVisualDataForGroup(group);
     window->tab_groups.emplace(group, std::move(*visual_data));
   }

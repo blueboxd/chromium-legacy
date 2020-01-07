@@ -66,12 +66,9 @@ class NET_EXPORT HostResolver {
     // On any other returned value, the request was handled synchronously and
     // |callback| will not be invoked.
     //
-    // Results in ERR_NAME_NOT_RESOLVED if the hostname is invalid, or if it is
-    // an incompatible IP literal (e.g. IPv6 is disabled and it is an IPv6
-    // literal).
-    //
-    // Results in ERR_DNS_CACHE_MISS if only fast local sources are to be
-    // queried and a cache lookup attempt fails.
+    // Results in ERR_NAME_NOT_RESOLVED if the hostname is not resolved. More
+    // detail about the underlying error can be retrieved using
+    // GetResolveErrorInfo().
     //
     // The parent HostResolver must still be alive when Start() is called,  but
     // if it is destroyed before an asynchronous result completes, the request

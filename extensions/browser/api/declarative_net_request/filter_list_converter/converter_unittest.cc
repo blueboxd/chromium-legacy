@@ -75,7 +75,8 @@ TEST_P(FilterListConverterTest, Convert) {
           "resourceTypes": [ "script", "image", "font" ],
           "urlFilter": "||example.com^|"
        },
-       "id": 1
+       "id": 1,
+       "priority": 1
     }, {
        "action": {
           "type": "allow"
@@ -86,7 +87,8 @@ TEST_P(FilterListConverterTest, Convert) {
           "isUrlFilterCaseSensitive": false,
           "urlFilter": "allowed.com"
        },
-       "id": 2
+       "id": 2,
+       "priority": 1
     }, {
        "action": {
           "type": "block"
@@ -98,7 +100,8 @@ TEST_P(FilterListConverterTest, Convert) {
           "urlFilter": "|https://*.abc.com|",
           "domainType": "thirdParty"
        },
-       "id": 3
+       "id": 3,
+       "priority": 1
     }, {
        "action": {
           "type": "block"
@@ -108,7 +111,8 @@ TEST_P(FilterListConverterTest, Convert) {
           "urlFilter": "abc.com",
           "domainType": "firstParty"
        },
-       "id": 4
+       "id": 4,
+       "priority": 1
     } ]
 
 )";

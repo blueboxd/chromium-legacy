@@ -7,6 +7,7 @@
 #include "base/time/time.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -39,7 +40,7 @@ class BreadcrumbManagerKeyedServiceTest : public PlatformTest {
         base::BindRepeating(&BuildBreadcrumbManagerKeyedService));
     chrome_browser_state_ = test_cbs_builder.Build();
 
-    breadcrumb_manager_ = static_cast<BreadcrumbManagerKeyedService*>(
+    breadcrumb_manager_service_ = static_cast<BreadcrumbManagerKeyedService*>(
         BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
             chrome_browser_state_.get()));
   }
@@ -49,92 +50,29 @@ class BreadcrumbManagerKeyedServiceTest : public PlatformTest {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  BreadcrumbManagerKeyedService* breadcrumb_manager_;
+  BreadcrumbManagerKeyedService* breadcrumb_manager_service_;
 };
-
-// Tests that an event is logged and returned.
-TEST_F(BreadcrumbManagerKeyedServiceTest, AddEvent) {
-  std::string event_message = "event";
-  breadcrumb_manager_->AddEvent(event_message);
-  std::list<std::string> events = breadcrumb_manager_->GetEvents(0);
-  ASSERT_EQ(1ul, events.size());
-  // Events returned from |GetEvents| will have a timestamp prepended.
-  EXPECT_NE(std::string::npos, events.front().find(event_message));
-}
-
-// Tests that returned events returned by |GetEvents| are limited by the
-// |event_count_limit| parameter.
-TEST_F(BreadcrumbManagerKeyedServiceTest, EventCountLimited) {
-  breadcrumb_manager_->AddEvent("event1");
-  breadcrumb_manager_->AddEvent("event2");
-  breadcrumb_manager_->AddEvent("event3");
-  breadcrumb_manager_->AddEvent("event4");
-
-  std::list<std::string> events = breadcrumb_manager_->GetEvents(2);
-  ASSERT_EQ(2ul, events.size());
-  EXPECT_NE(std::string::npos, events.front().find("event3"));
-  events.pop_front();
-  EXPECT_NE(std::string::npos, events.front().find("event4"));
-}
-
-// Tests that old events are dropped.
-TEST_F(BreadcrumbManagerKeyedServiceTest, OldEventsDropped) {
-  // Log an event from one and two hours ago.
-  breadcrumb_manager_->AddEvent("event1");
-  task_env_.FastForwardBy(base::TimeDelta::FromHours(1));
-  breadcrumb_manager_->AddEvent("event2");
-  task_env_.FastForwardBy(base::TimeDelta::FromHours(1));
-
-  // Log three events separated by three minutes to ensure they receive their
-  // own event bucket. Otherwise, some old events may be returned to ensure a
-  // minimum number of available events. See |MinimumEventsReturned| test below.
-  breadcrumb_manager_->AddEvent("event3");
-  task_env_.FastForwardBy(base::TimeDelta::FromMinutes(3));
-  breadcrumb_manager_->AddEvent("event4");
-  task_env_.FastForwardBy(base::TimeDelta::FromMinutes(3));
-  breadcrumb_manager_->AddEvent("event5");
-
-  std::list<std::string> events = breadcrumb_manager_->GetEvents(0);
-  ASSERT_EQ(3ul, events.size());
-  // Validate the three most recent events are the ones which were returned.
-  EXPECT_NE(std::string::npos, events.front().find("event3"));
-  events.pop_front();
-  EXPECT_NE(std::string::npos, events.front().find("event4"));
-  events.pop_front();
-  EXPECT_NE(std::string::npos, events.front().find("event5"));
-}
-
-// Tests that expired events are returned if not enough new events exist.
-TEST_F(BreadcrumbManagerKeyedServiceTest, MinimumEventsReturned) {
-  // Log an event from one and two hours ago.
-  breadcrumb_manager_->AddEvent("event1");
-  task_env_.FastForwardBy(base::TimeDelta::FromHours(1));
-  breadcrumb_manager_->AddEvent("event2");
-  task_env_.FastForwardBy(base::TimeDelta::FromHours(1));
-  breadcrumb_manager_->AddEvent("event3");
-
-  std::list<std::string> events = breadcrumb_manager_->GetEvents(0);
-  EXPECT_EQ(2ul, events.size());
-}
 
 // Tests that events logged to Normal and OffTheRecord BrowserStates are
 // seperately identifiable.
 TEST_F(BreadcrumbManagerKeyedServiceTest, EventsLabeledWithBrowserState) {
-  breadcrumb_manager_->AddEvent("event");
-  std::string event = breadcrumb_manager_->GetEvents(0).front();
+  breadcrumb_manager_service_->AddEvent("event");
+
+  std::string event = breadcrumb_manager_service_->GetEvents(0).front();
   // Event should indicate it was logged from a "Normal" browser state.
   EXPECT_NE(std::string::npos, event.find(" N "));
 
   ios::ChromeBrowserState* off_the_record_browser_state =
       chrome_browser_state_->GetOffTheRecordChromeBrowserState();
 
-  BreadcrumbManagerKeyedService* off_the_record_breadcrumb_manager =
+  BreadcrumbManagerKeyedService* otr_breadcrumb_manager_service =
       static_cast<BreadcrumbManagerKeyedService*>(
           BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
               off_the_record_browser_state));
-  off_the_record_breadcrumb_manager->AddEvent("event");
+  otr_breadcrumb_manager_service->AddEvent("event");
+
   std::string off_the_record_event =
-      off_the_record_breadcrumb_manager->GetEvents(0).front();
+      otr_breadcrumb_manager_service->GetEvents(0).front();
   // Event should indicate it was logged from an off the record "Incognito"
   // browser state.
   EXPECT_NE(std::string::npos, off_the_record_event.find(" I "));

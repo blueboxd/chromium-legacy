@@ -34,14 +34,14 @@ void FakeExtendedAuthenticator::SetConsumer(AuthStatusConsumer* consumer) {
 
 void FakeExtendedAuthenticator::AuthenticateToMount(
     const UserContext& context,
-    const ResultCallback& success_callback) {
+    ResultCallback success_callback) {
   if (expected_user_context_ == context) {
     UserContext reported_user_context(context);
     const std::string mount_hash =
         reported_user_context.GetAccountId().GetUserEmail() + "-hash";
     reported_user_context.SetUserIDHash(mount_hash);
-    if (!success_callback.is_null())
-      success_callback.Run(mount_hash);
+    if (success_callback)
+      std::move(success_callback).Run(mount_hash);
     OnAuthSuccess(reported_user_context);
     return;
   }
@@ -52,10 +52,10 @@ void FakeExtendedAuthenticator::AuthenticateToMount(
 
 void FakeExtendedAuthenticator::AuthenticateToCheck(
     const UserContext& context,
-    const base::Closure& success_callback) {
+    base::OnceClosure success_callback) {
   if (expected_user_context_ == context) {
-    if (!success_callback.is_null())
-      success_callback.Run();
+    if (success_callback)
+      std::move(success_callback).Run();
     OnAuthSuccess(context);
     return;
   }
@@ -65,9 +65,9 @@ void FakeExtendedAuthenticator::AuthenticateToCheck(
 }
 
 void FakeExtendedAuthenticator::AddKey(const UserContext& context,
-                    const cryptohome::KeyDefinition& key,
-                    bool replace_existing,
-                    const base::Closure& success_callback) {
+                                       const cryptohome::KeyDefinition& key,
+                                       bool replace_existing,
+                                       base::OnceClosure success_callback) {
   NOTREACHED();
 }
 
@@ -75,21 +75,21 @@ void FakeExtendedAuthenticator::UpdateKeyAuthorized(
     const UserContext& context,
     const cryptohome::KeyDefinition& key,
     const std::string& signature,
-    const base::Closure& success_callback) {
+    base::OnceClosure success_callback) {
   NOTREACHED();
 }
 
 void FakeExtendedAuthenticator::RemoveKey(const UserContext& context,
-                       const std::string& key_to_remove,
-                       const base::Closure& success_callback) {
+                                          const std::string& key_to_remove,
+                                          base::OnceClosure success_callback) {
   NOTREACHED();
 }
 
 void FakeExtendedAuthenticator::TransformKeyIfNeeded(
     const UserContext& user_context,
-    const ContextCallback& callback) {
-  if (!callback.is_null())
-    callback.Run(user_context);
+    ContextCallback callback) {
+  if (callback)
+    std::move(callback).Run(user_context);
 }
 
 void FakeExtendedAuthenticator::OnAuthSuccess(const UserContext& context) {

@@ -131,6 +131,7 @@ class CONTENT_EXPORT WebWorkerFetchContextImpl
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
       int request_id) override;
+  void SetIsOfflineMode(bool is_offline_mode) override;
 
   // blink::mojom::ServiceWorkerWorkerClient implementation:
   void OnControllerChanged(blink::mojom::ControllerServiceWorkerMode) override;

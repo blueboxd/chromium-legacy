@@ -828,7 +828,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // Note |virtual_time_domain_| is lazily created.
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;
 
-  base::Closure update_policy_closure_;
+  base::RepeatingClosure update_policy_closure_;
   DeadlineTaskRunner delayed_update_policy_runner_;
   CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
 

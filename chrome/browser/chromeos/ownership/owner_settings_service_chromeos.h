@@ -67,7 +67,7 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
 
   // ownership::OwnerSettingsService implementation:
   bool IsOwner() override;
-  void IsOwnerAsync(const IsOwnerCallback& callback) override;
+  void IsOwnerAsync(IsOwnerCallback callback) override;
   bool HandlesSetting(const std::string& setting) override;
   bool Set(const std::string& setting, const base::Value& value) override;
   bool AppendToList(const std::string& setting,
@@ -93,7 +93,7 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   static void IsOwnerForSafeModeAsync(
       const std::string& user_hash,
       const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util,
-      const IsOwnerCallback& callback);
+      IsOwnerCallback callback);
 
   // Assembles PolicyData based on |settings|, |policy_data|, |user_id| and
   // |pending_management_settings|. Applies local-owner policy fixups if needed.

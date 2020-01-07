@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/chrome_view_class_properties.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_colors.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
@@ -67,8 +68,12 @@ class TabCounterAnimator : public gfx::AnimationDelegate {
 
 class TabCounterUpdater : public TabStripModelObserver {
  public:
-  TabCounterUpdater(views::Button* button, views::Label* tab_counter)
-      : button_(button), tab_counter_(tab_counter), animator_(tab_counter) {}
+  TabCounterUpdater(views::Button* button,
+                    views::Label* tab_counter,
+                    views::View* tab_counter_container)
+      : button_(button),
+        tab_counter_(tab_counter),
+        animator_(tab_counter_container) {}
   ~TabCounterUpdater() override = default;
 
   void UpdateCounter(TabStripModel* model) {
@@ -113,6 +118,7 @@ class WebUITabCounterButton : public views::Button {
   std::unique_ptr<TabCounterUpdater> counter_updater_;
   views::InkDropContainerView* ink_drop_container_;
   views::Label* label_;
+  views::View* border_;
 };
 
 WebUITabCounterButton::WebUITabCounterButton(views::ButtonListener* listener)
@@ -137,7 +143,7 @@ void WebUITabCounterButton::UpdateColors() {
           : normal_text_color;
 
   label_->SetEnabledColor(current_text_color);
-  label_->SetBorder(views::CreateRoundedRectBorder(
+  border_->SetBorder(views::CreateRoundedRectBorder(
       2,
       views::LayoutProvider::Get()->GetCornerRadiusMetric(
           views::EMPHASIS_MEDIUM),
@@ -189,17 +195,22 @@ std::unique_ptr<views::View> CreateWebUITabCounterButton(
   tab_counter->ink_drop_container_ = ink_drop_container;
   ink_drop_container->SetBoundsRect(tab_counter->GetLocalBounds());
 
-  views::Label* label =
-      tab_counter->AddChildView(std::make_unique<views::Label>());
+  views::View* border =
+      tab_counter->AddChildView(std::make_unique<views::View>());
+  tab_counter->border_ = border;
+
+  views::Label* label = border->AddChildView(std::make_unique<views::Label>(
+      base::string16(), CONTEXT_WEB_UI_TAB_COUNTER));
   tab_counter->label_ = label;
 
-  constexpr int kDesiredBorderHeight = 18;
+  constexpr int kDesiredBorderHeight = 22;
   const int inset_height = (button_height - kDesiredBorderHeight) / 2;
-  label->SetBounds(inset_height, inset_height, kDesiredBorderHeight,
-                   kDesiredBorderHeight);
+  border->SetBounds(inset_height, inset_height, kDesiredBorderHeight,
+                    kDesiredBorderHeight);
+  label->SetBounds(0, 0, kDesiredBorderHeight, kDesiredBorderHeight);
 
   tab_counter->counter_updater_ =
-      std::make_unique<TabCounterUpdater>(tab_counter.get(), label);
+      std::make_unique<TabCounterUpdater>(tab_counter.get(), label, border);
   tab_strip_model->AddObserver(tab_counter->counter_updater_.get());
   tab_counter->counter_updater_->UpdateCounter(tab_strip_model);
 

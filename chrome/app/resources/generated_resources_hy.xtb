@@ -49,7 +49,6 @@
 <translation id="1056775291175587022">Ցանց չկա</translation>
 <translation id="1056898198331236512">Զգուշացում</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1060881073479695738">Play Խանութի հավելվածներ</translation>
 <translation id="1061745542578250838">«<ph name="FILE_NAME" />» ֆայլը պարունակում է գաղտնի բովանդակություն, ինչի պատճառով այն արգելափակվել է:</translation>
 <translation id="1061904396131502319">Շուտով ընդմիջման ժամն է</translation>
 <translation id="1067048845568873861">Ստեղծվել է</translation>
@@ -1570,6 +1569,7 @@
 <translation id="3172808215939929606">Այս էջը թարգմանվել է</translation>
 <translation id="3177909033752230686">Էջի լեզուն՝</translation>
 <translation id="3179982752812949580">Տեքստի տառատեսակը</translation>
+<translation id="3181825792072797598">Միացնել համաժամացումը</translation>
 <translation id="3181954750937456830">Անվտանգ դիտարկում (պաշտպանում է ձեզ և ձեր սարքը վտանգավոր կայքերից)</translation>
 <translation id="3182749001423093222">Ուղղագրության ստուգում</translation>
 <translation id="3183139917765991655">Պրոֆիլի ներմուծիչ</translation>
@@ -4657,6 +4657,7 @@
 <translation id="7684718995427157417">Հավելվածներ ստեղծելու և փորձարկելու համար միացրեք Android Debug Bridge-ը (ADB)։ Նկատի ունեցեք, որ այս գործողությունը թույլ է տալիս այն Android հավելվածների տեղադրումը, որոնք չեն ստուգվել Google-ի կողմից։ Դրա համար անհրաժեշտ է վերականգնել սարքի գործարանային կարգավորումները։</translation>
 <translation id="7685049629764448582">JavaScript հիշողություն</translation>
 <translation id="7685087414635069102">Պահանջվում է PIN կոդ</translation>
+<translation id="768549422429443215">Ավելացրեք լեզուներ կամ վերադասավորեք ցանկը։</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Հաստատեք նոր գաղտնաբառը</translation>
 <translation id="7690378713476594306">Ընտրել ցանկից</translation>

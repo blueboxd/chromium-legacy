@@ -2,6 +2,7 @@ Name: Android SDK
 URL: http://developer.android.com/sdk/index.html
 Version: 29
   Android SDK Build-tools 29.0.2
+  Android SDK Command-line Tools 1.0.0 rc1
   Android SDK Emulator 29.1.12
   Android SDK Platform-tools 29.0.5
   Android SDK Platform API 29
@@ -20,9 +21,7 @@ build, test and debug for Android.
 Local Modifications:
 
 - public/
-  - Included the Android support library and required extras packages.
   - Added extras/chromium/.
-  - Added build-tools/25.0.2/lib/dx.jar for //third_party/byte_buddy
 - public/tools-lint/
   - Go to go/studio-master-grid
   - Find the first green build under sdk_tools_linux
@@ -39,10 +38,11 @@ No other modifications has been made to the public Android SDK.
 Update Instructions:
 
 * public/tools/bin/sdkmanager --list  # Look for "Installed packages:"
+* For cmdline-tools run: sdkmanager --channel=3 'cmdline-tools;latest'
 * Prepare the CIPD yaml files for packages that need update and add them
   to android-sdk-packager buildbucket configuation file.
   Submit the changes into gerrit (See crrev.com/c/1803895 as a reference)
-* Wait till the builder android-sdk-packager create new CIPD packages
+* Wait until the builder android-sdk-packager creates new CIPD packages
 * Update //DEPS with InstanceIds from the CIPD
 * Update versions in this README.chromium.
-  * The overall Version field should corresponde to the Platform API version.
+  * The overall Version field should correspond to the Platform API version.

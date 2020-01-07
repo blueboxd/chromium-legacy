@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.MODEL_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.ModelType.MESSAGE;
+
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 
@@ -48,6 +51,7 @@ public class TabSuggestionMessageCardViewModel {
                 .with(MessageCardViewProperties.ACTION_TEXT, actionText)
                 .with(MessageCardViewProperties.DISMISS_BUTTON_CONTENT_DESCRIPTION,
                         dismissButtonContextDescription)
+                .with(MODEL_TYPE, MESSAGE)
                 .build();
     }
 

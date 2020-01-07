@@ -26,7 +26,6 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "ui/accessibility/accessibility_switches.h"
-#include "ui/base/ui_base_features.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -1574,10 +1573,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputDate) {
   RunHtmlTest(FILE_PATH_LITERAL("input-date.html"));
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
 // TODO(crbug.com/423675): AX tree is different for Win7 and Win10.
-// TODO(1038813): The /blink test pass is different on Windows and Mac, versus
-// Linux.
+#if defined(OS_WIN)
 #define MAYBE_AccessibilityInputDateWithPopupOpen \
   DISABLED_AccessibilityInputDateWithPopupOpen
 #else
@@ -1589,18 +1586,18 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("input-date-with-popup-open.html"));
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// TODO(1038813): The /blink test pass is different on Windows and Mac, versus
-// Linux.
-#define MAYBE_AccessibilityInputDateWithPopupOpenMultiple \
-  DISABLED_AccessibilityInputDateWithPopupOpenMultiple
+// The /blink test pass is different when run on Windows vs other OSs.
+// So separate into two different tests.
+#if defined(OS_WIN)
+#define AccessibilityInputDateWithPopupOpenMultiple_TestFile \
+  FILE_PATH_LITERAL("input-date-with-popup-open-multiple-for-win.html")
 #else
-#define MAYBE_AccessibilityInputDateWithPopupOpenMultiple \
-  AccessibilityInputDateWithPopupOpenMultiple
+#define AccessibilityInputDateWithPopupOpenMultiple_TestFile \
+  FILE_PATH_LITERAL("input-date-with-popup-open-multiple.html")
 #endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilityInputDateWithPopupOpenMultiple) {
-  RunHtmlTest(FILE_PATH_LITERAL("input-date-with-popup-open-multiple.html"));
+                       AccessibilityInputDateWithPopupOpenMultiple) {
+  RunHtmlTest(AccessibilityInputDateWithPopupOpenMultiple_TestFile);
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputDateTime) {

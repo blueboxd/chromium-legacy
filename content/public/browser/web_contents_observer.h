@@ -508,8 +508,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void AccessibilityLocationChangesReceived(
       const std::vector<AXLocationChangeNotificationDetails>& details) {}
 
-  // Invoked when theme color is changed to |theme_color|.
-  virtual void DidChangeThemeColor(base::Optional<SkColor> theme_color) {}
+  // Invoked when theme color is changed.
+  virtual void DidChangeThemeColor() {}
 
   // Called when a message is added to the console of the WebContents. This is
   // invoked before forwarding the message to the WebContents' delegate.

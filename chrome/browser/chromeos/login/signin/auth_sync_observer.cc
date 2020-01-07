@@ -9,7 +9,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -89,23 +88,9 @@ void AuthSyncObserver::HandleAuthError(
     const AccountId& account_id = user->GetAccountId();
     DCHECK(account_id.is_valid());
 
-    user_manager::User::OAuthTokenStatus old_status =
-        user->oauth_token_status();
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
         account_id, user_manager::User::OAUTH2_TOKEN_STATUS_INVALID);
     RecordReauthReason(account_id, ReauthReason::SYNC_FAILED);
-
-    if (user->GetType() == user_manager::USER_TYPE_SUPERVISED &&
-        old_status != user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) {
-      // Attempt to restore token from file.
-      ChromeUserManager::Get()
-          ->GetSupervisedUserManager()
-          ->LoadSupervisedUserToken(
-              profile_, base::Bind(&AuthSyncObserver::OnSupervisedTokenLoaded,
-                                   base::Unretained(this)));
-      base::RecordAction(
-          base::UserMetricsAction("ManagedUsers_Chromeos_Sync_Invalidated"));
-    }
   } else if (auth_error.state() == GoogleServiceAuthError::NONE) {
     if (user->oauth_token_status() ==
         user_manager::User::OAUTH2_TOKEN_STATUS_INVALID) {
@@ -119,11 +104,6 @@ void AuthSyncObserver::HandleAuthError(
       }
     }
   }
-}
-
-void AuthSyncObserver::OnSupervisedTokenLoaded(const std::string& token) {
-  ChromeUserManager::Get()->GetSupervisedUserManager()->ConfigureSyncWithToken(
-      profile_, token);
 }
 
 }  // namespace chromeos

@@ -510,7 +510,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   void ShelfItemStatusChanged(const ShelfID& id) override;
 
   // Overridden from ShellObserver:
-  void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  void OnShelfAlignmentChanged(aura::Window* root_window,
+                               ShelfAlignment old_alignment) override;
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
 
   // Shows a shelf context menu with the given |model|, or a default menu.

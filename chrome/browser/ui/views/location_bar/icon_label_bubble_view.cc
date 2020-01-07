@@ -77,6 +77,10 @@ void IconLabelBubbleView::SeparatorView::OnPaint(gfx::Canvas* canvas) {
                    gfx::PointF(x, GetLocalBounds().bottom()), separator_color);
 }
 
+void IconLabelBubbleView::SeparatorView::OnThemeChanged() {
+  SchedulePaint();
+}
+
 void IconLabelBubbleView::SeparatorView::UpdateOpacity() {
   if (!GetVisible())
     return;
@@ -181,10 +185,6 @@ void IconLabelBubbleView::SetLabel(const base::string16& label_text) {
   label()->SetText(label_text);
   separator_view_->SetVisible(ShouldShowSeparator());
   separator_view_->UpdateOpacity();
-}
-
-void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
-  LabelButton::SetImage(STATE_NORMAL, image_skia);
 }
 
 void IconLabelBubbleView::SetFontList(const gfx::FontList& font_list) {
@@ -392,6 +392,10 @@ void IconLabelBubbleView::OnTouchUiChanged() {
   // only call it when this view is showing.
   if (GetVisible())
     PreferredSizeChanged();
+}
+
+void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
+  LabelButton::SetImage(STATE_NORMAL, image_skia);
 }
 
 gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {

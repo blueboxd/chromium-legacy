@@ -260,8 +260,8 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
   // PeerConnectionFactory::CreateVideoTrack doesn't do reference counting.
   video_source_proxy_ =
       factory->CreateVideoTrackSourceProxy(video_source_.get());
-  video_track_ = factory->CreateLocalVideoTrack(track.Id().Utf8(),
-                                                video_source_proxy_.get());
+  video_track_ =
+      factory->CreateLocalVideoTrack(track.Id(), video_source_proxy_.get());
 
   video_track_->set_content_hint(
       ContentHintTypeToWebRtcContentHint(track.ContentHint()));

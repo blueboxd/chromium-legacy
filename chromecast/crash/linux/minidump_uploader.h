@@ -23,14 +23,14 @@ class CastSysInfo;
 class MinidumpUploader : public SynchronizedMinidumpManager {
  public:
   using PrefServiceGeneratorCallback =
-      base::Callback<std::unique_ptr<PrefService>()>;
+      base::OnceCallback<std::unique_ptr<PrefService>()>;
 
   // If |server_url| is empty, a default server url will be chosen.
   MinidumpUploader(CastSysInfo* sys_info, const std::string& server_url);
   MinidumpUploader(CastSysInfo* sys_info,
                    const std::string& server_url,
                    CastCrashdumpUploader* const uploader,
-                   const PrefServiceGeneratorCallback callback);
+                   PrefServiceGeneratorCallback callback);
   ~MinidumpUploader() override;
 
   // Attempts to upload all minidumps in the minidumps directory. Acquires a
@@ -69,7 +69,7 @@ class MinidumpUploader : public SynchronizedMinidumpManager {
 
   // Used for injecting mocks/inducing different behavior in unittests.
   CastCrashdumpUploader* const uploader_;
-  const PrefServiceGeneratorCallback pref_service_generator_;
+  PrefServiceGeneratorCallback pref_service_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(MinidumpUploader);
 };

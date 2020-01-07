@@ -49,7 +49,6 @@
 <translation id="1056775291175587022">कुनै पनि नेटवर्क छैन</translation>
 <translation id="1056898198331236512">चेतावनी</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1060881073479695738">Play Store का अनुप्रयोगहरू</translation>
 <translation id="1061745542578250838"><ph name="FILE_NAME" /> मा संवेदनशील सामग्री समावेश भएकाले यसलाई रोक लगाइएको छ।</translation>
 <translation id="1061904396131502319">विश्राम लिने समय हुनै लाग्यो</translation>
 <translation id="1067048845568873861">सिर्जना गरियो</translation>
@@ -1566,6 +1565,7 @@
 <translation id="3172808215939929606">यस पृष्ठलाई अनुवाद गरिएको छ</translation>
 <translation id="3177909033752230686">पृष्ठको भाषा:</translation>
 <translation id="3179982752812949580">पाठको फन्ट</translation>
+<translation id="3181825792072797598">सिंकलाई सक्रिय गर्नुहोस्</translation>
 <translation id="3181954750937456830">सुरक्षित ब्राउजिङ (तपाईं र तपाईंको यन्त्रलाई खतरनाक साइटहरूबाट सुरक्षित राख्छ)</translation>
 <translation id="3182749001423093222">हिज्जे जाँच</translation>
 <translation id="3183139917765991655">प्रोफाइल आयातकर्ता</translation>
@@ -4648,6 +4648,7 @@
 <translation id="7684718995427157417">आफ्ना अनुप्रयोगहरू बनाउन तथा परीक्षण गर्न Android Debug Bridge (ADB) सक्षम पार्नुहोस्। यस कारबाहीले Google ले प्रमाणीकरण नगरेका Android अनुप्रयोगहरू स्थापना गर्ने अनुमति दिन्छ र यसलाई असक्षम पार्न फ्याक्ट्री रिसेट गर्नु पर्ने हुन्छ भन्ने कुरामा ध्यान दिनुहोस्।</translation>
 <translation id="7685049629764448582">जाभास्क्रिप्ट स्मृ</translation>
 <translation id="7685087414635069102">पिन चाहिन्छ</translation>
+<translation id="768549422429443215">भाषाहरू थप्नुहोस् वा सूचीको क्रम मिलाउनुहोस्।</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">नयाँ पासवर्ड पुष्टि गर्नुहोस्</translation>
 <translation id="7690378713476594306">सूचीबाट छान्नुहोस्</translation>

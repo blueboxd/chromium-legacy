@@ -63,6 +63,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2112,7 +2113,8 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
   main_frame->NavigateWithError(
       std::move(common_params), CreateCommitNavigationParams(),
-      net::ERR_FILE_NOT_FOUND, "A suffusion of yellow.");
+      net::ERR_FILE_NOT_FOUND, net::ResolveErrorInfo(net::OK),
+      "A suffusion of yellow.");
 
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("", WebFrameContentDumper::DumpWebViewAsText(view()->GetWebView(),
@@ -2134,7 +2136,8 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
   main_frame->NavigateWithError(
       std::move(common_params), CreateCommitNavigationParams(),
-      net::ERR_FILE_NOT_FOUND, "A suffusion of yellow.");
+      net::ERR_FILE_NOT_FOUND, net::ResolveErrorInfo(net::OK),
+      "A suffusion of yellow.");
 
   // The error page itself is loaded asynchronously.
   FrameLoadWaiter(main_frame).Wait();

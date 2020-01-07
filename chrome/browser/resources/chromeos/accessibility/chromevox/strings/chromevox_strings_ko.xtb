@@ -31,7 +31,7 @@
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, 콤보 상자</translation>
 <translation id="1161762950103988776">점프</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, 메뉴 항목, 하위 메뉴 포함</translation>
-<translation id="1177863135347784049">맞춤</translation>
+<translation id="1177863135347784049">맞춤설정</translation>
 <translation id="1188858454923323853">상호 보완</translation>
 <translation id="1195238899008218998">후기</translation>
 <translation id="1197088940767939838">오렌지색</translation>
@@ -748,7 +748,7 @@
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">마지막 셀입니다.</translation>
 <translation id="6122013438240733403">btn</translation>
-<translation id="6129953537138746214">공백</translation>
+<translation id="6129953537138746214">Space</translation>
 <translation id="6132506484792346370">목록 상자 또는 콤보 상자</translation>
 <translation id="6142308968191113180">제목 4</translation>
 <translation id="6150023170003443621">옐로우 그린</translation>

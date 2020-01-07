@@ -55,16 +55,6 @@ void MockRenderWidgetHost::ExpectForceEnableZoom(bool enable) {
   EXPECT_EQ(enable, input_router->touch_action_filter_.force_enable_zoom_);
 }
 
-// Mocks out |renderer_compositor_frame_sink_| with a
-// CompositorFrameSinkClient bound to
-// |mock_renderer_compositor_frame_sink|.
-void MockRenderWidgetHost::SetMockRendererCompositorFrameSink(
-    viz::MockCompositorFrameSinkClient* mock_renderer_compositor_frame_sink) {
-  renderer_compositor_frame_sink_.reset();
-  renderer_compositor_frame_sink_.Bind(
-      mock_renderer_compositor_frame_sink->BindInterfaceRemote());
-}
-
 void MockRenderWidgetHost::SetupForInputRouterTest() {
   input_router_.reset(new MockInputRouter(this));
 }

@@ -163,9 +163,8 @@ public abstract class WebContentsObserver {
 
     /**
      * Called when the theme color was changed.
-     * @param color the new color in ARGB format
      */
-    public void didChangeThemeColor(int color) {}
+    public void didChangeThemeColor() {}
 
     /**
      * Called when the Web Contents leaves or enters fullscreen mode.

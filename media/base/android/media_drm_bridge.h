@@ -147,8 +147,8 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   //
   // Note: RegisterPlayer() should be called before SetMediaCryptoReadyCB() to
   // avoid missing any new key notifications.
-  int RegisterPlayer(const base::Closure& new_key_cb,
-                     const base::Closure& cdm_unset_cb) override;
+  int RegisterPlayer(base::RepeatingClosure new_key_cb,
+                     base::RepeatingClosure cdm_unset_cb) override;
   void UnregisterPlayer(int registration_id) override;
 
   // Helper function to determine whether a secure decoder is required for the

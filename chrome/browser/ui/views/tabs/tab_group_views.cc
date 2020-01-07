@@ -16,10 +16,12 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "components/tab_groups/tab_group_color.h"
+#include "components/tab_groups/tab_group_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
-TabGroupViews::TabGroupViews(TabStrip* tab_strip, tab_groups::TabGroupId group)
+TabGroupViews::TabGroupViews(TabStrip* tab_strip,
+                             const tab_groups::TabGroupId& group)
     : tab_strip_(tab_strip), group_(group) {
   header_ = std::make_unique<TabGroupHeader>(tab_strip_, group_);
   header_->set_owned_by_client();
@@ -88,8 +90,4 @@ SkColor TabGroupViews::GetGroupBackgroundColor() const {
   return SkColorSetA(active_color, gfx::Tween::IntValueBetween(
                                        TabStyle::kSelectedTabOpacity,
                                        SK_AlphaTRANSPARENT, SK_AlphaOPAQUE));
-}
-
-bool TabGroupViews::ShouldPaintGroupBackground() const {
-  return header_->dragging();
 }

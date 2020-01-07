@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
-#include "extensions/browser/api/declarative_net_request/action_tracker.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
@@ -19,7 +18,7 @@ namespace extensions {
 namespace declarative_net_request {
 namespace flat_rule = url_pattern_index::flat;
 using PageAccess = PermissionsData::PageAccess;
-using RedirectActionInfo = CompositeMatcher::RedirectActionInfo;
+using ActionInfo = CompositeMatcher::ActionInfo;
 
 namespace {
 
@@ -47,23 +46,18 @@ bool AreSortedPrioritiesUnique(const CompositeMatcher::MatcherList& matchers) {
 
 }  // namespace
 
-RedirectActionInfo::RedirectActionInfo(base::Optional<RequestAction> action,
-                                       bool notify_request_withheld)
+ActionInfo::ActionInfo(base::Optional<RequestAction> action,
+                       bool notify_request_withheld)
     : action(std::move(action)),
-      notify_request_withheld(notify_request_withheld) {
-  if (action)
-    DCHECK_EQ(RequestAction::Type::REDIRECT, action->type);
-}
+      notify_request_withheld(notify_request_withheld) {}
 
-RedirectActionInfo::~RedirectActionInfo() = default;
+ActionInfo::~ActionInfo() = default;
 
-RedirectActionInfo::RedirectActionInfo(RedirectActionInfo&&) = default;
-RedirectActionInfo& RedirectActionInfo::operator=(RedirectActionInfo&& other) =
-    default;
+ActionInfo::ActionInfo(ActionInfo&&) = default;
+ActionInfo& ActionInfo::operator=(ActionInfo&& other) = default;
 
-CompositeMatcher::CompositeMatcher(MatcherList matchers,
-                                   ActionTracker* action_tracker)
-    : matchers_(std::move(matchers)), action_tracker_(action_tracker) {
+CompositeMatcher::CompositeMatcher(MatcherList matchers)
+    : matchers_(std::move(matchers)) {
   SortMatchersByPriority();
   DCHECK(AreIDsUnique(matchers_));
 }
@@ -95,66 +89,38 @@ void CompositeMatcher::AddOrUpdateRuleset(
   has_any_extra_headers_matcher_.reset();
 }
 
-base::Optional<RequestAction> CompositeMatcher::GetBlockOrCollapseAction(
-    const RequestParams& params) const {
-  // TODO(karandeepb): change this to report time in micro-seconds.
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Extensions.DeclarativeNetRequest.ShouldBlockRequestTime."
-      "SingleExtension");
-
-  for (const auto& matcher : matchers_) {
-    if (HasAllowAction(*matcher, params))
-      return base::nullopt;
-
-    base::Optional<RequestAction> action =
-        matcher->GetBlockOrCollapseAction(params);
-    if (action)
-      return action;
-  }
-
-  return base::nullopt;
-}
-
-RedirectActionInfo CompositeMatcher::GetRedirectAction(
+ActionInfo CompositeMatcher::GetBeforeRequestAction(
     const RequestParams& params,
     PageAccess page_access) const {
   // TODO(karandeepb): change this to report time in micro-seconds.
   SCOPED_UMA_HISTOGRAM_TIMER(
-      "Extensions.DeclarativeNetRequest.ShouldRedirectRequestTime."
+      "Extensions.DeclarativeNetRequest.EvaluateBeforeRequestTime."
       "SingleExtension");
 
   bool notify_request_withheld = false;
   for (const auto& matcher : matchers_) {
-    if (HasAllowAction(*matcher, params)) {
-      return RedirectActionInfo(base::nullopt /* action */,
-                                false /* notify_request_withheld */);
+    base::Optional<RequestAction> action =
+        matcher->GetBeforeRequestAction(params);
+    params.allow_rule_cache[matcher.get()] =
+        action && action->type == RequestAction::Type::ALLOW;
+
+    if (action && action->type == RequestAction::Type::REDIRECT) {
+      // Redirecting requires host permissions.
+      // TODO(crbug.com/1033780): returning base::nullopt here results in
+      // counterintuitive behavior.
+      if (page_access == PageAccess::kDenied) {
+        action = base::nullopt;
+      } else if (page_access == PageAccess::kWithheld) {
+        action = base::nullopt;
+        notify_request_withheld = true;
+      }
     }
 
-    if (page_access == PageAccess::kAllowed) {
-      base::Optional<RequestAction> action =
-          matcher->GetRedirectOrUpgradeActionByPriority(params);
-      if (!action)
-        continue;
-
-      return RedirectActionInfo(std::move(action),
-                                false /* notify_request_withheld */);
-    }
-
-    // If the extension has no host permissions for the request, it can still
-    // upgrade the request.
-    base::Optional<RequestAction> upgrade_action =
-        matcher->GetUpgradeAction(params);
-    if (upgrade_action) {
-      return RedirectActionInfo(std::move(upgrade_action),
-                                false /* notify_request_withheld */);
-    }
-
-    notify_request_withheld |= (page_access == PageAccess::kWithheld &&
-                                matcher->GetRedirectAction(params));
+    if (action)
+      return ActionInfo(std::move(action), false);
   }
 
-  return RedirectActionInfo(base::nullopt /* action */,
-                            notify_request_withheld);
+  return ActionInfo(base::nullopt, notify_request_withheld);
 }
 
 uint8_t CompositeMatcher::GetRemoveHeadersMask(
@@ -163,9 +129,19 @@ uint8_t CompositeMatcher::GetRemoveHeadersMask(
     std::vector<RequestAction>* remove_headers_actions) const {
   uint8_t mask = 0;
   for (const auto& matcher : matchers_) {
-    // The allow rule will override lower priority remove header rules.
-    if (HasAllowAction(*matcher, params))
+    // An allow rule will override lower priority remove header rules.
+    if (!params.allow_rule_cache.contains(matcher.get())) {
+      // GetBeforeRequestAction is normally called before GetRemoveHeadersMask,
+      // so this should never happen in non-test builds. There are tests that
+      // call GetRemoveHeadersMask directly, though.
+      base::Optional<RequestAction> action =
+          matcher->GetBeforeRequestAction(params);
+      params.allow_rule_cache[matcher.get()] =
+          action && action->type == RequestAction::Type::ALLOW;
+    }
+    if (params.allow_rule_cache[matcher.get()])
       return mask;
+
     mask |= matcher->GetRemoveHeadersMask(
         params, mask | excluded_remove_headers_mask, remove_headers_actions);
   }
@@ -195,22 +171,6 @@ void CompositeMatcher::SortMatchersByPriority() {
               return a->priority() > b->priority();
             });
   DCHECK(AreSortedPrioritiesUnique(matchers_));
-}
-
-bool CompositeMatcher::HasAllowAction(const RulesetMatcher& matcher,
-                                      const RequestParams& params) const {
-  if (!params.allow_rule_cache.contains(&matcher)) {
-    base::Optional<RequestAction> allow_action = matcher.GetAllowAction(params);
-    params.allow_rule_cache[&matcher] = allow_action.has_value();
-
-    // OnRuleMatched is called only once, when the allow action is entered into
-    // the cache. This is done because an allow rule might override an action
-    // multiple times during a request and extraneous matches should be ignored.
-    if (allow_action && action_tracker_ && params.request_info)
-      action_tracker_->OnRuleMatched(*allow_action, *params.request_info);
-  }
-
-  return params.allow_rule_cache[&matcher];
 }
 
 }  // namespace declarative_net_request

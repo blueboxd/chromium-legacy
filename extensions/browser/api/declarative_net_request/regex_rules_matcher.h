@@ -56,13 +56,7 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
 
   // RulesetMatcherBase override:
   ~RegexRulesMatcher() override;
-  base::Optional<RequestAction> GetBlockOrCollapseAction(
-      const RequestParams& params) const override;
-  base::Optional<RequestAction> GetAllowAction(
-      const RequestParams& params) const override;
-  base::Optional<RequestAction> GetRedirectAction(
-      const RequestParams& params) const override;
-  base::Optional<RequestAction> GetUpgradeAction(
+  base::Optional<RequestAction> GetBeforeRequestAction(
       const RequestParams& params) const override;
   uint8_t GetRemoveHeadersMask(
       const RequestParams& params,
@@ -76,18 +70,17 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
   // Helper to build the necessary data structures for matching.
   void InitializeMatcher();
 
-  // Returns the highest priority matching rule for the given request |params|
-  // and action |type|, or null if no rules match.
-  const RegexRuleInfo* GetHighestPriorityMatchingRule(
-      const RequestParams& params,
-      flat::ActionType type) const;
-
   // Returns the potentially matching rules for the given request. A potentially
   // matching rule is one whose metadata matches the given request |params| and
   // which is not ruled out as a potential match by the |filtered_re2_| object.
   // Note: The returned vector is sorted in descending order of rule priority.
   const std::vector<RegexRuleInfo>& GetPotentialMatches(
       const RequestParams& params) const;
+
+  // Returns a RequestAction for the the given regex substitution rule.
+  base::Optional<RequestAction> CreateRegexSubstitutionRedirectAction(
+      const RequestParams& params,
+      const RegexRuleInfo& info) const;
 
   // Pointers to flatbuffer indexed data. Guaranteed to be valid through the
   // lifetime of the object.

@@ -49,7 +49,7 @@ scoped_refptr<ExtendedAuthenticatorImpl> ExtendedAuthenticatorImpl::Create(
     NewAuthStatusConsumer* consumer) {
   auto extended_authenticator =
       base::WrapRefCounted(new ExtendedAuthenticatorImpl(consumer));
-  SystemSaltGetter::Get()->GetSystemSalt(base::Bind(
+  SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
       &ExtendedAuthenticatorImpl::OnSaltObtained, extended_authenticator));
   return extended_authenticator;
 }
@@ -59,7 +59,7 @@ scoped_refptr<ExtendedAuthenticatorImpl> ExtendedAuthenticatorImpl::Create(
     AuthStatusConsumer* consumer) {
   auto extended_authenticator =
       base::WrapRefCounted(new ExtendedAuthenticatorImpl(consumer));
-  SystemSaltGetter::Get()->GetSystemSalt(base::Bind(
+  SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
       &ExtendedAuthenticatorImpl::OnSaltObtained, extended_authenticator));
   return extended_authenticator;
 }
@@ -80,78 +80,67 @@ void ExtendedAuthenticatorImpl::SetConsumer(AuthStatusConsumer* consumer) {
 
 void ExtendedAuthenticatorImpl::AuthenticateToMount(
     const UserContext& context,
-    const ResultCallback& success_callback) {
+    ResultCallback success_callback) {
   TransformKeyIfNeeded(
-      context,
-      base::Bind(&ExtendedAuthenticatorImpl::DoAuthenticateToMount,
-                 this,
-                 success_callback));
+      context, base::BindOnce(&ExtendedAuthenticatorImpl::DoAuthenticateToMount,
+                              this, std::move(success_callback)));
 }
 
 void ExtendedAuthenticatorImpl::AuthenticateToCheck(
     const UserContext& context,
-    const base::Closure& success_callback) {
+    base::OnceClosure success_callback) {
   TransformKeyIfNeeded(
-      context,
-      base::Bind(&ExtendedAuthenticatorImpl::DoAuthenticateToCheck,
-                 this,
-                 success_callback));
+      context, base::BindOnce(&ExtendedAuthenticatorImpl::DoAuthenticateToCheck,
+                              this, std::move(success_callback)));
 }
 
 void ExtendedAuthenticatorImpl::AddKey(const UserContext& context,
                                        const cryptohome::KeyDefinition& key,
                                        bool clobber_if_exists,
-                                       const base::Closure& success_callback) {
+                                       base::OnceClosure success_callback) {
   TransformKeyIfNeeded(
-      context, base::Bind(&ExtendedAuthenticatorImpl::DoAddKey, this, key,
-                          clobber_if_exists, success_callback));
+      context, base::BindOnce(&ExtendedAuthenticatorImpl::DoAddKey, this, key,
+                              clobber_if_exists, std::move(success_callback)));
 }
 
 void ExtendedAuthenticatorImpl::UpdateKeyAuthorized(
     const UserContext& context,
     const cryptohome::KeyDefinition& key,
     const std::string& signature,
-    const base::Closure& success_callback) {
+    base::OnceClosure success_callback) {
   TransformKeyIfNeeded(
       context,
-      base::Bind(&ExtendedAuthenticatorImpl::DoUpdateKeyAuthorized,
-                 this,
-                 key,
-                 signature,
-                 success_callback));
+      base::BindOnce(&ExtendedAuthenticatorImpl::DoUpdateKeyAuthorized, this,
+                     key, signature, std::move(success_callback)));
 }
 
 void ExtendedAuthenticatorImpl::RemoveKey(const UserContext& context,
-                                      const std::string& key_to_remove,
-                                      const base::Closure& success_callback) {
-  TransformKeyIfNeeded(context,
-                       base::Bind(&ExtendedAuthenticatorImpl::DoRemoveKey,
-                                  this,
-                                  key_to_remove,
-                                  success_callback));
+                                          const std::string& key_to_remove,
+                                          base::OnceClosure success_callback) {
+  TransformKeyIfNeeded(
+      context, base::BindOnce(&ExtendedAuthenticatorImpl::DoRemoveKey, this,
+                              key_to_remove, std::move(success_callback)));
 }
 
 void ExtendedAuthenticatorImpl::TransformKeyIfNeeded(
     const UserContext& user_context,
-    const ContextCallback& callback) {
+    ContextCallback callback) {
   if (user_context.GetKey()->GetKeyType() != Key::KEY_TYPE_PASSWORD_PLAIN) {
-    callback.Run(user_context);
+    std::move(callback).Run(user_context);
     return;
   }
 
   if (!salt_obtained_) {
     system_salt_callbacks_.push_back(
-        base::Bind(&ExtendedAuthenticatorImpl::TransformKeyIfNeeded,
-                   this,
-                   user_context,
-                   callback));
+        base::BindOnce(&ExtendedAuthenticatorImpl::TransformKeyIfNeeded, this,
+                       user_context, std::move(callback)));
     return;
   }
 
   UserContext transformed_context = user_context;
   transformed_context.GetKey()->Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
                                           system_salt_);
-  callback.Run(transformed_context);
+  std::move(callback).Run(transformed_context);
 }
 
 ExtendedAuthenticatorImpl::~ExtendedAuthenticatorImpl() = default;
@@ -159,17 +148,13 @@ ExtendedAuthenticatorImpl::~ExtendedAuthenticatorImpl() = default;
 void ExtendedAuthenticatorImpl::OnSaltObtained(const std::string& system_salt) {
   salt_obtained_ = true;
   system_salt_ = system_salt;
-  for (std::vector<base::Closure>::const_iterator it =
-           system_salt_callbacks_.begin();
-       it != system_salt_callbacks_.end();
-       ++it) {
-    it->Run();
-  }
+  for (auto& callback : system_salt_callbacks_)
+    std::move(callback).Run();
   system_salt_callbacks_.clear();
 }
 
 void ExtendedAuthenticatorImpl::DoAuthenticateToMount(
-    const ResultCallback& success_callback,
+    ResultCallback success_callback,
     const UserContext& user_context) {
   RecordStartMarker("MountEx");
   const Key* const key = user_context.GetKey();
@@ -179,11 +164,11 @@ void ExtendedAuthenticatorImpl::DoAuthenticateToMount(
       cryptohome::CreateAuthorizationRequest(key->GetLabel(), key->GetSecret()),
       cryptohome::MountRequest(),
       base::BindOnce(&ExtendedAuthenticatorImpl::OnMountComplete, this,
-                     "MountEx", user_context, success_callback));
+                     "MountEx", user_context, std::move(success_callback)));
 }
 
 void ExtendedAuthenticatorImpl::DoAuthenticateToCheck(
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     const UserContext& user_context) {
   RecordStartMarker("CheckKeyEx");
   cryptohome::HomedirMethods::GetInstance()->CheckKeyEx(
@@ -192,13 +177,13 @@ void ExtendedAuthenticatorImpl::DoAuthenticateToCheck(
           cryptohome_parameter_utils::CreateAuthorizationKeyDefFromUserContext(
               user_context)),
       cryptohome::CheckKeyRequest(),
-      base::Bind(&ExtendedAuthenticatorImpl::OnOperationComplete, this,
-                 "CheckKeyEx", user_context, success_callback));
+      base::BindOnce(&ExtendedAuthenticatorImpl::OnOperationComplete, this,
+                     "CheckKeyEx", user_context, std::move(success_callback)));
 }
 
 void ExtendedAuthenticatorImpl::DoAddKey(const cryptohome::KeyDefinition& key,
                                          bool clobber_if_exists,
-                                         const base::Closure& success_callback,
+                                         base::OnceClosure success_callback,
                                          const UserContext& user_context) {
   RecordStartMarker("AddKeyEx");
 
@@ -211,14 +196,14 @@ void ExtendedAuthenticatorImpl::DoAddKey(const cryptohome::KeyDefinition& key,
       cryptohome::CreateAuthorizationRequest(auth_key->GetLabel(),
                                              auth_key->GetSecret()),
       request,
-      base::Bind(&ExtendedAuthenticatorImpl::OnOperationComplete, this,
-                 "AddKeyEx", user_context, success_callback));
+      base::BindOnce(&ExtendedAuthenticatorImpl::OnOperationComplete, this,
+                     "AddKeyEx", user_context, std::move(success_callback)));
 }
 
 void ExtendedAuthenticatorImpl::DoUpdateKeyAuthorized(
     const cryptohome::KeyDefinition& key,
     const std::string& signature,
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     const UserContext& user_context) {
   RecordStartMarker("UpdateKeyAuthorized");
 
@@ -231,13 +216,14 @@ void ExtendedAuthenticatorImpl::DoUpdateKeyAuthorized(
       cryptohome::CreateAuthorizationRequest(auth_key->GetLabel(),
                                              auth_key->GetSecret()),
       request,
-      base::Bind(&ExtendedAuthenticatorImpl::OnOperationComplete, this,
-                 "UpdateKeyAuthorized", user_context, success_callback));
+      base::BindOnce(&ExtendedAuthenticatorImpl::OnOperationComplete, this,
+                     "UpdateKeyAuthorized", user_context,
+                     std::move(success_callback)));
 }
 
 void ExtendedAuthenticatorImpl::DoRemoveKey(const std::string& key_to_remove,
-                                        const base::Closure& success_callback,
-                                        const UserContext& user_context) {
+                                            base::OnceClosure success_callback,
+                                            const UserContext& user_context) {
   RecordStartMarker("RemoveKeyEx");
 
   cryptohome::RemoveKeyRequest request;
@@ -248,14 +234,14 @@ void ExtendedAuthenticatorImpl::DoRemoveKey(const std::string& key_to_remove,
       cryptohome::CreateAuthorizationRequest(auth_key->GetLabel(),
                                              auth_key->GetSecret()),
       request,
-      base::Bind(&ExtendedAuthenticatorImpl::OnOperationComplete, this,
-                 "RemoveKeyEx", user_context, success_callback));
+      base::BindOnce(&ExtendedAuthenticatorImpl::OnOperationComplete, this,
+                     "RemoveKeyEx", user_context, std::move(success_callback)));
 }
 
 void ExtendedAuthenticatorImpl::OnMountComplete(
     const std::string& time_marker,
     const UserContext& user_context,
-    const ResultCallback& success_callback,
+    ResultCallback success_callback,
     base::Optional<cryptohome::BaseReply> reply) {
   cryptohome::MountError return_code =
       cryptohome::MountExReplyToMountError(reply);
@@ -263,8 +249,8 @@ void ExtendedAuthenticatorImpl::OnMountComplete(
   if (return_code == cryptohome::MOUNT_ERROR_NONE) {
     const std::string& mount_hash =
         cryptohome::MountExReplyToMountHash(reply.value());
-    if (!success_callback.is_null())
-      success_callback.Run(mount_hash);
+    if (success_callback)
+      std::move(success_callback).Run(mount_hash);
     if (old_consumer_) {
       UserContext copy = user_context;
       copy.SetUserIDHash(mount_hash);
@@ -294,13 +280,13 @@ void ExtendedAuthenticatorImpl::OnMountComplete(
 void ExtendedAuthenticatorImpl::OnOperationComplete(
     const std::string& time_marker,
     const UserContext& user_context,
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     bool success,
     cryptohome::MountError return_code) {
   RecordEndMarker(time_marker);
   if (return_code == cryptohome::MOUNT_ERROR_NONE) {
-    if (!success_callback.is_null())
-      success_callback.Run();
+    if (success_callback)
+      std::move(success_callback).Run();
     if (old_consumer_)
       old_consumer_->OnAuthSuccess(user_context);
     return;

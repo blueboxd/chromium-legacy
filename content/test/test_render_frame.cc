@@ -259,6 +259,7 @@ void TestRenderFrame::NavigateWithError(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
     int error_code,
+    const net::ResolveErrorInfo& resolve_error_info,
     const base::Optional<std::string>& error_page_content) {
   mock_navigation_client_.reset();
   BindNavigationClient(
@@ -266,8 +267,8 @@ void TestRenderFrame::NavigateWithError(
           .BindNewEndpointAndPassDedicatedReceiverForTesting());
   mock_navigation_client_->CommitFailedNavigation(
       std::move(common_params), std::move(commit_params),
-      false /* has_stale_copy_in_cache */, error_code, error_page_content,
-      nullptr,
+      false /* has_stale_copy_in_cache */, error_code, resolve_error_info,
+      error_page_content, nullptr,
       base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
                      base::Unretained(mock_frame_host_.get())));
 }

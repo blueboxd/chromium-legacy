@@ -9,8 +9,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
-#include "chrome/browser/metrics/perf/heap_collector.h"
 #include "chrome/browser/metrics/perf/metric_provider.h"
 #include "chrome/browser/metrics/perf/perf_events_collector.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
@@ -74,19 +72,6 @@ ProfileProvider::~ProfileProvider() {
 }
 
 void ProfileProvider::Init() {
-#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-  if (base::FeatureList::IsEnabled(heap_profiling::kOOPHeapProfilingFeature)) {
-    HeapCollectionMode mode = HeapCollector::CollectionModeFromString(
-        base::GetFieldTrialParamValueByFeature(
-            heap_profiling::kOOPHeapProfilingFeature,
-            heap_profiling::kOOPHeapProfilingFeatureMode));
-    if (mode != HeapCollectionMode::kNone) {
-      collectors_.push_back(std::make_unique<MetricProvider>(
-          std::make_unique<HeapCollector>(mode)));
-    }
-  }
-#endif
-
   for (auto& collector : collectors_) {
     collector->Init();
   }

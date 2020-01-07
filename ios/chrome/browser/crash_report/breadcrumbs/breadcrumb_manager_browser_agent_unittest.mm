@@ -30,7 +30,7 @@ class BreadcrumbManagerBrowserAgentTest : public PlatformTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     browser_state_ = test_cbs_builder.Build();
 
-    breadcrumb_manager_ = static_cast<BreadcrumbManagerKeyedService*>(
+    breadcrumb_service_ = static_cast<BreadcrumbManagerKeyedService*>(
         BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
             browser_state_.get()));
   }
@@ -40,13 +40,13 @@ class BreadcrumbManagerBrowserAgentTest : public PlatformTest {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;
-  BreadcrumbManagerKeyedService* breadcrumb_manager_;
+  BreadcrumbManagerKeyedService* breadcrumb_service_;
 };
 
 // Tests that an event logged by the BrowserAgent is returned with events for
 // the associated |browser_state_|.
 TEST_F(BreadcrumbManagerBrowserAgentTest, LogEvent) {
-  ASSERT_EQ(0ul, breadcrumb_manager_->GetEvents(0).size());
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
 
   // Create and setup Browser.
   WebStateList web_state_list(&web_state_list_delegate_);
@@ -63,14 +63,14 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, LogEvent) {
       /*index=*/0, std::move(web_state),
       WebStateList::InsertionFlags::INSERT_NO_FLAGS, WebStateOpener());
 
-  EXPECT_EQ(1ul, breadcrumb_manager_->GetEvents(0).size());
+  EXPECT_EQ(1ul, breadcrumb_service_->GetEvents(0).size());
 }
 
 // Tests that events logged through BrowserAgents associated with different
 // Browser instances are returned with events for the associated
 // |browser_state_| and are uniquely identifiable.
 TEST_F(BreadcrumbManagerBrowserAgentTest, MultipleBrowsers) {
-  ASSERT_EQ(0ul, breadcrumb_manager_->GetEvents(0).size());
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
 
   // Create and setup Browser.
   WebStateList web_state_list(&web_state_list_delegate_);
@@ -101,7 +101,7 @@ TEST_F(BreadcrumbManagerBrowserAgentTest, MultipleBrowsers) {
       /*index=*/0, std::move(web_state2),
       WebStateList::InsertionFlags::INSERT_NO_FLAGS, WebStateOpener());
 
-  std::list<std::string> events = breadcrumb_manager_->GetEvents(0);
+  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
   EXPECT_EQ(2ul, events.size());
 
   // Seperately compare the start and end of the event strings to ensure

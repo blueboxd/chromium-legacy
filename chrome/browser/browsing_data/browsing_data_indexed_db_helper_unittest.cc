@@ -4,10 +4,12 @@
 
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,9 +18,8 @@ namespace {
 
 class CannedBrowsingDataIndexedDBHelperTest : public testing::Test {
  public:
-  content::IndexedDBContext* IndexedDBContext() {
-    return content::BrowserContext::GetDefaultStoragePartition(&profile_)->
-        GetIndexedDBContext();
+  content::StoragePartition* StoragePartition() {
+    return content::BrowserContext::GetDefaultStoragePartition(&profile_);
   }
 
  private:
@@ -29,7 +30,7 @@ class CannedBrowsingDataIndexedDBHelperTest : public testing::Test {
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, Empty) {
   const GURL origin("http://host1:1/");
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
-      new CannedBrowsingDataIndexedDBHelper(IndexedDBContext()));
+      new CannedBrowsingDataIndexedDBHelper(StoragePartition()));
 
   ASSERT_TRUE(helper->empty());
   helper->Add(url::Origin::Create(origin));
@@ -43,7 +44,7 @@ TEST_F(CannedBrowsingDataIndexedDBHelperTest, Delete) {
   const GURL origin2("http://example.com");
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
-      new CannedBrowsingDataIndexedDBHelper(IndexedDBContext()));
+      new CannedBrowsingDataIndexedDBHelper(StoragePartition()));
 
   EXPECT_TRUE(helper->empty());
   helper->Add(url::Origin::Create(origin1));
@@ -51,6 +52,12 @@ TEST_F(CannedBrowsingDataIndexedDBHelperTest, Delete) {
   EXPECT_EQ(2u, helper->GetCount());
   helper->DeleteIndexedDB(origin2);
   EXPECT_EQ(1u, helper->GetCount());
+
+  // TODO(dmurph): Remove this once Delete is mojo-ified as well.
+  base::RunLoop loop;
+  StoragePartition()->GetIndexedDBContext()->IDBTaskRunner()->PostTask(
+      FROM_HERE, loop.QuitClosure());
+  loop.Run();
 }
 
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, IgnoreExtensionsAndDevTools) {
@@ -58,7 +65,7 @@ TEST_F(CannedBrowsingDataIndexedDBHelperTest, IgnoreExtensionsAndDevTools) {
   const GURL origin2("devtools://abcdefghijklmnopqrstuvwxyz/");
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
-      new CannedBrowsingDataIndexedDBHelper(IndexedDBContext()));
+      new CannedBrowsingDataIndexedDBHelper(StoragePartition()));
 
   ASSERT_TRUE(helper->empty());
   helper->Add(url::Origin::Create(origin1));

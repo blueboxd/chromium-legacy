@@ -20,7 +20,7 @@ class MinidumpGenerator;
 // directory.
 class MinidumpWriter : public SynchronizedMinidumpManager {
  public:
-  typedef base::Callback<int(const std::string&)> DumpStateCallback;
+  using DumpStateCallback = base::OnceCallback<int(const std::string&)>;
 
   // Constructs a writer for a minidump. If |minidump_filename| is absolute, it
   // must be a path to a file in the |dump_path_| directory. Otherwise, it
@@ -33,7 +33,7 @@ class MinidumpWriter : public SynchronizedMinidumpManager {
   MinidumpWriter(MinidumpGenerator* minidump_generator,
                  const std::string& minidump_filename,
                  const MinidumpParams& params,
-                 const base::Callback<int(const std::string&)>& dump_state_cb);
+                 DumpStateCallback dump_state_cb);
 
   // Like the constructor above, but the default implementation of
   // |dump_state_cb_| is used inside DoWork().

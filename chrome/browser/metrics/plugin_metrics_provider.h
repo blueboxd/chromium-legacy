@@ -37,7 +37,7 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
   ~PluginMetricsProvider() override;
 
   // metrics::MetricsDataProvider:
-  void AsyncInit(const base::Closure& done_callback) override;
+  void AsyncInit(base::OnceClosure done_callback) override;
   void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
   void ProvideStabilityMetrics(
@@ -67,7 +67,7 @@ class PluginMetricsProvider : public metrics::MetricsProvider,
   struct ChildProcessStats;
 
   // Receives the plugin list from the PluginService and calls |done_callback|.
-  void OnGotPlugins(const base::Closure& done_callback,
+  void OnGotPlugins(base::OnceClosure done_callback,
                     const std::vector<content::WebPluginInfo>& plugins);
 
   // Returns reference to ChildProcessStats corresponding to |data|.

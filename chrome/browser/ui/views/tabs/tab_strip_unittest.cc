@@ -1230,13 +1230,6 @@ TEST_P(TabStripTest, GroupHighlightBasics) {
   std::vector<TabGroupViews*> views = ListGroupViews();
   EXPECT_EQ(1u, views.size());
 
-  // Highlights should not be painted by default.
-  EXPECT_FALSE(views[0]->ShouldPaintGroupBackground());
-
-  // Highlights should be painted when the group header is dragging.
-  views[0]->header()->set_dragging(true);
-  EXPECT_TRUE(views[0]->ShouldPaintGroupBackground());
-
   // The highlight bounds match the group view bounds. Grab this manually
   // here, since there isn't a real paint cycle to trigger OnPaint().
   gfx::Rect bounds = views[0]->GetBounds();

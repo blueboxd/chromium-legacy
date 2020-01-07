@@ -211,11 +211,9 @@ void WebContentsObserverProxy::DidDetachInterstitialPage() {
   Java_WebContentsObserverProxy_didDetachInterstitialPage(env, java_observer_);
 }
 
-void WebContentsObserverProxy::DidChangeThemeColor(
-    base::Optional<SkColor> color) {
+void WebContentsObserverProxy::DidChangeThemeColor() {
   JNIEnv* env = AttachCurrentThread();
-  Java_WebContentsObserverProxy_didChangeThemeColor(
-      env, java_observer_, color.value_or(SK_ColorTRANSPARENT));
+  Java_WebContentsObserverProxy_didChangeThemeColor(env, java_observer_);
 }
 
 void WebContentsObserverProxy::MediaEffectivelyFullscreenChanged(

@@ -241,7 +241,7 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
   css_property_filter_ = std::make_unique<CSSPropertyFilter>();
   // Look up the CSSPropertyIDs for each entry in |computed_styles|.
   for (String& entry : *computed_styles) {
-    CSSPropertyID property_id = cssPropertyID(entry);
+    CSSPropertyID property_id = cssPropertyID(main_document, entry);
     if (property_id == CSSPropertyID::kInvalid)
       continue;
     css_property_filter_->emplace_back(std::move(entry),

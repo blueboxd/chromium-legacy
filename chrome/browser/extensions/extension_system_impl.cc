@@ -460,7 +460,7 @@ bool ExtensionSystemImpl::FinishDelayedInstallationIfReady(
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
     const Extension* extension,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   base::Time install_time;
   if (extension->location() != Manifest::COMPONENT) {
     install_time = ExtensionPrefs::Get(profile_)->
@@ -482,7 +482,7 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
       base::BindOnce(&InfoMap::AddExtension, info_map(),
                      base::RetainedRef(extension), install_time,
                      incognito_enabled, notifications_disabled),
-      callback);
+      std::move(callback));
 }
 
 void ExtensionSystemImpl::UnregisterExtensionWithRequestContexts(

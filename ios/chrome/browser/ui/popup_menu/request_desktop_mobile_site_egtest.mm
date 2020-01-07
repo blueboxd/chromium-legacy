@@ -32,7 +32,7 @@ const char kDesktopSiteLabel[] = "Desktop";
 
 // Custom timeout used when waiting for a web state after requesting desktop
 // or mobile mode.
-const NSTimeInterval kWaitForUserAgentChangeTimeout = 10.0;
+const NSTimeInterval kWaitForUserAgentChangeTimeout = 15.0;
 
 // Select the button to request desktop site by scrolling the collection.
 // 200 is a reasonable scroll displacement that works for all UI elements, while
@@ -169,15 +169,7 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
 
 // Tests that requesting mobile site of a page works and the user agent
 // propagates to the next navigations in the same tab.
-// TODO(crbug.com/1037663): Enable for EG2.
-#if defined(CHROME_EARL_GREY_2)
-#define MAYBE_testRequestMobileSitePropagatesToNextNavigations \
-  FLAKY_testRequestMobileSitePropagatesToNextNavigations
-#else
-#define MAYBE_testRequestMobileSitePropagatesToNextNavigations \
-  testRequestMobileSitePropagatesToNextNavigations
-#endif
-- (void)MAYBE_testRequestMobileSitePropagatesToNextNavigations {
+- (void)testRequestMobileSitePropagatesToNextNavigations {
   std::unique_ptr<web::DataResponseProvider> provider(
       new UserAgentResponseProvider());
   web::test::SetUpHttpServer(std::move(provider));

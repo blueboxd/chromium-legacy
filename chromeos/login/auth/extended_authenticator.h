@@ -36,8 +36,8 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticator
     FAILED_TPM,    // Failed to mount/create cryptohome because of TPM error.
   };
 
-  typedef base::Callback<void(const std::string& result)> ResultCallback;
-  typedef base::Callback<void(const UserContext& context)> ContextCallback;
+  using ResultCallback = base::OnceCallback<void(const std::string& result)>;
+  using ContextCallback = base::OnceCallback<void(const UserContext& context)>;
 
   class NewAuthStatusConsumer {
    public:
@@ -61,12 +61,12 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticator
   // an error otherwise. On success, the user ID hash (used as the mount point)
   // will be passed to |success_callback|.
   virtual void AuthenticateToMount(const UserContext& context,
-                                   const ResultCallback& success_callback) = 0;
+                                   ResultCallback success_callback) = 0;
 
   // This call will attempt to authenticate the user with the key (and key
   // label) in |context|. No further actions are taken after authentication.
   virtual void AuthenticateToCheck(const UserContext& context,
-                                   const base::Closure& success_callback) = 0;
+                                   base::OnceClosure success_callback) = 0;
 
   // Attempts to add a new |key| for the user identified/authorized by
   // |context|. If a key with the same label already exists, the behavior
@@ -76,7 +76,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticator
   virtual void AddKey(const UserContext& context,
                       const cryptohome::KeyDefinition& key,
                       bool replace_existing,
-                      const base::Closure& success_callback) = 0;
+                      base::OnceClosure success_callback) = 0;
 
   // Attempts to perform an authorized update of the key in |context| with the
   // new |key|. The update is authorized by providing the |signature| of the
@@ -86,20 +86,20 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticator
   virtual void UpdateKeyAuthorized(const UserContext& context,
                                    const cryptohome::KeyDefinition& key,
                                    const std::string& signature,
-                                   const base::Closure& success_callback) = 0;
+                                   base::OnceClosure success_callback) = 0;
 
   // Attempts to remove the key labeled |key_to_remove| for the user identified/
   // authorized by |context|. It is possible to remove the key used for
   // authorization, although it should be done with extreme care.
   virtual void RemoveKey(const UserContext& context,
                          const std::string& key_to_remove,
-                         const base::Closure& success_callback) = 0;
+                         base::OnceClosure success_callback) = 0;
 
   // Hashes the key in |user_context| with the system salt it its type is
   // KEY_TYPE_PASSWORD_PLAIN and passes the resulting UserContext to the
   // |callback|.
   virtual void TransformKeyIfNeeded(const UserContext& user_context,
-                                    const ContextCallback& callback) = 0;
+                                    ContextCallback callback) = 0;
 
  protected:
   ExtendedAuthenticator();

@@ -361,11 +361,11 @@ void OverviewSession::ResetSplitViewDragIndicatorsWindowDraggingStates() {
   }
 }
 
-void OverviewSession::RearrangeDuringDrag(aura::Window* dragged_window) {
+void OverviewSession::RearrangeDuringDrag(OverviewItem* dragged_item) {
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
     DCHECK(grid->split_view_drag_indicators());
     grid->RearrangeDuringDrag(
-        dragged_window,
+        dragged_item,
         grid->split_view_drag_indicators()->current_window_dragging_state());
   }
 }
@@ -967,7 +967,28 @@ void OverviewSession::OnShellDestroying() {
   EndOverview();
 }
 
-void OverviewSession::OnShelfAlignmentChanged(aura::Window* root_window) {
+void OverviewSession::OnShelfAlignmentChanged(aura::Window* root_window,
+                                              ShelfAlignment old_alignment) {
+  // Helper to check if a shelf alignment change results in different
+  // visuals for overivew purposes.
+  auto same_effective_alignment = [](ShelfAlignment prev,
+                                     ShelfAlignment curr) -> bool {
+    auto bottom = ShelfAlignment::kBottom;
+    auto locked = ShelfAlignment::kBottomLocked;
+    return (prev == bottom && curr == locked) ||
+           (prev == locked && curr == bottom);
+  };
+
+  // On changing from kBottomLocked to kBottom shelf alignment or vice versa
+  // (usually from entering/exiting lock screen), keep splitview if it's active.
+  // Done here instead of using a SessionObserver so we can skip the
+  // EndOverview() at the end of this function if necessary.
+  ShelfAlignment current_alignment = Shelf::ForWindow(root_window)->alignment();
+  if (SplitViewController::Get(root_window)->InSplitViewMode() &&
+      same_effective_alignment(old_alignment, current_alignment)) {
+    return;
+  }
+
   // When the shelf alignment changes while in overview, the display work area
   // doesn't get updated anyways (see https://crbug.com/834400). In this case,
   // even updating the grid bounds won't make any difference, so we simply exit

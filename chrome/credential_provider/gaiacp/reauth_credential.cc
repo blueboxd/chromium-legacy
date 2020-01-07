@@ -44,7 +44,7 @@ HRESULT CReauthCredential::GetUserGlsCommandline(
                                        OLE2CW(email_for_reauth_));
     }
     return CGaiaCredentialBase::GetUserGlsCommandline(command_line);
-  } else if (CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() &&
+  } else if (CGaiaCredentialBase::IsCloudAssociationEnabled() &&
              OSUserManager::Get()->IsUserDomainJoined(OLE2CW(os_user_sid_))) {
     // Note that if ADAssociationIsEnabled and the reauth credential is an AD
     // user account, then fallback to the GaiaCredentialBase for loading Gls.
@@ -99,7 +99,7 @@ HRESULT CReauthCredential::GetStringValueImpl(DWORD field_id, wchar_t** value) {
     // If its an AD user sid without a user_id set in the registry, then
     // we need to show a different description message.
     if (email_for_reauth_.Length() == 0 &&
-        CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() &&
+        CGaiaCredentialBase::IsCloudAssociationEnabled() &&
         OSUserManager::Get()->IsUserDomainJoined(sid)) {
       description_label_id = IDS_REAUTH_AD_NO_USER_FID_DESCRIPTION_BASE;
     } else {

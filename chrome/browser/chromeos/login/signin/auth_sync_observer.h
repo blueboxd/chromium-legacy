@@ -51,9 +51,6 @@ class AuthSyncObserver : public KeyedService,
   // in the Primary / Sync account and not a Secondary Account.
   void HandleAuthError(const GoogleServiceAuthError& auth_error);
 
-  // Called on attempt to restore supervised user token.
-  void OnSupervisedTokenLoaded(const std::string& token);
-
   Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthSyncObserver);

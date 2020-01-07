@@ -182,3 +182,29 @@ if (use_v8_bind_gen_for_dictionary) {
     ]
   }
 }
+
+action_with_pydeps("generate_high_entropy_list") {
+  script = "${bindings_scripts_dir}/generate_high_entropy_list.py"
+
+  web_idl_database_outputs = get_target_outputs(":web_idl_database")
+  web_idl_database = web_idl_database_outputs[0]
+
+  inputs = [
+    web_idl_database,
+  ]
+  output_data_file = "${bindings_output_dir}/high_entropy_list.txt"
+  outputs = [
+    output_data_file,
+  ]
+
+  args = [
+    "--web_idl_database",
+    rebase_path(web_idl_database, root_build_dir),
+    "--output",
+    rebase_path(output_data_file, root_build_dir),
+  ]
+
+  deps = [
+    ":web_idl_database",
+  ]
+}

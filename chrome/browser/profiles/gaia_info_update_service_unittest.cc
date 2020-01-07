@@ -163,6 +163,36 @@ TEST_F(GAIAInfoUpdateServiceTest, SyncOnSyncOff) {
 }
 
 #if !defined(ANDROID)
+TEST_F(GAIAInfoUpdateServiceTest, SyncOnSyncOffKeepAllAccounts) {
+  AccountInfo info =
+      identity_test_env()->MakeAccountAvailable("pat@example.com");
+  base::RunLoop().RunUntilIdle();
+  identity_test_env()->SetPrimaryAccount(info.email);
+  info = GetValidAccountInfo(info.email, info.account_id, "Pat", "Pat Foo");
+  signin::UpdateAccountInfoForAccount(identity_test_env()->identity_manager(),
+                                      info);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1u, storage()->GetNumberOfProfiles());
+  ProfileAttributesEntry* entry = storage()->GetAllProfilesAttributes().front();
+  gfx::Image gaia_picture = gfx::test::CreateImage(256, 256);
+  signin::SimulateAccountImageFetch(identity_test_env()->identity_manager(),
+                                    info.account_id, gaia_picture);
+  // Turn off sync but stay logged in.
+  identity_test_env()->ClearPrimaryAccount(
+      signin::ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS);
+  ASSERT_TRUE(
+      identity_test_env()->identity_manager()->HasUnconsentedPrimaryAccount());
+  // Verify that the GAIA name and picture, and picture URL are not cleared
+  // as unconsented primary account still exists.
+  EXPECT_EQ(entry->GetGAIAGivenName(), base::UTF8ToUTF16("Pat"));
+  EXPECT_EQ(entry->GetGAIAName(), base::UTF8ToUTF16("Pat Foo"));
+  EXPECT_EQ(
+      profile()->GetPrefs()->GetString(prefs::kGoogleServicesHostedDomain),
+      info.hosted_domain);
+  EXPECT_TRUE(gfx::test::AreImagesEqual(gaia_picture, entry->GetAvatarIcon()));
+}
+
 TEST_F(GAIAInfoUpdateServiceTest, LogInLogOut) {
   std::string email = "pat@example.com";
   AccountInfo info = identity_test_env()->MakeAccountAvailableWithCookies(

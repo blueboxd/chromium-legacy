@@ -28,7 +28,7 @@ class BreadcrumbManagerTabHelperTest : public PlatformTest {
     first_web_state_.SetBrowserState(chrome_browser_state_.get());
     second_web_state_.SetBrowserState(chrome_browser_state_.get());
 
-    breadcrumb_manager_ = static_cast<BreadcrumbManagerKeyedService*>(
+    breadcrumb_service_ = static_cast<BreadcrumbManagerKeyedService*>(
         BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
             chrome_browser_state_.get()));
   }
@@ -37,7 +37,7 @@ class BreadcrumbManagerTabHelperTest : public PlatformTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   web::TestWebState first_web_state_;
   web::TestWebState second_web_state_;
-  BreadcrumbManagerKeyedService* breadcrumb_manager_;
+  BreadcrumbManagerKeyedService* breadcrumb_service_;
 };
 
 // Tests that the identifier returned for a WebState is unique.
@@ -64,13 +64,13 @@ TEST_F(BreadcrumbManagerTabHelperTest, UniqueIdentifiers) {
 TEST_F(BreadcrumbManagerTabHelperTest, EventsLogged) {
   BreadcrumbManagerTabHelper::CreateForWebState(&first_web_state_);
 
-  EXPECT_EQ(0ul, breadcrumb_manager_->GetEvents(0).size());
+  EXPECT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
   first_web_state_.SetLoading(true);
-  std::list<std::string> events = breadcrumb_manager_->GetEvents(0);
+  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
   EXPECT_EQ(1ul, events.size());
   EXPECT_NE(std::string::npos, events.back().find("DidStartLoading"));
   first_web_state_.SetLoading(false);
-  events = breadcrumb_manager_->GetEvents(0);
+  events = breadcrumb_service_->GetEvents(0);
   EXPECT_EQ(2ul, events.size());
   EXPECT_NE(std::string::npos, events.back().find("DidStopLoading"));
 }
@@ -84,7 +84,7 @@ TEST_F(BreadcrumbManagerTabHelperTest, UniqueEvents) {
   BreadcrumbManagerTabHelper::CreateForWebState(&second_web_state_);
   second_web_state_.SetLoading(true);
 
-  std::list<std::string> events = breadcrumb_manager_->GetEvents(0);
+  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
   EXPECT_EQ(2ul, events.size());
   EXPECT_STRNE(events.front().c_str(), events.back().c_str());
   EXPECT_NE(std::string::npos, events.front().find("DidStartLoading"));

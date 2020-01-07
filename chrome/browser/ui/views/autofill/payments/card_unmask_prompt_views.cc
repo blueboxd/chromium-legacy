@@ -184,7 +184,6 @@ void CardUnmaskPromptViews::GotVerificationResult(
 }
 
 void CardUnmaskPromptViews::LinkClicked(views::Link* source, int event_flags) {
-  DCHECK_EQ(source, new_card_link_);
   controller_->NewCardLinkClicked();
   for (views::View* child : input_row_->children())
     child->SetVisible(true);
@@ -230,11 +229,11 @@ void CardUnmaskPromptViews::ShowNewCardLink() {
   if (new_card_link_)
     return;
 
-  new_card_link_ = new views::Link(
+  auto new_card_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK));
-  new_card_link_->SetUnderline(false);
-  new_card_link_->set_listener(this);
-  input_row_->AddChildView(new_card_link_);
+  new_card_link->SetUnderline(false);
+  new_card_link->set_listener(this);
+  new_card_link_ = input_row_->AddChildView(std::move(new_card_link));
 }
 
 views::View* CardUnmaskPromptViews::GetContentsView() {

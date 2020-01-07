@@ -169,6 +169,13 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_EXPANDTOENCLOSINGUNIT);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
+  // Normalize the start position so that we do not incorrectly expand it
+  // backwards if it happens to be sitting at the end of a node.
+  AXPositionInstance normalized_start =
+      start_->AsLeafTextPositionBeforeCharacter();
+  if (!normalized_start->IsNullPosition())
+    start_ = std::move(normalized_start);
+
   // Determine if start is on a boundary of the specified TextUnit, if it is
   // not, move backwards until it is. Move the end forwards from start until it
   // is on the next TextUnit boundary, if one exists.
@@ -771,12 +778,14 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Select() {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_SELECT);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
-  AXNodeRange range(start_->Clone(), end_->Clone());
+  AXNodeRange new_selection_range(start_->Clone(), end_->Clone());
+  RemoveFocusFromPreviousSelectionIfNeeded(new_selection_range);
+
   AXActionData action_data;
-  action_data.anchor_node_id = range.anchor()->anchor_id();
-  action_data.anchor_offset = range.anchor()->text_offset();
-  action_data.focus_node_id = range.focus()->anchor_id();
-  action_data.focus_offset = range.focus()->text_offset();
+  action_data.anchor_node_id = new_selection_range.anchor()->anchor_id();
+  action_data.anchor_offset = new_selection_range.anchor()->text_offset();
+  action_data.focus_node_id = new_selection_range.focus()->anchor_id();
+  action_data.focus_offset = new_selection_range.focus()->text_offset();
   action_data.action = ax::mojom::Action::kSetSelection;
   owner()->GetDelegate()->AccessibilityPerformAction(action_data);
   return S_OK;
@@ -810,16 +819,9 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ScrollIntoView(
   DCHECK(common_ancestor_anchor == end_common_ancestor->GetAnchor());
 
   const AXTreeID common_ancestor_tree_id = start_common_ancestor->tree_id();
-  const AXTreeManager* ax_tree_manager =
-      AXTreeManagerMap::GetInstance().GetManager(common_ancestor_tree_id);
-  DCHECK(ax_tree_manager);
-  AXNode* root_node = ax_tree_manager->GetRootAsAXNode();
-  const AXPlatformNode* root_platform_node =
-      owner_->GetDelegate()->GetFromTreeIDAndNodeID(common_ancestor_tree_id,
-                                                    root_node->id());
-  DCHECK(root_platform_node);
   const AXPlatformNodeDelegate* root_delegate =
-      root_platform_node->GetDelegate();
+      GetRootDelegate(common_ancestor_tree_id);
+  DCHECK(root_delegate);
   const gfx::Rect root_frame_bounds = root_delegate->GetBoundsRect(
       AXCoordinateSystem::kFrame, AXClippingBehavior::kUnclipped);
   UIA_VALIDATE_BOUNDS(root_frame_bounds);
@@ -1183,6 +1185,71 @@ void AXPlatformNodeTextRangeProviderWin::NormalizeTextRange() {
   }
 
   DCHECK_LE(*start_, *end_);
+}
+
+AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetRootDelegate(
+    const ui::AXTreeID tree_id) {
+  const AXTreeManager* ax_tree_manager =
+      AXTreeManagerMap::GetInstance().GetManager(tree_id);
+  DCHECK(ax_tree_manager);
+  AXNode* root_node = ax_tree_manager->GetRootAsAXNode();
+  const AXPlatformNode* root_platform_node =
+      owner_->GetDelegate()->GetFromTreeIDAndNodeID(tree_id, root_node->id());
+  DCHECK(root_platform_node);
+  return root_platform_node->GetDelegate();
+}
+
+AXNode* AXPlatformNodeTextRangeProviderWin::GetSelectionCommonAnchor() {
+  AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
+  ui::AXTree::Selection unignored_selection = delegate->GetUnignoredSelection();
+  AXPlatformNode* anchor_object =
+      delegate->GetFromNodeID(unignored_selection.anchor_object_id);
+  AXPlatformNode* focus_object =
+      delegate->GetFromNodeID(unignored_selection.focus_object_id);
+
+  if (!anchor_object || !focus_object)
+    return nullptr;
+
+  AXNodePosition::AXPositionInstance start =
+      anchor_object->GetDelegate()->CreateTextPositionAt(
+          unignored_selection.anchor_offset);
+  AXNodePosition::AXPositionInstance end =
+      focus_object->GetDelegate()->CreateTextPositionAt(
+          unignored_selection.focus_offset);
+
+  return start->LowestCommonAnchor(*end);
+}
+
+// When the current selection is inside a focusable element, the DOM focused
+// element will correspond to this element. When we update the selection to be
+// on a different element that is not focusable, the new selection won't be
+// applied unless we remove the DOM focused element. For example, with Narrator,
+// if we move by word from a text field (focusable) to a static text
+// (not focusable), the selection we stay on the textfield because the DOM
+// focused element will still be the textfield. To avoid that, we need to remove
+// the focus from this element.
+// Since |ax::mojom::Action::kBlur| is not implemented, we perform a
+// |ax::mojom::Action::focus| action on the root node. The result is the same.
+void AXPlatformNodeTextRangeProviderWin::
+    RemoveFocusFromPreviousSelectionIfNeeded(const AXNodeRange& new_selection) {
+  const AXNode* old_selection_node = GetSelectionCommonAnchor();
+  const AXNode* new_selection_node =
+      new_selection.anchor()->LowestCommonAnchor(*new_selection.focus());
+
+  if (!old_selection_node)
+    return;
+
+  if (!new_selection_node ||
+      (old_selection_node->data().HasState(ax::mojom::State::kFocusable) &&
+       !new_selection_node->data().HasState(ax::mojom::State::kFocusable))) {
+    AXPlatformNodeDelegate* root_delegate =
+        GetRootDelegate(old_selection_node->tree()->GetAXTreeID());
+    DCHECK(root_delegate);
+
+    AXActionData focus_action;
+    focus_action.action = ax::mojom::Action::kFocus;
+    root_delegate->AccessibilityPerformAction(focus_action);
+  }
 }
 
 }  // namespace ui

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 
 namespace base {
 class FilePath;

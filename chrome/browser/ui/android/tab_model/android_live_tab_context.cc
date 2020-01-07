@@ -70,8 +70,9 @@ base::Optional<tab_groups::TabGroupId> AndroidLiveTabContext::GetTabGroupForTab(
   return base::Optional<tab_groups::TabGroupId>();
 }
 
-tab_groups::TabGroupVisualData* AndroidLiveTabContext::GetVisualDataForGroup(
-    tab_groups::TabGroupId group) const {
+const tab_groups::TabGroupVisualData*
+AndroidLiveTabContext::GetVisualDataForGroup(
+    const tab_groups::TabGroupId& group) const {
   // Since we never return a group from GetTabGroupForTab(), this should never
   // be called.
   NOTREACHED();
@@ -79,8 +80,8 @@ tab_groups::TabGroupVisualData* AndroidLiveTabContext::GetVisualDataForGroup(
 }
 
 void AndroidLiveTabContext::SetVisualDataForGroup(
-    tab_groups::TabGroupId group,
-    tab_groups::TabGroupVisualData group_visual_data) {
+    const tab_groups::TabGroupId& group,
+    const tab_groups::TabGroupVisualData& group_visual_data) {
   // Not supported on Android.
 
   // TODO(crbug.com/1003128): ensure this never gets called (or remove
@@ -110,7 +111,7 @@ sessions::LiveTab* AndroidLiveTabContext::AddRestoredTab(
     int selected_navigation,
     const std::string& extension_app_id,
     base::Optional<tab_groups::TabGroupId> group,
-    const tab_groups::TabGroupVisualData group_visual_data,
+    const tab_groups::TabGroupVisualData& group_visual_data,
     bool select,
     bool pin,
     bool from_last_session,

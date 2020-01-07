@@ -91,10 +91,10 @@ std::vector<uint32_t> ConvertChildIds(std::vector<int32_t> ids) {
 
 fuchsia::ui::gfx::BoundingBox ConvertBoundingBox(gfx::RectF bounds) {
   fuchsia::ui::gfx::BoundingBox box;
-  float min[3] = {bounds.bottom_left().x(), bounds.bottom_left().y(), 0.0f};
-  float max[3] = {bounds.top_right().x(), bounds.top_right().y(), 0.0f};
-  box.min = scenic::NewVector3(min);
-  box.max = scenic::NewVector3(max);
+  box.min = scenic::NewVector3({bounds.bottom_left().x(),
+                                bounds.bottom_left().y(), 0.0f});
+  box.max = scenic::NewVector3({bounds.top_right().x(), bounds.top_right().y(),
+                                0.0f});
   return box;
 }
 
@@ -102,8 +102,8 @@ fuchsia::ui::gfx::BoundingBox ConvertBoundingBox(gfx::RectF bounds) {
 // subtree as an optimization to handle resizing or repositioning. This requires
 // only one node to be updated on such an event.
 fuchsia::ui::gfx::mat4 ConvertTransform(gfx::Transform* transform) {
-  float mat[16] = {};
-  transform->matrix().asColMajorf(mat);
+  std::array<float, 16> mat = {};
+  transform->matrix().asColMajorf(mat.data());
   fuchsia::ui::gfx::Matrix4Value fuchsia_transform =
       scenic::NewMatrix4Value(mat);
   return fuchsia_transform.value;

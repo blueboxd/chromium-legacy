@@ -15,7 +15,7 @@ WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
                              int modifiers,
                              base::TimeTicks time_stamp,
                              PointerId id_param)
-    : WebInputEvent(sizeof(WebMouseEvent), type, modifiers, time_stamp),
+    : WebInputEvent(type, modifiers, time_stamp),
       WebPointerProperties(id_param,
                            WebPointerProperties::PointerType::kMouse,
                            button_param),
@@ -32,6 +32,10 @@ WebMouseEvent::WebMouseEvent(WebInputEvent::Type type,
 gfx::PointF WebMouseEvent::PositionInRootFrame() const {
   return gfx::ScalePoint(position_in_widget_, 1 / frame_scale_) +
          frame_translate_;
+}
+
+std::unique_ptr<WebInputEvent> WebMouseEvent::Clone() const {
+  return std::make_unique<WebMouseEvent>(*this);
 }
 
 WebMouseEvent WebMouseEvent::FlattenTransform() const {

@@ -82,13 +82,19 @@ struct HandlerParams {
   AsyncSafeWaitableEvent* event;
 
   // Return values:
+
   // Successfully copied the stack segment.
   bool* success;
+
   // The thread context of the leaf function.
   mcontext_t* context;
+
   // Buffer to copy the stack segment.
   StackBuffer* stack_buffer;
   const uint8_t** stack_copy_bottom;
+
+  // The timestamp when the stack was copied.
+  TimeTicks* timestamp;
 };
 
 // Pointer to the parameters to be "passed" to the CopyStackSignalHandler() from
@@ -101,6 +107,11 @@ std::atomic<HandlerParams*> g_handler_params;
 // function may only call reentrant code.
 void CopyStackSignalHandler(int n, siginfo_t* siginfo, void* sigcontext) {
   HandlerParams* params = g_handler_params.load(std::memory_order_acquire);
+
+  // TimeTicks::Now() is implemented in terms of clock_gettime on Linux, which
+  // is signal safe per the signal-safety(7) man page.
+  *params->timestamp = TimeTicks::Now();
+
   ScopedEventSignaller e(params->event);
   *params->success = false;
 
@@ -176,13 +187,15 @@ StackCopierSignal::~StackCopierSignal() = default;
 bool StackCopierSignal::CopyStack(StackBuffer* stack_buffer,
                                   uintptr_t* stack_top,
                                   ProfileBuilder* profile_builder,
+                                  TimeTicks* timestamp,
                                   RegisterContext* thread_context) {
   AsyncSafeWaitableEvent wait_event;
   bool copied = false;
   const uint8_t* stack_copy_bottom = nullptr;
   const uintptr_t stack_base_address = thread_delegate_->GetStackBaseAddress();
   HandlerParams params = {stack_base_address, &wait_event,  &copied,
-                          thread_context,     stack_buffer, &stack_copy_bottom};
+                          thread_context,     stack_buffer, &stack_copy_bottom,
+                          timestamp};
   {
     ScopedSetSignalHandlerParams scoped_handler_params(&params);
 

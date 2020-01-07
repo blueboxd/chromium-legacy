@@ -128,12 +128,10 @@ bool PictureLayer::Update() {
   // for them.
   DCHECK(picture_layer_inputs_.client);
 
-  picture_layer_inputs_.recorded_viewport =
-      picture_layer_inputs_.client->PaintableRegion();
+  auto recorded_viewport = picture_layer_inputs_.client->PaintableRegion();
 
   updated |= recording_source_->UpdateAndExpandInvalidation(
-      &last_updated_invalidation_, layer_size,
-      picture_layer_inputs_.recorded_viewport);
+      &last_updated_invalidation_, layer_size, recorded_viewport);
 
   if (updated) {
     picture_layer_inputs_.display_list =
@@ -269,7 +267,6 @@ void PictureLayer::DropRecordingSourceContentIfInvalid() {
     // for example), even though it has resized making the recording source no
     // longer valid. In this case just destroy the recording source.
     recording_source_->SetEmptyBounds();
-    picture_layer_inputs_.recorded_viewport = gfx::Rect();
     picture_layer_inputs_.display_list = nullptr;
     picture_layer_inputs_.painter_reported_memory_usage = 0;
   }

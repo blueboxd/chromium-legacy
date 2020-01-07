@@ -62,7 +62,8 @@ CSSStyleValue* StylePropertyMapReadOnlyMainThread::get(
     const ExecutionContext* execution_context,
     const String& property_name,
     ExceptionState& exception_state) const {
-  base::Optional<CSSPropertyName> name = CSSPropertyName::From(property_name);
+  base::Optional<CSSPropertyName> name =
+      CSSPropertyName::From(execution_context, property_name);
 
   if (!name) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
@@ -94,7 +95,8 @@ CSSStyleValueVector StylePropertyMapReadOnlyMainThread::getAll(
     const ExecutionContext* execution_context,
     const String& property_name,
     ExceptionState& exception_state) const {
-  base::Optional<CSSPropertyName> name = CSSPropertyName::From(property_name);
+  base::Optional<CSSPropertyName> name =
+      CSSPropertyName::From(execution_context, property_name);
 
   if (!name) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);

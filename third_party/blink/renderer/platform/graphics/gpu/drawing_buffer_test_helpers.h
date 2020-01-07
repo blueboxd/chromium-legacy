@@ -61,7 +61,7 @@ class WebGraphicsContext3DProviderForTests
     return webgl_preferences_;
   }
   viz::GLHelper* GetGLHelper() override { return nullptr; }
-  void SetLostContextCallback(base::Closure) override {}
+  void SetLostContextCallback(base::RepeatingClosure) override {}
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t id)>) override {}
   cc::ImageDecodeCache* ImageDecodeCache(SkColorType color_type) override {

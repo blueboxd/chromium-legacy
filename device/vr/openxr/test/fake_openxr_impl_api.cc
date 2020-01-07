@@ -790,6 +790,9 @@ XrResult xrSuggestInteractionProfileBindings(
               0 &&
           interaction_profile.compare(
               interaction_profile::kOculusTouchControllerInteractionProfile) !=
+              0 &&
+          interaction_profile.compare(
+              interaction_profile::kValveIndexControllerinteractionProfile) !=
               0,
       XR_ERROR_VALIDATION_FAILURE,
       "xrSetInteractionProfileSuggestedBindings invalid interaction_profile");

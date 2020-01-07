@@ -34,10 +34,16 @@ SelectedKeywordView::SelectedKeywordView(LocationBarView* location_bar,
 
 SelectedKeywordView::~SelectedKeywordView() {}
 
+void SelectedKeywordView::SetCustomImage(const gfx::ImageSkia& image) {
+  IconLabelBubbleView::SetImage(image);
+  using_custom_image_ = true;
+}
+
 void SelectedKeywordView::ResetImage() {
-  SetImage(gfx::CreateVectorIcon(vector_icons::kSearchIcon,
-                                 GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-                                 GetForegroundColor()));
+  IconLabelBubbleView::SetImage(gfx::CreateVectorIcon(
+      vector_icons::kSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+      GetForegroundColor()));
+  using_custom_image_ = false;
 }
 
 void SelectedKeywordView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -56,6 +62,12 @@ gfx::Size SelectedKeywordView::CalculatePreferredSize() const {
 gfx::Size SelectedKeywordView::GetMinimumSize() const {
   // Height will be ignored by the LocationBarView.
   return GetSizeForLabelWidth(0);
+}
+
+void SelectedKeywordView::OnThemeChanged() {
+  IconLabelBubbleView::OnThemeChanged();
+  if (!using_custom_image_)
+    ResetImage();
 }
 
 void SelectedKeywordView::SetKeyword(const base::string16& keyword) {

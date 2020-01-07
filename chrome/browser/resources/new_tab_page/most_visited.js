@@ -10,6 +10,8 @@ import 'chrome://resources/cr_elements/cr_icons_css.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js';
 import './strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -86,6 +88,9 @@ class MostVisitedElement extends PolymerElement {
 
       /** @private */
       dialogTileTitle_: String,
+
+      /** @private */
+      dialogTileTitleDirectionClass_: String,
 
       /** @private */
       dialogTileUrl_: String,
@@ -443,6 +448,17 @@ class MostVisitedElement extends PolymerElement {
   }
 
   /**
+   * @param {!newTabPage.mojom.MostVisitedTile} tile
+   * @return {string}
+   * @private
+   */
+  getTileTitleDirectionClass_(tile) {
+    return tile.titleDirection === mojoBase.mojom.TextDirection.RIGHT_TO_LEFT ?
+        'title-rtl' :
+        'title-ltr';
+  }
+
+  /**
    * @return {string}
    * @private
    */
@@ -463,6 +479,7 @@ class MostVisitedElement extends PolymerElement {
   onAdd_() {
     this.dialogTitle_ = loadTimeData.getString('addLinkTitle');
     this.dialogTileTitle_ = '';
+    this.dialogTileTitleDirectionClass_ = '';
     this.dialogTileUrl_ = '';
     this.dialogTileUrlInvalid_ = false;
     this.adding_ = true;
@@ -560,9 +577,11 @@ class MostVisitedElement extends PolymerElement {
   onEdit_() {
     this.$.actionMenu.close();
     this.dialogTitle_ = loadTimeData.getString('editLinkTitle');
-    const {title, url} = this.tiles_[this.actionMenuTargetIndex_];
-    this.dialogTileTitle_ = title;
-    this.dialogTileUrl_ = url.url;
+    const tile = this.tiles_[this.actionMenuTargetIndex_];
+    this.dialogTileTitle_ = tile.title;
+    this.dialogTileTitleDirectionClass_ =
+        this.getTileTitleDirectionClass_(tile);
+    this.dialogTileUrl_ = tile.url.url;
     this.dialogTileUrlInvalid_ = false;
     this.$.dialog.showModal();
   }

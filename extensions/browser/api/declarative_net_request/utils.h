@@ -14,6 +14,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -68,6 +69,10 @@ api::declarative_net_request::RequestDetails CreateRequestDetails(
 // Creates default RE2::Options.
 re2::RE2::Options CreateRE2Options(bool is_case_sensitive,
                                    bool require_capturing);
+
+// Convert dnr_api::RuleActionType into flat::ActionType.
+flat::ActionType ConvertToFlatActionType(
+    api::declarative_net_request::RuleActionType action_type);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

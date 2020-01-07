@@ -1851,9 +1851,9 @@ namespace {
 void PressEscapeWhileDetachedStep2(const BrowserList* browser_list) {
   ASSERT_EQ(2u, browser_list->size());
   Browser* new_browser = browser_list->get(1);
-  ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+  ui_controls::SendKeyPress(
       new_browser->window()->GetNativeWindow(), ui::VKEY_ESCAPE, false, false,
-      false, false));
+      false, false);
 }
 
 }  // namespace

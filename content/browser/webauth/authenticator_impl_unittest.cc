@@ -3162,7 +3162,7 @@ class PINTestAuthenticatorRequestDelegate
         FROM_HERE, base::BindOnce(std::move(provide_pin_cb), std::move(pin)));
   }
 
-  void FinishCollectPIN() override {}
+  void FinishCollectToken() override {}
 
   bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
     *failure_reason_ = reason;
@@ -3230,21 +3230,22 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
         // No support.
         config.pin_support = false;
         virtual_device_factory_->mutable_state()->pin = "";
-        virtual_device_factory_->mutable_state()->retries = 0;
+        virtual_device_factory_->mutable_state()->pin_retries = 0;
         break;
 
       case 1:
         // PIN supported, but no PIN set.
         config.pin_support = true;
         virtual_device_factory_->mutable_state()->pin = "";
-        virtual_device_factory_->mutable_state()->retries = 0;
+        virtual_device_factory_->mutable_state()->pin_retries = 0;
         break;
 
       case 2:
         // PIN set.
         config.pin_support = true;
         virtual_device_factory_->mutable_state()->pin = kTestPIN;
-        virtual_device_factory_->mutable_state()->retries = 8;
+        virtual_device_factory_->mutable_state()->pin_retries =
+            device::kMaxPinRetries;
         break;
 
       default:
@@ -3374,7 +3375,8 @@ TEST_F(PINAuthenticatorImplTest, MakeCredential) {
 
 TEST_F(PINAuthenticatorImplTest, MakeCredentialSoftLock) {
   virtual_device_factory_->mutable_state()->pin = kTestPIN;
-  virtual_device_factory_->mutable_state()->retries = 8;
+  virtual_device_factory_->mutable_state()->pin_retries =
+      device::kMaxPinRetries;
 
   test_client_.expected = {{8, "wrong"}, {7, "wrong"}, {6, "wrong"}};
   mojo::Remote<blink::mojom::Authenticator> authenticator =
@@ -3384,7 +3386,7 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialSoftLock) {
                                 callback_receiver.callback());
   callback_receiver.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-  EXPECT_EQ(5, virtual_device_factory_->mutable_state()->retries);
+  EXPECT_EQ(5, virtual_device_factory_->mutable_state()->pin_retries);
   EXPECT_TRUE(virtual_device_factory_->mutable_state()->soft_locked);
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kSoftPINBlock,
@@ -3393,7 +3395,7 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialSoftLock) {
 
 TEST_F(PINAuthenticatorImplTest, MakeCredentialHardLock) {
   virtual_device_factory_->mutable_state()->pin = kTestPIN;
-  virtual_device_factory_->mutable_state()->retries = 1;
+  virtual_device_factory_->mutable_state()->pin_retries = 1;
 
   test_client_.expected = {{1, "wrong"}};
   mojo::Remote<blink::mojom::Authenticator> authenticator =
@@ -3403,7 +3405,7 @@ TEST_F(PINAuthenticatorImplTest, MakeCredentialHardLock) {
                                 callback_receiver.callback());
   callback_receiver.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-  EXPECT_EQ(0, virtual_device_factory_->mutable_state()->retries);
+  EXPECT_EQ(0, virtual_device_factory_->mutable_state()->pin_retries);
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kHardPINBlock,
             *test_client_.failure_reason);
@@ -3500,7 +3502,8 @@ TEST_F(PINAuthenticatorImplTest, GetAssertion) {
 
 TEST_F(PINAuthenticatorImplTest, GetAssertionSoftLock) {
   virtual_device_factory_->mutable_state()->pin = kTestPIN;
-  virtual_device_factory_->mutable_state()->retries = 8;
+  virtual_device_factory_->mutable_state()->pin_retries =
+      device::kMaxPinRetries;
 
   PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
@@ -3513,7 +3516,7 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionSoftLock) {
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
   callback_receiver.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-  EXPECT_EQ(5, virtual_device_factory_->mutable_state()->retries);
+  EXPECT_EQ(5, virtual_device_factory_->mutable_state()->pin_retries);
   EXPECT_TRUE(virtual_device_factory_->mutable_state()->soft_locked);
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kSoftPINBlock,
@@ -3522,7 +3525,7 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionSoftLock) {
 
 TEST_F(PINAuthenticatorImplTest, GetAssertionHardLock) {
   virtual_device_factory_->mutable_state()->pin = kTestPIN;
-  virtual_device_factory_->mutable_state()->retries = 1;
+  virtual_device_factory_->mutable_state()->pin_retries = 1;
 
   PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
@@ -3535,7 +3538,7 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionHardLock) {
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
   callback_receiver.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-  EXPECT_EQ(0, virtual_device_factory_->mutable_state()->retries);
+  EXPECT_EQ(0, virtual_device_factory_->mutable_state()->pin_retries);
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kHardPINBlock,
             *test_client_.failure_reason);
@@ -3698,6 +3701,117 @@ TEST_F(InternalUVAuthenticatorImplTest, GetAssertionCryptotoken) {
   }
 }
 
+class UVTokenTestAuthenticatorClientDelegate
+    : public AuthenticatorRequestClientDelegate {
+ public:
+  void FinishCollectToken() override {}
+};
+
+class UVTokenTestAuthenticatorContentBrowserClient
+    : public ContentBrowserClient {
+ public:
+  std::unique_ptr<AuthenticatorRequestClientDelegate>
+  GetWebAuthenticationRequestDelegate(
+      RenderFrameHost* render_frame_host,
+      const std::string& relying_party_id) override {
+    return std::make_unique<UVTokenTestAuthenticatorClientDelegate>();
+  }
+};
+
+class UVTokenAuthenticatorImplTest : public UVAuthenticatorImplTest {
+ public:
+  UVTokenAuthenticatorImplTest() = default;
+  UVTokenAuthenticatorImplTest(const UVTokenAuthenticatorImplTest&) = delete;
+
+  void SetUp() override {
+    UVAuthenticatorImplTest::SetUp();
+    old_client_ = SetBrowserClientForTesting(&test_client_);
+    device::VirtualCtap2Device::Config config;
+    config.internal_uv_support = true;
+    config.uv_token_support = true;
+    virtual_device_factory_->SetCtap2Config(config);
+    NavigateAndCommit(GURL(kTestOrigin1));
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_client_);
+    AuthenticatorImplTest::TearDown();
+  }
+
+ protected:
+  UVTokenTestAuthenticatorContentBrowserClient test_client_;
+
+ private:
+  ContentBrowserClient* old_client_ = nullptr;
+};
+
+TEST_F(UVTokenAuthenticatorImplTest, GetAssertionUVToken) {
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      get_credential_options()->allow_credentials[0].id(),
+      kTestRelyingPartyId));
+
+  for (const auto fingerprints_enrolled : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "fingerprints_enrolled=" << fingerprints_enrolled);
+    virtual_device_factory_->mutable_state()->fingerprints_enrolled =
+        fingerprints_enrolled;
+
+    for (auto uv : {device::UserVerificationRequirement::kDiscouraged,
+                    device::UserVerificationRequirement::kPreferred,
+                    device::UserVerificationRequirement::kRequired}) {
+      SCOPED_TRACE(UVToString(uv));
+
+      auto options = get_credential_options(uv);
+      // Without a fingerprint enrolled we assume that a UV=required request
+      // cannot be satisfied by an authenticator that cannot do UV. It is
+      // possible for a credential to be created without UV and then later
+      // asserted with UV=required, but that would be bizarre behaviour from
+      // an RP and we currently don't worry about it.
+      const bool should_be_unrecognized =
+          !fingerprints_enrolled &&
+          uv == device::UserVerificationRequirement::kRequired;
+
+      TestGetAssertionCallback callback_receiver;
+      authenticator->GetAssertion(std::move(options),
+                                  callback_receiver.callback());
+      callback_receiver.WaitForCallback();
+
+      if (should_be_unrecognized) {
+        EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+                  callback_receiver.status());
+      } else {
+        EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+        EXPECT_EQ(fingerprints_enrolled &&
+                      uv != device::UserVerificationRequirement::kDiscouraged,
+                  HasUV(callback_receiver));
+      }
+    }
+  }
+}
+
+TEST_F(UVTokenAuthenticatorImplTest, UvTokenRequestUvFails) {
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  device::VirtualCtap2Device::Config config;
+  config.internal_uv_support = true;
+  config.uv_token_support = true;
+  config.user_verification_succeeds = false;
+  virtual_device_factory_->SetCtap2Config(config);
+  virtual_device_factory_->mutable_state()->fingerprints_enrolled = true;
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+      get_credential_options()->allow_credentials[0].id(),
+      kTestRelyingPartyId));
+
+  auto options = get_credential_options();
+  TestGetAssertionCallback callback_receiver;
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+}
+
 // ResidentKeyTestAuthenticatorRequestDelegate is a delegate that:
 //   a) always returns |kTestPIN| when asked for a PIN.
 //   b) sorts potential resident-key accounts by user ID, maps them to a string
@@ -3726,7 +3840,7 @@ class ResidentKeyTestAuthenticatorRequestDelegate
         FROM_HERE, base::BindOnce(std::move(provide_pin_cb), kTestPIN));
   }
 
-  void FinishCollectPIN() override {}
+  void FinishCollectToken() override {}
 
   bool SupportsResidentKeys() override { return true; }
 
@@ -3812,7 +3926,8 @@ class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
     config.resident_key_support = true;
     virtual_device_factory_->SetCtap2Config(config);
     virtual_device_factory_->mutable_state()->pin = kTestPIN;
-    virtual_device_factory_->mutable_state()->retries = 8;
+    virtual_device_factory_->mutable_state()->pin_retries =
+        device::kMaxPinRetries;
     NavigateAndCommit(GURL(kTestOrigin1));
   }
 

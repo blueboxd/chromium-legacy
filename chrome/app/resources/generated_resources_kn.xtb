@@ -49,7 +49,6 @@
 <translation id="1056775291175587022">ಯಾವುದೇ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಲ್ಲ</translation>
 <translation id="1056898198331236512">ಎಚ್ಚರಿಕೆ</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1060881073479695738">Play ಸ್ಟೋರ್ ಆ್ಯಪ್‌ಗಳು</translation>
 <translation id="1061745542578250838"><ph name="FILE_NAME" /> ಫೈಲ್ ಸೂಕ್ಷ್ಮ ವಿಷಯವನ್ನು ಒಳಗೊಂಡಿದೆ ಹಾಗೂ ಅದನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="1061904396131502319">ಬಹುತೇಕ ವಿರಾಮದ ಸಮಯ</translation>
 <translation id="1067048845568873861">ರಚಿಸಲಾಗಿದೆ</translation>
@@ -1569,6 +1568,7 @@
 <translation id="3172808215939929606">ಈ ಪುಟವನ್ನು ಅನುವಾದಿಸಲಾಗಿದೆ</translation>
 <translation id="3177909033752230686">ಪುಟದ ಭಾಷೆ:</translation>
 <translation id="3179982752812949580">ಪಠ್ಯದ ಫಾಂಟ್</translation>
+<translation id="3181825792072797598">ಸಿಂಕ್‌ ಆನ್‌ ಮಾಡಿ</translation>
 <translation id="3181954750937456830">ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್ (ಅಪಾಯಕಾರಿ ಸೈಟ್‌ಗಳಿಂದ ನಿಮ್ಮನ್ನು ಮತ್ತು ನಿಮ್ಮ ಸಾಧನವನ್ನು ರಕ್ಷಿಸುತ್ತದೆ)</translation>
 <translation id="3182749001423093222">ಕಾಗುಣಿತ ಪರಿಶೀಲನೆ</translation>
 <translation id="3183139917765991655">ಪ್ರೊಫೈಲ್ ಆಮದುದಾರ</translation>
@@ -4656,6 +4656,7 @@
 <translation id="7684718995427157417">ನಿಮ್ಮ ಆ್ಯಪ್‌ಗಳನ್ನು ರಚಿಸಲು ಮತ್ತು ಪರೀಕ್ಷಿಸಲು, Android ಡೀಬಗ್ ಬ್ರಿಡ್ಜ್ (ADB) ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ. ಇದು Google ನಿಂದ ದೃಢೀಕರಿಸದ Android ಆ್ಯಪ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಅನುಮತಿಸುತ್ತದೆ ಎಂಬುದನ್ನು ಗಮನಿಸಿ ಹಾಗೂ ಇದನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ಫ್ಯಾಕ್ಟರಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಮರುಹೊಂದಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="7685049629764448582">JavaScript ಸ್ಮರಣೆ</translation>
 <translation id="7685087414635069102">ಪಿನ್ ಅಗತ್ಯವಿದೆ</translation>
+<translation id="768549422429443215">ಭಾಷೆಗಳನ್ನು ಸೇರಿಸಿ ಅಥವಾ ಪಟ್ಟಿಯನ್ನು ಮರುಕ್ರಮಗೊಳಿಸಿ.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಖಚಿತಪಡಿಸಿ</translation>
 <translation id="7690378713476594306">ಪಟ್ಟಿಯಿಂದ ಆರಿಸಿ</translation>

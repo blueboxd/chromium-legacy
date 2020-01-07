@@ -17,8 +17,8 @@ MetricsProvider::~MetricsProvider() {
 void MetricsProvider::Init() {
 }
 
-void MetricsProvider::AsyncInit(const base::Closure& done_callback) {
-  done_callback.Run();
+void MetricsProvider::AsyncInit(base::OnceClosure done_callback) {
+  std::move(done_callback).Run();
 }
 
 void MetricsProvider::OnDidCreateMetricsLog() {

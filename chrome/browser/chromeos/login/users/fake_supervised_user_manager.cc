@@ -63,10 +63,4 @@ SupervisedUserAuthentication* FakeSupervisedUserManager::GetAuthentication() {
   return NULL;
 }
 
-void FakeSupervisedUserManager::LoadSupervisedUserToken(
-    Profile* profile,
-    const LoadTokenCallback& callback) {
-  callback.Run("token");
-}
-
 }  // namespace chromeos

@@ -6,10 +6,8 @@
 #define UI_ACCESSIBILITY_AX_EVENT_GENERATOR_H_
 
 #include <map>
-#include <memory>
 #include <ostream>
 #include <set>
-#include <string>
 #include <vector>
 
 #include "ui/accessibility/ax_export.h"
@@ -17,8 +15,6 @@
 #include "ui/accessibility/ax_tree_observer.h"
 
 namespace ui {
-
-class AXLiveRegionTracker;
 
 // Subclass of AXTreeObserver that automatically generates AXEvents to fire
 // based on changes to an accessibility tree.  Every platform
@@ -236,9 +232,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   // Valid between the call to OnIntAttributeChanged and the call to
   // OnAtomicUpdateFinished. List of nodes whose active descendant changed.
   std::vector<AXNode*> active_descendant_changed_;
-
-  // Helper that tracks live regions.
-  std::unique_ptr<AXLiveRegionTracker> live_region_tracker_;
 };
 
 AX_EXPORT std::ostream& operator<<(std::ostream& os,

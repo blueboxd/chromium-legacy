@@ -27,7 +27,9 @@ class CORE_EXPORT StylePropertyMap : public StylePropertyMapReadOnlyMainThread {
               const String& property_name,
               const HeapVector<CSSStyleValueOrString>& values,
               ExceptionState&);
-  void remove(const String& property_name, ExceptionState&);
+  void remove(const ExecutionContext*,
+              const String& property_name,
+              ExceptionState&);
   void clear();
 
  protected:

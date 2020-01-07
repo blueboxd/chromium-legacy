@@ -19,7 +19,7 @@ EventWithCallback::EventWithCallback(
     const LatencyInfo& latency,
     base::TimeTicks timestamp_now,
     InputHandlerProxy::EventDispositionCallback callback)
-    : event_(WebInputEventTraits::Clone(*event)),
+    : event_(event->Clone()),
       latency_(latency),
       creation_timestamp_(timestamp_now),
       last_coalesced_timestamp_(timestamp_now) {

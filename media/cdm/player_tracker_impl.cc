@@ -11,12 +11,16 @@
 namespace media {
 
 PlayerTrackerImpl::PlayerCallbacks::PlayerCallbacks(
-    const base::Closure& new_key_cb,
-    const base::Closure& cdm_unset_cb)
-    : new_key_cb(new_key_cb), cdm_unset_cb(cdm_unset_cb) {}
+    base::RepeatingClosure new_key_cb,
+    base::RepeatingClosure cdm_unset_cb)
+    : new_key_cb(std::move(new_key_cb)),
+      cdm_unset_cb(std::move(cdm_unset_cb)) {}
 
-PlayerTrackerImpl::PlayerCallbacks::PlayerCallbacks(
-    const PlayerCallbacks& other) = default;
+PlayerTrackerImpl::PlayerCallbacks::PlayerCallbacks(PlayerCallbacks&& other) =
+    default;
+
+PlayerTrackerImpl::PlayerCallbacks& PlayerTrackerImpl::PlayerCallbacks::
+operator=(PlayerCallbacks&&) = default;
 
 PlayerTrackerImpl::PlayerCallbacks::~PlayerCallbacks() = default;
 
@@ -25,13 +29,14 @@ PlayerTrackerImpl::PlayerTrackerImpl() : next_registration_id_(1) {
 
 PlayerTrackerImpl::~PlayerTrackerImpl() = default;
 
-int PlayerTrackerImpl::RegisterPlayer(const base::Closure& new_key_cb,
-                                      const base::Closure& cdm_unset_cb) {
+int PlayerTrackerImpl::RegisterPlayer(base::RepeatingClosure new_key_cb,
+                                      base::RepeatingClosure cdm_unset_cb) {
   base::AutoLock lock(lock_);
   int registration_id = next_registration_id_++;
   DCHECK(!base::Contains(player_callbacks_map_, registration_id));
   player_callbacks_map_.insert(std::make_pair(
-      registration_id, PlayerCallbacks(new_key_cb, cdm_unset_cb)));
+      registration_id,
+      PlayerCallbacks(std::move(new_key_cb), std::move(cdm_unset_cb))));
   return registration_id;
 }
 
@@ -43,10 +48,11 @@ void PlayerTrackerImpl::UnregisterPlayer(int registration_id) {
 }
 
 void PlayerTrackerImpl::NotifyNewKey() {
-  std::vector<base::Closure> new_key_callbacks;
+  std::vector<base::RepeatingClosure> new_key_callbacks;
 
   {
     base::AutoLock lock(lock_);
+    new_key_callbacks.reserve(player_callbacks_map_.size());
     for (const auto& entry : player_callbacks_map_)
       new_key_callbacks.push_back(entry.second.new_key_cb);
   }
@@ -56,10 +62,11 @@ void PlayerTrackerImpl::NotifyNewKey() {
 }
 
 void PlayerTrackerImpl::NotifyCdmUnset() {
-  std::vector<base::Closure> cdm_unset_callbacks;
+  std::vector<base::RepeatingClosure> cdm_unset_callbacks;
 
   {
     base::AutoLock lock(lock_);
+    cdm_unset_callbacks.reserve(player_callbacks_map_.size());
     for (const auto& entry : player_callbacks_map_)
       cdm_unset_callbacks.push_back(entry.second.cdm_unset_cb);
   }

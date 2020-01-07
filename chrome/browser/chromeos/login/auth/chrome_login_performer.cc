@@ -33,13 +33,13 @@ ChromeLoginPerformer::~ChromeLoginPerformer() {}
 ////////////////////////////////////////////////////////////////////////////////
 // ChromeLoginPerformer, public:
 
-bool ChromeLoginPerformer::RunTrustedCheck(const base::Closure& callback) {
+bool ChromeLoginPerformer::RunTrustedCheck(base::OnceClosure callback) {
   CrosSettings* cros_settings = CrosSettings::Get();
 
   CrosSettingsProvider::TrustedStatus status =
       cros_settings->PrepareTrustedValues(
-          base::Bind(&ChromeLoginPerformer::DidRunTrustedCheck,
-                     weak_factory_.GetWeakPtr(), callback));
+          base::BindOnce(&ChromeLoginPerformer::DidRunTrustedCheck,
+                         weak_factory_.GetWeakPtr(), &callback));
   // Must not proceed without signature verification.
   if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
     if (delegate_)
@@ -54,18 +54,18 @@ bool ChromeLoginPerformer::RunTrustedCheck(const base::Closure& callback) {
   } else {
     DCHECK(status == CrosSettingsProvider::TRUSTED);
     // CrosSettingsProvider::TRUSTED
-    callback.Run();
+    std::move(callback).Run();
     return true;  // Some callback was called.
   }
 }
 
-void ChromeLoginPerformer::DidRunTrustedCheck(const base::Closure& callback) {
+void ChromeLoginPerformer::DidRunTrustedCheck(base::OnceClosure* callback) {
   CrosSettings* cros_settings = CrosSettings::Get();
 
   CrosSettingsProvider::TrustedStatus status =
       cros_settings->PrepareTrustedValues(
-          base::Bind(&ChromeLoginPerformer::DidRunTrustedCheck,
-                     weak_factory_.GetWeakPtr(), callback));
+          base::BindOnce(&ChromeLoginPerformer::DidRunTrustedCheck,
+                         weak_factory_.GetWeakPtr(), callback));
   // Must not proceed without signature verification.
   if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
     if (delegate_)
@@ -78,7 +78,7 @@ void ChromeLoginPerformer::DidRunTrustedCheck(const base::Closure& callback) {
     return;
   } else {
     DCHECK(status == CrosSettingsProvider::TRUSTED);
-    callback.Run();
+    std::move(*callback).Run();
   }
 }
 
@@ -92,8 +92,8 @@ void ChromeLoginPerformer::RunOnlineWhitelistCheck(
     const AccountId& account_id,
     bool wildcard_match,
     const std::string& refresh_token,
-    const base::Closure& success_callback,
-    const base::Closure& failure_callback) {
+    base::OnceClosure success_callback,
+    base::OnceClosure failure_callback) {
   // On cloud managed devices, reconfirm login permission with the server.
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -103,17 +103,18 @@ void ChromeLoginPerformer::RunOnlineWhitelistCheck(
     if (refresh_token.empty()) {
       NOTREACHED() << "Refresh token must be present.";
       OnlineWildcardLoginCheckCompleted(
-          success_callback, failure_callback,
+          std::move(success_callback), std::move(failure_callback),
           policy::WildcardLoginChecker::RESULT_FAILED);
     } else {
       wildcard_login_checker_->StartWithRefreshToken(
           refresh_token,
-          base::Bind(&ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted,
-                     weak_factory_.GetWeakPtr(), success_callback,
-                     failure_callback));
+          base::BindOnce(
+              &ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted,
+              weak_factory_.GetWeakPtr(), std::move(success_callback),
+              std::move(failure_callback)));
     }
   } else {
-    success_callback.Run();
+    std::move(success_callback).Run();
   }
 }
 
@@ -176,13 +177,13 @@ ChromeLoginPerformer::GetSigninURLLoaderFactory() {
 }
 
 void ChromeLoginPerformer::OnlineWildcardLoginCheckCompleted(
-    const base::Closure& success_callback,
-    const base::Closure& failure_callback,
+    base::OnceClosure success_callback,
+    base::OnceClosure failure_callback,
     policy::WildcardLoginChecker::Result result) {
   if (result == policy::WildcardLoginChecker::RESULT_ALLOWED) {
-    success_callback.Run();
+    std::move(success_callback).Run();
   } else {
-    failure_callback.Run();
+    std::move(failure_callback).Run();
   }
 }
 

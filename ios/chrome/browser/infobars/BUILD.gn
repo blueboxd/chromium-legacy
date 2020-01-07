@@ -51,8 +51,6 @@ source_set("badge_public") {
 source_set("badge") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "infobar_badge_browser_agent.h",
-    "infobar_badge_browser_agent.mm",
     "infobar_badge_tab_helper.h",
     "infobar_badge_tab_helper.mm",
     "infobar_badge_tab_helper_delegate.h",
@@ -91,7 +89,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "infobar_badge_browser_agent_unittest.mm",
     "infobar_badge_tab_helper_unittest.mm",
     "infobar_ios_unittest.mm",
   ]
@@ -105,9 +102,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/infobars/test",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/main:test_support",
-    "//ios/chrome/browser/overlays",
-    "//ios/chrome/browser/overlays/public/common/infobars",
-    "//ios/chrome/browser/overlays/test",
     "//ios/chrome/browser/ui/badges:public",
     "//ios/chrome/browser/ui/badges:util",
     "//ios/chrome/browser/ui/infobars:feature_flags",

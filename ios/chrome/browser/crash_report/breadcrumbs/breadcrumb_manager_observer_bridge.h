@@ -7,11 +7,12 @@
 
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
 
+class BreadcrumbManager;
 class BreadcrumbManagerKeyedService;
 
 // Protocol mirroring BreadcrumbManagerObserver
 @protocol BreadcrumbManagerObserving
-- (void)breadcrumbManager:(BreadcrumbManagerKeyedService*)manager
+- (void)breadcrumbManager:(BreadcrumbManager*)manager
               didAddEvent:(NSString*)string;
 @end
 
@@ -19,9 +20,17 @@ class BreadcrumbManagerKeyedService;
 // that observes the connection type.
 class BreadcrumbManagerObserverBridge : public BreadcrumbManagerObserver {
  public:
-  explicit BreadcrumbManagerObserverBridge(
-      BreadcrumbManagerKeyedService* breadcrumb_manager_keyed_service,
+  // Constructs a new bridge instance adding |observer| as an observer of
+  // |breadcrumb_manager|.
+  BreadcrumbManagerObserverBridge(BreadcrumbManager* breadcrumb_manager,
+                                  id<BreadcrumbManagerObserving> observer);
+
+  // Constructs a new bridge instance adding |observer| as an observer of
+  // |breadcrumb_manager_service|.
+  BreadcrumbManagerObserverBridge(
+      BreadcrumbManagerKeyedService* breadcrumb_manager_service,
       id<BreadcrumbManagerObserving> observer);
+
   ~BreadcrumbManagerObserverBridge() override;
 
  private:
@@ -31,10 +40,11 @@ class BreadcrumbManagerObserverBridge : public BreadcrumbManagerObserver {
       const BreadcrumbManagerObserverBridge&) = delete;
 
   // BreadcrumbManagerObserver implementation:
-  void EventAdded(BreadcrumbManagerKeyedService* manager,
+  void EventAdded(BreadcrumbManager* manager,
                   const std::string& event) override;
 
-  BreadcrumbManagerKeyedService* breadcrumb_manager_keyed_service_ = nullptr;
+  BreadcrumbManager* breadcrumb_manager_ = nullptr;
+  BreadcrumbManagerKeyedService* breadcrumb_manager_service_ = nullptr;
   __weak id<BreadcrumbManagerObserving> observer_ = nil;
 };
 

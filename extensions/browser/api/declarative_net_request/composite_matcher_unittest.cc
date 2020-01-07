@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/strings/stringprintf.h"
 #include "components/version_info/version_info.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
@@ -29,7 +30,7 @@ namespace extensions {
 namespace declarative_net_request {
 
 using PageAccess = PermissionsData::PageAccess;
-using RedirectActionInfo = CompositeMatcher::RedirectActionInfo;
+using ActionInfo = CompositeMatcher::ActionInfo;
 
 namespace dnr_api = api::declarative_net_request;
 
@@ -58,7 +59,8 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
   redirect_rule_1.action->redirect->url = std::string("http://ruleset1.com");
   redirect_rule_1.id = kMinValidID + 1;
 
-  // Create the first ruleset matcher.
+  // Create the first ruleset matcher. It blocks google.com and redirects
+  // example.com to ruleset1.com.
   const size_t kSource1ID = 1;
   const size_t kSource1Priority = 1;
   std::unique_ptr<RulesetMatcher> matcher_1;
@@ -66,7 +68,8 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
       {block_rule, redirect_rule_1},
       CreateTemporarySource(kSource1ID, kSource1Priority), &matcher_1));
 
-  // Now create a second ruleset matcher.
+  // Now create a second ruleset matcher. It allows google.com and redirects
+  // example.com to ruleset2.com.
   const size_t kSource2ID = 2;
   const size_t kSource2Priority = 2;
   TestRule allow_rule = block_rule;
@@ -83,8 +86,8 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
   matchers.push_back(std::move(matcher_1));
   matchers.push_back(std::move(matcher_2));
-  auto composite_matcher = std::make_unique<CompositeMatcher>(
-      std::move(matchers), nullptr /* action_tracker */);
+  auto composite_matcher =
+      std::make_unique<CompositeMatcher>(std::move(matchers));
 
   GURL google_url = GURL("http://google.com");
   RequestParams google_params;
@@ -93,8 +96,10 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
   google_params.is_third_party = false;
 
   // The second ruleset should get more priority.
-  EXPECT_FALSE(
-      composite_matcher->GetBlockOrCollapseAction(google_params).has_value());
+  ActionInfo action_info = composite_matcher->GetBeforeRequestAction(
+      google_params, PageAccess::kAllowed);
+  ASSERT_TRUE(action_info.action);
+  EXPECT_EQ(action_info.action->type, RequestAction::Type::ALLOW);
 
   GURL example_url = GURL("http://example.com");
   RequestParams example_params;
@@ -103,9 +108,10 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
       url_pattern_index::flat::ElementType_SUBDOCUMENT;
   example_params.is_third_party = false;
 
-  RedirectActionInfo action_info = composite_matcher->GetRedirectAction(
-      example_params, PageAccess::kAllowed);
+  action_info = composite_matcher->GetBeforeRequestAction(example_params,
+                                                          PageAccess::kAllowed);
   ASSERT_TRUE(action_info.action);
+  EXPECT_EQ(action_info.action->type, RequestAction::Type::REDIRECT);
   EXPECT_EQ(GURL("http://ruleset2.com"), action_info.action->redirect_url);
   EXPECT_FALSE(action_info.notify_request_withheld);
 
@@ -122,20 +128,22 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
       CreateTemporarySource(kSource2ID, kSource1Priority), &matcher_2));
   matchers.push_back(std::move(matcher_1));
   matchers.push_back(std::move(matcher_2));
-  composite_matcher = std::make_unique<CompositeMatcher>(
-      std::move(matchers), nullptr /* action_tracker */);
+  composite_matcher = std::make_unique<CompositeMatcher>(std::move(matchers));
 
   // Reusing request params means that their allow_rule_caches must be cleared.
   google_params.allow_rule_cache.clear();
   example_params.allow_rule_cache.clear();
 
   // The first ruleset should get more priority.
-  EXPECT_TRUE(
-      composite_matcher->GetBlockOrCollapseAction(google_params).has_value());
-
-  action_info = composite_matcher->GetRedirectAction(example_params,
-                                                     PageAccess::kAllowed);
+  action_info = composite_matcher->GetBeforeRequestAction(google_params,
+                                                          PageAccess::kAllowed);
   ASSERT_TRUE(action_info.action);
+  EXPECT_TRUE(action_info.action->IsBlockOrCollapse());
+
+  action_info = composite_matcher->GetBeforeRequestAction(example_params,
+                                                          PageAccess::kAllowed);
+  ASSERT_TRUE(action_info.action);
+  EXPECT_EQ(action_info.action->type, RequestAction::Type::REDIRECT);
   EXPECT_EQ(GURL("http://ruleset1.com"), action_info.action->redirect_url);
   EXPECT_FALSE(action_info.notify_request_withheld);
 }
@@ -193,8 +201,8 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
   matchers.push_back(std::move(matcher_1));
   matchers.push_back(std::move(matcher_2));
-  auto composite_matcher = std::make_unique<CompositeMatcher>(
-      std::move(matchers), nullptr /* action_tracker */);
+  auto composite_matcher =
+      std::make_unique<CompositeMatcher>(std::move(matchers));
 
   // Send a request to google.com which should be redirected.
   GURL google_url = GURL("http://google.com");
@@ -204,9 +212,10 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
   google_params.is_third_party = false;
 
   // The second ruleset should get more priority.
-  RedirectActionInfo action_info =
-      composite_matcher->GetRedirectAction(google_params, PageAccess::kAllowed);
+  ActionInfo action_info = composite_matcher->GetBeforeRequestAction(
+      google_params, PageAccess::kAllowed);
   ASSERT_TRUE(action_info.action);
+  EXPECT_EQ(action_info.action->type, RequestAction::Type::REDIRECT);
   EXPECT_EQ(GURL("http://ruleset2.com"), action_info.action->redirect_url);
   EXPECT_FALSE(action_info.notify_request_withheld);
 
@@ -244,8 +253,7 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
       &matcher_2));
   matchers.push_back(std::move(matcher_1));
   matchers.push_back(std::move(matcher_2));
-  composite_matcher = std::make_unique<CompositeMatcher>(
-      std::move(matchers), nullptr /* action_tracker */);
+  composite_matcher = std::make_unique<CompositeMatcher>(std::move(matchers));
 
   // Reusing request params means that their allow_rule_caches must be cleared.
   google_params.allow_rule_cache.clear();
@@ -253,9 +261,10 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
 
   // The first ruleset should get more priority and so the request to google.com
   // should not be redirected.
-  action_info =
-      composite_matcher->GetRedirectAction(google_params, PageAccess::kAllowed);
-  EXPECT_FALSE(action_info.action.has_value());
+  action_info = composite_matcher->GetBeforeRequestAction(google_params,
+                                                          PageAccess::kAllowed);
+  ASSERT_TRUE(action_info.action);
+  EXPECT_EQ(action_info.action->type, RequestAction::Type::ALLOW);
   EXPECT_FALSE(action_info.notify_request_withheld);
 
   // The request to example.com should now have its headers removed.
@@ -328,8 +337,8 @@ TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
   matchers.push_back(std::move(matcher_1));
   matchers.push_back(std::move(matcher_2));
-  auto composite_matcher = std::make_unique<CompositeMatcher>(
-      std::move(matchers), nullptr /* action_tracker */);
+  auto composite_matcher =
+      std::make_unique<CompositeMatcher>(std::move(matchers));
 
   GURL google_url = GURL("http://google.com");
   RequestParams google_params;
@@ -425,8 +434,8 @@ TEST_F(CompositeMatcherTest, NotifyWithholdFromPageAccess) {
   // Create a composite matcher.
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
   matchers.push_back(std::move(matcher_1));
-  auto composite_matcher = std::make_unique<CompositeMatcher>(
-      std::move(matchers), nullptr /* action_tracker */);
+  auto composite_matcher =
+      std::make_unique<CompositeMatcher>(std::move(matchers));
 
   GURL google_url = GURL("http://google.com");
   GURL example_url = GURL("http://example.com");
@@ -464,13 +473,20 @@ TEST_F(CompositeMatcherTest, NotifyWithholdFromPageAccess) {
   };
 
   for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(base::StringPrintf(
+        "request_url=%s, access=%d, expected_final_url=%s, "
+        "should_notify_withheld=%d",
+        test_case.request_url.spec().c_str(), test_case.access,
+        test_case.expected_final_url.value_or(GURL()).spec().c_str(),
+        test_case.should_notify_withheld));
+
     RequestParams params;
     params.url = &test_case.request_url;
     params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
     params.is_third_party = false;
 
-    RedirectActionInfo redirect_action_info =
-        composite_matcher->GetRedirectAction(params, test_case.access);
+    ActionInfo redirect_action_info =
+        composite_matcher->GetBeforeRequestAction(params, test_case.access);
 
     EXPECT_EQ(test_case.should_notify_withheld,
               redirect_action_info.notify_request_withheld);
@@ -514,8 +530,8 @@ TEST_F(CompositeMatcherTest, GetRedirectUrlFromPriority) {
   // Create a composite matcher.
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
   matchers.push_back(std::move(matcher_1));
-  auto composite_matcher = std::make_unique<CompositeMatcher>(
-      std::move(matchers), nullptr /* action_tracker */);
+  auto composite_matcher =
+      std::make_unique<CompositeMatcher>(std::move(matchers));
 
   struct {
     GURL request_url;
@@ -534,23 +550,29 @@ TEST_F(CompositeMatcherTest, GetRedirectUrlFromPriority) {
       // the request should be redirected.
       {GURL("http://defghi.com"), GURL("http://example.com")},
 
-      // The request should be redirected as it does not match the upgrade rule
-      // because of its scheme.
-      {GURL("https://abcdef.com"), GURL("http://google.com")},
+      // The request will not be redirected as it matches the upgrade rule but
+      // is already https.
+      {GURL("https://abcdef.com"), base::nullopt},
+
       {GURL("http://xyz.com"), base::nullopt},
   };
 
   for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(base::StringPrintf(
+        "Test redirect from %s to %s", test_case.request_url.spec().c_str(),
+        test_case.expected_final_url.value_or(GURL()).spec().c_str()));
+
     RequestParams params;
     params.url = &test_case.request_url;
     params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
     params.is_third_party = false;
 
-    RedirectActionInfo redirect_action_info =
-        composite_matcher->GetRedirectAction(params, PageAccess::kAllowed);
+    ActionInfo redirect_action_info =
+        composite_matcher->GetBeforeRequestAction(params, PageAccess::kAllowed);
 
     if (test_case.expected_final_url) {
       ASSERT_TRUE(redirect_action_info.action);
+      EXPECT_TRUE(redirect_action_info.action->IsRedirectOrUpgrade());
       EXPECT_EQ(test_case.expected_final_url,
                 redirect_action_info.action->redirect_url);
     } else {

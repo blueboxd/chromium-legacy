@@ -15,7 +15,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
 
-class BreadcrumbManagerKeyedService;
+class BreadcrumbManager;
 
 namespace web {
 class BrowserState;
@@ -41,7 +41,7 @@ class BreadcrumbPersistentStorageKeyedService
   // if null is passed for |manager|. As such, this can be used to ensure stale
   // data does not take up disk space. If manager is non-null, events will be
   // written whenever |manager| receives an event.
-  void ObserveBreadcrumbManager(BreadcrumbManagerKeyedService* manager);
+  void ObserveBreadcrumbManager(BreadcrumbManager* manager);
 
  private:
   // Writes |observered_manager_|'s events to disk, overwriting any existing
@@ -54,11 +54,11 @@ class BreadcrumbPersistentStorageKeyedService
   void WriteBreadcrumbEvent(const std::string& event);
 
   // BreadcrumbManagerObserver
-  void EventAdded(BreadcrumbManagerKeyedService* manager,
+  void EventAdded(BreadcrumbManager* manager,
                   const std::string& event) override;
 
   // The breadcrumb manager currently being observed.
-  BreadcrumbManagerKeyedService* observered_manager_ = nullptr;
+  BreadcrumbManager* observered_manager_ = nullptr;
 
   // The path to the breadcrumbs file.
   base::FilePath breadcrumbs_file_path_;

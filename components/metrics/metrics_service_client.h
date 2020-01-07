@@ -153,7 +153,7 @@ class MetricsServiceClient {
   virtual std::string GetUploadSigningKey();
 
   // Sets the callback to run MetricsServiceManager::UpdateRunningServices.
-  void SetUpdateRunningServicesCallback(const base::Closure& callback);
+  void SetUpdateRunningServicesCallback(const base::RepeatingClosure& callback);
 
   // Notify MetricsServiceManager to UpdateRunningServices using callback.
   void UpdateRunningServices();
@@ -162,7 +162,7 @@ class MetricsServiceClient {
   bool IsMetricsReportingForceEnabled() const;
 
  private:
-  base::Closure update_running_services_;
+  base::RepeatingClosure update_running_services_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceClient);
 };

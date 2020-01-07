@@ -34,22 +34,22 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
   // ExtendedAuthenticator:
   void SetConsumer(AuthStatusConsumer* consumer) override;
   void AuthenticateToMount(const UserContext& context,
-                           const ResultCallback& success_callback) override;
+                           ResultCallback success_callback) override;
   void AuthenticateToCheck(const UserContext& context,
-                           const base::Closure& success_callback) override;
+                           base::OnceClosure success_callback) override;
   void AddKey(const UserContext& context,
               const cryptohome::KeyDefinition& key,
               bool clobber_if_exists,
-              const base::Closure& success_callback) override;
+              base::OnceClosure success_callback) override;
   void UpdateKeyAuthorized(const UserContext& context,
                            const cryptohome::KeyDefinition& key,
                            const std::string& signature,
-                           const base::Closure& success_callback) override;
+                           base::OnceClosure success_callback) override;
   void RemoveKey(const UserContext& context,
                  const std::string& key_to_remove,
-                 const base::Closure& success_callback) override;
+                 base::OnceClosure success_callback) override;
   void TransformKeyIfNeeded(const UserContext& user_context,
-                            const ContextCallback& callback) override;
+                            ContextCallback callback) override;
 
  private:
   explicit ExtendedAuthenticatorImpl(NewAuthStatusConsumer* consumer);
@@ -60,36 +60,36 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) ExtendedAuthenticatorImpl
   void OnSaltObtained(const std::string& system_salt);
 
   // Performs actual operation with fully configured |context|.
-  void DoAuthenticateToMount(const ResultCallback& success_callback,
+  void DoAuthenticateToMount(ResultCallback success_callback,
                              const UserContext& context);
-  void DoAuthenticateToCheck(const base::Closure& success_callback,
+  void DoAuthenticateToCheck(base::OnceClosure success_callback,
                              const UserContext& context);
   void DoAddKey(const cryptohome::KeyDefinition& key,
                 bool clobber_if_exists,
-                const base::Closure& success_callback,
+                base::OnceClosure success_callback,
                 const UserContext& context);
   void DoUpdateKeyAuthorized(const cryptohome::KeyDefinition& key,
                              const std::string& signature,
-                             const base::Closure& success_callback,
+                             base::OnceClosure success_callback,
                              const UserContext& context);
   void DoRemoveKey(const std::string& key_to_remove,
-                   const base::Closure& success_callback,
+                   base::OnceClosure success_callback,
                    const UserContext& context);
 
   // Inner operation callbacks.
   void OnMountComplete(const std::string& time_marker,
                        const UserContext& context,
-                       const ResultCallback& success_callback,
+                       ResultCallback success_callback,
                        base::Optional<cryptohome::BaseReply> reply);
   void OnOperationComplete(const std::string& time_marker,
                            const UserContext& context,
-                           const base::Closure& success_callback,
+                           base::OnceClosure success_callback,
                            bool success,
                            cryptohome::MountError return_code);
 
   bool salt_obtained_;
   std::string system_salt_;
-  std::vector<base::Closure> system_salt_callbacks_;
+  std::vector<base::OnceClosure> system_salt_callbacks_;
 
   NewAuthStatusConsumer* consumer_;
   AuthStatusConsumer* old_consumer_;

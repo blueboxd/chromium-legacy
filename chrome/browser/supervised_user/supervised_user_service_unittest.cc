@@ -531,9 +531,9 @@ TEST_F(SupervisedUserServiceExtensionTest,
     EXPECT_FALSE(error_3.empty());
 
     base::string16 error_4;
-    EXPECT_FALSE(supervised_user_service->UserMayModifySettings(extension.get(),
-                                                                &error_4));
-    EXPECT_FALSE(error_4.empty());
+    EXPECT_TRUE(supervised_user_service->UserMayModifySettings(extension.get(),
+                                                               &error_4));
+    EXPECT_TRUE(error_4.empty());
 
     base::string16 error_5;
     EXPECT_TRUE(

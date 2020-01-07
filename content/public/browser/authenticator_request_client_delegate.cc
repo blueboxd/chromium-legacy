@@ -166,7 +166,7 @@ void AuthenticatorRequestClientDelegate::CollectPIN(
   NOTREACHED();
 }
 
-void AuthenticatorRequestClientDelegate::FinishCollectPIN() {
+void AuthenticatorRequestClientDelegate::FinishCollectToken() {
   NOTREACHED();
 }
 

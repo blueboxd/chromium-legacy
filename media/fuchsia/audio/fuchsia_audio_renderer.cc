@@ -98,7 +98,7 @@ FuchsiaAudioRenderer::~FuchsiaAudioRenderer() {
 void FuchsiaAudioRenderer::Initialize(DemuxerStream* stream,
                                       CdmContext* cdm_context,
                                       RendererClient* client,
-                                      const PipelineStatusCB& init_cb) {
+                                      PipelineStatusCallback init_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!demuxer_stream_);
 

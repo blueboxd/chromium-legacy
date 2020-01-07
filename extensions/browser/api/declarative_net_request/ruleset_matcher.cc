@@ -78,39 +78,11 @@ RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
 
 RulesetMatcher::~RulesetMatcher() = default;
 
-base::Optional<RequestAction> RulesetMatcher::GetBlockOrCollapseAction(
-    const RequestParams& params) const {
-  base::Optional<RequestAction> action =
-      url_pattern_index_matcher_.GetBlockOrCollapseAction(params);
-  if (!action)
-    action = regex_matcher_.GetBlockOrCollapseAction(params);
-  return action;
-}
-
-base::Optional<RequestAction> RulesetMatcher::GetAllowAction(
-    const RequestParams& params) const {
-  base::Optional<RequestAction> action =
-      url_pattern_index_matcher_.GetAllowAction(params);
-  if (!action)
-    action = regex_matcher_.GetAllowAction(params);
-  return action;
-}
-
-base::Optional<RequestAction> RulesetMatcher::GetRedirectAction(
+base::Optional<RequestAction> RulesetMatcher::GetBeforeRequestAction(
     const RequestParams& params) const {
   return GetMaxPriorityAction(
-      url_pattern_index_matcher_.GetRedirectAction(params),
-      regex_matcher_.GetRedirectAction(params));
-}
-
-base::Optional<RequestAction> RulesetMatcher::GetUpgradeAction(
-    const RequestParams& params) const {
-  if (!IsUpgradeableRequest(params))
-    return base::nullopt;
-
-  return GetMaxPriorityAction(
-      url_pattern_index_matcher_.GetUpgradeAction(params),
-      regex_matcher_.GetUpgradeAction(params));
+      url_pattern_index_matcher_.GetBeforeRequestAction(params),
+      regex_matcher_.GetBeforeRequestAction(params));
 }
 
 uint8_t RulesetMatcher::GetRemoveHeadersMask(
@@ -132,13 +104,6 @@ uint8_t RulesetMatcher::GetRemoveHeadersMask(
 bool RulesetMatcher::IsExtraHeadersMatcher() const {
   return url_pattern_index_matcher_.IsExtraHeadersMatcher() ||
          regex_matcher_.IsExtraHeadersMatcher();
-}
-
-base::Optional<RequestAction>
-RulesetMatcher::GetRedirectOrUpgradeActionByPriority(
-    const RequestParams& params) const {
-  return GetMaxPriorityAction(GetRedirectAction(params),
-                              GetUpgradeAction(params));
 }
 
 RulesetMatcher::RulesetMatcher(

@@ -34,6 +34,9 @@ constexpr char kKHRSimpleControllerInteractionProfile[] =
 
 constexpr char kOculusTouchControllerInteractionProfile[] =
     "/interaction_profiles/oculus/touch_controller";
+
+constexpr char kValveIndexControllerinteractionProfile[] =
+    "/interaction_profiles/valve/index_controller";
 }  // namespace interaction_profile
 
 class OpenXrTestHelper : public device::ServiceTestHook {

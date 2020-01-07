@@ -544,6 +544,11 @@ WebWorkerFetchContextImpl::TakePendingWorkerTimingReceiver(int request_id) {
   return receiver.PassPipe();
 }
 
+void WebWorkerFetchContextImpl::SetIsOfflineMode(bool is_offline_mode) {
+  // Worker doesn't support offline mode. There should be no callers.
+  NOTREACHED();
+}
+
 void WebWorkerFetchContextImpl::set_controller_service_worker_mode(
     blink::mojom::ControllerServiceWorkerMode mode) {
   controller_service_worker_mode_ = mode;

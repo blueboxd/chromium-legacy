@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -320,9 +321,6 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
 
   BubbleReference bubble_reference_;
 
-  // The shortcut to open the manage shortcuts page.
-  views::Link* manage_shortcut_;
-
   Browser* const browser_;
   const scoped_refptr<const extensions::Extension> extension_;
   const gfx::ImageSkia icon_;
@@ -340,7 +338,6 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
                                    ? views::BubbleBorder::TOP_LEFT
                                    : views::BubbleBorder::TOP_RIGHT),
       bubble_reference_(bubble_reference),
-      manage_shortcut_(nullptr),
       browser_(browser),
       extension_(extension),
       icon_(MakeIconFromBitmap(icon)) {
@@ -432,11 +429,10 @@ void ExtensionInstalledBubbleView::Init() {
   }
 
   if (ShouldShowKeybinding(extension_.get(), browser_)) {
-    manage_shortcut_ = new views::Link(
-        l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS));
-    manage_shortcut_->set_listener(this);
-    manage_shortcut_->SetUnderline(false);
-    AddChildView(manage_shortcut_);
+    auto* manage_shortcut = AddChildView(std::make_unique<views::Link>(
+        l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_SHORTCUTS)));
+    manage_shortcut->set_listener(this);
+    manage_shortcut->SetUnderline(false);
   }
 
   if (ShouldShowHowToManage(extension_.get(), browser_)) {
@@ -456,12 +452,9 @@ void ExtensionInstalledBubbleView::OnEnableSync(const AccountInfo& account,
 
 void ExtensionInstalledBubbleView::LinkClicked(views::Link* source,
                                                int event_flags) {
-  DCHECK_EQ(manage_shortcut_, source);
-
-  std::string configure_url = chrome::kChromeUIExtensionsURL;
-  configure_url += chrome::kExtensionConfigureCommandsSubPage;
-  NavigateParams params(
-      GetSingletonTabNavigateParams(browser_, GURL(configure_url)));
+  const GURL kUrl(base::StrCat({chrome::kChromeUIExtensionsURL,
+                                chrome::kExtensionConfigureCommandsSubPage}));
+  NavigateParams params = GetSingletonTabNavigateParams(browser_, kUrl);
   Navigate(&params);
   CloseBubble(BUBBLE_CLOSE_NAVIGATED);
 }

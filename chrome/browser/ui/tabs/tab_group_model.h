@@ -13,12 +13,12 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "components/tab_groups/tab_group_color.h"
 
 class TabGroup;
 class TabGroupController;
 
 namespace tab_groups {
+enum class TabGroupColorId;
 class TabGroupId;
 class TabGroupVisualData;
 }  // namespace tab_groups
@@ -38,18 +38,18 @@ class TabGroupModel {
   // initially be empty, but the expectation is that at least one tab will be
   // added to it immediately.
   TabGroup* AddTabGroup(
-      tab_groups::TabGroupId id,
+      const tab_groups::TabGroupId& id,
       base::Optional<tab_groups::TabGroupVisualData> visual_data);
 
   // Returns whether a tab group with the given |id| exists.
-  bool ContainsTabGroup(tab_groups::TabGroupId id) const;
+  bool ContainsTabGroup(const tab_groups::TabGroupId& id) const;
 
   // Returns the tab group with the given |id|. The group must exist.
-  TabGroup* GetTabGroup(tab_groups::TabGroupId id) const;
+  TabGroup* GetTabGroup(const tab_groups::TabGroupId& id) const;
 
   // Removes the tab group with the given |id| from the registry. Should be
   // called whenever the group becomes empty.
-  void RemoveTabGroup(tab_groups::TabGroupId id);
+  void RemoveTabGroup(const tab_groups::TabGroupId& id);
 
   std::vector<tab_groups::TabGroupId> ListTabGroups() const;
 

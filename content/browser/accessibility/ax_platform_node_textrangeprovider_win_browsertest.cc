@@ -76,6 +76,9 @@ namespace content {
 class AXPlatformNodeTextRangeProviderWinBrowserTest
     : public AccessibilityContentBrowserTest {
  protected:
+  const base::string16 kEmbeddedCharacterAsString = {
+      ui::AXPlatformNodeBase::kEmbeddedCharacter};
+
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     SetupCrossSiteRedirector(embedded_test_server());
@@ -446,7 +449,8 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   ComPtr<ITextRangeProvider> text_range_provider;
   GetTextRangeProviderFromTextNode(*input_text_node, &text_range_provider);
   ASSERT_NE(nullptr, text_range_provider.Get());
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
+                          kEmbeddedCharacterAsString.c_str());
 
   base::win::ScopedVariant value;
   EXPECT_HRESULT_SUCCEEDED(text_range_provider->GetAttributeValue(
@@ -464,7 +468,8 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
 
   GetTextRangeProviderFromTextNode(*input_search_node, &text_range_provider);
   ASSERT_NE(nullptr, text_range_provider.Get());
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
+                          kEmbeddedCharacterAsString.c_str());
 
   EXPECT_HRESULT_SUCCEEDED(text_range_provider->GetAttributeValue(
       UIA_IsReadOnlyAttributeId, value.Receive()));
@@ -1906,8 +1911,9 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
        L"bold and italic text more bold and italic text", L" italic text",
        L" plain text"});
 
-  AssertMoveByUnitForMarkup(TextUnit_Format, "before <img src='test'> after",
-                            {L"before ", L" after"});
+  AssertMoveByUnitForMarkup(
+      TextUnit_Format, "before <img src='test'> after",
+      {L"before ", (kEmbeddedCharacterAsString + L" after").c_str()});
 
   AssertMoveByUnitForMarkup(TextUnit_Format,
                             "before <a href='test'>link</a> after",
@@ -1980,6 +1986,47 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   //     TextUnit_Line,
   //     "<h1>line one</h1><ul><li>line two</li><li>line three</li></ul>",
   //     {L"line one\n", L"* line two\n", L"* line three"});
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       MoveByCharacterWithEmbeddedObject) {
+  const std::string html_markup = R"HTML(<!DOCTYPE html>
+  <html>
+    <body>
+      <div>
+        <label for="input1">Some text</label>
+        <input id="input1">
+        <p>after</p>
+      </div>
+    </body>
+  </html>)HTML";
+
+  const std::vector<const wchar_t*> characters = {
+      L"S", L"o", L"m", L"e", L" ",
+      L"t", L"e", L"x", L"t", kEmbeddedCharacterAsString.c_str(),
+      L"a", L"f", L"t", L"e", L"r"};
+
+  AssertMoveByUnitForMarkup(TextUnit_Character, html_markup, characters);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       MoveByWordWithEmbeddedObject) {
+  const std::string html_markup = R"HTML(<!DOCTYPE html>
+  <html>
+    <body>
+      <div>
+        <label for="input1">Some text </label>
+        <input id="input1">
+        <p> after input</p>
+      </div>
+    </body>
+  </html>)HTML";
+
+  const std::vector<const wchar_t*> words = {L"Some ", L"text ",
+                                             kEmbeddedCharacterAsString.c_str(),
+                                             L"after ", L"input"};
+
+  AssertMoveByUnitForMarkup(TextUnit_Word, html_markup, words);
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,

@@ -84,6 +84,12 @@ RasterizeAndRecordBenchmark::~RasterizeAndRecordBenchmark() {
 
 void RasterizeAndRecordBenchmark::DidUpdateLayers(
     LayerTreeHost* layer_tree_host) {
+  // It is possible that this will be called before NotifyDone is called, in the
+  // event that a BeginMainFrame was scheduled before NotifyDone for example.
+  // This check prevents the benchmark from being run a second time redundantly.
+  if (main_thread_benchmark_done_)
+    return;
+
   layer_tree_host_ = layer_tree_host;
   for (auto* layer : *layer_tree_host)
     layer->RunMicroBenchmark(this);

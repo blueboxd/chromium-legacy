@@ -19,7 +19,7 @@ class GoogleUpdateMetricsProviderWin : public metrics::MetricsProvider {
   ~GoogleUpdateMetricsProviderWin() override;
 
   // metrics::MetricsProvider
-  void AsyncInit(const base::Closure& done_callback) override;
+  void AsyncInit(base::OnceClosure done_callback) override;
   void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
 
@@ -52,7 +52,7 @@ class GoogleUpdateMetricsProviderWin : public metrics::MetricsProvider {
   // Receives |google_update_metrics| from a blocking pool thread and runs
   // |done_callback|.
   void ReceiveGoogleUpdateData(
-      const base::Closure& done_callback,
+      base::OnceClosure done_callback,
       const GoogleUpdateMetrics& google_update_metrics);
 
   // Google Update metrics that were fetched via GetGoogleUpdateData(). Will be

@@ -54,7 +54,7 @@
 <translation id="1550523713251050646">Klik voor meer opties</translation>
 <translation id="1570871743947603115">Bluetooth schakelen. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Al je activiteit in deze sessie bekijken</translation>
-<translation id="1608626060424371292">Deze gebruiker verwijderen</translation>
+<translation id="1608626060424371292">Gebruiker verwijderen</translation>
 <translation id="1654477262762802994">Een gesproken zoekopdracht starten</translation>
 <translation id="1658406695958299976">Je wachtwoord kan nog steeds niet worden geverifieerd. Opmerking: Als je je wachtwoord onlangs hebt gewijzigd, wordt je nieuwe wachtwoord doorgevoerd wanneer je uitlogt. Gebruik hier het oude wachtwoord.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> resterend</translation>
@@ -345,7 +345,6 @@
 <translation id="5777841717266010279">Stoppen met scherm delen?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="ROUTE_TITLE" /> in <ph name="RECEIVER_NAME" /> stopzetten</translation>
-<translation id="5860033963881614850">Uit</translation>
 <translation id="5895138241574237353">Opnieuw starten</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
@@ -587,7 +586,7 @@
 <translation id="9080206825613744995">Microfoon wordt gebruikt.</translation>
 <translation id="9084606467167974638">Positie van menu wijzigen</translation>
 <translation id="9089416786594320554">Invoermethoden</translation>
-<translation id="9091626656156419976">Display <ph name="DISPLAY_NAME" /> is verwijderd</translation>
+<translation id="9091626656156419976">Scherm <ph name="DISPLAY_NAME" /> is verwijderd</translation>
 <translation id="9151726767154816831">Opnieuw opstarten en de functie Powerwash gebruiken om bij te werken</translation>
 <translation id="9179259655489829027">Met deze functie kun je snel zonder wachtwoord toegang krijgen tot iedere ingelogde gebruiker. Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="9183456764293710005">Vergrootglas voor volledig scherm</translation>

@@ -29,7 +29,7 @@ class CrashUtil {
   // in a seperate process. See MinidumpWriter::SetDumpStateCbForTest() for more
   // details on this callback's signature.
   static void SetDumpStateCbForTest(
-      const base::Callback<int(const std::string&)>& cb);
+      base::OnceCallback<int(const std::string&)> cb);
 };
 
 }  // namespace chromecast

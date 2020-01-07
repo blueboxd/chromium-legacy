@@ -70,8 +70,7 @@ constexpr base::StringPiece kQueryKey = "query";
 constexpr base::StringPiece kRawQueryKey = "rawQuery";
 constexpr base::StringPiece kClientTypeKey = "clientType";
 constexpr base::StringPiece kClientIdKey = "clientId";
-// TODO(llin): Update the client type after finalize on the client type.
-constexpr base::StringPiece kClientType = "EXPERIMENTAL";
+constexpr base::StringPiece kClientType = "QUICK_ANSWERS_CROS";
 
 std::string BuildSearchRequestPayload(const std::string& selected_text) {
   Value payload(Value::Type::DICTIONARY);

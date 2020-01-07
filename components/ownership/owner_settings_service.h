@@ -56,7 +56,7 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
           policy_response)>
       AssembleAndSignPolicyAsyncCallback;
 
-  typedef base::RepeatingCallback<void(bool is_owner)> IsOwnerCallback;
+  using IsOwnerCallback = base::OnceCallback<void(bool is_owner)>;
 
   explicit OwnerSettingsService(
       const scoped_refptr<ownership::OwnerKeyUtil>& owner_key_util);
@@ -82,7 +82,7 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
   // Determines whether current user is owner or not, responds via |callback|.
   // Reliably returns the correct value, but will not respond on the callback
   // until IsReady() returns true.
-  virtual void IsOwnerAsync(const IsOwnerCallback& callback);
+  virtual void IsOwnerAsync(IsOwnerCallback callback);
 
   // Assembles and signs |policy| on the |task_runner|, responds on
   // the original thread via |callback|.

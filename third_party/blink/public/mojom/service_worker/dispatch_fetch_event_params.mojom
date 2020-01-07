@@ -30,4 +30,8 @@ struct DispatchFetchEventParams {
   // TODO(https://crbug.com/900700): Make this non-nullable when implementation
   // is complete (including support for navigation requests).
   pending_remote<blink.mojom.WorkerTimingContainer>? worker_timing_remote;
+
+  // Whether this is a "fake" fetch event used to detect the offline capability
+  // of the service worker. See more details at https://crbug.com/965802.
+  bool is_offline_capability_check = false;
 };

@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/css/css_property_name.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
-class CSSPropertyNameTest : public testing::Test {
+class CSSPropertyNameTest : public PageTestBase {
  public:
   CSSPropertyName Empty() const {
     return CSSPropertyName(CSSPropertyName::kEmptyValue);
@@ -61,14 +61,15 @@ TEST_F(CSSPropertyNameTest, OperatorEquals) {
 }
 
 TEST_F(CSSPropertyNameTest, From) {
-  EXPECT_TRUE(CSSPropertyName::From("color"));
-  EXPECT_TRUE(CSSPropertyName::From("--x"));
-  EXPECT_FALSE(CSSPropertyName::From("notaproperty"));
-  EXPECT_FALSE(CSSPropertyName::From("-not-a-property"));
+  EXPECT_TRUE(CSSPropertyName::From(&GetDocument(), "color"));
+  EXPECT_TRUE(CSSPropertyName::From(&GetDocument(), "--x"));
+  EXPECT_FALSE(CSSPropertyName::From(&GetDocument(), "notaproperty"));
+  EXPECT_FALSE(CSSPropertyName::From(&GetDocument(), "-not-a-property"));
 
-  EXPECT_EQ(*CSSPropertyName::From("color"),
+  EXPECT_EQ(*CSSPropertyName::From(&GetDocument(), "color"),
             CSSPropertyName(CSSPropertyID::kColor));
-  EXPECT_EQ(*CSSPropertyName::From("--x"), CSSPropertyName("--x"));
+  EXPECT_EQ(*CSSPropertyName::From(&GetDocument(), "--x"),
+            CSSPropertyName("--x"));
 }
 
 TEST_F(CSSPropertyNameTest, FromNativeCSSProperty) {

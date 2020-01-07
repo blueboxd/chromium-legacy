@@ -17,7 +17,7 @@ class MetricsScheduler {
  public:
   // Creates MetricsScheduler object with the given |task_callback|
   // callback to call when a task should happen.
-  MetricsScheduler(const base::Closure& task_callback,
+  MetricsScheduler(const base::RepeatingClosure& task_callback,
                    bool fast_startup_for_testing);
   virtual ~MetricsScheduler();
 
@@ -42,7 +42,7 @@ class MetricsScheduler {
   void ScheduleNextTask();
 
   // The method to call when task should happen.
-  const base::Closure task_callback_;
+  const base::RepeatingClosure task_callback_;
 
   // Uses a one-shot timer rather than a repeating one because the task may be
   // async, and the length of the interval may change.

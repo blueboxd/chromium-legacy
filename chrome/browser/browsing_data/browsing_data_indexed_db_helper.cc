@@ -10,12 +10,14 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/indexed_db_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "url/origin.h"
 
@@ -24,59 +26,57 @@ using content::IndexedDBContext;
 using content::StorageUsageInfo;
 
 BrowsingDataIndexedDBHelper::BrowsingDataIndexedDBHelper(
-    IndexedDBContext* indexed_db_context)
-    : indexed_db_context_(indexed_db_context) {
-  DCHECK(indexed_db_context_.get());
+    content::StoragePartition* storage_partition)
+    : storage_partition_(storage_partition) {
+  DCHECK(storage_partition_);
 }
 
-BrowsingDataIndexedDBHelper::~BrowsingDataIndexedDBHelper() {
-}
+BrowsingDataIndexedDBHelper::~BrowsingDataIndexedDBHelper() {}
 
 void BrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
-  indexed_db_context_->IDBTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread,
-          this, std::move(callback)));
+  storage_partition_->GetIndexedDBControl().GetUsage(
+      base::BindOnce(&BrowsingDataIndexedDBHelper::IndexedDBUsageInfoReceived,
+                     base::WrapRefCounted(this), std::move(callback)));
 }
 
 void BrowsingDataIndexedDBHelper::DeleteIndexedDB(const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  indexed_db_context_->IDBTaskRunner()->PostTask(
+  storage_partition_->GetIndexedDBContext()->IDBTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread, this,
+          &BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread,
+          base::WrapRefCounted(this),
+          base::WrapRefCounted(storage_partition_->GetIndexedDBContext()),
           origin));
 }
 
-void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread(
-    FetchCallback callback) {
-  DCHECK(indexed_db_context_->IDBTaskRunner()->RunsTasksInCurrentSequence());
+void BrowsingDataIndexedDBHelper::IndexedDBUsageInfoReceived(
+    FetchCallback callback,
+    std::vector<storage::mojom::IndexedDBStorageUsageInfoPtr> origins) {
   DCHECK(!callback.is_null());
-  std::vector<StorageUsageInfo> origins =
-      indexed_db_context_->GetAllOriginsInfo();
   std::list<content::StorageUsageInfo> result;
-  for (const StorageUsageInfo& origin : origins) {
-    if (!BrowsingDataHelper::HasWebScheme(origin.origin.GetURL()))
+  for (const auto& origin_usage : origins) {
+    if (!BrowsingDataHelper::HasWebScheme(origin_usage->origin.GetURL()))
       continue;  // Non-websafe state is not considered browsing data.
-    result.push_back(origin);
+    result.push_back(StorageUsageInfo(origin_usage->origin,
+                                      origin_usage->size_in_bytes,
+                                      origin_usage->last_modified_time));
   }
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  std::move(callback).Run(std::move(result));
 }
 
 void BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread(
+    scoped_refptr<content::IndexedDBContext> context,
     const GURL& origin) {
-  DCHECK(indexed_db_context_->IDBTaskRunner()->RunsTasksInCurrentSequence());
-  indexed_db_context_->DeleteForOrigin(url::Origin::Create(origin));
+  DCHECK(context->IDBTaskRunner()->RunsTasksInCurrentSequence());
+  context->DeleteForOrigin(url::Origin::Create(origin));
 }
 
 CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper(
-    content::IndexedDBContext* context)
-    : BrowsingDataIndexedDBHelper(context) {
-}
+    content::StoragePartition* storage_partition)
+    : BrowsingDataIndexedDBHelper(storage_partition) {}
 
 CannedBrowsingDataIndexedDBHelper::~CannedBrowsingDataIndexedDBHelper() {}
 
@@ -116,8 +116,7 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
                  base::BindOnce(std::move(callback), result));
 }
 
-void CannedBrowsingDataIndexedDBHelper::DeleteIndexedDB(
-    const GURL& origin) {
+void CannedBrowsingDataIndexedDBHelper::DeleteIndexedDB(const GURL& origin) {
   pending_origins_.erase(url::Origin::Create(origin));
   BrowsingDataIndexedDBHelper::DeleteIndexedDB(origin);
 }

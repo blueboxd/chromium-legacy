@@ -17,10 +17,10 @@ class WebContents;
 
 class TabGroupController {
  public:
-  virtual void CreateTabGroup(tab_groups::TabGroupId group) = 0;
-  virtual void ChangeTabGroupContents(tab_groups::TabGroupId group) = 0;
-  virtual void ChangeTabGroupVisuals(tab_groups::TabGroupId group) = 0;
-  virtual void CloseTabGroup(tab_groups::TabGroupId group) = 0;
+  virtual void CreateTabGroup(const tab_groups::TabGroupId& group) = 0;
+  virtual void ChangeTabGroupContents(const tab_groups::TabGroupId& group) = 0;
+  virtual void ChangeTabGroupVisuals(const tab_groups::TabGroupId& group) = 0;
+  virtual void CloseTabGroup(const tab_groups::TabGroupId& group) = 0;
 
   // Methods from TabStipModel that are exposed to TabGroup.
   virtual base::Optional<tab_groups::TabGroupId> GetTabGroupForTab(

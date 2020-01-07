@@ -243,7 +243,7 @@ TEST_F(ActivityLogTest, LogPrerender) {
 
   prerender::test_utils::RestorePrerenderMode restore_prerender_mode;
   prerender::PrerenderManager::SetMode(
-      prerender::PrerenderManager::DEPRECATED_PRERENDER_MODE_ENABLED);
+      prerender::PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForBrowserContext(profile());
 
@@ -255,7 +255,7 @@ TEST_F(ActivityLogTest, LogPrerender) {
           kSize));
 
   const std::vector<content::WebContents*> contentses =
-      prerender_manager->GetAllPrerenderingContents();
+      prerender_manager->GetAllNoStatePrefetchingContentsForTesting();
   ASSERT_EQ(1U, contentses.size());
   content::WebContents *contents = contentses[0];
   ASSERT_TRUE(prerender_manager->IsWebContentsPrerendering(contents, NULL));

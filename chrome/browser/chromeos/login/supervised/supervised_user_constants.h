@@ -9,8 +9,6 @@
 
 namespace chromeos {
 
-extern const char kSupervisedUserTokenFilename[];
-
 extern const char kCryptohomeSupervisedUserKeyLabel[];
 extern const char kCryptohomeMasterKeyLabel[];
 extern const char kLegacyCryptohomeSupervisedUserKeyLabel[];

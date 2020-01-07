@@ -83,37 +83,29 @@ class MinidumpWriterTest : public testing::Test {
 };
 
 TEST_F(MinidumpWriterTest, Write_FailsWithIncorrectMinidumpPath) {
-  MinidumpWriter writer(&fake_generator_,
-                        "/path/to/wrong/dir",
-                        MinidumpParams(),
-                        base::Bind(&FakeDumpState));
+  MinidumpWriter writer(&fake_generator_, "/path/to/wrong/dir",
+                        MinidumpParams(), base::BindOnce(&FakeDumpState));
 
   ASSERT_EQ(-1, writer.Write());
 }
 
 TEST_F(MinidumpWriterTest, Write_FailsWithMultiLevelRelativeMinidumpPath) {
-  MinidumpWriter writer(&fake_generator_,
-                        "subdir/dumplog",
-                        MinidumpParams(),
-                        base::Bind(&FakeDumpState));
+  MinidumpWriter writer(&fake_generator_, "subdir/dumplog", MinidumpParams(),
+                        base::BindOnce(&FakeDumpState));
 
   ASSERT_EQ(-1, writer.Write());
 }
 
 TEST_F(MinidumpWriterTest, Write_SucceedsWithSimpleFilename) {
-  MinidumpWriter writer(&fake_generator_,
-                        "dumplog",
-                        MinidumpParams(),
-                        base::Bind(&FakeDumpState));
+  MinidumpWriter writer(&fake_generator_, "dumplog", MinidumpParams(),
+                        base::BindOnce(&FakeDumpState));
 
   ASSERT_EQ(0, writer.Write());
 }
 
 TEST_F(MinidumpWriterTest, Write_SucceedsWithCorrectMinidumpPath) {
-  MinidumpWriter writer(&fake_generator_,
-                        dumplog_file_.value(),
-                        MinidumpParams(),
-                        base::Bind(&FakeDumpState));
+  MinidumpWriter writer(&fake_generator_, dumplog_file_.value(),
+                        MinidumpParams(), base::BindOnce(&FakeDumpState));
 
   ASSERT_EQ(0, writer.Write());
 }
@@ -121,8 +113,7 @@ TEST_F(MinidumpWriterTest, Write_SucceedsWithCorrectMinidumpPath) {
 TEST_F(MinidumpWriterTest, Write_FailsWithSubdirInCorrectPath) {
   MinidumpWriter writer(&fake_generator_,
                         dumplog_file_.Append("subdir/logfile").value(),
-                        MinidumpParams(),
-                        base::Bind(&FakeDumpState));
+                        MinidumpParams(), base::BindOnce(&FakeDumpState));
   ASSERT_EQ(-1, writer.Write());
 }
 

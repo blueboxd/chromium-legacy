@@ -37,9 +37,9 @@ const base::Value* StubCrosSettingsProvider::Get(
 }
 
 CrosSettingsProvider::TrustedStatus
-StubCrosSettingsProvider::PrepareTrustedValues(base::OnceClosure callback) {
+StubCrosSettingsProvider::PrepareTrustedValues(base::OnceClosure* callback) {
   if (trusted_status_ == TEMPORARILY_UNTRUSTED)
-    callbacks_.push_back(std::move(callback));
+    callbacks_.push_back(std::move(*callback));
   return trusted_status_;
 }
 

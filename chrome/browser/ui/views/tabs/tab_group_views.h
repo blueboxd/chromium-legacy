@@ -21,7 +21,7 @@ class TabStrip;
 // calculations and updates. Painting is done in TabStrip.
 class TabGroupViews {
  public:
-  TabGroupViews(TabStrip* tab_strip, tab_groups::TabGroupId group);
+  TabGroupViews(TabStrip* tab_strip, const tab_groups::TabGroupId& group);
   ~TabGroupViews();
 
   tab_groups::TabGroupId group() const { return group_; }
@@ -48,10 +48,6 @@ class TabGroupViews {
   // Returns the group background color, which matches the non-active selected
   // tab color. Needed to layer painting for the group background highlight.
   SkColor GetGroupBackgroundColor() const;
-
-  // Returns whether the group highlight background should be shown. Currently
-  // it should only be shown if the entire group is dragging via its header.
-  bool ShouldPaintGroupBackground() const;
 
  private:
   TabStrip* const tab_strip_;

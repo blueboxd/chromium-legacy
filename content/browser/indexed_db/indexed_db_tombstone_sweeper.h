@@ -84,8 +84,10 @@ class CONTENT_EXPORT IndexedDBTombstoneSweeper
                             leveldb::DB* database);
   ~IndexedDBTombstoneSweeper() override;
 
+  bool RequiresMetadata() const override;
+
   void SetMetadata(
-      std::vector<blink::IndexedDBDatabaseMetadata> const* metadata) override;
+      const std::vector<blink::IndexedDBDatabaseMetadata>* metadata) override;
 
   void Stop(IndexedDBPreCloseTaskQueue::StopReason reason) override;
 
@@ -178,7 +180,6 @@ class CONTENT_EXPORT IndexedDBTombstoneSweeper
   const base::TickClock* clock_for_testing_ = nullptr;
   base::Optional<base::TimeTicks> start_time_;
 
-  leveldb::DB* database_ = nullptr;
   bool has_writes_ = false;
   leveldb::WriteBatch round_deletion_batch_;
   base::TimeDelta total_deletion_time_;

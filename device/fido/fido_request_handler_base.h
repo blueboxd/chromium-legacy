@@ -142,8 +142,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
         base::Optional<int> attempts,
         base::OnceCallback<void(std::string)> provide_pin_cb) = 0;
 
-    // CollectClientPin is guaranteed to have been called previously.
-    virtual void FinishCollectPIN() = 0;
+    virtual void FinishCollectToken() = 0;
 
     // SetMightCreateResidentCredential indicates whether the activation of an
     // authenticator may cause a resident credential to be created. A resident

@@ -28,8 +28,8 @@ class COMPONENT_EXPORT(TAB_GROUPS) TabGroupVisualData {
   TabGroupVisualData& operator=(const TabGroupVisualData& other) = default;
   TabGroupVisualData& operator=(TabGroupVisualData&& other) = default;
 
-  base::string16 title() const { return title_; }
-  tab_groups::TabGroupColorId color() const { return color_; }
+  const base::string16& title() const { return title_; }
+  const tab_groups::TabGroupColorId& color() const { return color_; }
 
   // Checks whether two instances are visually equivalent.
   bool operator==(const TabGroupVisualData& other) const {

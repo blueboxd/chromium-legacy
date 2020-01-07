@@ -719,10 +719,6 @@ void PrerenderContents::CancelPrerenderForUnsupportedScheme(const GURL& url) {
   ReportUnsupportedPrerenderScheme(url);
 }
 
-void PrerenderContents::CancelPrerenderForSyncDeferredRedirect() {
-  Destroy(FINAL_STATUS_BAD_DEFERRED_REDIRECT);
-}
-
 void PrerenderContents::OnPrerenderCancelerReceiver(
     mojo::PendingReceiver<chrome::mojom::PrerenderCanceler> receiver) {
   if (!prerender_canceler_receiver_.is_bound())

@@ -10,6 +10,8 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
+#include "base/gtest_prod_util.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "base/time/clock.h"
@@ -29,6 +31,10 @@ class IndexedDBPreCloseTaskQueue;
 class TransactionalLevelDBFactory;
 
 constexpr const char kIDBCloseImmediatelySwitch[] = "idb-close-immediately";
+
+// This is an emergency kill switch to use with Finch if the feature needs to be
+// shut off.
+CONTENT_EXPORT extern const base::Feature kCompactIDBOnClose;
 
 // IndexedDBOriginState manages the per-origin IndexedDB state, and contains the
 // backing store for the origin.
@@ -149,6 +155,13 @@ class CONTENT_EXPORT IndexedDBOriginState {
   friend IndexedDBFactoryImpl;
   friend IndexedDBOriginStateHandle;
 
+  // Test needs access to ShouldRunTombstoneSweeper.
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTestWithMockTime,
+                           TombstoneSweeperTiming);
+
+  // Test needs access to CompactionKillSwitchWorks.
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest, CompactionKillSwitchWorks);
+
   IndexedDBDatabase* AddDatabase(const base::string16& name,
                                  std::unique_ptr<IndexedDBDatabase> database);
 
@@ -167,6 +180,13 @@ class CONTENT_EXPORT IndexedDBOriginState {
   void StartPreCloseTasks();
 
   void CloseAndDestruct();
+
+  // Executes database operations, and if |true| is returned by this function,
+  // then the current time will be written to the database as the last sweep
+  // time.
+  bool ShouldRunTombstoneSweeper();
+
+  bool ShouldRunCompaction();
 
   SEQUENCE_CHECKER(sequence_checker_);
 

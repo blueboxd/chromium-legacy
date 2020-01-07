@@ -135,6 +135,11 @@ void UnifiedMessageCenterView::SetCollapsed(bool animate) {
   if (!GetVisible() || collapsed_)
     return;
 
+  // Do not collapse the message center if notification bar is not visible.
+  // i.e. there is only one notification.
+  if (!notification_bar_->GetVisible())
+    return;
+
   collapsed_ = true;
   if (animate) {
     StartCollapseAnimation();

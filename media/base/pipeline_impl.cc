@@ -1161,7 +1161,7 @@ PipelineImpl::~PipelineImpl() {
 void PipelineImpl::Start(StartType start_type,
                          Demuxer* demuxer,
                          Client* client,
-                         const PipelineStatusCB& seek_cb) {
+                         PipelineStatusCallback seek_cb) {
   DVLOG(2) << __func__ << ": start_type=" << static_cast<int>(start_type);
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(demuxer);
@@ -1171,7 +1171,7 @@ void PipelineImpl::Start(StartType start_type,
   DCHECK(!client_);
   DCHECK(!seek_cb_);
   client_ = client;
-  seek_cb_ = seek_cb;
+  seek_cb_ = std::move(seek_cb);
   last_media_time_ = base::TimeDelta();
   seek_time_ = kNoTimestamp;
 
@@ -1222,19 +1222,19 @@ void PipelineImpl::Stop() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void PipelineImpl::Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) {
+void PipelineImpl::Seek(base::TimeDelta time, PipelineStatusCallback seek_cb) {
   DVLOG(2) << __func__ << " to " << time.InMicroseconds();
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(seek_cb);
 
   if (!IsRunning()) {
     DLOG(ERROR) << "Media pipeline isn't running. Ignoring Seek().";
-    seek_cb.Run(PIPELINE_ERROR_INVALID_STATE);
+    std::move(seek_cb).Run(PIPELINE_ERROR_INVALID_STATE);
     return;
   }
 
   DCHECK(!seek_cb_);
-  seek_cb_ = seek_cb;
+  seek_cb_ = std::move(seek_cb);
   seek_time_ = time;
   last_media_time_ = base::TimeDelta();
   media_task_runner_->PostTask(
@@ -1243,13 +1243,13 @@ void PipelineImpl::Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) {
                      base::Unretained(renderer_wrapper_.get()), time));
 }
 
-void PipelineImpl::Suspend(const PipelineStatusCB& suspend_cb) {
+void PipelineImpl::Suspend(PipelineStatusCallback suspend_cb) {
   DVLOG(2) << __func__;
   DCHECK(suspend_cb);
 
   DCHECK(IsRunning());
   DCHECK(!suspend_cb_);
-  suspend_cb_ = suspend_cb;
+  suspend_cb_ = std::move(suspend_cb);
 
   media_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RendererWrapper::Suspend,
@@ -1257,14 +1257,14 @@ void PipelineImpl::Suspend(const PipelineStatusCB& suspend_cb) {
 }
 
 void PipelineImpl::Resume(base::TimeDelta time,
-                          const PipelineStatusCB& seek_cb) {
+                          PipelineStatusCallback seek_cb) {
   DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(seek_cb);
 
   DCHECK(IsRunning());
   DCHECK(!seek_cb_);
-  seek_cb_ = seek_cb;
+  seek_cb_ = std::move(seek_cb);
   seek_time_ = time;
   last_media_time_ = base::TimeDelta();
 

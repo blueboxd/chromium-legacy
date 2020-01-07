@@ -123,7 +123,7 @@ CastDisplayConfigurator::~CastDisplayConfigurator() {
 // display::NativeDisplayObserver interface
 void CastDisplayConfigurator::OnConfigurationChanged() {
   DCHECK(delegate_);
-  delegate_->GetDisplays(base::Bind(
+  delegate_->GetDisplays(base::BindOnce(
       &CastDisplayConfigurator::OnDisplaysAcquired, weak_factory_.GetWeakPtr(),
       false /* force_initial_configure */));
 }
@@ -153,7 +153,7 @@ void CastDisplayConfigurator::SetGammaCorrection(
 void CastDisplayConfigurator::ForceInitialConfigure() {
   if (!delegate_)
     return;
-  delegate_->GetDisplays(base::Bind(
+  delegate_->GetDisplays(base::BindOnce(
       &CastDisplayConfigurator::OnDisplaysAcquired, weak_factory_.GetWeakPtr(),
       true /* force_initial_configure */));
 }

@@ -5,14 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/p2p/stunprober/stun_prober.h"
 
@@ -70,11 +69,11 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
 
   // Asks the PeerConnection factory to create a Local MediaStream object.
   virtual scoped_refptr<webrtc::MediaStreamInterface> CreateLocalMediaStream(
-      const std::string& label);
+      const String& label);
 
   // Asks the PeerConnection factory to create a Local VideoTrack object.
   virtual scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
-      const std::string& id,
+      const String& id,
       webrtc::VideoTrackSourceInterface* source);
 
   // Asks the libjingle PeerConnection factory to create a libjingle
@@ -97,22 +96,22 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   // Creates a libjingle representation of a Session description. Used by a
   // RTCPeerConnectionHandler instance.
   virtual webrtc::SessionDescriptionInterface* CreateSessionDescription(
-      const std::string& type,
-      const std::string& sdp,
+      const String& type,
+      const String& sdp,
       webrtc::SdpParseError* error);
 
   // Creates a libjingle representation of an ice candidate.
   virtual webrtc::IceCandidateInterface* CreateIceCandidate(
-      const std::string& sdp_mid,
+      const String& sdp_mid,
       int sdp_mline_index,
-      const std::string& sdp);
+      const String& sdp);
 
   // Returns the most optimistic view of the capabilities of the system for
   // sending or receiving media of the given kind ("audio" or "video").
   virtual std::unique_ptr<webrtc::RtpCapabilities> GetSenderCapabilities(
-      const std::string& kind);
+      const String& kind);
   virtual std::unique_ptr<webrtc::RtpCapabilities> GetReceiverCapabilities(
-      const std::string& kind);
+      const String& kind);
 
   blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
 
@@ -142,7 +141,7 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   // Functions related to Stun probing trial to determine how fast we could send
   // Stun request without being dropped by NAT.
   void TryScheduleStunProbeTrial();
-  void StartStunProbeTrialOnWorkerThread(const std::string& params);
+  void StartStunProbeTrialOnWorkerThread(const String& params);
 
   // Creates |pc_factory_|, which in turn is used for
   // creating PeerConnection objects.

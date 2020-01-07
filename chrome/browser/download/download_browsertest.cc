@@ -305,7 +305,7 @@ class PercentWaiter : public download::DownloadItem::Observer {
   download::DownloadItem* item_;
   bool waiting_ = false;
   bool error_ = false;
-  int prev_percent_ = 0;
+  int prev_percent_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(PercentWaiter);
 };
@@ -418,13 +418,34 @@ class SimpleDownloadManagerCoordinatorWaiter
     base::RunLoop run_loop;
     completion_closure_ = run_loop.QuitClosure();
     run_loop.Run();
-    return;
   }
+
+  // Wait for a particular number of download to be created.
+  void WaitForDownloadCreation(int num_download_created) {
+    if (num_download_created_ >= num_download_created)
+      return;
+    num_download_to_wait_ = num_download_created;
+    base::RunLoop run_loop;
+    download_creation_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  int num_download_created() const { return num_download_created_; }
+
+  void reset_num_download_created() { num_download_created_ = 0; }
 
  private:
   void OnDownloadsInitialized(bool active_downloads_only) override {
     if (completion_closure_)
       std::move(completion_closure_).Run();
+  }
+
+  void OnDownloadCreated(download::DownloadItem* item) override {
+    num_download_created_++;
+    if (download_creation_closure_ &&
+        num_download_created_ >= num_download_to_wait_) {
+      std::move(download_creation_closure_).Run();
+    }
   }
 
   void OnManagerGoingDown(
@@ -436,6 +457,9 @@ class SimpleDownloadManagerCoordinatorWaiter
 
   download::SimpleDownloadManagerCoordinator* coordinator_;
   base::OnceClosure completion_closure_;
+  base::OnceClosure download_creation_closure_;
+  int num_download_created_ = 0;
+  int num_download_to_wait_ = 0;
 };
 
 void CreateCompletedDownload(content::DownloadManager* download_manager,
@@ -4286,6 +4310,63 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
   ASSERT_TRUE(waiter.WaitForFinished());
   download::DownloadItem* history_download = manager->GetDownloadByGuid(guid);
   CHECK_EQ(download, history_download);
+}
+
+// Check that InProgressDownloadManager can handle transient downloads with the
+// same GUID.
+IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
+                       DownloadURLWithInProgressManager) {
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/downloads/a_zip_file.zip");
+  base::FilePath origin(OriginFile(
+      base::FilePath(FILE_PATH_LITERAL("downloads/a_zip_file.zip"))));
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  ASSERT_TRUE(base::PathExists(origin));
+  std::string guid = base::GenerateGUID();
+
+  // Wait for in-progress download manager to initialize.
+  download::InProgressDownloadManager* in_progress_manager =
+      DownloadManagerUtils::GetInProgressDownloadManager(
+          browser()->profile()->GetProfileKey());
+  download::SimpleDownloadManagerCoordinator* coordinator =
+      SimpleDownloadManagerCoordinatorFactory::GetForKey(
+          browser()->profile()->GetProfileKey());
+  SimpleDownloadManagerCoordinatorWaiter coordinator_waiter(coordinator);
+  coordinator_waiter.WaitForInitialization();
+
+  base::FilePath target_path;
+  ASSERT_TRUE(
+      base::PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &target_path));
+  target_path =
+      target_path.Append(base::FilePath(FILE_PATH_LITERAL("a_zip_file.zip")));
+  std::vector<GURL> url_chain;
+  url_chain.emplace_back(url);
+  // Kick off 2 download with the same GUID
+  auto params = std::make_unique<DownloadUrlParameters>(
+      url, TRAFFIC_ANNOTATION_FOR_TESTS, net::NetworkIsolationKey());
+  params->set_guid(guid);
+  params->set_file_path(target_path);
+  params->set_transient(true);
+  params->set_require_safety_checks(false);
+  in_progress_manager->DownloadUrl(std::move(params));
+  auto params2 = std::make_unique<DownloadUrlParameters>(
+      url, TRAFFIC_ANNOTATION_FOR_TESTS, net::NetworkIsolationKey());
+  params2->set_guid(guid);
+  params2->set_file_path(target_path);
+  params2->set_transient(true);
+  params2->set_require_safety_checks(false);
+  in_progress_manager->DownloadUrl(std::move(params2));
+  coordinator_waiter.WaitForDownloadCreation(1);
+  download::DownloadItem* download = coordinator->GetDownloadByGuid(guid);
+  ASSERT_TRUE(download);
+
+  PercentWaiter waiter(download);
+  // Download should continue and complete.
+  ASSERT_TRUE(waiter.WaitForFinished());
+
+  // Only 1 download is created above, no more new downloads are created.
+  ASSERT_EQ(coordinator_waiter.num_download_created(), 1);
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

@@ -20,6 +20,14 @@ namespace {
 const char* kFlatbufferSchemaExpected = R"(
 include "components/url_pattern_index/flat/url_pattern_index.fbs";
 namespace extensions.declarative_net_request.flat;
+enum ActionType : ubyte {
+  block,
+  allow,
+  redirect,
+  upgrade_scheme,
+  remove_headers,
+  count
+}
 table QueryKeyValue {
   key : string (required);
   value : string (required);
@@ -42,25 +50,16 @@ table UrlTransform {
 }
 table UrlRuleMetadata {
   id : uint (key);
+  action : ActionType;
   redirect_url : string;
   transform : UrlTransform;
 }
-enum ActionIndex : ubyte {
-  block = 0,
-  allow,
-  redirect,
-  upgrade_scheme,
+enum IndexType : ubyte {
+  before_request = 0,
   remove_cookie_header,
   remove_referer_header,
   remove_set_cookie_header,
   count
-}
-enum ActionType : ubyte {
-  block,
-  allow,
-  redirect,
-  upgrade_scheme,
-  remove_headers
 }
 enum RemoveHeaderType : ubyte (bit_flags) {
   cookie,
@@ -144,7 +143,7 @@ TEST_F(IndexedRulesetFormatVersionTest, CheckVersionUpdated) {
   EXPECT_EQ(StripCommentsAndWhitespace(kFlatbufferSchemaExpected),
             StripCommentsAndWhitespace(flatbuffer_schema))
       << "Schema change detected; update this test and the schema version.";
-  EXPECT_EQ(13, GetIndexedRulesetFormatVersionForTesting())
+  EXPECT_EQ(14, GetIndexedRulesetFormatVersionForTesting())
       << "Update this test if you update the schema version.";
 }
 

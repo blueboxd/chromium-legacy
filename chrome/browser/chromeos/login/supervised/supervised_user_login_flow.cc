@@ -66,18 +66,10 @@ bool SupervisedUserLoginFlow::HandleLoginFailure(const AuthFailure& failure) {
   return false;
 }
 
-void SupervisedUserLoginFlow::OnSyncSetupDataLoaded(const std::string& token) {
+void SupervisedUserLoginFlow::CheckPasswordChange() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ConfigureSync(token);
-}
-
-void SupervisedUserLoginFlow::ConfigureSync(const std::string& token) {
   data_loaded_ = true;
 
-  // TODO(antrim): add error handling (no token loaded).
-  // See also: http://crbug.com/312751
-  ChromeUserManager::Get()->GetSupervisedUserManager()->ConfigureSyncWithToken(
-      profile_, token);
   SupervisedUserAuthentication* auth =
       ChromeUserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
 
@@ -249,9 +241,7 @@ void SupervisedUserLoginFlow::Finish() {
 
 void SupervisedUserLoginFlow::LaunchExtraSteps(Profile* profile) {
   profile_ = profile;
-  ChromeUserManager::Get()->GetSupervisedUserManager()->LoadSupervisedUserToken(
-      profile, base::Bind(&SupervisedUserLoginFlow::OnSyncSetupDataLoaded,
-                          weak_factory_.GetWeakPtr()));
+  CheckPasswordChange();
 }
 
 }  // namespace chromeos

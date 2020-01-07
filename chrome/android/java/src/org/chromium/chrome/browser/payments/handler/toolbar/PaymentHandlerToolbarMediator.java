@@ -12,7 +12,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolbarCoordinator.PaymentHandlerToolbarObserver;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
-import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -48,29 +47,14 @@ import java.net.URISyntaxException;
      * @param model The {@link PaymentHandlerToolbarProperties} that holds all the view state for
      *         the payment handler toolbar component.
      * @param webContents The web-contents that loads the payment app.
-     * @param url The url of the payment handler app.
      * @param observer The observer of this toolbar.
      */
-    /* package */ PaymentHandlerToolbarMediator(PropertyModel model, WebContents webContents,
-            URI url, PaymentHandlerToolbarObserver observer) {
+    /* package */ PaymentHandlerToolbarMediator(
+            PropertyModel model, WebContents webContents, PaymentHandlerToolbarObserver observer) {
         super(webContents);
         mWebContentsRef = webContents;
         mModel = model;
         mObserver = observer;
-
-        formatUrlAndUpdateProperty(url.toString());
-    }
-
-    /** Format the url for displaying purpose and update the origin in the property model. */
-    private void formatUrlAndUpdateProperty(String url) {
-        String origin = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(url);
-        try {
-            mModel.set(PaymentHandlerToolbarProperties.ORIGIN, new URI(origin));
-        } catch (URISyntaxException e) {
-            Log.e(TAG, "Failed to instantiate URI with the origin \"%s\", whose url is \"%s\".",
-                    origin, url);
-            mObserver.onToolbarError();
-        }
     }
 
     // WebContentsObserver:
@@ -94,9 +78,15 @@ import java.net.URISyntaxException;
 
     @Override
     public void didFinishNavigation(NavigationHandle navigation) {
-        if (navigation.hasCommitted() && navigation.isInMainFrame()) {
-            mModel.set(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, false);
-            formatUrlAndUpdateProperty(navigation.getUrl());
+        if (!navigation.hasCommitted() || !navigation.isInMainFrame()) return;
+        mModel.set(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, false);
+
+        String url = navigation.getUrl();
+        try {
+            mModel.set(PaymentHandlerToolbarProperties.URL, new URI(url));
+        } catch (URISyntaxException e) {
+            Log.e(TAG, "Failed to instantiate a URI with the url \"%s\".", url);
+            mObserver.onToolbarError();
         }
     }
 

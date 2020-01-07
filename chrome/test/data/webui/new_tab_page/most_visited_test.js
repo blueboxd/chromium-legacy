@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 import 'chrome://new-tab-page/most_visited.js';
+import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js';
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
@@ -41,7 +43,11 @@ suite('NewTabPageMostVisitedTest', () => {
   async function addTiles(n) {
     const tiles = Array(n).fill(0).map((x, i) => {
       const char = String.fromCharCode(i + /* 'a' */ 97);
-      return {title: char, url: {url: `https://${char}/`}};
+      return {
+        title: char,
+        titleDirection: mojoBase.mojom.TextDirection.LEFT_TO_RIGHT,
+        url: {url: `https://${char}/`},
+      };
     });
     const tilesRendered = eventToPromise('dom-change', mostVisited.$.tiles);
     testProxy.callbackRouterRemote.setMostVisitedInfo({
@@ -559,5 +565,53 @@ suite('NewTabPageMostVisitedTest', () => {
     const [newFirst, newSecond] = queryTiles();
     assertEquals('https://b/', newFirst.href);
     assertEquals('https://a/', newSecond.href);
+  });
+
+  test('RIGHT_TO_LEFT tile title text direction', async () => {
+    const tilesRendered = eventToPromise('dom-change', mostVisited.$.tiles);
+    testProxy.callbackRouterRemote.setMostVisitedInfo({
+      customLinksEnabled: true,
+      tiles: [{
+        title: 'title',
+        titleDirection: mojoBase.mojom.TextDirection.RIGHT_TO_LEFT,
+        url: {url: 'https://url/'},
+      }],
+      visible: true,
+    });
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+    await tilesRendered;
+    const [tile] = queryTiles();
+    const titleElement = tile.querySelector('.tile-title');
+    assertEquals('rtl', window.getComputedStyle(titleElement).direction);
+
+    tile.querySelector('cr-icon-button').click();
+    mostVisited.$.actionMenuEdit.click();
+    assertEquals(
+        'rtl',
+        window.getComputedStyle(mostVisited.$.dialogInputName).direction);
+  });
+
+  test('LEFT_TO_RIGHT tile title text direction', async () => {
+    const tilesRendered = eventToPromise('dom-change', mostVisited.$.tiles);
+    testProxy.callbackRouterRemote.setMostVisitedInfo({
+      customLinksEnabled: true,
+      tiles: [{
+        title: 'title',
+        titleDirection: mojoBase.mojom.TextDirection.LEFT_TO_RIGHT,
+        url: {url: 'https://url/'},
+      }],
+      visible: true,
+    });
+    await testProxy.callbackRouterRemote.$.flushForTesting();
+    await tilesRendered;
+    const [tile] = queryTiles();
+    const titleElement = tile.querySelector('.tile-title');
+    assertEquals('ltr', window.getComputedStyle(titleElement).direction);
+
+    tile.querySelector('cr-icon-button').click();
+    mostVisited.$.actionMenuEdit.click();
+    assertEquals(
+        'ltr',
+        window.getComputedStyle(mostVisited.$.dialogInputName).direction);
   });
 });

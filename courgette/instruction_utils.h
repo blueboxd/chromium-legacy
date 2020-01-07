@@ -26,9 +26,6 @@ class InstructionReceptor {
   // Generates an ELF style relocation table for X86.
   virtual CheckBool EmitElfRelocation() = 0;
 
-  // Generates an ELF style relocation table for ARM.
-  virtual CheckBool EmitElfARMRelocation() = 0;
-
   // Following instruction will be assembled at address 'rva'.
   virtual CheckBool EmitOrigin(RVA rva) = 0;
 
@@ -40,12 +37,6 @@ class InstructionReceptor {
 
   // Generates a 4-byte relative reference to address of 'label'.
   virtual CheckBool EmitRel32(Label* label) = 0;
-
-  // Generates a 4-byte relative reference to address of 'label' for ARM.
-  virtual CheckBool EmitRel32ARM(uint16_t op,
-                                 Label* label,
-                                 const uint8_t* arm_op,
-                                 uint16_t op_size) = 0;
 
   // Generates a 4-byte absolute reference to address of 'label'.
   virtual CheckBool EmitAbs32(Label* label) = 0;

@@ -77,6 +77,14 @@ DOMStorageContext* TestStoragePartition::GetDOMStorageContext() {
   return dom_storage_context_;
 }
 
+storage::mojom::IndexedDBControl& TestStoragePartition::GetIndexedDBControl() {
+  // Bind and throw away the receiver. If testing is required, then add a method
+  // to set the remote.
+  if (!indexed_db_control_.is_bound())
+    ignore_result(indexed_db_control_.BindNewPipeAndPassReceiver());
+  return *indexed_db_control_;
+}
+
 IndexedDBContext* TestStoragePartition::GetIndexedDBContext() {
   return indexed_db_context_;
 }

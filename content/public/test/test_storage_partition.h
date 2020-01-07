@@ -8,7 +8,9 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "build/build_config.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "content/public/browser/storage_partition.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace leveldb_proto {
 class ProtoDatabaseProvider;
@@ -103,6 +105,8 @@ class TestStoragePartition : public StoragePartition {
     dom_storage_context_ = context;
   }
   DOMStorageContext* GetDOMStorageContext() override;
+
+  storage::mojom::IndexedDBControl& GetIndexedDBControl() override;
 
   void set_indexed_db_context(IndexedDBContext* context) {
     indexed_db_context_ = context;
@@ -212,6 +216,7 @@ class TestStoragePartition : public StoragePartition {
   storage::FileSystemContext* file_system_context_ = nullptr;
   storage::DatabaseTracker* database_tracker_ = nullptr;
   DOMStorageContext* dom_storage_context_ = nullptr;
+  mojo::Remote<storage::mojom::IndexedDBControl> indexed_db_control_;
   IndexedDBContext* indexed_db_context_ = nullptr;
   ServiceWorkerContext* service_worker_context_ = nullptr;
   SharedWorkerService* shared_worker_service_ = nullptr;

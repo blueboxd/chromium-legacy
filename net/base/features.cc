@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/base/features.h"
+#include "build/build_config.h"
 
 namespace net {
 namespace features {
@@ -87,7 +88,7 @@ const base::FeatureParam<int>
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 const base::Feature kCertVerifierBuiltinFeature {
   "CertVerifierBuiltin",
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT

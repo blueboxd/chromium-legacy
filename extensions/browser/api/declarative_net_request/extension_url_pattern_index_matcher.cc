@@ -28,10 +28,10 @@ using FindRuleStrategy =
 std::vector<url_pattern_index::UrlPatternIndexMatcher> GetMatchers(
     const ExtensionUrlPatternIndexMatcher::UrlPatternIndexList* index_list) {
   DCHECK(index_list);
-  DCHECK_EQ(flat::ActionIndex_count, index_list->size());
+  DCHECK_EQ(flat::IndexType_count, index_list->size());
 
   std::vector<url_pattern_index::UrlPatternIndexMatcher> matchers;
-  matchers.reserve(flat::ActionIndex_count);
+  matchers.reserve(flat::IndexType_count);
   for (const flat_rule::UrlPatternIndex* index : *index_list)
     matchers.emplace_back(index);
   return matchers;
@@ -59,16 +59,16 @@ bool IsExtraHeadersMatcherInternal(
     const ExtensionUrlPatternIndexMatcher::UrlPatternIndexList* index_list) {
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
-  static_assert(flat::ActionIndex_count == 7,
+  static_assert(flat::IndexType_count == 4,
                 "Modify this method to ensure IsExtraHeadersMatcherInternal is "
                 "updated as new actions are added.");
-  static const flat::ActionIndex extra_header_indices[] = {
-      flat::ActionIndex_remove_cookie_header,
-      flat::ActionIndex_remove_referer_header,
-      flat::ActionIndex_remove_set_cookie_header,
+  static const flat::IndexType extra_header_indices[] = {
+      flat::IndexType_remove_cookie_header,
+      flat::IndexType_remove_referer_header,
+      flat::IndexType_remove_set_cookie_header,
   };
 
-  for (flat::ActionIndex index : extra_header_indices) {
+  for (flat::IndexType index : extra_header_indices) {
     if (HasAnyRules(index_list->Get(index)))
       return true;
   }
@@ -91,49 +91,33 @@ ExtensionUrlPatternIndexMatcher::ExtensionUrlPatternIndexMatcher(
 ExtensionUrlPatternIndexMatcher::~ExtensionUrlPatternIndexMatcher() = default;
 
 base::Optional<RequestAction>
-ExtensionUrlPatternIndexMatcher::GetBlockOrCollapseAction(
+ExtensionUrlPatternIndexMatcher::GetBeforeRequestAction(
     const RequestParams& params) const {
   const flat_rule::UrlRule* rule =
-      GetMatchingRule(params, flat::ActionIndex_block);
-  if (!rule)
-    return base::nullopt;
-
-  return CreateBlockOrCollapseRequestAction(params, *rule);
-}
-
-base::Optional<RequestAction> ExtensionUrlPatternIndexMatcher::GetAllowAction(
-    const RequestParams& params) const {
-  const flat_rule::UrlRule* rule =
-      GetMatchingRule(params, flat::ActionIndex_allow);
-  if (!rule)
-    return base::nullopt;
-
-  return CreateAllowAction(params, *rule);
-}
-
-base::Optional<RequestAction>
-ExtensionUrlPatternIndexMatcher::GetRedirectAction(
-    const RequestParams& params) const {
-  const flat_rule::UrlRule* redirect_rule = GetMatchingRule(
-      params, flat::ActionIndex_redirect, FindRuleStrategy::kHighestPriority);
-  if (!redirect_rule)
-    return base::nullopt;
-
-  return CreateRedirectActionFromMetadata(params, *redirect_rule,
-                                          *metadata_list_);
-}
-
-base::Optional<RequestAction> ExtensionUrlPatternIndexMatcher::GetUpgradeAction(
-    const RequestParams& params) const {
-  DCHECK(IsUpgradeableRequest(params));
-
-  const flat_rule::UrlRule* upgrade_rule =
-      GetMatchingRule(params, flat::ActionIndex_upgrade_scheme,
+      GetMatchingRule(params, flat::IndexType_before_request,
                       FindRuleStrategy::kHighestPriority);
-  if (!upgrade_rule)
+  if (!rule)
     return base::nullopt;
 
-  return CreateUpgradeAction(params, *upgrade_rule);
+  const flat::UrlRuleMetadata* metadata =
+      metadata_list_->LookupByKey(rule->id());
+  DCHECK(metadata);
+  DCHECK_EQ(metadata->id(), rule->id());
+  switch (metadata->action()) {
+    case flat::ActionType_block:
+      return CreateBlockOrCollapseRequestAction(params, *rule);
+    case flat::ActionType_allow:
+      return CreateAllowAction(params, *rule);
+    case flat::ActionType_redirect:
+      return CreateRedirectActionFromMetadata(params, *rule, *metadata_list_);
+    case flat::ActionType_upgrade_scheme:
+      return CreateUpgradeAction(params, *rule);
+    case flat::ActionType_remove_headers:
+    case flat::ActionType_count:
+      NOTREACHED();
+  }
+
+  return base::nullopt;
 }
 
 uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
@@ -146,7 +130,7 @@ uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
   base::flat_map<const flat_rule::UrlRule*, uint8_t> rule_to_mask_map;
   auto handle_remove_header_bit = [this, &params, excluded_remove_headers_mask,
                                    &rule_to_mask_map](uint8_t bit,
-                                                      flat::ActionIndex index) {
+                                                      flat::IndexType index) {
     if (excluded_remove_headers_mask & bit)
       return;
 
@@ -165,16 +149,15 @@ uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
         break;
       case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
         bit = flat::RemoveHeaderType_cookie;
-        handle_remove_header_bit(bit, flat::ActionIndex_remove_cookie_header);
+        handle_remove_header_bit(bit, flat::IndexType_remove_cookie_header);
         break;
       case dnr_api::REMOVE_HEADER_TYPE_REFERER:
         bit = flat::RemoveHeaderType_referer;
-        handle_remove_header_bit(bit, flat::ActionIndex_remove_referer_header);
+        handle_remove_header_bit(bit, flat::IndexType_remove_referer_header);
         break;
       case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
         bit = flat::RemoveHeaderType_set_cookie;
-        handle_remove_header_bit(bit,
-                                 flat::ActionIndex_remove_set_cookie_header);
+        handle_remove_header_bit(bit, flat::IndexType_remove_set_cookie_header);
         break;
     }
   }
@@ -195,9 +178,9 @@ uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
 
 const flat_rule::UrlRule* ExtensionUrlPatternIndexMatcher::GetMatchingRule(
     const RequestParams& params,
-    flat::ActionIndex index,
+    flat::IndexType index,
     FindRuleStrategy strategy) const {
-  DCHECK_LT(index, flat::ActionIndex_count);
+  DCHECK_LT(index, flat::IndexType_count);
   DCHECK_GE(index, 0);
   DCHECK(params.url);
 

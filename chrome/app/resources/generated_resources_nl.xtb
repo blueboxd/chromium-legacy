@@ -49,7 +49,6 @@
 <translation id="1056775291175587022">Geen netwerken</translation>
 <translation id="1056898198331236512">Waarschuwing</translation>
 <translation id="1058262162121953039">Pukcode</translation>
-<translation id="1060881073479695738">Play Store-apps</translation>
 <translation id="1061745542578250838"><ph name="FILE_NAME" /> bevat gevoelige content en is geblokkeerd.</translation>
 <translation id="1061904396131502319">Bijna tijd voor pauze</translation>
 <translation id="1067048845568873861">Gemaakt</translation>
@@ -439,7 +438,7 @@
 <translation id="1604432177629086300">Kan niet afdrukken. Controleer de printer en probeer het opnieuw.</translation>
 <translation id="1605544918554600534"><ph name="PROFILE_NAME" />: wachtwoordsynchronisatie werkt niet</translation>
 <translation id="1607139524282324606">Item wissen</translation>
-<translation id="1608626060424371292">Deze gebruiker verwijderen</translation>
+<translation id="1608626060424371292">Gebruiker verwijderen</translation>
 <translation id="1608668830839595724">Meer acties voor geselecteerde items</translation>
 <translation id="1609170755653088773">Dit wachtwoord synchroniseren met je iPhone</translation>
 <translation id="161042844686301425">Cyaan</translation>
@@ -1569,6 +1568,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3172808215939929606">Deze pagina is vertaald</translation>
 <translation id="3177909033752230686">Brontaal:</translation>
 <translation id="3179982752812949580">Lettertype</translation>
+<translation id="3181825792072797598">Synchronisatie inschakelen</translation>
 <translation id="3181954750937456830">Safe Browsing (hiermee worden jij en je apparaat beschermd tegen gevaarlijke sites)</translation>
 <translation id="3182749001423093222">Spellingcontrole</translation>
 <translation id="3183139917765991655">Profile Importer</translation>
@@ -1755,7 +1755,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3464012987031883895">Een site heeft toegang tot audio-invoer</translation>
 <translation id="346431825526753">Dit is een account voor kinderen dat wordt beheerd door <ph name="CUSTODIAN_EMAIL" />.</translation>
 <translation id="3468999815377931311">Android-telefoon</translation>
-<translation id="3470442499439619530">Deze gebruiker verwijderen</translation>
+<translation id="3470442499439619530">Gebruiker verwijderen</translation>
 <translation id="3471876058939596279">HDMI- en USB Type-C-poorten kunnen niet tegelijkertijd worden gebruikt voor video. Gebruik een andere videopoort.</translation>
 <translation id="3473479545200714844">Vergrootglas</translation>
 <translation id="3475843873335999118">Je vingerafdruk wordt nog steeds niet herkend. Geef je wachtwoord op.</translation>
@@ -1849,7 +1849,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3599863153486145794">Hiermee wordt de geschiedenis van alle ingelogde apparaten gewist. Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600051066689725006">Informatie over webverzoek</translation>
 <translation id="3600792891314830896">Sites dempen die geluid afspelen</translation>
-<translation id="360180734785106144">Nieuwe functies aanbieden zodra deze beschikbaar komen</translation>
+<translation id="360180734785106144">je nieuwe functies aan te bieden zodra deze beschikbaar komen</translation>
 <translation id="3602290021589620013">Voorbeeld</translation>
 <translation id="3603177256297531067">Deze pagina kan niet worden vertaald</translation>
 <translation id="3603622770190368340">Netwerkcertificaat verkrijgen</translation>
@@ -4250,7 +4250,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7088674813905715446">Dit apparaat is uit bedrijf genomen door de beheerder. Vraag je beheerder om het apparaat op 'in behandeling' in te stellen, zodat het kan worden aangemeld.</translation>
 <translation id="7092474863625458670">Met Voice Match krijg je rechtstreeks met je stem toegang tot de Assistent.
     <ph name="BR" />
-    <ph name="BEGIN_BOLD" />Houd rekening met het volgende:<ph name="END_BOLD" /> Een vergelijkbare stem of opname kan mogelijk ook toegang krijgen tot deze je Assistent. Je kunt je toestemming voor Voice Match intrekken door de functie uit te schakelen in de Instellingen voor de Assistent.</translation>
+    <ph name="BEGIN_BOLD" />Houd rekening met het volgende:<ph name="END_BOLD" /> Een vergelijkbare stem of opname kan mogelijk ook toegang krijgen tot je Assistent. Je kunt je toestemming voor Voice Match intrekken door de functie uit te schakelen in de Instellingen voor de Assistent.</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Gegevens uitwisselen met de apparaten met de naam: <ph name="HOSTNAMES" /></translation>
 <translation id="7098389117866926363">USB-C-apparaat (poort links aan de achterkant)</translation>
@@ -4495,7 +4495,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="744341768939279100">Een nieuw profiel maken</translation>
 <translation id="7443806024147773267">Toegang tot je wachtwoorden telkens wanneer je bent ingelogd op je Google-account</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> uitschakelen</translation>
-<translation id="7448430327655618736">Apps automatisch installeren</translation>
+<translation id="7448430327655618736">apps automatisch te installeren</translation>
 <translation id="7450761244949417357">Wordt nu geopend in <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
 <translation id="7453008956351770337">Door het selecteren van deze printer geef je de volgende extensie toegang tot je printer:</translation>
 <translation id="7456142309650173560">dev</translation>
@@ -4653,6 +4653,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7684718995427157417">Schakel Android Debug Bridge (ADB) in om je apps te maken en te testen. Let op: Met deze actie sta je toe dat Android-apps worden geïnstalleerd die niet door Google zijn geverifieerd. Als je deze functie wilt uitschakelen, moet je apparaat worden teruggezet op de fabrieksinstellingen.</translation>
 <translation id="7685049629764448582">JavaScript-geheugen</translation>
 <translation id="7685087414635069102">Pincode vereist</translation>
+<translation id="768549422429443215">Voeg talen toe of sorteer de lijst opnieuw.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Nieuw wachtwoord bevestigen</translation>
 <translation id="7690378713476594306">Selecteer een optie in de lijst</translation>
@@ -5047,7 +5048,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8199300056570174101">Eigenschappen van netwerk (service) en apparaat</translation>
 <translation id="8200772114523450471">Doorgaan</translation>
 <translation id="8202160505685531999">Geef je wachtwoord opnieuw op om je <ph name="DEVICE_TYPE" />-profiel te updaten.</translation>
-<translation id="8203732864715032075">Je meldingen sturen en deze computer standaard onthouden voor Berichten. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
+<translation id="8203732864715032075">je meldingen te sturen en deze computer standaard te gebruiken voor Berichten. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
 <translation id="820568752112382238">Meest bezochte sites</translation>
 <translation id="8206354486702514201">Deze instelling wordt door je beheerder afgedwongen.</translation>
 <translation id="8206581664590136590">Verzend gebruiks- en diagnostische gegevens. Verbeter de Android-functionaliteit voor je kind door automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google te verzenden. Deze gegevens worden niet gebruikt om je kind te identificeren en kunnen helpen om de systeem- en app-stabiliteit te verbeteren en andere optimalisaties mogelijk te maken. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld voor je kind, kunnen deze gegevens worden opgeslagen in het Google-account van je kind. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
@@ -5386,7 +5387,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8680251145628383637">Log in om je bladwijzers, geschiedenis, wachtwoorden en andere instellingen op te halen op al je apparaten. Je wordt ook automatisch ingelogd bij je Google-services.</translation>
 <translation id="8682730193597992579"><ph name="PRINTER_NAME" /> is verbonden en gereed</translation>
 <translation id="8688579245973331962">Staat je naam er niet bij?</translation>
-<translation id="8688591111840995413">Slecht wachtwoord</translation>
+<translation id="8688591111840995413">Ongeldig wachtwoord</translation>
 <translation id="8688672835843460752">Beschikbaar</translation>
 <translation id="8695825812785969222">&amp;Locatie openen...</translation>
 <translation id="869884720829132584">Menu 'Applicaties'</translation>

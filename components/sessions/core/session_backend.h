@@ -72,7 +72,7 @@ class SESSIONS_EXPORT SessionBackend
   // session, invokes ReadLastSessionCommandsImpl to do the work.
   void ReadLastSessionCommands(
       const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-      const sessions::BaseSessionService::GetCommandsCallback& callback);
+      sessions::BaseSessionService::GetCommandsCallback callback);
 
   // Reads the commands from the last file.
   //

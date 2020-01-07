@@ -207,6 +207,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
     @RetryOnFailure
+    @DisabledTest(message = "https://crbug.com/707528")
     public void testPushAndShowNotification() throws TimeoutException {
         mNotificationTestRule.setNotificationContentSettingForOrigin(
                 ContentSettingValues.ALLOW, mEmbeddedTestServerRule.getOrigin());
@@ -228,6 +229,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
     @LargeTest
     @Feature({"Browser", "PushMessaging"})
     @RetryOnFailure
+    @DisabledTest(message = "https://crbug.com/707528")
     public void testDefaultNotification() throws TimeoutException {
         // Start off using the tab loaded in setUp().
         Assert.assertEquals(1, mNotificationTestRule.getActivity().getCurrentTabModel().getCount());

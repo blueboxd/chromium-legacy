@@ -22,7 +22,7 @@ TabGroupModel::TabGroupModel(TabGroupController* controller)
 TabGroupModel::~TabGroupModel() {}
 
 TabGroup* TabGroupModel::AddTabGroup(
-    tab_groups::TabGroupId id,
+    const tab_groups::TabGroupId& id,
     base::Optional<tab_groups::TabGroupVisualData> visual_data) {
   auto tab_group = std::make_unique<TabGroup>(
       controller_, id,
@@ -33,16 +33,16 @@ TabGroup* TabGroupModel::AddTabGroup(
   return groups_[id].get();
 }
 
-bool TabGroupModel::ContainsTabGroup(tab_groups::TabGroupId id) const {
+bool TabGroupModel::ContainsTabGroup(const tab_groups::TabGroupId& id) const {
   return base::Contains(groups_, id);
 }
 
-TabGroup* TabGroupModel::GetTabGroup(tab_groups::TabGroupId id) const {
+TabGroup* TabGroupModel::GetTabGroup(const tab_groups::TabGroupId& id) const {
   DCHECK(ContainsTabGroup(id));
   return groups_.find(id)->second.get();
 }
 
-void TabGroupModel::RemoveTabGroup(tab_groups::TabGroupId id) {
+void TabGroupModel::RemoveTabGroup(const tab_groups::TabGroupId& id) {
   DCHECK(ContainsTabGroup(id));
   groups_.erase(id);
 }

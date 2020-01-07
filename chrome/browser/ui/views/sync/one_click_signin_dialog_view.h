@@ -75,10 +75,10 @@ class OneClickSigninDialogView : public views::DialogDelegateView,
   base::OnceCallback<void(bool)> confirmed_callback_;
 
   // Link to sync setup advanced page.
-  views::Link* advanced_link_;
+  views::Link* advanced_link_ = nullptr;
 
   // Link to the Learn More details page
-  views::Link* learn_more_link_;
+  views::Link* learn_more_link_ = nullptr;
 
   // The bubble, if we're showing one.
   static OneClickSigninDialogView* dialog_view_;

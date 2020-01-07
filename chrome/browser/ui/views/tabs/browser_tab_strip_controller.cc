@@ -321,11 +321,12 @@ void BrowserTabStripController::CloseTab(int model_index,
 }
 
 void BrowserTabStripController::UngroupAllTabsInGroup(
-    tab_groups::TabGroupId group) {
+    const tab_groups::TabGroupId& group) {
   model_->RemoveFromGroup(ListTabsInGroup(group));
 }
 
-void BrowserTabStripController::AddNewTabInGroup(tab_groups::TabGroupId group) {
+void BrowserTabStripController::AddNewTabInGroup(
+    const tab_groups::TabGroupId& group) {
   const std::vector<int> tabs = ListTabsInGroup(group);
   model_->delegate()->AddTabAt(GURL(), tabs.back() + 1, true, group);
 }
@@ -438,23 +439,23 @@ void BrowserTabStripController::OnKeyboardFocusedTabChanged(
 }
 
 base::string16 BrowserTabStripController::GetGroupTitle(
-    tab_groups::TabGroupId group) const {
+    const tab_groups::TabGroupId& group) const {
   return model_->group_model()->GetTabGroup(group)->visual_data()->title();
 }
 
 tab_groups::TabGroupColorId BrowserTabStripController::GetGroupColorId(
-    tab_groups::TabGroupId group) const {
+    const tab_groups::TabGroupId& group) const {
   return model_->group_model()->GetTabGroup(group)->visual_data()->color();
 }
 
 void BrowserTabStripController::SetVisualDataForGroup(
-    tab_groups::TabGroupId group,
-    tab_groups::TabGroupVisualData visual_data) {
+    const tab_groups::TabGroupId& group,
+    const tab_groups::TabGroupVisualData& visual_data) {
   model_->group_model()->GetTabGroup(group)->SetVisualData(visual_data);
 }
 
 std::vector<int> BrowserTabStripController::ListTabsInGroup(
-    tab_groups::TabGroupId group) const {
+    const tab_groups::TabGroupId& group) const {
   return model_->group_model()->GetTabGroup(group)->ListTabs();
 }
 
@@ -613,7 +614,7 @@ void BrowserTabStripController::TabBlockedStateChanged(WebContents* contents,
 void BrowserTabStripController::TabGroupedStateChanged(
     base::Optional<tab_groups::TabGroupId> group,
     int index) {
-  tabstrip_->AddTabToGroup(group, index);
+  tabstrip_->AddTabToGroup(std::move(group), index);
 }
 
 void BrowserTabStripController::SetTabNeedsAttentionAt(int index,

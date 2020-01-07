@@ -41,7 +41,7 @@ namespace content {
 class RenderViewHost;
 class SessionStorageNamespace;
 class WebContents;
-}
+}  // namespace content
 
 namespace history {
 struct HistoryAddPageArgs;
@@ -294,7 +294,6 @@ class PrerenderContents : public content::NotificationObserver,
   // chrome::mojom::PrerenderCanceler:
   void CancelPrerenderForUnsupportedMethod() override;
   void CancelPrerenderForUnsupportedScheme(const GURL& url) override;
-  void CancelPrerenderForSyncDeferredRedirect() override;
 
   mojo::Receiver<chrome::mojom::PrerenderCanceler> prerender_canceler_receiver_{
       this};

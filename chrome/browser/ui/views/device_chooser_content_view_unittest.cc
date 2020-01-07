@@ -104,12 +104,20 @@ class DeviceChooserContentViewTest : public ChromeViewsTestBase {
   bool IsDeviceSelected() { return !table_view()->selection_model().empty(); }
 
   void ExpectNoDevices() {
-    EXPECT_TRUE(no_options_view()->GetVisible());
     EXPECT_EQ(0, table_view()->GetRowCount());
     // The table should be disabled since there are no (real) options.
     EXPECT_FALSE(table_parent()->GetVisible());
     EXPECT_FALSE(table_view()->GetEnabled());
     EXPECT_FALSE(IsDeviceSelected());
+  }
+  void ExpectNoDevicesWithMessageVisible() {
+    EXPECT_TRUE(no_options_view()->GetVisible());
+    ExpectNoDevices();
+  }
+
+  void ExpectNoDevicesWithMessageHidden() {
+    EXPECT_FALSE(no_options_view()->GetVisible());
+    ExpectNoDevices();
   }
 
  protected:
@@ -125,8 +133,7 @@ class DeviceChooserContentViewTest : public ChromeViewsTestBase {
 
 TEST_F(DeviceChooserContentViewTest, InitialState) {
   EXPECT_CALL(table_observer(), OnSelectionChanged()).Times(0);
-
-  ExpectNoDevices();
+  ExpectNoDevicesWithMessageHidden();
   EXPECT_FALSE(adapter_off_view()->GetVisible());
   EXPECT_FALSE(throbber()->GetVisible());
   EXPECT_FALSE(scanning_label()->GetVisible());
@@ -170,7 +177,7 @@ TEST_F(DeviceChooserContentViewTest, RemoveOption) {
   controller()->RemoveDevice(1);
   controller()->RemoveDevice(0);
   // Should be back to the initial state.
-  ExpectNoDevices();
+  ExpectNoDevicesWithMessageVisible();
 }
 
 TEST_F(DeviceChooserContentViewTest, UpdateOption) {
@@ -219,7 +226,7 @@ TEST_F(DeviceChooserContentViewTest, TurnBluetoothOffAndOn) {
   controller()->RemoveDevice(0);
   controller()->SetBluetoothStatus(
       FakeBluetoothChooserController::BluetoothStatus::IDLE);
-  ExpectNoDevices();
+  ExpectNoDevicesWithMessageVisible();
   EXPECT_FALSE(adapter_off_view()->GetVisible());
   EXPECT_FALSE(throbber()->GetVisible());
   EXPECT_FALSE(scanning_label()->GetVisible());

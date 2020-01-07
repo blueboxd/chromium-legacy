@@ -12,9 +12,6 @@ interface PrerenderCanceler {
 
   // Cancels prerendering because of an unsupported scheme.
   CancelPrerenderForUnsupportedScheme(url.mojom.Url url);
-
-  // Cancels prerendering because of a synchronous deferred redirect.
-  CancelPrerenderForSyncDeferredRedirect();
 };
 
 // PrerenderDispatcher Messages

@@ -9,6 +9,7 @@
 
 #include "base/base_export.h"
 #include "base/profiler/register_context.h"
+#include "base/time/time.h"
 
 namespace base {
 
@@ -26,11 +27,12 @@ class BASE_EXPORT StackCopier {
 
   // Copies the thread's register context into |thread_context|, the stack into
   // |stack_buffer|, and the top of stack address into |stack_top|. Records
-  // metadata while the thread is suspended via |profile_builder|. Returns true
-  // if successful.
+  // metadata while the thread is suspended via |profile_builder|. Records
+  // |timestamp| at the time the stack was copied. Returns true if successful.
   virtual bool CopyStack(StackBuffer* stack_buffer,
                          uintptr_t* stack_top,
                          ProfileBuilder* profile_builder,
+                         TimeTicks* timestamp,
                          RegisterContext* thread_context) = 0;
 
  protected:

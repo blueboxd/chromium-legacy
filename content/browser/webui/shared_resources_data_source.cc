@@ -127,6 +127,10 @@ const std::map<int, std::string> CreateMojoResourceIdToAliasMap() {
          "mojo/mojo/public/mojom/base/string16.mojom.html"},
         {IDR_MOJO_STRING16_MOJOM_LITE_JS,
          "mojo/mojo/public/mojom/base/string16.mojom-lite.js"},
+        {IDR_MOJO_TEXT_DIRECTION_MOJOM_HTML,
+         "mojo/mojo/public/mojom/base/text_direction.mojom.html"},
+        {IDR_MOJO_TEXT_DIRECTION_MOJOM_LITE_JS,
+         "mojo/mojo/public/mojom/base/text_direction.mojom-lite.js"},
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
         {IDR_MOJO_TIME_MOJOM_HTML,
          "mojo/mojo/public/mojom/base/time.mojom.html"},

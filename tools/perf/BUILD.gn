@@ -8,10 +8,6 @@ group("perf") {
   deps = [
     "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
   ]
-  data_deps = [
-    "//third_party/perfetto/src/trace_processor:trace_processor_shell",
-  ]
-
   data = [
     "//tools/perf/",
 
@@ -39,7 +35,9 @@ group("perf") {
 
   # Runs a script which generates the ad tagging ruleset.
   if (!is_ios) {
-    data_deps += [ "//components/subresource_filter/tools:index_ruleset" ]
+    data_deps = [
+      "//components/subresource_filter/tools:index_ruleset",
+    ]
   }
 }
 

@@ -96,6 +96,7 @@ ResourceError::ResourceError(const KURL& url,
 ResourceError::ResourceError(const WebURLError& error)
     : error_code_(error.reason()),
       extended_error_code_(error.extended_reason()),
+      resolve_error_info_(error.resolve_error_info()),
       failing_url_(error.url()),
       is_access_check_(error.is_web_security_violation()),
       has_copy_in_cache_(error.has_copy_in_cache()),
@@ -108,6 +109,7 @@ ResourceError ResourceError::Copy() const {
   ResourceError error_copy(error_code_, failing_url_.Copy(),
                            cors_error_status_);
   error_copy.extended_error_code_ = extended_error_code_;
+  error_copy.resolve_error_info_ = resolve_error_info_;
   error_copy.has_copy_in_cache_ = has_copy_in_cache_;
   error_copy.localized_description_ = localized_description_.IsolatedCopy();
   error_copy.is_access_check_ = is_access_check_;
@@ -124,11 +126,11 @@ ResourceError::operator WebURLError() const {
     return WebURLError(*cors_error_status_, has_copy_in_cache, failing_url_);
   }
 
-  return WebURLError(error_code_, extended_error_code_, has_copy_in_cache,
-                     is_access_check_
-                         ? WebURLError::IsWebSecurityViolation::kTrue
-                         : WebURLError::IsWebSecurityViolation::kFalse,
-                     failing_url_);
+  return WebURLError(
+      error_code_, extended_error_code_, resolve_error_info_, has_copy_in_cache,
+      is_access_check_ ? WebURLError::IsWebSecurityViolation::kTrue
+                       : WebURLError::IsWebSecurityViolation::kFalse,
+      failing_url_);
 }
 
 bool ResourceError::Compare(const ResourceError& a, const ResourceError& b) {
@@ -151,6 +153,9 @@ bool ResourceError::Compare(const ResourceError& a, const ResourceError& b) {
     return false;
 
   if (a.extended_error_code_ != b.extended_error_code_)
+    return false;
+
+  if (a.resolve_error_info_ != b.resolve_error_info_)
     return false;
 
   return true;

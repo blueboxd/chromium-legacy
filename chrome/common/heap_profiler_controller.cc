@@ -107,7 +107,10 @@ void HeapProfilerController::RetrieveAndSendSnapshot() {
         static_cast<size_t>(
             std::llround(static_cast<double>(sample.total) / sample.size)),
         1);
-    profile_builder.OnSampleCompleted(std::move(frames), sample.total, count);
+    // Heap "samples" represent allocation stacks aggregated over time so do not
+    // have a meaningful timestamp.
+    profile_builder.OnSampleCompleted(std::move(frames), base::TimeTicks(),
+                                      sample.total, count);
   }
 
   profile_builder.OnProfileCompleted(base::TimeDelta(), base::TimeDelta());

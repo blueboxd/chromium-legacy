@@ -31,7 +31,7 @@
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, kombinationsruta</translation>
 <translation id="1161762950103988776">Hoppa</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, menyalternativ, med undermeny</translation>
-<translation id="1177863135347784049">Anpassad</translation>
+<translation id="1177863135347784049">Anpassat</translation>
 <translation id="1188858454923323853">kompletterande</translation>
 <translation id="1195238899008218998">Efterord</translation>
 <translation id="1197088940767939838">Orange</translation>
@@ -626,7 +626,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="5291783959063340370">Objekt</translation>
 <translation id="5302089807023311274">Bibliografisk referens</translation>
 <translation id="5304943142864553931">Fliken <ph name="TITLE" /></translation>
-<translation id="5308380583665731573">Ansluta</translation>
+<translation id="5308380583665731573">Anslut</translation>
 <translation id="5310788376443009632">har tagits bort:</translation>
 <translation id="5320727453979144100">Låsta knappar har aktiverats</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{komma}other{# komman}}</translation>

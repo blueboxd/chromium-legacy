@@ -186,9 +186,9 @@ const int kInvalidLanguageIndex = -1;
 
   base::string16 targetLanguage =
       self.translateInfobarDelegate->target_language_name();
-  if (self.newSourceLanguageIndex != kInvalidLanguageIndex) {
+  if (self.newTargetLanguageIndex != kInvalidLanguageIndex) {
     targetLanguage = self.translateInfobarDelegate->language_name_at(
-        self.newSourceLanguageIndex);
+        self.newTargetLanguageIndex);
   }
   [self.modalConsumer
       setupModalViewControllerWithPrefs:

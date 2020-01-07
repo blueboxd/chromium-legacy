@@ -5,11 +5,19 @@
 #include "ui/accessibility/ax_node_position.h"
 
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
 
 namespace ui {
+
+AXEmbeddedObjectBehavior g_ax_embedded_object_behavior =
+#if defined(OS_WIN)
+    AXEmbeddedObjectBehavior::kExposeCharacter;
+#else
+    AXEmbeddedObjectBehavior::kSuppressCharacter;
+#endif
 
 AXTree* AXNodePosition::tree_ = nullptr;
 
@@ -149,19 +157,24 @@ base::string16 AXNodePosition::GetText() const {
   if (IsNullPosition())
     return {};
 
+  base::string16 text;
+  if (IsEmptyObjectReplacedByCharacter()) {
+    text += kEmbeddedCharacter;
+    return text;
+  }
+
   const AXNode* anchor = GetAnchor();
   DCHECK(anchor);
-  base::string16 value = GetAnchor()->data().GetString16Attribute(
+  text = GetAnchor()->data().GetString16Attribute(
       ax::mojom::StringAttribute::kValue);
-  if (!value.empty())
-    return value;
+  if (!text.empty())
+    return text;
 
   if (anchor->IsText()) {
     return anchor->data().GetString16Attribute(
         ax::mojom::StringAttribute::kName);
   }
 
-  base::string16 text;
   for (int i = 0; i < AnchorChildCount(); ++i)
     text += CreateChildPositionAt(i)->GetText();
 
@@ -198,6 +211,9 @@ bool AXNodePosition::IsInWhiteSpace() const {
 int AXNodePosition::MaxTextOffset() const {
   if (IsNullPosition())
     return INVALID_OFFSET;
+
+  if (IsEmptyObjectReplacedByCharacter())
+    return 1;
 
   const AXNode* anchor = GetAnchor();
   DCHECK(anchor);
@@ -252,6 +268,12 @@ std::vector<int32_t> AXNodePosition::GetWordStartOffsets() const {
   if (IsNullPosition())
     return std::vector<int32_t>();
   DCHECK(GetAnchor());
+
+  // Embedded object replacement characters are not represented in |kWordStarts|
+  // attribute.
+  if (IsEmptyObjectReplacedByCharacter())
+    return {0};
+
   return GetAnchor()->data().GetIntListAttribute(
       ax::mojom::IntListAttribute::kWordStarts);
 }
@@ -260,6 +282,16 @@ std::vector<int32_t> AXNodePosition::GetWordEndOffsets() const {
   if (IsNullPosition())
     return std::vector<int32_t>();
   DCHECK(GetAnchor());
+
+  // Embedded object replacement characters are not represented in |kWordEnds|
+  // attribute. Since the whole text exposed inside of an embedded object is of
+  // length 1 (the embedded object replacement character), the word end offset
+  // is positioned at 1. Because we want to treat the embedded object
+  // replacement characters as ordinary characters, it wouldn't be consistent to
+  // assume they have no length and return 0 instead of 1.
+  if (IsEmptyObjectReplacedByCharacter())
+    return {1};
+
   return GetAnchor()->data().GetIntListAttribute(
       ax::mojom::IntListAttribute::kWordEnds);
 }

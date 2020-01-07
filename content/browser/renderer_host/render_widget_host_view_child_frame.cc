@@ -559,18 +559,6 @@ void RenderWidgetHostViewChildFrame::FirstSurfaceActivation(
     frame_connector_->FirstSurfaceActivation(surface_info);
 }
 
-void RenderWidgetHostViewChildFrame::SubmitCompositorFrame(
-    const viz::LocalSurfaceId& local_surface_id,
-    viz::CompositorFrame frame,
-    base::Optional<viz::HitTestRegionList> hit_test_region_list) {
-  NOTREACHED();
-}
-
-void RenderWidgetHostViewChildFrame::OnDidNotProduceFrame(
-    const viz::BeginFrameAck& ack) {
-  NOTREACHED();
-}
-
 void RenderWidgetHostViewChildFrame::TransformPointToRootSurface(
     gfx::PointF* point) {
   // This function is called by RenderWidgetHostInputEventRouter only for

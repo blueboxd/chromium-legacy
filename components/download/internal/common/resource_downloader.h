@@ -101,9 +101,6 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
-  // UrlDownloadHandler implementations.
-  void CancelRequest() override;
-
   // Ask the |delegate_| to destroy this object.
   void Destroy();
 

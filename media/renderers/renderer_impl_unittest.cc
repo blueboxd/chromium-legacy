@@ -23,6 +23,7 @@
 
 using ::base::test::RunCallback;
 using ::base::test::RunClosure;
+using ::base::test::RunOnceCallback;
 using ::base::test::RunOnceClosure;
 using ::testing::_;
 using ::testing::DoAll;
@@ -123,16 +124,16 @@ class RendererImplTest : public ::testing::Test {
 
   // Sets up expectations to allow the audio renderer to initialize.
   void SetAudioRendererInitializeExpectations(PipelineStatus status) {
-    EXPECT_CALL(*audio_renderer_, Initialize(audio_stream_.get(), _, _, _))
-        .WillOnce(
-            DoAll(SaveArg<2>(&audio_renderer_client_), RunCallback<3>(status)));
+    EXPECT_CALL(*audio_renderer_, OnInitialize(audio_stream_.get(), _, _, _))
+        .WillOnce(DoAll(SaveArg<2>(&audio_renderer_client_),
+                        RunOnceCallback<3>(status)));
   }
 
   // Sets up expectations to allow the video renderer to initialize.
   void SetVideoRendererInitializeExpectations(PipelineStatus status) {
-    EXPECT_CALL(*video_renderer_, Initialize(video_stream_.get(), _, _, _, _))
-        .WillOnce(
-            DoAll(SaveArg<2>(&video_renderer_client_), RunCallback<4>(status)));
+    EXPECT_CALL(*video_renderer_, OnInitialize(video_stream_.get(), _, _, _, _))
+        .WillOnce(DoAll(SaveArg<2>(&video_renderer_client_),
+                        RunOnceCallback<4>(status)));
   }
 
   void InitializeAndExpect(PipelineStatus start_status) {
@@ -397,7 +398,7 @@ TEST_F(RendererImplTest, Destroy_PendingInitialize) {
 
   SetAudioRendererInitializeExpectations(PIPELINE_OK);
   // Not returning the video initialization callback.
-  EXPECT_CALL(*video_renderer_, Initialize(video_stream_.get(), _, _, _, _));
+  EXPECT_CALL(*video_renderer_, OnInitialize(video_stream_.get(), _, _, _, _));
 
   InitializeAndExpect(PIPELINE_ERROR_ABORT);
   EXPECT_EQ(PIPELINE_OK, initialization_status_);
@@ -431,7 +432,7 @@ TEST_F(RendererImplTest, Destroy_PendingInitializeAfterSetCdm) {
   SetAudioRendererInitializeExpectations(PIPELINE_OK);
   // Not returning the video initialization callback. So initialization will
   // be pending.
-  EXPECT_CALL(*video_renderer_, Initialize(video_stream_.get(), _, _, _, _));
+  EXPECT_CALL(*video_renderer_, OnInitialize(video_stream_.get(), _, _, _, _));
 
   // SetCdm() will trigger the initialization to start. But it will not complete
   // because the |video_renderer_| is not returning the initialization callback.
@@ -697,10 +698,10 @@ TEST_F(RendererImplTest, ErrorDuringInitialize) {
   SetAudioRendererInitializeExpectations(PIPELINE_OK);
 
   // Force an audio error to occur during video renderer initialization.
-  EXPECT_CALL(*video_renderer_, Initialize(video_stream_.get(), _, _, _, _))
+  EXPECT_CALL(*video_renderer_, OnInitialize(video_stream_.get(), _, _, _, _))
       .WillOnce(DoAll(SetError(&audio_renderer_client_, PIPELINE_ERROR_DECODE),
                       SaveArg<2>(&video_renderer_client_),
-                      RunCallback<4>(PIPELINE_OK)));
+                      RunOnceCallback<4>(PIPELINE_OK)));
 
   InitializeAndExpect(PIPELINE_ERROR_DECODE);
 }

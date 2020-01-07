@@ -150,6 +150,10 @@ class WebWorkerFetchContext : public base::RefCounted<WebWorkerFetchContext> {
   // request has not been intercepted by a service worker.
   virtual mojo::ScopedMessagePipeHandle TakePendingWorkerTimingReceiver(
       int request_id) = 0;
+
+  // This flag is set to disallow all network accesses in the context. Used for
+  // offline capability detection in service workers.
+  virtual void SetIsOfflineMode(bool is_offline_mode) = 0;
 };
 
 }  // namespace blink

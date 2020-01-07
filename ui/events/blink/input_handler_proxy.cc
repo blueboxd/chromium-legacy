@@ -83,6 +83,8 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
       NOTREACHED();
       break;
   }
+  scroll_state_data.is_direct_manipulation =
+      event.SourceDevice() == blink::WebGestureDevice::kTouchscreen;
   return cc::ScrollState(scroll_state_data);
 }
 

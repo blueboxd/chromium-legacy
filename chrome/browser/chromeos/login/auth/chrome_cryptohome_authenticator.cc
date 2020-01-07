@@ -35,7 +35,7 @@ bool ChromeCryptohomeAuthenticator::IsSafeMode() {
 
 void ChromeCryptohomeAuthenticator::CheckSafeModeOwnership(
     const UserContext& context,
-    const IsOwnerCallback& callback) {
+    IsOwnerCallback callback) {
   // |IsOwnerForSafeModeAsync| expects logged in state to be
   // LOGGED_IN_SAFE_MODE.
   if (LoginState::IsInitialized()) {
@@ -46,7 +46,7 @@ void ChromeCryptohomeAuthenticator::CheckSafeModeOwnership(
   OwnerSettingsServiceChromeOS::IsOwnerForSafeModeAsync(
       context.GetUserIDHash(),
       OwnerSettingsServiceChromeOSFactory::GetInstance()->GetOwnerKeyUtil(),
-      callback);
+      std::move(callback));
 }
 
 }  // namespace chromeos

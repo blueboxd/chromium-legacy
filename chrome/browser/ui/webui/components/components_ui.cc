@@ -77,7 +77,8 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
 ///////////////////////////////////////////////////////////////////////////////
 
 ComponentsUI::ComponentsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
-  web_ui->AddMessageHandler(std::make_unique<ComponentsHandler>());
+  web_ui->AddMessageHandler(std::make_unique<ComponentsHandler>(
+      g_browser_process->component_updater()));
 
   // Set up the chrome://components/ source.
   Profile* profile = Profile::FromWebUI(web_ui);

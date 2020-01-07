@@ -438,7 +438,7 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
     if (!AssociatedUserValidator::Get()->HasInternetConnection() &&
         !AssociatedUserValidator::Get()->IsOnlineLoginStale(sid)) {
       continue;
-    } else if (CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() &&
+    } else if (CGaiaCredentialBase::IsCloudAssociationEnabled() &&
                OSUserManager::Get()->IsUserDomainJoined(sid)) {
       if (user_id[0] && is_token_handle_valid_for_user) {
         continue;

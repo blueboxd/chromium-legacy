@@ -225,7 +225,8 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void OnVisibilityWillChange(bool visible, int64_t display_id);
 
   // ShellObserver:
-  void OnShelfAlignmentChanged(aura::Window* root_window) override;
+  void OnShelfAlignmentChanged(aura::Window* root_window,
+                               ShelfAlignment old_alignment) override;
   void OnShellDestroying() override;
 
   // OverviewObserver:

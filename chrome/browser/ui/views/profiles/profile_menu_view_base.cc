@@ -588,10 +588,6 @@ void ProfileMenuViewBase::ButtonPressed(views::Button* button,
   OnClick(button);
 }
 
-void ProfileMenuViewBase::LinkClicked(views::Link* link, int event_flags) {
-  OnClick(link);
-}
-
 void ProfileMenuViewBase::StyledLabelLinkClicked(views::StyledLabel* link,
                                                  const gfx::Range& range,
                                                  int event_flags) {

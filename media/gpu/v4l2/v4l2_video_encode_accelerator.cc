@@ -569,6 +569,8 @@ size_t V4L2VideoEncodeAccelerator::CopyIntoOutputBuffer(
   parser.SetStream(bitstream_data, bitstream_size);
   H264NALU nalu;
 
+  bool inserted_sps = false;
+  bool inserted_pps = false;
   while (parser.AdvanceToNextNALU(&nalu) == H264Parser::kOk) {
     // nalu.size is always without the start code, regardless of the NALU type.
     if (nalu.size + kH264StartCodeSize > remaining_dst_size) {
@@ -582,6 +584,7 @@ size_t V4L2VideoEncodeAccelerator::CopyIntoOutputBuffer(
         memcpy(cached_sps_.data(), nalu.data, nalu.size);
         cached_h264_header_size_ =
             cached_sps_.size() + cached_pps_.size() + 2 * kH264StartCodeSize;
+        inserted_sps = true;
         break;
 
       case H264NALU::kPPS:
@@ -589,9 +592,14 @@ size_t V4L2VideoEncodeAccelerator::CopyIntoOutputBuffer(
         memcpy(cached_pps_.data(), nalu.data, nalu.size);
         cached_h264_header_size_ =
             cached_sps_.size() + cached_pps_.size() + 2 * kH264StartCodeSize;
+        inserted_pps = true;
         break;
 
       case H264NALU::kIDRSlice:
+        if (inserted_sps && inserted_pps) {
+          // Already inserted SPS and PPS. No need to inject.
+          break;
+        }
         // Only inject if we have both headers cached, and enough space for both
         // the headers and the NALU itself.
         if (cached_sps_.empty() || cached_pps_.empty()) {
@@ -604,10 +612,14 @@ size_t V4L2VideoEncodeAccelerator::CopyIntoOutputBuffer(
           break;
         }
 
-        CopyNALUPrependingStartCode(cached_sps_.data(), cached_sps_.size(),
-                                    &dst_ptr, &remaining_dst_size);
-        CopyNALUPrependingStartCode(cached_pps_.data(), cached_pps_.size(),
-                                    &dst_ptr, &remaining_dst_size);
+        if (!inserted_sps) {
+          CopyNALUPrependingStartCode(cached_sps_.data(), cached_sps_.size(),
+                                      &dst_ptr, &remaining_dst_size);
+        }
+        if (!inserted_pps) {
+          CopyNALUPrependingStartCode(cached_pps_.data(), cached_pps_.size(),
+                                      &dst_ptr, &remaining_dst_size);
+        }
         VLOGF(2) << "Stream header injected before IDR";
         break;
     }

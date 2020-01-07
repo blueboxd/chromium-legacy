@@ -118,10 +118,10 @@ TEST(CallStackProfileBuilderTest, ProfilingCompleted) {
 
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted(frames1);
+  profile_builder->OnSampleCompleted(frames1, base::TimeTicks());
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted(frames2);
+  profile_builder->OnSampleCompleted(frames2, base::TimeTicks());
   profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
                                       base::TimeDelta::FromMilliseconds(100));
 
@@ -183,9 +183,9 @@ TEST(CallStackProfileBuilderTest, CustomWeightsAndCounts) {
   base::Frame frame1 = {0x10, &module1};
   std::vector<base::Frame> frames = {frame1};
 
-  profile_builder->OnSampleCompleted(frames, 42, 3);
-  profile_builder->OnSampleCompleted(frames, 1, 1);
-  profile_builder->OnSampleCompleted(frames);
+  profile_builder->OnSampleCompleted(frames, base::TimeTicks(), 42, 3);
+  profile_builder->OnSampleCompleted(frames, base::TimeTicks(), 1, 1);
+  profile_builder->OnSampleCompleted(frames, base::TimeTicks());
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
   const SampledProfile& proto = profile_builder->test_sampled_profile();
@@ -219,10 +219,10 @@ TEST(CallStackProfileBuilderTest, StacksDeduped) {
   // to one.
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted(frames);
+  profile_builder->OnSampleCompleted(frames, base::TimeTicks());
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted(frames);
+  profile_builder->OnSampleCompleted(frames, base::TimeTicks());
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
@@ -259,10 +259,10 @@ TEST(CallStackProfileBuilderTest, StacksNotDeduped) {
   // Two stacks are completed with the different frames therefore not deduped.
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted(frames1);
+  profile_builder->OnSampleCompleted(frames1, base::TimeTicks());
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted(frames2);
+  profile_builder->OnSampleCompleted(frames2, base::TimeTicks());
 
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
@@ -305,7 +305,7 @@ TEST(CallStackProfileBuilderTest, Modules) {
 
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted(frames);
+  profile_builder->OnSampleCompleted(frames, base::TimeTicks());
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
   const SampledProfile& proto = profile_builder->test_sampled_profile();
@@ -356,7 +356,7 @@ TEST(CallStackProfileBuilderTest, DedupModules) {
 
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted(frames);
+  profile_builder->OnSampleCompleted(frames, base::TimeTicks());
   profile_builder->OnProfileCompleted(base::TimeDelta(), base::TimeDelta());
 
   const SampledProfile& proto = profile_builder->test_sampled_profile();
@@ -408,25 +408,25 @@ TEST(CallStackProfileBuilderTest, WorkIds) {
   // not have continued_work set.
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted({frame});
+  profile_builder->OnSampleCompleted({frame}, base::TimeTicks());
 
   // The second sample with the same id should have continued_work set.
   work_id_recorder.current_id = 1;
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted({frame});
+  profile_builder->OnSampleCompleted({frame}, base::TimeTicks());
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted({frame});
+  profile_builder->OnSampleCompleted({frame}, base::TimeTicks());
 
   // Ids are in general non-contiguous across multiple samples.
   work_id_recorder.current_id = 10;
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted({frame});
+  profile_builder->OnSampleCompleted({frame}, base::TimeTicks());
   profile_builder->RecordMetadata(
       base::MetadataRecorder().CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted({frame});
+  profile_builder->OnSampleCompleted({frame}, base::TimeTicks());
 
   profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
                                       base::TimeDelta::FromMilliseconds(100));
@@ -458,7 +458,7 @@ TEST(CallStackProfileBuilderTest, RecordMetadata) {
   metadata_recorder.Set(100, base::nullopt, 10);
   profile_builder->RecordMetadata(
       metadata_recorder.CreateMetadataProvider().get());
-  profile_builder->OnSampleCompleted({frame});
+  profile_builder->OnSampleCompleted({frame}, base::TimeTicks());
 
   profile_builder->OnProfileCompleted(base::TimeDelta::FromMilliseconds(500),
                                       base::TimeDelta::FromMilliseconds(100));

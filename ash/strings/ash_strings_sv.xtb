@@ -54,7 +54,7 @@
 <translation id="1550523713251050646">Klicka här för fler alternativ</translation>
 <translation id="1570871743947603115">Aktivera och inaktivera Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Få tillgång till all aktivitet i sessionen</translation>
-<translation id="1608626060424371292">Ta bort den här användaren</translation>
+<translation id="1608626060424371292">Ta bort denna användare</translation>
 <translation id="1654477262762802994">Säg en sökfråga</translation>
 <translation id="1658406695958299976">Det gick inte att verifiera lösenordet. Obs! Om du nyligen har bytt lösenord börjar det nya lösenordet att gälla först när du loggar ut. Använd det gamla lösenordet här.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> kvar</translation>
@@ -99,7 +99,7 @@
 <translation id="2220572644011485463">Pinkod eller lösenord</translation>
 <translation id="2222338659135520253">Inloggning krävs</translation>
 <translation id="225680501294068881">Söker efter enheter ...</translation>
-<translation id="2268130516524549846">Bluetooth inaktiverad</translation>
+<translation id="2268130516524549846">Bluetooth inaktiverat</translation>
 <translation id="2268813581635650749">Logga ut alla</translation>
 <translation id="2277103315734023688">Sök framåt</translation>
 <translation id="2292698582925480719">Skala på skärmen</translation>
@@ -345,7 +345,6 @@
 <translation id="5777841717266010279">Vill du avbryta skärmdelningen?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Sluta casta <ph name="ROUTE_TITLE" /> till <ph name="RECEIVER_NAME" /></translation>
-<translation id="5860033963881614850">Av</translation>
 <translation id="5895138241574237353">Starta om</translation>
 <translation id="5901316534475909376">Skift+Escape</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>

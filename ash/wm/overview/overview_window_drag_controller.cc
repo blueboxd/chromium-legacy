@@ -600,7 +600,7 @@ void OverviewWindowDragController::UpdateDragIndicatorsAndOverviewGrid(
           /*is_dragging=*/true,
           SplitViewDragIndicators::WindowDraggingState::kFromOverview,
           snap_position_));
-  overview_session_->RearrangeDuringDrag(item_->GetWindow());
+  overview_session_->RearrangeDuringDrag(item_);
 }
 
 aura::Window* OverviewWindowDragController::GetRootWindowBeingDraggedIn()

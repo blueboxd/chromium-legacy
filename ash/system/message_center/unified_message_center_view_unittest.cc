@@ -737,9 +737,9 @@ TEST_F(UnifiedMessageCenterViewTest, CollapseAndExpand_NonAnimated) {
 
 TEST_F(UnifiedMessageCenterViewTest, CollapseAndExpand_Animated) {
   AddNotification();
+  AddNotification();
   CreateMessageCenterView();
   EXPECT_TRUE(GetScroller()->GetVisible());
-  EXPECT_FALSE(GetNotificationBar()->GetVisible());
 
   // Set to collapsed state with animation.
   message_center_view()->SetCollapsed(true /* animate */);
@@ -762,7 +762,6 @@ TEST_F(UnifiedMessageCenterViewTest, CollapseAndExpand_Animated) {
   EXPECT_FALSE(GetNotificationBarExpandAllButton()->GetVisible());
   EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
   EXPECT_TRUE(GetScroller()->GetVisible());
-  EXPECT_FALSE(GetNotificationBar()->GetVisible());
 }
 
 TEST_F(UnifiedMessageCenterViewTest, CollapseAndExpand_NoNotifications) {

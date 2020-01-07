@@ -372,6 +372,9 @@ class AXPositionTextNavigationTestWithParam
 const char* AXPositionTest::TEXT_VALUE = "Line 1\nLine 2";
 
 void AXPositionTest::SetUp() {
+  // Most tests use kSuppressCharacter behavior.
+  g_ax_embedded_object_behavior = AXEmbeddedObjectBehavior::kSuppressCharacter;
+
   // root_
   //  |
   //  +------------+-----------+
@@ -6162,6 +6165,199 @@ TEST_F(AXPositionTest, CreatePreviousWordPositionInList) {
   ASSERT_TRUE(text_position->IsTextPosition());
   ASSERT_EQ(inline_box1.id, text_position->anchor_id());
   ASSERT_EQ(0, text_position->text_offset());
+}
+
+TEST_F(AXPositionTest, EmbeddedObjectReplacementCharacterTextNavigation) {
+  g_ax_embedded_object_behavior = AXEmbeddedObjectBehavior::kExposeCharacter;
+
+  // ++1 kRootWebArea
+  // ++++2 kStaticText
+  // ++++++3 kInlineTextBox
+  // ++++4 kTextField
+  // ++++++5 kGenericContainer
+  // ++++6 kStaticText
+  // ++++++7 kInlineTextBox
+  AXNodeData root;
+  AXNodeData static_text1;
+  AXNodeData inline_box1;
+  AXNodeData text_field;
+  AXNodeData generic_container;
+  AXNodeData static_text2;
+  AXNodeData inline_box2;
+
+  root.id = 1;
+  static_text1.id = 2;
+  inline_box1.id = 3;
+  text_field.id = 4;
+  generic_container.id = 5;
+  static_text2.id = 6;
+  inline_box2.id = 7;
+
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {static_text1.id, text_field.id, static_text2.id};
+
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.SetName("Hello ");
+  static_text1.child_ids = {inline_box1.id};
+
+  inline_box1.role = ax::mojom::Role::kInlineTextBox;
+  inline_box1.SetName("Hello ");
+  inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  std::vector<int32_t>{0});
+  inline_box1.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  std::vector<int32_t>{6});
+
+  text_field.role = ax::mojom::Role::kTextField;
+  text_field.child_ids = {generic_container.id};
+
+  generic_container.role = ax::mojom::Role::kGenericContainer;
+
+  static_text2.role = ax::mojom::Role::kStaticText;
+  static_text2.SetName(" world");
+  static_text2.child_ids = {inline_box2.id};
+
+  inline_box2.role = ax::mojom::Role::kInlineTextBox;
+  inline_box2.SetName(" world");
+  inline_box2.AddIntListAttribute(ax::mojom::IntListAttribute::kWordStarts,
+                                  std::vector<int32_t>{1});
+  inline_box2.AddIntListAttribute(ax::mojom::IntListAttribute::kWordEnds,
+                                  std::vector<int32_t>{6});
+
+  std::unique_ptr<AXTree> new_tree =
+      CreateAXTree({root, static_text1, inline_box1, text_field,
+                    generic_container, static_text2, inline_box2});
+
+  AXNodePosition::SetTree(new_tree.get());
+
+  // CreateStartWordStartPosition tests.
+  TestPositionType position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_box1.id,
+      0 /* child_index_or_text_offset */, ax::mojom::TextAffinity::kDownstream);
+
+  TestPositionType result_position =
+      position->CreateNextWordStartPosition(AXBoundaryBehavior::CrossBoundary);
+  std::string expectations =
+      "TextPosition anchor_id=5 text_offset=0 affinity=downstream "
+      "annotated_text=<\xEF\xBF\xBC>";
+  ASSERT_EQ(result_position->ToString(), expectations);
+
+  position = std::move(result_position);
+  result_position =
+      position->CreateNextWordStartPosition(AXBoundaryBehavior::CrossBoundary);
+  expectations =
+      "TextPosition anchor_id=7 text_offset=1 affinity=downstream "
+      "annotated_text= <w>orld";
+  ASSERT_EQ(result_position->ToString(), expectations);
+
+  // CreatePreviousWordStartPosition tests.
+  position = std::move(result_position);
+  result_position = position->CreatePreviousWordStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  expectations =
+      "TextPosition anchor_id=5 text_offset=0 affinity=downstream "
+      "annotated_text=<\xEF\xBF\xBC>";
+  ASSERT_EQ(result_position->ToString(), expectations);
+
+  position = std::move(result_position);
+  result_position = position->CreatePreviousWordStartPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  expectations =
+      "TextPosition anchor_id=3 text_offset=0 affinity=downstream "
+      "annotated_text=<H>ello ";
+  ASSERT_EQ(result_position->ToString(), expectations);
+
+  // CreateNextWordEndPosition tests.
+  position = std::move(result_position);
+  result_position =
+      position->CreateNextWordEndPosition(AXBoundaryBehavior::CrossBoundary);
+  expectations =
+      "TextPosition anchor_id=3 text_offset=6 affinity=downstream "
+      "annotated_text=Hello <>";
+  ASSERT_EQ(result_position->ToString(), expectations);
+
+  position = std::move(result_position);
+  result_position =
+      position->CreateNextWordEndPosition(AXBoundaryBehavior::CrossBoundary);
+  expectations =
+      "TextPosition anchor_id=5 text_offset=1 affinity=downstream "
+      "annotated_text=\xEF\xBF\xBC<>";
+  ASSERT_EQ(result_position->ToString(), expectations);
+
+  position = std::move(result_position);
+  result_position =
+      position->CreateNextWordEndPosition(AXBoundaryBehavior::CrossBoundary);
+  expectations =
+      "TextPosition anchor_id=7 text_offset=6 affinity=downstream "
+      "annotated_text= world<>";
+  ASSERT_EQ(result_position->ToString(), expectations);
+
+  // CreatePreviousWordEndPosition tests.
+  position = std::move(result_position);
+  result_position = position->CreatePreviousWordEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  expectations =
+      "TextPosition anchor_id=5 text_offset=1 affinity=downstream "
+      "annotated_text=\xEF\xBF\xBC<>";
+  ASSERT_EQ(result_position->ToString(), expectations);
+
+  position = std::move(result_position);
+  result_position = position->CreatePreviousWordEndPosition(
+      AXBoundaryBehavior::CrossBoundary);
+  expectations =
+      "TextPosition anchor_id=3 text_offset=6 affinity=downstream "
+      "annotated_text=Hello <>";
+  ASSERT_EQ(result_position->ToString(), expectations);
+
+  // GetText() with embedded object replacement character test.
+  position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, generic_container.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  base::string16 expected_text;
+  expected_text += AXNodePosition::kEmbeddedCharacter;
+  ASSERT_EQ(expected_text, position->GetText());
+
+  // GetText() on a node parent of text nodes and an embedded object replacement
+  // character.
+  position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, root.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  expected_text = base::WideToUTF16(L"Hello ") +
+                  AXNodePosition::kEmbeddedCharacter +
+                  base::WideToUTF16(L" world");
+  ASSERT_EQ(expected_text, position->GetText());
+
+  // MaxTextOffset() with an embedded object replacement character.
+  position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, generic_container.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  ASSERT_EQ(1, position->MaxTextOffset());
+
+  // Parent positions created from a position inside a node represented by an
+  // embedded object replacement character.
+  position = position->CreateParentPosition();
+  expectations =
+      "TextPosition anchor_id=4 text_offset=0 affinity=downstream "
+      "annotated_text=<\xEF\xBF\xBC>";
+  ASSERT_EQ(position->ToString(), expectations);
+  ASSERT_EQ(1, position->MaxTextOffset());
+
+  position = position->CreateParentPosition();
+  expectations =
+      "TextPosition anchor_id=1 text_offset=6 affinity=downstream "
+      "annotated_text=Hello <\xEF\xBF\xBC> world";
+  ASSERT_EQ(position->ToString(), expectations);
+  ASSERT_EQ(13, position->MaxTextOffset());
+
+  // MaxTextOffset() on a node parent of text nodes and an embedded object
+  // replacement character.
+  position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, root.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  ASSERT_EQ(13, position->MaxTextOffset());
 }
 
 //

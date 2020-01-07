@@ -41,14 +41,53 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
 
-using extensions::ExtensionRegistry;
+namespace {
+
+// A class that ensures any installed extension is uninstalled before it goes
+// out of scope.  This ensures the temporary directory used to load the
+// extension is unlocked and can be deleted.
+class ThemeScoper {
+ public:
+  ThemeScoper() = default;
+  ThemeScoper(extensions::ExtensionService* extension_service,
+              extensions::ExtensionRegistry* extension_registry)
+      : extension_service_(extension_service),
+        extension_registry_(extension_registry) {}
+  ThemeScoper(ThemeScoper&&) noexcept = default;
+  ThemeScoper& operator=(ThemeScoper&&) = default;
+  ~ThemeScoper() {
+    if (!extension_id_.empty() &&
+        extension_registry_->GetInstalledExtension(extension_id_)) {
+      extension_service_->UninstallExtension(
+          extension_id_, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+    }
+  }
+
+  std::string extension_id() const { return extension_id_; }
+  void set_extension_id(std::string extension_id) {
+    extension_id_ = std::move(extension_id);
+  }
+
+  base::FilePath GetTempPath() {
+    return temp_dir_.CreateUniqueTempDir() ? temp_dir_.GetPath()
+                                           : base::FilePath();
+  }
+
+ private:
+  extensions::ExtensionService* extension_service_ = nullptr;
+  extensions::ExtensionRegistry* extension_registry_ = nullptr;
+  std::string extension_id_;
+  base::ScopedTempDir temp_dir_;
+};
+
+}  // namespace
 
 namespace theme_service_internal {
 
 class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
  public:
-  ThemeServiceTest() : registry_(NULL) {}
-  ~ThemeServiceTest() override {}
+  ThemeServiceTest() = default;
+  ~ThemeServiceTest() override = default;
 
   void SetUp() override {
     extensions::ExtensionServiceTestBase::SetUp();
@@ -56,19 +95,16 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
         CreateDefaultInitParams();
     InitializeExtensionService(params);
     service_->Init();
-    registry_ = ExtensionRegistry::Get(profile_.get());
+    registry_ = extensions::ExtensionRegistry::Get(profile());
     ASSERT_TRUE(registry_);
+    theme_service_ = ThemeServiceFactory::GetForProfile(profile());
+    ASSERT_TRUE(theme_service_);
   }
 
-  // Moves a minimal theme to |temp_dir_path| and unpacks it from that
-  // directory.
-  std::string LoadUnpackedMinimalThemeAt(const base::FilePath& temp_dir) {
-    return LoadUnpackedTheme(temp_dir,
-                             "extensions/theme_minimal/manifest.json");
-  }
-
-  std::string LoadUnpackedTheme(const base::FilePath& temp_dir,
-                                const std::string source_file_path) {
+  ThemeScoper LoadUnpackedTheme(const std::string& source_file_path =
+                                    "extensions/theme_minimal/manifest.json") {
+    ThemeScoper scoper(service_, registry_);
+    base::FilePath temp_dir = scoper.GetTempPath();
     base::FilePath dst_manifest_path = temp_dir.AppendASCII("manifest.json");
     base::FilePath test_data_dir;
     EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
@@ -78,14 +114,13 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
 
     scoped_refptr<extensions::UnpackedInstaller> installer(
         extensions::UnpackedInstaller::Create(service_));
-    extensions::TestExtensionRegistryObserver observer(
-        ExtensionRegistry::Get(profile()));
+    extensions::TestExtensionRegistryObserver observer(registry_);
     installer->Load(temp_dir);
-    std::string extension_id = observer.WaitForExtensionLoaded()->id();
+    scoper.set_extension_id(observer.WaitForExtensionLoaded()->id());
 
     WaitForThemeInstall();
 
-    return extension_id;
+    return scoper;
   }
 
   // Update the theme with |extension_id|.
@@ -96,14 +131,13 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
     scoped_refptr<extensions::UnpackedInstaller> installer(
         extensions::UnpackedInstaller::Create(service_));
     if (service_->IsExtensionEnabled(extension_id)) {
-      extensions::TestExtensionRegistryObserver observer(
-          ExtensionRegistry::Get(profile()));
+      extensions::TestExtensionRegistryObserver observer(registry_);
       installer->Load(path);
       observer.WaitForExtensionLoaded();
     } else {
       content::WindowedNotificationObserver observer(
           extensions::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-          content::Source<Profile>(profile_.get()));
+          content::Source<Profile>(profile()));
       installer->Load(path);
       observer.Wait();
     }
@@ -134,9 +168,13 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
   void WaitForThemeInstall() {
     content::WindowedNotificationObserver theme_change_observer(
         chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-        content::Source<ThemeService>(
-            ThemeServiceFactory::GetForProfile(profile())));
+        content::Source<ThemeService>(theme_service_));
     theme_change_observer.Wait();
+  }
+
+  bool IsExtensionDisabled(const std::string& id) const {
+    return registry_->GetExtensionById(id,
+                                       extensions::ExtensionRegistry::DISABLED);
   }
 
   // Returns the separator color as the opaque result of blending it atop the
@@ -148,159 +186,117 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
   }
 
  protected:
-  ExtensionRegistry* registry_;
+  extensions::ExtensionRegistry* registry_ = nullptr;
+  ThemeService* theme_service_ = nullptr;
 };
 
 // Installs then uninstalls a theme and makes sure that the ThemeService
 // reverts to the default theme after the uninstall.
 TEST_F(ThemeServiceTest, ThemeInstallUninstall) {
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  theme_service->UseDefaultTheme();
-  // Let the ThemeService uninstall unused themes.
-  base::RunLoop().RunUntilIdle();
-
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const std::string& extension_id =
-      LoadUnpackedMinimalThemeAt(temp_dir.GetPath());
-  EXPECT_FALSE(theme_service->UsingDefaultTheme());
-  EXPECT_TRUE(theme_service->UsingExtensionTheme());
-  EXPECT_EQ(extension_id, theme_service->GetThemeID());
+  ThemeScoper scoper = LoadUnpackedTheme();
+  EXPECT_FALSE(theme_service_->UsingDefaultTheme());
+  EXPECT_TRUE(theme_service_->UsingExtensionTheme());
+  EXPECT_EQ(scoper.extension_id(), theme_service_->GetThemeID());
 
   // Now uninstall the extension, should revert to the default theme.
-  service_->UninstallExtension(extension_id,
-                               extensions::UNINSTALL_REASON_FOR_TESTING,
-                               NULL);
-  EXPECT_TRUE(theme_service->UsingDefaultTheme());
-  EXPECT_FALSE(theme_service->UsingExtensionTheme());
+  service_->UninstallExtension(
+      scoper.extension_id(), extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+  EXPECT_TRUE(theme_service_->UsingDefaultTheme());
+  EXPECT_FALSE(theme_service_->UsingExtensionTheme());
 }
 
 // Test that a theme extension is disabled when not in use. A theme may be
 // installed but not in use if it there is an infobar to revert to the previous
 // theme.
 TEST_F(ThemeServiceTest, DisableUnusedTheme) {
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  theme_service->UseDefaultTheme();
-
-  base::ScopedTempDir temp_dir1;
-  ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
-  base::ScopedTempDir temp_dir2;
-  ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
-
   // 1) Installing a theme should disable the previously active theme.
-  const std::string& extension1_id =
-      LoadUnpackedMinimalThemeAt(temp_dir1.GetPath());
-  EXPECT_FALSE(theme_service->UsingDefaultTheme());
-  EXPECT_EQ(extension1_id, theme_service->GetThemeID());
-  EXPECT_TRUE(service_->IsExtensionEnabled(extension1_id));
+  ThemeScoper scoper1 = LoadUnpackedTheme();
+  EXPECT_FALSE(theme_service_->UsingDefaultTheme());
+  EXPECT_EQ(scoper1.extension_id(), theme_service_->GetThemeID());
+  EXPECT_TRUE(service_->IsExtensionEnabled(scoper1.extension_id()));
 
   // Create theme reinstaller to prevent the current theme from being
   // uninstalled.
   std::unique_ptr<ThemeService::ThemeReinstaller> reinstaller =
-      theme_service->BuildReinstallerForCurrentTheme();
+      theme_service_->BuildReinstallerForCurrentTheme();
 
-  const std::string& extension2_id =
-      LoadUnpackedMinimalThemeAt(temp_dir2.GetPath());
-  EXPECT_EQ(extension2_id, theme_service->GetThemeID());
-  EXPECT_TRUE(service_->IsExtensionEnabled(extension2_id));
-  EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
-                                          ExtensionRegistry::DISABLED));
+  ThemeScoper scoper2 = LoadUnpackedTheme();
+  EXPECT_EQ(scoper2.extension_id(), theme_service_->GetThemeID());
+  EXPECT_TRUE(service_->IsExtensionEnabled(scoper2.extension_id()));
+  EXPECT_TRUE(IsExtensionDisabled(scoper1.extension_id()));
 
   // 2) Enabling a disabled theme extension should swap the current theme.
-  service_->EnableExtension(extension1_id);
+  service_->EnableExtension(scoper1.extension_id());
   WaitForThemeInstall();
-  EXPECT_EQ(extension1_id, theme_service->GetThemeID());
-  EXPECT_TRUE(service_->IsExtensionEnabled(extension1_id));
-  EXPECT_TRUE(registry_->GetExtensionById(extension2_id,
-                                          ExtensionRegistry::DISABLED));
+  EXPECT_EQ(scoper1.extension_id(), theme_service_->GetThemeID());
+  EXPECT_TRUE(service_->IsExtensionEnabled(scoper1.extension_id()));
+  EXPECT_TRUE(IsExtensionDisabled(scoper2.extension_id()));
 
   // 3) Using RevertToExtensionTheme() with a disabled theme should enable and
   // set the theme. This is the case when the user reverts to the previous theme
   // via an infobar.
-  theme_service->RevertToExtensionTheme(extension2_id);
+  theme_service_->RevertToExtensionTheme(scoper2.extension_id());
   WaitForThemeInstall();
-  EXPECT_EQ(extension2_id, theme_service->GetThemeID());
-  EXPECT_TRUE(service_->IsExtensionEnabled(extension2_id));
-  EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
-                                          ExtensionRegistry::DISABLED));
+  EXPECT_EQ(scoper2.extension_id(), theme_service_->GetThemeID());
+  EXPECT_TRUE(service_->IsExtensionEnabled(scoper2.extension_id()));
+  EXPECT_TRUE(IsExtensionDisabled(scoper1.extension_id()));
 
   // 4) Disabling the current theme extension should revert to the default theme
   // and disable any installed theme extensions.
-  EXPECT_FALSE(theme_service->UsingDefaultTheme());
-  service_->DisableExtension(extension2_id,
+  EXPECT_FALSE(theme_service_->UsingDefaultTheme());
+  service_->DisableExtension(scoper2.extension_id(),
                              extensions::disable_reason::DISABLE_USER_ACTION);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(theme_service->UsingDefaultTheme());
-  EXPECT_FALSE(service_->IsExtensionEnabled(extension1_id));
-  EXPECT_FALSE(service_->IsExtensionEnabled(extension2_id));
+  EXPECT_TRUE(theme_service_->UsingDefaultTheme());
+  EXPECT_FALSE(service_->IsExtensionEnabled(scoper1.extension_id()));
+  EXPECT_FALSE(service_->IsExtensionEnabled(scoper2.extension_id()));
 }
 
 // Test the ThemeService's behavior when a theme is upgraded.
 TEST_F(ThemeServiceTest, ThemeUpgrade) {
-  // Setup.
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  theme_service->UseDefaultTheme();
-  // Let the ThemeService uninstall unused themes.
-  base::RunLoop().RunUntilIdle();
-
   std::unique_ptr<ThemeService::ThemeReinstaller> reinstaller =
-      theme_service->BuildReinstallerForCurrentTheme();
+      theme_service_->BuildReinstallerForCurrentTheme();
 
-  base::ScopedTempDir temp_dir1;
-  ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
-  base::ScopedTempDir temp_dir2;
-  ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
-
-  const std::string& extension1_id =
-      LoadUnpackedMinimalThemeAt(temp_dir1.GetPath());
-  const std::string& extension2_id =
-      LoadUnpackedMinimalThemeAt(temp_dir2.GetPath());
+  ThemeScoper scoper1 = LoadUnpackedTheme();
+  ThemeScoper scoper2 = LoadUnpackedTheme();
 
   // Test the initial state.
-  EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
-                                          ExtensionRegistry::DISABLED));
-  EXPECT_EQ(extension2_id, theme_service->GetThemeID());
+  EXPECT_TRUE(IsExtensionDisabled(scoper1.extension_id()));
+  EXPECT_EQ(scoper2.extension_id(), theme_service_->GetThemeID());
 
   // 1) Upgrading the current theme should not revert to the default theme.
   content::WindowedNotificationObserver theme_change_observer(
       chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
-      content::Source<ThemeService>(theme_service));
-  UpdateUnpackedTheme(extension2_id);
+      content::Source<ThemeService>(theme_service_));
+  UpdateUnpackedTheme(scoper2.extension_id());
 
   // The ThemeService should have sent an theme change notification even though
   // the id of the current theme did not change.
   theme_change_observer.Wait();
 
-  EXPECT_EQ(extension2_id, theme_service->GetThemeID());
-  EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
-                                          ExtensionRegistry::DISABLED));
+  EXPECT_EQ(scoper2.extension_id(), theme_service_->GetThemeID());
+  EXPECT_TRUE(IsExtensionDisabled(scoper1.extension_id()));
 
   // 2) Upgrading a disabled theme should not change the current theme.
-  UpdateUnpackedTheme(extension1_id);
-  EXPECT_EQ(extension2_id, theme_service->GetThemeID());
-  EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
-                                          ExtensionRegistry::DISABLED));
+  UpdateUnpackedTheme(scoper1.extension_id());
+  EXPECT_EQ(scoper2.extension_id(), theme_service_->GetThemeID());
+  EXPECT_TRUE(IsExtensionDisabled(scoper1.extension_id()));
 }
 
 TEST_F(ThemeServiceTest, IncognitoTest) {
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  theme_service->UseDefaultTheme();
-  // Let the ThemeService uninstall unused themes.
-  base::RunLoop().RunUntilIdle();
+  // This test relies on incognito being meaningfully different than default,
+  // which is not currently true in dark mode.
+  ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(false);
 
   // Should get the same ThemeService for incognito and original profiles.
   ThemeService* otr_theme_service =
       ThemeServiceFactory::GetForProfile(profile_->GetOffTheRecordProfile());
-  EXPECT_EQ(theme_service, otr_theme_service);
+  EXPECT_EQ(theme_service_, otr_theme_service);
 
 #if !defined(OS_MACOSX)
   // Should get a different ThemeProvider for incognito and original profiles.
   const ui::ThemeProvider& provider =
-      ThemeService::GetThemeProviderForProfile(profile_.get());
+      ThemeService::GetThemeProviderForProfile(profile());
   const ui::ThemeProvider& otr_provider =
       ThemeService::GetThemeProviderForProfile(
           profile_->GetOffTheRecordProfile());
@@ -312,49 +308,37 @@ TEST_F(ThemeServiceTest, IncognitoTest) {
 }
 
 TEST_F(ThemeServiceTest, GetDefaultThemeProviderForProfile) {
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  theme_service->UseDefaultTheme();
-  // Let the ThemeService uninstall unused themes.
-  base::RunLoop().RunUntilIdle();
-
   SkColor default_toolbar_color =
-      ThemeService::GetThemeProviderForProfile(profile_.get())
-          .GetColor(ThemeProperties::COLOR_TOOLBAR);
+      ThemeService::GetThemeProviderForProfile(profile()).GetColor(
+          ThemeProperties::COLOR_TOOLBAR);
 
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  LoadUnpackedMinimalThemeAt(temp_dir.GetPath());
+  ThemeScoper scoper = LoadUnpackedTheme();
 
   // Should get a new color after installing a theme.
-  EXPECT_NE(ThemeService::GetThemeProviderForProfile(profile_.get())
-                .GetColor(ThemeProperties::COLOR_TOOLBAR),
+  EXPECT_NE(ThemeService::GetThemeProviderForProfile(profile()).GetColor(
+                ThemeProperties::COLOR_TOOLBAR),
             default_toolbar_color);
 
   // Should get the same color when requesting a default color.
-  EXPECT_EQ(ThemeService::GetDefaultThemeProviderForProfile(profile_.get())
-                .GetColor(ThemeProperties::COLOR_TOOLBAR),
+  EXPECT_EQ(ThemeService::GetDefaultThemeProviderForProfile(profile()).GetColor(
+                ThemeProperties::COLOR_TOOLBAR),
             default_toolbar_color);
 }
 
 TEST_F(ThemeServiceTest, GetColorForToolbarButton) {
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  theme_service->UseDefaultTheme();
-  // Let the ThemeService uninstall unused themes.
-  base::RunLoop().RunUntilIdle();
+  // This test relies on toolbar buttons having no tint, which is not currently
+  // true in dark mode.
+  ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(false);
 
   const ui::ThemeProvider& theme_provider =
-      ThemeService::GetThemeProviderForProfile(profile_.get());
+      ThemeService::GetThemeProviderForProfile(profile());
   SkColor default_toolbar_button_color =
       theme_provider.GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
   EXPECT_FALSE(theme_provider.HasCustomColor(
       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
 
-  base::ScopedTempDir temp_dir1;
-  ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
-  LoadUnpackedTheme(temp_dir1.GetPath(),
-                    "extensions/theme_test_toolbar_button_color/manifest.json");
+  ThemeScoper scoper1 = LoadUnpackedTheme(
+      "extensions/theme_test_toolbar_button_color/manifest.json");
 
   // Should get a new color after installing a theme.
   SkColor toolbar_button_explicit_color =
@@ -363,10 +347,8 @@ TEST_F(ThemeServiceTest, GetColorForToolbarButton) {
   EXPECT_TRUE(theme_provider.HasCustomColor(
       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
 
-  base::ScopedTempDir temp_dir2;
-  ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
-  LoadUnpackedTheme(temp_dir2.GetPath(),
-                    "extensions/theme_test_toolbar_button_tint/manifest.json");
+  ThemeScoper scoper2 = LoadUnpackedTheme(
+      "extensions/theme_test_toolbar_button_tint/manifest.json");
 
   // Should get the color based on a tint.
   SkColor toolbar_button_tinted_color =
@@ -378,19 +360,13 @@ TEST_F(ThemeServiceTest, GetColorForToolbarButton) {
 }
 
 TEST_F(ThemeServiceTest, NTPLogoAlternate) {
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  theme_service->UseDefaultTheme();
-  // Let the ThemeService uninstall unused themes.
-  base::RunLoop().RunUntilIdle();
+  // TODO(https://crbug.com/1039006): Fix ScopedTempDir deletion errors on Win.
 
   const ui::ThemeProvider& theme_provider =
-      ThemeService::GetThemeProviderForProfile(profile_.get());
+      ThemeService::GetThemeProviderForProfile(profile());
   {
-    base::ScopedTempDir temp_dir;
-    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-    LoadUnpackedTheme(temp_dir.GetPath(),
-                      "extensions/theme_grey_ntp/manifest.json");
+    ThemeScoper scoper =
+        LoadUnpackedTheme("extensions/theme_grey_ntp/manifest.json");
     // When logo alternate is not specified and ntp is grey, logo should be
     // colorful.
     EXPECT_EQ(0, theme_provider.GetDisplayProperty(
@@ -398,20 +374,16 @@ TEST_F(ThemeServiceTest, NTPLogoAlternate) {
   }
 
   {
-    base::ScopedTempDir temp_dir;
-    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-    LoadUnpackedTheme(temp_dir.GetPath(),
-                      "extensions/theme_grey_ntp_white_logo/manifest.json");
+    ThemeScoper scoper =
+        LoadUnpackedTheme("extensions/theme_grey_ntp_white_logo/manifest.json");
     // Logo alternate should match what is specified in the manifest.
     EXPECT_EQ(1, theme_provider.GetDisplayProperty(
                      ThemeProperties::NTP_LOGO_ALTERNATE));
   }
 
   {
-    base::ScopedTempDir temp_dir;
-    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-    LoadUnpackedTheme(temp_dir.GetPath(),
-                      "extensions/theme_color_ntp_white_logo/manifest.json");
+    ThemeScoper scoper = LoadUnpackedTheme(
+        "extensions/theme_color_ntp_white_logo/manifest.json");
     // When logo alternate is not specified and ntp is colorful, logo should be
     // white.
     EXPECT_EQ(1, theme_provider.GetDisplayProperty(
@@ -419,10 +391,8 @@ TEST_F(ThemeServiceTest, NTPLogoAlternate) {
   }
 
   {
-    base::ScopedTempDir temp_dir;
-    ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-    LoadUnpackedTheme(temp_dir.GetPath(),
-                      "extensions/theme_color_ntp_colorful_logo/manifest.json");
+    ThemeScoper scoper = LoadUnpackedTheme(
+        "extensions/theme_color_ntp_colorful_logo/manifest.json");
     // Logo alternate should match what is specified in the manifest.
     EXPECT_EQ(0, theme_provider.GetDisplayProperty(
                      ThemeProperties::NTP_LOGO_ALTERNATE));
@@ -431,119 +401,88 @@ TEST_F(ThemeServiceTest, NTPLogoAlternate) {
 
 // crbug.com/468280
 TEST_F(ThemeServiceTest, UninstallThemeWhenNoReinstallers) {
-  // Setup.
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  theme_service->UseDefaultTheme();
-  // Let the ThemeService uninstall unused themes.
-  base::RunLoop().RunUntilIdle();
+  ThemeScoper scoper1 = LoadUnpackedTheme();
+  ASSERT_EQ(scoper1.extension_id(), theme_service_->GetThemeID());
 
-  base::ScopedTempDir temp_dir1;
-  ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
-  base::ScopedTempDir temp_dir2;
-  ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
-
-  const std::string& extension1_id =
-      LoadUnpackedMinimalThemeAt(temp_dir1.GetPath());
-  ASSERT_EQ(extension1_id, theme_service->GetThemeID());
-
-  std::string extension2_id = "";
+  ThemeScoper scoper2;
   {
     // Show an infobar.
     std::unique_ptr<ThemeService::ThemeReinstaller> reinstaller =
-        theme_service->BuildReinstallerForCurrentTheme();
+        theme_service_->BuildReinstallerForCurrentTheme();
 
     // Install another theme. The first extension shouldn't be uninstalled yet
     // as it should be possible to revert to it.
-    extension2_id = LoadUnpackedMinimalThemeAt(temp_dir2.GetPath());
-    EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
-                                            ExtensionRegistry::DISABLED));
-    EXPECT_EQ(extension2_id, theme_service->GetThemeID());
+    scoper2 = LoadUnpackedTheme();
+    EXPECT_TRUE(IsExtensionDisabled(scoper1.extension_id()));
+    EXPECT_EQ(scoper2.extension_id(), theme_service_->GetThemeID());
 
     reinstaller->Reinstall();
     WaitForThemeInstall();
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(registry_->GetExtensionById(extension2_id,
-                                            ExtensionRegistry::DISABLED));
-    EXPECT_EQ(extension1_id, theme_service->GetThemeID());
+    EXPECT_TRUE(IsExtensionDisabled(scoper2.extension_id()));
+    EXPECT_EQ(scoper1.extension_id(), theme_service_->GetThemeID());
   }
 
   // extension 2 should get uninstalled as no reinstallers are in scope.
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(registry_->GetExtensionById(extension2_id,
-                                           ExtensionRegistry::EVERYTHING));
+  EXPECT_FALSE(registry_->GetInstalledExtension(scoper2.extension_id()));
 }
 
 TEST_F(ThemeServiceTest, BuildFromColorTest) {
   // Set theme from color.
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  theme_service->UseDefaultTheme();
-  EXPECT_TRUE(theme_service->UsingDefaultTheme());
-  EXPECT_FALSE(theme_service->UsingAutogeneratedTheme());
-  theme_service->BuildAutogeneratedThemeFromColor(SkColorSetRGB(100, 100, 100));
-  EXPECT_FALSE(theme_service->UsingDefaultTheme());
-  EXPECT_TRUE(theme_service->UsingAutogeneratedTheme());
+  EXPECT_TRUE(theme_service_->UsingDefaultTheme());
+  EXPECT_FALSE(theme_service_->UsingAutogeneratedTheme());
+  theme_service_->BuildAutogeneratedThemeFromColor(
+      SkColorSetRGB(100, 100, 100));
+  EXPECT_FALSE(theme_service_->UsingDefaultTheme());
+  EXPECT_TRUE(theme_service_->UsingAutogeneratedTheme());
 
   // Set theme from data pack and then override it with theme from color.
-  base::ScopedTempDir temp_dir1;
-  ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
-  const std::string& extension1_id =
-      LoadUnpackedMinimalThemeAt(temp_dir1.GetPath());
-  EXPECT_EQ(extension1_id, theme_service->GetThemeID());
-  EXPECT_FALSE(theme_service->UsingDefaultTheme());
-  EXPECT_FALSE(theme_service->UsingAutogeneratedTheme());
+  ThemeScoper scoper = LoadUnpackedTheme();
+  EXPECT_EQ(scoper.extension_id(), theme_service_->GetThemeID());
+  EXPECT_FALSE(theme_service_->UsingDefaultTheme());
+  EXPECT_FALSE(theme_service_->UsingAutogeneratedTheme());
   base::FilePath path =
       profile_->GetPrefs()->GetFilePath(prefs::kCurrentThemePackFilename);
   EXPECT_FALSE(path.empty());
 
-  theme_service->BuildAutogeneratedThemeFromColor(SkColorSetRGB(100, 100, 100));
-  EXPECT_FALSE(theme_service->UsingDefaultTheme());
-  EXPECT_TRUE(theme_service->UsingAutogeneratedTheme());
-  EXPECT_EQ(ThemeService::kAutogeneratedThemeID, theme_service->GetThemeID());
+  theme_service_->BuildAutogeneratedThemeFromColor(
+      SkColorSetRGB(100, 100, 100));
+  EXPECT_FALSE(theme_service_->UsingDefaultTheme());
+  EXPECT_TRUE(theme_service_->UsingAutogeneratedTheme());
+  EXPECT_EQ(ThemeService::kAutogeneratedThemeID, theme_service_->GetThemeID());
   path = profile_->GetPrefs()->GetFilePath(prefs::kCurrentThemePackFilename);
   EXPECT_TRUE(path.empty());
 }
 
 TEST_F(ThemeServiceTest, BuildFromColor_DisableExtensionTest) {
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  base::ScopedTempDir temp_dir1;
-  ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
-  const std::string& extension1_id =
-      LoadUnpackedMinimalThemeAt(temp_dir1.GetPath());
-  EXPECT_EQ(extension1_id, theme_service->GetThemeID());
-  EXPECT_TRUE(service_->IsExtensionEnabled(extension1_id));
+  ThemeScoper scoper = LoadUnpackedTheme();
+  EXPECT_EQ(scoper.extension_id(), theme_service_->GetThemeID());
+  EXPECT_TRUE(service_->IsExtensionEnabled(scoper.extension_id()));
 
   // Setting autogenerated theme should disable previous theme.
-  theme_service->BuildAutogeneratedThemeFromColor(SkColorSetRGB(100, 100, 100));
-  EXPECT_TRUE(theme_service->UsingAutogeneratedTheme());
-  EXPECT_FALSE(service_->IsExtensionEnabled(extension1_id));
+  theme_service_->BuildAutogeneratedThemeFromColor(
+      SkColorSetRGB(100, 100, 100));
+  EXPECT_TRUE(theme_service_->UsingAutogeneratedTheme());
+  EXPECT_FALSE(service_->IsExtensionEnabled(scoper.extension_id()));
 }
 
 TEST_F(ThemeServiceTest, UseDefaultTheme_DisableExtensionTest) {
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  base::ScopedTempDir temp_dir1;
-  ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
-  const std::string& extension1_id =
-      LoadUnpackedMinimalThemeAt(temp_dir1.GetPath());
-  EXPECT_EQ(extension1_id, theme_service->GetThemeID());
-  EXPECT_TRUE(service_->IsExtensionEnabled(extension1_id));
+  ThemeScoper scoper = LoadUnpackedTheme();
+  EXPECT_EQ(scoper.extension_id(), theme_service_->GetThemeID());
+  EXPECT_TRUE(service_->IsExtensionEnabled(scoper.extension_id()));
 
   // Resetting to default theme should disable previous theme.
-  theme_service->UseDefaultTheme();
-  EXPECT_FALSE(service_->IsExtensionEnabled(extension1_id));
+  theme_service_->UseDefaultTheme();
+  EXPECT_FALSE(service_->IsExtensionEnabled(scoper.extension_id()));
 }
 
 TEST_F(ThemeServiceTest, OmniboxContrast) {
   using TP = ThemeProperties;
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
   for (bool dark : {false, true}) {
     for (bool high_contrast : {false, true}) {
       set_theme_supplier(
-          theme_service,
+          theme_service_,
           high_contrast
               ? base::MakeRefCounted<IncreasedContrastThemeSupplier>(dark)
               : nullptr);
@@ -595,8 +534,8 @@ TEST_F(ThemeServiceTest, OmniboxContrast) {
       };
       auto check_sufficient_contrast = [&](int id1, int id2) {
         const float contrast = color_utils::GetContrastRatio(
-            GetOmniboxColor(theme_service, id1, dark),
-            GetOmniboxColor(theme_service, id2, dark));
+            GetOmniboxColor(theme_service_, id1, dark),
+            GetOmniboxColor(theme_service_, id2, dark));
         EXPECT_GE(contrast, color_utils::kMinimumReadableContrastRatio);
       };
       for (const int* ids : contrasting_ids)
@@ -612,9 +551,6 @@ TEST_F(ThemeServiceTest, OmniboxContrast) {
 // COLOR_OMNIBOX_TEXT are translucent (https://crbug.com/1006102).
 TEST_F(ThemeServiceTest, TranslucentOmniboxBackgroundAndText) {
   using TP = ThemeProperties;
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-
   class TranslucentOmniboxThemeSupplier : public CustomThemeSupplier {
    public:
     TranslucentOmniboxThemeSupplier()
@@ -634,7 +570,7 @@ TEST_F(ThemeServiceTest, TranslucentOmniboxBackgroundAndText) {
    private:
     ~TranslucentOmniboxThemeSupplier() override = default;
   };
-  set_theme_supplier(theme_service,
+  set_theme_supplier(theme_service_,
                      base::MakeRefCounted<TranslucentOmniboxThemeSupplier>());
 
   constexpr int ids[] = {
@@ -661,8 +597,8 @@ TEST_F(ThemeServiceTest, TranslucentOmniboxBackgroundAndText) {
   };
 
   for (int id : ids) {
-    GetOmniboxColor(theme_service, id, false);
-    GetOmniboxColor(theme_service, id, true);
+    GetOmniboxColor(theme_service_, id, false);
+    GetOmniboxColor(theme_service_, id, true);
   }
 }
 

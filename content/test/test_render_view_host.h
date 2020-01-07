@@ -86,10 +86,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void ShowDefinitionForSelection() override {}
   void SpeakSelection() override;
 #endif  // defined(OS_MACOSX)
-  void SubmitCompositorFrame(
-      const viz::LocalSurfaceId& local_surface_id,
-      viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list) override;
 
   // Advances the fallback surface to the first surface after navigation. This
   // ensures that stale surfaces are not presented to the user for an indefinite
@@ -97,7 +93,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void ResetFallbackToFirstNavigationSurface() override {}
 
   void SetNeedsBeginFrames(bool needs_begin_frames) override {}
-  void SetWantsAnimateOnlyBeginFrames() override {}
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   void EnsureSurfaceSynchronizedForWebTest() override {}
 
@@ -123,8 +118,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
 
   bool is_showing() const { return is_showing_; }
   bool is_occluded() const { return is_occluded_; }
-  bool did_swap_compositor_frame() const { return did_swap_compositor_frame_; }
-  void reset_did_swap_compositor_frame() { did_swap_compositor_frame_ = false; }
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
@@ -139,7 +132,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
  private:
   bool is_showing_;
   bool is_occluded_;
-  bool did_swap_compositor_frame_;
   ui::DummyTextInputClient text_input_client_;
 
 #if defined(USE_AURA)

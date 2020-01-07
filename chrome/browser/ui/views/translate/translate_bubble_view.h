@@ -28,7 +28,6 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
@@ -46,7 +45,6 @@ class View;
 class TranslateBubbleView : public LocationBarBubbleDelegateView,
                             public views::ButtonListener,
                             public views::ComboboxListener,
-                            public views::LinkListener,
                             public ui::SimpleMenuModel::Delegate,
                             public views::StyledLabelListener,
                             public views::TabbedPaneListener {
@@ -103,9 +101,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   // views::ComboboxListener:
   void OnPerformAction(views::Combobox* combobox) override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
-
   // ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
@@ -124,10 +119,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   void CloseBubble() override;
 
  private:
-  enum LinkID {
-    LINK_ID_ADVANCED,
-  };
-
   enum ButtonID {
     BUTTON_ID_TRANSLATE,
     BUTTON_ID_DONE,
@@ -221,9 +212,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // Triggers options menu in TAB UI.
   void ShowOptionsMenuTab(views::Button* source);
-
-  // Handles the event when the user clicks a link.
-  void HandleLinkClicked(LinkID sender_id);
 
   // Handles the event when the user changes an index of a combobox.
   void HandleComboboxPerformAction(ComboboxID sender_id);

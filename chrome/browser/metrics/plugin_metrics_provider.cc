@@ -116,11 +116,10 @@ PluginMetricsProvider::~PluginMetricsProvider() {
   BrowserChildProcessObserver::Remove(this);
 }
 
-void PluginMetricsProvider::AsyncInit(const base::Closure& done_callback) {
+void PluginMetricsProvider::AsyncInit(base::OnceClosure done_callback) {
   content::PluginService::GetInstance()->GetPlugins(
-      base::Bind(&PluginMetricsProvider::OnGotPlugins,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 done_callback));
+      base::BindOnce(&PluginMetricsProvider::OnGotPlugins,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(done_callback)));
 }
 
 void PluginMetricsProvider::ProvideSystemProfileMetrics(
@@ -323,10 +322,10 @@ void PluginMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void PluginMetricsProvider::OnGotPlugins(
-    const base::Closure& done_callback,
+    base::OnceClosure done_callback,
     const std::vector<content::WebPluginInfo>& plugins) {
   plugins_ = plugins;
-  done_callback.Run();
+  std::move(done_callback).Run();
 }
 
 PluginMetricsProvider::ChildProcessStats&

@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/base/features.h"
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/ctap_get_assertion_request.h"
@@ -53,24 +54,23 @@ bool TouchIdAuthenticator::HasCredentialForGetAssertionRequest(
     const CtapGetAssertionRequest& request) {
   if (__builtin_available(macOS 10.12.2, *)) {
     if (request.allow_list.empty()) {
-      return !FindResidentCredentialsInKeychain(keychain_access_group_,
-                                                metadata_secret_, request.rp_id,
-                                                nullptr /* LAContext */)
-                  .empty();
+      base::Optional<std::list<Credential>> resident_credentials =
+          credential_store_.FindResidentCredentials(request.rp_id);
+      if (!resident_credentials) {
+        FIDO_LOG(ERROR) << "FindResidentCredentials() failed";
+        return false;
+      }
+      return !resident_credentials->empty();
     }
 
-    std::set<std::vector<uint8_t>> allowed_credential_ids =
-        FilterInapplicableEntriesFromAllowList(request);
-    if (allowed_credential_ids.empty()) {
-      // The allow list does not have applicable entries, but is not empty.
-      // We must not mistake this for a request for resident credentials and
-      // account choser UI.
+    base::Optional<std::list<Credential>> credentials =
+        credential_store_.FindCredentialsFromCredentialDescriptorList(
+            request.rp_id, request.allow_list);
+    if (!credentials) {
+      FIDO_LOG(ERROR) << "FindCredentialsFromCredentialDescriptorList() failed";
       return false;
     }
-    return !FindCredentialsInKeychain(keychain_access_group_, metadata_secret_,
-                                      request.rp_id, allowed_credential_ids,
-                                      nullptr /* LAContext */)
-                .empty();
+    return !credentials->empty();
   }
   NOTREACHED();
   return false;
@@ -86,8 +86,7 @@ void TouchIdAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
   if (__builtin_available(macOS 10.12.2, *)) {
     DCHECK(!operation_);
     operation_ = std::make_unique<MakeCredentialOperation>(
-        std::move(request), metadata_secret_, keychain_access_group_,
-        std::move(callback));
+        std::move(request), &credential_store_, std::move(callback));
     operation_->Run();
     return;
   }
@@ -99,8 +98,7 @@ void TouchIdAuthenticator::GetAssertion(CtapGetAssertionRequest request,
   if (__builtin_available(macOS 10.12.2, *)) {
     DCHECK(!operation_);
     operation_ = std::make_unique<GetAssertionOperation>(
-        std::move(request), metadata_secret_, keychain_access_group_,
-        std::move(callback));
+        std::move(request), &credential_store_, std::move(callback));
     operation_->Run();
     return;
   }
@@ -186,8 +184,8 @@ base::WeakPtr<FidoAuthenticator> TouchIdAuthenticator::GetWeakPtr() {
 
 TouchIdAuthenticator::TouchIdAuthenticator(std::string keychain_access_group,
                                            std::string metadata_secret)
-    : keychain_access_group_(std::move(keychain_access_group)),
-      metadata_secret_(std::move(metadata_secret)),
+    : credential_store_(
+          {std::move(keychain_access_group), std::move(metadata_secret)}),
       weak_factory_(this) {}
 
 }  // namespace mac

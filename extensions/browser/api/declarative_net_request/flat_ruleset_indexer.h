@@ -45,7 +45,6 @@ class FlatRulesetIndexer {
  private:
   using UrlPatternIndexBuilder = url_pattern_index::UrlPatternIndexBuilder;
 
-  flat::ActionType GetActionType(const IndexedRule& indexed_rule) const;
   uint8_t GetRemoveHeadersMask(const IndexedRule& indexed_rule) const;
   std::vector<UrlPatternIndexBuilder*> GetBuilders(
       const IndexedRule& indexed_rule);
@@ -54,7 +53,7 @@ class FlatRulesetIndexer {
 
   flatbuffers::FlatBufferBuilder builder_;
 
-  // This will consist of |flat::ActionIndex_count| builders. We use unique_ptr
+  // This will consist of |flat::IndexType_count| builders. We use unique_ptr
   // since UrlPatternIndexBuilder is a non-copyable and non-movable type.
   const std::vector<std::unique_ptr<UrlPatternIndexBuilder>> index_builders_;
 

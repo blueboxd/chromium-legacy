@@ -30,12 +30,6 @@ namespace ui {
 
 namespace {
 
-const GrGLInterface* GrGLCreateNativeInterface() {
-  return GrGLAssembleInterface(nullptr, [](void* ctx, const char name[]) {
-    return gl::GetGLProcAddress(name);
-  });
-}
-
 const char kUseDDL[] = "use-ddl";
 
 }  // namespace
@@ -71,8 +65,9 @@ bool SkiaGlRenderer::Initialize() {
     return false;
   }
 
-  auto native_interface =
-      sk_sp<const GrGLInterface>(GrGLCreateNativeInterface());
+  sk_sp<const GrGLInterface> native_interface = GrGLMakeAssembledInterface(
+      nullptr,
+      [](void* ctx, const char name[]) { return gl::GetGLProcAddress(name); });
   DCHECK(native_interface);
   GrContextOptions options;
   // TODO(csmartdalton): enable internal multisampling after the related Skia

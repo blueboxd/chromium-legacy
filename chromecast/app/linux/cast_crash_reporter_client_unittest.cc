@@ -46,7 +46,7 @@ class CastCrashReporterClientTest : public testing::Test {
 
   static void SetUpTestCase() {
     // Set a callback to be used in place of the |dumpstate| executable.
-    CrashUtil::SetDumpStateCbForTest(base::Bind(&WriteFakeDumpStateFile));
+    CrashUtil::SetDumpStateCbForTest(base::BindOnce(&WriteFakeDumpStateFile));
   }
 
   // testing::Test implementation:

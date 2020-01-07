@@ -791,11 +791,10 @@ void SearchTabHelper::OpenExtensionsPage(double button,
                                          bool shift_key) {
   if (!search::DefaultSearchProviderIsGoogle(profile()))
     return;
-  bool middle_button = (button == 1.0);
-  WindowOpenDisposition disposition = ui::DispositionFromClick(
-      middle_button, alt_key, ctrl_key, meta_key, shift_key);
-  if (button > 1)
-    disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  WindowOpenDisposition disposition =
+      (button > 1) ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                   : ui::DispositionFromClick((button == 1.0), alt_key,
+                                              ctrl_key, meta_key, shift_key);
   web_contents_->OpenURL(content::OpenURLParams(
       GURL(chrome::kChromeUIExtensionsURL), content::Referrer(), disposition,
       ui::PAGE_TRANSITION_LINK, false));

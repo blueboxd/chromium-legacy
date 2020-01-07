@@ -10,12 +10,14 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/task/post_task.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/paint_preview/browser/compositor_utils.h"
 #include "components/paint_preview/browser/file_manager.h"
 #include "components/paint_preview/browser/paint_preview_client.h"
+#include "components/paint_preview/browser/paint_preview_compositor_service_impl.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace paint_preview {
 
@@ -34,6 +36,7 @@ PaintPreviewBaseService::PaintPreviewBaseService(
       file_manager_(
           path.AppendASCII(kPaintPreviewDir).AppendASCII(ascii_feature_name)),
       is_off_the_record_(is_off_the_record) {}
+
 PaintPreviewBaseService::~PaintPreviewBaseService() = default;
 
 void PaintPreviewBaseService::CapturePaintPreview(
@@ -73,6 +76,13 @@ void PaintPreviewBaseService::CapturePaintPreview(
       params, render_frame_host,
       base::BindOnce(&PaintPreviewBaseService::OnCaptured,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+std::unique_ptr<PaintPreviewCompositorService>
+PaintPreviewBaseService::StartCompositorService(
+    base::OnceClosure disconnect_handler) {
+  return std::make_unique<PaintPreviewCompositorServiceImpl>(
+      CreateCompositorCollection(), std::move(disconnect_handler));
 }
 
 void PaintPreviewBaseService::OnCaptured(

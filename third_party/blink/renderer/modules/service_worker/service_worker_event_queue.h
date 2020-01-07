@@ -60,9 +60,14 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
       base::OnceCallback<void(int /* event_id */,
                               mojom::blink::ServiceWorkerEventStatus)>;
 
-  explicit ServiceWorkerEventQueue(base::RepeatingClosure idle_callback);
+  using BeforeStartEventCallback =
+      base::RepeatingCallback<void(/*is_offline_event=*/bool)>;
+
+  ServiceWorkerEventQueue(BeforeStartEventCallback before_start_event_callback,
+                          base::RepeatingClosure idle_callback);
   // For testing.
-  ServiceWorkerEventQueue(base::RepeatingClosure idle_callback,
+  ServiceWorkerEventQueue(BeforeStartEventCallback before_start_event_callback,
+                          base::RepeatingClosure idle_callback,
                           const base::TickClock* tick_clock);
   ~ServiceWorkerEventQueue();
 
@@ -209,6 +214,9 @@ class MODULES_EXPORT ServiceWorkerEventQueue {
   // Set to true if the idle callback should be fired immediately after all
   // inflight events finish.
   bool zero_idle_timer_delay_ = false;
+
+  // Callback which is run just before starting an event.
+  BeforeStartEventCallback before_start_event_callback_;
 
   // For idle timeouts. Invoked when UpdateStatus() is called after
   // |idle_time_|.

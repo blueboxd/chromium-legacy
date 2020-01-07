@@ -5441,6 +5441,29 @@ TEST_P(SplitViewOverviewSessionTest, GridBoundsAfterWindowDestroyed) {
   EXPECT_EQ(grid_bounds, GetGridBounds());
 }
 
+// Tests that overview stays active if we have a snapped window.
+TEST_P(SplitViewOverviewSessionTest, OnScreenLock) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+
+  // Overview should exit if no snapped window after locking/unlocking.
+  ToggleOverview();
+  GetSessionControllerClient()->LockScreen();
+  GetSessionControllerClient()->UnlockScreen();
+  ASSERT_FALSE(InOverviewSession());
+
+  ToggleOverview();
+  split_view_controller()->SnapWindow(window2.get(), SplitViewController::LEFT);
+
+  // Lock and unlock the machine. Test that we are still in overview and
+  // splitview.
+  GetSessionControllerClient()->LockScreen();
+  GetSessionControllerClient()->UnlockScreen();
+  EXPECT_TRUE(InOverviewSession());
+  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller()->state());
+}
+
 // Test the split view and overview functionalities in clamshell mode. Split
 // view is only active when overview is active in clamshell mode.
 class SplitViewOverviewSessionInClamshellTest
@@ -6253,6 +6276,51 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             indicators_on_root2->current_window_dragging_state());
   EXPECT_EQ(display_with_root2.work_area(), grid_on_root2->bounds());
+}
+
+// Verify the drop target positions for multi-display dragging.
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+       DropTargetPositionTest) {
+  wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
+  UpdateDisplay("800x600,800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  const display::Display display_with_root1 =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[0]);
+  const display::Display display_with_root2 =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]);
+  const gfx::Rect bounds_within_root1(0, 0, 400, 400);
+  const gfx::Rect bounds_within_root2(800, 0, 400, 400);
+  // Named for MRU order, which is in reverse of creation order.
+  std::unique_ptr<aura::Window> window6 = CreateTestWindow(bounds_within_root2);
+  std::unique_ptr<aura::Window> window5 = CreateTestWindow(bounds_within_root1);
+  std::unique_ptr<aura::Window> window4 = CreateTestWindow(bounds_within_root2);
+  std::unique_ptr<aura::Window> window3 = CreateTestWindow(bounds_within_root1);
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds_within_root2);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds_within_root1);
+  ToggleOverview();
+  OverviewGrid* grid1 =
+      overview_session()->GetGridWithRootWindow(root_windows[0]);
+  OverviewGrid* grid2 =
+      overview_session()->GetGridWithRootWindow(root_windows[1]);
+  OverviewItem* item4 = grid2->GetOverviewItemContaining(window4.get());
+  // Start dragging |item4| from |grid2|.
+  cursor_manager->SetDisplay(display_with_root2);
+  overview_session()->InitiateDrag(item4, item4->target_bounds().CenterPoint(),
+                                   /*is_touch_dragging=*/false);
+  overview_session()->Drag(item4, gfx::PointF(1200.f, 0.f));
+  // On the grid where the drag starts (|grid2|), the drop target is inserted at
+  // the index immediately following the dragged item (|item4|).
+  ASSERT_EQ(4u, grid2->window_list().size());
+  EXPECT_EQ(grid2->GetDropTarget(), grid2->window_list()[2].get());
+  // Drag over |grid1|.
+  cursor_manager->SetDisplay(display_with_root1);
+  overview_session()->Drag(item4, gfx::PointF(400.f, 0.f));
+  // On other grids (such as |grid1|), the drop target is inserted at the
+  // correct position according to MRU order (between the overview items for
+  // |window3| and |window5|).
+  ASSERT_EQ(4u, grid1->window_list().size());
+  EXPECT_EQ(grid1->GetDropTarget(), grid1->window_list()[2].get());
 }
 
 // Verify that the drop target in each overview grid has bounds representing

@@ -141,7 +141,6 @@ Status EnsemblePatchApplication::ReadInitialParameters(
     switch (kind) {
       case EXE_WIN_32_X86:  // Fall through.
       case EXE_ELF_32_X86:
-      case EXE_ELF_32_ARM:
       case EXE_WIN_32_X64:
         patcher.reset(new PatcherX86_32(base_region_));
         break;

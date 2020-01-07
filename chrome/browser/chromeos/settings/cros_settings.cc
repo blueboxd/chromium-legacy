@@ -127,11 +127,11 @@ const base::Value* CrosSettings::GetPref(const std::string& path) const {
 }
 
 CrosSettingsProvider::TrustedStatus CrosSettings::PrepareTrustedValues(
-    const base::Closure& callback) const {
+    base::OnceClosure callback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (size_t i = 0; i < providers_.size(); ++i) {
     CrosSettingsProvider::TrustedStatus status =
-        providers_[i]->PrepareTrustedValues(callback);
+        providers_[i]->PrepareTrustedValues(&callback);
     if (status != CrosSettingsProvider::TRUSTED)
       return status;
   }

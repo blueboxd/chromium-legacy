@@ -274,19 +274,6 @@ void IndexedDBDispatcherHost::AddTransactionBinding(
   transaction_receivers_.Add(std::move(transaction), std::move(receiver));
 }
 
-void IndexedDBDispatcherHost::RenderProcessExited(
-    RenderProcessHost* host,
-    const ChildProcessTerminationInfo& info) {
-  // Since |this| is destructed on the IDB task runner, the next call would be
-  // issued and run before any destruction event.  This guarantees that the
-  // base::Unretained(this) usage is safe below.
-  IDBTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &IndexedDBDispatcherHost::InvalidateWeakPtrsAndClearBindings,
-          base::Unretained(this)));
-}
-
 void IndexedDBDispatcherHost::GetDatabaseInfo(
     mojo::PendingAssociatedRemote<blink::mojom::IDBCallbacks>
         pending_callbacks) {

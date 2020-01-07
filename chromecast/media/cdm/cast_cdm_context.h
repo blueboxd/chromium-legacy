@@ -26,8 +26,8 @@ class CastCdmContext : public ::media::CdmContext {
 
   // Register a player with this CDM. |new_key_cb| will be called when a new
   // key is available. |cdm_unset_cb| will be called when the CDM is destroyed.
-  virtual int RegisterPlayer(const base::Closure& new_key_cb,
-                             const base::Closure& cdm_unset_cb) = 0;
+  virtual int RegisterPlayer(base::RepeatingClosure new_key_cb,
+                             base::RepeatingClosure cdm_unset_cb) = 0;
 
   // Unregiester a player with this CDM. |registration_id| should be the id
   // returned by RegisterPlayer().

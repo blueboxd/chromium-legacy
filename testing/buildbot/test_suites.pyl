@@ -3276,12 +3276,6 @@
                  '--test-launcher-timeout=120000'],
         'test': 'content_browsertests',
       },
-      'content_browsertests_stress': {
-        'args': ['--gtest_filter=WebRtc*MANUAL*:-UsingRealWebcam*',
-                 '--run-manual', '--ui-test-action-max-timeout=110000',
-                 '--test-launcher-timeout=120000'],
-        'test': 'content_browsertests',
-      },
       'browser_tests_functional': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/webrtc_functional.browser_tests.filter',

@@ -7,9 +7,9 @@
 #include "base/feature_list.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
-#import "ios/chrome/browser/infobars/infobar_badge_browser_agent.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
+#include "ios/chrome/browser/infobars/overlays/infobar_overlay_browser_agent_util.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,8 +20,9 @@ void AttachBrowserAgents(Browser* browser) {
     BreadcrumbManagerBrowserAgent::CreateForBrowser(browser);
   }
   TabInsertionBrowserAgent::CreateForBrowser(browser);
+  AttachInfobarOverlayBrowserAgents(browser);
 
-  if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
-    InfobarBadgeBrowserAgent::CreateForBrowser(browser);
-  }
+  // This needs to be called last in case any downstream browser agents need to
+  // access upstream agents created earlier in this function.
+  ios::GetChromeBrowserProvider()->AttachBrowserAgents(browser);
 }

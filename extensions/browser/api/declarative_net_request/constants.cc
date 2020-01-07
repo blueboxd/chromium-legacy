@@ -16,15 +16,11 @@ const char* const kAllowedTransformSchemes[4] = {
 
 const char kErrorResourceTypeDuplicated[] =
     "Rule with id * includes and excludes the same resource.";
-const char kErrorEmptyRedirectRuleKey[] =
-    "Rule with id * does not specify the value for * key. This is required "
-    "for redirect rules.";
-const char kErrorEmptyUpgradeRulePriority[] =
-    "Rule with id * does not specify the value for priority key. This is "
-    "required for upgradeScheme rules.";
 const char kErrorInvalidRuleKey[] =
     "Rule with id * has an invalid value for * key. This should be greater "
     "than or equal to *.";
+const char kErrorEmptyRulePriority[] =
+    "Rule with id * does not specify the value for priority key.";
 const char kErrorNoApplicableResourceTypes[] =
     "Rule with id * is not applicable to any resource type.";
 const char kErrorEmptyList[] =

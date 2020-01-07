@@ -41,11 +41,13 @@ ACTION_P2(RunClosureThenReturn, closure, ret) {
 
 class MockPreCloseTask : public PreCloseTask {
  public:
-  MockPreCloseTask() {}
-  ~MockPreCloseTask() override {}
+  MockPreCloseTask() : PreCloseTask(nullptr) {}
+  ~MockPreCloseTask() override = default;
+
+  bool RequiresMetadata() const override { return true; }
 
   MOCK_METHOD1(SetMetadata,
-               void(std::vector<IndexedDBDatabaseMetadata> const* metadata));
+               void(const std::vector<IndexedDBDatabaseMetadata>* metadata));
 
   MOCK_METHOD1(Stop, void(StopReason reason));
 
@@ -228,9 +230,6 @@ TEST_F(IndexedDBPreCloseTaskQueueTest, StopForNewConnectionBeforeStart) {
   MockPreCloseTask* task1 = new testing::StrictMock<MockPreCloseTask>();
   MockPreCloseTask* task2 = new testing::StrictMock<MockPreCloseTask>();
 
-  EXPECT_CALL(*task1,
-              SetMetadata(testing::Pointee(testing::ContainerEq(metadata_))));
-
   base::MockOneShotTimer* fake_timer = new base::MockOneShotTimer;
   std::list<std::unique_ptr<PreCloseTask>> tasks;
   tasks.push_back(base::WrapUnique(task1));
@@ -249,7 +248,7 @@ TEST_F(IndexedDBPreCloseTaskQueueTest, StopForNewConnectionBeforeStart) {
 
   task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(metadata_called);
+  EXPECT_FALSE(metadata_called);
   EXPECT_TRUE(done_called);
   EXPECT_TRUE(queue.started());
   EXPECT_TRUE(queue.done());
@@ -321,8 +320,6 @@ TEST_F(IndexedDBPreCloseTaskQueueTest, StopForNewConnectionAfterTaskCompletes) {
 
     EXPECT_CALL(*task1, RunRound())
         .WillOnce(RunClosureThenReturn(loop.QuitClosure(), true));
-    EXPECT_CALL(*task2,
-                SetMetadata(testing::Pointee(testing::ContainerEq(metadata_))));
 
     loop.Run();
   }
@@ -367,8 +364,6 @@ TEST_F(IndexedDBPreCloseTaskQueueTest, StopForTimout) {
 
     EXPECT_CALL(*task1, RunRound())
         .WillOnce(RunClosureThenReturn(loop.QuitClosure(), true));
-    EXPECT_CALL(*task2,
-                SetMetadata(testing::Pointee(testing::ContainerEq(metadata_))));
 
     loop.Run();
   }

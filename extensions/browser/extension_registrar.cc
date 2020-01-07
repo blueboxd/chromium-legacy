@@ -431,8 +431,9 @@ void ExtensionRegistrar::ActivateExtension(const Extension* extension,
   // ensure its URLRequestContexts appropriately discover the loaded extension.
   extension_system_->RegisterExtensionWithRequestContexts(
       extension,
-      base::Bind(&ExtensionRegistrar::OnExtensionRegisteredWithRequestContexts,
-                 weak_factory_.GetWeakPtr(), WrapRefCounted(extension)));
+      base::BindOnce(
+          &ExtensionRegistrar::OnExtensionRegisteredWithRequestContexts,
+          weak_factory_.GetWeakPtr(), WrapRefCounted(extension)));
 
   // Activate the extension before calling
   // RendererStartupHelper::OnExtensionLoaded() below, so that we have

@@ -94,7 +94,7 @@ std::string MetricsServiceClient::GetUploadSigningKey() {
 }
 
 void MetricsServiceClient::SetUpdateRunningServicesCallback(
-    const base::Closure& callback) {
+    const base::RepeatingClosure& callback) {
   update_running_services_ = callback;
 }
 

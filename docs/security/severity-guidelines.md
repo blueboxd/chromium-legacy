@@ -10,9 +10,15 @@ for guidance on how to release fixes based on severity.
 
 Any significant mitigating factors, such as unusual or additional user
 interaction, or running Chrome with a specific command line flag or non-default
-feature enabled, may reduce an issue’s severity by one or more levels. Also note
-that most crashes do not indicate vulnerabilities. Chromium is designed to crash
-in a controlled manner (e.g., with a ```__debugBreak```) when memory is
+feature enabled, may reduce an issue’s severity by one or more levels.
+
+Conversely, we do not consider it a mitigating factor if a vulnerability applies
+only to a particular group of users. For instance, a Critical vulnerability is
+still considered Critical even if it applies only to Linux or to those users
+running with accessibility features enabled.
+
+Also note that most crashes do not indicate vulnerabilities. Chromium is designed
+to crash in a controlled manner (e.g., with a ```__debugBreak```) when memory is
 exhausted or in other exceptional circumstances.
 
 

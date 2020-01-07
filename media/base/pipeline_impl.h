@@ -92,11 +92,11 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void Start(StartType start_type,
              Demuxer* demuxer,
              Client* client,
-             const PipelineStatusCB& seek_cb) override;
+             PipelineStatusCallback seek_cb) override;
   void Stop() override;
-  void Seek(base::TimeDelta time, const PipelineStatusCB& seek_cb) override;
-  void Suspend(const PipelineStatusCB& suspend_cb) override;
-  void Resume(base::TimeDelta time, const PipelineStatusCB& seek_cb) override;
+  void Seek(base::TimeDelta time, PipelineStatusCallback seek_cb) override;
+  void Suspend(PipelineStatusCallback suspend_cb) override;
+  void Resume(base::TimeDelta time, PipelineStatusCallback seek_cb) override;
   bool IsRunning() const override;
   bool IsSuspended() const override;
   double GetPlaybackRate() const override;
@@ -181,10 +181,10 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   std::unique_ptr<RendererWrapper> renderer_wrapper_;
 
   // Temporary callback used for Start(), Seek(), and Resume().
-  PipelineStatusCB seek_cb_;
+  PipelineStatusCallback seek_cb_;
 
   // Temporary callback used for Suspend().
-  PipelineStatusCB suspend_cb_;
+  PipelineStatusCallback suspend_cb_;
 
   // Current playback rate (>= 0.0). This value is set immediately via
   // SetPlaybackRate() and a task is dispatched on the task runner to notify

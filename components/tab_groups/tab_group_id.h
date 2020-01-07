@@ -26,7 +26,7 @@ class COMPONENT_EXPORT(TAB_GROUPS) TabGroupId {
   bool operator!=(const TabGroupId& other) const;
   bool operator<(const TabGroupId& other) const;
 
-  base::Token token() const { return token_; }
+  const base::Token& token() const { return token_; }
 
   std::string ToString() const;
 

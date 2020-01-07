@@ -297,6 +297,14 @@ void GetAssertionRequestHandler::DispatchRequest(
                 kSupportedAndConfigured &&
         request_.user_verification !=
             UserVerificationRequirement::kDiscouraged) {
+      if (authenticator->Options()->supports_uv_token) {
+        FIDO_LOG(DEBUG) << "Getting UV token from "
+                        << authenticator->GetDisplayName();
+        authenticator->GetUvToken(
+            base::BindOnce(&GetAssertionRequestHandler::OnHaveUvToken,
+                           weak_factory_.GetWeakPtr(), authenticator));
+        return;
+      }
       request.user_verification = UserVerificationRequirement::kRequired;
     } else {
       request.user_verification = UserVerificationRequirement::kDiscouraged;
@@ -598,13 +606,60 @@ void GetAssertionRequestHandler::OnHavePINToken(
     return;
   }
 
-  observer()->FinishCollectPIN();
+  observer()->FinishCollectToken();
   state_ = State::kWaitingForSecondTouch;
   CtapGetAssertionRequest request(request_);
   request.pin_auth = response->PinAuth(request.client_data_hash);
   request.pin_protocol = pin::kProtocolVersion;
   // If doing a PIN operation then we don't ask the authenticator to also do
   // internal UV.
+  request.user_verification = UserVerificationRequirement::kDiscouraged;
+
+  ReportGetAssertionRequestTransport(authenticator_);
+
+  authenticator_->GetAssertion(
+      std::move(request),
+      base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
+                     weak_factory_.GetWeakPtr(), authenticator_));
+}
+
+void GetAssertionRequestHandler::OnHaveUvToken(
+    FidoAuthenticator* authenticator,
+    CtapDeviceResponseCode status,
+    base::Optional<pin::TokenResponse> response) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+  if (state_ != State::kWaitingForTouch) {
+    FIDO_LOG(DEBUG) << "Ignoring uv token response from "
+                    << authenticator->GetDisplayName()
+                    << " because no longer waiting for touch";
+    return;
+  }
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    // TODO(nsatragno): implement PIN fallback and UV retries.
+    if (status == CtapDeviceResponseCode::kCtap2ErrPinInvalid ||
+        status == CtapDeviceResponseCode::kCtap2ErrOperationDenied) {
+      FIDO_LOG(ERROR) << "Failing assertion request due to status "
+                      << static_cast<int>(status) << " from "
+                      << authenticator->GetDisplayName()
+                      << " on uv token response";
+      CancelActiveAuthenticators(authenticator->GetId());
+      std::move(completion_callback_)
+          .Run(GetAssertionStatus::kUserConsentDenied, base::nullopt, nullptr);
+      return;
+    }
+    FIDO_LOG(ERROR) << "Ignoring status " << static_cast<int>(status)
+                    << " from " << authenticator->GetDisplayName();
+    return;
+  }
+
+  CancelActiveAuthenticators(authenticator->GetId());
+  observer()->FinishCollectToken();
+  authenticator_ = authenticator;
+  state_ = State::kWaitingForSecondTouch;
+  CtapGetAssertionRequest request(request_);
+  request.pin_auth = response->PinAuth(request.client_data_hash);
+  request.pin_protocol = pin::kProtocolVersion;
+  // Do not do internal UV again.
   request.user_verification = UserVerificationRequirement::kDiscouraged;
 
   ReportGetAssertionRequestTransport(authenticator_);

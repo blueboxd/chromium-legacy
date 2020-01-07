@@ -1468,6 +1468,10 @@ void WebContentsViewAura::FinishOnPerformDropCallback(
                context.transformed_pt.value(), context.screen_pt, key_modifiers,
                /*drop_allowed=*/false);
     }
+
+    // The drop not being continued requires this to cleanup the drag data.
+    OnDragExited();
+
     return;
   }
 

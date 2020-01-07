@@ -9,11 +9,6 @@
 
 @protocol PageInfoPresentation;
 
-// Notification sent when the page info is shown.
-extern NSString* const kPageInfoWillShowNotification;
-// Notification sent when the page info is hidden.
-extern NSString* const kPageInfoWillHideNotification;
-
 // The coordinator that manages the display of the Page Info UI. When
 // |dispatcher| is set, this coordinator uses |dispatcher| to register itself
 // as the target for PageInfoCommmands. These commands can then trigger the
@@ -26,6 +21,10 @@ extern NSString* const kPageInfoWillHideNotification;
                               browserState:
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
+
+//|originPoint| is the midpoint of the UI element from which the page info
+// should start presenting.
+@property(nonatomic, assign) CGPoint originPoint;
 
 // |presentationProvider| provides information and runs tasks necessary to
 // present Page Info.

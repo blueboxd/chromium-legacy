@@ -135,7 +135,7 @@ class AudioSinkAndroidAudioTrackImpl : public AudioSinkAndroid {
   base::Thread feeder_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> feeder_task_runner_;
 
-  base::CancelableClosure wait_for_eos_task_;
+  base::CancelableOnceClosure wait_for_eos_task_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
 

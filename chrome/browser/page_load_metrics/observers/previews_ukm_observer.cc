@@ -4,7 +4,6 @@
 
 #include "chrome/browser/page_load_metrics/observers/previews_ukm_observer.h"
 
-#include "base/base64.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/offline_pages/buildflags/buildflags.h"
-#include "components/optimization_guide/proto/hints.pb.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
@@ -144,9 +142,6 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
   offline_eligibility_reason_ = previews_user_data->EligibilityReasonForPreview(
       previews::PreviewsType::OFFLINE);
 
-  serialized_hint_version_string_ =
-      previews_user_data->serialized_hint_version_string();
-
   return CONTINUE_OBSERVING;
 }
 
@@ -174,7 +169,7 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PreviewsUKMObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RecordMetrics();
+  RecordPreviewsTypes();
   return STOP_OBSERVING;
 }
 
@@ -182,19 +177,14 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PreviewsUKMObserver::OnHidden(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RecordMetrics();
+  RecordPreviewsTypes();
   return STOP_OBSERVING;
 }
 
 void PreviewsUKMObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RecordMetrics();
-}
-
-void PreviewsUKMObserver::RecordMetrics() {
   RecordPreviewsTypes();
-  RecordOptimizationGuideInfo();
 }
 
 void PreviewsUKMObserver::RecordPreviewsTypes() {
@@ -277,35 +267,6 @@ void PreviewsUKMObserver::RecordPreviewsTypes() {
   if (ShouldOptionalEligibilityReasonBeRecorded(offline_eligibility_reason_)) {
     builder.Setoffline_eligibility_reason(
         static_cast<int>(offline_eligibility_reason_.value()));
-  }
-  builder.Record(ukm::UkmRecorder::Get());
-}
-
-void PreviewsUKMObserver::RecordOptimizationGuideInfo() {
-  if (!serialized_hint_version_string_.has_value()) {
-    return;
-  }
-
-  // Deserialize the serialized version string into its protobuffer.
-  std::string binary_version_pb;
-  if (!base::Base64Decode(serialized_hint_version_string_.value(),
-                          &binary_version_pb))
-    return;
-
-  optimization_guide::proto::Version hint_version;
-  if (!hint_version.ParseFromString(binary_version_pb))
-    return;
-
-  ukm::builders::OptimizationGuide builder(GetDelegate().GetSourceId());
-  if (hint_version.has_generation_timestamp() &&
-      hint_version.generation_timestamp().seconds() > 0) {
-    builder.SetHintGenerationTimestamp(
-        hint_version.generation_timestamp().seconds());
-  }
-  if (hint_version.has_hint_source() &&
-      hint_version.hint_source() !=
-          optimization_guide::proto::HINT_SOURCE_UNKNOWN) {
-    builder.SetHintSource(static_cast<int>(hint_version.hint_source()));
   }
   builder.Record(ukm::UkmRecorder::Get());
 }

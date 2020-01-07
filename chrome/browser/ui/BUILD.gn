@@ -3793,6 +3793,8 @@ jumbo_static_library("ui") {
       "ash/launcher/arc_app_window.cc",
       "ash/launcher/arc_app_window.h",
       "ash/launcher/arc_app_window_delegate.h",
+      "ash/launcher/arc_app_window_info.cc",
+      "ash/launcher/arc_app_window_info.h",
       "ash/launcher/arc_app_window_launcher_controller.cc",
       "ash/launcher/arc_app_window_launcher_controller.h",
       "ash/launcher/arc_app_window_launcher_item_controller.cc",

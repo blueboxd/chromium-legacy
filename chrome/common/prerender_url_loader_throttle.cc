@@ -35,13 +35,6 @@ void CancelPrerenderForUnsupportedScheme(
     canceler->CancelPrerenderForUnsupportedScheme(url);
 }
 
-void CancelPrerenderForSyncDeferredRedirect(
-    PrerenderURLLoaderThrottle::CancelerGetterCallback callback) {
-  chrome::mojom::PrerenderCanceler* canceler = std::move(callback).Run();
-  if (canceler)
-    canceler->CancelPrerenderForSyncDeferredRedirect();
-}
-
 // Returns true if the response has a "no-store" cache control header.
 bool IsNoStoreResponse(const network::mojom::URLResponseHead& response_head) {
   return response_head.headers &&
@@ -74,8 +67,9 @@ void PrerenderURLLoaderThrottle::PrerenderUsed() {
 }
 
 void PrerenderURLLoaderThrottle::DetachFromCurrentSequence() {
-  // This method is only called for synchronous XHR from the main thread.
-  sync_xhr_ = true;
+  // This method is only called for synchronous XHR from the main thread which
+  // should not occur during a NoStatePrerender.
+  NOTREACHED();
 }
 
 void PrerenderURLLoaderThrottle::WillStartRequest(
@@ -180,18 +174,8 @@ void PrerenderURLLoaderThrottle::WillRedirectRequest(
              resource_type_ != content::ResourceType::kMainFrame) {
     // Only defer redirects with the Follow-Only-When-Prerender-Shown
     // header. Do not defer redirects on main frame loads.
-    if (sync_xhr_) {
-      // Cancel on deferred synchronous requests. Those will
-      // indefinitely hang up a renderer process.
-      canceler_getter_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(CancelPrerenderForSyncDeferredRedirect,
-                                    std::move(canceler_getter_)));
-      delegate_->CancelWithError(net::ERR_ABORTED);
-    } else {
-      // Defer the redirect until the prerender is used or canceled.
-      *defer = true;
-      deferred_ = true;
-    }
+    *defer = true;
+    deferred_ = true;
   }
 }
 

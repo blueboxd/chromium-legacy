@@ -64,7 +64,8 @@ NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
         static_cast<wtf_size_t>(byte_length));
     NDEFMessage* message = MakeGarbageCollected<NDEFMessage>();
     message->records_.push_back(MakeGarbageCollected<NDEFRecord>(
-        std::move(payload_data), "application/octet-stream"));
+        String() /* id */, "application/octet-stream",
+        std::move(payload_data)));
     return message;
   }
 
@@ -83,7 +84,8 @@ NDEFMessage* NDEFMessage::Create(const ExecutionContext* execution_context,
         static_cast<wtf_size_t>(byte_length));
     NDEFMessage* message = MakeGarbageCollected<NDEFMessage>();
     message->records_.push_back(MakeGarbageCollected<NDEFRecord>(
-        std::move(payload_data), "application/octet-stream"));
+        String() /* id */, "application/octet-stream",
+        std::move(payload_data)));
     return message;
   }
 

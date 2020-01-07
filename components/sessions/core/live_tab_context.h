@@ -46,13 +46,13 @@ class SESSIONS_EXPORT LiveTabContext {
       int index) const = 0;
   // Should not be called for |group| unless GetTabGroupForTab() returned
   // |group|.
-  virtual tab_groups::TabGroupVisualData* GetVisualDataForGroup(
-      tab_groups::TabGroupId group) const = 0;
+  virtual const tab_groups::TabGroupVisualData* GetVisualDataForGroup(
+      const tab_groups::TabGroupId& group) const = 0;
   // Update |group|'s metadata. Should only be called for |group| if a tab has
   // been restored in |group| via AddRestoredTab() or ReplaceRestoredTab().
   virtual void SetVisualDataForGroup(
-      tab_groups::TabGroupId group,
-      tab_groups::TabGroupVisualData visual_data) = 0;
+      const tab_groups::TabGroupId& group,
+      const tab_groups::TabGroupVisualData& visual_data) = 0;
   virtual const gfx::Rect GetRestoredBounds() const = 0;
   virtual ui::WindowShowState GetRestoredState() const = 0;
   virtual std::string GetWorkspace() const = 0;
@@ -66,7 +66,7 @@ class SESSIONS_EXPORT LiveTabContext {
       int selected_navigation,
       const std::string& extension_app_id,
       base::Optional<tab_groups::TabGroupId> group,
-      const tab_groups::TabGroupVisualData group_visual_data,
+      const tab_groups::TabGroupVisualData& group_visual_data,
       bool select,
       bool pin,
       bool from_last_session,

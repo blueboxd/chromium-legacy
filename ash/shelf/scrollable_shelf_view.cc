@@ -958,7 +958,9 @@ void ScrollableShelfView::ShowContextMenuForViewImpl(
   shelf_view_->ShowContextMenuForViewImpl(shelf_view_, point, source_type);
 }
 
-void ScrollableShelfView::OnShelfAlignmentChanged(aura::Window* root_window) {
+void ScrollableShelfView::OnShelfAlignmentChanged(
+    aura::Window* root_window,
+    ShelfAlignment old_alignment) {
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
   left_arrow_->set_is_horizontal_alignment(is_horizontal_alignment);
   right_arrow_->set_is_horizontal_alignment(is_horizontal_alignment);

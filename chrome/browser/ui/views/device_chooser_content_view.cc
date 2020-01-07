@@ -217,11 +217,13 @@ gfx::ImageSkia DeviceChooserContentView::GetIcon(int row) {
 }
 
 void DeviceChooserContentView::OnOptionsInitialized() {
+  is_initialized_ = true;
   table_view_->OnModelChanged();
   UpdateTableView();
 }
 
 void DeviceChooserContentView::OnOptionAdded(size_t index) {
+  is_initialized_ = true;
   table_view_->OnItemsAdded(base::checked_cast<int>(index), 1);
   UpdateTableView();
 }
@@ -353,10 +355,17 @@ void DeviceChooserContentView::Close() {
 
 void DeviceChooserContentView::UpdateTableView() {
   bool has_options = adapter_enabled_ && RowCount() > 0;
+  if (!is_initialized_ && GetWidget() &&
+      GetWidget()->GetFocusManager()->GetFocusedView()) {
+    is_initialized_ = true;  // Can show no_options_view_ after initial focus.
+  }
   table_parent_->SetVisible(has_options);
   table_view_->SetEnabled(has_options &&
                           !chooser_controller_->TableViewAlwaysDisabled());
-  no_options_view_->SetVisible(!has_options && adapter_enabled_);
+  // Do not set to visible until initialization is complete, in order to prevent
+  // message from briefly flashing and being read by screen reader.
+  no_options_view_->SetVisible(!has_options && adapter_enabled_ &&
+                               is_initialized_);
   adapter_off_view_->SetVisible(!adapter_enabled_);
 }
 

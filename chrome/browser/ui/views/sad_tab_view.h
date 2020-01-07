@@ -8,8 +8,6 @@
 #include "chrome/browser/ui/sad_tab.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
-#include "ui/views/controls/styled_label.h"
-#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
 
 namespace content {
@@ -71,7 +69,6 @@ class SadTabView : public SadTab,
   bool painted_ = false;
   views::Label* message_;
   std::vector<views::Label*> bullet_labels_;
-  views::Link* help_link_;
   views::LabelButton* action_button_;
   views::Label* title_;
   views::WebView* owner_ = nullptr;

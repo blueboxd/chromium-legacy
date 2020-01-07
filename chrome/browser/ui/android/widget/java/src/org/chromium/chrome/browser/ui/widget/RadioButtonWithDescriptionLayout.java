@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioGroup;
 
+import androidx.annotation.VisibleForTesting;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -160,6 +162,7 @@ public final class RadioButtonWithDescriptionLayout
      *
      * @param childIndex Index of the child to select.
      */
+    @VisibleForTesting
     void selectChildAtIndexForTesting(int childIndex) {
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {

@@ -99,6 +99,7 @@ jumbo_static_library("safe_browsing") {
       "ui_manager.h",
     ]
     deps += [
+      "//chrome/browser/engagement:mojo_bindings",
       "//chrome/common/safe_browsing:proto",
       "//components/safe_browsing:csd_proto",
       "//components/safe_browsing:safe_browsing",

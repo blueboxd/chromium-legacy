@@ -473,7 +473,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 };
 
 typedef std::vector<scoped_refptr<const Extension> > ExtensionList;
-typedef std::set<ExtensionId> ExtensionIdSet;
 
 // Handy struct to pass core extension info around.
 struct ExtensionInfo {

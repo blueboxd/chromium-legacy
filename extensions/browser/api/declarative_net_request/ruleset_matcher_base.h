@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
+#include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
 
@@ -16,7 +17,6 @@ class GURL;
 namespace extensions {
 
 namespace declarative_net_request {
-struct RequestAction;
 struct RequestParams;
 
 // An abstract class for rule matchers. Overridden by different kinds of
@@ -28,26 +28,10 @@ class RulesetMatcherBase {
 
   virtual ~RulesetMatcherBase();
 
-  // Returns any matching RequestAction with type |BLOCK| or |COLLAPSE|, or
-  // base::nullopt if the ruleset has no matching blocking rule.
-  virtual base::Optional<RequestAction> GetBlockOrCollapseAction(
-      const RequestParams& params) const = 0;
-
-  // Returns any matching RequestAction with type |ALLOW| or base::nullopt if
-  // the ruleset has no matching allow rule.
-  virtual base::Optional<RequestAction> GetAllowAction(
-      const RequestParams& params) const = 0;
-
-  // Returns a RequestAction constructed from the matching redirect rule with
-  // the highest priority, or base::nullopt if no matching redirect rules are
-  // found for this request.
-  virtual base::Optional<RequestAction> GetRedirectAction(
-      const RequestParams& params) const = 0;
-
-  // Returns a RequestAction constructed from the matching upgrade rule with the
-  // highest priority, or base::nullopt if no matching upgrade rules are found
-  // for this request.
-  virtual base::Optional<RequestAction> GetUpgradeAction(
+  // Returns the ruleset's highest priority matching RequestAction for the
+  // onBeforeRequest phase, or base::nullopt if the ruleset has no matching
+  // rule.
+  virtual base::Optional<RequestAction> GetBeforeRequestAction(
       const RequestParams& params) const = 0;
 
   // Returns the bitmask of headers to remove from the request. The bitmask
@@ -74,9 +58,6 @@ class RulesetMatcherBase {
   using ExtensionMetadataList =
       ::flatbuffers::Vector<flatbuffers::Offset<flat::UrlRuleMetadata>>;
 
-  // Returns true if the given request can be upgraded.
-  static bool IsUpgradeableRequest(const RequestParams& params);
-
   // Helper to create a RequestAction of type |BLOCK| or |COLLAPSE|.
   RequestAction CreateBlockOrCollapseRequestAction(
       const RequestParams& params,
@@ -88,8 +69,8 @@ class RulesetMatcherBase {
       const url_pattern_index::flat::UrlRule& rule) const;
 
   // Helper to create a RequestAction of type |REDIRECT| with the request
-  // upgraded.
-  RequestAction CreateUpgradeAction(
+  // upgraded. Returns base::nullopt if the request is not upgradeable.
+  base::Optional<RequestAction> CreateUpgradeAction(
       const RequestParams& params,
       const url_pattern_index::flat::UrlRule& rule) const;
 
@@ -112,6 +93,10 @@ class RulesetMatcherBase {
       uint8_t mask) const;
 
  private:
+  RequestAction CreateRequestAction(
+      RequestAction::Type type,
+      const url_pattern_index::flat::UrlRule& rule) const;
+
   const ExtensionId extension_id_;
   const api::declarative_net_request::SourceType source_type_;
 

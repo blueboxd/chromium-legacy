@@ -28,6 +28,11 @@ import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.ChromeFeatureList.TAB_GROUPS_ANDROID;
 import static org.chromium.chrome.browser.ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID;
+import static org.chromium.chrome.browser.tasks.tab_management.MessageCardViewProperties.MESSAGE_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.FOR_TESTING;
+import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.TAB_SUGGESTION;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.MODEL_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.ModelType.MESSAGE;
 
 import android.app.Activity;
 import android.content.ComponentCallbacks;
@@ -1399,7 +1404,9 @@ public class TabListMediatorUnitTest {
 
     @Test
     public void addSpecialItem() {
-        mMediator.addSpecialItemToModel(0, TabProperties.UiType.DIVIDER, new PropertyModel());
+        PropertyModel model = mock(PropertyModel.class);
+        when(model.get(MODEL_TYPE)).thenReturn(MESSAGE);
+        mMediator.addSpecialItemToModel(0, TabProperties.UiType.DIVIDER, model);
 
         assertTrue(mModel.size() > 0);
         assertEquals(TabProperties.UiType.DIVIDER, mModel.get(0).type);
@@ -1407,7 +1414,9 @@ public class TabListMediatorUnitTest {
 
     @Test
     public void addSpecialItem_notPersistOnReset() {
-        mMediator.addSpecialItemToModel(0, TabProperties.UiType.DIVIDER, new PropertyModel());
+        PropertyModel model = mock(PropertyModel.class);
+        when(model.get(MODEL_TYPE)).thenReturn(MESSAGE);
+        mMediator.addSpecialItemToModel(0, TabProperties.UiType.DIVIDER, model);
         assertEquals(TabProperties.UiType.DIVIDER, mModel.get(0).type);
 
         List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, mTab2));
@@ -1416,9 +1425,31 @@ public class TabListMediatorUnitTest {
         assertNotEquals(TabProperties.UiType.DIVIDER, mModel.get(0).type);
         assertNotEquals(TabProperties.UiType.DIVIDER, mModel.get(1).type);
 
-        mMediator.addSpecialItemToModel(1, TabProperties.UiType.DIVIDER, new PropertyModel());
+        mMediator.addSpecialItemToModel(1, TabProperties.UiType.DIVIDER, model);
         assertThat(mModel.size(), equalTo(3));
         assertEquals(TabProperties.UiType.DIVIDER, mModel.get(1).type);
+    }
+
+    @Test(expected = AssertionError.class)
+    public void addSpecialItem_withoutTabListModelProperties() {
+        mMediator.addSpecialItemToModel(0, TabProperties.UiType.DIVIDER, new PropertyModel());
+    }
+
+    @Test
+    public void removeSpecialItem_Message() {
+        PropertyModel model = mock(PropertyModel.class);
+        int expectedMessageType = FOR_TESTING;
+        int wrongMessageType = TAB_SUGGESTION;
+        when(model.get(MODEL_TYPE)).thenReturn(MESSAGE);
+        when(model.get(MESSAGE_TYPE)).thenReturn(expectedMessageType);
+        mMediator.addSpecialItemToModel(0, TabProperties.UiType.MESSAGE, model);
+        assertEquals(1, mModel.size());
+
+        mMediator.removeSpecialItemFromModel(TabProperties.UiType.MESSAGE, wrongMessageType);
+        assertEquals(1, mModel.size());
+
+        mMediator.removeSpecialItemFromModel(TabProperties.UiType.MESSAGE, expectedMessageType);
+        assertEquals(0, mModel.size());
     }
 
     @Test

@@ -12,10 +12,8 @@
 #include "url/gurl.h"
 
 class Browser;
-@protocol OmniboxFocuser;
 @class TabModel;
 @protocol TabSwitcher;
-@protocol ToolbarCommands;
 struct UrlLoadParams;
 
 // This delegate is used to drive the TabSwitcher dismissal and execute code
@@ -43,11 +41,6 @@ struct UrlLoadParams;
 // This delegate must be set on the tab switcher in order to drive the tab
 // switcher.
 @property(nonatomic, weak) id<TabSwitcherDelegate> delegate;
-
-// Dispatcher for anything that acts in a "browser" role.
-@property(nonatomic, readonly)
-    id<ApplicationCommands, OmniboxFocuser, ToolbarCommands>
-        dispatcher;
 
 // Restores the internal state of the tab switcher with the given tab models,
 // which must not be nil. |activeTabModel| is the model which starts active,

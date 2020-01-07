@@ -55,7 +55,7 @@ class DeviceSettingsProvider
 
   // CrosSettingsProvider implementation.
   const base::Value* Get(const std::string& path) const override;
-  TrustedStatus PrepareTrustedValues(base::OnceClosure callback) override;
+  TrustedStatus PrepareTrustedValues(base::OnceClosure* callback) override;
   bool HandlesSetting(const std::string& path) const override;
 
   // Helper function that decodes policies from provided proto into the pref

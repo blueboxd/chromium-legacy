@@ -28,26 +28,29 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
                             const NDEFRecordInit*,
                             ExceptionState&);
 
-  // Construct a "text" record from a string.
-  explicit NDEFRecord(const ExecutionContext*, const String&);
+  explicit NDEFRecord(device::mojom::NDEFRecordTypeCategory,
+                      const String& /* record_type */,
+                      const String& /* id */,
+                      WTF::Vector<uint8_t>);
 
-  // Construct a "mime" record from the raw payload bytes.
-  explicit NDEFRecord(WTF::Vector<uint8_t> /* payload_data */,
-                      const String& /* media_type */);
-
-  explicit NDEFRecord(const String& /* record_type */,
-                      WTF::Vector<uint8_t> /* data */);
-  explicit NDEFRecord(const String& /* record_type */,
+  // Only for constructing "text" type record. The type category will be
+  // device::mojom::NDEFRecordTypeCategory::kStandardized.
+  explicit NDEFRecord(const String& /* id */,
                       const String& /* encoding */,
                       const String& /* lang */,
-                      WTF::Vector<uint8_t> /* data */);
+                      WTF::Vector<uint8_t>);
 
-  // All above Ctors by default set the type category to
+  // Only for constructing "text" type record from just a text. The type
+  // category will be device::mojom::NDEFRecordTypeCategory::kStandardized.
+  // Called by NDEFMessage.
+  explicit NDEFRecord(const ExecutionContext*, const String&);
+
+  // Only for constructing "mime" type record. The type category will be
   // device::mojom::NDEFRecordTypeCategory::kStandardized.
+  explicit NDEFRecord(const String& /* id */,
+                      const String& /* media_type */,
+                      WTF::Vector<uint8_t>);
 
-  explicit NDEFRecord(device::mojom::NDEFRecordTypeCategory /* category */,
-                      const String& /* record_type */,
-                      WTF::Vector<uint8_t> /* data */);
   explicit NDEFRecord(const device::mojom::blink::NDEFRecord&);
 
   const String& recordType() const { return record_type_; }
@@ -68,16 +71,16 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
  private:
   const device::mojom::NDEFRecordTypeCategory category_;
   const String record_type_;
-  String media_type_;
-  String id_;
-  String encoding_;
-  String lang_;
+  const String id_;
+  const String media_type_;
+  const String encoding_;
+  const String lang_;
   // Holds the NDEFRecord.[[PayloadData]] bytes defined at
   // https://w3c.github.io/web-nfc/#the-ndefrecord-interface.
-  WTF::Vector<uint8_t> payload_data_;
+  const WTF::Vector<uint8_t> payload_data_;
   // |payload_data_| parsed as an NDEFMessage. This field will be set for some
   // "smart-poster" and external type records.
-  Member<NDEFMessage> payload_message_;
+  const Member<NDEFMessage> payload_message_;
 };
 
 }  // namespace blink

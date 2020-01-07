@@ -57,17 +57,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void SetFrameConnectorDelegate(FrameConnectorDelegate* frame_connector);
 
-  // This functions registers single-use callbacks that want to be notified when
-  // the next frame is swapped. The callback is triggered by
-  // SubmitCompositorFrame, which is the appropriate time to request pixel
-  // readback for the frame that is about to be drawn. Once called, the callback
-  // pointer is released.
-  // TODO(crbug.com/787941): This should be removed because it doesn't work when
-  // VIZ display compositing is enabled. The public CopyFromSurface() API does
-  // not make guarantees that it will succeed before the first frame is
-  // composited.
-  void RegisterFrameSwappedCallback(base::OnceClosure callback);
-
   // TouchSelectionControllerClientManager::Observer implementation.
   void OnManagerWillDestroy(
       TouchSelectionControllerClientManager* manager) override;
@@ -96,7 +85,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   bool IsMouseLocked() override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override {}
-  void SetWantsAnimateOnlyBeginFrames() override {}
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 
   // RenderWidgetHostViewBase implementation.
@@ -113,11 +101,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void SetTooltipText(const base::string16& tooltip_text) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
-  void SubmitCompositorFrame(
-      const viz::LocalSurfaceId& local_surface_id,
-      viz::CompositorFrame frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list) override;
-  void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   // Since the URL of content rendered by this class is not displayed in
   // the URL bar, this method does not need an implementation.
   void ResetFallbackToFirstNavigationSurface() override {}

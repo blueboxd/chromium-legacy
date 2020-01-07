@@ -19,7 +19,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
@@ -40,8 +39,7 @@ class DiceSigninButtonView;
 class ProfileMenuViewBase : public content::WebContentsDelegate,
                             public views::BubbleDialogDelegateView,
                             public views::ButtonListener,
-                            public views::StyledLabelListener,
-                            public views::LinkListener {
+                            public views::StyledLabelListener {
  public:
   // Enumeration of all actionable items in the profile menu.
   // These values are persisted to logs. Entries should not be renumbered and
@@ -234,9 +232,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* button, const ui::Event& event) final;
-
-  // views::LinkListener:
-  void LinkClicked(views::Link* link, int event_flags) final;
 
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* link,

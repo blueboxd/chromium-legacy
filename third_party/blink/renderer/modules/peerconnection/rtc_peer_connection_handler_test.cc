@@ -309,8 +309,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   }
 
   // Creates a WebKit local MediaStream.
-  blink::WebMediaStream CreateLocalMediaStream(
-      const std::string& stream_label) {
+  WebMediaStream CreateLocalMediaStream(const std::string& stream_label) {
     std::string video_track_label("video-label");
     std::string audio_track_label("audio-label");
     blink::WebMediaStreamSource blink_audio_source;
@@ -373,18 +372,18 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   // Creates a remote MediaStream and adds it to the mocked native
   // peer connection.
   rtc::scoped_refptr<webrtc::MediaStreamInterface> AddRemoteMockMediaStream(
-      const std::string& stream_label,
-      const std::string& video_track_label,
-      const std::string& audio_track_label) {
+      const String& stream_label,
+      const String& video_track_label,
+      const String& audio_track_label) {
     rtc::scoped_refptr<webrtc::MediaStreamInterface> stream(
         mock_dependency_factory_->CreateLocalMediaStream(stream_label).get());
-    if (!video_track_label.empty()) {
+    if (!video_track_label.IsEmpty()) {
       InvokeAddTrack(
-          stream, blink::MockWebRtcVideoTrack::Create(video_track_label).get());
+          stream, MockWebRtcVideoTrack::Create(video_track_label.Utf8()).get());
     }
-    if (!audio_track_label.empty()) {
+    if (!audio_track_label.IsEmpty()) {
       InvokeAddTrack(
-          stream, blink::MockWebRtcAudioTrack::Create(audio_track_label).get());
+          stream, MockWebRtcAudioTrack::Create(audio_track_label.Utf8()).get());
     }
     mock_peer_connection_->AddRemoteStream(stream);
     return stream;

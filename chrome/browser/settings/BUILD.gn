@@ -9,11 +9,23 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/settings/SettingsUtils.java",
   ]
   deps = [
+    ":java_resources",
     "//base:base_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
-    "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_preference_v7_java",
+
+    # TODO(crbug.com/1017190): Remove these 2 deps once we stop linting individual targets.
+    "//third_party/android_deps:com_android_support_design_java",
     "//ui/android:ui_java",
   ]
+}
+
+android_resources("java_resources") {
+  deps = [
+    "//third_party/android_deps:com_android_support_design_java",
+    "//ui/android:ui_java_resources",
+  ]
+  resource_dirs = []
+  custom_package = "org.chromium.chrome.browser.settings"
 }

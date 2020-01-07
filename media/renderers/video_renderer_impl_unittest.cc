@@ -133,7 +133,7 @@ class VideoRendererImplTest : public testing::Test {
   }
 
   void CallInitialize(MockDemuxerStream* demuxer_stream,
-                      const PipelineStatusCB& status_cb,
+                      PipelineStatusCallback status_cb,
                       bool low_delay,
                       bool expect_success) {
     if (low_delay)
@@ -145,7 +145,7 @@ class VideoRendererImplTest : public testing::Test {
         demuxer_stream, nullptr, &mock_cb_,
         base::BindRepeating(&WallClockTimeSource::GetWallClockTimes,
                             base::Unretained(&time_source_)),
-        status_cb);
+        std::move(status_cb));
   }
 
   void StartPlayingFrom(int milliseconds) {

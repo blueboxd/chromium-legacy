@@ -15,6 +15,7 @@
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -220,9 +221,9 @@ void VerifyIndexEquality(const std::vector<const IndexedRule*>& rules,
 }
 
 // Verifies that |extension_metadata| is sorted by ID and corresponds to rules
-// in |redirect_rules|.
+// in |rules|.
 void VerifyExtensionMetadata(
-    const std::vector<const IndexedRule*>& redirect_rules,
+    const std::vector<const IndexedRule*>& rules,
     const ::flatbuffers::Vector<flatbuffers::Offset<flat::UrlRuleMetadata>>*
         extension_metdata) {
   struct MetadataPair {
@@ -233,8 +234,11 @@ void VerifyExtensionMetadata(
   // Build a map from IDs to MetadataPair(s).
   std::map<uint32_t, MetadataPair> map;
 
-  for (const auto* rule : redirect_rules) {
-    EXPECT_EQ(nullptr, map[rule->id].indexed_rule);
+  for (const auto* rule : rules) {
+    // It is possible for a rule to be present in multiple indices, such as a
+    // remove headers rule that removes more than one header.
+    EXPECT_TRUE(map[rule->id].indexed_rule == nullptr ||
+                map[rule->id].indexed_rule == rule);
     map[rule->id].indexed_rule = rule;
   }
 
@@ -252,7 +256,15 @@ void VerifyExtensionMetadata(
 
   // Returns whether the metadata for the given rule was correctly indexed.
   auto is_metadata_correct = [](const MetadataPair& pair) {
-    CHECK(pair.indexed_rule->redirect_url || pair.indexed_rule->url_transform);
+    EXPECT_TRUE(pair.indexed_rule);
+
+    if (ConvertToFlatActionType(pair.indexed_rule->action_type) !=
+        pair.metadata->action()) {
+      return false;
+    }
+
+    EXPECT_FALSE(pair.indexed_rule->redirect_url &&
+                 pair.indexed_rule->url_transform);
 
     if (pair.indexed_rule->redirect_url) {
       if (!pair.metadata->redirect_url())
@@ -261,11 +273,16 @@ void VerifyExtensionMetadata(
              ToString(pair.metadata->redirect_url());
     }
 
-    return pair.metadata->transform() &&
-           VerifyUrlTransform(*pair.metadata->transform());
+    if (pair.indexed_rule->url_transform) {
+      if (!pair.metadata->transform())
+        return false;
+      return VerifyUrlTransform(*pair.metadata->transform());
+    }
+
+    return true;
   };
 
-  // Iterate over the map and verify equality of the redirect rules.
+  // Iterate over the map and verify correctness of the metadata.
   for (const auto& elem : map) {
     EXPECT_TRUE(is_metadata_correct(elem.second)) << base::StringPrintf(
         "Redirect rule with id %u was incorrectly indexed", elem.first);
@@ -296,26 +313,30 @@ const flat::ExtensionIndexedRuleset* AddRuleAndGetRuleset(
 // ExtensionIndexedRuleset.
 void AddRulesAndVerifyIndex(const std::vector<IndexedRule>& rules_to_index,
                             const std::vector<const IndexedRule*>
-                                expected_index_lists[flat::ActionIndex_count]) {
+                                expected_index_lists[flat::IndexType_count]) {
   FlatRulesetIndexer indexer;
   const flat::ExtensionIndexedRuleset* ruleset =
       AddRuleAndGetRuleset(rules_to_index, &indexer);
   ASSERT_TRUE(ruleset);
 
-  for (size_t i = 0; i < flat::ActionIndex_count; ++i) {
+  for (size_t i = 0; i < flat::IndexType_count; ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing index %" PRIuS, i));
     VerifyIndexEquality(expected_index_lists[i], ruleset->index_list()->Get(i));
   }
 
   {
     SCOPED_TRACE("Testing extension metadata");
-    VerifyExtensionMetadata(expected_index_lists[flat::ActionIndex_redirect],
-                            ruleset->extension_metadata());
+    std::vector<const IndexedRule*> all_rules;
+    for (size_t i = 0; i < flat::IndexType_count; i++) {
+      all_rules.insert(all_rules.end(), expected_index_lists[i].begin(),
+                       expected_index_lists[i].end());
+    }
+    VerifyExtensionMetadata(all_rules, ruleset->extension_metadata());
   }
 }
 
 TEST_F(FlatRulesetIndexerTest, TestEmptyIndex) {
-  std::vector<const IndexedRule*> expected_index_lists[flat::ActionIndex_count];
+  std::vector<const IndexedRule*> expected_index_lists[flat::IndexType_count];
   AddRulesAndVerifyIndex({}, expected_index_lists);
 }
 
@@ -410,19 +431,16 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
   // vector can resize/reallocate invalidating the existing pointers/iterators.
   // Hence we build |expected_index_lists| once the vector |rules_to_index| is
   // finalized.
-  std::vector<const IndexedRule*> expected_index_lists[flat::ActionIndex_count];
-  expected_index_lists[flat::ActionIndex_block] = {&rules_to_index[0],
-                                                   &rules_to_index[1]};
-  expected_index_lists[flat::ActionIndex_redirect] = {
-      &rules_to_index[2], &rules_to_index[3], &rules_to_index[4],
-      &rules_to_index[5]};
-  expected_index_lists[flat::ActionIndex_allow] = {&rules_to_index[6],
-                                                   &rules_to_index[7]};
-  expected_index_lists[flat::ActionIndex_remove_cookie_header] = {
+  std::vector<const IndexedRule*> expected_index_lists[flat::IndexType_count];
+  expected_index_lists[flat::IndexType_before_request] = {
+      &rules_to_index[0], &rules_to_index[1], &rules_to_index[2],
+      &rules_to_index[3], &rules_to_index[4], &rules_to_index[5],
+      &rules_to_index[6], &rules_to_index[7]};
+  expected_index_lists[flat::IndexType_remove_cookie_header] = {
       &rules_to_index[8], &rules_to_index[9]};
-  expected_index_lists[flat::ActionIndex_remove_referer_header] = {
+  expected_index_lists[flat::IndexType_remove_referer_header] = {
       &rules_to_index[9]};
-  expected_index_lists[flat::ActionIndex_remove_set_cookie_header] = {
+  expected_index_lists[flat::IndexType_remove_set_cookie_header] = {
       &rules_to_index[8], &rules_to_index[9]};
 
   AddRulesAndVerifyIndex(rules_to_index, expected_index_lists);
@@ -473,16 +491,17 @@ TEST_F(FlatRulesetIndexerTest, RegexRules) {
   ASSERT_TRUE(ruleset);
 
   // All the indices should be empty, since we only have regex rules.
-  for (size_t i = 0; i < flat::ActionIndex_count; ++i) {
+  for (size_t i = 0; i < flat::IndexType_count; ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing index %" PRIuS, i));
     VerifyIndexEquality({}, ruleset->index_list()->Get(i));
   }
 
-  // We should have metadata for the redirect rule.
   {
     SCOPED_TRACE("Testing extension metadata");
-    VerifyExtensionMetadata({&rules_to_index[1]},
-                            ruleset->extension_metadata());
+    std::vector<const IndexedRule*> all_rules;
+    for (IndexedRule& rule : rules_to_index)
+      all_rules.push_back(&rule);
+    VerifyExtensionMetadata(all_rules, ruleset->extension_metadata());
   }
 
   ASSERT_TRUE(ruleset->regex_rules());

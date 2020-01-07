@@ -315,11 +315,11 @@ void SkiaOutputDeviceBufferQueue::PageFlipComplete() {
   DCHECK(!in_flight_images_.empty());
 
   if (in_flight_images_.front()) {
-    if (displayed_image_)
-      available_images_.push_back(std::move(displayed_image_));
-    displayed_image_ = std::move(in_flight_images_.front());
-    if (displayed_image_)
+    if (displayed_image_) {
       displayed_image_->EndPresent();
+      available_images_.push_back(std::move(displayed_image_));
+    }
+    displayed_image_ = std::move(in_flight_images_.front());
   }
 
   in_flight_images_.pop_front();

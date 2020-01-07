@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -228,9 +229,11 @@ class HttpServerTest : public testing::Test, public HttpServer::Delegate {
       return;
 
     base::RunLoop run_loop;
-    run_loop_quit_func_ = run_loop.QuitClosure();
+    base::AutoReset<base::RepeatingClosure> run_loop_quit_func(
+        &run_loop_quit_func_, run_loop.QuitClosure());
     run_loop.Run();
-    run_loop_quit_func_.Reset();
+
+    ASSERT_EQ(requests_.size(), count);
   }
 
   void RunUntilConnectionIdClosed(int connection_id) {
@@ -242,9 +245,13 @@ class HttpServerTest : public testing::Test, public HttpServer::Delegate {
     }
 
     base::RunLoop run_loop;
-    run_loop_quit_func_ = run_loop.QuitClosure();
+    base::AutoReset<base::RepeatingClosure> run_loop_quit_func(
+        &run_loop_quit_func_, run_loop.QuitClosure());
     run_loop.Run();
-    run_loop_quit_func_.Reset();
+
+    iter = connection_map_.find(connection_id);
+    ASSERT_TRUE(iter != connection_map_.end());
+    ASSERT_FALSE(iter->second);
   }
 
   HttpServerRequestInfo GetRequest(size_t request_index) {

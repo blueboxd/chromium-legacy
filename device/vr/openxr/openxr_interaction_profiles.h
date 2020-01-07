@@ -23,7 +23,8 @@ enum class OpenXrInteractionProfileType {
   kMicrosoftMotion = 0,
   kKHRSimple = 1,
   kOculusTouch = 2,
-  kCount = 3,
+  kValveIndex = 3,
+  kCount = 4,
 };
 
 enum class OpenXrButtonType {
@@ -85,6 +86,7 @@ struct OpenXrControllerInteractionProfile {
 // Microsoft motion controller.
 // Khronos simple controller.
 // Oculus touch controller.
+// Valve index controller.
 // Declare OpenXR input profile bindings for other runtimes when they become
 // available.
 constexpr const char* kMicrosoftMotionInputProfiles[] = {
@@ -94,6 +96,9 @@ constexpr const char* kGenericButtonInputProfiles[] = {"generic-button"};
 
 constexpr const char* kOculusTouchInputProfiles[] = {
     "oculus-touch", "generic-trigger-squeeze-thumbstick"};
+
+constexpr const char* kValveIndexInputProfiles[] = {
+    "valve-index", "generic-trigger-squeeze-touchpad-thumbstick"};
 
 constexpr OpenXrButtonPathMap kMicrosoftMotionControllerButtonPathMaps[] = {
     {OpenXrButtonType::kTrigger,
@@ -173,12 +178,46 @@ constexpr OpenXrButtonPathMap kOculusTouchRightControllerButtonPathMaps[] = {
      2},
 };
 
+constexpr OpenXrButtonPathMap kValveIndexControllerButtonPathMaps[] = {
+    {OpenXrButtonType::kTrigger,
+     {{OpenXrButtonActionType::kPress, "/input/trigger/click"},
+      {OpenXrButtonActionType::kValue, "/input/trigger/value"},
+      {OpenXrButtonActionType::kTouch, "/input/trigger/touch"}},
+     3},
+    {OpenXrButtonType::kSqueeze,
+     {{OpenXrButtonActionType::kPress, "/input/squeeze/value"},
+      {OpenXrButtonActionType::kValue, "/input/squeeze/value"},
+      {OpenXrButtonActionType::kValue, "/input/squeeze/force"}},
+     3},
+    {OpenXrButtonType::kThumbstick,
+     {{OpenXrButtonActionType::kPress, "/input/thumbstick/click"},
+      {OpenXrButtonActionType::kTouch, "/input/thumbstick/touch"}},
+     2},
+    {OpenXrButtonType::kTrackpad,
+     {{OpenXrButtonActionType::kTouch, "/input/trackpad/touch"},
+      {OpenXrButtonActionType::kValue, "/input/trackpad/force"}},
+     2},
+    {OpenXrButtonType::kButton1,
+     {{OpenXrButtonActionType::kPress, "/input/a/click"},
+      {OpenXrButtonActionType::kTouch, "/input/a/touch"}},
+     2},
+    {OpenXrButtonType::kButton2,
+     {{OpenXrButtonActionType::kPress, "/input/b/click"},
+      {OpenXrButtonActionType::kTouch, "/input/b/touch"}},
+     2},
+};  // namespace device
+
 constexpr OpenXrAxisPathMap kMicrosoftMotionControllerAxisPathMaps[] = {
     {OpenXrAxisType::kTrackpad, "/input/trackpad"},
     {OpenXrAxisType::kThumbstick, "/input/thumbstick"},
 };
 
 constexpr OpenXrAxisPathMap kOculusTouchControllerAxisPathMaps[] = {
+    {OpenXrAxisType::kThumbstick, "/input/thumbstick"},
+};
+
+constexpr OpenXrAxisPathMap kValveIndexControllerAxisPathMaps[] = {
+    {OpenXrAxisType::kTrackpad, "/input/trackpad"},
     {OpenXrAxisType::kThumbstick, "/input/thumbstick"},
 };
 
@@ -222,10 +261,23 @@ constexpr OpenXrControllerInteractionProfile kOculusTouchInteractionProfile = {
     kOculusTouchControllerAxisPathMaps,
     base::size(kOculusTouchControllerAxisPathMaps)};
 
+constexpr OpenXrControllerInteractionProfile kValveIndexInteractionProfile = {
+    OpenXrInteractionProfileType::kValveIndex,
+    "/interaction_profiles/valve/index_controller",
+    GamepadMapping::kXrStandard,
+    kValveIndexInputProfiles,
+    base::size(kValveIndexInputProfiles),
+    kValveIndexControllerButtonPathMaps,
+    base::size(kValveIndexControllerButtonPathMaps),
+    kValveIndexControllerButtonPathMaps,
+    base::size(kValveIndexControllerButtonPathMaps),
+    kValveIndexControllerAxisPathMaps,
+    base::size(kValveIndexControllerAxisPathMaps)};
+
 constexpr OpenXrControllerInteractionProfile
     kOpenXrControllerInteractionProfiles[] = {
         kMicrosoftMotionInteractionProfile, kKHRSimpleInteractionProfile,
-        kOculusTouchInteractionProfile};
+        kOculusTouchInteractionProfile, kValveIndexInteractionProfile};
 
 }  // namespace device
 

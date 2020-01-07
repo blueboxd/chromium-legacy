@@ -22,6 +22,7 @@
 #include "base/time/default_clock.h"
 #include "components/services/storage/indexed_db/leveldb/fake_leveldb_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom-test-utils.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -251,7 +252,10 @@ TEST_F(IndexedDBFactoryTest, BasicFactoryCreationAndTearDown) {
   EXPECT_TRUE(origin_state2_handle.IsHeld()) << s.ToString();
   EXPECT_TRUE(s.ok()) << s.ToString();
 
-  std::vector<StorageUsageInfo> origin_info = context()->GetAllOriginsInfo();
+  std::vector<storage::mojom::IndexedDBStorageUsageInfoPtr> origin_info;
+  storage::mojom::IndexedDBControlAsyncWaiter sync_control(context());
+  sync_control.GetUsage(&origin_info);
+
   EXPECT_EQ(2ul, origin_info.size());
   EXPECT_EQ(2ul, factory()->GetOpenOrigins().size());
 }
@@ -301,7 +305,6 @@ TEST_F(IndexedDBFactoryTest, ImmediateClose) {
 }
 
 TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
-  base::test::ScopedFeatureList feature_list;
   base::SimpleTestClock clock;
   clock.SetNow(base::Time::Now());
   SetupContextWithFactories(nullptr, &clock);
@@ -325,73 +328,73 @@ TEST_F(IndexedDBFactoryTestWithMockTime, PreCloseTasksStart) {
   EXPECT_EQ(IndexedDBOriginState::ClosingState::kPreCloseGracePeriod,
             factory()->GetOriginFactory(origin)->closing_stage());
 
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(2));
-
-  // The factory should be closed, as the pre close tasks are delayed.
-  EXPECT_FALSE(factory()->GetOriginFactory(origin));
-
-  // Move the clock to run the tasks in the next close sequence.
-  clock.Advance(IndexedDBOriginState::kMaxEarliestGlobalSweepFromNow);
-
-  // Open a connection & immediately release it to cause the closing sequence to
-  // start again.
-  std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
-      factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
-                                        /*create_if_missing=*/true);
-  EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
-  origin_state_handle.Release();
-
-  // Manually execute the timer so that the PreCloseTaskList task doesn't also
-  // run.
   factory()->GetOriginFactory(origin)->close_timer()->FireNow();
 
-  // The pre-close tasks should be running now.
+  // Since the compaction task always runs, the test assumes it is running.
   ASSERT_TRUE(factory()->GetOriginFactory(origin));
   EXPECT_EQ(IndexedDBOriginState::ClosingState::kRunningPreCloseTasks,
             factory()->GetOriginFactory(origin)->closing_stage());
   ASSERT_TRUE(factory()->GetOriginFactory(origin)->pre_close_task_queue());
   EXPECT_TRUE(
       factory()->GetOriginFactory(origin)->pre_close_task_queue()->started());
+}
 
-  // Stop sweep by opening a connection.
+TEST_F(IndexedDBFactoryTestWithMockTime, TombstoneSweeperTiming) {
+  base::SimpleTestClock clock;
+  clock.SetNow(base::Time::Now());
+  SetupContextWithFactories(nullptr, &clock);
+
+  const Origin origin = Origin::Create(GURL("http://localhost:81"));
+
+  IndexedDBOriginStateHandle origin_state_handle;
+  leveldb::Status s;
+
+  // Open a connection & immediately release it to cause the closing sequence to
+  // start.
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
                                         /*create_if_missing=*/true);
   EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
-  EXPECT_FALSE(
-      OriginStateFromHandle(origin_state_handle)->pre_close_task_queue());
-  origin_state_handle.Release();
+
+  // The factory should be closed, as the pre close tasks are delayed.
+  EXPECT_FALSE(origin_state_handle.origin_state()->ShouldRunTombstoneSweeper());
+
+  // Move the clock to run the tasks in the next close sequence.
+  clock.Advance(IndexedDBOriginState::kMaxEarliestGlobalSweepFromNow);
+
+  EXPECT_TRUE(origin_state_handle.origin_state()->ShouldRunTombstoneSweeper());
 
   // Move clock forward to trigger next sweep, but origin has longer
   // sweep minimum, so no tasks should execute.
   clock.Advance(IndexedDBOriginState::kMaxEarliestGlobalSweepFromNow);
 
-  origin_state_handle.Release();
-  EXPECT_TRUE(factory()->GetOriginFactory(origin));
-  EXPECT_EQ(IndexedDBOriginState::ClosingState::kPreCloseGracePeriod,
-            factory()->GetOriginFactory(origin)->closing_stage());
-
-  // Manually execute the timer so that the PreCloseTaskList task doesn't also
-  // run.
-  factory()->GetOriginFactory(origin)->close_timer()->FireNow();
-  EXPECT_TRUE(factory()->GetOriginFactory(origin));
-  RunPostedTasks();
-  EXPECT_FALSE(factory()->GetOriginFactory(origin));
+  EXPECT_FALSE(origin_state_handle.origin_state()->ShouldRunTombstoneSweeper());
 
   //  Finally, move the clock forward so the origin should allow a sweep.
   clock.Advance(IndexedDBOriginState::kMaxEarliestOriginSweepFromNow);
+
+  EXPECT_TRUE(origin_state_handle.origin_state()->ShouldRunTombstoneSweeper());
+}
+
+// Remove this test when the kill switch is removed.
+TEST_F(IndexedDBFactoryTest, CompactionKillSwitchWorks) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({}, {kCompactIDBOnClose});
+
+  SetupContext();
+
+  const Origin origin = Origin::Create(GURL("http://localhost:81"));
+  IndexedDBOriginStateHandle origin_state_handle;
+  leveldb::Status s;
+
+  // Open a connection & immediately release it to cause the closing sequence to
+  // start.
   std::tie(origin_state_handle, s, std::ignore, std::ignore, std::ignore) =
       factory()->GetOrOpenOriginFactory(origin, context()->data_path(),
                                         /*create_if_missing=*/true);
-  origin_state_handle.Release();
-  factory()->GetOriginFactory(origin)->close_timer()->FireNow();
+  EXPECT_TRUE(origin_state_handle.IsHeld()) << s.ToString();
 
-  ASSERT_TRUE(factory()->GetOriginFactory(origin));
-  EXPECT_EQ(IndexedDBOriginState::ClosingState::kRunningPreCloseTasks,
-            factory()->GetOriginFactory(origin)->closing_stage());
-  ASSERT_TRUE(factory()->GetOriginFactory(origin)->pre_close_task_queue());
-  EXPECT_TRUE(
-      factory()->GetOriginFactory(origin)->pre_close_task_queue()->started());
+  EXPECT_FALSE(origin_state_handle.origin_state()->ShouldRunCompaction());
 }
 
 TEST_F(IndexedDBFactoryTest, InMemoryFactoriesStay) {

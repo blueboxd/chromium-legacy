@@ -167,13 +167,11 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
  public:
   InspectorFileReaderLoaderClient(
       scoped_refptr<BlobDataHandle> blob,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::OnceCallback<void(scoped_refptr<SharedBuffer>)> callback)
       : blob_(std::move(blob)), callback_(std::move(callback)) {
-    // TODO(hajimehoshi): Use a per-ExecutionContext task runner of
-    // TaskType::kFileReading
     loader_ = std::make_unique<FileReaderLoader>(
-        FileReaderLoader::kReadByClient, this,
-        ThreadScheduler::Current()->DeprecatedDefaultTaskRunner());
+        FileReaderLoader::kReadByClient, this, std::move(task_runner));
   }
 
   ~InspectorFileReaderLoaderClient() override = default;
@@ -233,9 +231,12 @@ static void ResponseBodyFileReaderLoaderDone(
 class InspectorPostBodyParser
     : public WTF::RefCounted<InspectorPostBodyParser> {
  public:
-  explicit InspectorPostBodyParser(
-      std::unique_ptr<GetRequestPostDataCallback> callback)
-      : callback_(std::move(callback)), error_(false) {}
+  InspectorPostBodyParser(
+      std::unique_ptr<GetRequestPostDataCallback> callback,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : callback_(std::move(callback)),
+        task_runner_(std::move(task_runner)),
+        error_(false) {}
 
   void Parse(EncodedFormData* request_body) {
     if (!request_body || request_body->IsEmpty())
@@ -287,13 +288,14 @@ class InspectorPostBodyParser
     if (!blob_handle)
       return;
     auto* reader = new InspectorFileReaderLoaderClient(
-        blob_handle,
+        blob_handle, task_runner_,
         WTF::Bind(&InspectorPostBodyParser::BlobReadCallback,
                   WTF::RetainedRef(this), WTF::Unretained(destination)));
     reader->Start();
   }
 
   std::unique_ptr<GetRequestPostDataCallback> callback_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool error_;
   Vector<String> parts_;
   DISALLOW_COPY_AND_ASSIGN(InspectorPostBodyParser);
@@ -1414,8 +1416,13 @@ void InspectorNetworkAgent::GetResponseBodyBlob(
   NetworkResourcesData::ResourceData const* resource_data =
       resources_data_->Data(request_id);
   BlobDataHandle* blob = resource_data->DownloadedFileBlob();
+  ExecutionContext* context = GetTargetExecutionContext();
+  if (!context) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
   InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(
-      blob,
+      blob, context->GetTaskRunner(TaskType::kFileReading),
       WTF::Bind(ResponseBodyFileReaderLoaderDone, resource_data->MimeType(),
                 resource_data->TextEncodingName(),
                 WTF::Passed(std::move(callback))));
@@ -1743,11 +1750,23 @@ void InspectorNetworkAgent::getRequestPostData(
         Response::Error("No post data available for the request"));
     return;
   }
-
+  ExecutionContext* context = GetTargetExecutionContext();
+  if (!context) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
   scoped_refptr<InspectorPostBodyParser> parser =
-      base::MakeRefCounted<InspectorPostBodyParser>(std::move(callback));
+      base::MakeRefCounted<InspectorPostBodyParser>(
+          std::move(callback), context->GetTaskRunner(TaskType::kFileReading));
   // TODO(crbug.com/810554): Extend protocol to fetch body parts separately
   parser->Parse(post_data.get());
+}
+
+ExecutionContext* InspectorNetworkAgent::GetTargetExecutionContext() const {
+  if (worker_global_scope_)
+    return worker_global_scope_;
+  DCHECK(inspected_frames_);
+  return inspected_frames_->Root()->GetDocument();
 }
 
 }  // namespace blink

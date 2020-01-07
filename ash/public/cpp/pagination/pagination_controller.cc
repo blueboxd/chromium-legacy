@@ -33,9 +33,9 @@ PaginationController::PaginationController(PaginationModel* model,
 
 PaginationController::~PaginationController() = default;
 
-bool PaginationController::OnScroll(const gfx::Vector2d& offset,
+bool PaginationController::OnScroll(const gfx::Vector2dF& offset,
                                     ui::EventType type) {
-  int offset_magnitude;
+  float offset_magnitude;
   if (scroll_axis_ == SCROLL_AXIS_HORIZONTAL) {
     // If the view scrolls horizontally, both horizontal and vertical scroll
     // events are valid (since most mouse wheels only have vertical scrolling).
@@ -95,13 +95,13 @@ bool PaginationController::OnGestureEvent(const ui::GestureEvent& event,
   }
 }
 
-void PaginationController::StartMouseDrag(const gfx::Vector2d& offset) {
+void PaginationController::StartMouseDrag(const gfx::Vector2dF& offset) {
   float scroll =
       scroll_axis_ == SCROLL_AXIS_HORIZONTAL ? offset.x() : offset.y();
   StartDrag(scroll);
 }
 
-void PaginationController::UpdateMouseDrag(const gfx::Vector2d& offset,
+void PaginationController::UpdateMouseDrag(const gfx::Vector2dF& offset,
                                            const gfx::Rect& bounds) {
   float scroll =
       scroll_axis_ == SCROLL_AXIS_HORIZONTAL ? offset.x() : offset.y();

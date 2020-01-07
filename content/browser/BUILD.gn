@@ -971,6 +971,8 @@ jumbo_source_set("browser") {
     "indexed_db/indexed_db_callbacks.h",
     "indexed_db/indexed_db_class_factory.cc",
     "indexed_db/indexed_db_class_factory.h",
+    "indexed_db/indexed_db_compaction_task.cc",
+    "indexed_db/indexed_db_compaction_task.h",
     "indexed_db/indexed_db_connection.cc",
     "indexed_db/indexed_db_connection.h",
     "indexed_db/indexed_db_connection_coordinator.cc",

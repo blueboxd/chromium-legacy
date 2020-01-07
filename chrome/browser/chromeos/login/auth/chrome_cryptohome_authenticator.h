@@ -22,7 +22,7 @@ class ChromeCryptohomeAuthenticator : public CryptohomeAuthenticator {
   bool IsKnownUser(const UserContext& context) override;
   bool IsSafeMode() override;
   void CheckSafeModeOwnership(const UserContext& context,
-                              const IsOwnerCallback& callback) override;
+                              IsOwnerCallback callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeCryptohomeAuthenticator);

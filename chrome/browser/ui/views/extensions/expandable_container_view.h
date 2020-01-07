@@ -55,11 +55,11 @@ class ExpandableContainerView : public views::View, public views::LinkListener {
   void ToggleDetailLevel();
 
   // The view that expands or collapses when |details_link_| is clicked.
-  DetailsView* details_view_;
+  DetailsView* details_view_ = nullptr;
 
   // The 'Show Details' link, which changes to 'Hide Details' when the details
   // section is expanded.
-  views::Link* details_link_;
+  views::Link* details_link_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXPANDABLE_CONTAINER_VIEW_H_

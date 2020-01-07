@@ -77,12 +77,25 @@ class MockPipeline : public Pipeline {
   MockPipeline();
   ~MockPipeline() override;
 
-  MOCK_METHOD4(Start,
-               void(StartType, Demuxer*, Client*, const PipelineStatusCB&));
+  void Start(StartType start_type,
+             Demuxer* demuxer,
+             Client* client,
+             PipelineStatusCallback seek_cb) {
+    OnStart(start_type, demuxer, client, seek_cb);
+  }
+  MOCK_METHOD4(OnStart,
+               void(StartType, Demuxer*, Client*, PipelineStatusCallback&));
   MOCK_METHOD0(Stop, void());
-  MOCK_METHOD2(Seek, void(base::TimeDelta, const PipelineStatusCB&));
-  MOCK_METHOD1(Suspend, void(const PipelineStatusCB&));
-  MOCK_METHOD2(Resume, void(base::TimeDelta, const PipelineStatusCB&));
+  void Seek(base::TimeDelta time, PipelineStatusCallback seek_cb) {
+    OnSeek(time, seek_cb);
+  }
+  MOCK_METHOD2(OnSeek, void(base::TimeDelta, PipelineStatusCallback&));
+  void Suspend(PipelineStatusCallback cb) { OnSuspend(cb); }
+  MOCK_METHOD1(OnSuspend, void(PipelineStatusCallback&));
+  void Resume(base::TimeDelta time, PipelineStatusCallback seek_cb) {
+    OnResume(time, seek_cb);
+  }
+  MOCK_METHOD2(OnResume, void(base::TimeDelta, PipelineStatusCallback&));
   MOCK_METHOD2(OnEnabledAudioTracksChanged,
                void(const std::vector<MediaTrack::Id>&, base::OnceClosure));
   MOCK_METHOD2(OnSelectedVideoTrackChanged,
@@ -294,12 +307,19 @@ class MockVideoRenderer : public VideoRenderer {
   ~MockVideoRenderer() override;
 
   // VideoRenderer implementation.
-  MOCK_METHOD5(Initialize,
+  void Initialize(DemuxerStream* stream,
+                  CdmContext* cdm_context,
+                  RendererClient* client,
+                  const TimeSource::WallClockTimeCB& wall_clock_time_cb,
+                  PipelineStatusCallback init_cb) {
+    OnInitialize(stream, cdm_context, client, wall_clock_time_cb, init_cb);
+  }
+  MOCK_METHOD5(OnInitialize,
                void(DemuxerStream* stream,
                     CdmContext* cdm_context,
                     RendererClient* client,
                     const TimeSource::WallClockTimeCB& wall_clock_time_cb,
-                    const PipelineStatusCB& init_cb));
+                    PipelineStatusCallback& init_cb));
   MOCK_METHOD1(Flush, void(base::OnceClosure flush_cb));
   MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta));
   MOCK_METHOD0(OnTimeProgressing, void());
@@ -315,11 +335,17 @@ class MockAudioRenderer : public AudioRenderer {
   ~MockAudioRenderer() override;
 
   // AudioRenderer implementation.
-  MOCK_METHOD4(Initialize,
+  void Initialize(DemuxerStream* stream,
+                  CdmContext* cdm_context,
+                  RendererClient* client,
+                  PipelineStatusCallback init_cb) {
+    OnInitialize(stream, cdm_context, client, init_cb);
+  }
+  MOCK_METHOD4(OnInitialize,
                void(DemuxerStream* stream,
                     CdmContext* cdm_context,
                     RendererClient* client,
-                    const PipelineStatusCB& init_cb));
+                    PipelineStatusCallback& init_cb));
   MOCK_METHOD0(GetTimeSource, TimeSource*());
   MOCK_METHOD1(Flush, void(base::OnceClosure flush_cb));
   MOCK_METHOD0(StartPlaying, void());

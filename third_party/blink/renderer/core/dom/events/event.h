@@ -292,6 +292,10 @@ class CORE_EXPORT Event : public ScriptWrappable {
     legacy_did_listeners_throw_flag_ = true;
   }
 
+  void SetCopyEventPathFromUnderlyingEvent() {
+    copy_event_path_from_underlying_event_ = true;
+  }
+
   // In general, event listeners do not run when related execution contexts are
   // paused.  However, when this function returns true, event listeners ignore
   // the pause and run.
@@ -342,6 +346,8 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
   unsigned fire_only_capture_listeners_at_target_ : 1;
   unsigned fire_only_non_capture_listeners_at_target_ : 1;
+
+  unsigned copy_event_path_from_underlying_event_ : 1;
 
   PassiveMode handling_passive_;
   uint8_t event_phase_;

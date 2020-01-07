@@ -28,7 +28,7 @@ class AntiVirusMetricsProvider : public metrics::MetricsProvider {
   ~AntiVirusMetricsProvider() override;
 
   // metrics::MetricsDataProvider:
-  void AsyncInit(const base::Closure& done_callback) override;
+  void AsyncInit(base::OnceClosure done_callback) override;
   void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
 
@@ -42,7 +42,7 @@ class AntiVirusMetricsProvider : public metrics::MetricsProvider {
   // |done_callback| is the callback that should be called once all metrics are
   // gathered.
   void GotAntiVirusProducts(
-      const base::Closure& done_callback,
+      base::OnceClosure done_callback,
       const std::vector<metrics::SystemProfileProto::AntiVirusProduct>& result);
 
   mojo::Remote<chrome::mojom::UtilWin> remote_util_win_;

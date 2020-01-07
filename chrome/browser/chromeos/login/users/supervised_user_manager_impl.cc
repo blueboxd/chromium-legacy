@@ -7,16 +7,12 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
-#include "chrome/browser/chromeos/login/supervised/supervised_user_constants.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -80,16 +76,6 @@ const char kSupervisedUserNeedPasswordUpdate[] =
 // A map from user id to flag indicating if cryptohome does not have signature
 // key.
 const char kSupervisedUserIncompleteKey[] = "SupervisedUserHasIncompleteKey";
-
-std::string LoadSyncToken(base::FilePath profile_dir) {
-  std::string token;
-  base::FilePath token_file =
-      profile_dir.Append(chromeos::kSupervisedUserTokenFilename);
-  VLOG(1) << "Loading" << token_file.value();
-  if (!base::ReadFileToString(token_file, &token))
-    return std::string();
-  return token;
-}
 
 }  // namespace
 
@@ -496,27 +482,6 @@ void SupervisedUserManagerImpl::UpdateManagerName(
 
 SupervisedUserAuthentication* SupervisedUserManagerImpl::GetAuthentication() {
   return authentication_.get();
-}
-
-void SupervisedUserManagerImpl::LoadSupervisedUserToken(
-    Profile* profile,
-    const LoadTokenCallback& callback) {
-  // TODO(antrim): use profile->GetPath() once we sure it is safe.
-  base::FilePath profile_dir = ProfileHelper::GetProfilePathByUserIdHash(
-      ProfileHelper::Get()->GetUserByProfile(profile)->username_hash());
-  PostTaskAndReplyWithResult(
-      base::CreateTaskRunner({base::ThreadPool(), base::MayBlock(),
-                              base::TaskPriority::BEST_EFFORT,
-                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
-          .get(),
-      FROM_HERE, base::Bind(&LoadSyncToken, profile_dir), callback);
-}
-
-void SupervisedUserManagerImpl::ConfigureSyncWithToken(
-    Profile* profile,
-    const std::string& token) {
-  if (!token.empty())
-    SupervisedUserServiceFactory::GetForProfile(profile)->InitSync(token);
 }
 
 }  // namespace chromeos

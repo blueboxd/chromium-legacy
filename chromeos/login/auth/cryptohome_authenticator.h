@@ -192,7 +192,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
  protected:
   ~CryptohomeAuthenticator() override;
 
-  typedef base::Callback<void(bool is_owner)> IsOwnerCallback;
+  using IsOwnerCallback = base::OnceCallback<void(bool is_owner)>;
 
   // Method to be implemented in child. Return |true| if user specified in
   // |context| exists on device.
@@ -206,7 +206,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
   // parameter that indicates if user in |context| can act as an owner in
   // safe mode.
   virtual void CheckSafeModeOwnership(const UserContext& context,
-                                      const IsOwnerCallback& callback) = 0;
+                                      IsOwnerCallback callback) = 0;
 
  private:
   friend class CryptohomeAuthenticatorTest;

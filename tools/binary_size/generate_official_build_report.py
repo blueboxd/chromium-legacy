@@ -78,9 +78,6 @@ def main():
       help='Path to .size file for the given version.')
   parser.add_argument(
       '--arch', required=True, help='Compiler architecture of build.')
-  parser.add_argument('--gs-size-url', help='Unused')
-  parser.add_argument('--gs-size-path', help='Unused')
-  parser.add_argument('--platform', help='Unused')
 
   args = parser.parse_args()
 

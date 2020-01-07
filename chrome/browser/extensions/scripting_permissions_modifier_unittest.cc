@@ -252,11 +252,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 
   {
     SCOPED_TRACE("Reload after granting single");
-    // TODO(tjudkins): We shouldn't have to explicitly call to grant
-    // permissions here, but at the moment when withholding host permissions on
-    // installation and then granting a permission, the reload or update detects
-    // that as a privilege increase and disables the extension.
-    service()->GrantPermissionsAndEnableExtension(extension.get());
     extension = reload_extension();
     CheckActiveHostPermissions(*extension, {kHostGoogle}, {});
     CheckWithheldHostPermissions(*extension, {kHostChromium}, {});
@@ -274,11 +269,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 
   {
     SCOPED_TRACE("Reload after setting to not withhold");
-    // TODO(tjudkins): We shouldn't have to explicitly call to grant
-    // permissions here, but at the moment when withholding host permissions on
-    // installation and then granting a permission, the reload or update detects
-    // that as a privilege increase and disables the extension.
-    service()->GrantPermissionsAndEnableExtension(extension.get());
     extension = reload_extension();
     CheckActiveHostPermissions(*extension, {kHostGoogle, kHostChromium}, {});
     CheckWithheldHostPermissions(*extension, {}, {});
@@ -374,11 +364,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 
   {
     SCOPED_TRACE("Update after granting single");
-    // TODO(tjudkins): We shouldn't have to explicitly call to grant
-    // permissions here, but at the moment when withholding host permissions on
-    // installation and then granting a permission, the reload or update detects
-    // that as a privilege increase and disables the extension.
-    service()->GrantPermissionsAndEnableExtension(extension.get());
     extension = update_extension("3");
     CheckActiveHostPermissions(*extension, {kHostGoogle}, {});
     CheckWithheldHostPermissions(*extension, {kHostChromium}, {});
@@ -396,11 +381,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
 
   {
     SCOPED_TRACE("Update after setting to not withhold");
-    // TODO(tjudkins): We shouldn't have to explicitly call to grant
-    // permissions here, but at the moment when withholding host permissions on
-    // installation and then granting a permission, the reload or update detects
-    // that as a privilege increase and disables the extension.
-    service()->GrantPermissionsAndEnableExtension(extension.get());
     extension = update_extension("4");
     CheckActiveHostPermissions(*extension, {kHostGoogle, kHostChromium}, {});
     CheckWithheldHostPermissions(*extension, {}, {});

@@ -42,6 +42,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/accessibility/accessibility_features.h"
+#include "ui/base/ui_base_features.h"
 
 namespace content {
 
@@ -114,6 +115,11 @@ void DumpAccessibilityTestBase::SetUp() {
   // Enable exposing ARIA Annotation roles.
   enabled_features.emplace_back(
       features::kEnableAccessibilityExposeDisplayNone);
+
+  // Enable the FormControlsRefresh feature to make sure the
+  // accessibility tree is the same across platforms.
+  // TODO(1012108): remove this once Mac is also enabled by default.
+  enabled_features.emplace_back(features::kFormControlsRefresh);
 
   // TODO(dmazzoni): DumpAccessibilityTree expectations are based on the
   // assumption that the accessibility labels feature is off. (There are

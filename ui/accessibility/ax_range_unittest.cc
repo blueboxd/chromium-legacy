@@ -142,6 +142,9 @@ class AXRangeTest : public testing::Test, public AXTreeManager {
 };
 
 void AXRangeTest::SetUp() {
+  // Most tests use kSuppressCharacter behavior.
+  g_ax_embedded_object_behavior = AXEmbeddedObjectBehavior::kSuppressCharacter;
+
   root_.id = ROOT_ID;
   div1_.id = DIV1_ID;
   div2_.id = DIV2_ID;

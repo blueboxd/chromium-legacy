@@ -445,13 +445,9 @@ AsCTAPRequestValuePair(const ResetRequest&) {
   return std::make_pair(CtapRequestCommand::kAuthenticatorReset, base::nullopt);
 }
 
-TokenRequest::TokenRequest(const std::string& pin,
-                           const KeyAgreementResponse& peer_key)
+TokenRequest::TokenRequest(const KeyAgreementResponse& peer_key)
     : cose_key_(GenerateSharedKey(peer_key, shared_key_.data())) {
   DCHECK_EQ(static_cast<size_t>(SHA256_DIGEST_LENGTH), shared_key_.size());
-  uint8_t digest[SHA256_DIGEST_LENGTH];
-  SHA256(reinterpret_cast<const uint8_t*>(pin.data()), pin.size(), digest);
-  memcpy(pin_hash_, digest, sizeof(pin_hash_));
 }
 
 TokenRequest::~TokenRequest() = default;
@@ -462,9 +458,21 @@ const std::array<uint8_t, 32>& TokenRequest::shared_key() const {
   return shared_key_;
 }
 
+PinTokenRequest::PinTokenRequest(const std::string& pin,
+                                 const KeyAgreementResponse& peer_key)
+    : TokenRequest(peer_key) {
+  uint8_t digest[SHA256_DIGEST_LENGTH];
+  SHA256(reinterpret_cast<const uint8_t*>(pin.data()), pin.size(), digest);
+  memcpy(pin_hash_, digest, sizeof(pin_hash_));
+}
+
+PinTokenRequest::~PinTokenRequest() = default;
+
+PinTokenRequest::PinTokenRequest(PinTokenRequest&& other) = default;
+
 // static
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-AsCTAPRequestValuePair(const TokenRequest& request) {
+AsCTAPRequestValuePair(const PinTokenRequest& request) {
   static_assert((sizeof(request.pin_hash_) % AES_BLOCK_SIZE) == 0,
                 "pin_hash_ is not a multiple of the AES block size");
   uint8_t encrypted_pin[sizeof(request.pin_hash_)];
@@ -478,6 +486,22 @@ AsCTAPRequestValuePair(const TokenRequest& request) {
         map->emplace(
             static_cast<int>(RequestKey::kPINHashEnc),
             base::span<const uint8_t>(encrypted_pin, sizeof(encrypted_pin)));
+      });
+}
+
+UvTokenRequest::UvTokenRequest(const KeyAgreementResponse& peer_key)
+    : TokenRequest(peer_key) {}
+
+UvTokenRequest::~UvTokenRequest() = default;
+
+UvTokenRequest::UvTokenRequest(UvTokenRequest&& other) = default;
+
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const UvTokenRequest& request) {
+  return EncodePINCommand(
+      Subcommand::kGetUvToken, [&request](cbor::Value::MapValue* map) {
+        map->emplace(static_cast<int>(RequestKey::kKeyAgreement),
+                     std::move(request.cose_key_));
       });
 }
 

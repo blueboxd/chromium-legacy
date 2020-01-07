@@ -9,48 +9,12 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "chromecast/media/base/test_media_resource_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
 namespace media {
-
-// Collection of mocks to verify MediaResourceTracker takes the correct actions.
-class MediaResourceTrackerTestMocks {
- public:
-  MOCK_METHOD0(Initialize, void());  // CastMediaShlib::Initialize
-  MOCK_METHOD0(Finalize, void());  // CastMediaShlib::Finalize
-  MOCK_METHOD0(Destroyed, void());  // ~CastMediaResourceTracker
-  MOCK_METHOD0(FinalizeCallback, void());  // callback to Finalize
-};
-
-class TestMediaResourceTracker : public MediaResourceTracker {
- public:
-  TestMediaResourceTracker(
-      MediaResourceTrackerTestMocks* test_mocks,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner)
-      : MediaResourceTracker(ui_task_runner, media_task_runner),
-        test_mocks_(test_mocks) {}
-  ~TestMediaResourceTracker() override {
-    EXPECT_TRUE(ui_task_runner_->BelongsToCurrentThread());
-    test_mocks_->Destroyed();
-  }
-
-  void DoInitializeMediaLib() override {
-    ASSERT_TRUE(media_task_runner_->BelongsToCurrentThread());
-    test_mocks_->Initialize();
-  }
-  void DoFinalizeMediaLib() override {
-    ASSERT_TRUE(media_task_runner_->BelongsToCurrentThread());
-    test_mocks_->Finalize();
-  }
-
-  size_t media_use_count() const { return media_use_count_; }
-
- private:
-  MediaResourceTrackerTestMocks* test_mocks_;
-};
 
 class MediaResourceTrackerTest : public ::testing::Test {
  public:
@@ -62,8 +26,8 @@ class MediaResourceTrackerTest : public ::testing::Test {
     test_mocks_.reset(new MediaResourceTrackerTestMocks());
 
     resource_tracker_ = new TestMediaResourceTracker(
-        test_mocks_.get(), task_environment_.GetMainThreadTaskRunner(),
-        task_environment_.GetMainThreadTaskRunner());
+        task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner(), test_mocks_.get());
   }
 
   void InitializeMediaLib() {

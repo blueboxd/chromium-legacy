@@ -2930,6 +2930,8 @@ void PaintLayerScrollableArea::InvalidatePaintOfScrollControlsIfNeeded(
       box_geometry_has_been_invalidated, context));
 
   IntRect scroll_corner_and_resizer_visual_rect = ScrollCornerAndResizerRect();
+  scroll_corner_and_resizer_visual_rect.MoveBy(
+      RoundedIntPoint(box.FirstFragment().PaintOffset()));
   if (ScrollControlNeedsPaintInvalidation(
           scroll_corner_and_resizer_visual_rect,
           scroll_corner_and_resizer_visual_rect_,
@@ -3084,10 +3086,7 @@ bool PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::
 
 IntRect PaintLayerScrollableArea::ScrollCornerDisplayItemClient::VisualRect()
     const {
-  IntRect rect = scrollable_area_->ScrollCornerAndResizerRect();
-  rect.MoveBy(RoundedIntPoint(
-      scrollable_area_->GetLayoutBox()->FirstFragment().PaintOffset()));
-  return rect;
+  return scrollable_area_->scroll_corner_and_resizer_visual_rect_;
 }
 
 String PaintLayerScrollableArea::ScrollCornerDisplayItemClient::DebugName()

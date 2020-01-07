@@ -24,8 +24,8 @@ class MEDIA_EXPORT PlayerTrackerImpl : public PlayerTracker {
   ~PlayerTrackerImpl() override;
 
   // PlayerTracker implementation.
-  int RegisterPlayer(const base::Closure& new_key_cb,
-                     const base::Closure& cdm_unset_cb) override;
+  int RegisterPlayer(base::RepeatingClosure new_key_cb,
+                     base::RepeatingClosure cdm_unset_cb) override;
   void UnregisterPlayer(int registration_id) override;
 
   // Helpers methods to fire registered callbacks.
@@ -34,13 +34,14 @@ class MEDIA_EXPORT PlayerTrackerImpl : public PlayerTracker {
 
  private:
   struct PlayerCallbacks {
-    PlayerCallbacks(const base::Closure& new_key_cb,
-                    const base::Closure& cdm_unset_cb);
-    PlayerCallbacks(const PlayerCallbacks& other);
+    PlayerCallbacks(base::RepeatingClosure new_key_cb,
+                    base::RepeatingClosure cdm_unset_cb);
+    PlayerCallbacks(PlayerCallbacks&& other);
+    PlayerCallbacks& operator=(PlayerCallbacks&& other);
     ~PlayerCallbacks();
 
-    base::Closure new_key_cb;
-    base::Closure cdm_unset_cb;
+    base::RepeatingClosure new_key_cb;
+    base::RepeatingClosure cdm_unset_cb;
   };
 
   base::Lock lock_;

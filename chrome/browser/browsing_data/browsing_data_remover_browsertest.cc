@@ -521,8 +521,6 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     Profile* profile = GetBrowser()->profile();
     content::StoragePartition* storage_partition =
         content::BrowserContext::GetDefaultStoragePartition(profile);
-    content::IndexedDBContext* indexed_db_context =
-        storage_partition->GetIndexedDBContext();
     content::ServiceWorkerContext* service_worker_context =
         storage_partition->GetServiceWorkerContext();
     content::CacheStorageContext* cache_storage_context =
@@ -535,7 +533,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
         new BrowsingDataLocalStorageHelper(profile),
         /*session_storage_helper=*/nullptr,
         new BrowsingDataAppCacheHelper(storage_partition->GetAppCacheService()),
-        new BrowsingDataIndexedDBHelper(indexed_db_context),
+        new BrowsingDataIndexedDBHelper(storage_partition),
         BrowsingDataFileSystemHelper::Create(file_system_context),
         BrowsingDataQuotaHelper::Create(profile),
         new BrowsingDataServiceWorkerHelper(service_worker_context),

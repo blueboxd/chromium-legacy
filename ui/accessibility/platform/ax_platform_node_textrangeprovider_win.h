@@ -148,6 +148,10 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
 
   void NormalizeAsUnignoredTextRange();
   void NormalizeTextRange();
+  AXPlatformNodeDelegate* GetRootDelegate(const ui::AXTreeID tree_id);
+  AXNode* GetSelectionCommonAnchor();
+  void RemoveFocusFromPreviousSelectionIfNeeded(
+      const AXNodeRange& new_selection);
 
   Microsoft::WRL::ComPtr<AXPlatformNodeWin> owner_;
   AXPositionInstance start_;

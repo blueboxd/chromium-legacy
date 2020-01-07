@@ -61,10 +61,7 @@ void InitNavigateParams(FrameHostMsg_DidCommitProvisionalLoad_Params* params,
 }
 
 TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
-    : RenderWidgetHostViewBase(rwh),
-      is_showing_(false),
-      is_occluded_(false),
-      did_swap_compositor_frame_(false) {
+    : RenderWidgetHostViewBase(rwh), is_showing_(false), is_occluded_(false) {
 #if defined(OS_ANDROID)
   frame_sink_id_ = AllocateFrameSinkId();
   GetHostFrameSinkManager()->RegisterFrameSinkId(
@@ -167,15 +164,6 @@ void TestRenderWidgetHostView::SpeakSelection() {
 
 gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
   return gfx::Rect();
-}
-
-void TestRenderWidgetHostView::SubmitCompositorFrame(
-    const viz::LocalSurfaceId& local_surface_id,
-    viz::CompositorFrame frame,
-    base::Optional<viz::HitTestRegionList> hit_test_region_list) {
-  did_swap_compositor_frame_ = true;
-  if (frame.metadata.send_frame_token_to_embedder)
-    OnFrameTokenChanged(frame.metadata.frame_token);
 }
 
 void TestRenderWidgetHostView::TakeFallbackContentFrom(

@@ -52,8 +52,7 @@ void ExpandableContainerView::DetailsView::ToggleExpanded() {
 
 ExpandableContainerView::ExpandableContainerView(
     const std::vector<base::string16>& details,
-    int available_width)
-    : details_view_(nullptr), details_link_(nullptr) {
+    int available_width) {
   DCHECK(!details.empty());
 
   views::GridLayout* layout =
@@ -78,7 +77,7 @@ ExpandableContainerView::ExpandableContainerView(
   details_link_ = layout->AddView(std::move(details_link));
 }
 
-ExpandableContainerView::~ExpandableContainerView() {}
+ExpandableContainerView::~ExpandableContainerView() = default;
 
 void ExpandableContainerView::LinkClicked(views::Link* source,
                                           int event_flags) {

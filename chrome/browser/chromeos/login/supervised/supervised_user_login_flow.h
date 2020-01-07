@@ -41,8 +41,7 @@ class SupervisedUserLoginFlow
   void Launch();
   void Finish();
 
-  void OnSyncSetupDataLoaded(const std::string& token);
-  void ConfigureSync(const std::string& token);
+  void CheckPasswordChange();
   void OnPasswordChangeDataLoaded(const base::DictionaryValue* password_data);
   void OnPasswordChangeDataLoadFailed();
   void OnNewKeyAdded(std::unique_ptr<base::DictionaryValue> password_data);

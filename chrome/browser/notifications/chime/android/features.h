@@ -10,8 +10,8 @@
 namespace notifications {
 namespace features {
 
-// The feature flag to determine whether to use Chime notification platform.
-extern const base::Feature kChimeNotificationPlatform;
+// The feature flag to determine whether to use Chime Android SDK.
+extern const base::Feature kUseChimeAndroidSdk;
 
 }  // namespace features
 }  // namespace notifications

@@ -9,6 +9,7 @@ var ruleLimit = chrome.declarativeNetRequest.MAX_NUMBER_OF_DYNAMIC_RULES;
 var createRuleWithID = function(id) {
   return {
     id: id,
+    priority: 1,
     condition: {urlFilter: id.toString()},
     action: {type: 'block'},
   };

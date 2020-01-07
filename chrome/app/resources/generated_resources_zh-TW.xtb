@@ -49,7 +49,6 @@
 <translation id="1056775291175587022">沒有網路</translation>
 <translation id="1056898198331236512">警告</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1060881073479695738">Play 商店應用程式</translation>
 <translation id="1061745542578250838"><ph name="FILE_NAME" /> 包含敏感內容，因此已遭到封鎖。</translation>
 <translation id="1061904396131502319">快到休息時間了</translation>
 <translation id="1067048845568873861">建立時間</translation>
@@ -197,7 +196,7 @@
 <translation id="1260451001046713751">一律允許 <ph name="HOST" /> 的彈出式視窗和重新導向</translation>
 <translation id="126156426083987769">示範模式的裝置授權發生問題。</translation>
 <translation id="126710816202626562">翻譯語言：</translation>
-<translation id="126768002343224824">16x</translation>
+<translation id="126768002343224824">16 倍</translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1272293450992660632">PIN 碼值不相符。</translation>
 <translation id="1272978324304772054">裝置註冊的網域中沒有這個使用者帳戶。如果你要使用其他網域進行註冊，必須先完成裝置修復作業。</translation>
@@ -832,7 +831,7 @@
 <translation id="2157474325782140681">如要取得其他功能，請使用這部 Chromebook 的專用座架。</translation>
 <translation id="215753907730220065">結束全螢幕</translation>
 <translation id="2157875535253991059">這個頁面已顯示為全螢幕。</translation>
-<translation id="216169395504480358">新增 WiFi...</translation>
+<translation id="216169395504480358">新增 Wi-Fi...</translation>
 <translation id="2162155940152307086">同步功能會在你退出同步功能設定後立即啟動</translation>
 <translation id="2163470535490402084">請連線至網際網路，以登入您的 <ph name="DEVICE_TYPE" />。</translation>
 <translation id="2165421703844373933">只要說出「Ok Google」就能存取 Google 助理。如要節省電力，請選擇「啟用 (建議設定)」。這樣一來，你的 Google 助理就只會在裝置插上電源或充電時回應你的指令。</translation>
@@ -1015,7 +1014,7 @@
 <translation id="241727068219398187">系統已採用你在 <ph name="TIME" />設定的 Google 密碼針對資料進行加密處理。加密的資料不包括 Google Pay 的付款方式和地址。</translation>
 <translation id="2419706071571366386">為了安全起見，當你未使用電腦時請登出帳戶。</translation>
 <translation id="2422125132043002186">已取消 Linux 還原作業</translation>
-<translation id="2423578206845792524">另存圖檔(&amp;V)...</translation>
+<translation id="2423578206845792524">另存圖片(&amp;V)...</translation>
 <translation id="2428510569851653187">說明分頁當掉時你正在執行的動作</translation>
 <translation id="2431027948063157455">無法載入 Google 助理，請檢查網路連線狀態並重試。</translation>
 <translation id="2432753757290432042">必須更新 Linux (測試版)</translation>
@@ -1037,7 +1036,7 @@
 <translation id="2448312741937722512">類型</translation>
 <translation id="2450223707519584812">找不到 Google API 金鑰，因此您無法新增使用者。詳情請參閱 <ph name="DETAILS_URL" />。</translation>
 <translation id="2450849356604136918">沒有運作中的檢視畫面</translation>
-<translation id="2451298179137331965">2x</translation>
+<translation id="2451298179137331965">2 倍</translation>
 <translation id="2453860139492968684">結束</translation>
 <translation id="2454247629720664989">關鍵字</translation>
 <translation id="245650153866130664">如果要自動重新整理票證，請勾選「記住密碼」。你的密碼只會儲存在你的裝置上。</translation>
@@ -1090,7 +1089,7 @@
 <translation id="2507397597949272797">「<ph name="NAME" />」已暫停</translation>
 <translation id="2508428939232952663">Google Play 商店帳戶</translation>
 <translation id="2509495747794740764">縮放比例必須為介於 10 和 200 之間的數字。</translation>
-<translation id="2509566264613697683">8x</translation>
+<translation id="2509566264613697683">8 倍</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">掃描</translation>
 <translation id="2518024842978892609">使用您的用戶端憑證</translation>
@@ -1165,7 +1164,7 @@
 <translation id="2619761439309613843">每日變換新桌布</translation>
 <translation id="2620436844016719705">系統</translation>
 <translation id="2621713457727696555">已受到安全保護</translation>
-<translation id="26224892172169984">不允許任何網站處理通訊協定</translation>
+<translation id="26224892172169984">禁止任何網站處理通訊協定</translation>
 <translation id="2624142942574147739">這個網頁正在存取你的攝影機和麥克風。</translation>
 <translation id="2626799779920242286">請稍後再試。</translation>
 <translation id="2628770867680720336">如要啟用 ADB 偵錯，必須將這部 Chromebook 恢復原廠設定。<ph name="BEGIN_LINK_LEARN_MORE" />瞭解詳情<ph name="END_LINK_LEARN_MORE" /></translation>
@@ -1479,7 +1478,7 @@
 <translation id="3036546437875325427">啟用 Flash</translation>
 <translation id="3037754279345160234">無法對加入網域的設定進行剖析，請與你的管理員聯絡。</translation>
 <translation id="3038612606416062604">手動新增印表機</translation>
-<translation id="3038675903128704560">不允許任何網站使用外掛程式存取你的電腦</translation>
+<translation id="3038675903128704560">禁止任何網站使用外掛程式存取你的電腦</translation>
 <translation id="3039491566278747710">無法在裝置上安裝離線政策。</translation>
 <translation id="3043581297103810752">來自 <ph name="ORIGIN" /></translation>
 <translation id="3045447014237878114">這個網站已自動下載多個檔案</translation>
@@ -1525,7 +1524,7 @@
 <translation id="3122496702278727796">無法建立資料目錄</translation>
 <translation id="3124111068741548686">USER 控制代碼</translation>
 <translation id="3126026824346185272">Ctrl</translation>
-<translation id="3127156390846601284">這會將顯示的所有網站儲存在你裝置上的資料全部刪除。你要繼續操作嗎？</translation>
+<translation id="3127156390846601284">這將會刪除所有顯示的網站儲存在你裝置上的全部資料。你要繼續操作嗎?</translation>
 <translation id="3127860049873093642">為避免發生充電和效能問題，請使用相容的 Dell 或 USB Type-C 電源變壓器。</translation>
 <translation id="3129173833825111527">左邊界</translation>
 <translation id="3130528281680948470">你的裝置將會進行重設，且所有使用者帳戶和本機資料都會遭到移除。這項操作無法復原。</translation>
@@ -1568,6 +1567,7 @@
 <translation id="3172808215939929606">這個網頁的內容已經過翻譯</translation>
 <translation id="3177909033752230686">網頁語言：</translation>
 <translation id="3179982752812949580">文字字型</translation>
+<translation id="3181825792072797598">開啟同步處理功能</translation>
 <translation id="3181954750937456830">安全瀏覽 (保護你和你的裝置不受危險網站攻擊)</translation>
 <translation id="3182749001423093222">拼字檢查</translation>
 <translation id="3183139917765991655">設定檔匯入工具</translation>
@@ -2285,7 +2285,7 @@
 <translation id="4175737294868205930">永久儲存空間</translation>
 <translation id="4176463684765177261">已停用</translation>
 <translation id="4180788401304023883">刪除憑證授權單位(CA) 的「<ph name="CERTIFICATE_NAME" />」憑證？</translation>
-<translation id="4181602000363099176">20x</translation>
+<translation id="4181602000363099176">20 倍</translation>
 <translation id="4181841719683918333">語言</translation>
 <translation id="4184885522552335684">拖曳即可移動顯示畫面</translation>
 <translation id="4194570336751258953">啟用點按功能</translation>
@@ -2731,7 +2731,7 @@
 <translation id="4882831918239250449">控制 Google 使用瀏覽記錄提供個人化搜尋服務、廣告和其他內容的方式</translation>
 <translation id="4883436287898674711">所有 <ph name="WEBSITE_1" /> 網站</translation>
 <translation id="48838266408104654">工作管理員(&amp;T)</translation>
-<translation id="4884987973312178454">6x</translation>
+<translation id="4884987973312178454">6 倍</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4887424188275796356">使用 System Viewer 開啟</translation>
 <translation id="488785315393301722">顯示詳細資料</translation>
@@ -2761,7 +2761,7 @@
 <translation id="4920887663447894854">下列網站已遭封鎖，無法在你瀏覽此網頁時追蹤你的位置：</translation>
 <translation id="492299503953721473">移除 Android 應用程式</translation>
 <translation id="4923279099980110923">是，我願意協助</translation>
-<translation id="4924352752174756392">12x</translation>
+<translation id="4924352752174756392">12 倍</translation>
 <translation id="4925542575807923399">這個帳戶的管理員要求此帳戶必需是多重登入工作階段中第一個登入的帳戶。</translation>
 <translation id="4927753642311223124">這裡沒有任何通知訊息，以後再來看看吧！</translation>
 <translation id="4929386379796360314">列印目的地</translation>
@@ -2850,7 +2850,7 @@
 <translation id="5065775832226780415">Smart Lock</translation>
 <translation id="5067399438976153555">一律啟用</translation>
 <translation id="5067867186035333991">當 <ph name="HOST" /> 要求存取麥克風時詢問我。</translation>
-<translation id="5068918910148307423">禁止最近關閉的網站完成資料的傳送及接收</translation>
+<translation id="5068918910148307423">禁止最近關閉的網站完成資料收發作業</translation>
 <translation id="5068919226082848014">披薩</translation>
 <translation id="5072052264945641674">調整游標大小</translation>
 <translation id="5072836811783999860">顯示受管理書籤</translation>
@@ -3100,7 +3100,7 @@
 <translation id="544083962418256601">建立捷徑...</translation>
 <translation id="5442228125690314719">建立磁碟映像檔時發生錯誤，請再試一次。</translation>
 <translation id="5442550868130618860">開啟自動更新功能</translation>
-<translation id="5445400788035474247">10x</translation>
+<translation id="5445400788035474247">10 倍</translation>
 <translation id="5446983216438178612">顯示機構憑證</translation>
 <translation id="5448293924669608770">糟糕，登入帳戶時發生錯誤</translation>
 <translation id="5449551289610225147">密碼無效</translation>
@@ -3202,7 +3202,7 @@
 <translation id="5578059481725149024">自動登入</translation>
 <translation id="558170650521898289">Microsoft Windows 硬體驅動程式驗證</translation>
 <translation id="5582839680698949063">主選單</translation>
-<translation id="5583640892426849032">Backspace 鍵</translation>
+<translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">要儲存使用者名稱嗎？</translation>
 <translation id="5584915726528712820"><ph name="BEGIN_PARAGRAPH1" />這會提供裝置和裝置使用情況的一般資訊 (例如電池電量、系統和應用程式活動，以及錯誤資訊)。這些資料會用於改善 Android 使用體驗，而部分匯總資訊還能協助 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提高應用程式和產品的品質。<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />即使關閉這項功能，你的裝置仍然可以傳送基本服務 (例如系統更新與安全服務) 所需的資訊。<ph name="END_PARAGRAPH2" />
@@ -4220,7 +4220,7 @@
 <translation id="7056526158851679338">檢查裝置 (&amp;I)</translation>
 <translation id="7059858479264779982">設為自動啟動</translation>
 <translation id="7059893117020417984">如果想要進行私密瀏覽，請按一下三個圓點圖示的選單，然後開啟無痕式視窗</translation>
-<translation id="7062222374113411376">允許最近關閉的網站完成資料的傳送及接收 (建議)</translation>
+<translation id="7062222374113411376">允許最近關閉的網站完成資料收發作業 (建議)</translation>
 <translation id="7063129466199351735">正在處理捷徑...</translation>
 <translation id="7063311912041006059">以 <ph name="SPECIAL_SYMBOL" /> 取代查詢的網址</translation>
 <translation id="7063957500469387217">使用 Google 雲端列印設定或管理印表機。</translation>
@@ -4472,7 +4472,7 @@
 <translation id="7410344089573941623">當 <ph name="HOST" /> 要求存取攝影機和麥克風時詢問我。</translation>
 <translation id="741204030948306876">是，我要啟用</translation>
 <translation id="7412226954991670867">GPU 記憶體</translation>
-<translation id="7414464185801331860">18x</translation>
+<translation id="7414464185801331860">18 倍</translation>
 <translation id="7415454883318062233">設定完成</translation>
 <translation id="7416362041876611053">不明的網路錯誤。</translation>
 <translation id="741906494724992817">這個應用程式不需要任何特殊權限。</translation>
@@ -4611,7 +4611,7 @@
 <translation id="7631887513477658702">一律開啟這類檔案(&amp;A)</translation>
 <translation id="7632948528260659758">下列 Kiosk 應用程式更新失敗：</translation>
 <translation id="7634566076839829401">發生錯誤，請再試一次。</translation>
-<translation id="763632859238619983">不允許任何網站安裝付款處理常式</translation>
+<translation id="763632859238619983">禁止任何網站安裝付款處理常式</translation>
 <translation id="7636919061354591437">安裝到這部裝置</translation>
 <translation id="7638605456503525968">序列埠</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> 會使用您儲存的密碼，讓您自動登入符合資格的網站。</translation>
@@ -4651,6 +4651,7 @@
 <translation id="7684718995427157417">如要建立並測試你的應用程式，請啟用 Android Debug Bridge (ADB)。請注意，這項操作會允許你安裝未經 Google 驗證的 Android 應用程式，而且需要將裝置恢復原廠設定才能停用。</translation>
 <translation id="7685049629764448582">JavaScript 記憶體使用量</translation>
 <translation id="7685087414635069102">請輸入 PIN 碼</translation>
+<translation id="768549422429443215">新增語言或重新排列清單。</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">確認新密碼</translation>
 <translation id="7690378713476594306">從清單中選擇</translation>
@@ -5634,7 +5635,7 @@
 <translation id="9018218886431812662">安裝完成</translation>
 <translation id="901834265349196618">電子郵件</translation>
 <translation id="9019062154811256702">讀取及變更自動填入設定</translation>
-<translation id="9020362265352758658">4x</translation>
+<translation id="9020362265352758658">4 倍</translation>
 <translation id="9021662811137657072">系統偵測到病毒</translation>
 <translation id="9022847679183471841"><ph name="AVATAR_NAME" />目前已在這部電腦上使用這個帳戶。</translation>
 <translation id="9023009238991294202">這個裝置的其他使用者可以使用這個網路。</translation>
@@ -5667,7 +5668,7 @@
 <translation id="9056810968620647706">找不到相符項目。</translation>
 <translation id="9057354806206861646">更新時間表</translation>
 <translation id="9062065967472365419">隨機</translation>
-<translation id="9062468308252555888">14x</translation>
+<translation id="9062468308252555888">14 倍</translation>
 <translation id="9063208415146866933">第 <ph name="ERROR_LINE_START" /> 至第 <ph name="ERROR_LINE_END" /> 行有錯誤</translation>
 <translation id="9064142312330104323">Google 個人資料相片 (載入中)</translation>
 <translation id="9064275926664971810">啟用自動填入功能，輕鬆一按即可填妥表單</translation>

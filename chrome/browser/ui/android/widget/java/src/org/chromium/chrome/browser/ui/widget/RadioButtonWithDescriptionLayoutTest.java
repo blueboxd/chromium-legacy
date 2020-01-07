@@ -9,9 +9,11 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import org.junit.Assert;
@@ -35,12 +37,19 @@ public class RadioButtonWithDescriptionLayoutTest {
             "First N-1 items should have a non-zero margin";
     private static final String ZERO_MARGIN_ASSERT_MESSAGE =
             "The last item should have a zero margin";
-    private static final String TITLE_MATCH_ASSERT_MESSAGE =
+    private static final String PRIMARY_MATCH_ASSERT_MESSAGE =
             "Primary text set through addButtons should match the view's primary text.";
     private static final String DESCRIPTION_MATCH_ASSERT_MESSAGE =
             "Description set through addButtons should match the view's description.";
     private static final String TAG_MATCH_ASSERT_MESSAGE =
             "Tag set through addButtons should match the view's tag.";
+
+    private static final String PRIMARY_MATCH_FROM_XML_ASSERT_MESSAGE =
+            "Primary text set through layout should match the view's primary text.";
+    private static final String DESC_MATCH_FROM_XML_ASSERT_MESSAGE =
+            "Description text set through layout should match the view's description.";
+    private static final String HINT_MATCH_FROM_XML_ASSERT_MESSAGE =
+            "Hint message set through layout should match the view's hint message.";
 
     @Rule
     public UiThreadTestRule mRule = new UiThreadTestRule();
@@ -115,10 +124,11 @@ public class RadioButtonWithDescriptionLayoutTest {
 
         for (int i = 0; i < layout.getChildCount(); i++) {
             RadioButtonWithDescription b = (RadioButtonWithDescription) layout.getChildAt(i);
-            Assert.assertEquals(TITLE_MATCH_ASSERT_MESSAGE, buttons.get(i).getPrimaryText(),
-                    b.getPrimaryText());
+            Assert.assertEquals(PRIMARY_MATCH_ASSERT_MESSAGE,
+                    buttons.get(i).getPrimaryText().toString(), b.getPrimaryText().toString());
             Assert.assertEquals(DESCRIPTION_MATCH_ASSERT_MESSAGE,
-                    buttons.get(i).getDescriptionText(), b.getDescriptionText());
+                    buttons.get(i).getDescriptionText().toString(),
+                    b.getDescriptionText().toString());
             Assert.assertEquals(TAG_MATCH_ASSERT_MESSAGE, buttons.get(i).getTag(), b.getTag());
         }
 
@@ -131,18 +141,21 @@ public class RadioButtonWithDescriptionLayoutTest {
         Assert.assertEquals(6, layout.getChildCount());
         for (int i = 0; i < 3; i++) {
             RadioButtonWithDescription b = (RadioButtonWithDescription) layout.getChildAt(i);
-            Assert.assertEquals(TITLE_MATCH_ASSERT_MESSAGE, buttons.get(i).getPrimaryText(),
-                    b.getPrimaryText());
+            Assert.assertEquals(PRIMARY_MATCH_ASSERT_MESSAGE,
+                    buttons.get(i).getPrimaryText().toString(), b.getPrimaryText().toString());
             Assert.assertEquals(DESCRIPTION_MATCH_ASSERT_MESSAGE,
-                    buttons.get(i).getDescriptionText(), b.getDescriptionText());
+                    buttons.get(i).getDescriptionText().toString(),
+                    b.getDescriptionText().toString());
             Assert.assertEquals(TAG_MATCH_ASSERT_MESSAGE, buttons.get(i).getTag(), b.getTag());
         }
         for (int i = 3; i < 6; i++) {
             RadioButtonWithDescription b = (RadioButtonWithDescription) layout.getChildAt(i);
-            Assert.assertEquals(TITLE_MATCH_ASSERT_MESSAGE, moreButtons.get(i - 3).getPrimaryText(),
-                    b.getPrimaryText());
+            Assert.assertEquals(PRIMARY_MATCH_ASSERT_MESSAGE,
+                    moreButtons.get(i - 3).getPrimaryText().toString(),
+                    b.getPrimaryText().toString());
             Assert.assertEquals(DESCRIPTION_MATCH_ASSERT_MESSAGE,
-                    moreButtons.get(i - 3).getDescriptionText(), b.getDescriptionText());
+                    moreButtons.get(i - 3).getDescriptionText().toString(),
+                    b.getDescriptionText().toString());
             Assert.assertEquals(
                     TAG_MATCH_ASSERT_MESSAGE, moreButtons.get(i - 3).getTag(), b.getTag());
         }
@@ -244,34 +257,6 @@ public class RadioButtonWithDescriptionLayoutTest {
     public void testCombinedRadioButtons() {
         // Test if radio buttons are set up correctly when there are multiple classes in the same
         // layout.
-        final RadioButtonWithDescriptionLayout layout =
-                new RadioButtonWithDescriptionLayout(mContext);
-
-        RadioButtonWithDescription b1 = createRadioButtonWithDescription("a", "a_desc", null);
-        RadioButtonWithDescription b2 = createRadioButtonWithDescription("b", "b_desc", null);
-
-        RadioButtonWithEditText b3 = new RadioButtonWithEditText(mContext, null);
-        b3.setPrimaryText("c");
-        b3.setDescriptionText("c_desc");
-
-        List<RadioButtonWithDescription> buttons = Arrays.asList(b1, b2, b3);
-        layout.addButtons(buttons);
-
-        layout.selectChildAtIndexForTesting(3);
-        for (int i = 0; i < layout.getChildCount(); i++) {
-            RadioButtonWithDescription b = (RadioButtonWithDescription) layout.getChildAt(i);
-            Assert.assertEquals(TITLE_MATCH_ASSERT_MESSAGE, buttons.get(i).getPrimaryText(),
-                    b.getPrimaryText());
-            Assert.assertEquals(DESCRIPTION_MATCH_ASSERT_MESSAGE,
-                    buttons.get(i).getDescriptionText(), b.getDescriptionText());
-            Assert.assertEquals(i == 3, b.isChecked());
-        }
-    }
-
-    @Test
-    @SmallTest
-    @UiThreadTest
-    public void testInflateFromLayout() {
         View content = LayoutInflater.from(mContext).inflate(
                 R.layout.radio_button_with_description_layout_test, null, false);
 
@@ -287,6 +272,38 @@ public class RadioButtonWithDescriptionLayoutTest {
         Assert.assertNotNull(b2);
         Assert.assertNotNull(b3);
         Assert.assertNotNull(b4);
+
+        layout.selectChildAtIndexForTesting(3);
+
+        Assert.assertEquals(PRIMARY_MATCH_FROM_XML_ASSERT_MESSAGE, b1.getPrimaryText().toString(),
+                mContext.getResources().getString(R.string.test_primary_1));
+        Assert.assertEquals(PRIMARY_MATCH_FROM_XML_ASSERT_MESSAGE, b2.getPrimaryText().toString(),
+                mContext.getResources().getString(R.string.test_primary_2));
+        Assert.assertEquals(PRIMARY_MATCH_FROM_XML_ASSERT_MESSAGE, b3.getPrimaryText().toString(),
+                mContext.getResources().getString(R.string.test_primary_3));
+        Assert.assertEquals(PRIMARY_MATCH_FROM_XML_ASSERT_MESSAGE, b4.getPrimaryText().toString(),
+                mContext.getResources().getString(R.string.test_primary_4));
+
+        Assert.assertTrue(
+                DESC_MATCH_FROM_XML_ASSERT_MESSAGE, TextUtils.isEmpty(b1.getDescriptionText()));
+        Assert.assertEquals(DESC_MATCH_FROM_XML_ASSERT_MESSAGE, b2.getDescriptionText().toString(),
+                mContext.getResources().getString(R.string.test_desc_2));
+        Assert.assertTrue(
+                DESC_MATCH_FROM_XML_ASSERT_MESSAGE, TextUtils.isEmpty(b3.getDescriptionText()));
+        Assert.assertEquals(DESC_MATCH_FROM_XML_ASSERT_MESSAGE, b4.getDescriptionText().toString(),
+                mContext.getResources().getString(R.string.test_desc_4));
+
+        Assert.assertEquals(HINT_MATCH_FROM_XML_ASSERT_MESSAGE,
+                ((EditText) b3.getPrimaryTextView()).getHint().toString(),
+                mContext.getResources().getString(R.string.test_uri));
+        Assert.assertEquals(HINT_MATCH_FROM_XML_ASSERT_MESSAGE,
+                ((EditText) b4.getPrimaryTextView()).getHint().toString(),
+                mContext.getResources().getString(R.string.test_uri));
+
+        Assert.assertFalse(b1.isChecked());
+        Assert.assertFalse(b2.isChecked());
+        Assert.assertFalse(b3.isChecked());
+        Assert.assertTrue(b4.isChecked());
     }
 
     private RadioButtonWithDescription createRadioButtonWithDescription(

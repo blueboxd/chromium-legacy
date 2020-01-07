@@ -11,7 +11,11 @@ template("system_webview_bundle") {
     proguard_enabled = !is_java_debug
     enable_language_splits = true
     system_image_locale_whitelist = locales
-    is_multi_abi = android_64bit_target_cpu
+    is_multi_abi =
+        android_64bit_target_cpu && (!defined(invoker.include_64_bit_webview) ||
+                                     invoker.include_64_bit_webview) &&
+        (!defined(invoker.include_32_bit_webview) ||
+         invoker.include_32_bit_webview)
 
     if (!defined(proguard_android_sdk_dep)) {
       proguard_android_sdk_dep = webview_framework_dep

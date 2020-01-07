@@ -55,6 +55,8 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
   void TearDown() override;
 
  protected:
+  static const base::string16 kEmbeddedCharacterAsString;
+
   AXPlatformNode* AXPlatformNodeFromNode(AXNode* node);
   template <typename T>
   Microsoft::WRL::ComPtr<T> QueryInterfaceFromNodeId(int32_t id);

@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsOrchestrator;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -51,6 +52,7 @@ public class TabSwitcherCoordinator
     // TODO(crbug.com/982018): Rename 'COMPONENT_NAME' so as to add different metrics for carousel
     // tab switcher.
     static final String COMPONENT_NAME = "GridTabSwitcher";
+    private static boolean sAppendedMessagesForTesting;
     private final PropertyModelChangeProcessor mContainerViewChangeProcessor;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
@@ -62,6 +64,8 @@ public class TabSwitcherCoordinator
     private final UndoGroupSnackbarController mUndoGroupSnackbarController;
     private final TabModelSelector mTabModelSelector;
     private final @TabListCoordinator.TabListMode int mMode;
+    private final MessageCardProviderCoordinator mMessageCardProviderCoordinator;
+    private TabSuggestionsOrchestrator mTabSuggestionsOrchestrator;
 
     private final MenuOrKeyboardActionController
             .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler =
@@ -121,6 +125,11 @@ public class TabSwitcherCoordinator
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
 
+        mMessageCardProviderCoordinator = new MessageCardProviderCoordinator(context,
+                (identifier)
+                        -> mTabListCoordinator.removeSpecialListItem(
+                                TabProperties.UiType.MESSAGE, identifier));
+
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
                     tabContentManager, tabCreatorManager,
@@ -151,6 +160,15 @@ public class TabSwitcherCoordinator
                     return (ViewGroup) LayoutInflater.from(context).inflate(
                             R.layout.tab_grid_message_card_item, container, false);
                 }, MessageCardViewBinder::bind);
+
+                mTabSuggestionsOrchestrator =
+                        new TabSuggestionsOrchestrator(mTabModelSelector, lifecycleDispatcher);
+                TabSuggestionMessageService tabSuggestionMessageService =
+                        new TabSuggestionMessageService(context, tabModelSelector,
+                                mTabSelectionEditorCoordinator.getController());
+                mTabSuggestionsOrchestrator.addObserver(tabSuggestionMessageService);
+                mMessageCardProviderCoordinator.subscribeMessageService(
+                        tabSuggestionMessageService);
             }
 
             assert mTabListCoordinator.getContainerView().getLayoutManager()
@@ -177,6 +195,11 @@ public class TabSwitcherCoordinator
 
         mLifecycleDispatcher = lifecycleDispatcher;
         mLifecycleDispatcher.register(this);
+    }
+
+    @VisibleForTesting
+    public static boolean hasAppendedMessagesForTesting() {
+        return sAppendedMessagesForTesting;
     }
 
     // TabSwitcher implementation.
@@ -283,6 +306,7 @@ public class TabSwitcherCoordinator
     // ResetHandler implementation.
     @Override
     public boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode, boolean mruMode) {
+        sAppendedMessagesForTesting = false;
         List<Tab> tabs = null;
         if (tabList != null) {
             tabs = new ArrayList<>();
@@ -292,7 +316,21 @@ public class TabSwitcherCoordinator
         }
 
         mMediator.registerFirstMeaningfulPaintRecorder();
-        return mTabListCoordinator.resetWithListOfTabs(tabs, quickMode, mruMode);
+        boolean showQuickly = mTabListCoordinator.resetWithListOfTabs(tabs, quickMode, mruMode);
+
+        if (tabs != null && tabs.size() > 0) appendMessagesTo(tabs.size());
+
+        return showQuickly;
+    }
+
+    private void appendMessagesTo(int index) {
+        List<MessageCardProviderMediator.Message> messages =
+                mMessageCardProviderCoordinator.getMessageItems();
+        for (int i = 0; i < messages.size(); i++) {
+            mTabListCoordinator.addSpecialListItem(
+                    index + i, TabProperties.UiType.MESSAGE, messages.get(i).model);
+        }
+        if (messages.size() > 0) sAppendedMessagesForTesting = true;
     }
 
     private View getTabGridDialogAnimationSourceView(int tabId) {
@@ -318,6 +356,7 @@ public class TabSwitcherCoordinator
         mMenuOrKeyboardActionController.unregisterMenuOrKeyboardActionHandler(
                 mTabSwitcherMenuActionHandler);
         mTabListCoordinator.destroy();
+        mMessageCardProviderCoordinator.destroy();
         mContainerViewChangeProcessor.destroy();
         if (mTabGridDialogCoordinator != null) {
             mTabGridDialogCoordinator.destroy();

@@ -1134,9 +1134,11 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
         *should_collapse_initiator = true;
         return net::ERR_BLOCKED_BY_CLIENT;
       case DNRRequestAction::Type::ALLOW:
-        NOTREACHED();
+        DCHECK_EQ(1u, actions.size());
+        OnDNRActionMatched(browser_context, *request, action);
         break;
       case DNRRequestAction::Type::REDIRECT:
+      case DNRRequestAction::Type::UPGRADE:
         ClearPendingCallbacks(*request);
         DCHECK_EQ(1u, actions.size());
         DCHECK(action.redirect_url);

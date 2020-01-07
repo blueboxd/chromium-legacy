@@ -172,7 +172,7 @@ CSSStyleValueVector PaintWorkletStylePropertyMap::getAll(
     const ExecutionContext* execution_context,
     const String& property_name,
     ExceptionState& exception_state) const {
-  CSSPropertyID property_id = cssPropertyID(property_name);
+  CSSPropertyID property_id = cssPropertyID(execution_context, property_name);
   if (property_id == CSSPropertyID::kInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
     return CSSStyleValueVector();

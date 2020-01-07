@@ -244,12 +244,12 @@ AppSorting* CastExtensionSystem::app_sorting() {
 
 void CastExtensionSystem::RegisterExtensionWithRequestContexts(
     const Extension* extension,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO},
                          base::BindOnce(&InfoMap::AddExtension, info_map(),
                                         base::RetainedRef(extension),
                                         base::Time::Now(), false, false),
-                         callback);
+                         std::move(callback));
 }
 
 void CastExtensionSystem::UnregisterExtensionWithRequestContexts(

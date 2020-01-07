@@ -58,9 +58,9 @@ void ClonedInstallDetector::CheckForClonedInstall(PrefService* local_state) {
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&MachineIdProvider::GetMachineId),
-      base::Bind(&ClonedInstallDetector::SaveMachineId,
-                 weak_ptr_factory_.GetWeakPtr(), local_state));
+      base::BindOnce(&MachineIdProvider::GetMachineId),
+      base::BindOnce(&ClonedInstallDetector::SaveMachineId,
+                     weak_ptr_factory_.GetWeakPtr(), local_state));
 }
 
 void ClonedInstallDetector::SaveMachineId(PrefService* local_state,

@@ -58,15 +58,17 @@ class FakeBaseTabStripController : public TabStripController {
   void OnStartedDragging() override;
   void OnStoppedDragging() override;
   void OnKeyboardFocusedTabChanged(base::Optional<int> index) override;
-  base::string16 GetGroupTitle(tab_groups::TabGroupId group_id) const override;
+  base::string16 GetGroupTitle(
+      const tab_groups::TabGroupId& group_id) const override;
   tab_groups::TabGroupColorId GetGroupColorId(
-      tab_groups::TabGroupId group_id) const override;
+      const tab_groups::TabGroupId& group_id) const override;
   void SetVisualDataForGroup(
-      tab_groups::TabGroupId group,
-      tab_groups::TabGroupVisualData visual_data) override;
-  std::vector<int> ListTabsInGroup(tab_groups::TabGroupId group) const override;
-  void UngroupAllTabsInGroup(tab_groups::TabGroupId group) override;
-  void AddNewTabInGroup(tab_groups::TabGroupId group) override;
+      const tab_groups::TabGroupId& group,
+      const tab_groups::TabGroupVisualData& visual_data) override;
+  std::vector<int> ListTabsInGroup(
+      const tab_groups::TabGroupId& group) const override;
+  void UngroupAllTabsInGroup(const tab_groups::TabGroupId& group) override;
+  void AddNewTabInGroup(const tab_groups::TabGroupId& group) override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;

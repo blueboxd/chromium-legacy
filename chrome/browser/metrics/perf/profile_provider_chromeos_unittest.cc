@@ -17,12 +17,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "chrome/browser/metrics/perf/heap_collector.h"
 #include "chrome/browser/metrics/perf/metric_collector.h"
 #include "chrome/browser/metrics/perf/metric_provider.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "components/services/heap_profiling/public/cpp/settings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
@@ -485,21 +483,21 @@ TEST(ProfileProviderJankinessParamTest, SetFeatureParam) {
 
 namespace {
 
-class TestParamsProfileProvider : public ProfileProvider {
+class TestStockProfileProvider : public ProfileProvider {
  public:
-  TestParamsProfileProvider() = default;
+  TestStockProfileProvider() = default;
 
   using ProfileProvider::collectors_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestParamsProfileProvider);
+  DISALLOW_COPY_AND_ASSIGN(TestStockProfileProvider);
 };
 
 }  // namespace
 
-class ProfileProviderFeatureParamsTest : public testing::Test {
+class ProfileProviderStockTest : public testing::Test {
  public:
-  ProfileProviderFeatureParamsTest() = default;
+  ProfileProviderStockTest() = default;
 
   void SetUp() override {
     // ProfileProvider requires chromeos::LoginState and
@@ -517,60 +515,17 @@ class ProfileProviderFeatureParamsTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileProviderFeatureParamsTest);
+  DISALLOW_COPY_AND_ASSIGN(ProfileProviderStockTest);
 };
 
-TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorDisabled) {
-  std::map<std::string, std::string> params;
-  params.insert(
-      std::make_pair(heap_profiling::kOOPHeapProfilingFeatureMode, "non-cwp"));
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      heap_profiling::kOOPHeapProfilingFeature, params);
-
-  TestParamsProfileProvider profile_provider;
+TEST_F(ProfileProviderStockTest, CheckSetup) {
+  TestStockProfileProvider profile_provider;
   // We should have one collector registered.
   EXPECT_EQ(1u, profile_provider.collectors_.size());
 
-  // After initialization, we should still have a single collector, because the
-  // sampling factor param is set to 0.
+  // After initialization, we should still have a single collector.
   profile_provider.Init();
   EXPECT_EQ(1u, profile_provider.collectors_.size());
-
-  // Before destroying ScopedFeatureList, we need to finish SetUp() of each
-  // registered collector, which accesses field trial params on its own
-  // dedicated sequence.
-  task_environment_.RunUntilIdle();
-}
-
-TEST_F(ProfileProviderFeatureParamsTest, HeapCollectorEnabled) {
-  std::map<std::string, std::string> params;
-  params.insert(std::make_pair(heap_profiling::kOOPHeapProfilingFeatureMode,
-                               "cwp-tcmalloc"));
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      heap_profiling::kOOPHeapProfilingFeature, params);
-
-  TestParamsProfileProvider profile_provider;
-  // We should have one collector registered.
-  EXPECT_EQ(1u, profile_provider.collectors_.size());
-
-  // After initialization, if the new tcmalloc is enabled, we should have two
-  // collectors, because the sampling factor param is set to 1. Otherwise, we
-  // must still have one collector only.
-  profile_provider.Init();
-#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
-  EXPECT_EQ(2u, profile_provider.collectors_.size());
-#else
-  EXPECT_EQ(1u, profile_provider.collectors_.size());
-#endif
-
-  // Before destroying ScopedFeatureList, we need to finish SetUp() of each
-  // registered collector, which accesses field trial params on its own
-  // dedicated sequence.
-  task_environment_.RunUntilIdle();
 }
 
 }  // namespace metrics

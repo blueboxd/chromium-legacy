@@ -580,10 +580,6 @@ void PageInfoBubbleView::ButtonPressed(views::Button* button,
   }
 }
 
-void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {
-  HandleMoreInfoRequest(source);
-}
-
 gfx::Size PageInfoBubbleView::CalculatePreferredSize() const {
   if (header_ == nullptr && site_settings_view_ == nullptr) {
     return views::View::CalculatePreferredSize();

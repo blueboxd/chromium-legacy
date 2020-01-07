@@ -92,29 +92,29 @@ void FakeBaseTabStripController::MoveTabIntoGroup(
   }
 }
 base::string16 FakeBaseTabStripController::GetGroupTitle(
-    tab_groups::TabGroupId group_id) const {
+    const tab_groups::TabGroupId& group_id) const {
   return fake_group_data_.title();
 }
 
 tab_groups::TabGroupColorId FakeBaseTabStripController::GetGroupColorId(
-    tab_groups::TabGroupId group_id) const {
+    const tab_groups::TabGroupId& group_id) const {
   return fake_group_data_.color();
 }
 
 void FakeBaseTabStripController::SetVisualDataForGroup(
-    tab_groups::TabGroupId group,
-    tab_groups::TabGroupVisualData visual_data) {
+    const tab_groups::TabGroupId& group,
+    const tab_groups::TabGroupVisualData& visual_data) {
   fake_group_data_ = visual_data;
 }
 
 void FakeBaseTabStripController::UngroupAllTabsInGroup(
-    tab_groups::TabGroupId group) {}
+    const tab_groups::TabGroupId& group) {}
 
 void FakeBaseTabStripController::AddNewTabInGroup(
-    tab_groups::TabGroupId group) {}
+    const tab_groups::TabGroupId& group) {}
 
 std::vector<int> FakeBaseTabStripController::ListTabsInGroup(
-    tab_groups::TabGroupId group) const {
+    const tab_groups::TabGroupId& group) const {
   std::vector<int> result;
   for (size_t i = 0; i < tab_groups_.size(); i++) {
     if (tab_groups_[i] == group)

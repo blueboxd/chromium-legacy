@@ -32,6 +32,9 @@ using base::win::ScopedVariant;
 
 namespace ui {
 
+const base::string16 AXPlatformNodeWinTest::kEmbeddedCharacterAsString = {
+    ui::AXPlatformNodeBase::kEmbeddedCharacter};
+
 namespace {
 
 // Most IAccessible functions require a VARIANT set to CHILDID_SELF as

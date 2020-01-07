@@ -27,6 +27,7 @@
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -1459,6 +1460,25 @@ IdleManager* StoragePartitionImpl::GetIdleManager() {
 LockManager* StoragePartitionImpl::GetLockManager() {
   DCHECK(initialized_);
   return lock_manager_.get();
+}
+
+storage::mojom::IndexedDBControl& StoragePartitionImpl::GetIndexedDBControl() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(
+      !(indexed_db_control_.is_bound() && !indexed_db_control_.is_connected()))
+      << "Rebinding is not supported yet.";
+
+  if (indexed_db_control_.is_bound())
+    return *indexed_db_control_;
+
+  IndexedDBContextImpl* idb_context = GetIndexedDBContext();
+  idb_context->IDBTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&IndexedDBContextImpl::Bind,
+                     base::WrapRefCounted(idb_context),
+                     indexed_db_control_.BindNewPipeAndPassReceiver()));
+
+  return *indexed_db_control_;
 }
 
 IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {

@@ -1962,7 +1962,7 @@ std::unique_ptr<CookiesTreeModel> CookiesTreeModel::CreateForProfile(
       new BrowsingDataLocalStorageHelper(profile),
       /*session_storage_helper=*/nullptr,
       new BrowsingDataAppCacheHelper(storage_partition->GetAppCacheService()),
-      new BrowsingDataIndexedDBHelper(storage_partition->GetIndexedDBContext()),
+      new BrowsingDataIndexedDBHelper(storage_partition),
       BrowsingDataFileSystemHelper::Create(file_system_context),
       BrowsingDataQuotaHelper::Create(profile),
       new BrowsingDataServiceWorkerHelper(

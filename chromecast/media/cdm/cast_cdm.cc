@@ -37,9 +37,10 @@ class CastCdmContextImpl : public CastCdmContext {
   ~CastCdmContextImpl() override {}
 
   // CastCdmContext implementation:
-  int RegisterPlayer(const base::Closure& new_key_cb,
-                     const base::Closure& cdm_unset_cb) override {
-    return cast_cdm_->RegisterPlayer(new_key_cb, cdm_unset_cb);
+  int RegisterPlayer(base::RepeatingClosure new_key_cb,
+                     base::RepeatingClosure cdm_unset_cb) override {
+    return cast_cdm_->RegisterPlayer(std::move(new_key_cb),
+                                     std::move(cdm_unset_cb));
   }
 
   void UnregisterPlayer(int registration_id) override {
@@ -135,10 +136,11 @@ void CastCdm::Initialize(
   InitializeInternal();
 }
 
-int CastCdm::RegisterPlayer(const base::Closure& new_key_cb,
-                            const base::Closure& cdm_unset_cb) {
+int CastCdm::RegisterPlayer(base::RepeatingClosure new_key_cb,
+                            base::RepeatingClosure cdm_unset_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return player_tracker_impl_->RegisterPlayer(new_key_cb, cdm_unset_cb);
+  return player_tracker_impl_->RegisterPlayer(std::move(new_key_cb),
+                                              std::move(cdm_unset_cb));
 }
 
 void CastCdm::UnregisterPlayer(int registration_id) {

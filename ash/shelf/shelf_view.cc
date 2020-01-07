@@ -540,8 +540,8 @@ void ShelfView::ToggleOverflowBubble() {
   overflow_view->overflow_mode_ = true;
   overflow_view->Init();
   overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
-  overflow_view->OnShelfAlignmentChanged(
-      GetWidget()->GetNativeWindow()->GetRootWindow());
+  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
+  overflow_view->OnShelfAlignmentChanged(root_window, shelf_->alignment());
   overflow_view->main_shelf_ = this;
   UpdateOverflowRange(overflow_view);
 
@@ -2408,7 +2408,8 @@ void ShelfView::ShelfItemStatusChanged(const ShelfID& id) {
   button->SchedulePaint();
 }
 
-void ShelfView::OnShelfAlignmentChanged(aura::Window* root_window) {
+void ShelfView::OnShelfAlignmentChanged(aura::Window* root_window,
+                                        ShelfAlignment old_alignment) {
   LayoutToIdealBounds();
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i >= first_visible_index_ && i <= last_visible_index_)

@@ -42,12 +42,11 @@ int DumpState(const std::string& minidump_name) {
 MinidumpWriter::MinidumpWriter(MinidumpGenerator* minidump_generator,
                                const std::string& minidump_filename,
                                const MinidumpParams& params,
-                               const DumpStateCallback& dump_state_cb)
+                               DumpStateCallback dump_state_cb)
     : minidump_generator_(minidump_generator),
       minidump_path_(minidump_filename),
       params_(params),
-      dump_state_cb_(dump_state_cb) {
-}
+      dump_state_cb_(std::move(dump_state_cb)) {}
 
 MinidumpWriter::MinidumpWriter(MinidumpGenerator* minidump_generator,
                                const std::string& minidump_filename,
@@ -55,8 +54,7 @@ MinidumpWriter::MinidumpWriter(MinidumpGenerator* minidump_generator,
     : MinidumpWriter(minidump_generator,
                      minidump_filename,
                      params,
-                     base::Bind(&DumpState)) {
-}
+                     base::BindOnce(&DumpState)) {}
 
 MinidumpWriter::~MinidumpWriter() {
 }
@@ -80,8 +78,8 @@ bool MinidumpWriter::DoWork() {
   }
 
   // Run the dumpstate callback.
-  DCHECK(!dump_state_cb_.is_null());
-  if (dump_state_cb_.Run(minidump_path_.value()) < 0) {
+  DCHECK(dump_state_cb_);
+  if (std::move(dump_state_cb_).Run(minidump_path_.value()) < 0) {
     LOG(ERROR) << "DumpState callback failed.";
     return false;
   }
@@ -98,4 +96,4 @@ bool MinidumpWriter::DoWork() {
   return true;
 }
 
-}  // namespace crash_manager
+}  // namespace chromecast

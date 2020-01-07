@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "content/common/content_export.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -39,6 +40,9 @@ struct CONTENT_EXPORT SyncLoadResponse {
 
   // The response extended error code.
   int extended_error_code = 0;
+
+  // Detailed host resolution error information.
+  net::ResolveErrorInfo resolve_error_info;
 
   // Optional CORS error details.
   base::Optional<network::CorsErrorStatus> cors_error;

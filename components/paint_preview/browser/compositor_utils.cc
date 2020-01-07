@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 #include "components/strings/grit/components_strings.h"
@@ -35,7 +36,12 @@ CreateCompositorCollection() {
   auto collection = content::ServiceProcessHost::Launch<
       mojom::PaintPreviewCompositorCollection>(
       content::ServiceProcessHost::Options()
-          .WithDisplayName(IDS_PAINT_PREVIEW_COMPOSITOR_SERVICE_DISPLAY_NAME)
+          // TODO(crbug/1035118): due to resource whitelisting, resources not
+          // shipped in production fail to compile into the resource pack. For
+          // now, the display name should be disabled until the buildflag hiding
+          // this feature is enabled for official builds.
+
+          // .WithDisplayName(IDS_PAINT_PREVIEW_COMPOSITOR_SERVICE_DISPLAY_NAME)
           .WithSandboxType(service_manager::SandboxType::kPdfCompositor)
           .Pass());
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>

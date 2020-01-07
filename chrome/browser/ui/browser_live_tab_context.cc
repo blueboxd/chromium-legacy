@@ -98,8 +98,9 @@ base::Optional<tab_groups::TabGroupId> BrowserLiveTabContext::GetTabGroupForTab(
   return browser_->tab_strip_model()->GetTabGroupForTab(index);
 }
 
-tab_groups::TabGroupVisualData* BrowserLiveTabContext::GetVisualDataForGroup(
-    tab_groups::TabGroupId group) const {
+const tab_groups::TabGroupVisualData*
+BrowserLiveTabContext::GetVisualDataForGroup(
+    const tab_groups::TabGroupId& group) const {
   return browser_->tab_strip_model()
       ->group_model()
       ->GetTabGroup(group)
@@ -107,8 +108,8 @@ tab_groups::TabGroupVisualData* BrowserLiveTabContext::GetVisualDataForGroup(
 }
 
 void BrowserLiveTabContext::SetVisualDataForGroup(
-    tab_groups::TabGroupId group,
-    tab_groups::TabGroupVisualData visual_data) {
+    const tab_groups::TabGroupId& group,
+    const tab_groups::TabGroupVisualData& visual_data) {
   browser_->tab_strip_model()->group_model()->GetTabGroup(group)->SetVisualData(
       std::move(visual_data));
 }
@@ -131,7 +132,7 @@ sessions::LiveTab* BrowserLiveTabContext::AddRestoredTab(
     int selected_navigation,
     const std::string& extension_app_id,
     base::Optional<tab_groups::TabGroupId> group,
-    const tab_groups::TabGroupVisualData group_visual_data,
+    const tab_groups::TabGroupVisualData& group_visual_data,
     bool select,
     bool pin,
     bool from_last_session,

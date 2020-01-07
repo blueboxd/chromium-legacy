@@ -7415,7 +7415,8 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
   DCHECK(navigation_client && navigation_request);
   navigation_client->CommitFailedNavigation(
       std::move(common_params), std::move(commit_params),
-      has_stale_copy_in_cache, error_code, error_page_content,
+      has_stale_copy_in_cache, error_code,
+      navigation_request->GetResolveErrorInfo(), error_page_content,
       std::move(subresource_loader_factories),
       BuildCommitFailedNavigationCallback(navigation_request));
 }

@@ -42,18 +42,9 @@ void InitCrashReporterIfEnabled(bool enabled) {
   if (enabled)
     breakpad::InitCrashReporter(std::string());
 #elif defined(OS_LINUX)
-  if (!crash_reporter::IsCrashpadEnabled() && enabled) {
+  if (!crash_reporter::IsCrashpadEnabled() && enabled)
     breakpad::InitCrashReporter(std::string());
-  }
 #endif
-}
-
-std::unique_ptr<views::View> CreateLearnMoreLink(
-    views::LinkListener* listener) {
-  auto link =
-      std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  link->set_listener(listener);
-  return link;
 }
 
 }  // namespace
@@ -78,7 +69,9 @@ void FirstRunDialog::Show(Profile* profile) {
 
 FirstRunDialog::FirstRunDialog(Profile* profile) : profile_(profile) {
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
-  DialogDelegate::SetExtraView(CreateLearnMoreLink(this));
+  DialogDelegate::SetExtraView(
+      std::make_unique<views::Link>(l10n_util::GetStringUTF16(IDS_LEARN_MORE)))
+      ->set_listener(this);
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));

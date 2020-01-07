@@ -5,7 +5,6 @@
 #include "courgette/program_detector.h"
 
 #include "courgette/disassembler.h"
-#include "courgette/disassembler_elf_32_arm.h"
 #include "courgette/disassembler_elf_32_x86.h"
 #include "courgette/disassembler_win32_x64.h"
 #include "courgette/disassembler_win32_x86.h"
@@ -28,11 +27,6 @@ std::unique_ptr<Disassembler> DetectDisassembler(const uint8_t* buffer,
   }
   if (DisassemblerElf32X86::QuickDetect(buffer, length)) {
     disassembler.reset(new DisassemblerElf32X86(buffer, length));
-    if (disassembler->ParseHeader())
-      return disassembler;
-  }
-  if (DisassemblerElf32ARM::QuickDetect(buffer, length)) {
-    disassembler.reset(new DisassemblerElf32ARM(buffer, length));
     if (disassembler->ParseHeader())
       return disassembler;
   }

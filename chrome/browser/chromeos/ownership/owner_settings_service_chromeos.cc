@@ -157,19 +157,18 @@ bool DoesPrivateKeyExistAsyncHelper(
 // not. Responds via |callback|.
 void DoesPrivateKeyExistAsync(
     const scoped_refptr<OwnerKeyUtil>& owner_key_util,
-    const OwnerSettingsServiceChromeOS::IsOwnerCallback& callback) {
+    OwnerSettingsServiceChromeOS::IsOwnerCallback callback) {
   if (!owner_key_util.get()) {
-    callback.Run(false);
+    std::move(callback).Run(false);
     return;
   }
   scoped_refptr<base::TaskRunner> task_runner = base::CreateTaskRunner(
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   base::PostTaskAndReplyWithResult(
-      task_runner.get(),
-      FROM_HERE,
-      base::Bind(&DoesPrivateKeyExistAsyncHelper, owner_key_util),
-      callback);
+      task_runner.get(), FROM_HERE,
+      base::BindOnce(&DoesPrivateKeyExistAsyncHelper, owner_key_util),
+      std::move(callback));
 }
 
 }  // namespace
@@ -269,14 +268,13 @@ bool OwnerSettingsServiceChromeOS::IsOwner() {
   return OwnerSettingsService::IsOwner();
 }
 
-void OwnerSettingsServiceChromeOS::IsOwnerAsync(
-    const IsOwnerCallback& callback) {
+void OwnerSettingsServiceChromeOS::IsOwnerAsync(IsOwnerCallback callback) {
   if (InstallAttributes::Get()->IsEnterpriseManaged()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, false));
+        FROM_HERE, base::BindOnce(std::move(callback), false));
     return;
   }
-  OwnerSettingsService::IsOwnerAsync(callback);
+  OwnerSettingsService::IsOwnerAsync(std::move(callback));
 }
 
 bool OwnerSettingsServiceChromeOS::HandlesSetting(const std::string& setting) {
@@ -383,17 +381,18 @@ void OwnerSettingsServiceChromeOS::OnDeviceSettingsServiceShutdown() {
 void OwnerSettingsServiceChromeOS::IsOwnerForSafeModeAsync(
     const std::string& user_hash,
     const scoped_refptr<OwnerKeyUtil>& owner_key_util,
-    const IsOwnerCallback& callback) {
+    IsOwnerCallback callback) {
   CHECK(chromeos::LoginState::Get()->IsInSafeMode());
 
   // Make sure NSS is initialized and NSS DB is loaded for the user before
   // searching for the owner key.
   base::PostTaskAndReply(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(base::IgnoreResult(&crypto::InitializeNSSForChromeOSUser),
-                 user_hash,
-                 ProfileHelper::GetProfilePathByUserIdHash(user_hash)),
-      base::Bind(&DoesPrivateKeyExistAsync, owner_key_util, callback));
+      base::BindOnce(base::IgnoreResult(&crypto::InitializeNSSForChromeOSUser),
+                     user_hash,
+                     ProfileHelper::GetProfilePathByUserIdHash(user_hash)),
+      base::BindOnce(&DoesPrivateKeyExistAsync, owner_key_util,
+                     std::move(callback)));
 }
 
 // static

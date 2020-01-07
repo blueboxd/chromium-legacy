@@ -20,15 +20,16 @@
 #include "ui/gfx/text_elider.h"
 
 TabGroup::TabGroup(TabGroupController* controller,
-                   tab_groups::TabGroupId id,
-                   tab_groups::TabGroupVisualData visual_data)
+                   const tab_groups::TabGroupId& id,
+                   const tab_groups::TabGroupVisualData& visual_data)
     : controller_(controller), id_(id) {
   visual_data_ = std::make_unique<tab_groups::TabGroupVisualData>(visual_data);
 }
 
 TabGroup::~TabGroup() {}
 
-void TabGroup::SetVisualData(tab_groups::TabGroupVisualData visual_data) {
+void TabGroup::SetVisualData(
+    const tab_groups::TabGroupVisualData& visual_data) {
   visual_data_ = std::make_unique<tab_groups::TabGroupVisualData>(visual_data);
   controller_->ChangeTabGroupVisuals(id_);
 }

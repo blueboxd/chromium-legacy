@@ -203,7 +203,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/power_monitor.mojom.h"
 #include "services/device/public/mojom/screen_orientation.mojom.h"
@@ -1546,8 +1545,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       /* render_frame_id= */ ChildProcessHost::kInvalidUniqueID,
       storage_partition_impl_->GetServiceWorkerContext()));
 
-  AddObserver(indexed_db_factory_.get());
-
   InitializeChannelProxy();
 
   const int id = GetID();
@@ -2131,39 +2128,35 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       registry.get(),
       base::BindRepeating(
           &RenderProcessHostImpl::CreateEmbeddedFrameSinkProvider,
-          base::Unretained(this)));
+          weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindFrameSinkProvider,
-                          base::Unretained(this)));
+                          weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindCompositingModeReporter,
-                          base::Unretained(this)));
+                          weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(
-          &BackgroundSyncContextImpl::CreateOneShotSyncService,
-          base::Unretained(
-              storage_partition_impl_->GetBackgroundSyncContext())));
+      base::BindRepeating(&RenderProcessHostImpl::CreateOneShotSyncService,
+                          weak_factory_.GetWeakPtr()));
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(
-          &BackgroundSyncContextImpl::CreatePeriodicSyncService,
-          base::Unretained(
-              storage_partition_impl_->GetBackgroundSyncContext())));
+      base::BindRepeating(&RenderProcessHostImpl::CreatePeriodicSyncService,
+                          weak_factory_.GetWeakPtr()));
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::CreateStoragePartitionService,
-                          base::Unretained(this)));
+                          weak_factory_.GetWeakPtr()));
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
           &RenderProcessHostImpl::CreateBroadcastChannelProvider,
-          base::Unretained(this)));
+          weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(registry.get(),
                        base::BindRepeating(&ClipboardHostImpl::Create));
@@ -2171,15 +2164,17 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindWebDatabaseHostImpl,
-                          base::Unretained(this)));
+                          weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(
-          [](RenderProcessHostImpl* host,
+          [](base::WeakPtr<RenderProcessHostImpl> host,
              mojo::PendingReceiver<
                  memory_instrumentation::mojom::CoordinatorConnector>
                  receiver) {
+            if (!host)
+              return;
             host->coordinator_connector_receiver_.reset();
             host->coordinator_connector_receiver_.Bind(std::move(receiver));
             if (!host->GetProcess().IsValid()) {
@@ -2188,7 +2183,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
               host->coordinator_connector_receiver_.Pause();
             }
           },
-          base::Unretained(this)));
+          weak_factory_.GetWeakPtr()));
 
   registry->AddInterface(base::BindRepeating(&MimeRegistryImpl::Create),
                          base::CreateSequencedTaskRunner(
@@ -2222,8 +2217,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     AddUIThreadInterface(
         registry.get(),
-        base::BindRepeating(&PushMessagingManager::AddPushMessagingReceiver,
-                            base::Unretained(push_messaging_manager_.get())));
+        base::BindRepeating(&RenderProcessHostImpl::BindPushMessagingManager,
+                            weak_factory_.GetWeakPtr()));
   } else {
     registry->AddInterface(
         base::BindRepeating(&PushMessagingManager::AddPushMessagingReceiver,
@@ -2272,7 +2267,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       registry.get(),
       base::BindRepeating(
           &RenderProcessHostImpl::CreateAgentMetricsCollectorHost,
-          base::Unretained(this)));
+          weak_factory_.GetWeakPtr()));
 
   registry->AddInterface(
       base::BindRepeating(&metrics::CreateSingleSampleMetricsProvider));
@@ -2280,12 +2275,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindPeerConnectionTrackerHost,
-                          base::Unretained(this)));
+                          weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::CreateCodeCacheHost,
-                          base::Unretained(this)));
+                          weak_factory_.GetWeakPtr()));
 
 #if BUILDFLAG(ENABLE_REPORTING)
   AddUIThreadInterface(
@@ -2295,14 +2290,14 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&P2PSocketDispatcherHost::BindReceiver,
-                          base::Unretained(p2p_socket_dispatcher_host_.get())));
+      base::BindRepeating(&RenderProcessHostImpl::BindP2PSocketManager,
+                          weak_factory_.GetWeakPtr()));
 
 #if BUILDFLAG(ENABLE_MDNS)
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::CreateMdnsResponder,
-                          base::Unretained(this)));
+                          weak_factory_.GetWeakPtr()));
 #endif  // BUILDFLAG(ENABLE_MDNS)
 
   AddUIThreadInterface(registry.get(),
@@ -2321,7 +2316,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       registry.get(),
       base::BindRepeating(
           &RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess,
-          base::Unretained(this)));
+          weak_factory_.GetWeakPtr()));
 
   registry->AddInterface(
       base::BindRepeating(&BlobRegistryWrapper::Bind,
@@ -2335,8 +2330,8 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   }
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&PluginRegistryImpl::Bind,
-                          base::Unretained(plugin_registry_.get())));
+      base::BindRepeating(&RenderProcessHostImpl::BindPluginRegistry,
+                          weak_factory_.GetWeakPtr()));
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
@@ -2346,12 +2341,12 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(),
       base::BindRepeating(&RenderProcessHostImpl::BindVideoDecoderService,
-                          base::Unretained(this)));
+                          weak_factory_.GetWeakPtr()));
 
   AddUIThreadInterface(
       registry.get(),
-      base::BindRepeating(&AecDumpManagerImpl::AddReceiver,
-                          base::Unretained(&aec_dump_manager_)));
+      base::BindRepeating(&RenderProcessHostImpl::BindAecDumpManager,
+                          weak_factory_.GetWeakPtr()));
 
   // ---- Please do not register interfaces below this line ------
   //
@@ -2479,6 +2474,41 @@ void RenderProcessHostImpl::BindWebDatabaseHostImpl(
       base::BindOnce(&WebDatabaseHostImpl::Create, GetID(),
                      base::WrapRefCounted(db_tracker), std::move(receiver)));
 }
+void RenderProcessHostImpl::BindAecDumpManager(
+    mojo::PendingReceiver<blink::mojom::AecDumpManager> receiver) {
+  aec_dump_manager_.AddReceiver(std::move(receiver));
+}
+
+void RenderProcessHostImpl::CreateOneShotSyncService(
+    mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>
+        receiver) {
+  storage_partition_impl_->GetBackgroundSyncContext()->CreateOneShotSyncService(
+      std::move(receiver));
+}
+
+void RenderProcessHostImpl::CreatePeriodicSyncService(
+    mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>
+        receiver) {
+  storage_partition_impl_->GetBackgroundSyncContext()
+      ->CreatePeriodicSyncService(std::move(receiver));
+}
+
+void RenderProcessHostImpl::BindPushMessagingManager(
+    mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) {
+  push_messaging_manager_->AddPushMessagingReceiver(std::move(receiver));
+}
+
+void RenderProcessHostImpl::BindP2PSocketManager(
+    mojo::PendingReceiver<network::mojom::P2PSocketManager> receiver) {
+  p2p_socket_dispatcher_host_->BindReceiver(std::move(receiver));
+}
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+void RenderProcessHostImpl::BindPluginRegistry(
+    mojo::PendingReceiver<blink::mojom::PluginRegistry> receiver) {
+  plugin_registry_->Bind(std::move(receiver));
+}
+#endif
 
 void RenderProcessHostImpl::RegisterCoordinatorClient(
     mojo::PendingReceiver<memory_instrumentation::mojom::Coordinator> receiver,

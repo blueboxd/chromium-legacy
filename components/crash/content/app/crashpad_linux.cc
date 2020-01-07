@@ -163,6 +163,7 @@ base::FilePath PlatformCrashpadInitialization(
     if (crash_reporter_client->IsRunningUnattended()) {
       arguments.push_back(base::StringPrintf("--minidump-dir-for-tests=%s",
                                              database_path.value().c_str()));
+      arguments.push_back("--always-allow-feedback");
     }
 #endif
 

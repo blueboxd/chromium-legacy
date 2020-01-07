@@ -17508,7 +17508,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 21
+          "shards": 50
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -17716,7 +17716,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 6
+          "shards": 12
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -18023,7 +18023,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 3
+          "shards": 10
         },
         "test": "interactive_ui_tests",
         "test_target": "//chrome/test:interactive_ui_tests"
@@ -18587,7 +18587,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "sync_integration_tests",
         "test_target": "//chrome/test:sync_integration_tests"
@@ -20851,7 +20852,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 21
+          "shards": 50
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -21025,7 +21026,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 6
+          "shards": 12
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"
@@ -21405,7 +21406,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 3
+          "shards": 10
         },
         "test": "interactive_ui_tests",
         "test_target": "//chrome/test:interactive_ui_tests"
@@ -21898,7 +21899,8 @@
             {
               "os": "Ubuntu-16.04"
             }
-          ]
+          ],
+          "shards": 4
         },
         "test": "sync_integration_tests",
         "test_target": "//chrome/test:sync_integration_tests"

@@ -172,21 +172,21 @@ class TabStrip : public views::AccessiblePaneView,
                      int model_index);
 
   // Creates the views associated with a newly-created tab group.
-  void OnGroupCreated(tab_groups::TabGroupId group);
+  void OnGroupCreated(const tab_groups::TabGroupId& group);
 
   // Updates the group's contents and metadata when its tab membership changes.
   // This should be called when a tab is added to or removed from a group.
-  void OnGroupContentsChanged(tab_groups::TabGroupId group);
+  void OnGroupContentsChanged(const tab_groups::TabGroupId& group);
 
   // Updates the group's tabs and header when its associated TabGroupVisualData
   // changes. This should be called when the result of
   // |TabStripController::GetGroupTitle(group)| or
   // |TabStripController::GetGroupColorId(group)| changes.
-  void OnGroupVisualsChanged(tab_groups::TabGroupId group);
+  void OnGroupVisualsChanged(const tab_groups::TabGroupId& group);
 
   // Destroys the views associated with a recently deleted tab group. The
   // associated view mappings are erased in OnGroupCloseAnimationCompleted().
-  void OnGroupClosed(tab_groups::TabGroupId group);
+  void OnGroupClosed(const tab_groups::TabGroupId& group);
 
   // Returns true if the tab is not partly or fully clipped (due to overflow),
   // and the tab couldn't become partly clipped due to changing the selected tab
@@ -215,7 +215,7 @@ class TabStrip : public views::AccessiblePaneView,
   Tab* tab_at(int index) const { return tabs_.view_at(index); }
 
   // Returns the TabGroupHeader with ID |id|.
-  TabGroupHeader* group_header(tab_groups::TabGroupId id) {
+  TabGroupHeader* group_header(const tab_groups::TabGroupId& id) {
     return group_views_[id].get()->header();
   }
 
@@ -305,17 +305,18 @@ class TabStrip : public views::AccessiblePaneView,
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
   float GetHoverOpacityForTab(float range_parameter) const override;
   float GetHoverOpacityForRadialHighlight() const override;
-  base::string16 GetGroupTitle(tab_groups::TabGroupId group) const override;
+  base::string16 GetGroupTitle(
+      const tab_groups::TabGroupId& group) const override;
   tab_groups::TabGroupColorId GetGroupColorId(
-      tab_groups::TabGroupId group) const override;
+      const tab_groups::TabGroupId& group) const override;
   SkColor GetPaintedGroupColor(
-      tab_groups::TabGroupColorId color_id) const override;
+      const tab_groups::TabGroupColorId& color_id) const override;
   void SetVisualDataForGroup(
-      tab_groups::TabGroupId group,
-      tab_groups::TabGroupVisualData visual_data) override;
-  void CloseAllTabsInGroup(tab_groups::TabGroupId group) override;
-  void UngroupAllTabsInGroup(tab_groups::TabGroupId group) override;
-  void AddNewTabInGroup(tab_groups::TabGroupId group) override;
+      const tab_groups::TabGroupId& group,
+      const tab_groups::TabGroupVisualData& visual_data) override;
+  void CloseAllTabsInGroup(const tab_groups::TabGroupId& group) override;
+  void UngroupAllTabsInGroup(const tab_groups::TabGroupId& group) override;
+  void AddNewTabInGroup(const tab_groups::TabGroupId& group) override;
   const Browser* GetBrowser() override;
 
   // MouseWatcherListener:
@@ -499,7 +500,7 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Cleans up the TabGroupHeader for |group| from the TabStrip. This is called
   // from the tab animation code and is not a general-purpose method.
-  void OnGroupCloseAnimationCompleted(tab_groups::TabGroupId group);
+  void OnGroupCloseAnimationCompleted(const tab_groups::TabGroupId& group);
 
   // Invoked from StoppedDraggingTabs to cleanup |view|. If |view| is known
   // |is_first_view| is set to true.

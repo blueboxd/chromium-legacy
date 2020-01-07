@@ -184,9 +184,7 @@ android_builder(
     cores = 16,
     goma_jobs = goma.jobs.J300,
     ssd = True,
-    tryjob = tryjob(
-        experiment_percentage = 100,
-    ),
+    tryjob = tryjob(),
 )
 
 android_builder(

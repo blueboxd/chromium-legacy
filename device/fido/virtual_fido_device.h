@@ -33,6 +33,10 @@ class ECPrivateKey;
 
 namespace device {
 
+constexpr size_t kMaxPinRetries = 8;
+
+constexpr size_t kMaxUvRetries = 5;
+
 class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
  public:
   // Encapsulates information corresponding to one registered key on the virtual
@@ -106,9 +110,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     bool non_zero_aaguid_with_self_attestation = false;
 
     // Number of PIN retries remaining.
-    int retries = 8;
+    int pin_retries = kMaxPinRetries;
     // The number of failed PIN attempts since the token was "inserted".
-    int retries_since_insertion = 0;
+    int pin_retries_since_insertion = 0;
     // True if the token is soft-locked due to too many failed PIN attempts
     // since "insertion".
     bool soft_locked = false;
@@ -119,6 +123,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // The random PIN token that is returned as a placeholder for the PIN
     // itself.
     uint8_t pin_token[32];
+
+    // Number of internal UV retries remaining.
+    int uv_retries = kMaxUvRetries;
 
     // Whether a device with internal-UV support has fingerprints enrolled.
     bool fingerprints_enrolled = false;

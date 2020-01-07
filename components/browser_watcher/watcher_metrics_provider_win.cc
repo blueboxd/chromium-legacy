@@ -222,12 +222,12 @@ void WatcherMetricsProviderWin::ProvideStabilityMetrics(
   RecordExitCodes(registry_path_);
 }
 
-void WatcherMetricsProviderWin::AsyncInit(const base::Closure& done_callback) {
+void WatcherMetricsProviderWin::AsyncInit(base::OnceClosure done_callback) {
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&WatcherMetricsProviderWin::CollectPostmortemReportsImpl,
                      weak_ptr_factory_.GetWeakPtr()),
-      done_callback);
+      std::move(done_callback));
 }
 
 // TODO(manzagop): consider mechanisms for partial collection if this is to be

@@ -212,6 +212,7 @@ include_rules = [
   "+components/services/patch/public",
   "+components/services/pdf_compositor/public",
   "+components/services/quarantine",
+  '+components/services/storage/public',
   "+components/services/unzip",
   "+components/session_manager",
   "+components/sessions/content",

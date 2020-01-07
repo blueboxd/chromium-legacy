@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.MODEL_TYPE;
+
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -36,8 +38,9 @@ class MessageCardViewProperties {
             .WritableObjectPropertyKey<String> DISMISS_BUTTON_CONTENT_DESCRIPTION =
             new PropertyModel.WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ACTION_TEXT, DESCRIPTION_TEXT,
-            DESCRIPTION_TEXT_TEMPLATE, MESSAGE_TYPE, ICON_PROVIDER, UI_ACTION_PROVIDER,
-            UI_DISMISS_ACTION_PROVIDER, MESSAGE_SERVICE_ACTION_PROVIDER,
-            MESSAGE_SERVICE_DISMISS_ACTION_PROVIDER, DISMISS_BUTTON_CONTENT_DESCRIPTION};
+    public static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {ACTION_TEXT, DESCRIPTION_TEXT, DESCRIPTION_TEXT_TEMPLATE,
+                    MESSAGE_TYPE, ICON_PROVIDER, UI_ACTION_PROVIDER, UI_DISMISS_ACTION_PROVIDER,
+                    MESSAGE_SERVICE_ACTION_PROVIDER, MESSAGE_SERVICE_DISMISS_ACTION_PROVIDER,
+                    DISMISS_BUTTON_CONTENT_DESCRIPTION, MODEL_TYPE};
 }

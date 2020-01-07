@@ -8,20 +8,12 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
-
-namespace {
-
-void Fail() {
-  // Should never be called.
-  FAIL();
-}
-
-}  // namespace
 
 class StubCrosSettingsProviderTest : public testing::Test {
  protected:
@@ -90,9 +82,11 @@ TEST_F(StubCrosSettingsProviderTest, SetMissing) {
 
 TEST_F(StubCrosSettingsProviderTest, PrepareTrustedValues) {
   // Should return immediately without invoking the callback.
+  base::OnceClosure closure = base::BindOnce([]() { FAIL(); });
   CrosSettingsProvider::TrustedStatus trusted =
-      provider_->PrepareTrustedValues(base::Bind(&Fail));
+      provider_->PrepareTrustedValues(&closure);
   EXPECT_EQ(CrosSettingsProvider::TRUSTED, trusted);
+  EXPECT_TRUE(closure);  // The |closure| was not taken or run.
 }
 
 }  // namespace chromeos

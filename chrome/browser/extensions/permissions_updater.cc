@@ -286,6 +286,10 @@ void PermissionsUpdater::GrantOptionalPermissions(
   // host permissions enabled). They're also added to the active set, which is
   // the permission set stored in preferences representing the extension's
   // currently-desired permission state.
+  // TODO(tjudkins): The reasoning for this doesn't entirely hold true now that
+  // we check both the granted permissions and runtime permissions to detect a
+  // permission increase. We should address this as we continue working on
+  // reducing the different ways we store permissions into a unified concept.
   constexpr int permissions_store_mask =
       kActivePermissions | kGrantedPermissions | kRuntimeGrantedPermissions;
   AddPermissionsImpl(extension, permissions, permissions_store_mask,

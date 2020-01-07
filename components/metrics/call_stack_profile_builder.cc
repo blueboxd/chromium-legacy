@@ -87,13 +87,16 @@ void CallStackProfileBuilder::RecordMetadata(
 }
 
 void CallStackProfileBuilder::OnSampleCompleted(
-    std::vector<base::Frame> frames) {
-  OnSampleCompleted(std::move(frames), 1, 1);
+    std::vector<base::Frame> frames,
+    base::TimeTicks sample_timestamp) {
+  OnSampleCompleted(std::move(frames), sample_timestamp, 1, 1);
 }
 
-void CallStackProfileBuilder::OnSampleCompleted(std::vector<base::Frame> frames,
-                                                size_t weight,
-                                                size_t count) {
+void CallStackProfileBuilder::OnSampleCompleted(
+    std::vector<base::Frame> frames,
+    base::TimeTicks sample_timestamp,
+    size_t weight,
+    size_t count) {
   // Write CallStackProfile::Stack protobuf message.
   CallStackProfile::Stack stack;
 

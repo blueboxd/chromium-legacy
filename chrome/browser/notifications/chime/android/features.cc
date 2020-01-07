@@ -7,14 +7,14 @@
 
 jboolean JNI_ChimeSession_IsEnabled(JNIEnv* env) {
   return base::FeatureList::IsEnabled(
-      notifications::features::kChimeNotificationPlatform);
+      notifications::features::kUseChimeAndroidSdk);
 }
 
 namespace notifications {
 namespace features {
 
-const base::Feature kChimeNotificationPlatform{
-    "ChimeNotificationPlatform", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUseChimeAndroidSdk{"UseChimeAndroidSdk",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace notifications

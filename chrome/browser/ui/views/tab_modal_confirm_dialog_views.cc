@@ -28,9 +28,6 @@ TabModalConfirmDialog* TabModalConfirmDialog::Create(
   return new TabModalConfirmDialogViews(std::move(delegate), web_contents);
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// TabModalConfirmDialogViews, constructor & destructor:
-
 TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     std::unique_ptr<TabModalConfirmDialogDelegate> delegate,
     content::WebContents* web_contents)
@@ -74,16 +71,10 @@ void TabModalConfirmDialogViews::CloseDialog() {
   GetWidget()->Close();
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// TabModalConfirmDialogViews, views::LinkListener implementation:
-
 void TabModalConfirmDialogViews::LinkClicked(views::Link* source,
                                              int event_flags) {
   delegate_->LinkClicked(ui::DispositionFromEventFlags(event_flags));
 }
-
-//////////////////////////////////////////////////////////////////////////////
-// TabModalConfirmDialogViews, views::DialogDelegate implementation:
 
 int TabModalConfirmDialogViews::GetDialogButtons() const {
   return delegate_->GetDialogButtons();
@@ -126,9 +117,6 @@ views::View* TabModalConfirmDialogViews::GetInitiallyFocusedView() {
     return GetCancelButton();
   return nullptr;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// TabModalConfirmDialogViews, views::WidgetDelegate implementation:
 
 views::View* TabModalConfirmDialogViews::GetContentsView() {
   return message_box_view_;

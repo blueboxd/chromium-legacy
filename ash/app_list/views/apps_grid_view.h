@@ -847,12 +847,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // The initial mouse drag location in screen coordinate. Updates when drag
   // on AppsGridView starts.
-  gfx::Point mouse_drag_start_point_;
+  gfx::PointF mouse_drag_start_point_;
 
   // The last mouse drag location in screen coordinate. Different from
   // |last_drag_point_|, |last_mouse_drag_point_| is the location of the most
   // recent drag on AppsGridView instead of the app icon.
-  gfx::Point last_mouse_drag_point_;
+  gfx::PointF last_mouse_drag_point_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

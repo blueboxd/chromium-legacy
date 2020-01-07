@@ -160,7 +160,7 @@ class ProtoToJSONRuleConverter {
   }
 
   bool PopulatePriorirty() {
-    // Do nothing. Priority is optional and only relevant for redirect rules.
+    CHECK(json_rule_.SetKey(kPriorityKey, base::Value(kMinValidPriority)));
     return true;
   }
 

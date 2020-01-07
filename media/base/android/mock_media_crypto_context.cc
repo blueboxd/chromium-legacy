@@ -25,7 +25,7 @@ MockMediaCryptoContext::MockMediaCryptoContext(bool has_media_crypto_context)
 
   // Provide some sane defaults.
   ON_CALL(*this, RegisterPlayer(_, _))
-      .WillByDefault(DoAll(SaveArg<0>(&new_key_cb), SaveArg<1>(&cdm_unset_cb),
+      .WillByDefault(DoAll(MoveArg<0>(&new_key_cb), MoveArg<1>(&cdm_unset_cb),
                            Return(kRegistrationId)));
   ON_CALL(*this, SetMediaCryptoReadyCB_(_))
       .WillByDefault(MoveArg<0>(&media_crypto_ready_cb));

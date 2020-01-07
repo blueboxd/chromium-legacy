@@ -242,16 +242,15 @@ void MetricsService::InitializeMetricsRecordingState() {
   reporting_service_.Initialize();
   InitializeMetricsState();
 
-  base::Closure upload_callback =
-      base::Bind(&MetricsService::StartScheduledUpload,
-                 self_ptr_factory_.GetWeakPtr());
+  base::RepeatingClosure upload_callback = base::BindRepeating(
+      &MetricsService::StartScheduledUpload, self_ptr_factory_.GetWeakPtr());
 
   rotation_scheduler_.reset(new MetricsRotationScheduler(
       upload_callback,
       // MetricsServiceClient outlives MetricsService, and
       // MetricsRotationScheduler is tied to the lifetime of |this|.
-      base::Bind(&MetricsServiceClient::GetUploadInterval,
-                 base::Unretained(client_)),
+      base::BindRepeating(&MetricsServiceClient::GetUploadInterval,
+                          base::Unretained(client_)),
       client_->ShouldStartUpFastForTesting()));
 
   // Init() has to be called after LogCrash() in order for LogCrash() to work.
@@ -329,8 +328,8 @@ void MetricsService::EnableRecording() {
   RecordCurrentEnvironment(log_manager_.current_log(), /*complete=*/false);
 
   base::RemoveActionCallback(action_callback_);
-  action_callback_ = base::Bind(&MetricsService::OnUserAction,
-                                base::Unretained(this));
+  action_callback_ = base::BindRepeating(&MetricsService::OnUserAction,
+                                         base::Unretained(this));
   base::AddActionCallback(action_callback_);
 }
 
@@ -612,8 +611,8 @@ void MetricsService::OpenNewLog() {
 }
 
 void MetricsService::StartInitTask() {
-  delegating_provider_.AsyncInit(base::Bind(&MetricsService::FinishedInitTask,
-                                            self_ptr_factory_.GetWeakPtr()));
+  delegating_provider_.AsyncInit(base::BindOnce(
+      &MetricsService::FinishedInitTask, self_ptr_factory_.GetWeakPtr()));
 }
 
 void MetricsService::CloseCurrentLog() {

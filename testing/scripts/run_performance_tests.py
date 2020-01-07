@@ -107,6 +107,7 @@ GTEST_CONVERSION_WHITELIST = [
   'validating_command_buffer_perftests',
   'views_perftests',
   'viz_perftests',
+  'wayland_client_perftests',
   'xr.vr.common_perftests',
 ]
 

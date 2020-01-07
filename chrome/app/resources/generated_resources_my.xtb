@@ -49,7 +49,6 @@
 <translation id="1056775291175587022">ကွန်ရက်ချိတ်ဆက်မှု မရှိပါ</translation>
 <translation id="1056898198331236512">သတိပေးချက်</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1060881073479695738">'Play စတိုး' အက်ပ်များ</translation>
 <translation id="1061745542578250838"><ph name="FILE_NAME" /> တွင် အလွန်အရေးကြီးသော အကြောင်းအရာများ ပါဝင်သည့်အတွက် ပိတ်ထားသည်။</translation>
 <translation id="1061904396131502319">ခေတ္တနားချိန် ရောက်တော့မည်</translation>
 <translation id="1067048845568873861">ပြုလုပ်ပြီးပါပြီ</translation>
@@ -1570,6 +1569,7 @@
 <translation id="3172808215939929606">ဤစာမျက်နှာကို ဘာသာပြန်ပြီးပါပြီ။</translation>
 <translation id="3177909033752230686">စာမျက်နှာ ဘာသာစကား −</translation>
 <translation id="3179982752812949580">စာသားဖောင့်</translation>
+<translation id="3181825792072797598">စင့်ခ်လုပ်ခြင်းကို ဖွင့်ပါ</translation>
 <translation id="3181954750937456830">အင်တာနက်ကို လုံခြုံစွာအသုံးပြုရေးစနစ် (သင်နှင့် သင့်စက်ကို အန္တရာယ်ရှိသည့် ဝဘ်ဆိုက်များမှ ကာကွယ်သည်)</translation>
 <translation id="3182749001423093222">စာလုံးပေါင်းသတ်ပုံစစ်ခြင်း</translation>
 <translation id="3183139917765991655">Profile Importer</translation>
@@ -4651,6 +4651,7 @@
 <translation id="7684718995427157417">သင်၏အက်ပ်များကို ပြုလုပ်ပြီး စမ်းသပ်ရန် 'Android အမှားပြင်ဆင်မှုတံတား' (ADB) ဖွင့်ပါ။ ယခုလုပ်ဆောင်ချက်သည် Google က အတည်မပြုရသေးသော Android အက်ပ်များကို ထည့်သွင်းရန်ခွင့်ပြုပြီး ပိတ်ရန်အတွက် စက်ရုံထုတ်ဆက်တင် ပြင်ဆင်သတ်မှတ်ရန် လိုအပ်ကြောင်း သတိပြုပါ။</translation>
 <translation id="7685049629764448582">JavaScript မှတ်ဉာဏ်</translation>
 <translation id="7685087414635069102">ပင်နံပါတ် လိုအပ်သည်</translation>
+<translation id="768549422429443215">ဘာသာစကားများ ထည့်ပါ သို့မဟုတ် စာရင်းကို ပြန်စီပါ။</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">စကားဝှက်အသစ်ကို အတည်ပြုပါ</translation>
 <translation id="7690378713476594306">စာရင်းထဲမှ ရွေးရန်</translation>

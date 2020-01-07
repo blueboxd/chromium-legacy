@@ -57,7 +57,7 @@ class MockObserver : public FidoRequestHandlerBase::Observer {
   MOCK_METHOD2(CollectPIN,
                void(base::Optional<int>,
                     base::OnceCallback<void(std::string)>));
-  MOCK_METHOD0(FinishCollectPIN, void());
+  MOCK_METHOD0(FinishCollectToken, void());
   MOCK_METHOD1(SetMightCreateResidentCredential, void(bool));
 
  private:

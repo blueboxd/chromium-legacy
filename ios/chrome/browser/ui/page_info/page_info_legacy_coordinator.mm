@@ -13,14 +13,14 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/chrome_coordinator+fullscreen_disabling.h"
+#import "ios/chrome/browser/ui/page_info/legacy_page_info_view_controller.h"
+#import "ios/chrome/browser/ui/page_info/page_info_constants.h"
 #include "ios/chrome/browser/ui/page_info/page_info_model.h"
-#import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
-#import "ios/chrome/browser/ui/page_info/requirements/page_info_reloading.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
@@ -35,40 +35,21 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kPageInfoWillShowNotification =
-    @"kPageInfoWillShowNotification";
-
-NSString* const kPageInfoWillHideNotification =
-    @"kPageInfoWillHideNotification";
-
-@interface PageInfoLegacyCoordinator ()<PageInfoCommands, PageInfoReloading>
+@interface PageInfoLegacyCoordinator ()
 
 // The view controller for the Page Info UI. Nil if not visible.
-@property(nonatomic, strong) PageInfoViewController* pageInfoViewController;
+@property(nonatomic, strong)
+    LegacyPageInfoViewController* pageInfoViewController;
 
 @end
 
 @implementation PageInfoLegacyCoordinator
 
+@synthesize presentationProvider = _presentationProvider;
+
 #pragma mark - ChromeCoordinator
 
 - (void)start {
-  [self.browser->GetCommandDispatcher()
-      startDispatchingToTarget:self
-                   forProtocol:@protocol(PageInfoCommands)];
-}
-
-- (void)stop {
-  [super stop];
-  // DCHECK that the Page Info UI is not displayed before disconnecting.
-  DCHECK(!self.pageInfoViewController);
-  [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
-  self.presentationProvider = nil;
-}
-
-#pragma mark - PageInfoCommands
-
-- (void)showPageInfoForOriginPoint:(CGPoint)originPoint {
   web::WebState* webState =
       self.browser->GetWebStateList()->GetActiveWebState();
   web::NavigationItem* navItem =
@@ -103,23 +84,21 @@ NSString* const kPageInfoWillHideNotification =
       OfflinePageTabHelper::FromWebState(webState)->presenting_offline_page();
 
   // TODO(crbug.com/760387): Get rid of PageInfoModel completely.
-  PageInfoModelBubbleBridge* bridge = new PageInfoModelBubbleBridge();
-  PageInfoModel* pageInfoModel =
-      new PageInfoModel(self.browserState, navItem->GetURL(), navItem->GetSSL(),
-                        presenting_offline_page, bridge);
+  PageInfoModel* pageInfoModel = new PageInfoModel(
+      navItem->GetURL(), navItem->GetSSL(), presenting_offline_page);
 
   CGPoint originPresentationCoordinates = [self.presentationProvider
-      convertToPresentationCoordinatesForOrigin:originPoint];
-  self.pageInfoViewController = [[PageInfoViewController alloc]
+      convertToPresentationCoordinatesForOrigin:self.originPoint];
+  self.pageInfoViewController = [[LegacyPageInfoViewController alloc]
              initWithModel:pageInfoModel
-                    bridge:bridge
                sourcePoint:originPresentationCoordinates
       presentationProvider:self.presentationProvider
-                dispatcher:self];
-  bridge->set_controller(self.pageInfoViewController);
+                   handler:HandlerForProtocol(
+                               self.browser->GetCommandDispatcher(),
+                               BrowserCommands)];
 }
 
-- (void)hidePageInfo {
+- (void)stop {
   // Early return if the PageInfoPopup is not presented.
   if (!self.pageInfoViewController)
     return;
@@ -133,26 +112,6 @@ NSString* const kPageInfoWillHideNotification =
 
   [self.pageInfoViewController dismiss];
   self.pageInfoViewController = nil;
-}
-
-- (void)showSecurityHelpPage {
-  UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kPageInfoHelpCenterURL));
-  params.in_incognito = self.browserState->IsOffTheRecord();
-  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
-  [self hidePageInfo];
-}
-
-#pragma mark - PageInfoReloading
-
-- (void)reload {
-  web::WebState* webState =
-      self.browser->GetWebStateList()->GetActiveWebState();
-  if (webState) {
-    // |check_for_repost| is true because the reload is explicitly initiated
-    // by the user.
-    webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
-                                             true /* check_for_repost */);
-  }
 }
 
 @end

@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
+    "indexed_db_control.mojom",
     "local_storage_control.mojom",
     "origin_context.mojom",
     "partition.mojom",

@@ -30,13 +30,7 @@ class PortalBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(crbug.com/1006633): Test fails on Chrome OS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_PortalActivation DISABLED_PortalActivation
-#else
-#define MAYBE_PortalActivation PortalActivation
-#endif
-IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_PortalActivation) {
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, PortalActivation) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/portal/activate.html"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -55,16 +49,8 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MAYBE_PortalActivation) {
   EXPECT_EQ(portal_contents, tab_strip_model->GetActiveWebContents());
 }
 
-// TODO(crbug.com/1006633): Test fails on Chrome OS.
-#if defined(OS_CHROMEOS)
-#define MAYBE_DevToolsWindowStaysOpenAfterActivation \
-  DISABLED_DevToolsWindowStaysOpenAfterActivation
-#else
-#define MAYBE_DevToolsWindowStaysOpenAfterActivation \
-  DevToolsWindowStaysOpenAfterActivation
-#endif
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
-                       MAYBE_DevToolsWindowStaysOpenAfterActivation) {
+                       DevToolsWindowStaysOpenAfterActivation) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/portal/activate.html"));
   ui_test_utils::NavigateToURL(browser(), url);

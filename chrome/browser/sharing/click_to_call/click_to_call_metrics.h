@@ -9,7 +9,6 @@
 
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/sharing/click_to_call/phone_number_regex.h"
-#include "chrome/browser/sharing/sharing_metrics.h"
 
 namespace content {
 class WebContents;
@@ -64,10 +63,6 @@ class ScopedUmaHistogramMicrosecondsTimer {
   const PhoneNumberRegexVariant variant_;
   const base::ElapsedTimer timer_;
 };
-
-// Logs the dialog type when a user clicks on the help text in the Click to Call
-// dialog.
-void LogClickToCallHelpTextClicked(SharingDialogType type);
 
 // Records a Click to Call selection to UKM. This is logged after a completed
 // action like selecting an app or a device to send the phone number to.

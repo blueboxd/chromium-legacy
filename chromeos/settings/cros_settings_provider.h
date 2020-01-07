@@ -48,10 +48,11 @@ class COMPONENT_EXPORT(CHROMEOS_SETTINGS) CrosSettingsProvider {
   // Requests the provider to fetch its values from a trusted store, if it
   // hasn't done so yet. Returns TRUSTED if the values returned by this provider
   // are trusted during the current loop cycle. Otherwise returns
-  // TEMPORARILY_UNTRUSTED, and |callback| will be invoked later when trusted
-  // values become available, PrepareTrustedValues() should be tried again in
-  // that case. Returns PERMANENTLY_UNTRUSTED if a permanent error has occurred.
-  virtual TrustedStatus PrepareTrustedValues(base::OnceClosure callback) = 0;
+  // TEMPORARILY_UNTRUSTED, takes ownership of |callback|, and will invoke it
+  // later when trusted values become available. PrepareTrustedValues() should
+  // be tried again in that case. Returns PERMANENTLY_UNTRUSTED if a permanent
+  // error has occurred.
+  virtual TrustedStatus PrepareTrustedValues(base::OnceClosure* callback) = 0;
 
   // Gets the namespace prefix provided by this provider.
   virtual bool HandlesSetting(const std::string& path) const = 0;

@@ -1141,7 +1141,7 @@ WebURLError WebURLLoaderImpl::PopulateURLError(
   if (status.cors_error_status)
     return WebURLError(*status.cors_error_status, has_copy_in_cache, url);
   return WebURLError(status.error_code, status.extended_error_code,
-                     has_copy_in_cache,
+                     status.resolve_error_info, has_copy_in_cache,
                      WebURLError::IsWebSecurityViolation::kFalse, url);
 }
 
@@ -1178,6 +1178,7 @@ void WebURLLoaderImpl::LoadSynchronously(
               ? WebURLError::IsWebSecurityViolation::kTrue
               : WebURLError::IsWebSecurityViolation::kFalse;
       error = WebURLError(error_code, sync_load_response.extended_error_code,
+                          sync_load_response.resolve_error_info,
                           WebURLError::HasCopyInCache::kFalse,
                           is_web_security_violation, final_url);
     }

@@ -311,7 +311,7 @@ bool RulesetManager::HasExtraHeadersMatcherForRequest(
 
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
-  static_assert(flat::ActionIndex_count == 7,
+  static_assert(flat::ActionType_count == 5,
                 "Modify this method to ensure HasExtraHeadersMatcherForRequest "
                 "is updated as new actions are added.");
 
@@ -351,19 +351,7 @@ bool RulesetManager::ExtensionRulesetData::operator<(
          std::tie(other.extension_install_time, other.extension_id);
 }
 
-base::Optional<RequestAction> RulesetManager::GetBlockOrCollapseAction(
-    const std::vector<const ExtensionRulesetData*>& rulesets,
-    const RequestParams& params) const {
-  for (const ExtensionRulesetData* ruleset : rulesets) {
-    base::Optional<RequestAction> action =
-        ruleset->matcher->GetBlockOrCollapseAction(params);
-    if (action)
-      return action;
-  }
-  return base::nullopt;
-}
-
-base::Optional<RequestAction> RulesetManager::GetRedirectOrUpgradeAction(
+base::Optional<RequestAction> RulesetManager::GetBeforeRequestAction(
     const std::vector<const ExtensionRulesetData*>& rulesets,
     const WebRequestInfo& request,
     const int tab_id,
@@ -373,13 +361,31 @@ base::Optional<RequestAction> RulesetManager::GetRedirectOrUpgradeAction(
                         [](const ExtensionRulesetData* a,
                            const ExtensionRulesetData* b) { return *a < *b; }));
 
-  // Redirecting WebSocket handshake request is prohibited.
-  if (params.element_type == flat_rule::ElementType_WEBSOCKET)
-    return base::nullopt;
+  // The priorities of actions between different extensions is different from
+  // the priorities of actions within an extension.
+  const auto action_priority = [](const base::Optional<RequestAction>& action) {
+    if (!action.has_value())
+      return 0;
+    switch (action->type) {
+      case RequestAction::Type::BLOCK:
+      case RequestAction::Type::COLLAPSE:
+        return 3;
+      case RequestAction::Type::REDIRECT:
+      case RequestAction::Type::UPGRADE:
+        return 2;
+      case RequestAction::Type::ALLOW:
+        return 1;
+      case RequestAction::Type::REMOVE_HEADERS:
+        NOTREACHED();
+        return 0;
+    }
+  };
+
+  base::Optional<RequestAction> action;
 
   // This iterates in decreasing order of extension installation time. Hence
   // more recently installed extensions get higher priority in choosing the
-  // redirect url.
+  // action for the request.
   for (const ExtensionRulesetData* ruleset : rulesets) {
     PageAccess page_access = WebRequestPermissions::CanExtensionAccessURL(
         permission_helper_, ruleset->extension_id, request.url, tab_id,
@@ -387,23 +393,20 @@ base::Optional<RequestAction> RulesetManager::GetRedirectOrUpgradeAction(
         WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
         request.initiator, request.type);
 
-    CompositeMatcher::RedirectActionInfo redirect_action_info =
-        ruleset->matcher->GetRedirectAction(params, page_access);
+    CompositeMatcher::ActionInfo action_info =
+        ruleset->matcher->GetBeforeRequestAction(params, page_access);
 
-    DCHECK(!(redirect_action_info.action &&
-             redirect_action_info.notify_request_withheld));
-    if (redirect_action_info.notify_request_withheld) {
+    DCHECK(!(action_info.action && action_info.notify_request_withheld));
+    if (action_info.notify_request_withheld) {
       NotifyRequestWithheld(ruleset->extension_id, request);
       continue;
     }
 
-    if (!redirect_action_info.action)
-      continue;
-
-    return std::move(redirect_action_info.action);
+    if (action_priority(action_info.action) > action_priority(action))
+      action = std::move(action_info.action);
   }
 
-  return base::nullopt;
+  return action;
 }
 
 std::vector<RequestAction> RulesetManager::GetRemoveHeadersActions(
@@ -483,18 +486,10 @@ std::vector<RequestAction> RulesetManager::EvaluateRequestInternal(
     rulesets_to_evaluate.push_back(&ruleset);
   }
 
-  // If the request is blocked, no further modifications can happen.
-  base::Optional<RequestAction> action =
-      GetBlockOrCollapseAction(rulesets_to_evaluate, params);
-  if (action) {
-    actions.push_back(std::move(std::move(*action)));
-    return actions;
-  }
-
-  // If the request is redirected, no further modifications can happen. A new
-  // request will be created and subsequently evaluated.
-  action = GetRedirectOrUpgradeAction(rulesets_to_evaluate, request, tab_id,
-                                      crosses_incognito, params);
+  // If the request is blocked/allowed/redirected, no further modifications can
+  // happen. A new request will be created and subsequently evaluated.
+  base::Optional<RequestAction> action = GetBeforeRequestAction(
+      rulesets_to_evaluate, request, tab_id, crosses_incognito, params);
   if (action) {
     actions.push_back(std::move(std::move(*action)));
     return actions;

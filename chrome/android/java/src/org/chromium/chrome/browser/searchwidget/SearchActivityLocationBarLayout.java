@@ -41,6 +41,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
         super(context, attrs, R.layout.location_bar_base);
         setUrlBarFocusable(true);
         setBackground(ToolbarPhone.createModernLocationBarBackground(getResources()));
+        setShouldShowMicButtonWhenUnfocused(true);
 
         mPendingSearchPromoDecision = LocaleManager.getInstance().needToCheckForSearchEnginePromo();
         getAutocompleteCoordinator().setShouldPreventOmniboxAutocomplete(
@@ -82,10 +83,8 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     void onDeferredStartup(boolean isVoiceSearchIntent) {
         getAutocompleteCoordinator().prefetchZeroSuggestResults();
 
-        if (mVoiceRecognitionHandler != null) {
-            SearchWidgetProvider.updateCachedVoiceSearchAvailability(
-                    mVoiceRecognitionHandler.isVoiceSearchEnabled());
-        }
+        SearchWidgetProvider.updateCachedVoiceSearchAvailability(
+                getLocationBarVoiceRecognitionHandler().isVoiceSearchEnabled());
         if (isVoiceSearchIntent && mUrlBar.isFocused()) onUrlFocusChange(true);
 
         assert !LocaleManager.getInstance().needToCheckForSearchEnginePromo();
@@ -128,9 +127,8 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     private void beginQueryInternal(boolean isVoiceSearchIntent) {
         assert !mPendingSearchPromoDecision;
 
-        if (mVoiceRecognitionHandler != null && mVoiceRecognitionHandler.isVoiceSearchEnabled()
-                && isVoiceSearchIntent) {
-            mVoiceRecognitionHandler.startVoiceRecognition(
+        if (getLocationBarVoiceRecognitionHandler().isVoiceSearchEnabled() && isVoiceSearchIntent) {
+            getLocationBarVoiceRecognitionHandler().startVoiceRecognition(
                     LocationBarVoiceRecognitionHandler.VoiceInteractionSource.SEARCH_WIDGET);
         } else {
             focusTextBox();
@@ -140,7 +138,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     @Override
     protected void updateButtonVisibility() {
         super.updateButtonVisibility();
-        updateMicButtonVisibility(1.0f);
+        updateMicButtonVisibility();
         findViewById(R.id.url_action_container).setVisibility(View.VISIBLE);
     }
 

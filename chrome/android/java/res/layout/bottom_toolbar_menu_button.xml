@@ -15,21 +15,19 @@
 
     <org.chromium.ui.widget.ChromeImageButton
         android:id="@+id/menu_button"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:background="@null"
+        style="@style/SplitToolbarButton"
         android:src="@drawable/ic_more_vert_24dp"
         android:importantForAccessibility="no"
         android:layout_gravity="center"
+        android:background="?attr/selectableItemBackgroundBorderless"
         app:tint="@color/standard_mode_tint" />
 
     <ImageView
         android:id="@+id/menu_badge"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:background="@null"
+        style="@style/SplitToolbarButton"
         android:src="@drawable/badge_update_dark"
         tools:ignore="ContentDescription"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:importantForAccessibility="no"
         android:layout_gravity="center"
         android:visibility="invisible" />

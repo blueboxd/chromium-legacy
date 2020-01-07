@@ -49,7 +49,6 @@
 <translation id="1056775291175587022">Δεν βρέθηκαν δίκτυα</translation>
 <translation id="1056898198331236512">Προειδοποίηση</translation>
 <translation id="1058262162121953039">Κωδικός PUK</translation>
-<translation id="1060881073479695738">Εφαρμογές Play Store</translation>
 <translation id="1061745542578250838">Το αρχείο <ph name="FILE_NAME" /> περιέχει ευαίσθητο περιεχόμενο και έχει αποκλειστεί.</translation>
 <translation id="1061904396131502319">Πλησιάζει η ώρα για διάλειμμα</translation>
 <translation id="1067048845568873861">Δημιουργήθηκε</translation>
@@ -1569,6 +1568,7 @@
 <translation id="3172808215939929606">Αυτή η σελίδα έχει μεταφραστεί</translation>
 <translation id="3177909033752230686">Γλώσσα σελίδας:</translation>
 <translation id="3179982752812949580">Γραμματοσειρά κειμένου</translation>
+<translation id="3181825792072797598">Ενεργοποίηση συγχρονισμού</translation>
 <translation id="3181954750937456830">Ασφαλής περιήγηση (προστατεύει εσάς και τη συσκευή σας από επικίνδυνους ιστοτόπους)</translation>
 <translation id="3182749001423093222">Ορθογραφικός έλεγχος</translation>
 <translation id="3183139917765991655">Εργαλείο εισαγωγής προφίλ</translation>
@@ -4654,6 +4654,7 @@
 <translation id="7684718995427157417">Για να δημιουργήσετε και να δοκιμάσετε τις εφαρμογές σας, ενεργοποιήστε το Android Debug Bridge (ADB). Σημειώστε ότι αυτή η ενέργεια επιτρέπει την εγκατάσταση εφαρμογών Android που δεν έχουν επαληθευτεί από τη Google. Επιπλέον, απαιτείται εργοστασιακή επαναφορά για την απενεργοποίησή της.</translation>
 <translation id="7685049629764448582">Μνήμη JavaScript</translation>
 <translation id="7685087414635069102">Απαιτείται PIN</translation>
+<translation id="768549422429443215">Προσθέστε γλώσσες ή κάντε αναδιάταξη της λίστας.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Επιβεβαίωση νέου κωδικού πρόσβασης</translation>
 <translation id="7690378713476594306">Επιλογή από τη λίστα</translation>

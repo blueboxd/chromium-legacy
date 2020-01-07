@@ -90,6 +90,26 @@ enum class AXRangeExpandBehavior {
   kRightFirst
 };
 
+// Some platforms require empty objects to be represented by a replacement
+// character in order for text navigation to work correctly. This enum controls
+// whether a replacement character will be exposed for such objects.
+//
+// When an embedded object is replaced by a real character, the expectations
+// are the same with this character as with other ordinary characters.
+// For example, with UIA on Windows, we need to be able to navigate inside and
+// outside of this character as if it was an ordinary character, using the
+// AXPlatformNodeTextRangeProvider methods. Since an embedded object character
+// is the only character in a node, we also treat this character as a word.
+enum class AXEmbeddedObjectBehavior {
+  kExposeCharacter,
+  kSuppressCharacter,
+};
+
+// Controls whether embedded objects are represented by a replacement
+// character. This is initialized to a per-platform default but can be
+// overridden for testing.
+AX_EXPORT extern AXEmbeddedObjectBehavior g_ax_embedded_object_behavior;
+
 // Forward declarations.
 template <class AXPositionType, class AXNodeType>
 class AXPosition;
@@ -148,6 +168,13 @@ class AXPosition {
   static const int BEFORE_TEXT = -1;
   static const int INVALID_INDEX = -2;
   static const int INVALID_OFFSET = -1;
+
+  // Replacement character used to represent an empty object. See
+  // AXEmbeddedObjectBehavior for more information.
+  //
+  // Duplicate of AXPlatformNodeBase::kEmbeddedCharacter because we don't want
+  // to include platform specific code in here.
+  static constexpr base::char16 kEmbeddedCharacter = L'\xfffc';
 
   static AXPositionInstance CreateNullPosition() {
     AXPositionInstance new_position(new AXPositionType());
@@ -269,9 +296,10 @@ class AXPosition {
 
     base::string16 text = GetText();
     DCHECK_GE(text_offset_, 0);
-    DCHECK_LE(text_offset_, int{text.length()});
+    int max_text_offset = MaxTextOffset();
+    DCHECK_LE(text_offset_, max_text_offset);
     base::string16 annotated_text;
-    if (text_offset_ == MaxTextOffset()) {
+    if (text_offset_ == max_text_offset) {
       annotated_text = text + base::WideToUTF16(L"<>");
     } else {
       annotated_text = text.substr(0, text_offset_) + base::WideToUTF16(L"<") +
@@ -2592,6 +2620,22 @@ class AXPosition {
                                other_tree_position_ancestor->child_index());
   }
 
+  // Returns true if this position is on an empty object node that needs to
+  // be represented by an empty object replacement character. It does when
+  // the node has no child, is not a text object and we are on a platform that
+  // enables this feature.
+  bool IsEmptyObjectReplacedByCharacter() const {
+    if (g_ax_embedded_object_behavior ==
+            AXEmbeddedObjectBehavior::kSuppressCharacter ||
+        AnchorChildCount()) {
+      return false;
+    }
+    // All unignored leaf nodes in the AXTree except the document and the text
+    // nodes should be replaced by the embedded object character.
+    return !IsIgnored() && !IsDocument(GetRole()) &&
+           !GetAnchor()->IsTextOnlyObject();
+  }
+
   void swap(AXPosition& other) {
     std::swap(kind_, other.kind_);
     std::swap(tree_id_, other.tree_id_);
@@ -2608,8 +2652,8 @@ class AXPosition {
 
   // Returns the text that is present inside the anchor node, including any text
   // found in descendant text nodes, based on the platform's text
-  // representation. Some platforms use an embedded object character that
-  // replaces the text coming from each child node.
+  // representation. Some platforms use an embedded object replacement character
+  // that replaces the text coming from each child node.
   virtual base::string16 GetText() const = 0;
 
   // Determines if the anchor containing this position is a <br> or a text

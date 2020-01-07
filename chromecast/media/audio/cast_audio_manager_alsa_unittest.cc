@@ -70,7 +70,8 @@ class CastAudioManagerAlsaTest : public testing::Test {
 
 TEST_F(CastAudioManagerAlsaTest, MakeAudioInputStream) {
   ::media::AudioInputStream* stream = audio_manager_->MakeAudioInputStream(
-      kDefaultAudioParams, kDefaultAlsaDevice, base::Bind(&OnLogMessage));
+      kDefaultAudioParams, kDefaultAlsaDevice,
+      base::BindRepeating(&OnLogMessage));
   ASSERT_TRUE(stream);
   EXPECT_TRUE(stream->Open());
   stream->Close();

@@ -75,18 +75,56 @@ def fixObsoleteOrder(tree):
   if obsoletes:
     tree.insert(0, obsoletes[0])
 
-def DropNodesByTagName(tree, tag):
+def DropNodesByTagName(tree, tag, dropped_nodes=[]):
   """Drop all nodes with named tag from the XML tree."""
   removes = []
 
   for child in tree:
     if child.tag == tag:
       removes.append(child)
+      dropped_nodes.append(child)
     else:
       DropNodesByTagName(child, tag)
 
   for child in removes:
     tree.remove(child)
+
+def FixMisplacedHistogramsAndHistogramSuffixes(tree):
+  """Fixes misplaced histogram and histogram_suffixes nodes."""
+  histograms = []
+  histogram_suffixes = []
+
+  def ExtractMisplacedHistograms(tree):
+    """Gets and drops misplaced histograms and histogram_suffixes.
+
+    Args:
+      tree: The node of the xml tree.
+      histograms: A list of histogram nodes inside histogram_suffixes_list
+          node. This is a return element.
+      histogram_suffixes: A list of histogram_suffixes nodes inside histograms
+          node. This is a return element.
+    """
+    for child in tree:
+      if child.tag == 'histograms':
+        DropNodesByTagName(child, 'histogram_suffixes', histogram_suffixes)
+      elif child.tag == 'histogram_suffixes_list':
+        DropNodesByTagName(child, 'histogram', histograms)
+      else:
+        ExtractMisplacedHistograms(child)
+
+  ExtractMisplacedHistograms(tree)
+
+  def AddBackMisplacedHistograms(tree):
+    """Adds back those misplaced histogram and histogram_suffixes nodes."""
+    for child in tree:
+      if child.tag == 'histograms':
+        child.extend(histograms)
+      elif child.tag == 'histogram_suffixes_list':
+        child.extend(histogram_suffixes)
+      else:
+        AddBackMisplacedHistograms(child)
+
+  AddBackMisplacedHistograms(tree)
 
 def PrettyPrintHistograms(raw_xml):
   """Pretty-print the given histograms XML.
@@ -112,6 +150,7 @@ def PrettyPrintHistogramsTree(tree):
   """
   # Prevent accidentally adding enums to histograms.xml
   DropNodesByTagName(tree, 'enums')
+  FixMisplacedHistogramsAndHistogramSuffixes(tree)
   canonicalizeUnits(tree)
   fixObsoleteOrder(tree)
   return histograms_print_style.GetPrintStyle().PrettyPrintXml(tree)

@@ -103,9 +103,9 @@ class CustomLinksManagerImplTest : public testing::Test {
   }
 
  protected:
+  base::ScopedTempDir scoped_temp_dir_;
   base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  base::ScopedTempDir scoped_temp_dir_;
   std::unique_ptr<history::HistoryService> history_service_;
   std::unique_ptr<CustomLinksManagerImpl> custom_links_;
 

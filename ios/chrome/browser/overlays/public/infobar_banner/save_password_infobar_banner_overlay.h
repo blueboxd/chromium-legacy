@@ -21,10 +21,16 @@ class SavePasswordInfobarBannerOverlayRequestConfig
  public:
   ~SavePasswordInfobarBannerOverlayRequestConfig() override;
 
-  // The save password delegate used to configure the banner UI.
-  IOSChromeSavePasswordInfoBarDelegate* save_password_delegate() const {
-    return save_password_delegate_;
-  }
+  // The infobar delegate's message text.
+  NSString* message() const { return message_; }
+  // The username for which passwords are being saved.
+  NSString* username() const { return username_; }
+  // The text to show on the banner's confirm button.
+  NSString* button_text() const { return button_text_; }
+  // The name of the banner's icon image.
+  NSString* icon_image_name() const { return icon_image_name_; }
+  // The length of the password being saved.
+  size_t password_length() const { return password_length_; }
 
  private:
   OVERLAY_USER_DATA_SETUP(SavePasswordInfobarBannerOverlayRequestConfig);
@@ -36,8 +42,12 @@ class SavePasswordInfobarBannerOverlayRequestConfig
 
   // The InfoBar causing this banner.
   infobars::InfoBar* infobar_ = nullptr;
-  // The delegate used to configure the save passwords banner.
-  IOSChromeSavePasswordInfoBarDelegate* save_password_delegate_ = nullptr;
+  // Configuration data extracted from |infobar_|'s save passwords delegate.
+  NSString* message_ = nil;
+  NSString* username_ = nil;
+  NSString* button_text_ = nil;
+  NSString* icon_image_name_ = nil;
+  size_t password_length_ = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_INFOBAR_BANNER_SAVE_PASSWORD_INFOBAR_BANNER_OVERLAY_H_

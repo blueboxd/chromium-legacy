@@ -304,10 +304,9 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
     return;
 
   extensions_with_rulesets_.insert(load_data.extension_id);
-  LoadRuleset(
-      load_data.extension_id,
-      std::make_unique<CompositeMatcher>(std::move(matchers), &action_tracker_),
-      prefs_->GetDNRAllowedPages(load_data.extension_id));
+  LoadRuleset(load_data.extension_id,
+              std::make_unique<CompositeMatcher>(std::move(matchers)),
+              prefs_->GetDNRAllowedPages(load_data.extension_id));
 }
 
 void RulesMonitorService::OnDynamicRulesUpdated(

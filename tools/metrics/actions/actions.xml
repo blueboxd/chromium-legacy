@@ -10808,6 +10808,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ManagedUsers_Chromeos_Sync_Invalidated">
+  <obsolete>This metric hasn't triggered since M67</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>

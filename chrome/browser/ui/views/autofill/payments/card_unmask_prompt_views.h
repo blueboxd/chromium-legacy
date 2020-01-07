@@ -23,7 +23,6 @@ class WebContents;
 namespace views {
 class Checkbox;
 class Label;
-class Link;
 class Textfield;
 class Throbber;
 }  // namespace views
@@ -103,7 +102,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   MonthComboboxModel month_combobox_model_;
   YearComboboxModel year_combobox_model_;
 
-  views::Link* new_card_link_ = nullptr;
+  views::View* new_card_link_ = nullptr;
 
   // The error row view and label for most errors, which live beneath the
   // inputs.

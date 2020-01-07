@@ -678,10 +678,10 @@ class TabStripModel : public TabGroupController {
   void GroupTab(int index, tab_groups::TabGroupId group);
 
   // TabGroupController:
-  void CreateTabGroup(tab_groups::TabGroupId group) override;
-  void ChangeTabGroupContents(tab_groups::TabGroupId group) override;
-  void ChangeTabGroupVisuals(tab_groups::TabGroupId group) override;
-  void CloseTabGroup(tab_groups::TabGroupId group) override;
+  void CreateTabGroup(const tab_groups::TabGroupId& group) override;
+  void ChangeTabGroupContents(const tab_groups::TabGroupId& group) override;
+  void ChangeTabGroupVisuals(const tab_groups::TabGroupId& group) override;
+  void CloseTabGroup(const tab_groups::TabGroupId& group) override;
   // The same as count(), but overridden for TabGroup to access.
   int GetTabCount() const override;
 

@@ -24,7 +24,10 @@ FrameResourceFetcherProperties::FrameResourceFetcherProperties(
     : frame_or_imported_document_(frame_or_imported_document),
       fetch_client_settings_object_(
           MakeGarbageCollected<FetchClientSettingsObjectImpl>(
-              frame_or_imported_document.GetDocument())) {}
+              frame_or_imported_document.GetDocument())),
+      web_bundle_physical_url_(
+          frame_or_imported_document_->GetMasterDocumentLoader()
+              .WebBundlePhysicalUrl()) {}
 
 void FrameResourceFetcherProperties::Trace(Visitor* visitor) {
   visitor->Trace(frame_or_imported_document_);
@@ -107,8 +110,7 @@ scheduler::FrameStatus FrameResourceFetcherProperties::GetFrameStatus() const {
 }
 
 const KURL& FrameResourceFetcherProperties::WebBundlePhysicalUrl() const {
-  return frame_or_imported_document_->GetMasterDocumentLoader()
-      .WebBundlePhysicalUrl();
+  return web_bundle_physical_url_;
 }
 
 }  // namespace blink

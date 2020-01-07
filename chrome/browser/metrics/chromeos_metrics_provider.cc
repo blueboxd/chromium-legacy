@@ -184,8 +184,9 @@ void ChromeOSMetricsProvider::Init() {
     profile_provider_->Init();
 }
 
-void ChromeOSMetricsProvider::AsyncInit(const base::Closure& done_callback) {
-  base::RepeatingClosure barrier = base::BarrierClosure(3, done_callback);
+void ChromeOSMetricsProvider::AsyncInit(base::OnceClosure done_callback) {
+  base::RepeatingClosure barrier =
+      base::BarrierClosure(3, std::move(done_callback));
   InitTaskGetFullHardwareClass(barrier);
   InitTaskGetBluetoothAdapter(barrier);
   InitTaskGetArcFeatures(barrier);
@@ -201,7 +202,7 @@ void ChromeOSMetricsProvider::OnDidCreateMetricsLog() {
 }
 
 void ChromeOSMetricsProvider::InitTaskGetFullHardwareClass(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   // Run the (potentially expensive) task in the background to avoid blocking
   // the UI thread.
   base::PostTaskAndReplyWithResult(
@@ -211,21 +212,21 @@ void ChromeOSMetricsProvider::InitTaskGetFullHardwareClass(
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&GetFullHardwareClassOnBackgroundThread),
       base::BindOnce(&ChromeOSMetricsProvider::SetFullHardwareClass,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ChromeOSMetricsProvider::InitTaskGetBluetoothAdapter(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   device::BluetoothAdapterFactory::GetAdapter(
       base::BindOnce(&ChromeOSMetricsProvider::SetBluetoothAdapter,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ChromeOSMetricsProvider::InitTaskGetArcFeatures(
-    const base::RepeatingClosure& callback) {
+    base::OnceClosure callback) {
   arc::ArcFeaturesParser::GetArcFeatures(
       base::BindOnce(&ChromeOSMetricsProvider::OnArcFeaturesParsed,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
@@ -419,27 +420,27 @@ void ChromeOSMetricsProvider::UpdateMultiProfileUserCount(
 }
 
 void ChromeOSMetricsProvider::SetBluetoothAdapter(
-    base::Closure callback,
+    base::OnceClosure callback,
     scoped_refptr<device::BluetoothAdapter> adapter) {
   adapter_ = adapter;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void ChromeOSMetricsProvider::SetFullHardwareClass(
-    base::Closure callback,
+    base::OnceClosure callback,
     std::string full_hardware_class) {
   if (!base::FeatureList::IsEnabled(features::kUmaShortHWClass)) {
     DCHECK(hardware_class_.empty());
     hardware_class_ = full_hardware_class;
   }
   full_hardware_class_ = full_hardware_class;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void ChromeOSMetricsProvider::OnArcFeaturesParsed(
-    base::RepeatingClosure callback,
+    base::OnceClosure callback,
     base::Optional<arc::ArcFeatures> features) {
-  base::ScopedClosureRunner runner(callback);
+  base::ScopedClosureRunner runner(std::move(callback));
   if (!features) {
     LOG(WARNING) << "ArcFeatures not available on this build";
     return;

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -13,21 +14,33 @@
 #endif
 
 BreadcrumbManagerObserverBridge::BreadcrumbManagerObserverBridge(
-    BreadcrumbManagerKeyedService* breadcrumb_manager_keyed_service,
+    BreadcrumbManager* breadcrumb_manager,
     id<BreadcrumbManagerObserving> observer)
-    : breadcrumb_manager_keyed_service_(breadcrumb_manager_keyed_service),
+    : breadcrumb_manager_(breadcrumb_manager), observer_(observer) {
+  DCHECK(observer_);
+  breadcrumb_manager_->AddObserver(this);
+}
+
+BreadcrumbManagerObserverBridge::BreadcrumbManagerObserverBridge(
+    BreadcrumbManagerKeyedService* breadcrumb_manager_service,
+    id<BreadcrumbManagerObserving> observer)
+    : breadcrumb_manager_service_(breadcrumb_manager_service),
       observer_(observer) {
   DCHECK(observer_);
-  breadcrumb_manager_keyed_service_->AddObserver(this);
+  breadcrumb_manager_service_->AddObserver(this);
 }
 
 BreadcrumbManagerObserverBridge::~BreadcrumbManagerObserverBridge() {
-  breadcrumb_manager_keyed_service_->RemoveObserver(this);
+  if (breadcrumb_manager_) {
+    breadcrumb_manager_->RemoveObserver(this);
+  }
+  if (breadcrumb_manager_service_) {
+    breadcrumb_manager_service_->RemoveObserver(this);
+  }
 }
 
-void BreadcrumbManagerObserverBridge::EventAdded(
-    BreadcrumbManagerKeyedService* manager,
-    const std::string& event) {
+void BreadcrumbManagerObserverBridge::EventAdded(BreadcrumbManager* manager,
+                                                 const std::string& event) {
   [observer_ breadcrumbManager:manager
                    didAddEvent:base::SysUTF8ToNSString(event)];
 }

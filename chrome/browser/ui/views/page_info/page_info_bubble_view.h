@@ -26,7 +26,6 @@
 #include "components/security_state/core/security_state.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
@@ -53,7 +52,6 @@ class PageInfoBubbleViewTestApi;
 }  // namespace test
 
 namespace views {
-class Link;
 class View;
 }  // namespace views
 
@@ -62,7 +60,6 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
                            public PermissionSelectorRowObserver,
                            public ChosenObjectViewObserver,
                            public views::ButtonListener,
-                           public views::LinkListener,
                            public views::StyledLabelListener,
                            public PageInfoUI {
  public:
@@ -138,9 +135,6 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* button, const ui::Event& event) override;
-
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
 
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,

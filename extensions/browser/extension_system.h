@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "build/build_config.h"
@@ -114,7 +114,7 @@ class ExtensionSystem : public KeyedService {
   // asynchronously. |callback| is run on the calling thread once completed.
   virtual void RegisterExtensionWithRequestContexts(
       const Extension* extension,
-      const base::Closure& callback) {}
+      base::OnceClosure callback) {}
 
   // Called by the ExtensionService that lives in this system. Lets the
   // info map clean up its RequestContexts once all the listeners to the

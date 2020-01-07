@@ -521,7 +521,7 @@ void ChromeAuthenticatorRequestDelegate::CollectPIN(
   weak_dialog_model_->CollectPIN(attempts, std::move(provide_pin_cb));
 }
 
-void ChromeAuthenticatorRequestDelegate::FinishCollectPIN() {
+void ChromeAuthenticatorRequestDelegate::FinishCollectToken() {
   weak_dialog_model_->SetCurrentStep(
       AuthenticatorRequestDialogModel::Step::kClientPinTapAgain);
 }

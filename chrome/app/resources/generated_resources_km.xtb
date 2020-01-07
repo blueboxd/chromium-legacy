@@ -49,7 +49,6 @@
 <translation id="1056775291175587022">មិនមានបណ្ដាញទេ</translation>
 <translation id="1056898198331236512">ការព្រមាន</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1060881073479695738">កម្មវិធី​នៅលើ Play Store</translation>
 <translation id="1061745542578250838"><ph name="FILE_NAME" /> មានខ្លឹមសាររសើប និងត្រូវបានទប់ស្កាត់។</translation>
 <translation id="1061904396131502319">ជិតដល់ពេលសម្រាកហើយ</translation>
 <translation id="1067048845568873861">បានបង្កើត</translation>
@@ -1569,6 +1568,7 @@
 <translation id="3172808215939929606">ទំព័រ​នេះត្រូវ​បាន​បកប្រែ​រួច​ហើយ</translation>
 <translation id="3177909033752230686">ភាសាទំព័រ៖</translation>
 <translation id="3179982752812949580">ពុម្ព​អក្សរ​</translation>
+<translation id="3181825792072797598">បើក​សមកាលកម្ម</translation>
 <translation id="3181954750937456830">មុខងាររុករក​ដោយ​សុវត្ថិភាព (ការពារអ្នក​ និងឧបករណ៍​របស់អ្នក​ពីគេហទំព័រ​គ្រោះថ្នាក់)</translation>
 <translation id="3182749001423093222">ពិនិត្យអក្ខរាវិរុទ្ធ</translation>
 <translation id="3183139917765991655">កម្មវិធីនាំចូលប្រវត្តិរូប</translation>
@@ -4654,6 +4654,7 @@
 <translation id="7684718995427157417">ដើម្បី​បង្កើត និងធ្វើតេស្ត​កម្មវិធី​របស់អ្នក សូមបើក Android Debug Bridge (ADB)។ សូម​ចំណាំថា សកម្មភាពនេះ​អនុញ្ញាតការដំឡើង​កម្មវិធី Android ដែល​មិនមាន​ការផ្ទៀងផ្ទាត់ពី Google និងតម្រូវឱ្យ​កំណត់ដូចដើមឡើងវិញ ដើម្បី​បិទ។</translation>
 <translation id="7685049629764448582">មេម៉ូរី JavaScript</translation>
 <translation id="7685087414635069102">តម្រូវឱ្យមានកូដ PIN</translation>
+<translation id="768549422429443215">បញ្ចូលភាសា ឬ​តម្រៀបបញ្ជី​ឡើងវិញ។</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">បញ្ជាក់​ពាក្យ​សម្ងាត់​ថ្មី</translation>
 <translation id="7690378713476594306">ជ្រើសរើស​ពី​បញ្ជី</translation>

@@ -150,20 +150,23 @@ bool BrowserCompositorMac::UpdateSurfaceFromNSView(
 }
 
 void BrowserCompositorMac::UpdateSurfaceFromChild(
+    bool auto_resize_enabled,
     float new_device_scale_factor,
     const gfx::Size& new_size_in_pixels,
     const viz::LocalSurfaceIdAllocation& child_local_surface_id_allocation) {
   if (dfh_local_surface_id_allocator_.UpdateFromChild(
           child_local_surface_id_allocation)) {
-    dfh_display_.set_device_scale_factor(new_device_scale_factor);
-    dfh_size_dip_ = gfx::ConvertSizeToDIP(dfh_display_.device_scale_factor(),
-                                          new_size_in_pixels);
-    dfh_size_pixels_ = new_size_in_pixels;
-    root_layer_->SetBounds(gfx::Rect(dfh_size_dip_));
-    if (recyclable_compositor_) {
-      recyclable_compositor_->UpdateSurface(dfh_size_pixels_,
-                                            dfh_display_.device_scale_factor(),
-                                            dfh_display_.color_space());
+    if (auto_resize_enabled) {
+      dfh_display_.set_device_scale_factor(new_device_scale_factor);
+      dfh_size_dip_ = gfx::ConvertSizeToDIP(dfh_display_.device_scale_factor(),
+                                            new_size_in_pixels);
+      dfh_size_pixels_ = new_size_in_pixels;
+      root_layer_->SetBounds(gfx::Rect(dfh_size_dip_));
+      if (recyclable_compositor_) {
+        recyclable_compositor_->UpdateSurface(
+            dfh_size_pixels_, dfh_display_.device_scale_factor(),
+            dfh_display_.color_space());
+      }
     }
     delegated_frame_host_->EmbedSurface(
         dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()

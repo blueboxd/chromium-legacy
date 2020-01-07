@@ -175,6 +175,7 @@ TestRule CreateGenericRule() {
   action.type = std::string("block");
   TestRule rule;
   rule.id = kMinValidID;
+  rule.priority = kMinValidPriority;
   rule.action = action;
   rule.condition = condition;
   return rule;

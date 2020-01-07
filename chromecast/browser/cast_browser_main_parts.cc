@@ -144,7 +144,7 @@ int kSignalsToRunClosure[] = {
     SIGTERM, SIGINT,
 };
 // Closure to run on SIGTERM and SIGINT.
-base::Closure* g_signal_closure = nullptr;
+base::OnceClosure* g_signal_closure = nullptr;
 base::PlatformThreadId g_main_thread_id;
 
 void RunClosureOnSignal(int signum) {
@@ -158,16 +158,18 @@ void RunClosureOnSignal(int signum) {
   RAW_LOG(INFO, message);
 
   DCHECK(g_signal_closure);
-  g_signal_closure->Run();
+  if (*g_signal_closure)
+    std::move(*g_signal_closure).Run();
 }
 
-void RegisterClosureOnSignal(const base::Closure& closure) {
+void RegisterClosureOnSignal(base::OnceClosure closure) {
   DCHECK(!g_signal_closure);
+  DCHECK(closure);
   DCHECK_GT(base::size(kSignalsToRunClosure), 0U);
 
   // Memory leak on purpose, since |g_signal_closure| should live until
   // process exit.
-  g_signal_closure = new base::Closure(closure);
+  g_signal_closure = new base::OnceClosure(std::move(closure));
   g_main_thread_id = base::PlatformThread::CurrentId();
 
   struct sigaction sa_new;
@@ -684,11 +686,10 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 #else
   if (run_message_loop_) {
     base::RunLoop run_loop;
-    base::Closure quit_closure(run_loop.QuitClosure());
 
 #if !defined(OS_FUCHSIA)
     // Fuchsia doesn't have signals.
-    RegisterClosureOnSignal(quit_closure);
+    RegisterClosureOnSignal(run_loop.QuitClosure());
 #endif  // !defined(OS_FUCHSIA)
 
     run_loop.Run();

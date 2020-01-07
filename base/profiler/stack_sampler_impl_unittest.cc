@@ -37,31 +37,44 @@ class TestProfileBuilder : public ProfileBuilder {
   ModuleCache* GetModuleCache() override { return module_cache_; }
   void RecordMetadata(
       ProfileBuilder::MetadataProvider* metadata_provider) override {}
-  void OnSampleCompleted(std::vector<Frame> frames) override {}
+
+  void OnSampleCompleted(std::vector<Frame> frames,
+                         TimeTicks sample_timestamp) override {
+    last_timestamp_ = sample_timestamp;
+  }
+
   void OnProfileCompleted(TimeDelta profile_duration,
                           TimeDelta sampling_period) override {}
 
+  TimeTicks last_timestamp() { return last_timestamp_; }
+
  private:
   ModuleCache* module_cache_;
+  TimeTicks last_timestamp_;
 };
 
 // A stack copier for use in tests that provides the expected behavior when
 // operating on the supplied fake stack.
 class TestStackCopier : public StackCopier {
  public:
-  TestStackCopier(const std::vector<uintptr_t>& fake_stack)
-      : fake_stack_(fake_stack) {}
+  TestStackCopier(const std::vector<uintptr_t>& fake_stack,
+                  TimeTicks timestamp = TimeTicks())
+      : fake_stack_(fake_stack), timestamp_(timestamp) {}
 
   bool CopyStack(StackBuffer* stack_buffer,
                  uintptr_t* stack_top,
                  ProfileBuilder* profile_builder,
+                 TimeTicks* timestamp,
                  RegisterContext* thread_context) override {
     std::memcpy(stack_buffer->buffer(), &fake_stack_[0], fake_stack_.size());
     *stack_top =
         reinterpret_cast<uintptr_t>(&fake_stack_[0] + fake_stack_.size());
     // Set the stack pointer to be consistent with the provided fake stack.
+    *thread_context = {};
     RegisterContextStackPointer(thread_context) =
         reinterpret_cast<uintptr_t>(&fake_stack_[0]);
+
+    *timestamp = timestamp_;
 
     return true;
   }
@@ -70,6 +83,8 @@ class TestStackCopier : public StackCopier {
   // Must be a reference to retain the underlying allocation from the vector
   // passed to the constructor.
   const std::vector<uintptr_t>& fake_stack_;
+
+  const TimeTicks timestamp_;
 };
 
 // Trivial unwinder implementation for testing.
@@ -223,6 +238,24 @@ TEST(StackSamplerImplTest, MAYBE_CopyStack) {
   stack_sampler_impl.RecordStackFrames(stack_buffer.get(), &profile_builder);
 
   EXPECT_EQ(stack, stack_copy);
+}
+
+TEST(StackSamplerImplTest, CopyStackTimestamp) {
+  ModuleCache module_cache;
+  const std::vector<uintptr_t> stack = {0};
+  InjectModuleForContextInstructionPointer(stack, &module_cache);
+  std::vector<uintptr_t> stack_copy;
+  TimeTicks timestamp = TimeTicks::UnixEpoch();
+  StackSamplerImpl stack_sampler_impl(
+      std::make_unique<TestStackCopier>(stack, timestamp),
+      std::make_unique<TestUnwinder>(stack.size(), &stack_copy), &module_cache);
+
+  std::unique_ptr<StackBuffer> stack_buffer =
+      std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
+  TestProfileBuilder profile_builder(&module_cache);
+  stack_sampler_impl.RecordStackFrames(stack_buffer.get(), &profile_builder);
+
+  EXPECT_EQ(timestamp, profile_builder.last_timestamp());
 }
 
 TEST(StackSamplerImplTest, WalkStack_Completed) {

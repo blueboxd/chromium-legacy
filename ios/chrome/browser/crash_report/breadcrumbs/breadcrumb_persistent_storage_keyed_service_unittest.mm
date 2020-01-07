@@ -8,8 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_keyed_service_factory.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_util.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
@@ -24,13 +23,6 @@ using breadcrumb_persistent_storage_util::
     GetBreadcrumbPersistentStorageFilePath;
 
 namespace {
-// Creates a new BreadcrumbManagerKeyedService for |browser_state|.
-std::unique_ptr<KeyedService> BuildBreadcrumbManagerKeyedService(
-    web::BrowserState* browser_state) {
-  return std::make_unique<BreadcrumbManagerKeyedService>(
-      ios::ChromeBrowserState::FromBrowserState(browser_state));
-}
-
 // Creates a new BreadcrumbPersistentStorageKeyedService for |browser_state|.
 std::unique_ptr<KeyedService> BuildBreadcrumbPersistentStorageKeyedService(
     web::BrowserState* browser_state) {
@@ -50,16 +42,10 @@ class BreadcrumbPersistentStorageKeyedServiceTest : public PlatformTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.SetPath(directory_name);
     test_cbs_builder.AddTestingFactory(
-        BreadcrumbManagerKeyedServiceFactory::GetInstance(),
-        base::BindRepeating(&BuildBreadcrumbManagerKeyedService));
-    test_cbs_builder.AddTestingFactory(
         BreadcrumbPersistentStorageKeyedServiceFactory::GetInstance(),
         base::BindRepeating(&BuildBreadcrumbPersistentStorageKeyedService));
     chrome_browser_state_ = test_cbs_builder.Build();
 
-    breadcrumb_manager_ = static_cast<BreadcrumbManagerKeyedService*>(
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-            chrome_browser_state_.get()));
     persistent_storage_ = static_cast<BreadcrumbPersistentStorageKeyedService*>(
         BreadcrumbPersistentStorageKeyedServiceFactory::GetForBrowserState(
             chrome_browser_state_.get()));
@@ -75,15 +61,15 @@ class BreadcrumbPersistentStorageKeyedServiceTest : public PlatformTest {
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   base::ScopedTempDir scoped_temp_directory_;
-  BreadcrumbManagerKeyedService* breadcrumb_manager_;
+  BreadcrumbManager breadcrumb_manager_;
   BreadcrumbPersistentStorageKeyedService* persistent_storage_;
 };
 
 // Ensures that events logged after a BreadcrumbManager is already being
 // observed are persisted.
 TEST_F(BreadcrumbPersistentStorageKeyedServiceTest, PersistMessages) {
-  persistent_storage_->ObserveBreadcrumbManager(breadcrumb_manager_);
-  breadcrumb_manager_->AddEvent("event");
+  persistent_storage_->ObserveBreadcrumbManager(&breadcrumb_manager_);
+  breadcrumb_manager_.AddEvent("event");
 
   auto events = persistent_storage_->GetStoredEvents();
   ASSERT_EQ(1ul, events.size());
@@ -93,8 +79,8 @@ TEST_F(BreadcrumbPersistentStorageKeyedServiceTest, PersistMessages) {
 // Ensures that events logged before a BreadcrumbManager is being observed
 // are persisted.
 TEST_F(BreadcrumbPersistentStorageKeyedServiceTest, PersistExistingMessages) {
-  breadcrumb_manager_->AddEvent("event");
-  persistent_storage_->ObserveBreadcrumbManager(breadcrumb_manager_);
+  breadcrumb_manager_.AddEvent("event");
+  persistent_storage_->ObserveBreadcrumbManager(&breadcrumb_manager_);
 
   auto events = persistent_storage_->GetStoredEvents();
   ASSERT_EQ(1ul, events.size());
@@ -104,8 +90,8 @@ TEST_F(BreadcrumbPersistentStorageKeyedServiceTest, PersistExistingMessages) {
 // Tests that calling |ObserveBreadcrumbManager| with a null manager removes the
 // contents of the persistent storage file.
 TEST_F(BreadcrumbPersistentStorageKeyedServiceTest, DeletePersistentStorage) {
-  breadcrumb_manager_->AddEvent("event");
-  persistent_storage_->ObserveBreadcrumbManager(breadcrumb_manager_);
+  breadcrumb_manager_.AddEvent("event");
+  persistent_storage_->ObserveBreadcrumbManager(&breadcrumb_manager_);
   persistent_storage_->ObserveBreadcrumbManager(/*manager=*/nullptr);
 
   int64_t file_size = -1;

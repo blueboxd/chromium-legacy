@@ -136,7 +136,7 @@ class AppBrowserController : public TabStripModelObserver,
 
   // content::WebContentsObserver:
   void DidStartNavigation(content::NavigationHandle* handle) override;
-  void DidChangeThemeColor(base::Optional<SkColor> theme_color) override;
+  void DidChangeThemeColor() override;
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(

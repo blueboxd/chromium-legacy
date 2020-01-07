@@ -28,6 +28,7 @@ enum class Subcommand : uint8_t {
   kSetPIN = 0x03,
   kChangePIN = 0x04,
   kGetPINToken = 0x05,
+  kGetUvToken = 0x06,
 };
 
 // RequestKey enumerates the keys in the top-level CBOR map for all PIN

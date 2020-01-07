@@ -33,8 +33,7 @@ PreviewsUserData::PreviewsUserData(const PreviewsUserData& other)
       committed_previews_state_without_holdback_(
           other.committed_previews_state_without_holdback_),
       coin_flip_holdback_result_(other.coin_flip_holdback_result_),
-      preview_eligibility_reasons_(other.preview_eligibility_reasons_),
-      serialized_hint_version_string_(other.serialized_hint_version_string_) {
+      preview_eligibility_reasons_(other.preview_eligibility_reasons_) {
   if (other.server_lite_page_info_) {
     server_lite_page_info_ =
         std::make_unique<ServerLitePageInfo>(*other.server_lite_page_info_);

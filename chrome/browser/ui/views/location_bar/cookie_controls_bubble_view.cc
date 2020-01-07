@@ -29,18 +29,11 @@
 using base::UserMetricsAction;
 
 namespace {
+
 // Singleton instance of the cookie bubble. The cookie bubble can only be
 // shown on the active browser window, so there is no case in which it will be
 // shown twice at the same time.
 static CookieControlsBubbleView* g_instance;
-
-std::unique_ptr<views::Link> CreateNotWorkingLink(
-    views::LinkListener* listener) {
-  auto link = std::make_unique<views::Link>(
-      l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE));
-  link->set_listener(listener);
-  return link;
-}
 
 std::unique_ptr<views::TooltipIcon> CreateInfoIcon() {
   auto explanation_tooltip = std::make_unique<views::TooltipIcon>(
@@ -142,7 +135,10 @@ void CookieControlsBubbleView::UpdateUi() {
     text_->SetVisible(true);
     text_->SetText(
         l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE));
-    extra_view_ = SetExtraView(CreateNotWorkingLink(this));
+    auto link = std::make_unique<views::Link>(
+        l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_NOT_WORKING_TITLE));
+    link->set_listener(this);
+    extra_view_ = SetExtraView(std::move(link));
     blocked_cookies_.reset();
   } else {
     DCHECK_EQ(status_, CookieControlsController::Status::kDisabledForSite);

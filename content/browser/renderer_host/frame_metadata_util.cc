@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/frame_metadata_util.h"
 
-#include "components/viz/common/quads/compositor_frame_metadata.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace {
 

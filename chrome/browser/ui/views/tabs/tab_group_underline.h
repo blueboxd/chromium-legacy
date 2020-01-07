@@ -19,9 +19,9 @@ class TabGroupUnderline : public views::View {
   static int GetStrokeInset();
 
   TabGroupUnderline(TabGroupViews* tab_group_views,
-                    tab_groups::TabGroupId group);
+                    const tab_groups::TabGroupId& group);
 
-  tab_groups::TabGroupId group() const { return group_; }
+  const tab_groups::TabGroupId& group() const { return group_; }
 
   // Updates the bounds of the underline for painting.
   void UpdateBounds();

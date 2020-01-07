@@ -50,6 +50,7 @@ class TestRenderFrame : public RenderFrameImpl {
   void NavigateWithError(mojom::CommonNavigationParamsPtr common_params,
                          mojom::CommitNavigationParamsPtr request_params,
                          int error_code,
+                         const net::ResolveErrorInfo& resolve_error_info,
                          const base::Optional<std::string>& error_page_content);
   void SwapOut(int proxy_routing_id,
                bool is_loading,

@@ -38,6 +38,7 @@ namespace blink {
 class AffineTransform;
 class Document;
 class ElementSMILAnimations;
+class ExecutionContext;
 class SVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
 class SVGAnimatedString;
@@ -237,7 +238,8 @@ class CORE_EXPORT SVGElement : public Element {
 
   void DetachLayoutTree(bool performing_reattach) override;
 
-  static CSSPropertyID CssPropertyIdForSVGAttributeName(const QualifiedName&);
+  static CSSPropertyID CssPropertyIdForSVGAttributeName(const ExecutionContext*,
+                                                        const QualifiedName&);
   void UpdateRelativeLengthsInformation() {
     UpdateRelativeLengthsInformation(SelfHasRelativeLengths(), this);
   }

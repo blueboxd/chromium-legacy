@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "base/numerics/safe_conversions.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
@@ -171,7 +172,8 @@ SharedBuffer::Iterator SharedBuffer::end() const {
 }
 
 void SharedBuffer::MergeSegmentsIntoBuffer() {
-  wtf_size_t bytes_left = size_ - buffer_.size();
+  wtf_size_t bytes_left =
+      base::checked_cast<wtf_size_t>(size_ - buffer_.size());
   for (const auto& segment : segments_) {
     wtf_size_t bytes_to_copy = std::min<wtf_size_t>(bytes_left, kSegmentSize);
     buffer_.Append(segment.get(), bytes_to_copy);

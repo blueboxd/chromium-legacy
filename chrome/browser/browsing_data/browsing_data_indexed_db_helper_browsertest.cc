@@ -24,9 +24,9 @@ using TestCompletionCallback =
 
 class BrowsingDataIndexedDBHelperTest : public InProcessBrowserTest {
  public:
-  content::IndexedDBContext* IndexedDBContext() {
+  content::StoragePartition* StoragePartition() {
     return content::BrowserContext::GetDefaultStoragePartition(
-        browser()->profile())->GetIndexedDBContext();
+        browser()->profile());
   }
 };
 
@@ -35,14 +35,13 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
   const GURL origin2("http://host2:1/");
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
-      new CannedBrowsingDataIndexedDBHelper(IndexedDBContext()));
+      new CannedBrowsingDataIndexedDBHelper(StoragePartition()));
   helper->Add(url::Origin::Create(origin1));
   helper->Add(url::Origin::Create(origin2));
 
   TestCompletionCallback callback;
-  helper->StartFetching(
-      base::Bind(&TestCompletionCallback::callback,
-                 base::Unretained(&callback)));
+  helper->StartFetching(base::Bind(&TestCompletionCallback::callback,
+                                   base::Unretained(&callback)));
 
   std::list<content::StorageUsageInfo> result = callback.result();
 
@@ -57,14 +56,13 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
   const GURL origin("http://host1:1/");
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
-      new CannedBrowsingDataIndexedDBHelper(IndexedDBContext()));
+      new CannedBrowsingDataIndexedDBHelper(StoragePartition()));
   helper->Add(url::Origin::Create(origin));
   helper->Add(url::Origin::Create(origin));
 
   TestCompletionCallback callback;
-  helper->StartFetching(
-      base::Bind(&TestCompletionCallback::callback,
-                 base::Unretained(&callback)));
+  helper->StartFetching(base::Bind(&TestCompletionCallback::callback,
+                                   base::Unretained(&callback)));
 
   std::list<content::StorageUsageInfo> result = callback.result();
 

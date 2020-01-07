@@ -573,6 +573,17 @@ FOO_TEST_SUITE = """\
 }
 """
 
+FOO_TEST_SUITE_NOT_SORTED = """\
+{
+  'basic_suites': {
+    'foo_tests': {
+      'foo_test': {},
+      'a_test': {},
+    },
+  },
+}
+"""
+
 FOO_TEST_SUITE_WITH_ARGS = """\
 {
   'basic_suites': {
@@ -907,6 +918,37 @@ EXCEPTIONS_UNSORTED = """\
     'modifications': {
       'Fake Tester': {
         'foo': 'bar',
+      },
+    },
+  },
+}
+"""
+
+EXCEPTIONS_PER_TEST_UNSORTED = """\
+{
+  'suite_d': {
+    'modifications': {
+      'Other Tester': {
+        'foo': 'baz',
+      },
+      'Fake Tester': {
+        'foo': 'baz',
+      },
+    },
+  },
+}
+"""
+
+EXCEPTIONS_DUPS_REMOVE_FROM = """\
+{
+  'suite_d': {
+    'remove_from': [
+      'Fake Tester',
+      'Fake Tester',
+    ],
+    'modifications': {
+      'Fake Tester': {
+        'foo': 'baz',
       },
     },
   },
@@ -2454,9 +2496,9 @@ class UnitTest(unittest.TestCase):
       fbb.check_input_file_consistency(verbose=True)
     joined_lines = '\n'.join(fbb.printed_lines)
     self.assertRegexpMatches(
-      joined_lines, '.*\+chromium\..*test.*')
+      joined_lines, '.*\+ chromium\..*test.*')
     self.assertRegexpMatches(
-      joined_lines, '.*\-chromium\..*test.*')
+      joined_lines, '.*\- chromium\..*test.*')
     fbb.printed_lines = []
     self.assertFalse(fbb.printed_lines)
 
@@ -2486,14 +2528,65 @@ class UnitTest(unittest.TestCase):
     fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
                     TEST_SUITE_SORTED,
                     LUCI_MILO_CFG,
+                    exceptions=EXCEPTIONS_DUPS_REMOVE_FROM)
+    with self.assertRaises(generate_buildbot_json.BBGenErr):
+      fbb.check_input_file_consistency(verbose=True)
+    joined_lines = ' '.join(fbb.printed_lines)
+    self.assertRegexpMatches(
+        joined_lines, '.*\- Fake Tester.*')
+    fbb.printed_lines = []
+    self.assertFalse(fbb.printed_lines)
+
+  def test_test_suite_exceptions_no_dups_remove_from(self):
+    fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
+                    TEST_SUITE_SORTED,
+                    LUCI_MILO_CFG,
+                    exceptions=EXCEPTIONS_SORTED)
+    fbb.check_input_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+    fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
+                    TEST_SUITE_SORTED,
+                    LUCI_MILO_CFG,
+                    exceptions=EXCEPTIONS_PER_TEST_UNSORTED)
+    real_dict_format = fbb.check_ast_dict_formatted
+    def fake_dict_format(*args, **kwargs):
+      kwargs['check_sorting'] = True
+      return real_dict_format(*args, **kwargs)
+
+    # Mock this out for now. A future CL will enable sorting by default. Still
+    # want to test the codepath, even if it's not used it production yet.
+    fbb.check_ast_dict_formatted = fake_dict_format
+
+    with self.assertRaises(generate_buildbot_json.BBGenErr):
+      fbb.check_input_file_consistency(verbose=True)
+    joined_lines = ' '.join(fbb.printed_lines)
+    self.assertRegexpMatches(
+        joined_lines, '.*\+ Fake Tester.*')
+    self.assertRegexpMatches(
+        joined_lines, '.*\- Fake Tester.*')
+    fbb.printed_lines = []
+    self.assertFalse(fbb.printed_lines)
+
+  def test_test_suite_exceptions_per_test_must_be_sorted(self):
+    fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
+                    TEST_SUITE_SORTED,
+                    LUCI_MILO_CFG,
+                    exceptions=EXCEPTIONS_SORTED)
+    fbb.check_input_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
+    fbb = FakeBBGen(TEST_SUITE_SORTING_WATERFALL,
+                    TEST_SUITE_SORTED,
+                    LUCI_MILO_CFG,
                     exceptions=EXCEPTIONS_UNSORTED)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_input_file_consistency(verbose=True)
     joined_lines = ' '.join(fbb.printed_lines)
     self.assertRegexpMatches(
-        joined_lines, '.*\+suite_.*')
+        joined_lines, '.*\+ suite_.*')
     self.assertRegexpMatches(
-        joined_lines, '.*\-suite_.*')
+        joined_lines, '.*\- suite_.*')
     fbb.printed_lines = []
     self.assertFalse(fbb.printed_lines)
 
@@ -2516,9 +2609,9 @@ class UnitTest(unittest.TestCase):
         fbb.check_input_file_consistency(verbose=True)
       joined_lines = ' '.join(fbb.printed_lines)
       self.assertRegexpMatches(
-          joined_lines, '.*\+suite_.*')
+          joined_lines, '.*\+ suite_.*')
       self.assertRegexpMatches(
-          joined_lines, '.*\-suite_.*')
+          joined_lines, '.*\- suite_.*')
       fbb.printed_lines = []
       self.assertFalse(fbb.printed_lines)
 
@@ -3031,11 +3124,11 @@ class MixinTests(unittest.TestCase):
                     mixins=SWARMING_MIXINS_UNSORTED)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_input_file_consistency(verbose=True)
-    joined_lines = ' '.join(fbb.printed_lines)
+    joined_lines = '\n'.join(fbb.printed_lines)
     self.assertRegexpMatches(
-        joined_lines, '.*\+._mixin.*')
+        joined_lines, '.*\+ ._mixin.*')
     self.assertRegexpMatches(
-        joined_lines, '.*\-._mixin.*')
+        joined_lines, '.*\- ._mixin.*')
     fbb.printed_lines = []
     self.assertFalse(fbb.printed_lines)
 
@@ -3153,9 +3246,32 @@ class MixinTests(unittest.TestCase):
         generate_buildbot_json.BBGenErr,
         'The following files have invalid keys: mixins.pyl'):
       fbb.check_input_file_consistency(verbose=True)
-    joined_lines = ' '.join(fbb.printed_lines)
+    joined_lines = '\n'.join(fbb.printed_lines)
     self.assertRegexpMatches(
-        joined_lines, 'Key .* is duplicated')
+        joined_lines, '.*\- builder_mixin')
+    fbb.printed_lines = []
+    self.assertFalse(fbb.printed_lines)
+
+  def test_no_duplicate_keys_basic_test_suite(self):
+    fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
+                    FOO_TEST_SUITE_NOT_SORTED,
+                    LUCI_MILO_CFG)
+    real_dict_format = fbb.check_ast_dict_formatted
+    def fake_dict_format(*args, **kwargs):
+      kwargs['check_sorting'] = True
+      return real_dict_format(*args, **kwargs)
+
+    # Mock this out for now. A future CL will enable sorting by default. Still
+    # want to test the codepath, even if it's not used it production yet.
+    fbb.check_ast_dict_formatted = fake_dict_format
+
+    with self.assertRaisesRegexp(
+        generate_buildbot_json.BBGenErr,
+        'The following files have invalid keys: test_suites.pyl'):
+      fbb.check_input_file_consistency(verbose=True)
+    joined_lines = '\n'.join(fbb.printed_lines)
+    self.assertRegexpMatches(joined_lines, '.*\- a_test')
+    self.assertRegexpMatches(joined_lines, '.*\+ a_test')
     fbb.printed_lines = []
     self.assertFalse(fbb.printed_lines)
 

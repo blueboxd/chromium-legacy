@@ -264,6 +264,10 @@ extern const char kOmniboxUseDefaultSearchEngineFaviconDescription[];
 extern const char kOmniboxOnDeviceHeadSuggestionsName[];
 extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 
+// Title and description for the flag to enable the new design of the page info.
+extern const char kPageInfoRefactoringName[];
+extern const char kPageInfoRefactoringDescription[];
+
 // Title and description for the flag to enable leak detection for entered
 // credentials.
 extern const char kPasswordLeakDetectionName[];

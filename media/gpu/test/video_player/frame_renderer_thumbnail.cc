@@ -225,6 +225,9 @@ scoped_refptr<VideoFrame> FrameRendererThumbnail::CreateVideoFrame(
     uint32_t* texture_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(renderer_sequence_checker_);
 
+  // Make the GL context current in the case it's not currently yet.
+  AcquireGLContext();
+
   // Create a mailbox.
   gpu::Mailbox mailbox = gpu::Mailbox::Generate();
   gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];

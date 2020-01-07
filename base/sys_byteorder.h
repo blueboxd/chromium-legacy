@@ -13,7 +13,6 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
 #include "build/build_config.h"
 
 #if defined(COMPILER_MSVC)
@@ -53,13 +52,11 @@ inline uintptr_t ByteSwapUintPtrT(uintptr_t x) {
   // because these conditionals are constexprs, the irrelevant branches will
   // likely be optimized away, so this construction should not result in code
   // bloat.
-  if (sizeof(uintptr_t) == 4) {
+  static_assert(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8,
+                "Unsupported uintptr_t size");
+  if (sizeof(uintptr_t) == 4)
     return ByteSwap(static_cast<uint32_t>(x));
-  } else if (sizeof(uintptr_t) == 8) {
-    return ByteSwap(static_cast<uint64_t>(x));
-  } else {
-    NOTREACHED();
-  }
+  return ByteSwap(static_cast<uint64_t>(x));
 }
 
 // Converts the bytes in |x| from host order (endianness) to little endian, and

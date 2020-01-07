@@ -14,7 +14,7 @@ import java.net.URI;
 
 /** PaymentHandlerToolbar UI properties, which fully describe the state of the UI. */
 /* package */ class PaymentHandlerToolbarProperties {
-    /* package */ static final WritableObjectPropertyKey<URI> ORIGIN =
+    /* package */ static final WritableObjectPropertyKey<URI> URL =
             new WritableObjectPropertyKey<>();
 
     /* package */ static final WritableObjectPropertyKey<String> TITLE =
@@ -29,7 +29,7 @@ import java.net.URI;
     /* package */ static final WritableIntPropertyKey SECURITY_ICON = new WritableIntPropertyKey();
 
     /* package */ static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {ORIGIN, TITLE, LOAD_PROGRESS, PROGRESS_VISIBLE, SECURITY_ICON};
+            new PropertyKey[] {URL, TITLE, LOAD_PROGRESS, PROGRESS_VISIBLE, SECURITY_ICON};
 
     // Prevent instantiation.
     private PaymentHandlerToolbarProperties() {}

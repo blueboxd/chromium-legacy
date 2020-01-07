@@ -266,10 +266,6 @@ void ResourceDownloader::OnUploadProgress(uint64_t bytes_uploaded) {
       FROM_HERE, base::BindOnce(upload_callback_, bytes_uploaded));
 }
 
-void ResourceDownloader::CancelRequest() {
-  Destroy();
-}
-
 void ResourceDownloader::Destroy() {
   if (wake_lock_)
     wake_lock_->CancelWakeLock();

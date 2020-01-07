@@ -181,7 +181,8 @@ void SVGAnimateElement::ResolveTargetProperty() {
   } else {
     type_ = SVGElement::AnimatedPropertyTypeForCSSAttribute(AttributeName());
     css_property_id_ = type_ != kAnimatedUnknown
-                           ? cssPropertyID(AttributeName().LocalName())
+                           ? cssPropertyID(&targetElement()->GetDocument(),
+                                           AttributeName().LocalName())
                            : CSSPropertyID::kInvalid;
   }
   // Blacklist <script> targets here for now to prevent unpleasantries. This

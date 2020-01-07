@@ -710,7 +710,6 @@ if (!is_android) {
       "//components/resources",
       "//components/safe_browsing:buildflags",
       "//components/safe_browsing/db:test_database_manager",
-      "//components/services/paint_preview_compositor/public/mojom",
       "//components/services/patch/public/mojom",
       "//components/services/quarantine:test_support",
       "//components/signin/core/browser",
@@ -1636,7 +1635,6 @@ if (!is_android) {
         "../browser/apps/platform_apps/app_browsertest_util.h",
         "../browser/apps/platform_apps/audio_focus_web_contents_observer_browsertest.cc",
         "../browser/extensions/active_tab_apitest.cc",
-        "../browser/extensions/activity_log/activity_log_browsertest.cc",
         "../browser/extensions/alert_apitest.cc",
         "../browser/extensions/all_urls_apitest.cc",
         "../browser/extensions/api/activity_log_private/activity_log_private_apitest.cc",
@@ -2737,7 +2735,9 @@ if (!is_android) {
       ]
       deps += [
         "//components/paint_preview/browser",
+        "//components/paint_preview/browser:test_support",
         "//components/paint_preview/common",
+        "//components/services/paint_preview_compositor/public/mojom",
       ]
     }
     if (enable_service_discovery && !is_mac) {
@@ -4054,6 +4054,7 @@ test("unit_tests") {
       "../browser/ui/toolbar/toolbar_actions_model_unittest.cc",
       "../browser/ui/web_applications/app_browser_controller_unittest.cc",
       "../browser/ui/web_applications/web_app_launch_utils_unittest.cc",
+      "../browser/ui/webui/components/components_handler_unittest.cc",
       "../browser/ui/webui/downloads/downloads_dom_handler_unittest.cc",
       "../browser/ui/webui/downloads/downloads_list_tracker_unittest.cc",
       "../browser/ui/webui/downloads/mock_downloads_page.cc",
@@ -4263,7 +4264,6 @@ test("unit_tests") {
       "../browser/extensions/api/terminal/crostini_startup_status_unittest.cc",
       "../browser/google/google_brand_code_map_chromeos_unittest.cc",
       "../browser/media/webrtc/desktop_media_list_ash_unittest.cc",
-      "../browser/metrics/perf/heap_collector_unittest.cc",
       "../browser/metrics/perf/metric_collector_unittest.cc",
       "../browser/metrics/perf/metric_provider_unittest.cc",
       "../browser/metrics/perf/perf_events_collector_unittest.cc",

@@ -42,7 +42,7 @@ class MEDIA_EXPORT VideoRenderer {
                           CdmContext* cdm_context,
                           RendererClient* client,
                           const TimeSource::WallClockTimeCB& wall_clock_time_cb,
-                          const PipelineStatusCB& init_cb) = 0;
+                          PipelineStatusCallback init_cb) = 0;
 
   // Discards any video data and stops reading from |stream|, executing
   // |callback| when completed.

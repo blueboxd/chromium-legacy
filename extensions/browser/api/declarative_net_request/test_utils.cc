@@ -37,7 +37,7 @@ RequestAction CreateRequestActionForTesting(RequestAction::Type type,
 // with gtest. This reuses the logic used to test action equality in
 // TestRequestACtion in test_utils.h.
 bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
-  static_assert(flat::ActionIndex_count == 7,
+  static_assert(flat::IndexType_count == 4,
                 "Modify this method to ensure it stays updated as new actions "
                 "are added.");
 
@@ -74,6 +74,9 @@ std::ostream& operator<<(std::ostream& output, RequestAction::Type type) {
     case RequestAction::Type::REDIRECT:
       output << "REDIRECT";
       break;
+    case RequestAction::Type::UPGRADE:
+      output << "UPGRADE";
+      break;
     case RequestAction::Type::REMOVE_HEADERS:
       output << "REMOVE_HEADERS";
       break;
@@ -108,20 +111,14 @@ std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
     case ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED:
       output << "ERROR_RESOURCE_TYPE_DUPLICATED";
       break;
-    case ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY:
-      output << "ERROR_EMPTY_REDIRECT_RULE_PRIORITY";
-      break;
-    case ParseResult::ERROR_EMPTY_UPGRADE_RULE_PRIORITY:
-      output << "ERROR_EMPTY_UPGRADE_RULE_PRIORITY";
+    case ParseResult::ERROR_EMPTY_RULE_PRIORITY:
+      output << "ERROR_EMPTY_RULE_PRIORITY";
       break;
     case ParseResult::ERROR_INVALID_RULE_ID:
       output << "ERROR_INVALID_RULE_ID";
       break;
-    case ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY:
-      output << "ERROR_INVALID_REDIRECT_RULE_PRIORITY";
-      break;
-    case ParseResult::ERROR_INVALID_UPGRADE_RULE_PRIORITY:
-      output << "ERROR_INVALID_UPGRADE_RULE_PRIORITY";
+    case ParseResult::ERROR_INVALID_RULE_PRIORITY:
+      output << "ERROR_INVALID_RULE_PRIORITY";
       break;
     case ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES:
       output << "ERROR_NO_APPLICABLE_RESOURCE_TYPES";

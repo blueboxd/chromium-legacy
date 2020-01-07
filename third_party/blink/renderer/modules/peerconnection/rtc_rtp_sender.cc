@@ -580,7 +580,7 @@ RTCRtpCapabilities* RTCRtpSender::getCapabilities(const String& kind) {
 
   std::unique_ptr<webrtc::RtpCapabilities> rtc_capabilities =
       PeerConnectionDependencyFactory::GetInstance()->GetSenderCapabilities(
-          kind.Utf8());
+          kind);
 
   HeapVector<Member<RTCRtpCodecCapability>> codecs;
   codecs.ReserveInitialCapacity(

@@ -6,7 +6,7 @@
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> 추가 중...</translation>
 <translation id="1041308826830691739">웹사이트 알림</translation>
 <translation id="1049743911850919806">시크릿</translation>
-<translation id="10614374240317010">저장되지 않음</translation>
+<translation id="10614374240317010">저장하지 않음</translation>
 <translation id="1067922213147265141">다른 Google 서비스</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />로 된 페이지는 번역하지 않음</translation>
 <translation id="107147699690128016">파일 확장자를 변경하면 파일이 다른 애플리케이션에서 열리고 기기가 위험에 노출될 수도 있습니다.</translation>
@@ -247,7 +247,7 @@
 <translation id="2860954141821109167">이 기기에서 전화 앱이 사용 설정되어 있는지 확인하세요.</translation>
 <translation id="2870560284913253234">사이트</translation>
 <translation id="2874939134665556319">이전 트랙</translation>
-<translation id="2876369937070532032">보안상의 위험이 있을 때 일부 방문 페이지의 URL을 Google로 전송함</translation>
+<translation id="2876369937070532032">보안상의 위험이 있을 때 일부 방문 페이지의 URL을 Google로 전송합니다.</translation>
 <translation id="2888126860611144412">Chrome 정보</translation>
 <translation id="2891154217021530873">페이지 로딩 중지</translation>
 <translation id="2893180576842394309">Google에서 내 방문 기록을 사용하여 Google 검색 및 다른 Google 서비스를 맞춤설정할 수 있습니다.</translation>
@@ -416,12 +416,12 @@
 <translation id="4226663524361240545">알림이 있으면 진동이 울릴 수도 있습니다.</translation>
 <translation id="423219824432660969"><ph name="TIME" />에 Google 비밀번호를 사용하여 동기화된 데이터 암호화</translation>
 <translation id="4242533952199664413">설정 열기</translation>
-<translation id="4250229828105606438">캡처화면</translation>
+<translation id="4250229828105606438">스크린샷</translation>
 <translation id="4256782883801055595">오픈소스 라이선스</translation>
 <translation id="4259722352634471385">탐색이 차단됨: <ph name="URL" /></translation>
 <translation id="4269820728363426813">링크 주소 복사</translation>
 <translation id="4275663329226226506">미디어</translation>
-<translation id="4278390842282768270">허용됨</translation>
+<translation id="4278390842282768270">허용</translation>
 <translation id="429312253194641664">사이트에서 미디어 재생 중</translation>
 <translation id="4298388696830689168">연결된 사이트</translation>
 <translation id="4307992518367153382">기본설정</translation>
@@ -476,7 +476,7 @@
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />개}other{<ph name="SHIPPING_OPTION_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />개}}</translation>
 <translation id="4696983787092045100">기기로 SMS 전송</translation>
 <translation id="4698034686595694889"><ph name="APP_NAME" />에서 오프라인으로 보기</translation>
-<translation id="4699172675775169585">캐시된 이미지 또는 파일</translation>
+<translation id="4699172675775169585">캐시된 이미지 및 파일</translation>
 <translation id="4714588616299687897">데이터 최대 60% 절약</translation>
 <translation id="4719927025381752090">번역 옵션 제공</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" />에서 열기</translation>
@@ -619,7 +619,7 @@
 <translation id="5659593005791499971">이메일</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" />에 일정 만들기</translation>
 <translation id="5668404140385795438">웹사이트의 확대 방지 요청 무시</translation>
-<translation id="5677928146339483299">차단됨</translation>
+<translation id="5677928146339483299">차단</translation>
 <translation id="5684874026226664614">죄송합니다. 이 페이지를 번역할 수 없습니다.</translation>
 <translation id="5686790454216892815">파일 이름이 너무 깁니다.</translation>
 <translation id="5689516760719285838">위치</translation>

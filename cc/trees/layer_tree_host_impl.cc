@@ -3850,12 +3850,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
 
   browser_controls_offset_manager_->ScrollBegin();
 
-  // TODO(majidvp): get rid of touch_scrolling_ and set is_direct_manipulation
-  // in input_handler_proxy instead.
-  touch_scrolling_ = type == InputHandler::TOUCHSCREEN;
   wheel_scrolling_ = type == InputHandler::WHEEL;
   middle_click_autoscrolling_ = type == InputHandler::AUTOSCROLL;
-  scroll_state->set_is_direct_manipulation(touch_scrolling_);
 
   LatchToScroller(scroll_state, scrolling_node);
 
@@ -4641,8 +4637,6 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
   float initial_top_controls_offset =
       browser_controls_offset_manager_->ControlsTopOffset();
-
-  scroll_state->set_is_direct_manipulation(touch_scrolling_);
 
   ScrollLatchedScroller(scroll_state);
 

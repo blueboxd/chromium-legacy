@@ -66,25 +66,14 @@ class RulesetMatcher final : public RulesetMatcherBase {
 
   // RulesetMatcherBase overrides:
   ~RulesetMatcher() override;
-  base::Optional<RequestAction> GetBlockOrCollapseAction(
-      const RequestParams& params) const override;
-  base::Optional<RequestAction> GetAllowAction(
-      const RequestParams& params) const override;
-  base::Optional<RequestAction> GetRedirectAction(
-      const RequestParams& params) const override;
-  base::Optional<RequestAction> GetUpgradeAction(
+
+  base::Optional<RequestAction> GetBeforeRequestAction(
       const RequestParams& params) const override;
   uint8_t GetRemoveHeadersMask(
       const RequestParams& params,
       uint8_t excluded_remove_headers_mask,
       std::vector<RequestAction>* remove_headers_actions) const override;
   bool IsExtraHeadersMatcher() const override;
-
-  // Returns a RequestAction constructed from the matching redirect or upgrade
-  // rule with the highest priority, or base::nullopt if no matching redirect or
-  // upgrade rules are found for this request.
-  base::Optional<RequestAction> GetRedirectOrUpgradeActionByPriority(
-      const RequestParams& params) const;
 
   // ID of the ruleset. Each extension can have multiple rulesets with
   // their own unique ids.

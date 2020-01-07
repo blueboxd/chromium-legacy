@@ -7109,7 +7109,7 @@ crbug.com/1006759 inspector-protocol/heap-profiler/heap-snapshot-with-no-detache
 # Sheriff 2019-12-13
 crbug.com/1032451 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/idlharness.https.window.html [ Failure Timeout Pass ]
 crbug.com/1033852 [ Win7 ] virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Failure ]
-crbug.com/1033387 [ Mac ] http/tests/portals/crbug-1031677.html [ Pass Timeout ]
+crbug.com/1033387 [ Mac ] http/tests/portals/crbug-1031677.html [ Pass Timeout Crash ]
 
 # Sheriff 2019-12-16
 crbug.com/1034374 http/tests/devtools/tracing/timeline-worker-events.js [ Pass Failure ]
@@ -7155,3 +7155,20 @@ crbug.com/1018640 external/wpt/web-bundle/* [ Skip ]
 # Sheriff 2020-01-02
 crbug.com/1038656 [ Mac ] http/tests/devtools/coverage/coverage-view-unused.js [ Pass Failure ]
 crbug.com/1038656 [ Win ] http/tests/devtools/coverage/coverage-view-unused.js [ Pass Failure ]
+
+# Temporarily disabled to land breakpoints changes in devtools
+crbug.com/963183 http/tests/devtools/persistence/persistence-move-breakpoints.js [ Pass Failure ]
+crbug.com/963183 [ Mac ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure ]
+crbug.com/963183 [ Win ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/breakpoints-sidebar-pane.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/debugger-reload-breakpoints-with-source-maps.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/disable-breakpoints.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/set-breakpoint.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/set-conditional-breakpoint.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/set-logpoint.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger-ui/click-gutter-breakpoint.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-2.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger-ui/script-formatter-breakpoints-3.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger/js-with-inline-stylesheets.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-1.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-inline-with-sourceURL.js [ Pass Failure ]

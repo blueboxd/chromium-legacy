@@ -322,7 +322,8 @@ void PasswordProtectionService::RequestFinished(
         response ? response->verdict_type()
                  : LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
+// Disabled on Android, because enterprise reporting extension is not supported.
+#if !defined(OS_ANDROID)
     MaybeReportPasswordReuseDetected(
         request->web_contents(), request->username(), request->password_type(),
         verdict == LoginReputationClientResponse::PHISHING);

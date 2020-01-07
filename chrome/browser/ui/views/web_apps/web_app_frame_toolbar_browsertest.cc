@@ -75,7 +75,7 @@ class ThemeChangeWaiter : public content::WebContentsObserver {
 
  private:
   // content::WebContentsObserver:
-  void DidChangeThemeColor(base::Optional<SkColor> theme_color) override {
+  void DidChangeThemeColor() override {
     observed_ = true;
 
     if (run_loop_.running())

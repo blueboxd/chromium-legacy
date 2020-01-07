@@ -568,6 +568,16 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
   }
 
   ui::AXTreeUpdate BuildAXTreeForMoveByFormat() {
+    //                    1
+    //                    |
+    //    -------------------------------------
+    //    |       |       |    |    |    |    |
+    //    2       4       8   10   12   14   16
+    //    |       |       |    |    |    |    |
+    //    |   ---------   |    |    |    |    |
+    //    |   |   |   |   |    |    |    |    |
+    //    3   5   6   7   9   11   13   15   17
+
     ui::AXNodeData group1_data;
     group1_data.id = 2;
     group1_data.role = ax::mojom::Role::kGenericContainer;
@@ -1212,7 +1222,6 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   Init(BuildAXTreeForMoveByFormat());
   AXNodePosition::SetTree(tree_.get());
   AXNode* root_node = GetRootNode();
-
   ComPtr<ITextRangeProvider> text_range_provider;
   GetTextRangeProviderFromTextNode(text_range_provider, root_node);
 
@@ -1221,54 +1230,190 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
       L"Text with formattingStandalone line with no formattingbold "
       L"textParagraph 1Paragraph 2Paragraph 3Paragraph 4");
 
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Text with formatting");
+  // https://docs.microsoft.com/en-us/windows/win32/api/uiautomationclient/nf-uiautomationclient-iuiautomationtextrange-expandtoenclosingunit
+  // Consider two consecutive text units A and B.
+  // The documentation illustrates 9 cases, but cases 1 and 9 are equivalent.
+  // In each case, the expected output is a range from start of A to end of A.
 
-  // Set it up so that the text range is in the middle of a format boundary
-  // and expand by format.
+  // Create a range encompassing nodes 11-15 which will serve as text units A
+  // and B for this test.
+  ComPtr<ITextRangeProvider> units_a_b_provider;
+  ASSERT_HRESULT_SUCCEEDED(text_range_provider->Clone(&units_a_b_provider));
   int count;
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->Move(TextUnit_Character, /*count*/ 31, &count));
-  ASSERT_EQ(31, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"l");
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
-                          L"Standalone line with no formatting");
+  ASSERT_HRESULT_SUCCEEDED(units_a_b_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 63,
+      &count));
+  ASSERT_EQ(63, count);
+  ASSERT_HRESULT_SUCCEEDED(units_a_b_provider->MoveEndpointByUnit(
+      TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -11, &count));
+  ASSERT_EQ(-11, count);
+  EXPECT_UIA_TEXTRANGE_EQ(units_a_b_provider,
+                          L"Paragraph 1Paragraph 2Paragraph 3");
 
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->Move(TextUnit_Character, /*count*/ 35, &count));
-  ASSERT_EQ(35, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"o");
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"bold text");
-
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->Move(TextUnit_Character, /*count*/ 10, &count));
-  ASSERT_EQ(10, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"a");
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Paragraph 1");
-
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->Move(TextUnit_Character, /*count*/ 15, &count));
-  ASSERT_EQ(15, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"g");
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Paragraph 2Paragraph 3");
-
-  // Test expanding a degenerate range
-  ASSERT_HRESULT_SUCCEEDED(text_range_provider->MoveEndpointByUnit(
+  // Create a range encompassing node 11 which will serve as our expected
+  // value of a range from start of A to end of A.
+  ComPtr<ITextRangeProvider> unit_a_provider;
+  ASSERT_HRESULT_SUCCEEDED(units_a_b_provider->Clone(&unit_a_provider));
+  ASSERT_HRESULT_SUCCEEDED(unit_a_provider->MoveEndpointByUnit(
       TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -22, &count));
   ASSERT_EQ(-22, count);
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"");
-  ASSERT_HRESULT_SUCCEEDED(
-      text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"Paragraph 2Paragraph 3");
+  EXPECT_UIA_TEXTRANGE_EQ(unit_a_provider, L"Paragraph 1");
+
+  // Case 1: Degenerate range at start of A.
+  {
+    SCOPED_TRACE("Case 1: Degenerate range at start of A.");
+    ComPtr<ITextRangeProvider> test_case_provider;
+    ASSERT_HRESULT_SUCCEEDED(unit_a_provider->Clone(&test_case_provider));
+    ASSERT_HRESULT_SUCCEEDED(test_case_provider->MoveEndpointByRange(
+        TextPatternRangeEndpoint_End, test_case_provider.Get(),
+        TextPatternRangeEndpoint_Start));
+    EXPECT_UIA_TEXTRANGE_EQ(test_case_provider, L"");
+
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->ExpandToEnclosingUnit(TextUnit_Format));
+    BOOL are_same;
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->Compare(unit_a_provider.Get(), &are_same));
+    EXPECT_TRUE(are_same);
+  }
+
+  // Case 2: Range from start of A to middle of A.
+  {
+    SCOPED_TRACE("Case 2: Range from start of A to middle of A.");
+    ComPtr<ITextRangeProvider> test_case_provider;
+    ASSERT_HRESULT_SUCCEEDED(unit_a_provider->Clone(&test_case_provider));
+    ASSERT_HRESULT_SUCCEEDED(test_case_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -7,
+        &count));
+    ASSERT_EQ(-7, count);
+    EXPECT_UIA_TEXTRANGE_EQ(test_case_provider, L"Para");
+
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->ExpandToEnclosingUnit(TextUnit_Format));
+    BOOL are_same;
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->Compare(unit_a_provider.Get(), &are_same));
+    EXPECT_TRUE(are_same);
+  }
+
+  // Case 3: Range from start of A to end of A.
+  {
+    SCOPED_TRACE("Case 3: Range from start of A to end of A.");
+    ComPtr<ITextRangeProvider> test_case_provider;
+    ASSERT_HRESULT_SUCCEEDED(unit_a_provider->Clone(&test_case_provider));
+    EXPECT_UIA_TEXTRANGE_EQ(test_case_provider, L"Paragraph 1");
+
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->ExpandToEnclosingUnit(TextUnit_Format));
+    BOOL are_same;
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->Compare(unit_a_provider.Get(), &are_same));
+    EXPECT_TRUE(are_same);
+  }
+
+  // Case 4: Range from start of A to middle of B.
+  {
+    SCOPED_TRACE("Case 4: Range from start of A to middle of B.");
+    ComPtr<ITextRangeProvider> test_case_provider;
+    ASSERT_HRESULT_SUCCEEDED(unit_a_provider->Clone(&test_case_provider));
+    ASSERT_HRESULT_SUCCEEDED(test_case_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 4, &count));
+    ASSERT_EQ(4, count);
+    EXPECT_UIA_TEXTRANGE_EQ(test_case_provider, L"Paragraph 1Para");
+
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->ExpandToEnclosingUnit(TextUnit_Format));
+    BOOL are_same;
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->Compare(unit_a_provider.Get(), &are_same));
+    EXPECT_TRUE(are_same);
+  }
+
+  // Case 5: Degenerate range in middle of A.
+  {
+    SCOPED_TRACE("Case 5: Degenerate range in middle of A.");
+    ComPtr<ITextRangeProvider> test_case_provider;
+    ASSERT_HRESULT_SUCCEEDED(unit_a_provider->Clone(&test_case_provider));
+    ASSERT_HRESULT_SUCCEEDED(test_case_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 4,
+        &count));
+    ASSERT_EQ(4, count);
+    ASSERT_HRESULT_SUCCEEDED(test_case_provider->MoveEndpointByRange(
+        TextPatternRangeEndpoint_End, test_case_provider.Get(),
+        TextPatternRangeEndpoint_Start));
+    EXPECT_UIA_TEXTRANGE_EQ(test_case_provider, L"");
+
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->ExpandToEnclosingUnit(TextUnit_Format));
+    BOOL are_same;
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->Compare(unit_a_provider.Get(), &are_same));
+    EXPECT_TRUE(are_same);
+  }
+
+  // Case 6: Range from middle of A to middle of A.
+  {
+    SCOPED_TRACE("Case 6: Range from middle of A to middle of A.");
+    ComPtr<ITextRangeProvider> test_case_provider;
+    ASSERT_HRESULT_SUCCEEDED(unit_a_provider->Clone(&test_case_provider));
+    ASSERT_HRESULT_SUCCEEDED(test_case_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 4,
+        &count));
+    ASSERT_EQ(4, count);
+    ASSERT_HRESULT_SUCCEEDED(test_case_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ -2,
+        &count));
+    ASSERT_EQ(-2, count);
+    EXPECT_UIA_TEXTRANGE_EQ(test_case_provider, L"graph");
+
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->ExpandToEnclosingUnit(TextUnit_Format));
+    BOOL are_same;
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->Compare(unit_a_provider.Get(), &are_same));
+    EXPECT_TRUE(are_same);
+  }
+
+  // Case 7: Range from middle of A to end of A.
+  {
+    SCOPED_TRACE("Case 7: Range from middle of A to end of A.");
+    ComPtr<ITextRangeProvider> test_case_provider;
+    ASSERT_HRESULT_SUCCEEDED(unit_a_provider->Clone(&test_case_provider));
+    ASSERT_HRESULT_SUCCEEDED(test_case_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 4,
+        &count));
+    ASSERT_EQ(4, count);
+    EXPECT_UIA_TEXTRANGE_EQ(test_case_provider, L"graph 1");
+
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->ExpandToEnclosingUnit(TextUnit_Format));
+    BOOL are_same;
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->Compare(unit_a_provider.Get(), &are_same));
+    EXPECT_TRUE(are_same);
+  }
+
+  // Case 8: Range from middle of A to middle of B.
+  {
+    SCOPED_TRACE("Case 8: Range from middle of A to middle of B.");
+    ComPtr<ITextRangeProvider> test_case_provider;
+    ASSERT_HRESULT_SUCCEEDED(unit_a_provider->Clone(&test_case_provider));
+    ASSERT_HRESULT_SUCCEEDED(test_case_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_Start, TextUnit_Character, /*count*/ 4,
+        &count));
+    ASSERT_EQ(4, count);
+    ASSERT_HRESULT_SUCCEEDED(test_case_provider->MoveEndpointByUnit(
+        TextPatternRangeEndpoint_End, TextUnit_Character, /*count*/ 4, &count));
+    ASSERT_EQ(4, count);
+    EXPECT_UIA_TEXTRANGE_EQ(test_case_provider, L"graph 1Para");
+
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->ExpandToEnclosingUnit(TextUnit_Format));
+    BOOL are_same;
+    ASSERT_HRESULT_SUCCEEDED(
+        test_case_provider->Compare(unit_a_provider.Get(), &are_same));
+    EXPECT_TRUE(are_same);
+  }
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,

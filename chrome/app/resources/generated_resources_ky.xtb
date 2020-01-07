@@ -49,7 +49,6 @@
 <translation id="1056775291175587022">Тармактар жок</translation>
 <translation id="1056898198331236512">Эскертүү</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1060881073479695738">Play Store колдонмолору</translation>
 <translation id="1061745542578250838"><ph name="FILE_NAME" /> файлында купуя маалымат камтылгандыктан, ал бөгөттөлдү.</translation>
 <translation id="1061904396131502319">Тыныгууга убакыт келип калды</translation>
 <translation id="1067048845568873861">Түзүлгөн</translation>
@@ -1569,6 +1568,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="3172808215939929606">Бул барак которулду</translation>
 <translation id="3177909033752230686">Баракчанын тили:</translation>
 <translation id="3179982752812949580">Тексттин ариби</translation>
+<translation id="3181825792072797598">Шайкештирүүнү күйгүзүү</translation>
 <translation id="3181954750937456830">Коопсуз серептөө (сизди жана түзмөгүңүздү кооптуу сайттардан коргойт)</translation>
 <translation id="3182749001423093222">Орфографиялык текшерүү</translation>
 <translation id="3183139917765991655">Профиль импорттогуч</translation>
@@ -4653,6 +4653,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="7684718995427157417">Колдонмолорду түзүп, сыноо үчүн Android Debug Bridge (ADB) куралын иштетиңиз. Бул аракет Google тарабынан текшерилбеген Android колдонмолорун орнотууга уруксат берет. Аларды өчүрүү үчүн түзмөктү баштапкы абалга кайтаруу керек болот.</translation>
 <translation id="7685049629764448582">JavaScript эстутуму</translation>
 <translation id="7685087414635069102">PIN код талап кылынат</translation>
+<translation id="768549422429443215">Тилдерди кошуңуз же тизмени иреттеңиз.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Жаңы сырсөздү ырастаңыз</translation>
 <translation id="7690378713476594306">Тизмеден тандаңыз</translation>

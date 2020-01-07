@@ -116,10 +116,6 @@ ScopedUmaHistogramMicrosecondsTimer::~ScopedUmaHistogramMicrosecondsTimer() {
       elapsed, kMinTime, kMaxTime, kBuckets);
 }
 
-void LogClickToCallHelpTextClicked(SharingDialogType type) {
-  base::UmaHistogramEnumeration("Sharing.ClickToCallHelpTextClicked", type);
-}
-
 void LogClickToCallUKM(content::WebContents* web_contents,
                        SharingClickToCallEntryPoint entry_point,
                        bool has_devices,

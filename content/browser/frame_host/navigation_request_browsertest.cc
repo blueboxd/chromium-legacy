@@ -1643,7 +1643,7 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestHostResolutionFailureTest,
 
   EXPECT_TRUE(observer.has_committed());
   EXPECT_TRUE(observer.is_error());
-  EXPECT_EQ(net::ERR_DNS_TIMED_OUT, observer.net_error_code());
+  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, observer.net_error_code());
   EXPECT_EQ(net::ERR_DNS_TIMED_OUT, observer.resolve_error_info().error);
 }
 

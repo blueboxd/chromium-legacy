@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_track_supported_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/navigator_media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
@@ -63,15 +64,15 @@ MediaDevices::MediaDevices(ExecutionContext* context)
 
 MediaDevices::~MediaDevices() = default;
 
-ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state) {
+ScriptPromise MediaDevices::enumerateDevices(ScriptState* script_state,
+                                             ExceptionState& exception_state) {
   UpdateWebRTCMethodCount(RTCAPIName::kEnumerateDevices);
   LocalFrame* frame =
       To<Document>(ExecutionContext::From(script_state))->GetFrame();
   if (!frame) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                           "Current frame is detached."));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "Current frame is detached.");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -111,11 +112,10 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
   UserMediaController* user_media =
       UserMediaController::From(document->GetFrame());
   if (!user_media) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kNotSupportedError,
-                          "No media device controller available; is this a "
-                          "detached window?"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "No media device controller available; "
+                                      "is this a detached window?");
+    return ScriptPromise();
   }
 
   MediaErrorState error_state;
@@ -134,9 +134,9 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
 
   String error_message;
   if (!request->IsSecureContextUse(error_message)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kNotSupportedError, error_message));
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      error_message);
+    return ScriptPromise();
   }
   auto promise = resolver->Promise();
   request->Start();

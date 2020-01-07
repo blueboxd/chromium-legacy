@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
 import 'chrome://new-tab-page/skcolor.mojom-lite.js';
 import 'chrome://new-tab-page/new_tab_page.mojom-lite.js';

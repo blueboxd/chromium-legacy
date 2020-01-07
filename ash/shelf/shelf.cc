@@ -263,12 +263,14 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
     return;
   }
 
+  ShelfAlignment old_alignment = alignment_;
   alignment_ = alignment;
   // The ShelfWidget notifies the ShelfView of the alignment change.
   shelf_widget_->OnShelfAlignmentChanged();
   tooltip_->Close();
   shelf_layout_manager_->LayoutShelf();
-  Shell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow());
+  Shell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow(),
+                                            old_alignment);
 }
 
 bool Shelf::IsHorizontalAlignment() const {

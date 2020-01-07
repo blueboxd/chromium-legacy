@@ -1080,7 +1080,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   bool IsInaccessibleDueToAncestor() const;
 
-  bool ShouldHideChildren() const;
+  bool ShouldHideChildrenForUIA() const;
 
   // AXPlatformNodeBase overrides.
   void Dispose() override;

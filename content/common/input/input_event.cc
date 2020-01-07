@@ -16,8 +16,7 @@ InputEvent::InputEvent(ui::WebScopedInputEvent event,
 
 InputEvent::InputEvent(const blink::WebInputEvent& web_event,
                        const ui::LatencyInfo& latency_info)
-    : web_event(ui::WebInputEventTraits::Clone(web_event)),
-      latency_info(latency_info) {}
+    : web_event(web_event.Clone()), latency_info(latency_info) {}
 
 InputEvent::~InputEvent() {}
 

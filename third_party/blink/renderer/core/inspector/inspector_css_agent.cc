@@ -2202,15 +2202,15 @@ Response InspectorCSSAgent::setEffectivePropertyValueForNode(
   if (element->GetPseudoId())
     return Response::Error("Elements is pseudo");
 
-  CSSPropertyID property = cssPropertyID(property_name);
-  if (!isValidCSSPropertyID(property))
-    return Response::Error("Invalid property name");
-
   Document* owner_document = element->ownerDocument();
   if (!owner_document->IsActive())
     return Response::Error("Can't edit a node from a non-active document");
 
-  CSSPropertyID property_id = cssPropertyID(property_name);
+  CSSPropertyID property = cssPropertyID(owner_document, property_name);
+  if (!isValidCSSPropertyID(property))
+    return Response::Error("Invalid property name");
+
+  CSSPropertyID property_id = cssPropertyID(owner_document, property_name);
   const CSSProperty& property_class = CSSProperty::Get(property_id);
   CSSStyleDeclaration* style =
       FindEffectiveDeclaration(property_class, MatchingStyles(element));

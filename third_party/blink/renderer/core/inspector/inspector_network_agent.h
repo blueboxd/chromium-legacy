@@ -257,6 +257,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   bool CanGetResponseBodyBlob(const String& request_id);
   void GetResponseBodyBlob(const String& request_id,
                            std::unique_ptr<GetResponseBodyCallback>);
+  ExecutionContext* GetTargetExecutionContext() const;
 
   static std::unique_ptr<protocol::Network::Initiator> BuildInitiatorObject(
       Document*,

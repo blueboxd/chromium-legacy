@@ -113,17 +113,6 @@ Label* LabelManager::Find(RVA rva) {
   return it == labels_.end() || it->rva_ != rva ? nullptr : &(*it);
 }
 
-void LabelManager::RemoveUnderusedLabels(int32_t count_threshold) {
-  if (count_threshold <= 0)
-    return;
-  labels_.erase(std::remove_if(labels_.begin(), labels_.end(),
-                               [count_threshold](const Label& label) {
-                                 return label.count_ < count_threshold;
-                               }),
-                labels_.end());
-  // Not shrinking |labels_|, since this may cause reallocation.
-}
-
 void LabelManager::UnassignIndexes() {
   for (Label& label : labels_)
     label.index_ = Label::kNoIndex;

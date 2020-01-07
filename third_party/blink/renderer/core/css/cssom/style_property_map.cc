@@ -254,7 +254,8 @@ void StylePropertyMap::set(const ExecutionContext* execution_context,
                            const String& property_name,
                            const HeapVector<CSSStyleValueOrString>& values,
                            ExceptionState& exception_state) {
-  const CSSPropertyID property_id = cssPropertyID(property_name);
+  const CSSPropertyID property_id =
+      cssPropertyID(execution_context, property_name);
   if (property_id == CSSPropertyID::kInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
     return;
@@ -318,7 +319,8 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
   if (values.IsEmpty())
     return;
 
-  const CSSPropertyID property_id = cssPropertyID(property_name);
+  const CSSPropertyID property_id =
+      cssPropertyID(execution_context, property_name);
 
   if (property_id == CSSPropertyID::kInvalid) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
@@ -360,9 +362,10 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
   SetProperty(property_id, *current_value);
 }
 
-void StylePropertyMap::remove(const String& property_name,
+void StylePropertyMap::remove(const ExecutionContext* execution_context,
+                              const String& property_name,
                               ExceptionState& exception_state) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
+  CSSPropertyID property_id = cssPropertyID(execution_context, property_name);
   if (property_id == CSSPropertyID::kInvalid) {
     exception_state.ThrowTypeError("Invalid property name: " + property_name);
     return;

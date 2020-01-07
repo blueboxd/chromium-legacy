@@ -83,6 +83,10 @@ cbor::Value AsCBOR(const AuthenticatorSupportedOptions& options) {
       break;
   }
 
+  if (options.supports_uv_token) {
+    option_map.emplace(kUvTokenMapKey, true);
+  }
+
   return cbor::Value(std::move(option_map));
 }
 

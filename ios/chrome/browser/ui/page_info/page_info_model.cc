@@ -21,9 +21,7 @@
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_google_chrome_strings.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/ui/page_info/page_info_model_observer.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -37,28 +35,24 @@
 
 // TODO(crbug.com/227827) Merge 178763: PageInfoModel has been removed in
 // upstream; check if we should use PageInfoModel.
-PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
-                             const GURL& url,
+PageInfoModel::PageInfoModel(const GURL& url,
                              const web::SSLStatus& ssl,
-                             bool is_offline_page,
-                             PageInfoModelObserver* observer)
-    : observer_(observer) {
+                             bool is_offline_page) {
   if (is_offline_page) {
     sections_.push_back(
         SectionInfo(ICON_STATE_OFFLINE_PAGE,
                     l10n_util::GetStringUTF16(IDS_IOS_PAGE_INFO_OFFLINE_TITLE),
                     l10n_util::GetStringUTF16(IDS_IOS_PAGE_INFO_OFFLINE_PAGE),
-                    SECTION_INFO_INTERNAL_PAGE, BUTTON_RELOAD));
+                    BUTTON_RELOAD));
     return;
   }
 
   if (url.SchemeIs(kChromeUIScheme)) {
     base::string16 spec(base::UTF8ToUTF16(url.spec()));
 
-    sections_.push_back(
-        SectionInfo(ICON_STATE_INTERNAL_PAGE, spec,
-                    l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE),
-                    SECTION_INFO_INTERNAL_PAGE, BUTTON_NONE));
+    sections_.push_back(SectionInfo(
+        ICON_STATE_INTERNAL_PAGE, spec,
+        l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE), BUTTON_NONE));
     return;
   }
 
@@ -157,7 +151,6 @@ PageInfoModel::PageInfoModel(ios::ChromeBrowserState* browser_state,
   }
 
   sections_.push_back(SectionInfo(icon_id, hostname, description,
-                                  SECTION_INFO_CONNECTION,
                                   BUTTON_SHOW_SECURITY_HELP));
 }
 
@@ -188,9 +181,3 @@ gfx::Image* PageInfoModel::GetIconImage(SectionStateIcon icon_id) {
       return &rb.GetNativeImageNamed(IDR_IOS_OMNIBOX_OFFLINE);
   }
 }
-
-base::string16 PageInfoModel::GetCertificateLabel() const {
-  return certificate_label_;
-}
-
-PageInfoModel::PageInfoModel() : observer_(NULL) {}

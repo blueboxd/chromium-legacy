@@ -49,7 +49,6 @@
 <translation id="1056775291175587022">Nuk ka asnjë rrjet</translation>
 <translation id="1056898198331236512">Paralajmërim</translation>
 <translation id="1058262162121953039">PUK</translation>
-<translation id="1060881073479695738">Aplikacionet e "Dyqanit të Play"</translation>
 <translation id="1061745542578250838"><ph name="FILE_NAME" /> përfshin përmbajtje delikate dhe është bllokuar.</translation>
 <translation id="1061904396131502319">Pothuajse koha për një pushim</translation>
 <translation id="1067048845568873861">U krijua</translation>
@@ -1566,6 +1565,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3172808215939929606">Kjo faqe është përkthyer</translation>
 <translation id="3177909033752230686">Gjuha e faqes:</translation>
 <translation id="3179982752812949580">Lloji i fontit</translation>
+<translation id="3181825792072797598">Aktivizo "Sinkronizimin"</translation>
 <translation id="3181954750937456830">"Shfletimi i sigurt" (të mbron ty dhe pajisjen tënde nga sajtet e rrezikshme)</translation>
 <translation id="3182749001423093222">Kontrolli drejtshkrimor</translation>
 <translation id="3183139917765991655">Importuesi i profilit</translation>
@@ -4650,6 +4650,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7684718995427157417">Për të krijuar dhe testuar aplikacionet e tua, aktivizo "Urën e korrigjimit të Android" (ADB). Ki parasysh se ky veprim lejon instalimin e aplikacioneve të Android që nuk janë verifikuar nga Google dhe për çaktivizimin kërkohet rivendosja e cilësimeve të fabrikës.</translation>
 <translation id="7685049629764448582">Memoria e JavaScript</translation>
 <translation id="7685087414635069102">Kërkohet kodi PIN</translation>
+<translation id="768549422429443215">Shto gjuhën ose rendit përsëri listën.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Konfirmo fjalëkalimin e ri</translation>
 <translation id="7690378713476594306">Zgjidh nga lista</translation>

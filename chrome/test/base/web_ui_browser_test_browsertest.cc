@@ -92,7 +92,8 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest,
 }
 
 // Test times out in debug builds: https://crbug.com/902310
-#ifndef NDEBUG
+// Test also times out in Win7 Tests: https://crbug.com/1039406
+#if defined(OS_WIN) || !defined(NDEBUG)
 #define MAYBE_TestFailsAsyncFast DISABLED_TestFailsAsyncFast
 #else
 #define MAYBE_TestFailsAsyncFast TestFailsAsyncFast

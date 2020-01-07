@@ -5,9 +5,10 @@
 source_set("page_info") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "legacy_page_info_view_controller.h",
+    "legacy_page_info_view_controller.mm",
     "page_info_model.cc",
     "page_info_model.h",
-    "page_info_model_observer.h",
     "page_info_view_controller.h",
     "page_info_view_controller.mm",
   ]
@@ -49,9 +50,22 @@ source_set("constants") {
   ]
 }
 
+source_set("features") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "features.h",
+    "features.mm",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
 source_set("coordinator") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "page_info_coordinator.h",
+    "page_info_coordinator.mm",
     "page_info_legacy_coordinator.h",
     "page_info_legacy_coordinator.mm",
   ]

@@ -4507,23 +4507,22 @@ TEST_P(SplitViewTabDraggingTestWithClamshellSupport,
 
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {
  public:
-  TestWindowDelegateWithWidget(bool can_activate)
-      : can_activate_(can_activate) {}
+  TestWindowDelegateWithWidget(bool can_resize) : can_resize_(can_resize) {}
   ~TestWindowDelegateWithWidget() override = default;
 
   // views::WidgetDelegate:
   void DeleteDelegate() override { delete this; }
   views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
-  bool CanActivate() const override { return can_activate_; }
-  bool CanResize() const override { return true; }
+  bool CanActivate() const override { return true; }
+  bool CanResize() const override { return can_resize_; }
   bool CanMaximize() const override { return true; }
   bool ShouldAdvanceFocusToTopLevelWidget() const override { return true; }
 
   void set_widget(views::Widget* widget) { widget_ = widget; }
 
  private:
-  bool can_activate_ = false;
+  bool can_resize_;
   views::Widget* widget_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegateWithWidget);
@@ -4542,12 +4541,12 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
   }
 
  protected:
-  std::unique_ptr<aura::Window> CreateTestWindowWithWidget(bool can_activate) {
+  std::unique_ptr<aura::Window> CreateTestWindowWithWidget(bool can_resize) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.show_state = ui::SHOW_STATE_MAXIMIZED;
     views::Widget* widget = new views::Widget;
     std::unique_ptr<TestWindowDelegateWithWidget> widget_delegate =
-        std::make_unique<TestWindowDelegateWithWidget>(can_activate);
+        std::make_unique<TestWindowDelegateWithWidget>(can_resize);
     widget_delegate->set_widget(widget);
     params.delegate = widget_delegate.release();
     params.context = CurrentContext();
@@ -4556,8 +4555,8 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
     return base::WrapUnique<aura::Window>(widget->GetNativeView());
   }
 
-  void InitializeWindow(bool can_activate = true) {
-    window_ = CreateTestWindowWithWidget(can_activate);
+  void InitializeWindow(bool can_resize = true) {
+    window_ = CreateTestWindowWithWidget(can_resize);
   }
 
   // Sends a gesture scroll sequence to TabletModeAppWindowDragController.

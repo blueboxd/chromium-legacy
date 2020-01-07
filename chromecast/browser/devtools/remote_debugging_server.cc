@@ -57,7 +57,7 @@ class UnixDomainServerSocketFactory : public content::DevToolsSocketFactory {
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     std::unique_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(
-            base::Bind(&content::CanUserConnectToDevTools),
+            base::BindRepeating(&content::CanUserConnectToDevTools),
             true /* use_abstract_namespace */));
     if (socket->BindAndListen(socket_name_, kBackLog) != net::OK)
       return std::unique_ptr<net::ServerSocket>();

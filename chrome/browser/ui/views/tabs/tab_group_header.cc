@@ -37,7 +37,7 @@
 #include "ui/views/view_class_properties.h"
 
 TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
-                               tab_groups::TabGroupId group)
+                               const tab_groups::TabGroupId& group)
     : tab_strip_(tab_strip) {
   DCHECK(tab_strip);
 

@@ -28,24 +28,8 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
-namespace {
-
-// Minimum width for the multi-line label.
-const int kMinimumDialogLabelWidth = 400;
-
-std::unique_ptr<views::Link> CreateExtraView(views::LinkListener* listener) {
-  auto advanced_link = std::make_unique<views::Link>(
-      l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_ADVANCED));
-
-  advanced_link->set_listener(listener);
-  advanced_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  return advanced_link;
-}
-
-}  // namespace
-
 // static
-OneClickSigninDialogView* OneClickSigninDialogView::dialog_view_ = NULL;
+OneClickSigninDialogView* OneClickSigninDialogView::dialog_view_ = nullptr;
 
 // static
 void OneClickSigninDialogView::ShowDialog(
@@ -80,16 +64,19 @@ OneClickSigninDialogView::OneClickSigninDialogView(
     base::OnceCallback<void(bool)> confirmed_callback)
     : delegate_(std::move(delegate)),
       email_(email),
-      confirmed_callback_(std::move(confirmed_callback)),
-      advanced_link_(nullptr),
-      learn_more_link_(nullptr) {
+      confirmed_callback_(std::move(confirmed_callback)) {
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_OK_BUTTON));
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_UNDO_BUTTON));
-  advanced_link_ = DialogDelegate::SetExtraView(::CreateExtraView(this));
+
+  auto advanced_link = std::make_unique<views::Link>(
+      l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_ADVANCED));
+  advanced_link->set_listener(this);
+  advanced_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  advanced_link_ = DialogDelegate::SetExtraView(std::move(advanced_link));
 
   DCHECK(!confirmed_callback_.is_null());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -117,6 +104,8 @@ void OneClickSigninDialogView::Init() {
       IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW, email_));
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  // Minimum width for the multi-line label.
+  constexpr int kMinimumDialogLabelWidth = 400;
   label->SizeToFit(kMinimumDialogLabelWidth);
   layout->AddView(std::move(label));
 
@@ -144,17 +133,15 @@ void OneClickSigninDialogView::WindowClosing() {
   // we'll be destroyed asynchronously and the shown state will be checked
   // before then.
   DCHECK_EQ(dialog_view_, this);
-  dialog_view_ = NULL;
+  dialog_view_ = nullptr;
 }
 
 void OneClickSigninDialogView::LinkClicked(views::Link* source,
                                            int event_flags) {
-  if (source == learn_more_link_) {
+  if (source == learn_more_link_)
     delegate_->OnLearnMoreLinkClicked(true);
-  } else if (source == advanced_link_) {
-    std::move(confirmed_callback_).Run(true);
-    GetWidget()->Close();
-  }
+  else if ((source == advanced_link_) && Accept())
+    Hide();
 }
 
 bool OneClickSigninDialogView::Accept() {

@@ -9,12 +9,14 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/unguessable_token.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/paint_preview/browser/file_manager.h"
 #include "components/paint_preview/browser/paint_preview_policy.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
+#include "components/paint_preview/public/paint_preview_compositor_service.h"
 #include "content/public/browser/web_contents.h"
 
 namespace paint_preview {
@@ -94,6 +96,10 @@ class PaintPreviewBaseService : public KeyedService {
                            gfx::Rect clip_rect,
                            OnCapturedCallback callback);
 
+  // Starts the compositor service in a utility process.
+  std::unique_ptr<PaintPreviewCompositorService> StartCompositorService(
+      base::OnceClosure disconnect_handler);
+
  private:
   void OnCaptured(OnCapturedCallback callback,
                   base::UnguessableToken guid,
@@ -106,7 +112,8 @@ class PaintPreviewBaseService : public KeyedService {
 
   base::WeakPtrFactory<PaintPreviewBaseService> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(PaintPreviewBaseService);
+  PaintPreviewBaseService(const PaintPreviewBaseService&) = delete;
+  PaintPreviewBaseService& operator=(const PaintPreviewBaseService&) = delete;
 };
 
 }  // namespace paint_preview

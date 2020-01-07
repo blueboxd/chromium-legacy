@@ -18,6 +18,7 @@
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/common/api/declarative_net_request.h"
+#include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,6 +44,7 @@ std::unique_ptr<dnr_api::Redirect> MakeRedirectUrl(const char* redirect_url) {
 
 dnr_api::Rule CreateGenericParsedRule() {
   dnr_api::Rule rule;
+  rule.priority = std::make_unique<int>(kMinValidPriority);
   rule.id = kMinValidID;
   rule.condition.url_filter = std::make_unique<std::string>("filter");
   rule.action.type = dnr_api::RULE_ACTION_TYPE_BLOCK;
@@ -93,23 +95,27 @@ TEST_F(IndexedRuleTest, PriorityParsing) {
   } cases[] = {
       {dnr_api::RULE_ACTION_TYPE_REDIRECT,
        std::make_unique<int>(kMinValidPriority - 1),
-       ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY, kDefaultPriority},
+       ParseResult::ERROR_INVALID_RULE_PRIORITY, kDefaultPriority},
       {dnr_api::RULE_ACTION_TYPE_REDIRECT,
        std::make_unique<int>(kMinValidPriority), ParseResult::SUCCESS,
        kMinValidPriority},
+      {dnr_api::RULE_ACTION_TYPE_REDIRECT, nullptr,
+       ParseResult::ERROR_EMPTY_RULE_PRIORITY, kDefaultPriority},
       {dnr_api::RULE_ACTION_TYPE_REDIRECT,
        std::make_unique<int>(kMinValidPriority + 1), ParseResult::SUCCESS,
        kMinValidPriority + 1},
-      {dnr_api::RULE_ACTION_TYPE_REDIRECT, nullptr,
-       ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY, kDefaultPriority},
       {dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME,
        std::make_unique<int>(kMinValidPriority - 1),
-       ParseResult::ERROR_INVALID_UPGRADE_RULE_PRIORITY, kDefaultPriority},
+       ParseResult::ERROR_INVALID_RULE_PRIORITY, kDefaultPriority},
       {dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME,
        std::make_unique<int>(kMinValidPriority), ParseResult::SUCCESS,
        kMinValidPriority},
-      {dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME, nullptr,
-       ParseResult::ERROR_EMPTY_UPGRADE_RULE_PRIORITY, kDefaultPriority},
+      {dnr_api::RULE_ACTION_TYPE_BLOCK,
+       std::make_unique<int>(kMinValidPriority - 1),
+       ParseResult::ERROR_INVALID_RULE_PRIORITY, kDefaultPriority},
+      {dnr_api::RULE_ACTION_TYPE_BLOCK,
+       std::make_unique<int>(kMinValidPriority), ParseResult::SUCCESS,
+       kMinValidPriority},
   };
 
   for (size_t i = 0; i < base::size(cases); ++i) {
@@ -131,10 +137,15 @@ TEST_F(IndexedRuleTest, PriorityParsing) {
       EXPECT_EQ(cases[i].expected_priority, indexed_rule.priority);
   }
 
-  // Ensure priority is ignored for non-redirect rules.
+  // Ensure priority is ignored for non-before-request rules.
   {
     dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.action.type = dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS;
     rule.priority = std::make_unique<int>(5);
+    rule.action.remove_headers_list =
+        std::make_unique<std::vector<dnr_api::RemoveHeaderType>>(
+            std::vector<dnr_api::RemoveHeaderType>{
+                dnr_api::REMOVE_HEADER_TYPE_COOKIE});
     IndexedRule indexed_rule;
     ParseResult result = IndexedRule::CreateIndexedRule(
         std::move(rule), GetBaseURL(), &indexed_rule);
@@ -431,7 +442,6 @@ TEST_F(IndexedRuleTest, RedirectUrlParsing) {
     dnr_api::Rule rule = CreateGenericParsedRule();
     rule.action.redirect = MakeRedirectUrl(cases[i].redirect_url);
     rule.action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
-    rule.priority = std::make_unique<int>(kMinValidPriority);
 
     IndexedRule indexed_rule;
     ParseResult result = IndexedRule::CreateIndexedRule(
@@ -613,7 +623,6 @@ TEST_F(IndexedRuleTest, RedirectParsing) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
     dnr_api::Rule rule = CreateGenericParsedRule();
     rule.action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
-    rule.priority = std::make_unique<int>(kMinValidPriority);
 
     base::Optional<base::Value> redirect_val =
         base::JSONReader::Read(cases[i].redirect_dictionary_json);

@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context_set_iterable.h"
@@ -32,6 +32,7 @@ class RenderFrame;
 }
 
 namespace extensions {
+class Extension;
 class ScriptContext;
 
 // A container of ScriptContexts, responsible for both creating and managing

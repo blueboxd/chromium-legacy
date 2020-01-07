@@ -22,7 +22,7 @@ class View;
 // strip flow and positioned left of the leftmost tab in the group.
 class TabGroupHeader : public TabSlotView {
  public:
-  TabGroupHeader(TabStrip* tab_strip, tab_groups::TabGroupId group);
+  TabGroupHeader(TabStrip* tab_strip, const tab_groups::TabGroupId& group);
   ~TabGroupHeader() override = default;
 
   // TabSlotView:

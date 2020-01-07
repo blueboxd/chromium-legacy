@@ -210,12 +210,13 @@ TracingSamplerProfiler::TracingProfileBuilder::GetModuleCache() {
 }
 
 void TracingSamplerProfiler::TracingProfileBuilder::OnSampleCompleted(
-    std::vector<base::Frame> frames) {
+    std::vector<base::Frame> frames,
+    base::TimeTicks sample_timestamp) {
   base::AutoLock l(trace_writer_lock_);
   if (!trace_writer_) {
     if (buffered_samples_.size() < kMaxBufferedSamples) {
       buffered_samples_.emplace_back(
-          BufferedSample(TRACE_TIME_TICKS_NOW(), std::move(frames)));
+          BufferedSample(sample_timestamp, std::move(frames)));
     }
     return;
   }
@@ -225,7 +226,7 @@ void TracingSamplerProfiler::TracingProfileBuilder::OnSampleCompleted(
     }
     buffered_samples_.clear();
   }
-  WriteSampleToTrace(BufferedSample(TRACE_TIME_TICKS_NOW(), std::move(frames)));
+  WriteSampleToTrace(BufferedSample(sample_timestamp, std::move(frames)));
 }
 
 void TracingSamplerProfiler::TracingProfileBuilder::WriteSampleToTrace(

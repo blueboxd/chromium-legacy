@@ -62,7 +62,8 @@ class BASE_EXPORT ProfileBuilder {
   virtual void RecordMetadata(MetadataProvider* metadata_provider) {}
 
   // Records a new set of frames. Invoked when sampling a sample completes.
-  virtual void OnSampleCompleted(std::vector<Frame> frames) = 0;
+  virtual void OnSampleCompleted(std::vector<Frame> frames,
+                                 TimeTicks sample_timestamp) = 0;
 
   // Finishes the profile construction with |profile_duration| and
   // |sampling_period|. Invoked when sampling a profile completes.

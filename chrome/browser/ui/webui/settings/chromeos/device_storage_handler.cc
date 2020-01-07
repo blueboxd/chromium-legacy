@@ -308,8 +308,7 @@ void StorageHandler::UpdateBrowsingDataSize() {
         new BrowsingDataDatabaseHelper(profile_),
         new BrowsingDataLocalStorageHelper(profile_),
         new BrowsingDataAppCacheHelper(storage_partition->GetAppCacheService()),
-        new BrowsingDataIndexedDBHelper(
-            storage_partition->GetIndexedDBContext()),
+        new BrowsingDataIndexedDBHelper(storage_partition),
         BrowsingDataFileSystemHelper::Create(
             storage_partition->GetFileSystemContext()),
         new BrowsingDataServiceWorkerHelper(

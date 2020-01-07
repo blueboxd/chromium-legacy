@@ -246,10 +246,23 @@ base::string16 GetDictString(const std::unique_ptr<base::Value>& dict,
 // names provided in the input should be in order. Below is an example : Lets
 // say the json object is {"key1": {"key2": {"key3": "value1"}}, "key4":
 // "value2"}. Then to search for the key "key3", this method should be called
-// by providing the names vector as {"key1", "key2", "key3"}.
+// by providing the |path| as {"key1", "key2", "key3"}.
 std::string SearchForKeyInStringDictUTF8(
     const std::string& json_string,
     const std::initializer_list<base::StringPiece>& path);
+
+// Perform a recursive search on a nested dictionary object. Note that the
+// names provided in the input should be in order. Below is an example : Lets
+// say the json object is
+// {"key1": {"key2": {"value": "value1", "value": "value2"}}}.
+// Then to search for the key "key2" and list_key as "value", then this method
+// should be called by providing |list_key| as "value", |path| as
+// ["key1", "key2"] and the result returned would be ["value1", "value2"].
+HRESULT SearchForListInStringDictUTF8(
+    const std::string& list_key,
+    const std::string& json_string,
+    const std::initializer_list<base::StringPiece>& path,
+    std::vector<std::string>* output);
 std::string GetDictStringUTF8(const base::Value& dict, const char* name);
 std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
                               const char* name);

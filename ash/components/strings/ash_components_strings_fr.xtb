@@ -13,7 +13,7 @@
 <translation id="1383876407941801731">Rechercher</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> ou <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">Accéder à la fin de la ligne</translation>
-<translation id="1499072997694708844">Fermez n'importe quelle fenêtre de recherche ouverte ou arrêtez le chargement de la page actuelle</translation>
+<translation id="1499072997694708844">Fermer n'importe quelle fenêtre de recherche ouverte ou arrêter le chargement de la page actuelle</translation>
 <translation id="1510238584712386396">Lanceur d'applications</translation>
 <translation id="152892567002884378">Augmenter le volume</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, puis <ph name="ESC" /></translation>
@@ -122,7 +122,7 @@
 <translation id="5554139136362089836">Rechercher sur la page active</translation>
 <translation id="5563050856984839829">Appuyez sur <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> et cliquez sur un lien</translation>
 <translation id="561814908794220892">Ouvrir la page Web dans un nouvel onglet</translation>
-<translation id="5620219513321115856">Déplacez la fenêtre active vers le bureau à droite</translation>
+<translation id="5620219513321115856">Déplacer la fenêtre active vers le bureau à droite</translation>
 <translation id="5710621673935162997"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="L" /> ou <ph name="ALT" /><ph name="SEPARATOR2" /><ph name="D" /></translation>
 <translation id="5757111373163288447">Ouvrir le lien dans l'onglet</translation>
 <translation id="5757474750054631686">Réduire la luminosité du clavier (claviers rétroéclairés uniquement)</translation>
@@ -162,7 +162,7 @@
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="7020813747703216897">Aucun résultat ne correspond à votre recherche</translation>
 <translation id="7025325401470358758">Volet suivant</translation>
-<translation id="7076878155205969899">Coupe le son</translation>
+<translation id="7076878155205969899">Couper le son</translation>
 <translation id="7077383985738259936">Sélectionner ou mettre en surbrillance la barre de favoris (si elle est affichée)</translation>
 <translation id="7237562915163138771">Saisissez une adresse Web dans la barre d'adresse, puis appuyez sur <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
 <translation id="7254764037241667478">Mettre l'appareil en mode veille (suspendre)</translation>
@@ -197,7 +197,7 @@
 <translation id="8717459106217102612">Sélectionner la lettre ou le mot précédents</translation>
 <translation id="8727232706774971183">Voir vos notifications</translation>
 <translation id="8855885154700222542">Touche de plein écran</translation>
-<translation id="8881584919399569791">Déplacez la fenêtre active vers le bureau à gauche</translation>
+<translation id="8881584919399569791">Déplacer la fenêtre active vers le bureau à gauche</translation>
 <translation id="88986195241502842">Accéder à la page suivante</translation>
 <translation id="8924883688469390268">Passer à l'utilisateur précédent</translation>
 <translation id="8977648847395357314">Sélectionner le contenu de la barre d'adresse</translation>

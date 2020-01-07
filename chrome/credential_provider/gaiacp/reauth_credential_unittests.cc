@@ -93,9 +93,9 @@ TEST_P(GcpReauthCredentialGetStringValueTest, FidDescription) {
   const bool is_user_domain_joined = std::get<2>(GetParam());
   const bool is_sid_empty = std::get<3>(GetParam());
 
-  // Override registry to enable AD association with google.
-  constexpr wchar_t kRegEnableADAssociation[] = L"enable_ad_association";
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableADAssociation,
+  // Override registry to enable cloud association with google.
+  constexpr wchar_t kRegCloudAssociation[] = L"enable_cloud_association";
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegCloudAssociation,
                                           is_ad_association_enabled));
 
   Microsoft::WRL::ComPtr<IReauthCredential> reauth;
@@ -332,9 +332,9 @@ TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAvailable) {
 TEST_F(GcpReauthCredentialGlsRunnerTest, NoGaiaIdAvailableForADUser) {
   USES_CONVERSION;
 
-  // Override registry to enable AD association with google.
-  constexpr wchar_t kRegEnableADAssociation[] = L"enable_ad_association";
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableADAssociation, 1));
+  // Override registry to enable cloud association with google.
+  constexpr wchar_t kRegCloudAssociation[] = L"enable_cloud_association";
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegCloudAssociation, 1));
 
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
 

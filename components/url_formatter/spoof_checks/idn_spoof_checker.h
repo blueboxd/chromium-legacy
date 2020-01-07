@@ -100,7 +100,9 @@ class IDNSpoofChecker {
         const std::vector<std::string>& allowed_tlds);
     ~WholeScriptConfusable();
 
-    // Captures all letters belonging to this script.
+    // Captures all letters belonging to this script. See kScriptNameCodeList in
+    // blink/renderer/platform/text/locale_to_script_mapping.cc for script
+    // codes.
     std::unique_ptr<icu::UnicodeSet> all_letters;
     // The subset of all_letters that look like Latin ASCII letters. A domain
     // label entirely made of them is blocked as a simplified

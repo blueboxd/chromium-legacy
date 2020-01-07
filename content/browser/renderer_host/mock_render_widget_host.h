@@ -17,10 +17,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 
-namespace viz {
-class MockCompositorFrameSinkClient;
-}  // namespace viz
-
 namespace content {
 
 class MockRenderWidgetHost : public RenderWidgetHostImpl {
@@ -55,12 +51,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   blink::WebInputEvent::Type acked_touch_event_type() const {
     return acked_touch_event_type_;
   }
-
-  // Mocks out |renderer_compositor_frame_sink_| with a
-  // CompositorFrameSinkClient bound to
-  // |mock_renderer_compositor_frame_sink|.
-  void SetMockRendererCompositorFrameSink(
-      viz::MockCompositorFrameSinkClient* mock_renderer_compositor_frame_sink);
 
   void SetupForInputRouterTest();
 

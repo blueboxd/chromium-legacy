@@ -62,7 +62,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
   void RegisterExtensionWithRequestContexts(
       const Extension* extension,
-      const base::Closure& callback) override;
+      base::OnceClosure callback) override;
 
   void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,

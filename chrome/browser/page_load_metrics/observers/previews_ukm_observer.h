@@ -55,9 +55,7 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   virtual bool IsOfflinePreview(content::WebContents* web_contents) const;
 
  private:
-  void RecordMetrics();
   void RecordPreviewsTypes();
-  void RecordOptimizationGuideInfo();
 
   // The preview type that was actually committed and seen by the user.
   PreviewsType committed_preview_;
@@ -85,7 +83,6 @@ class PreviewsUKMObserver : public page_load_metrics::PageLoadMetricsObserver {
   base::Optional<previews::PreviewsEligibilityReason>
       offline_eligibility_reason_;
   base::Optional<base::TimeDelta> navigation_restart_penalty_;
-  base::Optional<std::string> serialized_hint_version_string_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

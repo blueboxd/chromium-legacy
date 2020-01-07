@@ -40,6 +40,7 @@ class GURL;
 @protocol LogoVendor;
 @class UITextField;
 @class UIView;
+class Browser;
 
 namespace ios {
 
@@ -119,6 +120,9 @@ class ChromeBrowserProvider {
 
   // Attaches any embedder-specific tab helpers to the given |web_state|.
   virtual void AttachTabHelpers(web::WebState* web_state) const;
+
+  // Attaches any embedder-specific browser agents to the given |browser|.
+  virtual void AttachBrowserAgents(Browser* browser) const;
 
   // Returns an instance of the voice search provider, if one exists.
   virtual VoiceSearchProvider* GetVoiceSearchProvider() const;

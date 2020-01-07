@@ -13,7 +13,7 @@
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1454364489140280055"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT1" /><ph name="SEPARATOR2" /><ph name="G" /> o <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="ENTER" /></translation>
 <translation id="1477442857810932985">Vai alla fine della riga</translation>
-<translation id="1499072997694708844">Chiudi le finestre di ricerca aperte o interrompi il caricamento della pagina attuale</translation>
+<translation id="1499072997694708844">Chiude le finestre di ricerca aperte o interrompe il caricamento della pagina attuale</translation>
 <translation id="1510238584712386396">Avvio applicazioni</translation>
 <translation id="152892567002884378">Alza il volume</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, quindi <ph name="ESC" /></translation>
@@ -41,7 +41,7 @@
 <translation id="2397416548179033562">Mostra il menu Chrome</translation>
 <translation id="2424073332829844142">Attiva e disattiva BLOC MAIUSC</translation>
 <translation id="2441202986792279177">Passa velocemente da una finestra all'altra</translation>
-<translation id="2454251766545114447">Diminuisci lo zoom dello schermo</translation>
+<translation id="2454251766545114447">Diminuisce lo zoom dello schermo</translation>
 <translation id="2478303094958140141">Attiva o disattiva ChromeVox (funzione di lettura vocale)</translation>
 <translation id="2480851840841871861">Apri l'Assistente Google</translation>
 <translation id="2488661730534396940">Attiva il desktop a sinistra</translation>
@@ -74,7 +74,7 @@
 <translation id="353037708190149633">Salva tutte le pagine aperte nella finestra corrente come Preferiti in una nuova cartella</translation>
 <translation id="355103131818127604">Apre il link in una nuova scheda in background</translation>
 <translation id="3622741593887335780">Aumenta lo zoom (con lente d’ingrandimento ancorata o a schermo intero attiva)</translation>
-<translation id="3649256019230929621">Riduci la finestra</translation>
+<translation id="3649256019230929621">Riduce la finestra</translation>
 <translation id="3655154169297074232">Schede e finestre</translation>
 <translation id="3668361878347172356">Ripete l'ultima azione</translation>
 <translation id="3710784500737332588">Consente di aprire il Centro assistenza</translation>
@@ -92,7 +92,7 @@
 <translation id="4060703249685950734">Riapre l'ultima scheda o finestra chiusa</translation>
 <translation id="4090342722461256974">Tieni premuto <ph name="ALT" /><ph name="SEPARATOR" /><ph name="SHIFT" />, tocca <ph name="TAB" /> fin quando arrivi alla finestra che vuoi aprire, quindi rilascia.</translation>
 <translation id="4092538597492297615">Copia i contenuti selezionati negli appunti</translation>
-<translation id="4101772068965291327">Apri pagina iniziale</translation>
+<translation id="4101772068965291327">Apre pagina iniziale</translation>
 <translation id="4123108089450197101">Salva il link nei Preferiti</translation>
 <translation id="4141203561740478845">Mette in evidenza la riga con la barra degli indirizzi</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> o <ph name="ENTER" /></translation>
@@ -145,7 +145,7 @@
 <translation id="6425378783626925378">Consente di fare clic sulle icone 1-8 nella shelf</translation>
 <translation id="6435207348963613811">Mette in evidenza l'elemento precedente sulla shelf</translation>
 <translation id="6445033640292336367">Ripristina la posizione originale della scheda</translation>
-<translation id="6474744297082284761">Diminuisci lo zoom (con lente d’ingrandimento ancorata o a schermo intero attiva)</translation>
+<translation id="6474744297082284761">Diminuisce lo zoom (con lente d’ingrandimento ancorata o a schermo intero attiva)</translation>
 <translation id="649811797655257835">Seleziona il file, quindi premi <ph name="SPACE" /></translation>
 <translation id="6556040137485212400">Consente di aprire la finestra rimasta inutilizzata per più tempo</translation>
 <translation id="666343722268997814">Apre il menu di scelta rapida per l'elemento evidenziato</translation>
@@ -153,7 +153,7 @@
 <translation id="6681606577947445973"><ph name="REFRESH" /> o <ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="R" /></translation>
 <translation id="6690765639083431875">Aggancia una finestra a sinistra</translation>
 <translation id="6692847073476874842">Visualizza l'anteprima di un file nell'app File</translation>
-<translation id="671928215901716392">Blocco schermo</translation>
+<translation id="671928215901716392">Blocca schermo</translation>
 <translation id="6727005317916125192">Riquadro precedente</translation>
 <translation id="6740781404993465795">Seleziona la parola o la lettera successiva</translation>
 <translation id="6755851152783057058">Passa all'ultimo metodo di immissione utilizzato</translation>

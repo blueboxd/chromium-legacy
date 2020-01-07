@@ -71,6 +71,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -909,6 +910,9 @@ void CaptivePortalBrowserTest::SetUpOnMainThread() {
   url_loader_interceptor_ =
       std::make_unique<content::URLLoaderInterceptor>(base::Bind(
           &CaptivePortalBrowserTest::OnIntercept, base::Unretained(this)));
+
+  // Do not introduce DNS errors.
+  host_resolver()->AddRule("*", "127.0.0.1");
 
   // Double-check that the captive portal service isn't enabled by default for
   // browser tests.

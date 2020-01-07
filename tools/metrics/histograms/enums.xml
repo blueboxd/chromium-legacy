@@ -6206,6 +6206,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Timed out"/>
 </enum>
 
+<enum name="BooleanCoalesced">
+  <int value="0" label="not coalesced"/>
+  <int value="1" label="coalesced"/>
+</enum>
+
 <enum name="BooleanColorSpaceSupported">
   <int value="0" label="Color space not supported"/>
   <int value="1" label="Color space supported"/>
@@ -51052,7 +51057,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="42" label="REGISTER_PROTOCOL_HANDLER"/>
   <int value="43" label="CREATING_AUDIO_STREAM (Obsolete)"/>
   <int value="44" label="PAGE_BEING_CAPTURED (Obsolete)"/>
-  <int value="45" label="BAD_DEFERRED_REDIRECT"/>
+  <int value="45" label="BAD_DEFERRED_REDIRECT (Obsolete)"/>
   <int value="46" label="NAVIGATION_UNCOMMITTED (Obsolete)"/>
   <int value="47" label="NEW_NAVIGATION_ENTRY (Obsolete)"/>
   <int value="48" label="COOKIE_STORE_NOT_LOADED (Obsolete)"/>

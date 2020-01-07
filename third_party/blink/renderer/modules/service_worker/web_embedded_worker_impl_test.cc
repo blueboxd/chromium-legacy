@@ -115,6 +115,7 @@ class FakeWebWorkerFetchContext final : public WebWorkerFetchContext {
       int request_id) override {
     return {};
   }
+  void SetIsOfflineMode(bool is_offline_mode) override {}
 
  private:
   FakeWebURLLoaderFactory fake_web_url_loader_factory_;

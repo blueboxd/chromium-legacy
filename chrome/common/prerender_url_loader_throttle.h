@@ -61,7 +61,6 @@ class PrerenderURLLoaderThrottle
   std::string histogram_prefix_;
 
   bool deferred_ = false;
-  bool sync_xhr_ = false;
   int redirect_count_ = 0;
   content::ResourceType resource_type_;
 

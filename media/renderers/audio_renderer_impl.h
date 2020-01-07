@@ -84,7 +84,7 @@ class MEDIA_EXPORT AudioRendererImpl
   void Initialize(DemuxerStream* stream,
                   CdmContext* cdm_context,
                   RendererClient* client,
-                  const PipelineStatusCB& init_cb) override;
+                  PipelineStatusCallback init_cb) override;
   TimeSource* GetTimeSource() override;
   void Flush(base::OnceClosure callback) override;
   void StartPlaying() override;
@@ -249,7 +249,7 @@ class MEDIA_EXPORT AudioRendererImpl
   RendererClient* client_;
 
   // Callback provided during Initialize().
-  PipelineStatusCB init_cb_;
+  PipelineStatusCallback init_cb_;
 
   // Callback provided to Flush().
   base::OnceClosure flush_cb_;

@@ -50,66 +50,6 @@
 
 namespace {
 
-// Display a maximum of 4 visible items in a list before scrolling.
-const int kMaxVisibleListItems = 4;
-
-// Padding for list items and icons.
-const gfx::Insets kTitleDescriptionListItemInset = gfx::Insets(3, 0, 13, 0);
-
-// Returns a view with the given title and description.
-std::unique_ptr<views::View> ConstructTitleDescriptionItemContents(
-    const base::string16& title,
-    const base::string16& description) {
-  auto label_container = std::make_unique<views::View>();
-  label_container->SetBorder(
-      views::CreateEmptyBorder(kTitleDescriptionListItemInset));
-  label_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
-  if (!title.empty()) {
-    auto title_label = std::make_unique<views::Label>(
-        title, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY,
-        gfx::DirectionalityMode::DIRECTIONALITY_FROM_UI);
-    title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    title_label->SetAllowCharacterBreak(true);
-    label_container->AddChildView(title_label.release());
-  }
-  if (!description.empty()) {
-    auto description_label = std::make_unique<views::Label>(
-        description, views::style::CONTEXT_LABEL, views::style::STYLE_DISABLED,
-        gfx::DirectionalityMode::DIRECTIONALITY_FROM_UI);
-    description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    description_label->SetAllowCharacterBreak(true);
-    label_container->AddChildView(description_label.release());
-  }
-  return label_container;
-}
-
-// Constructs a view for a list item containing a link.
-std::unique_ptr<views::Link> ConstructLinkItemContents(
-    const base::string16& title,
-    views::LinkListener* parent_) {
-  auto link = std::make_unique<views::Link>(title);
-  link->SetElideBehavior(gfx::ELIDE_MIDDLE);
-  link->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  link->set_listener(parent_);
-  return link;
-}
-
-// Constructs an ImageView for a list item with the given icon.
-std::unique_ptr<views::ImageView> ConstructItemIcon(
-    const gfx::VectorIcon* icon,
-    const gfx::VectorIcon& badge) {
-  auto icon_view = std::make_unique<views::ImageView>();
-  DCHECK(icon);
-  icon_view->SetBorder(
-      views::CreateEmptyBorder(kTitleDescriptionListItemInset));
-  const SkColor icon_color = views::style::GetColor(
-      *icon_view, CONTEXT_BODY_TEXT_SMALL, views::style::STYLE_PRIMARY);
-  icon_view->SetImage(CreateVectorIconWithBadge(
-      *icon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE), icon_color, badge));
-  return icon_view;
-}  // namespace
-
 enum class LayoutRowType {
   DEFAULT,
   INDENTED,
@@ -290,17 +230,45 @@ ContentSettingBubbleContents::ListItemContainer::ListItemContainer(
 
 void ContentSettingBubbleContents::ListItemContainer::AddItem(
     const ContentSettingBubbleModel::ListItem& item) {
-  std::unique_ptr<views::ImageView> item_icon =
-      std::make_unique<views::ImageView>();
+  // Padding for list items and icons.
+  static constexpr gfx::Insets kTitleDescriptionListItemInset(3, 0, 13, 0);
 
-  auto item_contents =
-      item.has_link
-          ? ConstructLinkItemContents(item.title, parent_)
-          : ConstructTitleDescriptionItemContents(item.title, item.description);
+  auto item_icon = std::make_unique<views::ImageView>();
   if (item.image) {
-    item_icon =
-        ConstructItemIcon(item.image, item.has_blocked_badge ? kBlockedBadgeIcon
-                                                             : gfx::kNoneIcon);
+    item_icon->SetBorder(
+        views::CreateEmptyBorder(kTitleDescriptionListItemInset));
+    const SkColor icon_color = views::style::GetColor(
+        *item_icon, CONTEXT_BODY_TEXT_SMALL, views::style::STYLE_PRIMARY);
+    item_icon->SetImage(CreateVectorIconWithBadge(
+        *item.image, GetLayoutConstant(LOCATION_BAR_ICON_SIZE), icon_color,
+        item.has_blocked_badge ? kBlockedBadgeIcon : gfx::kNoneIcon));
+  }
+
+  std::unique_ptr<views::View> item_contents;
+  if (item.has_link) {
+    auto link = std::make_unique<views::Link>(item.title);
+    link->SetElideBehavior(gfx::ELIDE_MIDDLE);
+    link->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    link->set_listener(parent_);
+    item_contents = std::move(link);
+  } else {
+    item_contents->SetBorder(
+        views::CreateEmptyBorder(kTitleDescriptionListItemInset));
+    item_contents->SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kVertical));
+    const auto add_label = [&item_contents](const base::string16& string,
+                                            int style) {
+      if (!string.empty()) {
+        auto label = std::make_unique<views::Label>(
+            string, views::style::CONTEXT_LABEL, style,
+            gfx::DirectionalityMode::DIRECTIONALITY_FROM_UI);
+        label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+        label->SetAllowCharacterBreak(true);
+        item_contents->AddChildView(std::move(label));
+      }
+    };
+    add_label(item.title, views::style::STYLE_PRIMARY);
+    add_label(item.description, views::style::STYLE_DISABLED);
   }
 
   list_item_views_.push_back(AddNewRowToLayout(
@@ -381,6 +349,8 @@ void ContentSettingBubbleContents::ListItemContainer::UpdateScrollHeight(
   auto* scroll_view = views::ScrollView::GetScrollViewForContents(this);
   DCHECK(scroll_view);
   if (!scroll_view->is_bounded()) {
+    // Display a maximum of 4 visible items in a list before scrolling.
+    static constexpr int kMaxVisibleListItems = 4;
     scroll_view->ClipHeightTo(
         0, std::max(row.first->GetPreferredSize().height(),
                     row.second->GetPreferredSize().height()) *

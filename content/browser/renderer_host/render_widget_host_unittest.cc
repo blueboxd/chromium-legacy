@@ -25,8 +25,6 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/test/begin_frame_args_test.h"
-#include "components/viz/test/compositor_frame_helpers.h"
-#include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/input/mock_input_router.h"
@@ -47,7 +45,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/mock_widget_input_handler.h"
 #include "content/test/stub_render_widget_host_owner_delegate.h"
@@ -185,10 +182,6 @@ class TestView : public TestRenderWidgetHostView {
     local_surface_id_allocator_.GenerateId();
   }
 
-  const viz::BeginFrameAck& last_did_not_produce_frame_ack() {
-    return last_did_not_produce_frame_ack_;
-  }
-
   // RenderWidgetHostView override.
   gfx::Rect GetViewBounds() override { return bounds_; }
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
@@ -218,9 +211,6 @@ class TestView : public TestRenderWidgetHostView {
       return mock_compositor_viewport_pixel_size_;
     return TestRenderWidgetHostView::GetCompositorViewportPixelSize();
   }
-  void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override {
-    last_did_not_produce_frame_ack_ = ack;
-  }
 
  protected:
   WebMouseWheelEvent unhandled_wheel_event_;
@@ -232,7 +222,6 @@ class TestView : public TestRenderWidgetHostView {
   bool use_fake_compositor_viewport_pixel_size_;
   gfx::Size mock_compositor_viewport_pixel_size_;
   InputEventAckState ack_result_;
-  viz::BeginFrameAck last_did_not_produce_frame_ack_;
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
   ScreenInfo screen_info_;
 
@@ -526,14 +515,6 @@ class RenderWidgetHostTest : public testing::Test {
     host_->Init();
     host_->DisableGestureDebounce();
 
-    mojo::PendingRemote<viz::mojom::CompositorFrameSink> sink;
-    mojo::PendingReceiver<viz::mojom::CompositorFrameSink> sink_receiver =
-        sink.InitWithNewPipeAndPassReceiver();
-    renderer_compositor_frame_sink_ =
-        std::make_unique<FakeRendererCompositorFrameSink>(
-            std::move(sink), renderer_compositor_frame_sink_remote_
-                                 .BindNewPipeAndPassReceiver());
-
     mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
         renderer_render_frame_metadata_observer_remote;
     mojo::PendingRemote<mojom::RenderFrameMetadataObserverClient>
@@ -548,9 +529,6 @@ class RenderWidgetHostTest : public testing::Test {
                 .InitWithNewPipeAndPassReceiver(),
             std::move(render_frame_metadata_observer_remote));
 
-    host_->RequestCompositorFrameSink(
-        std::move(sink_receiver),
-        renderer_compositor_frame_sink_remote_.Unbind());
     host_->RegisterRenderFrameMetadataObserver(
         std::move(render_frame_metadata_observer_client_receiver),
         std::move(renderer_render_frame_metadata_observer_remote));
@@ -745,16 +723,11 @@ class RenderWidgetHostTest : public testing::Test {
   base::TimeTicks last_simulated_event_time_;
   base::TimeDelta simulated_event_time_delta_;
   IPC::TestSink* sink_;
-  std::unique_ptr<FakeRendererCompositorFrameSink>
-      renderer_compositor_frame_sink_;
   std::unique_ptr<FakeRenderFrameMetadataObserver>
       renderer_render_frame_metadata_observer_;
 
  private:
   SyntheticWebTouchEvent touch_event_;
-
-  mojo::Remote<viz::mojom::CompositorFrameSinkClient>
-      renderer_compositor_frame_sink_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };
@@ -1734,27 +1707,19 @@ TEST_F(RenderWidgetHostTest, EventDispatchPostDetach) {
 // Check that if messages of a frame arrive earlier than the frame itself, we
 // queue the messages until the frame arrives and then process them.
 TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
-  const viz::LocalSurfaceId local_surface_id(1,
-                                             base::UnguessableToken::Create());
+  constexpr uint32_t frame_token = 1;
   std::vector<IPC::Message> messages;
   messages.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  auto frame = viz::CompositorFrameBuilder()
-                   .AddDefaultRenderPass()
-                   .SetSendFrameTokenToEmbedder(true)
-                   .Build();
-  const uint32_t frame_token = frame.metadata.frame_token;
-
   host_->OnMessageReceived(
       WidgetHostMsg_FrameSwapMessages(0, frame_token, messages));
   EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  view_->OnFrameTokenChanged(frame_token);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }
@@ -1762,21 +1727,14 @@ TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
 // Check that if a frame arrives earlier than its messages, we process the
 // messages immedtiately.
 TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
-  const viz::LocalSurfaceId local_surface_id(1,
-                                             base::UnguessableToken::Create());
+  constexpr uint32_t frame_token = 1;
   std::vector<IPC::Message> messages;
   messages.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  auto frame = viz::CompositorFrameBuilder()
-                   .AddDefaultRenderPass()
-                   .SetSendFrameTokenToEmbedder(true)
-                   .Build();
-  const uint32_t frame_token = frame.metadata.frame_token;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  view_->OnFrameTokenChanged(frame_token);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -1789,8 +1747,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
 // Check that if messages of multiple frames arrive before the frames, we
 // process each message once it frame arrives.
 TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
-  const viz::LocalSurfaceId local_surface_id(1,
-                                             base::UnguessableToken::Create());
+  constexpr uint32_t frame_token1 = 1;
+  constexpr uint32_t frame_token2 = 2;
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
   messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
@@ -1798,17 +1756,6 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
 
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
-
-  auto frame1 = viz::CompositorFrameBuilder()
-                    .AddDefaultRenderPass()
-                    .SetSendFrameTokenToEmbedder(true)
-                    .Build();
-  const uint32_t frame_token1 = frame1.metadata.frame_token;
-  auto frame2 = viz::CompositorFrameBuilder()
-                    .AddDefaultRenderPass()
-                    .SetSendFrameTokenToEmbedder(true)
-                    .Build();
-  const uint32_t frame_token2 = frame2.metadata.frame_token;
 
   host_->OnMessageReceived(
       WidgetHostMsg_FrameSwapMessages(0, frame_token1, messages1));
@@ -1820,12 +1767,10 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
   EXPECT_EQ(2u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame1),
-                               base::nullopt, 0);
+  view_->OnFrameTokenChanged(frame_token1);
   EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame2),
-                               base::nullopt, 0);
+  view_->OnFrameTokenChanged(frame_token2);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
 }
@@ -1833,8 +1778,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
 // Check that if multiple frames arrive before their messages, each message is
 // processed immediately as soon as it arrives.
 TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
-  const viz::LocalSurfaceId local_surface_id(1,
-                                             base::UnguessableToken::Create());
+  constexpr uint32_t frame_token1 = 1;
+  constexpr uint32_t frame_token2 = 2;
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
   messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
@@ -1843,23 +1788,11 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  auto frame = viz::CompositorFrameBuilder()
-                   .AddDefaultRenderPass()
-                   .SetSendFrameTokenToEmbedder(true)
-                   .Build();
-  const uint32_t frame_token1 = frame.metadata.frame_token;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  view_->OnFrameTokenChanged(frame_token1);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  frame = viz::CompositorFrameBuilder()
-              .AddDefaultRenderPass()
-              .SetSendFrameTokenToEmbedder(true)
-              .Build();
-  const uint32_t frame_token2 = frame.metadata.frame_token;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  view_->OnFrameTokenChanged(frame_token2);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -1877,9 +1810,8 @@ TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
 // Check that if one frame is lost but its messages arrive, we process the
 // messages on the arrival of the next frame.
 TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
-  const uint32_t frame_token1 = 1;
-  const viz::LocalSurfaceId local_surface_id(1,
-                                             base::UnguessableToken::Create());
+  constexpr uint32_t frame_token1 = 1;
+  constexpr uint32_t frame_token2 = 2;
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages2;
   messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
@@ -1893,18 +1825,12 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
   EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  auto frame = viz::CompositorFrameBuilder()
-                   .AddDefaultRenderPass()
-                   .SetSendFrameTokenToEmbedder(true)
-                   .Build();
-  const uint32_t frame_token2 = frame.metadata.frame_token;
   host_->OnMessageReceived(
       WidgetHostMsg_FrameSwapMessages(0, frame_token2, messages2));
   EXPECT_EQ(2u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  view_->OnFrameTokenChanged(frame_token2);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
 }
@@ -1912,30 +1838,19 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
 // Check that if the renderer crashes, we drop all queued messages and allow
 // smaller frame tokens to be sent by the renderer.
 TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
-  const viz::LocalSurfaceId local_surface_id(1,
-                                             base::UnguessableToken::Create());
+  constexpr uint32_t frame_token1 = 10;
+  constexpr uint32_t frame_token2 = 1;
+  constexpr uint32_t frame_token3 = 1;
+
   std::vector<IPC::Message> messages1;
   std::vector<IPC::Message> messages3;
   messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
   messages3.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
 
-  // Mocking |renderer_compositor_frame_sink_| to prevent crashes in
-  // renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources).
-  std::unique_ptr<viz::MockCompositorFrameSinkClient>
-      mock_compositor_frame_sink_client =
-          std::make_unique<viz::MockCompositorFrameSinkClient>();
-  host_->SetMockRendererCompositorFrameSink(
-      mock_compositor_frame_sink_client.get());
-
   // If we don't do this, then RWHI destroys the view in RendererExited and
   // then a crash occurs when we attempt to destroy it again in TearDown().
   host_->SetView(nullptr);
 
-  auto frame = viz::CompositorFrameBuilder()
-                   .AddDefaultRenderPass()
-                   .SetSendFrameTokenToEmbedder(true)
-                   .Build();
-  const uint32_t frame_token1 = frame.metadata.frame_token;
   host_->OnMessageReceived(
       WidgetHostMsg_FrameSwapMessages(0, frame_token1, messages1));
   EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
@@ -1946,13 +1861,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
   host_->Init();
 
-  frame = viz::CompositorFrameBuilder()
-              .AddDefaultRenderPass()
-              .SetSendFrameTokenToEmbedder(true)
-              .Build();
-  const uint32_t frame_token2 = frame.metadata.frame_token;
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  view_->OnFrameTokenChanged(frame_token2);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
@@ -1963,16 +1872,11 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   host_->Init();
 
   host_->OnMessageReceived(
-      WidgetHostMsg_FrameSwapMessages(0, frame_token2, messages3));
+      WidgetHostMsg_FrameSwapMessages(0, frame_token3, messages3));
   EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  frame = viz::CompositorFrameBuilder()
-              .AddDefaultRenderPass()
-              .SetSendFrameTokenToEmbedder(true)
-              .Build();
-  host_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                               base::nullopt, 0);
+  view_->OnFrameTokenChanged(frame_token3);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }

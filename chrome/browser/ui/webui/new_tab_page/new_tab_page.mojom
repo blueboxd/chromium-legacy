@@ -6,9 +6,11 @@ module new_tab_page.mojom;
 
 import "skia/public/mojom/skcolor.mojom";
 import "url/mojom/url.mojom";
+import "mojo/public/mojom/base/text_direction.mojom";
 
 struct MostVisitedTile {
   string title;
+  mojo_base.mojom.TextDirection title_direction;
   url.mojom.Url url;
 };
 

@@ -25,6 +25,10 @@ class AXPlatformNodeTextChildProviderTest : public ui::AXPlatformNodeWinTest {
   // nontext_child_of_root______                          text_child_of_root
   // |                          |                         |
   // nontext_child_of_nontext   text_child_of_nontext     text_child_of_text
+  //
+  // nontext leaf elements are considered as embedded objects and expose a
+  // character to allow the text pattern navigation to work with them too.
+  // Because of that, a nontext leaf element is treated as a text element.
   void SetUp() override {
     ui::AXNodeData root;
     root.id = 1;
@@ -273,7 +277,9 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, text_content.Receive()));
   EXPECT_EQ(
-      0, wcscmp(static_cast<BSTR>(text_content), L"\ntext child of nontext."));
+      0,
+      wcscmp(static_cast<BSTR>(text_content),
+             (kEmbeddedCharacterAsString + L"text child of nontext.").c_str()));
 
   ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);
@@ -310,7 +316,8 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
   base::win::ScopedBstr text_content;
   EXPECT_HRESULT_SUCCEEDED(
       text_range_provider->GetText(-1, text_content.Receive()));
-  EXPECT_EQ(0, wcscmp(static_cast<BSTR>(text_content), L""));
+  EXPECT_EQ(0, wcscmp(static_cast<BSTR>(text_content),
+                      kEmbeddedCharacterAsString.c_str()));
 
   ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);

@@ -21,6 +21,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class LocalFrame;
 class MediaStreamConstraints;
 class MediaTrackSupportedConstraints;
@@ -41,7 +42,7 @@ class MODULES_EXPORT MediaDevices final
   explicit MediaDevices(ExecutionContext*);
   ~MediaDevices() override;
 
-  ScriptPromise enumerateDevices(ScriptState*);
+  ScriptPromise enumerateDevices(ScriptState*, ExceptionState&);
   MediaTrackSupportedConstraints* getSupportedConstraints() const;
   ScriptPromise getUserMedia(ScriptState*,
                              const MediaStreamConstraints*,

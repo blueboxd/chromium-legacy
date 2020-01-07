@@ -338,7 +338,7 @@ public class LocationBarPhone extends LocationBarLayout {
     @Override
     protected void updateButtonVisibility() {
         super.updateButtonVisibility();
-        updateMicButtonVisibility(mUrlFocusChangePercent);
+        updateMicButtonVisibility();
     }
 
     @Override

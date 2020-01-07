@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 
 #include "base/bind.h"
+#include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -223,7 +224,14 @@ void NewTabPageHandler::OnURLsAvailable(
       sections.at(ntp_tiles::SectionType::PERSONALIZED);
   for (const ntp_tiles::NTPTile& tile : tiles) {
     auto value = new_tab_page::mojom::MostVisitedTile::New();
-    value->title = base::UTF16ToUTF8(tile.title);
+    if (tile.title.empty()) {
+      value->title = tile.url.spec();
+      value->title_direction = base::i18n::LEFT_TO_RIGHT;
+    } else {
+      value->title = base::UTF16ToUTF8(tile.title);
+      value->title_direction =
+          base::i18n::GetFirstStrongCharacterDirection(tile.title);
+    }
     value->url = tile.url;
     list.push_back(std::move(value));
   }

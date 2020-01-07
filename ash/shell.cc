@@ -507,9 +507,10 @@ void Shell::NotifyUserWorkAreaInsetsChanged(aura::Window* root_window) {
     observer.OnUserWorkAreaInsetsChanged(root_window);
 }
 
-void Shell::NotifyShelfAlignmentChanged(aura::Window* root_window) {
+void Shell::NotifyShelfAlignmentChanged(aura::Window* root_window,
+                                        ShelfAlignment old_alignment) {
   for (auto& observer : shell_observers_)
-    observer.OnShelfAlignmentChanged(root_window);
+    observer.OnShelfAlignmentChanged(root_window, old_alignment);
 }
 
 void Shell::NotifyShelfAutoHideBehaviorChanged(aura::Window* root_window) {

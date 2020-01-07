@@ -37,8 +37,8 @@ class SESSIONS_EXPORT BaseSessionService {
     TAB_RESTORE
   };
 
-  typedef base::Callback<void(std::vector<std::unique_ptr<SessionCommand>>)>
-      GetCommandsCallback;
+  using GetCommandsCallback =
+      base::OnceCallback<void(std::vector<std::unique_ptr<SessionCommand>>)>;
 
   // Creates a new BaseSessionService. After creation you need to invoke
   // Init. |delegate| will remain owned by the creator and it is guaranteed
@@ -99,7 +99,7 @@ class SESSIONS_EXPORT BaseSessionService {
   // Uses the backend to load the last session commands from disc. |callback|
   // gets called once the data has arrived.
   base::CancelableTaskTracker::TaskId ScheduleGetLastSessionCommands(
-      const GetCommandsCallback& callback,
+      GetCommandsCallback callback,
       base::CancelableTaskTracker* tracker);
 
  private:

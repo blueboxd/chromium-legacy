@@ -384,20 +384,20 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   if (parsed_rule.id < kMinValidID)
     return ParseResult::ERROR_INVALID_RULE_ID;
 
+  const bool is_before_request_rule =
+      parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_BLOCK ||
+      parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_ALLOW ||
+      parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_REDIRECT ||
+      parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME;
+  if (is_before_request_rule) {
+    if (!parsed_rule.priority)
+      return ParseResult::ERROR_EMPTY_RULE_PRIORITY;
+    if (*parsed_rule.priority < kMinValidPriority)
+      return ParseResult::ERROR_INVALID_RULE_PRIORITY;
+  }
+
   const bool is_redirect_rule =
       parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_REDIRECT;
-  const bool is_upgrade_rule =
-      parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME;
-
-  if (is_redirect_rule || is_upgrade_rule) {
-    if (!parsed_rule.priority)
-      return is_redirect_rule ? ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY
-                              : ParseResult::ERROR_EMPTY_UPGRADE_RULE_PRIORITY;
-    if (*parsed_rule.priority < kMinValidPriority)
-      return is_redirect_rule
-                 ? ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY
-                 : ParseResult::ERROR_INVALID_UPGRADE_RULE_PRIORITY;
-  }
 
   if (is_redirect_rule) {
     if (!parsed_rule.action.redirect)
@@ -464,8 +464,7 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   indexed_rule->action_type = parsed_rule.action.type;
   indexed_rule->id = base::checked_cast<uint32_t>(parsed_rule.id);
   indexed_rule->priority = base::checked_cast<uint32_t>(
-      (is_redirect_rule || is_upgrade_rule) ? *parsed_rule.priority
-                                            : kDefaultPriority);
+      is_before_request_rule ? *parsed_rule.priority : kDefaultPriority);
   indexed_rule->options = GetOptionsMask(parsed_rule);
   indexed_rule->activation_types = GetActivationTypes(parsed_rule);
 

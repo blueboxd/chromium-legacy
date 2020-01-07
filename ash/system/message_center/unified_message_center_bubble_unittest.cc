@@ -260,6 +260,7 @@ TEST_F(UnifiedMessageCenterBubbleTest, ReverseFocusCycle) {
 TEST_F(UnifiedMessageCenterBubbleTest, CollapseState) {
   EnableMessageCenterRefactor();
   AddNotification();
+  AddNotification();
 
   GetPrimaryUnifiedSystemTray()->ShowBubble(true);
   int small_display_height =

@@ -414,6 +414,7 @@ jumbo_source_set("browser_sources") {
   public_deps = [
     "//build:chromecast_buildflags",
     "//components/download/public/common:public",
+    "//components/services/storage/public/mojom",
     "//content/public/common:common_sources",
     "//ipc",
     "//media/mojo/mojom:remoting",

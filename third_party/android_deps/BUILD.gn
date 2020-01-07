@@ -1200,7 +1200,7 @@ java_prebuilt("android_arch_core_common_java") {
   supports_android = true
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_support_annotations_java",
@@ -1213,7 +1213,7 @@ android_aar_prebuilt("android_arch_core_runtime_java") {
   info_path = "libs/android_arch_core_runtime/android_arch_core_runtime.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":android_arch_core_common_java",
@@ -1227,7 +1227,7 @@ android_aar_prebuilt("android_arch_lifecycle_livedata_java") {
   info_path = "libs/android_arch_lifecycle_livedata/android_arch_lifecycle_livedata.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":android_arch_core_common_java",
@@ -1242,7 +1242,7 @@ android_aar_prebuilt("android_arch_lifecycle_livedata_core_java") {
   info_path = "libs/android_arch_lifecycle_livedata_core/android_arch_lifecycle_livedata_core.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":android_arch_core_common_java",
@@ -1258,7 +1258,7 @@ java_prebuilt("androidx_arch_core_core_common_java") {
   supports_android = true
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
@@ -1271,7 +1271,7 @@ android_aar_prebuilt("androidx_arch_core_core_runtime_java") {
   info_path = "libs/androidx_arch_core_core_runtime/androidx_arch_core_core_runtime.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
@@ -1285,7 +1285,7 @@ android_aar_prebuilt("androidx_cursoradapter_cursoradapter_java") {
   info_path = "libs/androidx_cursoradapter_cursoradapter/androidx_cursoradapter_cursoradapter.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
@@ -1298,7 +1298,7 @@ android_aar_prebuilt("androidx_documentfile_documentfile_java") {
   info_path = "libs/androidx_documentfile_documentfile/androidx_documentfile_documentfile.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
@@ -1311,7 +1311,7 @@ android_aar_prebuilt("androidx_fragment_fragment_java") {
   info_path = "libs/androidx_fragment_fragment/androidx_fragment_fragment.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
@@ -1329,7 +1329,7 @@ android_aar_prebuilt("androidx_leanback_leanback_java") {
   info_path = "libs/androidx_leanback_leanback/androidx_leanback_leanback.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_core_core_java",
@@ -1346,7 +1346,7 @@ android_aar_prebuilt("androidx_legacy_legacy_preference_v14_java") {
   info_path = "libs/androidx_legacy_legacy_preference_v14/androidx_legacy_legacy_preference_v14.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_preference_preference_java",
@@ -1360,7 +1360,7 @@ android_aar_prebuilt("androidx_lifecycle_lifecycle_livedata_java") {
   info_path = "libs/androidx_lifecycle_lifecycle_livedata/androidx_lifecycle_lifecycle_livedata.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_arch_core_core_common_java",
@@ -1375,7 +1375,7 @@ android_aar_prebuilt("androidx_lifecycle_lifecycle_livedata_core_java") {
   info_path = "libs/androidx_lifecycle_lifecycle_livedata_core/androidx_lifecycle_lifecycle_livedata_core.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_arch_core_core_common_java",
@@ -1390,7 +1390,7 @@ android_aar_prebuilt("androidx_loader_loader_java") {
   info_path = "libs/androidx_loader_loader/androidx_loader_loader.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
@@ -1406,7 +1406,7 @@ android_aar_prebuilt("androidx_media_media_java") {
   info_path = "libs/androidx_media_media/androidx_media_media.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
@@ -1422,7 +1422,7 @@ android_aar_prebuilt("androidx_palette_palette_java") {
   info_path = "libs/androidx_palette_palette/androidx_palette_palette.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_core_core_java",
@@ -1436,7 +1436,7 @@ android_aar_prebuilt("androidx_print_print_java") {
   info_path = "libs/androidx_print_print/androidx_print_print.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
@@ -1449,7 +1449,7 @@ android_aar_prebuilt("androidx_slidingpanelayout_slidingpanelayout_java") {
   info_path = "libs/androidx_slidingpanelayout_slidingpanelayout/androidx_slidingpanelayout_slidingpanelayout.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
@@ -1465,7 +1465,7 @@ android_aar_prebuilt("androidx_transition_transition_java") {
       "libs/androidx_transition_transition/androidx_transition_transition.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
@@ -1481,7 +1481,7 @@ android_aar_prebuilt("androidx_vectordrawable_vectordrawable_java") {
   info_path = "libs/androidx_vectordrawable_vectordrawable/androidx_vectordrawable_vectordrawable.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
@@ -1496,7 +1496,7 @@ android_aar_prebuilt("androidx_vectordrawable_vectordrawable_animated_java") {
   info_path = "libs/androidx_vectordrawable_vectordrawable_animated/androidx_vectordrawable_vectordrawable_animated.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_legacy_legacy_support_core_ui_java",
@@ -1510,7 +1510,7 @@ android_aar_prebuilt("androidx_versionedparcelable_versionedparcelable_java") {
   info_path = "libs/androidx_versionedparcelable_versionedparcelable/androidx_versionedparcelable_versionedparcelable.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":androidx_annotation_annotation_java",
@@ -1525,7 +1525,7 @@ android_aar_prebuilt("com_android_support_animated_vector_drawable_java") {
   info_path = "libs/com_android_support_animated_vector_drawable/com_android_support_animated_vector_drawable.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_support_core_ui_java",
@@ -1539,7 +1539,7 @@ android_aar_prebuilt("com_android_support_cursoradapter_java") {
   info_path = "libs/com_android_support_cursoradapter/com_android_support_cursoradapter.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_support_annotations_java",
@@ -1552,7 +1552,7 @@ android_aar_prebuilt("com_android_support_documentfile_java") {
   info_path = "libs/com_android_support_documentfile/com_android_support_documentfile.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_support_annotations_java",
@@ -1565,7 +1565,7 @@ android_aar_prebuilt("com_android_support_leanback_v17_java") {
   info_path = "libs/com_android_support_leanback_v17/com_android_support_leanback_v17.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_recyclerview_v7_java",
@@ -1582,7 +1582,7 @@ android_aar_prebuilt("com_android_support_loader_java") {
   info_path = "libs/com_android_support_loader/com_android_support_loader.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":android_arch_lifecycle_livedata_java",
@@ -1599,7 +1599,7 @@ android_aar_prebuilt("com_android_support_palette_v7_java") {
       "libs/com_android_support_palette_v7/com_android_support_palette_v7.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_support_compat_java",
@@ -1613,7 +1613,7 @@ android_aar_prebuilt("com_android_support_preference_v14_java") {
   info_path = "libs/com_android_support_preference_v14/com_android_support_preference_v14.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_preference_v7_java",
@@ -1626,7 +1626,7 @@ android_aar_prebuilt("com_android_support_print_java") {
   info_path = "libs/com_android_support_print/com_android_support_print.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_support_annotations_java",
@@ -1640,7 +1640,7 @@ android_aar_prebuilt("com_android_support_slidingpanelayout_java") {
   info_path = "libs/com_android_support_slidingpanelayout/com_android_support_slidingpanelayout.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_customview_java",
@@ -1655,7 +1655,7 @@ android_aar_prebuilt("com_android_support_support_media_compat_java") {
   info_path = "libs/com_android_support_support_media_compat/com_android_support_support_media_compat.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_support_annotations_java",
@@ -1671,7 +1671,7 @@ android_aar_prebuilt("com_android_support_support_vector_drawable_java") {
   info_path = "libs/com_android_support_support_vector_drawable/com_android_support_support_vector_drawable.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_support_annotations_java",
@@ -1687,7 +1687,7 @@ android_aar_prebuilt("com_android_support_transition_java") {
       "libs/com_android_support_transition/com_android_support_transition.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_support_annotations_java",
@@ -1702,7 +1702,7 @@ android_aar_prebuilt("com_android_support_versionedparcelable_java") {
   info_path = "libs/com_android_support_versionedparcelable/com_android_support_versionedparcelable.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_android_support_collections_java",
@@ -1718,7 +1718,7 @@ java_prebuilt("com_github_kevinstern_software_and_algorithms_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -1729,7 +1729,7 @@ java_prebuilt("com_github_stephenc_jcip_jcip_annotations_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -1739,7 +1739,7 @@ android_aar_prebuilt("google_play_services_clearcut_java") {
   info_path = "libs/com_google_android_gms_play_services_clearcut/com_google_android_gms_play_services_clearcut.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":google_play_services_base_java",
@@ -1758,7 +1758,7 @@ android_aar_prebuilt("google_play_services_flags_java") {
   info_path = "libs/com_google_android_gms_play_services_flags/com_google_android_gms_play_services_flags.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":google_play_services_base_java",
@@ -1775,7 +1775,7 @@ android_aar_prebuilt("google_play_services_phenotype_java") {
   info_path = "libs/com_google_android_gms_play_services_phenotype/com_google_android_gms_play_services_phenotype.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":google_play_services_base_java",
@@ -1793,7 +1793,7 @@ android_aar_prebuilt("google_play_services_places_placereport_java") {
   info_path = "libs/com_google_android_gms_play_services_places_placereport/com_google_android_gms_play_services_places_placereport.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":google_play_services_basement_java",
@@ -1809,7 +1809,7 @@ android_aar_prebuilt("google_play_services_stats_java") {
   info_path = "libs/com_google_android_gms_play_services_stats/com_google_android_gms_play_services_stats.info"
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":google_play_services_basement_java",
@@ -1826,7 +1826,7 @@ java_prebuilt("com_google_auto_auto_common_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_google_guava_guava_java",
@@ -1841,7 +1841,7 @@ java_prebuilt("com_google_code_findbugs_jFormatString_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -1852,7 +1852,7 @@ java_prebuilt("com_google_code_findbugs_jsr305_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -1863,7 +1863,7 @@ java_prebuilt("com_google_dagger_dagger_producers_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_google_dagger_dagger_java",
@@ -1880,7 +1880,7 @@ java_prebuilt("com_google_dagger_dagger_spi_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_google_dagger_dagger_java",
@@ -1897,7 +1897,7 @@ java_prebuilt("com_google_errorprone_error_prone_annotation_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_google_guava_guava_java",
@@ -1911,7 +1911,7 @@ java_prebuilt("com_google_errorprone_error_prone_annotations_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -1922,7 +1922,7 @@ java_prebuilt("com_google_errorprone_error_prone_check_api_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_github_kevinstern_software_and_algorithms_java",
@@ -1942,7 +1942,7 @@ java_prebuilt("com_google_errorprone_error_prone_type_annotations_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -1953,7 +1953,7 @@ java_prebuilt("com_google_errorprone_javac_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -1965,7 +1965,7 @@ java_prebuilt("com_google_errorprone_javac_shaded_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -1976,7 +1976,7 @@ java_prebuilt("com_google_googlejavaformat_google_java_format_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":com_google_errorprone_javac_shaded_java",
@@ -1991,7 +1991,7 @@ java_prebuilt("com_google_guava_failureaccess_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -2003,7 +2003,7 @@ java_prebuilt("com_google_j2objc_j2objc_annotations_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -2014,7 +2014,7 @@ java_prebuilt("com_google_protobuf_protobuf_java_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -2025,7 +2025,7 @@ java_prebuilt("net_sf_kxml_kxml2_java") {
   supports_android = true
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   testonly = true
 
@@ -2040,7 +2040,7 @@ java_prebuilt("org_checkerframework_checker_compat_qual_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -2051,7 +2051,7 @@ java_prebuilt("org_checkerframework_checker_qual_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -2062,7 +2062,7 @@ java_prebuilt("org_checkerframework_dataflow_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":org_checkerframework_checker_qual_java",
@@ -2077,7 +2077,7 @@ java_prebuilt("org_checkerframework_javacutil_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [
     ":org_checkerframework_checker_qual_java",
@@ -2091,7 +2091,7 @@ java_prebuilt("org_codehaus_mojo_animal_sniffer_annotations_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 
@@ -2102,7 +2102,7 @@ java_prebuilt("org_pcollections_pcollections_java") {
   enable_bytecode_rewriter = false
 
   # To remove visibility constraint, add this dependency to
-  # //tools/android/roll/android_deps/build.gradle.
+  # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
 }
 # === Generated Code End ===

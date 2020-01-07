@@ -226,9 +226,13 @@ GURL ChromeContentBrowserClientExtensionsPart::GetEffectiveURL(
   if (extension->from_bookmark())
     return url;
 
-  // If the URL is part of an extension's web extent, convert it to an
-  // extension URL.
-  return extension->GetResourceURL(url.path());
+  // If the URL is part of an extension's web extent, convert it to the
+  // extension's URL.  Note that we don't need to carry over the |url|'s path,
+  // because the process model only uses the origin of a hosted app's effective
+  // URL.  Note also that we must not return an invalid effective URL here,
+  // since that might lead to incorrect security decisions - see
+  // https://crbug.com/1016954.
+  return extension->url();
 }
 
 // static

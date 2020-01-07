@@ -103,6 +103,7 @@ Event::Event(const AtomicString& event_type,
       legacy_did_listeners_throw_flag_(false),
       fire_only_capture_listeners_at_target_(false),
       fire_only_non_capture_listeners_at_target_(false),
+      copy_event_path_from_underlying_event_(false),
       handling_passive_(PassiveMode::kNotPassiveDefault),
       event_phase_(0),
       current_target_(nullptr),
@@ -292,7 +293,9 @@ void Event::SetUnderlyingEvent(Event* ue) {
 }
 
 void Event::InitEventPath(Node& node) {
-  if (!event_path_) {
+  if (copy_event_path_from_underlying_event_) {
+    event_path_ = underlying_event_->GetEventPath();
+  } else if (!event_path_) {
     event_path_ = MakeGarbageCollected<EventPath>(node, this);
   } else {
     event_path_->InitializeWith(node, this);

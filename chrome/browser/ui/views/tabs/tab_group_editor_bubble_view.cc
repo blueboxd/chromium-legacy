@@ -47,9 +47,10 @@ constexpr int TAB_GROUP_HEADER_CXMENU_FEEDBACK = 16;
 }  // namespace
 
 // static
-views::Widget* TabGroupEditorBubbleView::Show(TabGroupHeader* anchor_view,
-                                              TabController* tab_controller,
-                                              tab_groups::TabGroupId group) {
+views::Widget* TabGroupEditorBubbleView::Show(
+    TabGroupHeader* anchor_view,
+    TabController* tab_controller,
+    const tab_groups::TabGroupId& group) {
   views::Widget* const widget = BubbleDialogDelegateView::CreateBubble(
       new TabGroupEditorBubbleView(anchor_view, tab_controller, group));
   widget->Show();
@@ -73,7 +74,7 @@ views::View* TabGroupEditorBubbleView::GetInitiallyFocusedView() {
 TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     TabGroupHeader* anchor_view,
     TabController* tab_controller,
-    tab_groups::TabGroupId group)
+    const tab_groups::TabGroupId& group)
     : tab_controller_(tab_controller),
       group_(group),
       title_field_controller_(this),

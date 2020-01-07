@@ -98,7 +98,8 @@ class TestProfileBuilder : public ProfileBuilder {
     recorded_metadata_ = true;
   }
 
-  void OnSampleCompleted(std::vector<Frame> frames) override {}
+  void OnSampleCompleted(std::vector<Frame> frames,
+                         TimeTicks sample_timestamp) override {}
   void OnProfileCompleted(TimeDelta profile_duration,
                           TimeDelta sampling_period) override {}
 
@@ -117,9 +118,11 @@ TEST(StackCopierSuspendTest, CopyStack) {
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
   uintptr_t stack_top = 0;
   TestProfileBuilder profile_builder;
+  TimeTicks timestamp;
   RegisterContext register_context{};
   stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top,
-                                 &profile_builder, &register_context);
+                                 &profile_builder, &timestamp,
+                                 &register_context);
 
   uintptr_t* stack_copy_bottom =
       reinterpret_cast<uintptr_t*>(stack_buffer.get()->buffer());
@@ -139,9 +142,11 @@ TEST(StackCopierSuspendTest, CopyStackBufferTooSmall) {
   stack_buffer->buffer()[0] = 100;
   uintptr_t stack_top = 0;
   TestProfileBuilder profile_builder;
+  TimeTicks timestamp;
   RegisterContext register_context{};
   stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top,
-                                 &profile_builder, &register_context);
+                                 &profile_builder, &timestamp,
+                                 &register_context);
 
   uintptr_t* stack_copy_bottom =
       reinterpret_cast<uintptr_t*>(stack_buffer.get()->buffer());
@@ -164,9 +169,11 @@ TEST(StackCopierSuspendTest, CopyStackAndRewritePointers) {
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
   uintptr_t stack_top = 0;
   TestProfileBuilder profile_builder;
+  TimeTicks timestamp;
   RegisterContext register_context{};
   stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top,
-                                 &profile_builder, &register_context);
+                                 &profile_builder, &timestamp,
+                                 &register_context);
 
   uintptr_t* stack_copy_bottom =
       reinterpret_cast<uintptr_t*>(stack_buffer.get()->buffer());
@@ -176,6 +183,28 @@ TEST(StackCopierSuspendTest, CopyStackAndRewritePointers) {
               ElementsAre(reinterpret_cast<uintptr_t>(stack_copy_bottom),
                           reinterpret_cast<uintptr_t>(stack_copy_bottom) +
                               sizeof(uintptr_t)));
+}
+
+TEST(StackCopierSuspendTest, CopyStackTimeStamp) {
+  const std::vector<uintptr_t> stack = {0};
+  StackCopierSuspend stack_copier_suspend(
+      std::make_unique<TestSuspendableThreadDelegate>(stack));
+
+  std::unique_ptr<StackBuffer> stack_buffer =
+      std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
+  uintptr_t stack_top = 0;
+  TestProfileBuilder profile_builder;
+  TimeTicks timestamp;
+  RegisterContext register_context{};
+
+  TimeTicks before = TimeTicks::Now();
+  stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top,
+                                 &profile_builder, &timestamp,
+                                 &register_context);
+  TimeTicks after = TimeTicks::Now();
+
+  EXPECT_GE(timestamp, before);
+  EXPECT_LE(timestamp, after);
 }
 
 TEST(StackCopierSuspendTest, RewriteRegisters) {
@@ -190,9 +219,11 @@ TEST(StackCopierSuspendTest, RewriteRegisters) {
   std::unique_ptr<StackBuffer> stack_buffer =
       std::make_unique<StackBuffer>(stack.size() * sizeof(uintptr_t));
   uintptr_t stack_top = 0;
+  TimeTicks timestamp;
   TestProfileBuilder profile_builder;
   stack_copier_suspend.CopyStack(stack_buffer.get(), &stack_top,
-                                 &profile_builder, &register_context);
+                                 &profile_builder, &timestamp,
+                                 &register_context);
 
   uintptr_t stack_copy_bottom =
       reinterpret_cast<uintptr_t>(stack_buffer.get()->buffer());

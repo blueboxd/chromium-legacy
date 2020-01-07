@@ -34,6 +34,7 @@ class Time;
 
 class AppServiceAppWindowLauncherController;
 class AppServiceAppWindowLauncherItemController;
+class ArcAppWindowInfo;
 class Profile;
 
 // AppServiceAppWindowArcTracker observes the ArcAppListPrefs to handle ARC app
@@ -90,8 +91,6 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
   int active_task_id() const { return active_task_id_; }
 
  private:
-  class ArcAppWindowInfo;
-
   using TaskIdToArcAppWindowInfo =
       std::map<int, std::unique_ptr<ArcAppWindowInfo>>;
 

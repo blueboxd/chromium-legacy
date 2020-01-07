@@ -6,9 +6,14 @@ package org.chromium.chrome.features.start_surface;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 
+import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -55,7 +60,10 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
+import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorTestingRobot;
+import org.chromium.chrome.browser.tasks.tab_management.TabSuggestionMessageService;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCoordinator;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -694,6 +702,75 @@ public class StartSurfaceLayoutTest {
         });
         mActivityTestRule.loadUrlInTab(
                 mUrl, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, tab);
+    }
+
+    @Test
+    @MediumTest
+    @Feature("TabSuggestion")
+    // clang-format off
+    @Features.EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @CommandLineFlags.Add({BASE_PARAMS + "/close_tab_suggestions_stale_time_ms/0"})
+    public void testTabSuggestionMessageCard_dismiss() throws InterruptedException {
+        // clang-format on
+        prepareTabs(3, 0, null);
+
+        // TODO(meiliang): Avoid using static variable for tracking state,
+        // TabSuggestionMessageService.isSuggestionAvailableForTesting(). Instead, we can add a
+        // dummy MessageObserver to track the availability of the suggestions.
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
+                        && mActivityTestRule.getActivity()
+                                        .getTabModelSelector()
+                                        .getCurrentModel()
+                                        .getCount()
+                                == 3);
+
+        enterGTSWithThumbnailChecking();
+
+        // TODO(meiliang): Avoid using static variable for tracking state,
+        // TabSwitcherCoordinator::hasAppendedMessagesForTesting. Instead, we can query the number
+        // of items that the inner model of the TabSwitcher has.
+        CriteriaHelper.pollInstrumentationThread(
+                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.close_button), withParent(withId(R.id.tab_grid_message_item))))
+                .perform(click());
+        onView(withId(R.id.tab_grid_message_item)).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    @Feature("TabSuggestion")
+    // clang-format off
+    @Features.EnableFeatures(ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<Study")
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
+    @CommandLineFlags.Add({BASE_PARAMS + "/close_tab_suggestions_stale_time_ms/0"})
+    public void testTabSuggestionMessageCard_review() throws InterruptedException {
+        // clang-format on
+        prepareTabs(3, 0, null);
+
+        CriteriaHelper.pollInstrumentationThread(
+                ()
+                        -> TabSuggestionMessageService.isSuggestionAvailableForTesting()
+                        && mActivityTestRule.getActivity()
+                                        .getTabModelSelector()
+                                        .getCurrentModel()
+                                        .getCount()
+                                == 3);
+
+        enterGTSWithThumbnailChecking();
+
+        CriteriaHelper.pollInstrumentationThread(
+                TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        onView(withId(R.id.tab_grid_message_item)).check(matches(isDisplayed()));
+        onView(allOf(withId(R.id.action_button), withParent(withId(R.id.tab_grid_message_item))))
+                .perform(click());
+
+        TabSelectionEditorTestingRobot tabSelectionEditorTestingRobot =
+                new TabSelectionEditorTestingRobot();
+        tabSelectionEditorTestingRobot.resultRobot.verifyTabSelectionEditorIsVisible();
     }
 
     private static class TabCountAssertion implements ViewAssertion {

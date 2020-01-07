@@ -111,13 +111,11 @@ public class ClickToCallUma {
                 .record(timeFromDialerToCallMs);
     }
 
-    public static void recordDialerShown(boolean emptyPhoneNumber) {
-        CallMetricListener.startMetric(ContextUtils.getApplicationContext());
-        new CachedMetrics.BooleanHistogramSample("Sharing.ClickToCallDialIntent")
-                .record(emptyPhoneNumber);
-    }
-
     public static void recordDialerPresent(boolean isDialerPresent) {
+        if (isDialerPresent) {
+            // We successfully launched the dialer intent, lets record if a call is made.
+            CallMetricListener.startMetric(ContextUtils.getApplicationContext());
+        }
         new CachedMetrics.BooleanHistogramSample("Sharing.ClickToCallDialerPresent")
                 .record(isDialerPresent);
     }

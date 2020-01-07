@@ -108,7 +108,7 @@
 <translation id="3990502903496589789">오른쪽 모서리</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{읽지 않은 알림 1개}other{읽지 않은 알림 #개}}</translation>
 <translation id="4202807286478387388">건너뛰기</translation>
-<translation id="4250229828105606438">캡처화면</translation>
+<translation id="4250229828105606438">스크린샷</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1개월 전}other{#개월 전}}</translation>
 <translation id="4289300219472526559">말하기 시작</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> 앱이 <ph name="FOLDER_NAME" /> 폴더로 이동했습니다.</translation>
@@ -152,7 +152,7 @@
 <translation id="6022924867608035986">검색창 텍스트 삭제</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6119846243427417423">활성화</translation>
-<translation id="6129953537138746214">공백</translation>
+<translation id="6129953537138746214">Space</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" />B/s</translation>
 <translation id="6156262341071374681">펼쳐서 모든 앱 보기</translation>

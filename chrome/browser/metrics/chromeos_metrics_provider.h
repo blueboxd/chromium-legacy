@@ -60,19 +60,19 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
 
   // Loads hardware class information. When this task is complete, |callback|
   // is run.
-  void InitTaskGetFullHardwareClass(const base::Closure& callback);
+  void InitTaskGetFullHardwareClass(base::OnceClosure callback);
 
   // Creates the Bluetooth adapter. When this task is complete, |callback| is
   // run.
-  void InitTaskGetBluetoothAdapter(const base::Closure& callback);
+  void InitTaskGetBluetoothAdapter(base::OnceClosure callback);
 
   // Retrieves ARC features using ArcFeaturesParser. When this task is complete,
   // |callback| is run.
-  void InitTaskGetArcFeatures(const base::RepeatingClosure& callback);
+  void InitTaskGetArcFeatures(base::OnceClosure callback);
 
   // metrics::MetricsProvider:
   void Init() override;
-  void AsyncInit(const base::Closure& done_callback) override;
+  void AsyncInit(base::OnceClosure done_callback) override;
   void OnDidCreateMetricsLog() override;
   void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
@@ -92,15 +92,15 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
 
   // Sets the Bluetooth Adapter instance used for the WriteBluetoothProto()
   // call and calls callback.
-  void SetBluetoothAdapter(base::Closure callback,
+  void SetBluetoothAdapter(base::OnceClosure callback,
                            scoped_refptr<device::BluetoothAdapter> adapter);
 
   // Sets the full hardware class, then calls the callback.
-  void SetFullHardwareClass(base::Closure callback,
+  void SetFullHardwareClass(base::OnceClosure callback,
                             std::string full_hardware_class);
 
   // Updates ARC-related system profile fields, then calls the callback.
-  void OnArcFeaturesParsed(base::RepeatingClosure callback,
+  void OnArcFeaturesParsed(base::OnceClosure callback,
                            base::Optional<arc::ArcFeatures> features);
 
   // Writes info about paired Bluetooth devices on this system.

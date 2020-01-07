@@ -193,10 +193,10 @@ TEST_P(RuleIndexingTest, EmptyRedirectRulePriority) {
   rule.action->type = std::string("redirect");
   rule.action->redirect.emplace();
   rule.action->redirect->url = std::string("https://google.com");
+  rule.priority.reset();
   AddRule(rule);
-  LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY, *rule.id)
-          .GetErrorDescription());
+  LoadAndExpectError(ParseInfo(ParseResult::ERROR_EMPTY_RULE_PRIORITY, *rule.id)
+                         .GetErrorDescription());
 }
 
 TEST_P(RuleIndexingTest, EmptyRedirectRuleUrl) {
@@ -229,7 +229,7 @@ TEST_P(RuleIndexingTest, InvalidRedirectRulePriority) {
   rule.priority = kMinValidPriority - 1;
   AddRule(rule);
   LoadAndExpectError(
-      ParseInfo(ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY, *rule.id)
+      ParseInfo(ParseResult::ERROR_INVALID_RULE_PRIORITY, *rule.id)
           .GetErrorDescription());
 }
 
@@ -400,22 +400,26 @@ TEST_P(RuleIndexingTest, InvalidJSONRules_Parsed) {
     [
       {
         "id" : 1,
+        "priority": 1,
         "condition" : [],
         "action" : {"type" : "block" }
       },
       {
         "id" : 2,
+        "priority": 1,
         "condition" : {"urlFilter" : "abc"},
         "action" : {"type" : "block" }
       },
       {
         "id" : 3,
+        "priority": 1,
         "invalidKey" : "invalidKeyValue",
         "condition" : {"urlFilter" : "example"},
         "action" : {"type" : "block" }
       },
       {
         "id" : "6",
+        "priority": 1,
         "condition" : {"urlFilter" : "google"},
         "action" : {"type" : "block" }
       }

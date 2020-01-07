@@ -404,35 +404,34 @@ MockPeerConnectionDependencyFactory::CreateVideoTrackSourceProxy(
 }
 scoped_refptr<webrtc::MediaStreamInterface>
 MockPeerConnectionDependencyFactory::CreateLocalMediaStream(
-    const std::string& label) {
-  return new rtc::RefCountedObject<MockMediaStream>(label);
+    const String& label) {
+  return new rtc::RefCountedObject<MockMediaStream>(label.Utf8());
 }
 
 scoped_refptr<webrtc::VideoTrackInterface>
 MockPeerConnectionDependencyFactory::CreateLocalVideoTrack(
-    const std::string& id,
+    const String& id,
     webrtc::VideoTrackSourceInterface* source) {
   scoped_refptr<webrtc::VideoTrackInterface> track(
-      new rtc::RefCountedObject<MockWebRtcVideoTrack>(id, source));
+      new rtc::RefCountedObject<MockWebRtcVideoTrack>(id.Utf8(), source));
   return track;
 }
 
 SessionDescriptionInterface*
 MockPeerConnectionDependencyFactory::CreateSessionDescription(
-    const std::string& type,
-    const std::string& sdp,
+    const String& type,
+    const String& sdp,
     webrtc::SdpParseError* error) {
   if (fail_to_create_session_description_)
     return nullptr;
-  return new MockSessionDescription(type, sdp);
+  return new MockSessionDescription(type.Utf8(), sdp.Utf8());
 }
 
 webrtc::IceCandidateInterface*
-MockPeerConnectionDependencyFactory::CreateIceCandidate(
-    const std::string& sdp_mid,
-    int sdp_mline_index,
-    const std::string& sdp) {
-  return new MockIceCandidate(sdp_mid, sdp_mline_index, sdp);
+MockPeerConnectionDependencyFactory::CreateIceCandidate(const String& sdp_mid,
+                                                        int sdp_mline_index,
+                                                        const String& sdp) {
+  return new MockIceCandidate(sdp_mid.Utf8(), sdp_mline_index, sdp.Utf8());
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

@@ -311,7 +311,9 @@ void ShelfNavigationWidget::OnTabletModeEnded() {
   UpdateLayout(/*animate=*/true);
 }
 
-void ShelfNavigationWidget::OnShelfAlignmentChanged(aura::Window* root_window) {
+void ShelfNavigationWidget::OnShelfAlignmentChanged(
+    aura::Window* root_window,
+    ShelfAlignment old_alignment) {
   UpdateLayout(/*animate=*/false);
 }
 

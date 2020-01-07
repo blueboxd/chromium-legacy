@@ -65,9 +65,10 @@ class CastCdmContextForTest : public CastCdmContext {
   }
 
   // CastCdmContext implementation:
-  int RegisterPlayer(const base::Closure& new_key_cb,
-                     const base::Closure& cdm_unset_cb) override {
-    return player_tracker_.RegisterPlayer(new_key_cb, cdm_unset_cb);
+  int RegisterPlayer(base::RepeatingClosure new_key_cb,
+                     base::RepeatingClosure cdm_unset_cb) override {
+    return player_tracker_.RegisterPlayer(std::move(new_key_cb),
+                                          std::move(cdm_unset_cb));
   }
 
   void UnregisterPlayer(int registration_id) override {

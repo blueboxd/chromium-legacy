@@ -34,7 +34,7 @@ struct RequestParams {
   bool is_third_party = false;
 
   // A map from RulesetMatchers to whether it has a matching allow rule. Used as
-  // a cache to prevent additional calls to GetAllowAction.
+  // a cache to prevent additional calls to GetBeforeRequestAction.
   mutable base::flat_map<const RulesetMatcher*, bool> allow_rule_cache;
 
   // Lower cased url, used for regex matching. Cached for performance.

@@ -7,9 +7,6 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
-#include "components/tab_groups/tab_group_color.h"
-#include "components/tab_groups/tab_group_id.h"
-#include "components/tab_groups/tab_group_visual_data.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -21,7 +18,13 @@ namespace gfx {
 class Size;
 }
 
+namespace tab_groups {
+enum class TabGroupColorId;
+class TabGroupId;
+}  // namespace tab_groups
+
 class ColorPickerView;
+class TabGroupHeader;
 
 // A dialog for changing a tab group's visual parameters.
 class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
@@ -30,7 +33,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   // bubble's widget.
   static views::Widget* Show(TabGroupHeader* anchor_view,
                              TabController* tab_controller,
-                             tab_groups::TabGroupId group);
+                             const tab_groups::TabGroupId& group);
 
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
@@ -40,7 +43,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
  private:
   TabGroupEditorBubbleView(TabGroupHeader* anchor_view,
                            TabController* tab_controller,
-                           tab_groups::TabGroupId group);
+                           const tab_groups::TabGroupId& group);
   ~TabGroupEditorBubbleView() override;
 
   void UpdateGroup();

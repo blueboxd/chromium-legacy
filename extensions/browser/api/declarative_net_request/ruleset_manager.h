@@ -114,10 +114,7 @@ class RulesetManager {
     DISALLOW_COPY_AND_ASSIGN(ExtensionRulesetData);
   };
 
-  base::Optional<RequestAction> GetBlockOrCollapseAction(
-      const std::vector<const ExtensionRulesetData*>& rulesets,
-      const RequestParams& params) const;
-  base::Optional<RequestAction> GetRedirectOrUpgradeAction(
+  base::Optional<RequestAction> GetBeforeRequestAction(
       const std::vector<const ExtensionRulesetData*>& rulesets,
       const WebRequestInfo& request,
       const int tab_id,

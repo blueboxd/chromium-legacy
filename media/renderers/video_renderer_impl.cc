@@ -211,7 +211,7 @@ void VideoRendererImpl::Initialize(
     CdmContext* cdm_context,
     RendererClient* client,
     const TimeSource::WallClockTimeCB& wall_clock_time_cb,
-    const PipelineStatusCB& init_cb) {
+    PipelineStatusCallback init_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT_ASYNC_BEGIN0("media", "VideoRendererImpl::Initialize", this);
 
@@ -246,7 +246,7 @@ void VideoRendererImpl::Initialize(
 
   // Always post |init_cb_| because |this| could be destroyed if initialization
   // failed.
-  init_cb_ = BindToCurrentLoop(init_cb);
+  init_cb_ = BindToCurrentLoop(std::move(init_cb));
 
   client_ = client;
   wall_clock_time_cb_ = wall_clock_time_cb;

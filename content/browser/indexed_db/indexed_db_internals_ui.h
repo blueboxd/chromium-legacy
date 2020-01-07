@@ -74,15 +74,6 @@ class IndexedDBInternalsUI : public WebUIController {
                      const url::Origin& origin,
                      size_t connection_count);
 
-  void ForceSchemaDowngradeOrigin(const base::ListValue* args);
-  void ForceSchemaDowngradeOriginOnIndexedDBThread(
-      const base::FilePath& partition_path,
-      const scoped_refptr<IndexedDBContextImpl> context,
-      const url::Origin& origin);
-  void OnForcedSchemaDowngrade(const base::FilePath& partition_path,
-                               const url::Origin& origin,
-                               size_t connection_count);
-
   bool GetOriginContext(const base::FilePath& path,
                         const url::Origin& origin,
                         scoped_refptr<IndexedDBContextImpl>* context);

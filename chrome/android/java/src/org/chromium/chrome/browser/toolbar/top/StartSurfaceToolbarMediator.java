@@ -1,0 +1,115 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.toolbar.top;
+
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.ACCESSIBILITY_ENABLED;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.APP_MENU_BUTTON_HELPER;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.INCOGNITO_STATE_PROVIDER;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_INCOGNITO;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_VISIBLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.LOGO_IS_VISIBLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.MENU_IS_VISIBLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_CLICK_HANDLER;
+
+import android.view.View;
+
+import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
+import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
+import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.ui.modelutil.PropertyModel;
+
+/** The mediator implements interacts between the views and the caller. */
+class StartSurfaceToolbarMediator {
+    private final PropertyModel mPropertyModel;
+    private TabModelSelector mTabModelSelector;
+    private TemplateUrlServiceObserver mTemplateUrlObserver;
+    private TabModelSelectorObserver mTabModelSelectorObserver;
+
+    StartSurfaceToolbarMediator(PropertyModel model) {
+        mPropertyModel = model;
+        mPropertyModel.set(MENU_IS_VISIBLE, !FeatureUtilities.isBottomToolbarEnabled());
+
+        // Observers
+
+        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                mPropertyModel.set(IS_INCOGNITO, mTabModelSelector.isIncognitoSelected());
+            }
+        };
+    }
+
+    void onNativeLibraryReady() {
+        if (mTemplateUrlObserver != null) {
+            mTemplateUrlObserver = new TemplateUrlServiceObserver() {
+                @Override
+                public void onTemplateURLServiceChanged() {
+                    mPropertyModel.set(LOGO_IS_VISIBLE,
+                            TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
+                }
+            };
+        }
+        TemplateUrlServiceFactory.get().addObserver(mTemplateUrlObserver);
+        mPropertyModel.set(
+                LOGO_IS_VISIBLE, TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
+    }
+
+    void destroy() {
+        if (mTemplateUrlObserver != null) {
+            TemplateUrlServiceFactory.get().removeObserver(mTemplateUrlObserver);
+        }
+        if (mTabModelSelectorObserver != null) {
+            mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+        }
+    }
+
+    void setAppMenuButtonHelper(AppMenuButtonHelper appMenuButtonHelper) {
+        mPropertyModel.set(APP_MENU_BUTTON_HELPER, appMenuButtonHelper);
+    }
+
+    void setOnNewTabClickHandler(View.OnClickListener listener) {
+        mPropertyModel.set(NEW_TAB_CLICK_HANDLER, listener);
+    }
+
+    void setTabModelSelector(TabModelSelector selector) {
+        mTabModelSelector = selector;
+
+        if (mTabModelSelector != null) {
+            mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+                @Override
+                public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                    mPropertyModel.set(IS_INCOGNITO, mTabModelSelector.isIncognitoSelected());
+                }
+            };
+        }
+        mTabModelSelector.addObserver(mTabModelSelectorObserver);
+    }
+
+    void setStartSurfaceMode(boolean inStartSurfaceMode) {
+        mPropertyModel.set(IS_VISIBLE, inStartSurfaceMode);
+    }
+
+    void setIncognitoStateProvider(IncognitoStateProvider provider) {
+        mPropertyModel.set(INCOGNITO_STATE_PROVIDER, provider);
+    }
+
+    void setStartSurfaceToolbarVisibility(boolean shouldShowStartSurfaceToolbar) {
+        mPropertyModel.set(IS_VISIBLE, shouldShowStartSurfaceToolbar);
+    }
+
+    void onAccessibilityStatusChanged(boolean enabled) {
+        mPropertyModel.set(ACCESSIBILITY_ENABLED, enabled);
+    }
+
+    void onBottomToolbarVisibilityChanged(boolean isVisible) {
+        mPropertyModel.set(MENU_IS_VISIBLE, !isVisible);
+    }
+}

@@ -57,7 +57,8 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
                                const std::string& client_id,
                                scoped_refptr<ServiceWorkerVersion> version,
                                base::OnceClosure prepare_callback,
-                               FetchCallback fetch_callback);
+                               FetchCallback fetch_callback,
+                               bool is_offline_capability_check);
   ~ServiceWorkerFetchDispatcher();
 
   // If appropriate, starts the navigation preload request and creates
@@ -121,6 +122,9 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   // worker to receive the navigation preload response. It's passed to the
   // service worker along with the fetch event.
   blink::mojom::FetchEventPreloadHandlePtr preload_handle_;
+
+  // Whether to dispatch an offline-capability-check fetch event.
+  const bool is_offline_capability_check_ = false;
 
   base::WeakPtrFactory<ServiceWorkerFetchDispatcher> weak_factory_{this};
 

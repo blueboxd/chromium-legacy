@@ -102,6 +102,15 @@ InterpolationValue CSSShadowListInterpolationType::MaybeConvertInherit(
                            state.ParentStyle()->EffectiveZoom());
 }
 
+class AlwaysInvalidateChecker
+    : public CSSInterpolationType::CSSConversionChecker {
+ public:
+  bool IsValid(const StyleResolverState& state,
+               const InterpolationValue& underlying) const final {
+    return false;
+  }
+};
+
 InterpolationValue CSSShadowListInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
@@ -147,13 +156,9 @@ void CSSShadowListInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  ListInterpolationFunctions::Composite(
-      underlying_value_owner, underlying_fraction, *this, value,
-      ListInterpolationFunctions::LengthMatchingStrategy::kPadToLargest,
-      WTF::BindRepeating(InterpolableShadow::CompatibleForCompositing),
-      WTF::BindRepeating(
-          ListInterpolationFunctions::VerifyNoNonInterpolableValues),
-      WTF::BindRepeating(InterpolableShadow::Composite));
+  // We do our compositing behavior in |PreInterpolationCompositeIfNeeded|; see
+  // the documentation on that method.
+  underlying_value_owner.Set(*this, value);
 }
 
 static scoped_refptr<ShadowList> CreateShadowList(
@@ -188,6 +193,88 @@ void CSSShadowListInterpolationType::ApplyStandardPropertyValue(
     default:
       NOTREACHED();
   }
+}
+
+InterpolationValue
+CSSShadowListInterpolationType::PreInterpolationCompositeIfNeeded(
+    InterpolationValue value,
+    const InterpolationValue& underlying,
+    EffectModel::CompositeOperation composite,
+    ConversionCheckers& conversion_checkers) const {
+  // Due to the post-interpolation composite optimization, the interpolation
+  // stack aggressively caches interpolated values. When we are doing
+  // pre-interpolation compositing, this can cause us to bake-in the composited
+  // result even when the underlying value is changing. This checker is a hack
+  // to disable that caching in this case.
+  // TODO(crbug.com/1009230): Remove this once our interpolation code isn't
+  // caching composited values.
+  conversion_checkers.push_back(std::make_unique<AlwaysInvalidateChecker>());
+  auto interpolable_list = std::unique_ptr<InterpolableList>(
+      To<InterpolableList>(value.interpolable_value.release()));
+  if (composite == EffectModel::CompositeOperation::kCompositeAdd) {
+    return PerformAdditiveComposition(std::move(interpolable_list), underlying);
+  }
+  DCHECK_EQ(composite, EffectModel::CompositeOperation::kCompositeAccumulate);
+  return PerformAccumulativeComposition(std::move(interpolable_list),
+                                        std::move(underlying));
+}
+
+InterpolationValue CSSShadowListInterpolationType::PerformAdditiveComposition(
+    std::unique_ptr<InterpolableList> interpolable_list,
+    const InterpolationValue& underlying) const {
+  // Per the spec, addition of shadow lists is defined as concatenation.
+  // https://drafts.csswg.org/web-animations/#combining-shadow-lists
+  const InterpolableList& underlying_list =
+      To<InterpolableList>(*underlying.interpolable_value);
+  auto composited_list = std::make_unique<InterpolableList>(
+      underlying_list.length() + interpolable_list->length());
+  for (wtf_size_t i = 0; i < composited_list->length(); i++) {
+    if (i < underlying_list.length()) {
+      composited_list->Set(i, underlying_list.Get(i)->Clone());
+    } else {
+      composited_list->Set(
+          i, interpolable_list->Get(i - underlying_list.length())->Clone());
+    }
+  }
+  return InterpolationValue(std::move(composited_list),
+                            underlying.non_interpolable_value);
+}
+
+InterpolationValue
+CSSShadowListInterpolationType::PerformAccumulativeComposition(
+    std::unique_ptr<InterpolableList> interpolable_list,
+    const InterpolationValue& underlying) const {
+  // Per the spec, accumulation of shadow lists operates on pairwise addition of
+  // the underlying components.
+  // https://drafts.csswg.org/web-animations/#combining-shadow-lists
+  const InterpolableList& underlying_list =
+      To<InterpolableList>(*underlying.interpolable_value);
+  wtf_size_t length = interpolable_list->length();
+  wtf_size_t underlying_length = underlying_list.length();
+  // If any of the shadow style(inset or normal) value don't match, fallback to
+  // replace behavior.
+  for (wtf_size_t i = 0; i < underlying_length && i < length; i++) {
+    if (To<InterpolableShadow>(underlying_list.Get(i))->GetShadowStyle() !=
+        To<InterpolableShadow>(interpolable_list->Get(i))->GetShadowStyle()) {
+      return InterpolationValue(std::move(interpolable_list));
+    }
+  }
+
+  // Otherwise, arithmetically combine the matching prefix of the lists then
+  // concatenate the remainder of the longer one.
+  wtf_size_t max_length = std::max(length, underlying_length);
+  auto composited_list = std::make_unique<InterpolableList>(max_length);
+  for (wtf_size_t i = 0; i < max_length; i++) {
+    if (i < underlying_length) {
+      composited_list->Set(i, underlying_list.Get(i)->Clone());
+      if (i < length)
+        composited_list->GetMutable(i)->Add(*interpolable_list->Get(i));
+    } else {
+      composited_list->Set(i, interpolable_list->Get(i)->Clone());
+    }
+  }
+  return InterpolationValue(std::move(composited_list),
+                            underlying.non_interpolable_value);
 }
 
 }  // namespace blink

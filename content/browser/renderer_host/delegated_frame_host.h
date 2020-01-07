@@ -22,7 +22,6 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/common/content_export.h"
 #include "content/common/tab_switch_time_recorder.h"
-#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -187,9 +186,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   void ContinueDelegatedFrameEviction();
 
   SkColor GetGutterColor() const;
-
-  void CreateCompositorFrameSinkSupport();
-  void ResetCompositorFrameSinkSupport();
 
   void CopyFromCompositingSurfaceInternal(
       const gfx::Rect& src_subrect,

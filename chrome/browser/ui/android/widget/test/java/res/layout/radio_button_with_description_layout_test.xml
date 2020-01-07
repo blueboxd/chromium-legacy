@@ -18,15 +18,15 @@
               android:id="@+id/test_radio_description_1"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              app:primaryText="@string/test_string" />
+              app:primaryText="@string/test_primary_1" />
 
         <!-- RadioButtonWithDescription - With primary and description. -->
         <org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription
             android:id="@+id/test_radio_description_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:primaryText="@string/test_string"
-            app:descriptionText="@string/test_string" />
+            app:primaryText="@string/test_primary_2"
+            app:descriptionText="@string/test_desc_2" />
 
         <!-- RadioButtonWithDescription - With primary, without description. -->
         <org.chromium.chrome.browser.ui.widget.RadioButtonWithEditText
@@ -38,7 +38,7 @@
             android:paddingBottom="8dp"
             android:inputType="text"
             android:hint="@string/test_uri"
-            app:primaryText="@string/test_string" />
+            app:primaryText="@string/test_primary_3" />
 
         <!-- RadioButtonWithDescription - With primary and description. -->
         <org.chromium.chrome.browser.ui.widget.RadioButtonWithEditText
@@ -50,7 +50,7 @@
             android:paddingBottom="8dp"
             android:inputType="text"
             android:hint="@string/test_uri"
-            app:primaryText="@string/test_string"
-            app:descriptionText="@string/test_string" />
+            app:primaryText="@string/test_primary_4"
+            app:descriptionText="@string/test_desc_4" />
     </org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout>
 </FrameLayout>

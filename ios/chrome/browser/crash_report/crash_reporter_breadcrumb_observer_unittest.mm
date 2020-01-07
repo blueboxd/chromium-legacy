@@ -8,6 +8,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
@@ -100,7 +101,7 @@ TEST_F(CrashReporterBreadcrumbObserverTest, EventsAttachedToCrashReport) {
       observeBrowserState:chrome_browser_state_.get()];
 
   const std::string event = std::string("Breadcrumb Event");
-  BreadcrumbManagerKeyedService* breadcrumb_manager =
+  BreadcrumbManagerKeyedService* breadcrumb_service =
       BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
           chrome_browser_state_.get());
 
@@ -108,7 +109,7 @@ TEST_F(CrashReporterBreadcrumbObserverTest, EventsAttachedToCrashReport) {
     if (![value isKindOfClass:[NSString class]]) {
       return NO;
     }
-    std::list<std::string> events = breadcrumb_manager->GetEvents(0);
+    std::list<std::string> events = breadcrumb_service->GetEvents(0);
     std::string expected_breadcrumbs;
     for (const auto& event : events) {
       expected_breadcrumbs += event + "\n";
@@ -120,7 +121,7 @@ TEST_F(CrashReporterBreadcrumbObserverTest, EventsAttachedToCrashReport) {
       addUploadParameter:breadcrumbs_param_vaidation_block
                   forKey:@"browser_state_breadcrumbs"];
 
-  breadcrumb_manager->AddEvent(event);
+  breadcrumb_service->AddEvent(event);
   EXPECT_OCMOCK_VERIFY(mock_breakpad_controller_);
 }
 
@@ -140,40 +141,43 @@ TEST_F(CrashReporterBreadcrumbObserverTest,
 
   [crash_reporter_breadcrumb_observer
       observeBrowserState:chrome_browser_state_.get()];
-  BreadcrumbManagerKeyedService* breadcrumb_manager =
+  BreadcrumbManagerKeyedService* breadcrumb_service =
       BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
           chrome_browser_state_.get());
+
   [[mock_breakpad_controller_ expect]
       addUploadParameter:StringParameterValidatorWithCountOfSubstring(
                              1, event_nsstring)
                   forKey:@"browser_state_breadcrumbs"];
-  breadcrumb_manager->AddEvent(event);
+  breadcrumb_service->AddEvent(event);
 
   ios::ChromeBrowserState* otr_browser_state =
       chrome_browser_state_->GetOffTheRecordChromeBrowserState();
   [crash_reporter_breadcrumb_observer observeBrowserState:otr_browser_state];
-  BreadcrumbManagerKeyedService* otr_breadcrumb_manager =
+  BreadcrumbManagerKeyedService* otr_breadcrumb_service =
       BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
           otr_browser_state);
+
   [[mock_breakpad_controller_ expect]
       addUploadParameter:StringParameterValidatorWithCountOfSubstring(
                              2, event_nsstring)
                   forKey:@"browser_state_breadcrumbs"];
-  otr_breadcrumb_manager->AddEvent(event);
+  otr_breadcrumb_service->AddEvent(event);
 
   TestChromeBrowserState::Builder test_cbs_builder;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_2 =
       test_cbs_builder.Build();
   [crash_reporter_breadcrumb_observer
       observeBrowserState:chrome_browser_state_2.get()];
-  BreadcrumbManagerKeyedService* breadcrumb_manager_2 =
+  BreadcrumbManagerKeyedService* breadcrumb_service_2 =
       BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
           chrome_browser_state_2.get());
+
   [[mock_breakpad_controller_ expect]
       addUploadParameter:StringParameterValidatorWithCountOfSubstring(
                              3, event_nsstring)
                   forKey:@"browser_state_breadcrumbs"];
-  breadcrumb_manager_2->AddEvent(event);
+  breadcrumb_service_2->AddEvent(event);
 
   EXPECT_OCMOCK_VERIFY(mock_breakpad_controller_);
 

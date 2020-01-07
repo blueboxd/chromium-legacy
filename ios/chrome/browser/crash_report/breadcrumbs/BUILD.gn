@@ -27,6 +27,8 @@ source_set("breadcrumbs") {
   ]
 
   sources = [
+    "breadcrumb_manager.cc",
+    "breadcrumb_manager.h",
     "breadcrumb_manager_browser_agent.h",
     "breadcrumb_manager_browser_agent.mm",
     "breadcrumb_manager_keyed_service.cc",
@@ -73,6 +75,7 @@ source_set("unit_tests") {
     "breadcrumb_manager_observer_bridge_unittest.mm",
     "breadcrumb_manager_observer_unittest.mm",
     "breadcrumb_manager_tab_helper_unittest.mm",
+    "breadcrumb_manager_unittest.mm",
     "breadcrumb_persistent_storage_keyed_service_unittest.mm",
     "breadcrumb_persistent_storage_util_unittest.mm",
   ]

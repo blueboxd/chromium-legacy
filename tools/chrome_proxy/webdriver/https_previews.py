@@ -24,7 +24,6 @@ class HttpsPreviews(IntegrationTest):
   def EnableLitePageServerPreviewsAndInit(self, t):
     t.EnableChromeFeature('Previews')
     t.EnableChromeFeature('LitePageServerPreviews')
-    t.EnableChromeFeature('HTTPSServerPreviewsUsingURLLoader')
 
     # RLH and NoScript may disable use of LitePageRedirect Previews.
     t.DisableChromeFeature('ResourceLoadingHints')

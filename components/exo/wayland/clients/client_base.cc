@@ -165,12 +165,6 @@ wl_registry_listener g_registry_listener = {RegistryHandler, RegistryRemover};
 wl_buffer_listener g_buffer_listener = {BufferRelease};
 
 #if defined(USE_GBM)
-const GrGLInterface* GrGLCreateNativeInterface() {
-  return GrGLAssembleInterface(nullptr, [](void* ctx, const char name[]) {
-    return eglGetProcAddress(name);
-  });
-}
-
 #if defined(USE_VULKAN)
 uint32_t VulkanChooseGraphicsQueueFamily(VkPhysicalDevice device) {
   uint32_t properties_number = 0;
@@ -446,7 +440,6 @@ bool ClientBase::Init(const InitParams& params) {
   }
 
 #if defined(USE_GBM)
-  sk_sp<const GrGLInterface> native_interface;
   if (params.use_drm) {
     // Number of files to look for when discovering DRM devices.
     const uint32_t kDrmMaxMinor = 15;
@@ -504,7 +497,9 @@ bool ClientBase::Init(const InitParams& params) {
       egl_sync_type_ = EGL_SYNC_NATIVE_FENCE_ANDROID;
     }
 
-    native_interface = sk_sp<const GrGLInterface>(GrGLCreateNativeInterface());
+    sk_sp<const GrGLInterface> native_interface = GrGLMakeAssembledInterface(
+        nullptr,
+        [](void* ctx, const char name[]) { return eglGetProcAddress(name); });
     DCHECK(native_interface);
     gr_context_ = GrContext::MakeGL(std::move(native_interface));
     DCHECK(gr_context_);

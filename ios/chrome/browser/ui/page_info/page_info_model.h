@@ -11,12 +11,6 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
-class PageInfoModelObserver;
-
-namespace ios {
-class ChromeBrowserState;
-}
-
 namespace web {
 struct SSLStatus;
 }
@@ -27,13 +21,6 @@ struct SSLStatus;
 // info dialog/bubble.
 class PageInfoModel {
  public:
-  enum SectionInfoType {
-    SECTION_INFO_IDENTITY = 0,
-    SECTION_INFO_CONNECTION,
-    SECTION_INFO_FIRST_VISIT,
-    SECTION_INFO_INTERNAL_PAGE,  // Used for chrome:// pages, etc.
-  };
-
   // NOTE: ICON_STATE_OK ... ICON_STATE_ERROR must be listed in increasing
   // order of severity.  Code may depend on this order.
   enum SectionStateIcon {
@@ -66,12 +53,10 @@ class PageInfoModel {
     SectionInfo(SectionStateIcon icon_id,
                 const base::string16& headline,
                 const base::string16& description,
-                SectionInfoType type,
                 ButtonAction button)
         : icon_id(icon_id),
           headline(headline),
           description(description),
-          type(type),
           button(button) {}
 
     // The overall state of the connection (error, warning, ok).
@@ -83,21 +68,15 @@ class PageInfoModel {
     // The full description of what this section is.
     base::string16 description;
 
-    // The type of SectionInfo we are dealing with, for example: Identity,
-    // Connection, First Visit.
-    SectionInfoType type;
-
     // The button at the bottom of the sheet that allows the user to do an extra
     // action on top of dismissing the sheet.
     ButtonAction button;
   };
   // |is_offline_page| is true if related WebState presents Offline Version of
   // the page.
-  PageInfoModel(ios::ChromeBrowserState* browser_state,
-                const GURL& url,
+  PageInfoModel(const GURL& url,
                 const web::SSLStatus& ssl,
-                bool is_offline_page,
-                PageInfoModelObserver* observer);
+                bool is_offline_page);
   ~PageInfoModel();
 
   int GetSectionCount();
@@ -106,19 +85,8 @@ class PageInfoModel {
   // Returns the native image type for an icon with the given id.
   gfx::Image* GetIconImage(SectionStateIcon icon_id);
 
-  // Returns the label for the "Certificate Information", if needed.
-  base::string16 GetCertificateLabel() const;
-
  protected:
-  // Testing constructor. DO NOT USE.
-  PageInfoModel();
-
-  PageInfoModelObserver* observer_;
-
   std::vector<SectionInfo> sections_;
-
-  // Label for "Certificate Information", if needed.
-  base::string16 certificate_label_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageInfoModel);

@@ -12,6 +12,8 @@
 
 namespace blink {
 
+class ExecutionContext;
+
 // This class may be used to represent the name of any valid CSS property,
 // including custom properties.
 class CORE_EXPORT CSSPropertyName {
@@ -29,8 +31,10 @@ class CORE_EXPORT CSSPropertyName {
     DCHECK(!custom_property_name.IsNull());
   }
 
-  static base::Optional<CSSPropertyName> From(const String& value) {
-    const CSSPropertyID property_id = cssPropertyID(value);
+  static base::Optional<CSSPropertyName> From(
+      const ExecutionContext* execution_context,
+      const String& value) {
+    const CSSPropertyID property_id = cssPropertyID(execution_context, value);
     if (property_id == CSSPropertyID::kInvalid)
       return base::nullopt;
     if (property_id == CSSPropertyID::kVariable)

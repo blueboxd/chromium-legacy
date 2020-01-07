@@ -5,6 +5,7 @@
 #include "components/variations/variations_murmur_hash.h"
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
 

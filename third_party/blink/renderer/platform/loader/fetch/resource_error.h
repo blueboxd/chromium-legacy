@@ -29,6 +29,7 @@
 
 #include <iosfwd>
 #include "base/optional.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -99,6 +100,7 @@ class PLATFORM_EXPORT ResourceError final {
 
   int error_code_;
   int extended_error_code_ = 0;
+  net::ResolveErrorInfo resolve_error_info_;
   KURL failing_url_;
   String localized_description_;
   bool is_access_check_ = false;

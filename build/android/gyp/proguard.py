@@ -216,12 +216,8 @@ def _OptimizeWithR8(options,
     # from failing.
     build_utils.Touch(tmp_mapping_path)
 
-    output_is_zipped = not options.output_path.endswith('.dex')
     tmp_output = os.path.join(tmp_dir, 'r8out')
-    if output_is_zipped:
-      tmp_output += '.jar'
-    else:
-      os.mkdir(tmp_output)
+    os.mkdir(tmp_output)
 
     cmd = [
         build_utils.JAVA_PATH,
@@ -265,14 +261,17 @@ def _OptimizeWithR8(options,
           'android/docs/java_optimization.md#Debugging-common-failures\n'))
       raise ProguardProcessError(err, debugging_link)
 
-    if not output_is_zipped:
-      found_files = os.listdir(tmp_output)
+    found_files = build_utils.FindInDirectory(tmp_output)
+    if not options.output_path.endswith('.dex'):
+      # Add to .jar using Python rather than having R8 output to a .zip directly
+      # in order to disable compression of the .jar, saving ~500ms.
+      tmp_jar_output = tmp_output + '.jar'
+      build_utils.DoZip(found_files, tmp_jar_output, base_dir=tmp_output)
+      shutil.move(tmp_jar_output, options.output_path)
+    else:
       if len(found_files) > 1:
         raise Exception('Too many files created: {}'.format(found_files))
-      tmp_output = os.path.join(tmp_output, found_files[0])
-
-    # Copy output files to correct locations.
-    shutil.move(tmp_output, options.output_path)
+      shutil.move(found_files[0], options.output_path)
 
     with open(options.mapping_output, 'w') as out_file, \
         open(tmp_mapping_path) as in_file:

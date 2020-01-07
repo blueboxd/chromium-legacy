@@ -92,8 +92,7 @@ class RulesetManagerTest : public DNRTestBase {
                   RulesetSource::CreateStatic(*last_loaded_extension_),
                   expected_checksum, &matchers[0]));
 
-    *matcher = std::make_unique<CompositeMatcher>(std::move(matchers),
-                                                  nullptr /* action_tracker */);
+    *matcher = std::make_unique<CompositeMatcher>(std::move(matchers));
   }
 
   void SetIncognitoEnabled(const Extension* extension, bool incognito_enabled) {

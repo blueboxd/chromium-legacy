@@ -60,6 +60,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace credential_provider {
 
@@ -72,7 +73,7 @@ constexpr char kGetAccessTokenBodyWithScopeFormat[] =
     "grant_type=refresh_token&"
     "refresh_token=%s&"
     "scope=%s";
-constexpr wchar_t kRegEnableADAssociation[] = L"enable_ad_association";
+constexpr wchar_t kRegCloudAssociation[] = L"enable_cloud_association";
 // The access scopes should be separated by single space.
 constexpr char kAccessScopes[] =
     "https://www.googleapis.com/auth/admin.directory.user";
@@ -82,7 +83,8 @@ constexpr int kHttpTimeout = 3000;  // in milliseconds
 // users directory api.
 constexpr char kKeyCustomSchemas[] = "customSchemas";
 constexpr char kKeyEmployeeData[] = "employeeData";
-constexpr char kKeyAdUpn[] = "ad_upn";
+constexpr char kKeySamAccountName[] = "samAccountName";
+constexpr char kKeyLocalAccountInfo[] = "localAccountInfo";
 
 base::string16 GetEmailDomains() {
   std::vector<wchar_t> email_domains(16);
@@ -122,14 +124,18 @@ base::string16 GetEmailDomainsPrintableString() {
 }
 
 // Use WinHttpUrlFetcher to communicate with the admin sdk and fetch the active
-// directory UPN from the admin configured custom attributes.
-HRESULT GetAdUpnFromCloudDirectory(const base::string16& email,
-                                   const std::string& access_token,
-                                   std::string* ad_upn,
-                                   BSTR* error_text) {
+// directory samAccountName if available and list of local account name mapping
+// configured as custom attributes.
+HRESULT GetExistingAccountMappingFromCD(
+    const base::string16& email,
+    const std::string& access_token,
+    std::string* sam_account_name,
+    std::vector<std::string>* local_account_names,
+    BSTR* error_text) {
   DCHECK(email.size() > 0);
   DCHECK(access_token.size() > 0);
-  DCHECK(ad_upn);
+  DCHECK(sam_account_name);
+  DCHECK(local_account_names);
   DCHECK(error_text);
   *error_text = nullptr;
 
@@ -158,10 +164,20 @@ HRESULT GetAdUpnFromCloudDirectory(const base::string16& email,
     return hr;
   }
 
-  *ad_upn = SearchForKeyInStringDictUTF8(
+  *sam_account_name = SearchForKeyInStringDictUTF8(
       cd_user_response_json_string,
-      {kKeyCustomSchemas, kKeyEmployeeData, kKeyAdUpn});
-  return S_OK;
+      {kKeyCustomSchemas, kKeyEmployeeData, kKeySamAccountName});
+
+  hr = SearchForListInStringDictUTF8(
+      "value", cd_user_response_json_string,
+      {kKeyCustomSchemas, kKeyEmployeeData, kKeyLocalAccountInfo},
+      local_account_names);
+
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "Attempt to parse localAccountInfo failed.";
+  }
+
+  return hr;
 }
 
 // Request a downscoped access token using the refresh token provided in the
@@ -216,29 +232,148 @@ HRESULT RequestDownscopedAccessToken(const std::string& refresh_token,
   return S_OK;
 }
 
-// Find an AD account associated with GCPW user if one exists.
+HRESULT GetUserAndDomainInfo(
+    const std::string& sam_account_name,
+    const std::vector<std::string>& local_account_names,
+    base::string16* existing_sid,
+    BSTR* error_text) {
+  base::string16 user_name;
+  base::string16 domain_name;
+
+  bool is_ad_user =
+      OSUserManager::Get()->IsDeviceDomainJoined() && !sam_account_name.empty();
+  // Login via existing AD account mapping when the device is domain joined if
+  // the AD account mapping is available.
+  if (is_ad_user) {
+    // The format for ad_upn custom attribute is domainName/userName.
+    const base::char16 kSlashDelimiter[] = STRING16_LITERAL("/");
+    std::vector<base::string16> tokens =
+        base::SplitString(base::UTF8ToUTF16(sam_account_name), kSlashDelimiter,
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+    // Values fetched from custom attribute shouldn't be empty.
+    if (tokens.size() != 2) {
+      LOGFN(ERROR) << "Found unparseable samAccountName in cloud directory : "
+                   << sam_account_name;
+      *error_text =
+          CGaiaCredentialBase::AllocErrorString(IDS_INVALID_AD_UPN_BASE);
+      return E_FAIL;
+    }
+
+    domain_name = tokens.at(0);
+    user_name = tokens.at(1);
+  } else {
+    // Fallback to using local account mapping for all other scenarios.
+
+    // Step 1: Filter out invalid local account names based on serial number
+    // etc. The mapping would look like "un:abcd,sn:1234" where "un" represents
+    // the local user name and "sn" represents the serial number of the device.
+    // Note that "sn" is optional, but it is recommended to be used by the IT
+    // admin.
+
+    // The variable that holds all the local accounts which has
+    // a matching serial number of the device.
+    std::vector<base::string16> filtered_local_account_names;
+
+    // The variable that holds all the local accounts which doesn't have
+    // any serial_number mapping in custom attributes.
+    std::vector<base::string16> filtered_local_account_names_no_sn;
+
+    for (auto local_account_name : local_account_names) {
+      // The format for local_account_name custom attribute is
+      // "un:abcd,sn:1234" where "un:abcd" would always exist and "sn:1234" is
+      // optional.
+      std::string username;
+      std::string serial_number;
+      // Note: "?:" is used to signify non-capturing groups. For more details,
+      // look at https://github.com/google/re2/wiki/Syntax link.
+      re2::RE2::FullMatch(local_account_name, "un:([^,]+)(?:,sn:(\\w+))?",
+                          &username, &serial_number);
+
+      if (!username.empty() && !serial_number.empty()) {
+        std::string device_serial_number =
+            base::UTF16ToUTF8(GetSerialNumber().c_str());
+        if (base::EqualsCaseInsensitiveASCII(serial_number,
+                                             device_serial_number))
+          filtered_local_account_names.push_back(base::UTF8ToUTF16(username));
+      } else if (!username.empty()) {
+        filtered_local_account_names_no_sn.push_back(
+            base::UTF8ToUTF16(username));
+      }
+    }
+
+    // Step 2: If more than one mapping found on both the above lists
+    // OR no mapping found on either one of them, then return NTE_NOT_FOUND.
+    if (filtered_local_account_names.size() != 1 &&
+        filtered_local_account_names_no_sn.size() != 1) {
+      return NTE_NOT_FOUND;
+    }
+
+    // Step 3: Assign the extracted user name to user_name variable so that we
+    // can verify for existence of SID on the device with the extracted user
+    // name on the current windows device.
+    user_name = filtered_local_account_names.size() == 1
+                    ? filtered_local_account_names.at(0)
+                    : filtered_local_account_names_no_sn.at(0);
+    domain_name = OSUserManager::GetLocalDomain();
+  }
+
+  OSUserManager* os_user_manager = OSUserManager::Get();
+  DCHECK(os_user_manager);
+  LOGFN(INFO) << "Get user sid for user " << user_name << " and domain name "
+              << domain_name;
+  HRESULT hr = os_user_manager->GetUserSID(domain_name.c_str(),
+                                           user_name.c_str(), existing_sid);
+
+  if (existing_sid->length() > 0) {
+    LOGFN(INFO) << "Found existing SID = " << *existing_sid;
+    return S_OK;
+  }
+
+  LOGFN(ERROR) << "No existing sid found with user name : " << user_name
+               << " and domain name: " << domain_name << ". hr=" << putHR(hr);
+
+  if (is_ad_user) {
+    *error_text =
+        CGaiaCredentialBase::AllocErrorString(IDS_INVALID_AD_UPN_BASE);
+    LOGFN(ERROR) << "Could not find a valid samAccountName.";
+  }
+
+  // For non-AD usecase, we will fallback to creating new local account
+  // instead of failing the login attempt.
+  return NTE_NOT_FOUND;
+}
+
+// Find an existing account associated with GCPW user if one exists.
 // (1) Verifies if the gaia user has a corresponding mapping in Google
 //   Admin SDK Users Directory and contains the custom_schema that contains
-//   the ad_upn or local_user_name for the corresponding user.
+//   the sam_account_name or local_user_info for the corresponding user.
 // (2) If there is an entry in cloud directory, gcpw would search for the SID
 //   corresponding to that user entry on the device.
 // (3) If a SID is found, then it would log the user onto the device using
 //   username extracted from Google Admin SDK Users Directory and password
 //   being the same as the gaia entity.
 // (4) If there is no entry found in cloud directory, gcpw would fallback to
-//   attempting creation of a new user on the device.
+//   create a new local user on the device.
+//
+// Below are the scenarios where we fallback to create a new local user:
+// (1) No mapping available in user's cloud directory custom schema attributes.
+// (2) If a local user mapping exists but the extracted domainname/username
+//     combination doesn't have a valid SID.
 //
 // Below are the failure scenarios :
-// (1) If an invalid upn is set in the custom attributes, the login would fail.
-// (2) If an attempt to find SID from domain controller failed, then we fail
-//     the login.
-// Note that if an empty upn is found in the custom attribute, then the login
-// would try and attempt to create local user.
-HRESULT FindAdUserSidIfAvailable(const std::string& refresh_token,
-                                 const base::string16& email,
-                                 wchar_t* sid,
-                                 const DWORD sid_length,
-                                 BSTR* error_text) {
+// (1) Failed getting a downscoped access token from refresh token.
+// (2) If communication with cloud directory fails, then we fail the login.
+// (3) If an attempt to find SID from domain controller or local machine failed,
+//     then we fail the login.
+// (4) Parsing the samAccountName or localAccountInfo failed.
+// (5) If an AD user mapping exists but the extracted domainname/username
+//     combination doesn't have a valid SID.
+HRESULT FindExistingUserSidIfAvailable(const std::string& refresh_token,
+                                       const base::string16& email,
+                                       wchar_t* sid,
+                                       const DWORD sid_length,
+                                       BSTR* error_text) {
   DCHECK(sid);
   DCHECK(error_text);
   *error_text = nullptr;
@@ -254,59 +389,24 @@ HRESULT FindAdUserSidIfAvailable(const std::string& refresh_token,
   }
 
   // Step 2: Make a get call to admin sdk using the fetched access_token and
-  // retrieve the ad_upn.
-  std::string ad_upn;
-  hr = GetAdUpnFromCloudDirectory(email, access_token, &ad_upn, error_text);
+  // retrieve the sam_account_name.
+  std::string sam_account_name;
+  std::vector<std::string> local_account_names;
+  hr = GetExistingAccountMappingFromCD(email, access_token, &sam_account_name,
+                                       &local_account_names, error_text);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "GetAdUpnFromCloudDirectory hr=" << putHR(hr);
+    LOGFN(ERROR) << "GetExistingAccountMappingFromCD hr=" << putHR(hr);
     return hr;
   }
 
-  base::string16 ad_domain;
-  base::string16 ad_user;
-  if (ad_upn.empty()) {
-    LOGFN(INFO) << "Found empty ad_upn in cloud directory. Fall back to "
-                   "creating local account";
-    return S_FALSE;
-  }
-
-  // The format for ad_upn custom attribute is domainName/userName.
-  const base::char16 kSlashDelimiter[] = STRING16_LITERAL("/");
-  std::vector<base::string16> tokens =
-      base::SplitString(base::UTF8ToUTF16(ad_upn), kSlashDelimiter,
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-  // Values fetched from custom attribute shouldn't be empty.
-  if (tokens.size() != 2) {
-    LOGFN(ERROR) << "Found unparseable ad_upn in cloud directory : " << ad_upn;
-    *error_text =
-        CGaiaCredentialBase::AllocErrorString(IDS_INVALID_AD_UPN_BASE);
-    return E_FAIL;
-  }
-
-  ad_domain = tokens.at(0);
-  ad_user = tokens.at(1);
-
-  OSUserManager* os_user_manager = OSUserManager::Get();
-  DCHECK(os_user_manager);
   base::string16 existing_sid = base::string16();
+  hr = GetUserAndDomainInfo(sam_account_name, local_account_names,
+                            &existing_sid, error_text);
 
-  LOGFN(INFO) << "Get user sid for user " << ad_user << " and domain name "
-              << ad_domain;
-  hr = os_user_manager->GetUserSID(ad_domain.c_str(), ad_user.c_str(),
-                                   &existing_sid);
-  LOGFN(INFO) << "GetUserSID result=" << hr;
-
-  if (existing_sid.length() > 0) {
-    LOGFN(INFO) << "Found existing SID = " << existing_sid;
+  if (SUCCEEDED(hr))
     wcscpy_s(sid, sid_length, existing_sid.c_str());
-    return S_OK;
-  } else {
-    LOGFN(ERROR) << "No existing sid found with UPN : " << ad_upn;
-    *error_text =
-        CGaiaCredentialBase::AllocErrorString(IDS_INVALID_AD_UPN_BASE);
-    return E_FAIL;
-  }
+
+  return hr;
 }
 
 // Tries to find a user associated to the gaia_id stored in |result| under the
@@ -359,29 +459,36 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
     LOGFN(INFO) << "Found existing SID created in GCPW registry entry = "
                 << sid;
     has_existing_user_sid = true;
-  } else if (CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() &&
-             OSUserManager::Get()->IsDeviceDomainJoined()) {
-    LOGFN(INFO) << "No existing SID found in the GCPW registry.";
+  } else if (CGaiaCredentialBase::IsCloudAssociationEnabled()) {
+    LOGFN(INFO) << "Lookup cloud association.";
 
     std::string refresh_token = GetDictStringUTF8(result, kKeyRefreshToken);
-    hr = FindAdUserSidIfAvailable(refresh_token, email, sid, sid_length,
-                                  error_text);
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "Failed finding AD user sid for GCPW user. hr="
+    hr = FindExistingUserSidIfAvailable(refresh_token, email, sid, sid_length,
+                                        error_text);
+
+    has_existing_user_sid = true;
+    if (hr == NTE_NOT_FOUND) {
+      LOGFN(ERROR) << "No valid sid mapping found."
+                   << "Fallback to create a new local user account. hr="
+                   << putHR(hr);
+      has_existing_user_sid = false;
+    } else if (FAILED(hr)) {
+      LOGFN(ERROR) << "Failed finding existing user sid for GCPW user. hr="
                    << putHR(hr);
       return hr;
-    } else if (hr == S_OK) {
-      has_existing_user_sid = true;
     }
+
   } else {
-    LOGFN(INFO) << "Falling back to creation of new user";
+    LOGFN(INFO) << "Fallback to create a new local user account";
   }
 
   if (has_existing_user_sid) {
     HRESULT hr = OSUserManager::Get()->FindUserBySID(
         sid, username, username_length, domain, domain_length);
-    if (SUCCEEDED(hr))
-      return hr;
+    if (FAILED(hr))
+      *error_text =
+          CGaiaCredentialBase::AllocErrorString(IDS_INTERNAL_ERROR_BASE);
+    return hr;
   }
 
   LOGFN(INFO) << "No existing user found associated to gaia id:" << *gaia_id;
@@ -653,9 +760,9 @@ CGaiaCredentialBase::UIProcessInfo::UIProcessInfo() {}
 CGaiaCredentialBase::UIProcessInfo::~UIProcessInfo() {}
 
 // static
-bool CGaiaCredentialBase::IsAdToGoogleAssociationEnabled() {
-  DWORD enable_ad_association = 0;
-  return GetGlobalFlagOrDefault(kRegEnableADAssociation, enable_ad_association);
+bool CGaiaCredentialBase::IsCloudAssociationEnabled() {
+  DWORD enable_cloud_association = 0;
+  return GetGlobalFlagOrDefault(kRegCloudAssociation, enable_cloud_association);
 }
 
 // static

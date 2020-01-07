@@ -1293,11 +1293,17 @@ void LockContentsView::OnDisplayMetricsChanged(const display::Display& display,
   // Ignore all metrics except for those listed in |filter|.
   uint32_t filter = DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_WORK_AREA |
                     DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
-                    DISPLAY_METRIC_ROTATION;
+                    DISPLAY_METRIC_ROTATION | DISPLAY_METRIC_PRIMARY;
   if ((filter & changed_metrics) == 0)
     return;
 
   DoLayout();
+
+  // Set bounds here so that the lock screen widget always shows up on the
+  // primary display. Sometimes the widget bounds are incorrect in the case
+  // where multiple external displays are used. See crbug.com/1031571.
+  GetWidget()->SetBounds(
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds());
 }
 
 void LockContentsView::OnLockStateChanged(bool locked) {

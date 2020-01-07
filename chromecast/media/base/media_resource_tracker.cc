@@ -27,15 +27,15 @@ MediaResourceTracker::ScopedUsage::~ScopedUsage() {
 }
 
 MediaResourceTracker::MediaResourceTracker(
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
     : media_use_count_(0),
       media_lib_initialized_(false),
       delete_on_finalize_(false),
-      ui_task_runner_(ui_task_runner),
-      media_task_runner_(media_task_runner) {
-  DCHECK(ui_task_runner);
-  DCHECK(media_task_runner);
+      ui_task_runner_(std::move(ui_task_runner)),
+      media_task_runner_(std::move(media_task_runner)) {
+  DCHECK(ui_task_runner_);
+  DCHECK(media_task_runner_);
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 }
 

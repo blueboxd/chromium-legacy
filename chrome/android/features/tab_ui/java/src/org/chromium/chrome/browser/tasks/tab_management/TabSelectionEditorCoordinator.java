@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.MODEL_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.ModelType.OTHERS;
+
 import android.content.Context;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -171,10 +174,9 @@ class TabSelectionEditorCoordinator {
     void resetWithListOfTabs(@Nullable List<Tab> tabs, int preSelectedCount) {
         mTabListCoordinator.resetWithListOfTabs(tabs);
 
-        if (tabs != null && preSelectedCount > 0) {
-            assert preSelectedCount < tabs.size();
-            mTabListCoordinator.addSpecialListItem(
-                    preSelectedCount, TabProperties.UiType.DIVIDER, new PropertyModel());
+        if (tabs != null && preSelectedCount > 0 && preSelectedCount < tabs.size()) {
+            mTabListCoordinator.addSpecialListItem(preSelectedCount, TabProperties.UiType.DIVIDER,
+                    new PropertyModel.Builder(MODEL_TYPE).with(MODEL_TYPE, OTHERS).build());
         }
     }
 

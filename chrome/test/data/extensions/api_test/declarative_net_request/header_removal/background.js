@@ -248,6 +248,7 @@ var removeSetCookieRule = {
 };
 var allowRule = {
   id: 3,
+  priority: 1,
   condition: {urlFilter: host, resourceTypes: ['main_frame']},
   action: {type: 'allow'}
 };

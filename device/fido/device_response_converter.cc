@@ -338,6 +338,14 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
               : Availability::kSupportedButUnprovisioned;
     }
 
+    option_map_it = option_map.find(CBOR(kUvTokenMapKey));
+    if (option_map_it != option_map.end()) {
+      if (!option_map_it->second.is_bool()) {
+        return base::nullopt;
+      }
+      options.supports_uv_token = option_map_it->second.GetBool();
+    }
+
     response.options = std::move(options);
   }
 

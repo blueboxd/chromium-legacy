@@ -2524,6 +2524,12 @@ void CrostiniManager::OnLxdContainerCreated(
       break;
   }
 
+  if (result != CrostiniResult::SUCCESS) {
+    LOG(ERROR) << "Failed to create container. VM: " << signal.vm_name()
+               << " container: " << signal.container_name()
+               << " reason: " << signal.failure_reason();
+  }
+
   InvokeAndErasePendingContainerCallbacks(&create_lxd_container_callbacks_,
                                           signal.vm_name(),
                                           signal.container_name(), result);

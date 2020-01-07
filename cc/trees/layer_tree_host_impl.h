@@ -1062,7 +1062,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<LayerTreeImpl> recycle_tree_;
 
   InputHandlerClient* input_handler_client_ = nullptr;
-  bool touch_scrolling_ = false;
   bool wheel_scrolling_ = false;
   bool middle_click_autoscrolling_ = false;
   bool scroll_affects_scroll_handler_ = false;

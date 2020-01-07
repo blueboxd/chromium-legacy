@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_COMMON_EXTENSION_ID_H_
 #define EXTENSIONS_COMMON_EXTENSION_ID_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,7 @@ namespace extensions {
 using ExtensionId = std::string;
 
 using ExtensionIdList = std::vector<ExtensionId>;
+using ExtensionIdSet = std::set<ExtensionId>;
 
 }  // namespace extensions
 

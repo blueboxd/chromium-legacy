@@ -16,6 +16,7 @@ group("telemetry_chrome_test") {
 
   data_deps = [
     ":telemetry_chrome_test_without_chrome",
+    "//third_party/perfetto/src/trace_processor:trace_processor_shell",
   ]
   data = []
 

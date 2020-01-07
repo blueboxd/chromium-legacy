@@ -28,17 +28,13 @@
 #include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/surfaces/child_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
-#include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/hit_test/hit_test_manager.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
-#include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/fake_surface_observer.h"
 #include "components/viz/test/test_latest_local_surface_id_lookup_delegate.h"
@@ -71,7 +67,6 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_overscroll_delegate.h"
@@ -293,8 +288,6 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
 
  private:
   FakeDelegatedFrameHostClientAura* delegated_frame_host_client_;
-  mojo::Remote<viz::mojom::CompositorFrameSinkClient>
-      renderer_compositor_frame_sink_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRenderWidgetHostViewAura);
 };
@@ -1519,13 +1512,13 @@ TEST_F(RenderWidgetHostViewAuraTest,
   base::RunLoop().RunUntilIdle();
   auto events = GetAndResetDispatchedMessages();
   ASSERT_FALSE(events.empty());
-  const NativeWebKeyboardEvent* native_key_event1 =
-      static_cast<const NativeWebKeyboardEvent*>(
+  const blink::WebKeyboardEvent* blink_key_event1 =
+      static_cast<const blink::WebKeyboardEvent*>(
           events[0]->ToEvent()->Event()->web_event.get());
-  ASSERT_TRUE(native_key_event1);
-  ASSERT_EQ(key_event1.key_code(), native_key_event1->windows_key_code);
+  ASSERT_TRUE(blink_key_event1);
+  ASSERT_EQ(key_event1.key_code(), blink_key_event1->windows_key_code);
   ASSERT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event1.code()),
-            native_key_event1->native_key_code);
+            blink_key_event1->native_key_code);
 
   // These keys will pass through the prehandler since they aren't locked.
   std::vector<ui::DomCode> dom_codes = {
@@ -1621,15 +1614,15 @@ TEST_F(RenderWidgetHostViewAuraTest,
     ASSERT_FALSE(events.empty())
         << "Failed for DomCode: "
         << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
-    const NativeWebKeyboardEvent* native_key_event =
-        static_cast<const NativeWebKeyboardEvent*>(
+    const blink::WebKeyboardEvent* blink_key_event =
+        static_cast<const blink::WebKeyboardEvent*>(
             events[0]->ToEvent()->Event()->web_event.get());
-    ASSERT_TRUE(native_key_event)
+    ASSERT_TRUE(blink_key_event)
         << "Failed for DomCode: "
         << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
-    ASSERT_EQ(key_event.key_code(), native_key_event->windows_key_code);
+    ASSERT_EQ(key_event.key_code(), blink_key_event->windows_key_code);
     ASSERT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code()),
-              native_key_event->native_key_code);
+              blink_key_event->native_key_code);
   }
 
   // Although this key was locked, it will still pass through the prehandler as
@@ -2978,83 +2971,6 @@ TEST_F(RenderWidgetHostViewAuraTest, UpdateCursorIfOverSelf) {
   aura::Env::GetInstance()->SetLastMouseLocation(gfx::Point(161, 161));
   view_->UpdateCursorIfOverSelf();
   EXPECT_EQ(0, cursor_client.calls_to_set_cursor());
-}
-
-viz::CompositorFrame MakeDelegatedFrame(float scale_factor,
-                                        gfx::Size size,
-                                        gfx::Rect damage) {
-  viz::CompositorFrame frame;
-  frame.metadata.device_scale_factor = scale_factor;
-  frame.metadata.begin_frame_ack = viz::BeginFrameAck(0, 1, true);
-
-  std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
-  pass->SetNew(1, gfx::Rect(size), damage, gfx::Transform());
-  frame.render_pass_list.push_back(std::move(pass));
-  if (!size.IsEmpty()) {
-    viz::TransferableResource resource;
-    resource.id = 1;
-    frame.resource_list.push_back(std::move(resource));
-  }
-  return frame;
-}
-
-// Resizing in fullscreen mode should send the up-to-date screen info.
-// http://crbug.com/324350
-TEST_F(RenderWidgetHostViewAuraTest, DISABLED_FullscreenResize) {
-  aura::Window* root_window = aura_test_helper_->root_window();
-  root_window->SetLayoutManager(new FullscreenLayoutManager(root_window));
-  view_->InitAsFullscreen(parent_view_);
-  view_->Show();
-  widget_host_->ResetSentVisualProperties();
-  sink_->ClearMessages();
-
-  // Call SynchronizeVisualProperties to flush the old screen info.
-  view_->GetRenderWidgetHost()->SynchronizeVisualProperties();
-  {
-    // 0 is CreatingNew message.
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(WidgetMsg_UpdateVisualProperties::ID),
-              msg->type());
-    WidgetMsg_UpdateVisualProperties::Param params;
-    WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    EXPECT_EQ(gfx::Rect(800, 600),
-              std::get<0>(params).screen_info.available_rect);
-    EXPECT_EQ(gfx::Size(800, 600), std::get<0>(params).new_size);
-    // Resizes are blocked until we swapped a frame of the correct size, and
-    // we've committed it.
-    view_->SubmitCompositorFrame(
-        kArbitraryLocalSurfaceId,
-        MakeDelegatedFrame(1.f, std::get<0>(params).new_size,
-                           gfx::Rect(std::get<0>(params).new_size)),
-        base::nullopt);
-    ui::DrawWaiterForTest::WaitForCommit(
-        root_window->GetHost()->compositor());
-  }
-
-  widget_host_->ResetSentVisualProperties();
-  sink_->ClearMessages();
-
-  // Make sure the corrent screen size is set along in the resize
-  // request when the screen size has changed.
-  aura_test_helper_->test_screen()->SetUIScale(0.5);
-  ASSERT_EQ(1u, sink_->message_count());
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    EXPECT_EQ(static_cast<uint32_t>(WidgetMsg_UpdateVisualProperties::ID),
-              msg->type());
-    WidgetMsg_UpdateVisualProperties::Param params;
-    WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    EXPECT_EQ(gfx::Rect(1600, 1200),
-              std::get<0>(params).screen_info.available_rect);
-    EXPECT_EQ(gfx::Size(1600, 1200), std::get<0>(params).new_size);
-    view_->SubmitCompositorFrame(
-        kArbitraryLocalSurfaceId,
-        MakeDelegatedFrame(1.f, std::get<0>(params).new_size,
-                           gfx::Rect(std::get<0>(params).new_size)),
-        base::nullopt);
-    ui::DrawWaiterForTest::WaitForCommit(
-        root_window->GetHost()->compositor());
-  }
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, ZeroSizeStillGetsLocalSurfaceId) {

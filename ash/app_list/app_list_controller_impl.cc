@@ -619,7 +619,9 @@ bool AppListControllerImpl::ShouldHomeLauncherBeVisible() const {
   return IsTabletMode() && !HasVisibleWindows();
 }
 
-void AppListControllerImpl::OnShelfAlignmentChanged(aura::Window* root_window) {
+void AppListControllerImpl::OnShelfAlignmentChanged(
+    aura::Window* root_window,
+    ShelfAlignment old_alignment) {
   if (!IsTabletMode())
     DismissAppList();
 }

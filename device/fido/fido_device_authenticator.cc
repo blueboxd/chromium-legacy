@@ -110,17 +110,18 @@ void FidoDeviceAuthenticator::GetRetries(GetRetriesCallback callback) {
 void FidoDeviceAuthenticator::GetEphemeralKey(
     GetEphemeralKeyCallback callback) {
   DCHECK(Options());
-  DCHECK(Options()->client_pin_availability !=
-         AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
+  DCHECK(
+      Options()->client_pin_availability !=
+          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported ||
+      Options()->supports_uv_token);
 
   RunOperation<pin::KeyAgreementRequest, pin::KeyAgreementResponse>(
       pin::KeyAgreementRequest(), std::move(callback),
       base::BindOnce(&pin::KeyAgreementResponse::Parse));
 }
 
-void FidoDeviceAuthenticator::GetPINToken(
-    std::string pin,
-    GetPINTokenCallback callback) {
+void FidoDeviceAuthenticator::GetPINToken(std::string pin,
+                                          GetTokenCallback callback) {
   DCHECK(Options());
   DCHECK(Options()->client_pin_availability !=
          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
@@ -132,16 +133,16 @@ void FidoDeviceAuthenticator::GetPINToken(
 
 void FidoDeviceAuthenticator::OnHaveEphemeralKeyForGetPINToken(
     std::string pin,
-    GetPINTokenCallback callback,
+    GetTokenCallback callback,
     CtapDeviceResponseCode status,
     base::Optional<pin::KeyAgreementResponse> key) {
   if (status != CtapDeviceResponseCode::kSuccess) {
     std::move(callback).Run(status, base::nullopt);
     return;
   }
-  pin::TokenRequest request(pin, *key);
+  pin::PinTokenRequest request(pin, *key);
   std::array<uint8_t, 32> shared_key = request.shared_key();
-  RunOperation<pin::TokenRequest, pin::TokenResponse>(
+  RunOperation<pin::PinTokenRequest, pin::TokenResponse>(
       std::move(request), std::move(callback),
       base::BindOnce(&pin::TokenResponse::Parse, std::move(shared_key)));
 }
@@ -676,6 +677,30 @@ bool FidoDeviceAuthenticator::IsTouchIdAuthenticator() const {
 void FidoDeviceAuthenticator::SetTaskForTesting(
     std::unique_ptr<FidoTask> task) {
   task_ = std::move(task);
+}
+
+void FidoDeviceAuthenticator::GetUvToken(GetTokenCallback callback) {
+  GetEphemeralKey(
+      base::BindOnce(&FidoDeviceAuthenticator::OnHaveEphemeralKeyForUvToken,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FidoDeviceAuthenticator::OnHaveEphemeralKeyForUvToken(
+    GetTokenCallback callback,
+    CtapDeviceResponseCode status,
+    base::Optional<pin::KeyAgreementResponse> key) {
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    std::move(callback).Run(status, base::nullopt);
+    return;
+  }
+
+  DCHECK(key);
+
+  pin::UvTokenRequest request(*key);
+  std::array<uint8_t, 32> shared_key = request.shared_key();
+  RunOperation<pin::UvTokenRequest, pin::TokenResponse>(
+      std::move(request), std::move(callback),
+      base::BindOnce(&pin::TokenResponse::Parse, std::move(shared_key)));
 }
 
 base::WeakPtr<FidoAuthenticator> FidoDeviceAuthenticator::GetWeakPtr() {

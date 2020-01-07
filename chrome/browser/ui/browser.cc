@@ -1127,7 +1127,7 @@ void Browser::OnTabGroupChanged(const TabGroupChange& change) {
     SessionService* const session_service =
         SessionServiceFactory::GetForProfile(profile_);
     if (session_service) {
-      tab_groups::TabGroupVisualData* visual_data =
+      const tab_groups::TabGroupVisualData* visual_data =
           tab_strip_model_->group_model()
               ->GetTabGroup(change.group)
               ->visual_data();

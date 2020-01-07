@@ -127,3 +127,17 @@ cast_source_set("monotonic_clock") {
     "//base",
   ]
 }
+
+cast_source_set("test_media_resource_tracker") {
+  sources = [
+    "test_media_resource_tracker.cc",
+    "test_media_resource_tracker.h",
+  ]
+  deps = [
+    ":media_resource_tracker",
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+  testonly = true
+}

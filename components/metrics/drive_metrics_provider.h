@@ -28,7 +28,7 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
   ~DriveMetricsProvider() override;
 
   // metrics::MetricsDataProvider:
-  void AsyncInit(const base::Closure& done_callback) override;
+  void AsyncInit(base::OnceClosure done_callback) override;
   void ProvideSystemProfileMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
 
@@ -65,7 +65,7 @@ class DriveMetricsProvider : public metrics::MetricsProvider {
   // Called when metrics are done being gathered asynchronously.
   // |done_callback| is the callback that should be called once all metrics are
   // gathered.
-  void GotDriveMetrics(const base::Closure& done_callback,
+  void GotDriveMetrics(base::OnceClosure done_callback,
                        const DriveMetrics& metrics);
 
   // Fills |drive| with information from successful |response|s.

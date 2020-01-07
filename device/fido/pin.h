@@ -130,22 +130,43 @@ using ResetResponse = EmptyResponse;
 // assertion.
 class TokenRequest {
  public:
-  TokenRequest(const std::string& pin, const KeyAgreementResponse& peer_key);
-  ~TokenRequest();
-  TokenRequest(TokenRequest&&);
   TokenRequest(const TokenRequest&) = delete;
 
   // shared_key returns the shared ECDH key that was used to encrypt the PIN.
   // This is needed to decrypt the response.
   const std::array<uint8_t, 32>& shared_key() const;
 
-  friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-  AsCTAPRequestValuePair(const TokenRequest&);
-
- private:
+ protected:
+  TokenRequest(TokenRequest&&);
+  explicit TokenRequest(const KeyAgreementResponse& peer_key);
+  ~TokenRequest();
   std::array<uint8_t, 32> shared_key_;
   cbor::Value::MapValue cose_key_;
+};
+
+class PinTokenRequest : public TokenRequest {
+ public:
+  PinTokenRequest(const std::string& pin, const KeyAgreementResponse& peer_key);
+  PinTokenRequest(PinTokenRequest&&);
+  PinTokenRequest(const PinTokenRequest&) = delete;
+  virtual ~PinTokenRequest();
+
+  friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  AsCTAPRequestValuePair(const PinTokenRequest&);
+
+ private:
   uint8_t pin_hash_[16];
+};
+
+class UvTokenRequest : public TokenRequest {
+ public:
+  explicit UvTokenRequest(const KeyAgreementResponse& peer_key);
+  UvTokenRequest(UvTokenRequest&&);
+  UvTokenRequest(const UvTokenRequest&) = delete;
+  virtual ~UvTokenRequest();
+
+  friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  AsCTAPRequestValuePair(const UvTokenRequest&);
 };
 
 // TokenResponse represents the response to a pin-token request. In order to

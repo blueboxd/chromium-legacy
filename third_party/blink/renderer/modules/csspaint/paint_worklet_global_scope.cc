@@ -146,7 +146,8 @@ void PaintWorkletGlobalScope::Dispose() {
   WorkletGlobalScope::Dispose();
 }
 
-void PaintWorkletGlobalScope::registerPaint(const String& name,
+void PaintWorkletGlobalScope::registerPaint(const ScriptState* script_state,
+                                            const String& name,
                                             V8NoArgumentConstructor* paint_ctor,
                                             ExceptionState& exception_state) {
   // https://drafts.css-houdini.org/css-paint-api/#dom-paintworkletglobalscope-registerpaint
@@ -178,8 +179,11 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
   Vector<CSSPropertyID> native_invalidation_properties;
   Vector<AtomicString> custom_invalidation_properties;
 
+  const ExecutionContext* execution_context =
+      ExecutionContext::From(script_state);
+
   if (!V8ObjectParser::ParseCSSPropertyList(
-          context, v8_paint_ctor, "inputProperties",
+          context, execution_context, v8_paint_ctor, "inputProperties",
           &native_invalidation_properties, &custom_invalidation_properties,
           &exception_state))
     return;

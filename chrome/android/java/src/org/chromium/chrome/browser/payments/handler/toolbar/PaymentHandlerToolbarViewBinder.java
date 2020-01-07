@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments.handler.toolbar;
 
 import android.view.View;
 
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -16,8 +17,10 @@ import org.chromium.ui.modelutil.PropertyModel;
 /* package */ class PaymentHandlerToolbarViewBinder {
     /* package */ static void bind(
             PropertyModel model, PaymentHandlerToolbarView view, PropertyKey propertyKey) {
-        if (PaymentHandlerToolbarProperties.ORIGIN == propertyKey) {
-            view.mOriginView.setText(model.get(PaymentHandlerToolbarProperties.ORIGIN).toString());
+        if (PaymentHandlerToolbarProperties.URL == propertyKey) {
+            String origin = UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
+                    model.get(PaymentHandlerToolbarProperties.URL).toString());
+            view.mOriginView.setText(origin);
         } else if (PaymentHandlerToolbarProperties.TITLE == propertyKey) {
             view.mTitleView.setText(model.get(PaymentHandlerToolbarProperties.TITLE));
         } else if (PaymentHandlerToolbarProperties.LOAD_PROGRESS == propertyKey) {

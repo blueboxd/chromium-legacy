@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 556 tests; 539 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 556 tests; 541 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAddition function
 PASS align-content: "flex-end" onto "flex-start"
@@ -103,7 +103,7 @@ PASS border-top-width (type: length) has testAddition function
 PASS border-top-width: length
 PASS border-top-width: length of rem
 PASS box-shadow (type: boxShadowList) has testAddition function
-FAIL box-shadow: shadow assert_equals: The value should be rgb(0, 0, 0) 0px 0px 0px 0px, rgb(120, 120, 120) 10px 10px 10px 0px at 0ms expected "rgb(0, 0, 0) 0px 0px 0px 0px, rgb(120, 120, 120) 10px 10px 10px 0px" but got "rgb(120, 120, 120) 10px 10px 10px 0px"
+PASS box-shadow: shadow
 PASS box-sizing (type: discrete) has testAddition function
 PASS box-sizing: "border-box" onto "content-box"
 PASS box-sizing: "content-box" onto "border-box"
@@ -493,7 +493,7 @@ PASS text-rendering (type: discrete) has testAddition function
 PASS text-rendering: "optimizeLegibility" onto "optimizeSpeed"
 PASS text-rendering: "optimizeSpeed" onto "optimizeLegibility"
 PASS text-shadow (type: textShadowList) has testAddition function
-FAIL text-shadow: shadow assert_equals: The value should be rgb(0, 0, 0) 0px 0px 0px, rgb(120, 120, 120) 10px 10px 10px at 0ms expected "rgb(0, 0, 0) 0px 0px 0px, rgb(120, 120, 120) 10px 10px 10px" but got "rgb(120, 120, 120) 10px 10px 10px"
+PASS text-shadow: shadow
 PASS text-transform (type: discrete) has testAddition function
 PASS text-transform: "uppercase" onto "capitalize"
 PASS text-transform: "capitalize" onto "uppercase"

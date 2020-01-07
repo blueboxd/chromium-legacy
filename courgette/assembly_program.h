@@ -55,10 +55,6 @@ class AssemblyProgram {
   // Traverses RVAs in |abs32_visitor| and |rel32_visitor| to precompute Labels.
   void PrecomputeLabels(RvaVisitor* abs32_visitor, RvaVisitor* rel32_visitor);
 
-  // Removes underused Labels. Thresholds used (0 = no trimming) is
-  // architecture-dependent.
-  void TrimLabels();
-
   void UnassignIndexes();
   void DefaultAssignIndexes();
   void AssignRemainingIndexes();

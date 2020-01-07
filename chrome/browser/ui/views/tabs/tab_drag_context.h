@@ -36,7 +36,7 @@ class TabDragContext {
   virtual bool IsTabPinned(const Tab* tab) const = 0;
   virtual int GetPinnedTabCount() const = 0;
   virtual TabGroupHeader* GetTabGroupHeader(
-      tab_groups::TabGroupId group) const = 0;
+      const tab_groups::TabGroupId& group) const = 0;
   virtual TabStripModel* GetTabStripModel() = 0;
 
   // Returns the index of the active tab in touch mode, or no value if not in

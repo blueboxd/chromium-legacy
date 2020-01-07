@@ -94,6 +94,20 @@ TEST(ScopedTempDir, MultipleInvocations) {
   EXPECT_FALSE(other_dir.CreateUniqueTempDir());
 }
 
+TEST(ScopedTempDir, Move) {
+  ScopedTempDir dir;
+  EXPECT_TRUE(dir.CreateUniqueTempDir());
+  FilePath dir_path = dir.GetPath();
+  EXPECT_TRUE(DirectoryExists(dir_path));
+  {
+    ScopedTempDir other_dir(std::move(dir));
+    EXPECT_EQ(dir_path, other_dir.GetPath());
+    EXPECT_TRUE(DirectoryExists(dir_path));
+    EXPECT_FALSE(dir.IsValid());
+  }
+  EXPECT_FALSE(DirectoryExists(dir_path));
+}
+
 #if defined(OS_WIN)
 TEST(ScopedTempDir, LockedTempDir) {
   ScopedTempDir dir;

@@ -42,8 +42,9 @@ class NetMetricsLogUploaderTest : public testing::Test {
     uploader_.reset(new NetMetricsLogUploader(
         test_shared_url_loader_factory_, GURL("https://dummy_server"),
         "dummy_mime", MetricsLogUploader::UMA,
-        base::Bind(&NetMetricsLogUploaderTest::OnUploadCompleteReuseUploader,
-                   base::Unretained(this))));
+        base::BindRepeating(
+            &NetMetricsLogUploaderTest::OnUploadCompleteReuseUploader,
+            base::Unretained(this))));
     uploader_->UploadLog("initial_dummy_data", "initial_dummy_hash",
                          "initial_dummy_signature", reporting_info);
   }
@@ -53,8 +54,8 @@ class NetMetricsLogUploaderTest : public testing::Test {
     uploader_.reset(new NetMetricsLogUploader(
         test_shared_url_loader_factory_, GURL(url), "dummy_mime",
         MetricsLogUploader::UMA,
-        base::Bind(&NetMetricsLogUploaderTest::DummyOnUploadComplete,
-                   base::Unretained(this))));
+        base::BindRepeating(&NetMetricsLogUploaderTest::DummyOnUploadComplete,
+                            base::Unretained(this))));
     uploader_->UploadLog("dummy_data", "dummy_hash", "dummy_signature",
                          dummy_reporting_info);
   }
@@ -64,8 +65,8 @@ class NetMetricsLogUploaderTest : public testing::Test {
     uploader_.reset(new NetMetricsLogUploader(
         test_shared_url_loader_factory_, GURL("http://dummy_insecure_server"),
         "dummy_mime", MetricsLogUploader::UMA,
-        base::Bind(&NetMetricsLogUploaderTest::DummyOnUploadComplete,
-                   base::Unretained(this))));
+        base::BindRepeating(&NetMetricsLogUploaderTest::DummyOnUploadComplete,
+                            base::Unretained(this))));
     std::string compressed_message;
     // Compress the data since the encryption code expects a compressed log,
     // and tries to decompress it before encrypting it.

@@ -163,57 +163,6 @@ class MockMediaDevicesDispatcherHost
   mojo::Receiver<mojom::blink::MediaDevicesDispatcherHost> receiver_{this};
 };
 
-class PromiseObserver {
- public:
-  PromiseObserver(ScriptState* script_state, ScriptPromise promise)
-      : is_rejected_(false), is_fulfilled_(false) {
-    v8::Local<v8::Function> on_fulfilled = MyScriptFunction::CreateFunction(
-        script_state, &is_fulfilled_, &saved_arg_);
-    v8::Local<v8::Function> on_rejected = MyScriptFunction::CreateFunction(
-        script_state, &is_rejected_, &saved_arg_);
-    promise.Then(on_fulfilled, on_rejected);
-  }
-
-  bool isDecided() { return is_rejected_ || is_fulfilled_; }
-
-  bool isFulfilled() { return is_fulfilled_; }
-  bool isRejected() { return is_rejected_; }
-  ScriptValue argument() { return saved_arg_; }
-  void Trace(blink::Visitor* visitor) { visitor->Trace(saved_arg_); }
-
- private:
-  class MyScriptFunction : public ScriptFunction {
-   public:
-    static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
-                                                  bool* flag_to_set,
-                                                  ScriptValue* arg_to_set) {
-      MyScriptFunction* self = MakeGarbageCollected<MyScriptFunction>(
-          script_state, flag_to_set, arg_to_set);
-      return self->BindToV8Function();
-    }
-
-    MyScriptFunction(ScriptState* script_state,
-                     bool* flag_to_set,
-                     ScriptValue* arg_to_set)
-        : ScriptFunction(script_state),
-          flag_to_set_(flag_to_set),
-          arg_to_set_(arg_to_set) {}
-    ScriptValue Call(ScriptValue arg) override {
-      *flag_to_set_ = true;
-      *arg_to_set_ = arg;
-      return arg;
-    }
-
-   private:
-    bool* flag_to_set_;
-    ScriptValue* arg_to_set_;
-  };
-
-  bool is_rejected_;
-  bool is_fulfilled_;
-  ScriptValue saved_arg_;
-};
-
 class MediaDevicesTest : public testing::Test {
  public:
   using MediaDeviceInfos = HeapVector<Member<MediaDeviceInfo>>;
@@ -298,24 +247,13 @@ TEST_F(MediaDevicesTest, GetUserMediaCanBeCalled) {
       GetMediaDevices(scope.GetExecutionContext())
           ->getUserMedia(scope.GetScriptState(), constraints,
                          scope.GetExceptionState());
-  ASSERT_FALSE(promise.IsEmpty());
-  PromiseObserver promise_observer(scope.GetScriptState(), promise);
-  EXPECT_FALSE(promise_observer.isDecided());
-  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
-  EXPECT_TRUE(promise_observer.isDecided());
+  ASSERT_TRUE(promise.IsEmpty());
   // In the default test environment, we expect a DOM rejection because
   // the script state's execution context's document's frame doesn't
   // have an UserMediaController.
-  EXPECT_TRUE(promise_observer.isRejected());
-  // TODO(hta): Check that the correct error ("not supported") is returned.
-  EXPECT_FALSE(promise_observer.argument().IsNull());
-  // This log statement is included as a demonstration of how to get the string
-  // value of the argument.
-  VLOG(1) << "Argument is"
-          << ToCoreString(promise_observer.argument()
-                              .V8Value()
-                              ->ToString(scope.GetContext())
-                              .ToLocalChecked());
+  DCHECK_EQ(scope.GetExceptionState().Code(),
+            ToExceptionCode(DOMExceptionCode::kNotSupportedError));
+  VLOG(1) << "Exception message is" << scope.GetExceptionState().Message();
 }
 
 TEST_F(MediaDevicesTest, EnumerateDevices) {
@@ -323,8 +261,8 @@ TEST_F(MediaDevicesTest, EnumerateDevices) {
   auto* media_devices = GetMediaDevices(scope.GetExecutionContext());
   media_devices->SetEnumerateDevicesCallbackForTesting(
       WTF::Bind(&MediaDevicesTest::DevicesEnumerated, WTF::Unretained(this)));
-  ScriptPromise promise =
-      media_devices->enumerateDevices(scope.GetScriptState());
+  ScriptPromise promise = media_devices->enumerateDevices(
+      scope.GetScriptState(), scope.GetExceptionState());
   platform()->RunUntilIdle();
   ASSERT_FALSE(promise.IsEmpty());
 
@@ -385,8 +323,8 @@ TEST_F(MediaDevicesTest, EnumerateDevicesAfterConnectionError) {
   CloseBinding();
   platform()->RunUntilIdle();
 
-  ScriptPromise promise =
-      media_devices->enumerateDevices(scope.GetScriptState());
+  ScriptPromise promise = media_devices->enumerateDevices(
+      scope.GetScriptState(), scope.GetExceptionState());
   platform()->RunUntilIdle();
   ASSERT_FALSE(promise.IsEmpty());
   EXPECT_TRUE(dispatcher_host_connection_error());
@@ -403,8 +341,8 @@ TEST_F(MediaDevicesTest, EnumerateDevicesBeforeConnectionError) {
                 WTF::Unretained(this)));
   EXPECT_FALSE(dispatcher_host_connection_error());
 
-  ScriptPromise promise =
-      media_devices->enumerateDevices(scope.GetScriptState());
+  ScriptPromise promise = media_devices->enumerateDevices(
+      scope.GetScriptState(), scope.GetExceptionState());
   platform()->RunUntilIdle();
   ASSERT_FALSE(promise.IsEmpty());
 

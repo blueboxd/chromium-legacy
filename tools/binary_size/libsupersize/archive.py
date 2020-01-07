@@ -1469,8 +1469,8 @@ def CreateSectionSizesAndSymbols(map_path=None,
         size_info_prefix, knobs)
 
     if knobs.analyze_java:
-      dex_symbols = apkanalyzer.CreateDexSymbols(
-          apk_path, mapping_path, size_info_prefix, output_directory)
+      dex_symbols = apkanalyzer.CreateDexSymbols(apk_path, mapping_path,
+                                                 size_info_prefix)
       raw_symbols.extend(dex_symbols)
 
       # We can't meaningfully track section size of dex methods vs other, so

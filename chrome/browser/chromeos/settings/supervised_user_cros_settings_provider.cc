@@ -36,7 +36,7 @@ const base::Value* SupervisedUserCrosSettingsProvider::Get(
 
 CrosSettingsProvider::TrustedStatus
 SupervisedUserCrosSettingsProvider::PrepareTrustedValues(
-    base::OnceClosure callback) {
+    base::OnceClosure* callback) {
   return TrustedStatus::TRUSTED;
 }
 

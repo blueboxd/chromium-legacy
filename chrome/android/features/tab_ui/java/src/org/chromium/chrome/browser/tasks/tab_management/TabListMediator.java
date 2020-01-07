@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.MessageCardViewProperties.MESSAGE_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.MODEL_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.ModelType.TAB;
+
 import android.app.Activity;
 import android.content.ComponentCallbacks;
 import android.content.Context;
@@ -845,6 +849,8 @@ class TabListMediator {
         assert mVisible;
         int count = 0;
         for (int i = 0; i < mModel.size(); i++) {
+            if (mModel.get(i).model.get(MODEL_TYPE) != TAB) continue;
+
             if (mModel.get(i).model.get(TabProperties.IS_SELECTED)) count++;
             mModel.get(i).model.set(TabProperties.IS_SELECTED, false);
         }
@@ -859,7 +865,10 @@ class TabListMediator {
         }
         if (tabs.size() != mModel.size()) return false;
         for (int i = 0; i < tabs.size(); i++) {
-            if (tabs.get(i).getId() != mModel.get(i).model.get(TabProperties.TAB_ID)) return false;
+            if (mModel.get(i).model.get(MODEL_TYPE) == TAB
+                    && mModel.get(i).model.get(TabProperties.TAB_ID) != tabs.get(i).getId()) {
+                return false;
+            }
         }
         return true;
     }
@@ -923,7 +932,9 @@ class TabListMediator {
     void softCleanup() {
         assert !mVisible;
         for (int i = 0; i < mModel.size(); i++) {
-            mModel.get(i).model.set(TabProperties.THUMBNAIL_FETCHER, null);
+            if (mModel.get(i).model.get(MODEL_TYPE) == TAB) {
+                mModel.get(i).model.set(TabProperties.THUMBNAIL_FETCHER, null);
+            }
         }
     }
 
@@ -1130,6 +1141,7 @@ class TabListMediator {
                         .with(TabProperties.TABSTRIP_FAVICON_BACKGROUND_COLOR_ID,
                                 tabstripFaviconBackgroundDrawableId)
                         .with(TabProperties.ACCESSIBILITY_DELEGATE, mAccessibilityDelegate)
+                        .with(MODEL_TYPE, TAB)
                         .build();
 
         if (mUiType == UiType.SELECTABLE) {
@@ -1282,6 +1294,37 @@ class TabListMediator {
      */
     void addSpecialItemToModel(int index, @UiType int uiType, PropertyModel model) {
         mModel.add(index, new SimpleRecyclerViewAdapter.ListItem(uiType, model));
+    }
+
+    /**
+     * Removes a special {@link @link org.chromium.ui.modelutil.MVCListAdapter.ListItem} that
+     * has the given {@code uiType} and/or its {@link PropertyModel} has the given
+     * {@code itemIdentifier} from the current {@link TabListModel}.
+     *
+     * @param uiType The uiType to match.
+     * @param itemIdentifier The itemIdentifier to match. This can be obsoleted if the {@link @link
+     *         org.chromium.ui.modelutil.MVCListAdapter.ListItem} does not need additional
+     *         identifier.
+     */
+    void removeSpecialItemFromModel(@UiType int uiType, int itemIdentifier) {
+        int index = TabModel.INVALID_TAB_INDEX;
+        if (uiType == UiType.MESSAGE) {
+            index = mModel.lastIndexForMessageItemFromType(itemIdentifier);
+        }
+
+        if (index == TabModel.INVALID_TAB_INDEX) return;
+
+        assert validateItemAt(index, uiType, itemIdentifier);
+        mModel.removeAt(index);
+    }
+
+    private boolean validateItemAt(int index, @UiType int uiType, int itemIdentifier) {
+        if (uiType == UiType.MESSAGE) {
+            return mModel.get(index).type == uiType
+                    && mModel.get(index).model.get(MESSAGE_TYPE) == itemIdentifier;
+        }
+
+        return false;
     }
 
     @VisibleForTesting

@@ -236,7 +236,7 @@ void SessionBackend::AppendCommands(
 
 void SessionBackend::ReadLastSessionCommands(
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-    const sessions::BaseSessionService::GetCommandsCallback& callback) {
+    sessions::BaseSessionService::GetCommandsCallback callback) {
   if (is_canceled.Run())
     return;
 
@@ -244,7 +244,7 @@ void SessionBackend::ReadLastSessionCommands(
 
   std::vector<std::unique_ptr<sessions::SessionCommand>> commands;
   ReadLastSessionCommandsImpl(&commands);
-  callback.Run(std::move(commands));
+  std::move(callback).Run(std::move(commands));
 }
 
 bool SessionBackend::ReadLastSessionCommandsImpl(

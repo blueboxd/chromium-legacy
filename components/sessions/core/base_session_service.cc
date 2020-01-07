@@ -24,22 +24,22 @@ namespace {
 // thread if it's not canceled.
 void RunIfNotCanceled(
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-    const BaseSessionService::GetCommandsCallback& callback,
+    BaseSessionService::GetCommandsCallback callback,
     std::vector<std::unique_ptr<SessionCommand>> commands) {
   if (is_canceled.Run())
     return;
-  callback.Run(std::move(commands));
+  std::move(callback).Run(std::move(commands));
 }
 
 void PostOrRunInternalGetCommandsCallback(
     base::SequencedTaskRunner* task_runner,
-    const BaseSessionService::GetCommandsCallback& callback,
+    BaseSessionService::GetCommandsCallback callback,
     std::vector<std::unique_ptr<SessionCommand>> commands) {
   if (task_runner->RunsTasksInCurrentSequence()) {
-    callback.Run(std::move(commands));
+    std::move(callback).Run(std::move(commands));
   } else {
-    task_runner->PostTask(FROM_HERE,
-                          base::BindOnce(callback, std::move(commands)));
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(commands)));
   }
 }
 
@@ -150,23 +150,24 @@ void BaseSessionService::Save() {
 
 base::CancelableTaskTracker::TaskId
 BaseSessionService::ScheduleGetLastSessionCommands(
-    const GetCommandsCallback& callback,
+    GetCommandsCallback callback,
     base::CancelableTaskTracker* tracker) {
   base::CancelableTaskTracker::IsCanceledCallback is_canceled;
   base::CancelableTaskTracker::TaskId id =
       tracker->NewTrackedTaskId(&is_canceled);
 
   GetCommandsCallback run_if_not_canceled =
-      base::Bind(&RunIfNotCanceled, is_canceled, callback);
+      base::BindOnce(&RunIfNotCanceled, is_canceled, std::move(callback));
 
   GetCommandsCallback callback_runner =
-      base::Bind(&PostOrRunInternalGetCommandsCallback,
-                 base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
-                 run_if_not_canceled);
+      base::BindOnce(&PostOrRunInternalGetCommandsCallback,
+                     base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+                     std::move(run_if_not_canceled));
 
   RunTaskOnBackendThread(
-      FROM_HERE, base::BindOnce(&SessionBackend::ReadLastSessionCommands,
-                                backend_, is_canceled, callback_runner));
+      FROM_HERE,
+      base::BindOnce(&SessionBackend::ReadLastSessionCommands, backend_,
+                     is_canceled, std::move(callback_runner)));
   return id;
 }
 

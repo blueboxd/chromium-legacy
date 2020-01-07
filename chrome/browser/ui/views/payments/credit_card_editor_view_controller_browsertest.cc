@@ -355,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTestWithGooglePayEnabled,
   EXPECT_TRUE(styled_label);
 
   content::WebContentsAddedObserver web_contents_added_observer;
-  styled_label->LinkClicked(nullptr, 0);
+  styled_label->LinkClicked(nullptr, ui::EF_NONE);
   content::WebContents* new_tab_contents =
       web_contents_added_observer.GetWebContents();
 

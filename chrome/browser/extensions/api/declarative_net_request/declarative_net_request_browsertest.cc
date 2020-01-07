@@ -963,6 +963,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowBlock) {
     rule.id = id++;
     rule.condition->url_filter = base::StringPrintf("num=%d|", i);
     rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+    rule.priority = 1;
     rules.push_back(rule);
   }
 
@@ -973,6 +974,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowBlock) {
     rule.condition->url_filter = base::StringPrintf("num=%d|", i);
     rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.action->type = std::string("allow");
+    rule.priority = 2;
     rules.push_back(rule);
   }
 
@@ -1009,20 +1011,21 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowRedirect) {
   struct {
     std::string url_filter;
     int id;
+    int priority;
     std::string action_type;
     base::Optional<std::string> redirect_url;
   } rules_data[] = {
-      {"google.com", 1, "redirect", static_redirect_url.spec()},
-      {"num=1|", 2, "allow", base::nullopt},
-      {"1|", 3, "redirect", dynamic_redirect_url.spec()},
-      {"num=21|", 4, "allow", base::nullopt},
+      {"google.com", 1, 1, "redirect", static_redirect_url.spec()},
+      {"num=1|", 2, 2, "allow", base::nullopt},
+      {"1|", 3, 1, "redirect", dynamic_redirect_url.spec()},
+      {"num=21|", 4, 2, "allow", base::nullopt},
   };
 
   std::vector<TestRule> rules;
   for (const auto& rule_data : rules_data) {
     TestRule rule = CreateGenericRule();
     rule.id = rule_data.id;
-    rule.priority = kMinValidPriority;
+    rule.priority = rule_data.priority;
     rule.condition->url_filter = rule_data.url_filter;
     rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.action->type = rule_data.action_type;
@@ -1275,15 +1278,16 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
   struct {
     std::string url_filter;
     int id;
+    int priority;
     std::string action_type;
     base::Optional<std::string> redirect_url;
   } rules_data[] = {
-      {"example.com", 1, "redirect", get_url_for_host("yahoo.com")},
-      {"yahoo.com", 2, "redirect", get_url_for_host("google.com")},
-      {"abc.com", 3, "redirect", get_url_for_host("def.com")},
-      {"def.com", 4, "block", base::nullopt},
-      {"def.com", 5, "redirect", get_url_for_host("xyz.com")},
-      {"ghi*", 6, "redirect", get_url_for_host("ghijk.com")},
+      {"example.com", 1, 1, "redirect", get_url_for_host("yahoo.com")},
+      {"yahoo.com", 2, 1, "redirect", get_url_for_host("google.com")},
+      {"abc.com", 3, 1, "redirect", get_url_for_host("def.com")},
+      {"def.com", 4, 2, "block", base::nullopt},
+      {"def.com", 5, 1, "redirect", get_url_for_host("xyz.com")},
+      {"ghi*", 6, 1, "redirect", get_url_for_host("ghijk.com")},
   };
 
   // Load the extension.
@@ -1292,7 +1296,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, BlockAndRedirect) {
     TestRule rule = CreateGenericRule();
     rule.condition->url_filter = rule_data.url_filter;
     rule.id = rule_data.id;
-    rule.priority = kMinValidPriority;
+    rule.priority = rule_data.priority;
     rule.condition->resource_types = std::vector<std::string>({"main_frame"});
     rule.action->type = rule_data.action_type;
     rule.action->redirect.emplace();
@@ -1441,7 +1445,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, UpgradeRules) {
       // TODO(crbug.com/985104): Add a https test server to display https pages
       // so this redirect rule can be removed.
       {"|https*", 3, 6, "redirect", google_url.spec()},
-      {"exact.com", 4, 1, "block", base::nullopt},
+      {"exact.com", 4, 5, "block", base::nullopt},
   };
 
   // Load the extension.

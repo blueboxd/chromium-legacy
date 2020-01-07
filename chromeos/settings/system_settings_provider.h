@@ -31,7 +31,7 @@ class COMPONENT_EXPORT(CHROMEOS_SETTINGS) SystemSettingsProvider
 
   // CrosSettingsProvider implementation.
   const base::Value* Get(const std::string& path) const override;
-  TrustedStatus PrepareTrustedValues(base::OnceClosure callback) override;
+  TrustedStatus PrepareTrustedValues(base::OnceClosure* callback) override;
   bool HandlesSetting(const std::string& path) const override;
 
   // TimezoneSettings::Observer implementation.

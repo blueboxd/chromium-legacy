@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.TabListModelProperties.MODEL_TYPE;
+
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.view.View.AccessibilityDelegate;
@@ -103,7 +105,8 @@ public class TabProperties {
             CARD_ANIMATION_STATUS, SELECTABLE_TAB_CLICKED_LISTENER, TAB_SELECTION_DELEGATE,
             IS_INCOGNITO, SELECTED_TAB_BACKGROUND_DRAWABLE_ID, TABSTRIP_FAVICON_BACKGROUND_COLOR_ID,
             SELECTABLE_TAB_ACTION_BUTTON_BACKGROUND,
-            SELECTABLE_TAB_ACTION_BUTTON_SELECTED_BACKGROUND, URL, ACCESSIBILITY_DELEGATE};
+            SELECTABLE_TAB_ACTION_BUTTON_SELECTED_BACKGROUND, URL, ACCESSIBILITY_DELEGATE,
+            MODEL_TYPE};
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP =
             new PropertyKey[] {TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON,

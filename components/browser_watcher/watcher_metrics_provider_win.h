@@ -33,7 +33,7 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
   ~WatcherMetricsProviderWin() override;
 
   // metrics::MetricsProvider implementation.
-  void AsyncInit(const base::Closure& done_callback) override;
+  void AsyncInit(base::OnceClosure done_callback) override;
   void OnRecordingEnabled() override;
   void OnRecordingDisabled() override;
   // Note: this function collects metrics, some of which are related to the

@@ -173,8 +173,4 @@ enum elf32_rel_386_type_values {
   R_386_TLS_TPOFF = 14,
 };
 
-enum elf32_rel_arm_type_values {
-  R_ARM_RELATIVE = 23,
-};
-
 #endif  // COURGETTE_ELF_TYPES_H_

@@ -6,10 +6,12 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
+#include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_consumer.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
@@ -20,7 +22,6 @@
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
-#include "ios/web/public/browser_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,38 +33,45 @@ const int kNumberOfFullScrenBadges = 1;
 // The minimum number of non-Fullscreen badges to display the overflow popup
 // menu.
 const int kMinimumNonFullScreenBadgesForOverflow = 2;
-}
+}  // namespace
 
 @interface BadgeMediator () <InfobarBadgeTabHelperDelegate,
                              WebStateListObserving> {
-  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+  std::unique_ptr<WebStateListObserver> _webStateListObserver;
 }
 
 // The WebStateList that this mediator listens for any changes on the active web
 // state.
-@property(nonatomic, assign) WebStateList* webStateList;
+@property(nonatomic, readonly) WebStateList* webStateList;
+
+// The WebStateList's active WebState.
+@property(nonatomic, assign) web::WebState* webState;
+
+// The active WebState's badge tab helper.
+@property(nonatomic, readonly) InfobarBadgeTabHelper* badgeTabHelper;
+
+// The incognito badge, or nil if the Browser is not off-the-record.
+@property(nonatomic, readonly) id<BadgeItem> offTheRecordBadge;
 
 // Array of all available badges.
 @property(nonatomic, strong) NSMutableArray<id<BadgeItem>>* badges;
 
-// The consumer of the mediator.
-@property(nonatomic, weak) id<BadgeConsumer> consumer;
-
 @end
 
 @implementation BadgeMediator
-@synthesize webStateList = _webStateList;
 
-- (instancetype)initWithConsumer:(id<BadgeConsumer>)consumer
-                    webStateList:(WebStateList*)webStateList {
+- (instancetype)initWithBrowser:(Browser*)browser {
   self = [super init];
   if (self) {
-    _consumer = consumer;
-    _webStateList = webStateList;
-    web::WebState* activeWebState = webStateList->GetActiveWebState();
-    if (activeWebState) {
-      [self updateNewWebState:activeWebState withWebStateList:webStateList];
+    DCHECK(browser);
+    // Create the incognito badge if |browser| is off-the-record.
+    if (browser->GetBrowserState()->IsOffTheRecord()) {
+      _offTheRecordBadge = [[BadgeStaticItem alloc]
+          initWithBadgeType:BadgeType::kBadgeTypeIncognito];
     }
+    // Set up the WebStateList and its observer.
+    _webStateList = browser->GetWebStateList();
+    _webState = _webStateList->GetActiveWebState();
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
     _webStateList->AddObserver(_webStateListObserver.get());
   }
@@ -71,45 +79,82 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 }
 
 - (void)dealloc {
-  [self disconnect];
+  // |-disconnect| must be called before deallocation.
+  DCHECK(!_webStateList);
 }
 
 - (void)disconnect {
   if (_webStateList) {
+    self.webState = nullptr;
     _webStateList->RemoveObserver(_webStateListObserver.get());
-    _webStateListObserver.reset();
+    _webStateListObserver = nullptr;
     _webStateList = nullptr;
   }
 }
 
-#pragma mark - InfobarBadgeTabHelperDelegate
+#pragma mark - Accessors
 
-- (void)addInfobarBadge:(id<BadgeItem>)badgeItem {
-  if (!self.badges) {
-    self.badges = [NSMutableArray array];
-  }
-  [self.badges addObject:badgeItem];
-  [self updateBadgesShown];
+- (void)setConsumer:(id<BadgeConsumer>)consumer {
+  if (_consumer == consumer)
+    return;
+  _consumer = consumer;
+  [self updateConsumer];
 }
 
-- (void)removeInfobarBadge:(id<BadgeItem>)badgeItem {
-  for (id<BadgeItem> item in self.badges) {
-    if (item.badgeType == badgeItem.badgeType) {
-      [self.badges removeObject:item];
-      [self updateBadgesShown];
-      return;
-    }
+- (void)setWebState:(web::WebState*)webState {
+  if (_webState == webState)
+    return;
+  if (_webState)
+    InfobarBadgeTabHelper::FromWebState(_webState)->SetDelegate(nil);
+  _webState = webState;
+  if (_webState)
+    InfobarBadgeTabHelper::FromWebState(_webState)->SetDelegate(self);
+  [self updateBadgesForActiveWebState];
+  [self updateConsumer];
+}
+
+- (InfobarBadgeTabHelper*)badgeTabHelper {
+  return self.webState ? InfobarBadgeTabHelper::FromWebState(self.webState)
+                       : nullptr;
+}
+
+#pragma mark - Accessor helpers
+
+- (void)updateBadgesForActiveWebState {
+  if (self.webState) {
+    self.badges = [self.badgeTabHelper->GetInfobarBadgeItems() mutableCopy];
+    if (self.offTheRecordBadge)
+      [self.badges addObject:self.offTheRecordBadge];
+  } else {
+    self.badges = [NSMutableArray<id<BadgeItem>> array];
   }
 }
 
-- (void)updateInfobarBadge:(id<BadgeItem>)badgeItem {
-  for (id<BadgeItem> item in self.badges) {
-    if (item.badgeType == badgeItem.badgeType) {
-      item.badgeState = badgeItem.badgeState;
-      [self updateBadgesShown];
-      return;
-    }
+// Updates the consumer for the current active WebState.
+- (void)updateConsumer {
+  if (!self.consumer)
+    return;
+
+  // Update the badges array if necessary.
+  if (!self.badges)
+    [self updateBadgesForActiveWebState];
+
+  // Show the overflow badge if there are multiple BadgeItems.  Otherwise, use
+  // the last badge.
+  NSUInteger fullscreenBadgeCount = self.offTheRecordBadge ? 1U : 0U;
+  BOOL shouldDisplayOverflowBadge =
+      self.badges.count - fullscreenBadgeCount > 1;
+  id<BadgeItem> displayedBadge = nil;
+  if (shouldDisplayOverflowBadge) {
+    displayedBadge = [[BadgeTappableItem alloc]
+        initWithBadgeType:BadgeType::kBadgeTypeOverflow];
+  } else {
+    id<BadgeItem> firstBadge = [self.badges firstObject];
+    displayedBadge = firstBadge.fullScreen ? nil : firstBadge;
   }
+  // Update the consumer with the new badge items.
+  [self.consumer setupWithDisplayedBadge:displayedBadge
+                         fullScreenBadge:self.offTheRecordBadge];
 }
 
 #pragma mark - BadgeDelegate
@@ -166,15 +211,42 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
   // TODO(crbug.com/976901): Add metric for this action.
 }
 
+#pragma mark - InfobarBadgeTabHelperDelegate
+
+- (void)addInfobarBadge:(id<BadgeItem>)badgeItem {
+  [self.badges addObject:badgeItem];
+  [self updateBadgesShown];
+}
+
+- (void)removeInfobarBadge:(id<BadgeItem>)badgeItem {
+  for (id<BadgeItem> item in self.badges) {
+    if (item.badgeType == badgeItem.badgeType) {
+      [self.badges removeObject:item];
+      [self updateBadgesShown];
+      return;
+    }
+  }
+}
+
+- (void)updateInfobarBadge:(id<BadgeItem>)badgeItem {
+  for (id<BadgeItem> item in self.badges) {
+    if (item.badgeType == badgeItem.badgeType) {
+      item.badgeState = badgeItem.badgeState;
+      [self updateBadgesShown];
+      return;
+    }
+  }
+}
+
 #pragma mark - WebStateListObserver
 
 - (void)webStateList:(WebStateList*)webStateList
     didReplaceWebState:(web::WebState*)oldWebState
           withWebState:(web::WebState*)newWebState
                atIndex:(int)atIndex {
-  if (newWebState && newWebState == webStateList->GetActiveWebState()) {
-    [self updateNewWebState:newWebState withWebStateList:webStateList];
-  }
+  DCHECK_EQ(self.webStateList, webStateList);
+  if (atIndex == webStateList->active_index())
+    self.webState = newWebState;
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -182,11 +254,8 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                      reason:(int)reason {
-  // Only attempt to retrieve badges if there is a new current web state, since
-  // |newWebState| can be null.
-  if (newWebState) {
-    [self updateNewWebState:newWebState withWebStateList:webStateList];
-  }
+  DCHECK_EQ(self.webStateList, webStateList);
+  self.webState = newWebState;
 }
 
 #pragma mark - Helpers
@@ -277,39 +346,6 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
   [self.consumer updateDisplayedBadge:displayedBadge
                       fullScreenBadge:fullScreenBadge];
   [self updateConsumerReadStatus];
-}
-
-- (void)updateNewWebState:(web::WebState*)newWebState
-         withWebStateList:(WebStateList*)webStateList {
-  DCHECK_EQ(_webStateList, webStateList);
-  InfobarBadgeTabHelper* infobarBadgeTabHelper =
-      InfobarBadgeTabHelper::FromWebState(newWebState);
-  DCHECK(infobarBadgeTabHelper);
-  infobarBadgeTabHelper->SetDelegate(self);
-  // Whenever the WebState changes ask the corresponding
-  // InfobarBadgeTabHelper for all the badges for that WebState.
-  self.badges = [infobarBadgeTabHelper->GetInfobarBadgeItems() mutableCopy];
-
-  id<BadgeItem> displayedBadge;
-  if ([self.badges count] > 1) {
-    // Show the overflow menu badge when there are multiple badges.
-    displayedBadge = [[BadgeTappableItem alloc]
-        initWithBadgeType:BadgeType::kBadgeTypeOverflow];
-  } else if ([self.badges count] == 1) {
-    displayedBadge = [self.badges lastObject];
-  }
-  id<BadgeItem> fullScreenBadge;
-  if (newWebState->GetBrowserState()->IsOffTheRecord()) {
-    BadgeStaticItem* incognitoItem = [[BadgeStaticItem alloc]
-        initWithBadgeType:BadgeType::kBadgeTypeIncognito];
-    fullScreenBadge = incognitoItem;
-    // Keep track of presence of an incognito badge so that the mediator knows
-    // whether or not there is a fullscreen badge when calling
-    // updateDisplayedBadge:fullScreenBadge:.
-    [self.badges addObject:incognitoItem];
-  }
-  [self.consumer setupWithDisplayedBadge:displayedBadge
-                         fullScreenBadge:fullScreenBadge];
 }
 
 @end

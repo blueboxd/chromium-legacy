@@ -139,12 +139,6 @@ class SupervisedUserService : public KeyedService,
 
   bool IsSupervisedUserIframeFilterEnabled() const;
 
-#if !defined(OS_ANDROID)
-  // Initializes this profile for syncing, using the provided |refresh_token| to
-  // mint access tokens for Sync.
-  void InitSync(const std::string& refresh_token);
-#endif
-
   void AddObserver(SupervisedUserServiceObserver* observer);
   void RemoveObserver(SupervisedUserServiceObserver* observer);
 
@@ -221,8 +215,6 @@ class SupervisedUserService : public KeyedService,
   std::string GetDebugPolicyProviderName() const override;
   bool UserMayLoad(const extensions::Extension* extension,
                    base::string16* error) const override;
-  bool UserMayModifySettings(const extensions::Extension* extension,
-                             base::string16* error) const override;
   bool MustRemainDisabled(const extensions::Extension* extension,
                           extensions::disable_reason::DisableReason* reason,
                           base::string16* error) const override;

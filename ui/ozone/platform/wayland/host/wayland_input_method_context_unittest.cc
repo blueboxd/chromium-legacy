@@ -6,7 +6,6 @@
 #include <wayland-server.h>
 #include <memory>
 
-#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"

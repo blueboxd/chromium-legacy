@@ -1075,6 +1075,14 @@ void OmniboxViewViews::UpdateSchemeStyle(const gfx::Range& range) {
   DCHECK(range.IsValid());
   DCHECK(!model()->user_input_in_progress());
 
+  // Do not style the scheme for non-http/https URLs. For such schemes, styling
+  // could be confusing or misleading. For example, the scheme isn't meaningful
+  // in about:blank URLs. Or in blob: or filesystem: URLs, which have an inner
+  // origin, the URL is likely too syntax-y to be able to meaningfully draw
+  // attention to any part of it.
+  if (!controller()->GetLocationBarModel()->GetURL().SchemeIsHTTPOrHTTPS())
+    return;
+
   security_state::SecurityLevel security_level =
       controller()->GetLocationBarModel()->GetSecurityLevel();
 

@@ -54,8 +54,8 @@ TEST_F(RulesetMatcherTest, BlockingRule) {
   ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
 
   auto should_block_request = [&matcher](const RequestParams& params) {
-    return !matcher->GetAllowAction(params) &&
-           matcher->GetBlockOrCollapseAction(params).has_value();
+    auto action = matcher->GetBeforeRequestAction(params);
+    return action.has_value() && action->IsBlockOrCollapse();
   };
 
   GURL google_url("http://google.com");
@@ -92,12 +92,13 @@ TEST_F(RulesetMatcherTest, RedirectRule) {
   params.is_third_party = true;
 
   base::Optional<RequestAction> redirect_action =
-      matcher->GetRedirectAction(params);
+      matcher->GetBeforeRequestAction(params);
   ASSERT_TRUE(redirect_action);
+  ASSERT_EQ(redirect_action->type, RequestAction::Type::REDIRECT);
   EXPECT_EQ(yahoo_url, redirect_action->redirect_url);
 
   params.url = &yahoo_url;
-  EXPECT_FALSE(matcher->GetRedirectAction(params));
+  EXPECT_FALSE(matcher->GetBeforeRequestAction(params));
 }
 
 // Test that a URL cannot redirect to itself, as filed in crbug.com/954646.
@@ -118,7 +119,7 @@ TEST_F(RulesetMatcherTest, PreventSelfRedirect) {
   params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
   params.is_third_party = true;
 
-  EXPECT_FALSE(matcher->GetRedirectAction(params));
+  EXPECT_FALSE(matcher->GetBeforeRequestAction(params));
 }
 
 // Tests a simple upgrade scheme rule.
@@ -132,7 +133,8 @@ TEST_F(RulesetMatcherTest, UpgradeRule) {
   ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
 
   auto should_upgrade_request = [&matcher](const RequestParams& params) {
-    return matcher->GetUpgradeAction(params).has_value();
+    auto action = matcher->GetBeforeRequestAction(params);
+    return action.has_value() && action->type == RequestAction::Type::UPGRADE;
   };
 
   GURL google_url("http://google.com");
@@ -329,9 +331,10 @@ TEST_F(RulesetMatcherTest, RedirectToExtensionPath) {
   params.url = &example_url;
 
   base::Optional<RequestAction> redirect_action =
-      matcher->GetRedirectAction(params);
+      matcher->GetBeforeRequestAction(params);
 
   ASSERT_TRUE(redirect_action.has_value());
+  EXPECT_EQ(redirect_action->type, RequestAction::Type::REDIRECT);
   GURL expected_redirect_url(
       "chrome-extension://extensionid/path/newfile.js?query#fragment");
   EXPECT_EQ(expected_redirect_url, redirect_action->redirect_url);
@@ -354,9 +357,10 @@ TEST_F(RulesetMatcherTest, RedirectToStaticUrl) {
   params.url = &example_url;
 
   base::Optional<RequestAction> redirect_action =
-      matcher->GetRedirectAction(params);
+      matcher->GetBeforeRequestAction(params);
 
   ASSERT_TRUE(redirect_action.has_value());
+  EXPECT_EQ(redirect_action->type, RequestAction::Type::REDIRECT);
   GURL expected_redirect_url("https://google.com");
   EXPECT_EQ(expected_redirect_url, redirect_action->redirect_url);
 }
@@ -487,12 +491,15 @@ TEST_F(RulesetMatcherTest, UrlTransform) {
     params.url = &url;
 
     base::Optional<RequestAction> redirect_action =
-        matcher->GetRedirectAction(params);
+        matcher->GetBeforeRequestAction(params);
 
     if (!test_case.expected_redirect_url) {
       EXPECT_FALSE(redirect_action) << redirect_action->redirect_url->spec();
       continue;
     }
+
+    ASSERT_TRUE(redirect_action.has_value());
+    EXPECT_EQ(redirect_action->type, RequestAction::Type::REDIRECT);
 
     ASSERT_TRUE(GURL(*test_case.expected_redirect_url).is_valid())
         << *test_case.expected_redirect_url;
@@ -551,10 +558,7 @@ TEST_F(RulesetMatcherTest, RegexRules) {
 
   struct TestCase {
     const char* url = nullptr;
-    base::Optional<RequestAction> expected_block_or_collapse_action;
-    base::Optional<RequestAction> expected_allow_action;
-    base::Optional<RequestAction> expected_redirect_action;
-    base::Optional<RequestAction> expected_upgrade_action;
+    base::Optional<RequestAction> expected_action;
     uint8_t expected_remove_headers_mask = 0u;
     base::Optional<RequestAction> expected_remove_header_action;
   };
@@ -563,7 +567,7 @@ TEST_F(RulesetMatcherTest, RegexRules) {
 
   {
     TestCase test_case = {"http://www.block.com/path"};
-    test_case.expected_block_or_collapse_action = CreateRequestActionForTesting(
+    test_case.expected_action = CreateRequestActionForTesting(
         RequestAction::Type::BLOCK, *block_rule.id);
     test_cases.push_back(std::move(test_case));
   }
@@ -577,7 +581,7 @@ TEST_F(RulesetMatcherTest, RegexRules) {
 
   {
     TestCase test_case = {"http://abc.xyz.allow.com/path"};
-    test_case.expected_allow_action = CreateRequestActionForTesting(
+    test_case.expected_action = CreateRequestActionForTesting(
         RequestAction::Type::ALLOW, *allow_rule.id);
     test_cases.push_back(std::move(test_case));
   }
@@ -589,9 +593,9 @@ TEST_F(RulesetMatcherTest, RegexRules) {
 
   {
     TestCase test_case = {"http://redirect.com?path=abc"};
-    test_case.expected_redirect_action = CreateRequestActionForTesting(
+    test_case.expected_action = CreateRequestActionForTesting(
         RequestAction::Type::REDIRECT, *redirect_rule.id);
-    test_case.expected_redirect_action->redirect_url =
+    test_case.expected_action->redirect_url =
         GURL(*redirect_rule.action->redirect->url);
     test_cases.push_back(std::move(test_case));
   }
@@ -603,9 +607,9 @@ TEST_F(RulesetMatcherTest, RegexRules) {
 
   {
     TestCase test_case = {"http://example.com/upgrade"};
-    test_case.expected_upgrade_action = CreateRequestActionForTesting(
-        RequestAction::Type::REDIRECT, *upgrade_rule.id);
-    test_case.expected_upgrade_action->redirect_url.emplace(
+    test_case.expected_action = CreateRequestActionForTesting(
+        RequestAction::Type::UPGRADE, *upgrade_rule.id);
+    test_case.expected_action->redirect_url.emplace(
         "https://example.com/upgrade");
     test_cases.push_back(std::move(test_case));
   }
@@ -638,14 +642,8 @@ TEST_F(RulesetMatcherTest, RegexRules) {
     RequestParams params;
     params.url = &url;
 
-    EXPECT_EQ(test_case.expected_block_or_collapse_action,
-              matcher->GetBlockOrCollapseAction(params));
-    EXPECT_EQ(test_case.expected_allow_action, matcher->GetAllowAction(params));
-    EXPECT_EQ(test_case.expected_redirect_action,
-              matcher->GetRedirectAction(params));
-    EXPECT_EQ(test_case.expected_upgrade_action,
-              matcher->GetUpgradeAction(params));
-
+    EXPECT_EQ(test_case.expected_action,
+              matcher->GetBeforeRequestAction(params));
     std::vector<RequestAction> remove_header_actions;
     EXPECT_EQ(test_case.expected_remove_headers_mask,
               matcher->GetRemoveHeadersMask(
@@ -711,7 +709,7 @@ TEST_F(RulesetMatcherTest, RegexRules_Metadata) {
     url_pattern_index::flat::ElementType element_type =
         url_pattern_index::flat::ElementType_OTHER;
     bool is_third_party = false;
-    base::Optional<RequestAction> expected_block_or_collapse_action;
+    base::Optional<RequestAction> expected_action;
   };
   std::vector<TestCase> test_cases;
 
@@ -722,21 +720,21 @@ TEST_F(RulesetMatcherTest, RegexRules_Metadata) {
 
   {
     TestCase test_case = {"http://example.com/PATH/abc"};
-    test_case.expected_block_or_collapse_action = CreateRequestActionForTesting(
+    test_case.expected_action = CreateRequestActionForTesting(
         RequestAction::Type::BLOCK, *path_rule.id);
     test_cases.push_back(std::move(test_case));
   }
 
   {
     TestCase test_case = {"http://example.com/xyz/abc"};
-    test_case.expected_block_or_collapse_action =
+    test_case.expected_action =
         CreateRequestActionForTesting(RequestAction::Type::BLOCK, *xyz_rule.id);
     test_cases.push_back(std::move(test_case));
   }
 
   {
     TestCase test_case = {"http://example.com/XYZ/abc"};
-    test_case.expected_block_or_collapse_action =
+    test_case.expected_action =
         CreateRequestActionForTesting(RequestAction::Type::BLOCK, *xyz_rule.id);
     test_cases.push_back(std::move(test_case));
   }
@@ -746,7 +744,7 @@ TEST_F(RulesetMatcherTest, RegexRules_Metadata) {
     test_case.first_party_origin =
         url::Origin::Create(GURL("http://a.example.com"));
     test_case.is_third_party = true;
-    test_case.expected_block_or_collapse_action = CreateRequestActionForTesting(
+    test_case.expected_action = CreateRequestActionForTesting(
         RequestAction::Type::BLOCK, *google_rule.id);
     test_cases.push_back(std::move(test_case));
   }
@@ -767,7 +765,7 @@ TEST_F(RulesetMatcherTest, RegexRules_Metadata) {
   {
     TestCase test_case = {"http://abc.com"};
     test_case.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
-    test_case.expected_block_or_collapse_action = CreateRequestActionForTesting(
+    test_case.expected_action = CreateRequestActionForTesting(
         RequestAction::Type::COLLAPSE, *sub_frame_rule.id);
     test_cases.push_back(std::move(test_case));
   }
@@ -775,7 +773,7 @@ TEST_F(RulesetMatcherTest, RegexRules_Metadata) {
   {
     TestCase test_case = {"http://243.com"};
     test_case.is_third_party = true;
-    test_case.expected_block_or_collapse_action = CreateRequestActionForTesting(
+    test_case.expected_action = CreateRequestActionForTesting(
         RequestAction::Type::BLOCK, *third_party_rule.id);
     test_cases.push_back(std::move(test_case));
   }
@@ -798,8 +796,8 @@ TEST_F(RulesetMatcherTest, RegexRules_Metadata) {
     params.element_type = test_cases[i].element_type;
     params.is_third_party = test_cases[i].is_third_party;
 
-    EXPECT_EQ(test_cases[i].expected_block_or_collapse_action,
-              matcher->GetBlockOrCollapseAction(params));
+    EXPECT_EQ(test_cases[i].expected_action,
+              matcher->GetBeforeRequestAction(params));
   }
 }
 
@@ -850,44 +848,40 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_RedirectPriority) {
 
   struct TestCase {
     const char* url = nullptr;
-    base::Optional<RequestAction> expected_redirect_action;
-    base::Optional<RequestAction> expected_upgrade_action;
+    base::Optional<RequestAction> expected_action;
   };
   std::vector<TestCase> test_cases;
 
   {
     TestCase test_case = {"http://filter.com"};
-    test_case.expected_redirect_action = CreateRequestActionForTesting(
+    test_case.expected_action = CreateRequestActionForTesting(
         RequestAction::Type::REDIRECT, rule_info[0].id, rule_info[0].priority);
-    test_case.expected_redirect_action->redirect_url.emplace(
+    test_case.expected_action->redirect_url.emplace(
         "http://redirect_filter.com");
     test_cases.push_back(std::move(test_case));
   }
 
   {
     TestCase test_case = {"http://regex.com"};
-    test_case.expected_upgrade_action = CreateRequestActionForTesting(
-        RequestAction::Type::REDIRECT, rule_info[1].id, rule_info[1].priority);
-    test_case.expected_upgrade_action->redirect_url.emplace(
-        "https://regex.com");
+    test_case.expected_action = CreateRequestActionForTesting(
+        RequestAction::Type::UPGRADE, rule_info[1].id, rule_info[1].priority);
+    test_case.expected_action->redirect_url.emplace("https://regex.com");
     test_cases.push_back(std::move(test_case));
   }
 
   {
     TestCase test_case = {"http://common1.com"};
-    test_case.expected_redirect_action = CreateRequestActionForTesting(
+    test_case.expected_action = CreateRequestActionForTesting(
         RequestAction::Type::REDIRECT, rule_info[3].id, rule_info[3].priority);
-    test_case.expected_redirect_action->redirect_url.emplace(
-        "http://common1_regex.com");
+    test_case.expected_action->redirect_url.emplace("http://common1_regex.com");
     test_cases.push_back(std::move(test_case));
   }
 
   {
     TestCase test_case = {"http://common2.com"};
-    test_case.expected_upgrade_action = CreateRequestActionForTesting(
-        RequestAction::Type::REDIRECT, rule_info[4].id, rule_info[4].priority);
-    test_case.expected_upgrade_action->redirect_url.emplace(
-        "https://common2.com");
+    test_case.expected_action = CreateRequestActionForTesting(
+        RequestAction::Type::UPGRADE, rule_info[4].id, rule_info[4].priority);
+    test_case.expected_action->redirect_url.emplace("https://common2.com");
     test_cases.push_back(std::move(test_case));
   }
 
@@ -904,19 +898,17 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_RedirectPriority) {
 
   {
     TestCase test_case = {"http://abc.com"};
-    test_case.expected_redirect_action = CreateRequestActionForTesting(
+    test_case.expected_action = CreateRequestActionForTesting(
         RequestAction::Type::REDIRECT, rule_info[6].id, rule_info[6].priority);
-    test_case.expected_redirect_action->redirect_url.emplace(
-        "http://example1.com");
+    test_case.expected_action->redirect_url.emplace("http://example1.com");
     test_cases.push_back(std::move(test_case));
   }
 
   {
     TestCase test_case = {"http://xyz.com/abc"};
-    test_case.expected_redirect_action = CreateRequestActionForTesting(
+    test_case.expected_action = CreateRequestActionForTesting(
         RequestAction::Type::REDIRECT, rule_info[7].id, rule_info[7].priority);
-    test_case.expected_redirect_action->redirect_url.emplace(
-        "http://example2.com");
+    test_case.expected_action->redirect_url.emplace("http://example2.com");
     test_cases.push_back(std::move(test_case));
   }
 
@@ -927,10 +919,8 @@ TEST_F(RulesetMatcherTest, RegexAndFilterListRules_RedirectPriority) {
     RequestParams params;
     params.url = &url;
 
-    EXPECT_EQ(test_case.expected_redirect_action,
-              matcher->GetRedirectAction(params));
-    EXPECT_EQ(test_case.expected_upgrade_action,
-              matcher->GetUpgradeAction(params));
+    EXPECT_EQ(test_case.expected_action,
+              matcher->GetBeforeRequestAction(params));
   }
 }
 
@@ -1051,7 +1041,7 @@ TEST_F(RulesetMatcherTest, RegexSubstitution) {
 
   struct {
     std::string url;
-    base::Optional<RequestAction> expected_redirect_action;
+    base::Optional<RequestAction> expected_action;
   } test_cases[] = {
       {"http://google.com/path?query",
        create_redirect_action(
@@ -1074,8 +1064,8 @@ TEST_F(RulesetMatcherTest, RegexSubstitution) {
     RequestParams params;
     params.url = &url;
 
-    ASSERT_EQ(test_case.expected_redirect_action,
-              matcher->GetRedirectAction(params));
+    ASSERT_EQ(test_case.expected_action,
+              matcher->GetBeforeRequestAction(params));
   }
 }
 

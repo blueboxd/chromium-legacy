@@ -26,7 +26,12 @@ void FidoAuthenticator::GetRetries(
 
 void FidoAuthenticator::GetPINToken(
     std::string pin,
-    FidoAuthenticator::GetPINTokenCallback callback) {
+    FidoAuthenticator::GetTokenCallback callback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::GetUvToken(
+    FidoAuthenticator::GetTokenCallback callback) {
   NOTREACHED();
 }
 

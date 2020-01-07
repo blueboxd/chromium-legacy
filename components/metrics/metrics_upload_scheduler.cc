@@ -59,7 +59,7 @@ base::TimeDelta GetInitialBackoffInterval() {
 }  // namespace
 
 MetricsUploadScheduler::MetricsUploadScheduler(
-    const base::Closure& upload_callback,
+    const base::RepeatingClosure& upload_callback,
     bool fast_startup_for_testing)
     : MetricsScheduler(upload_callback, fast_startup_for_testing),
       unsent_logs_interval_(GetUnsentLogsInterval()),

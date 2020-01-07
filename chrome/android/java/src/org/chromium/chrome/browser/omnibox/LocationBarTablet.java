@@ -251,7 +251,7 @@ public class LocationBarTablet extends LocationBarLayout {
         if (showSaveOfflineButton) mSaveOfflineButton.setEnabled(isSaveOfflineButtonEnabled());
 
         if (!mShouldShowButtonsWhenUnfocused) {
-            updateMicButtonVisibility(mUrlFocusChangePercent);
+            updateMicButtonVisibility();
         } else {
             mMicButton.setVisibility(shouldShowMicButton() ? View.VISIBLE : View.GONE);
         }
@@ -423,7 +423,7 @@ public class LocationBarTablet extends LocationBarLayout {
 
         if (shouldShowSaveOfflineButton() && mSaveOfflineButton.getVisibility() == View.VISIBLE) {
             animators.add(createHideButtonAnimator(mSaveOfflineButton));
-        } else if (!(mUrlBar.isFocused() && mDeleteButton.getVisibility() != View.VISIBLE)) {
+        } else if (!(mUrlBar.hasFocus() && mDeleteButton.getVisibility() != View.VISIBLE)) {
             // If the save offline button isn't enabled, the microphone button always shows when
             // buttons are shown in the unfocused location bar. When buttons are hidden in the
             // unfocused location bar, the microphone shows if the location bar is focused and the
@@ -543,13 +543,13 @@ public class LocationBarTablet extends LocationBarLayout {
 
         // There are two actions, bookmark and save offline, and they should be shown if the
         // omnibox isn't focused.
-        return !(mUrlBar.hasFocus() || mUrlFocusChangeInProgress);
+        return !(mUrlBar.hasFocus() || isUrlFocusChangeInProgress());
     }
 
     private boolean shouldShowMicButton() {
         // If the download UI is enabled, the mic button should be only be shown when the url bar
         // is focused.
-        return mVoiceRecognitionHandler != null && mVoiceRecognitionHandler.isVoiceSearchEnabled()
-                && mNativeInitialized && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress);
+        return mVoiceSearchEnabled && mNativeInitialized
+                && (mUrlBar.hasFocus() || isUrlFocusChangeInProgress());
     }
 }

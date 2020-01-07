@@ -36,12 +36,12 @@ mac_app_bundle("alert_notification_xpc_service") {
   ldflags = []
   if (is_component_build) {
     ldflags += [
-      # The XPC service is in Chromium.app/Contents/Versions/X/Chromium \
+      # The XPC service is in Chromium.app/Contents/Frameworks/Chromium \
       # Framework.framework/Versions/A/XPCServices/ \
       # AlertNotificationService.xpc/Contents/MacOS/
       # so set rpath up to the base.
       "-rpath",
-      "@loader_path/../../../../../../../../../../../",
+      "@loader_path/../../../../../../../../../../",
     ]
   }
 }

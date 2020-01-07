@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -32,9 +33,12 @@
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/infobar_commands.h"
+#import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/open_in/open_in_mediator.h"
+#import "ios/chrome/browser/ui/page_info/features.h"
+#import "ios/chrome/browser/ui/page_info/page_info_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_coordinator.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
@@ -62,6 +66,7 @@
 @interface BrowserCoordinator () <AutofillSecurityAlertPresenter,
                                   BrowserCoordinatorCommands,
                                   FormInputAccessoryCoordinatorNavigator,
+                                  PageInfoCommands,
                                   RepostFormTabHelperDelegate,
                                   URLLoadingServiceDelegate,
                                   WebStateListObserving>
@@ -111,7 +116,7 @@
     ManualFillAllPasswordCoordinator* allPasswordCoordinator;
 
 // Coordinator for Page Info UI.
-@property(nonatomic, strong) PageInfoLegacyCoordinator* pageInfoCoordinator;
+@property(nonatomic, strong) ChromeCoordinator* pageInfoCoordinator;
 
 // Coordinator for the PassKit UI presentation.
 @property(nonatomic, strong) PassKitCoordinator* passKitCoordinator;
@@ -178,6 +183,8 @@
   [self.dispatcher
       startDispatchingToTarget:self
                    forProtocol:@protocol(BrowserCoordinatorCommands)];
+  [self.dispatcher startDispatchingToTarget:self
+                                forProtocol:@protocol(PageInfoCommands)];
   [self installDelegatesForAllWebStates];
   [self installDelegatesForBrowserState];
   [self addWebStateListObserver];
@@ -224,6 +231,8 @@
   self.readingListCoordinator = nil;
 
   [self.passwordBreachCoordinator stop];
+
+  [self.pageInfoCoordinator stop];
 
   [self.viewController clearPresentedStateWithCompletion:completion
                                           dismissOmnibox:dismissOmnibox];
@@ -310,12 +319,6 @@
       initWithBaseViewController:self.viewController
                          browser:self.browser];
   [self.translateInfobarCoordinator start];
-
-  self.pageInfoCoordinator = [[PageInfoLegacyCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  self.pageInfoCoordinator.presentationProvider = self.viewController;
-  [self.pageInfoCoordinator start];
 
   self.passKitCoordinator = [[PassKitCoordinator alloc]
       initWithBaseViewController:self.viewController];
@@ -483,6 +486,41 @@
 - (void)showAddCreditCard {
   [self.formInputAccessoryCoordinator reset];
   [self.addCreditCardCoordinator start];
+}
+
+#pragma mark - PageInfoCommands
+
+- (void)legacyShowPageInfoForOriginPoint:(CGPoint)originPoint {
+  PageInfoLegacyCoordinator* pageInfoCoordinator =
+      [[PageInfoLegacyCoordinator alloc]
+          initWithBaseViewController:self.viewController
+                             browser:self.browser];
+  pageInfoCoordinator.presentationProvider = self.viewController;
+  pageInfoCoordinator.originPoint = originPoint;
+  self.pageInfoCoordinator = pageInfoCoordinator;
+  [self.pageInfoCoordinator start];
+}
+
+- (void)showPageInfo {
+  DCHECK(base::FeatureList::IsEnabled(kPageInfoRefactoring));
+  PageInfoCoordinator* pageInfoCoordinator = [[PageInfoCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  pageInfoCoordinator.presentationProvider = self.viewController;
+  self.pageInfoCoordinator = pageInfoCoordinator;
+  [self.pageInfoCoordinator start];
+}
+
+- (void)hidePageInfo {
+  [self.pageInfoCoordinator stop];
+  self.pageInfoCoordinator = nil;
+}
+
+- (void)showSecurityHelpPage {
+  UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kPageInfoHelpCenterURL));
+  params.in_incognito = self.browserState->IsOffTheRecord();
+  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
+  [self hidePageInfo];
 }
 
 #pragma mark - FormInputAccessoryCoordinatorNavigator

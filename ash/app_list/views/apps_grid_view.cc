@@ -60,6 +60,7 @@
 #include "ui/views/paint_info.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -1121,10 +1122,10 @@ void AppsGridView::OnMouseEvent(ui::MouseEvent* event) {
       !event->IsLeftMouseButton()) {
     return;
   }
-
-  gfx::Point point_in_screen = event->location();
-  ConvertPointToScreen(static_cast<views::View*>(event->target()),
-                       &point_in_screen);
+  gfx::PointF point_in_screen = event->root_location_f();
+  auto* view_target = static_cast<views::View*>(event->target());
+  wm::ConvertPointToScreen(view_target->GetWidget()->GetNativeWindow(),
+                           &point_in_screen);
 
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
@@ -1184,8 +1185,8 @@ void AppsGridView::OnMouseEvent(ui::MouseEvent* event) {
       const bool should_handle = ShouldHandleDragEvent(*event);
 
       is_in_mouse_drag_ = false;
-      mouse_drag_start_point_ = gfx::Point();
-      last_mouse_drag_point_ = gfx::Point();
+      mouse_drag_start_point_ = gfx::PointF();
+      last_mouse_drag_point_ = gfx::PointF();
 
       if (!should_handle) {
         gfx::Point drag_location_in_app_list = event->location();
@@ -2779,7 +2780,7 @@ void AppsGridView::TransitionChanged() {
 
   // Sets the transform to locate the scrolled content.
   gfx::Size grid_size = GetTileGridSize();
-  gfx::Vector2d translate;
+  gfx::Vector2dF translate;
   const int dir =
       transition.target_page > pagination_model_.selected_page() ? -1 : 1;
   if (pagination_controller_->scroll_axis() ==

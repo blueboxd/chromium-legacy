@@ -72,7 +72,7 @@ class TestCascade {
            String value,
            Priority priority = Origin::kAuthor,
            AnimationTainted animation_tainted = AnimationTainted::kNo) {
-    return Add(*CSSPropertyName::From(name), value, priority,
+    return Add(*CSSPropertyName::From(&GetDocument(), name), value, priority,
                animation_tainted);
   }
 
@@ -90,7 +90,7 @@ class TestCascade {
   void Add(String name,
            const CSSValue* value,
            Priority priority = Origin::kAuthor) {
-    Add(*CSSPropertyName::From(name), value, priority);
+    Add(*CSSPropertyName::From(&GetDocument(), name), value, priority);
   }
 
   void Add(const CSSPropertyName& name,
@@ -106,7 +106,9 @@ class TestCascade {
   }
 
   void Apply(const CSSPropertyName& name) { cascade_.Apply(name); }
-  void Apply(String name) { Apply(*CSSPropertyName::From(name)); }
+  void Apply(String name) {
+    Apply(*CSSPropertyName::From(&GetDocument(), name));
+  }
   void Apply() { cascade_.Apply(); }
   void Apply(StyleCascade::Animator& animator) { cascade_.Apply(animator); }
   void Exclude(CSSProperty::Flag flag, bool set) {
@@ -155,11 +157,12 @@ class TestCascade {
   }
 
   bool HasValue(String name, const CSSValue* value) {
-    return cascade_.HasValue(*CSSPropertyName::From(name), value);
+    return cascade_.HasValue(*CSSPropertyName::From(&GetDocument(), name),
+                             value);
   }
 
   const CSSValue* GetCSSValue(String name) {
-    return cascade_.GetValue(*CSSPropertyName::From(name));
+    return cascade_.GetValue(*CSSPropertyName::From(&GetDocument(), name));
   }
 
   const String GetValue(String name) {
@@ -1542,8 +1545,10 @@ TEST_F(StyleCascadeTest, AnimatorCalledByPendingInterpolationValue) {
 
   cascade.Apply(animator);
 
-  EXPECT_TRUE(animator.record.Contains(*CSSPropertyName::From("--x")));
-  EXPECT_TRUE(animator.record.Contains(*CSSPropertyName::From("--y")));
+  EXPECT_TRUE(
+      animator.record.Contains(*CSSPropertyName::From(&GetDocument(), "--x")));
+  EXPECT_TRUE(
+      animator.record.Contains(*CSSPropertyName::From(&GetDocument(), "--y")));
 }
 
 TEST_F(StyleCascadeTest, PendingKeyframeAnimation) {

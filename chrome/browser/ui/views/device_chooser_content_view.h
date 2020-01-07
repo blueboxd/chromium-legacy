@@ -90,6 +90,8 @@ class DeviceChooserContentView : public views::View,
   views::View* adapter_off_view_ = nullptr;
   BluetoothStatusContainer* bluetooth_status_container_ = nullptr;
 
+  bool is_initialized_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceChooserContentView);
 };
 

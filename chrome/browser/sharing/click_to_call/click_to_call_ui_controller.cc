@@ -175,11 +175,6 @@ SharingFeatureName ClickToCallUiController::GetFeatureMetricsPrefix() const {
   return SharingFeatureName::kClickToCall;
 }
 
-void ClickToCallUiController::OnHelpTextClicked(SharingDialogType dialog_type) {
-  LogClickToCallHelpTextClicked(dialog_type);
-  SharingUiController::OnHelpTextClicked(dialog_type);
-}
-
 SharingDialogData ClickToCallUiController::CreateDialogData(
     SharingDialogType dialog_type) {
   SharingDialogData data = SharingUiController::CreateDialogData(dialog_type);

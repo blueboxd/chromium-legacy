@@ -381,14 +381,8 @@ if (gen_policy_templates_android && is_android) {
   }
 
   android_resources("app_restrictions_resources") {
-    resource_dirs = []
-    generated_resource_dirs = [
-      "$policy_templates_base_dir/android",
-      _generated_resources_dir,
-    ]
-    generated_resource_files =
-        policy_templates_android_outputs +
-        [ "$_generated_resources_dir/xml-v21/app_restrictions.xml" ]
+    sources = policy_templates_android_outputs +
+              [ "$_generated_resources_dir/xml-v21/app_restrictions.xml" ]
     deps = [
       ":app_restrictions_resources_copy",
       ":policy_templates",

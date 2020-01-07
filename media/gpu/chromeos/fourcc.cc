@@ -55,25 +55,25 @@ base::Optional<Fourcc> Fourcc::FromVideoPixelFormat(
   if (single_planar) {
     switch (pixel_format) {
       case PIXEL_FORMAT_ARGB:
-        return Fourcc(Fourcc::AR24);
+        return Fourcc(AR24);
       case PIXEL_FORMAT_ABGR:
-        return Fourcc(Fourcc::AB24);
+        return Fourcc(AB24);
       case PIXEL_FORMAT_XRGB:
-        return Fourcc(Fourcc::XR24);
+        return Fourcc(XR24);
       case PIXEL_FORMAT_XBGR:
-        return Fourcc(Fourcc::XB24);
+        return Fourcc(XB24);
       case PIXEL_FORMAT_BGRA:
-        return Fourcc(Fourcc::RGB4);
+        return Fourcc(RGB4);
       case PIXEL_FORMAT_I420:
-        return Fourcc(Fourcc::YU12);
+        return Fourcc(YU12);
       case PIXEL_FORMAT_YV12:
-        return Fourcc(Fourcc::YV12);
+        return Fourcc(YV12);
       case PIXEL_FORMAT_YUY2:
-        return Fourcc(Fourcc::YUYV);
+        return Fourcc(YUYV);
       case PIXEL_FORMAT_NV12:
-        return Fourcc(Fourcc::NV12);
+        return Fourcc(NV12);
       case PIXEL_FORMAT_NV21:
-        return Fourcc(Fourcc::NV21);
+        return Fourcc(NV21);
       case PIXEL_FORMAT_I422:
       case PIXEL_FORMAT_I420A:
       case PIXEL_FORMAT_I444:
@@ -98,15 +98,15 @@ base::Optional<Fourcc> Fourcc::FromVideoPixelFormat(
   } else {
     switch (pixel_format) {
       case PIXEL_FORMAT_I420:
-        return Fourcc(Fourcc::YM12);
+        return Fourcc(YM12);
       case PIXEL_FORMAT_YV12:
-        return Fourcc(Fourcc::YM21);
+        return Fourcc(YM21);
       case PIXEL_FORMAT_NV12:
-        return Fourcc(Fourcc::NM12);
+        return Fourcc(NM12);
       case PIXEL_FORMAT_I422:
-        return Fourcc(Fourcc::YM16);
+        return Fourcc(YM16);
       case PIXEL_FORMAT_NV21:
-        return Fourcc(Fourcc::NM21);
+        return Fourcc(NM21);
       case PIXEL_FORMAT_I420A:
       case PIXEL_FORMAT_I444:
       case PIXEL_FORMAT_YUY2:
@@ -141,31 +141,31 @@ base::Optional<Fourcc> Fourcc::FromVideoPixelFormat(
 
 VideoPixelFormat Fourcc::ToVideoPixelFormat() const {
   switch (value_) {
-    case Fourcc::AR24:
+    case AR24:
       return PIXEL_FORMAT_ARGB;
-    case Fourcc::AB24:
+    case AB24:
       return PIXEL_FORMAT_ABGR;
-    case Fourcc::XR24:
+    case XR24:
       return PIXEL_FORMAT_XRGB;
-    case Fourcc::XB24:
+    case XB24:
       return PIXEL_FORMAT_XBGR;
-    case Fourcc::RGB4:
+    case RGB4:
       return PIXEL_FORMAT_BGRA;
-    case Fourcc::YU12:
-    case Fourcc::YM12:
+    case YU12:
+    case YM12:
       return PIXEL_FORMAT_I420;
-    case Fourcc::YV12:
-    case Fourcc::YM21:
+    case YV12:
+    case YM21:
       return PIXEL_FORMAT_YV12;
-    case Fourcc::YUYV:
+    case YUYV:
       return PIXEL_FORMAT_YUY2;
-    case Fourcc::NV12:
-    case Fourcc::NM12:
+    case NV12:
+    case NM12:
       return PIXEL_FORMAT_NV12;
-    case Fourcc::NV21:
-    case Fourcc::NM21:
+    case NV21:
+    case NM21:
       return PIXEL_FORMAT_NV21;
-    case Fourcc::YM16:
+    case YM16:
       return PIXEL_FORMAT_I422;
     // V4L2_PIX_FMT_MT21C is only used for MT8173 hardware video decoder output
     // and should be converted by MT8173 image processor for compositor to
@@ -174,11 +174,11 @@ VideoPixelFormat Fourcc::ToVideoPixelFormat() const {
     // VideoFrameLayout for the format to process the intermediate frame. Hence
     // we map V4L2_PIX_FMT_MT21C to PIXEL_FORMAT_NV12 as their layout are the
     // same.
-    case Fourcc::MT21:
+    case MT21:
     // V4L2_PIX_FMT_MM21 is used for MT8183 hardware video decoder. It is
     // similar to V4L2_PIX_FMT_MT21C but is not compressed ; thus it can also
     // be mapped to PIXEL_FORMAT_NV12.
-    case Fourcc::MM21:
+    case MM21:
       return PIXEL_FORMAT_NV12;
   }
   NOTREACHED() << "Unmapped Fourcc: " << ToString();
@@ -205,25 +205,25 @@ uint32_t Fourcc::ToV4L2PixFmt() const {
 base::Optional<Fourcc> Fourcc::FromVAFourCC(uint32_t va_fourcc) {
   switch (va_fourcc) {
     case VA_FOURCC_I420:
-      return Fourcc(Fourcc::YU12);
+      return Fourcc(YU12);
     case VA_FOURCC_NV12:
-      return Fourcc(Fourcc::NV12);
+      return Fourcc(NV12);
     case VA_FOURCC_NV21:
-      return Fourcc(Fourcc::NV21);
+      return Fourcc(NV21);
     case VA_FOURCC_YV12:
-      return Fourcc(Fourcc::YV12);
+      return Fourcc(YV12);
     case VA_FOURCC_YUY2:
-      return Fourcc(Fourcc::YUYV);
+      return Fourcc(YUYV);
     case VA_FOURCC_RGBA:
-      return Fourcc(Fourcc::AB24);
+      return Fourcc(AB24);
     case VA_FOURCC_RGBX:
-      return Fourcc(Fourcc::XB24);
+      return Fourcc(XB24);
     case VA_FOURCC_BGRA:
-      return Fourcc(Fourcc::AR24);
+      return Fourcc(AR24);
     case VA_FOURCC_BGRX:
-      return Fourcc(Fourcc::XR24);
+      return Fourcc(XR24);
     case VA_FOURCC_ARGB:
-      return Fourcc(Fourcc::RGB4);
+      return Fourcc(RGB4);
   }
   DVLOGF(3) << "Unmapped VAFourCC: " << FourccToString(va_fourcc);
   return base::nullopt;
@@ -231,33 +231,33 @@ base::Optional<Fourcc> Fourcc::FromVAFourCC(uint32_t va_fourcc) {
 
 base::Optional<uint32_t> Fourcc::ToVAFourCC() const {
   switch (value_) {
-    case Fourcc::YU12:
+    case YU12:
       return VA_FOURCC_I420;
-    case Fourcc::NV12:
+    case NV12:
       return VA_FOURCC_NV12;
-    case Fourcc::NV21:
+    case NV21:
       return VA_FOURCC_NV21;
-    case Fourcc::YV12:
+    case YV12:
       return VA_FOURCC_YV12;
-    case Fourcc::YUYV:
+    case YUYV:
       return VA_FOURCC_YUY2;
-    case Fourcc::AB24:
+    case AB24:
       return VA_FOURCC_RGBA;
-    case Fourcc::XB24:
+    case XB24:
       return VA_FOURCC_RGBX;
-    case Fourcc::AR24:
+    case AR24:
       return VA_FOURCC_BGRA;
-    case Fourcc::XR24:
+    case XR24:
       return VA_FOURCC_BGRX;
-    case Fourcc::RGB4:
+    case RGB4:
       return VA_FOURCC_ARGB;
-    case Fourcc::YM12:
-    case Fourcc::YM21:
-    case Fourcc::NM12:
-    case Fourcc::NM21:
-    case Fourcc::YM16:
-    case Fourcc::MT21:
-    case Fourcc::MM21:
+    case YM12:
+    case YM21:
+    case NM12:
+    case NM21:
+    case YM16:
+    case MT21:
+    case MM21:
       // VAAPI does not know about these formats, so signal this by returning
       // nullopt.
       DVLOGF(3) << "Fourcc not convertible to VaFourCC: " << ToString();

@@ -63,12 +63,10 @@ class EncodedProgram {
   CheckBool AddOrigin(RVA rva) WARN_UNUSED_RESULT;
   CheckBool AddCopy(size_t count, const void* bytes) WARN_UNUSED_RESULT;
   CheckBool AddRel32(int label_index) WARN_UNUSED_RESULT;
-  CheckBool AddRel32ARM(uint16_t op, int label_index) WARN_UNUSED_RESULT;
   CheckBool AddAbs32(int label_index) WARN_UNUSED_RESULT;
   CheckBool AddAbs64(int label_index) WARN_UNUSED_RESULT;
   CheckBool AddPeMakeRelocs(ExecutableType kind) WARN_UNUSED_RESULT;
   CheckBool AddElfMakeRelocs() WARN_UNUSED_RESULT;
-  CheckBool AddElfARMMakeRelocs() WARN_UNUSED_RESULT;
 
   // (3) Serialize binary assembly language tables to a set of streams.
   CheckBool WriteTo(SinkStreamSet* streams) WARN_UNUSED_RESULT;
@@ -94,23 +92,16 @@ class EncodedProgram {
     COPY = 1,    // COPY <count> <bytes> - copy bytes to output.
     COPY1 = 2,   // COPY1 <byte> - same as COPY 1 <byte>.
     REL32 = 3,   // REL32 <index> - emit rel32 encoded reference to address at
-                 // address table offset <index>
+                 // address table offset <index>.
     ABS32 = 4,   // ABS32 <index> - emit abs32 encoded reference to address at
-                 // address table offset <index>
-    MAKE_PE_RELOCATION_TABLE = 5,       // Emit PE base relocation table blocks.
-    MAKE_ELF_RELOCATION_TABLE = 6,      // Emit Elf relocation table for X86
-    MAKE_ELF_ARM_RELOCATION_TABLE = 7,  // Emit Elf relocation table for ARM
+                 // address table offset <index>.
+    MAKE_PE_RELOCATION_TABLE = 5,   // Emit PE base relocation table blocks.
+    MAKE_ELF_RELOCATION_TABLE = 6,  // Emit ELF relocation table for X86.
+    // DEPCREATED: ELF relocation table for ARM.
+    // MAKE_ELF_ARM_RELOCATION_TABLE_DEPRECATED = 7,
     MAKE_PE64_RELOCATION_TABLE = 8,  // Emit PE64 base relocation table blocks.
     ABS64 = 9,  // ABS64 <index> - emit abs64 encoded reference to address at
-                // address table offset <index>
-    // ARM reserves 0x1000-LAST_ARM, bits 13-16 define the opcode
-    // subset, and 1-12 are the compressed ARM op.
-    REL32ARM8 = 0x1000,
-    REL32ARM11 = 0x2000,
-    REL32ARM24 = 0x3000,
-    REL32ARM25 = 0x4000,
-    REL32ARM21 = 0x5000,
-    LAST_ARM = 0x5FFF,
+                // address table offset <index>.
   };
 
   typedef NoThrowBuffer<RVA> RvaVector;
@@ -132,12 +123,6 @@ class EncodedProgram {
                                   uint8_t type) WARN_UNUSED_RESULT;
   CheckBool GenerateElfRelocations(Elf32_Word pending_elf_relocation_table,
                                    SinkStream* buffer) WARN_UNUSED_RESULT;
-
-  // Decodes and evaluates courgette ops for ARM rel32 addresses.
-  CheckBool EvaluateRel32ARM(OP op,
-                             size_t* ix_rel32_ix,
-                             RVA* current_rva,
-                             SinkStream* output);
 
   // Binary assembly language tables.
   uint64_t image_base_ = 0;

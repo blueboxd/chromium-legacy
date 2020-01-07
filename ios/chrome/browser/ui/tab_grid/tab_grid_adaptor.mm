@@ -8,11 +8,11 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-
 #import "ios/web/public/navigation/navigation_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -25,20 +25,15 @@
 
 #pragma mark - TabSwitcher
 
-- (id<ApplicationCommands, OmniboxFocuser, ToolbarCommands>)dispatcher {
-  return static_cast<id<ApplicationCommands, OmniboxFocuser, ToolbarCommands>>(
-      self.adaptedDispatcher);
-}
-
 - (void)restoreInternalStateWithMainTabModel:(TabModel*)mainModel
                                  otrTabModel:(TabModel*)otrModel
                               activeTabModel:(TabModel*)activeModel {
   // The only action here is to signal to the tab grid which panel should be
   // active.
   if (activeModel == otrModel) {
-    self.tabGridPager.activePage = TabGridPageIncognitoTabs;
+    self.tabGridViewController.activePage = TabGridPageIncognitoTabs;
   } else {
-    self.tabGridPager.activePage = TabGridPageRegularTabs;
+    self.tabGridViewController.activePage = TabGridPageRegularTabs;
   }
 }
 

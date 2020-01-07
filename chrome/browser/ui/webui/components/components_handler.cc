@@ -6,12 +6,15 @@
 
 #include "base/bind.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/update_client/crx_update_item.h"
 #include "ui/base/l10n/l10n_util.h"
 
-ComponentsHandler::ComponentsHandler() = default;
+ComponentsHandler::ComponentsHandler(
+    component_updater::ComponentUpdateService* component_updater)
+    : component_updater_(component_updater) {
+  DCHECK(component_updater_);
+}
 ComponentsHandler::~ComponentsHandler() = default;
 
 void ComponentsHandler::RegisterMessages() {
@@ -26,7 +29,7 @@ void ComponentsHandler::RegisterMessages() {
 }
 
 void ComponentsHandler::OnJavascriptAllowed() {
-  observer_.Add(g_browser_process->component_updater());
+  observer_.Add(component_updater_);
 }
 
 void ComponentsHandler::OnJavascriptDisallowed() {
@@ -67,9 +70,8 @@ void ComponentsHandler::OnEvent(Events event, const std::string& id) {
   parameters.SetString("event", ComponentEventToString(event));
   if (!id.empty()) {
     if (event == Events::COMPONENT_UPDATED) {
-      auto* component_updater = g_browser_process->component_updater();
       update_client::CrxUpdateItem item;
-      if (component_updater->GetComponentDetails(id, &item) && item.component)
+      if (component_updater_->GetComponentDetails(id, &item) && item.component)
         parameters.SetString("version", item.component->version.GetString());
     }
     parameters.SetString("id", id);
@@ -133,29 +135,21 @@ base::string16 ComponentsHandler::ServiceStatusToString(
   return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);
 }
 
-// static
 void ComponentsHandler::OnDemandUpdate(const std::string& component_id) {
-  component_updater::ComponentUpdateService* cus =
-      g_browser_process->component_updater();
-  if (cus) {  // TODO(dbeam): can this return nullptr if called from UI thread?
-    cus->GetOnDemandUpdater().OnDemandUpdate(
-        component_id, component_updater::OnDemandUpdater::Priority::FOREGROUND,
-        component_updater::Callback());
-  }
+  component_updater_->GetOnDemandUpdater().OnDemandUpdate(
+      component_id, component_updater::OnDemandUpdater::Priority::FOREGROUND,
+      component_updater::Callback());
 }
 
-// static
 std::unique_ptr<base::ListValue> ComponentsHandler::LoadComponents() {
-  component_updater::ComponentUpdateService* cus =
-      g_browser_process->component_updater();
   std::vector<std::string> component_ids;
-  component_ids = cus->GetComponentIDs();
+  component_ids = component_updater_->GetComponentIDs();
 
   // Construct DictionaryValues to return to UI.
   auto component_list = std::make_unique<base::ListValue>();
   for (size_t j = 0; j < component_ids.size(); ++j) {
     update_client::CrxUpdateItem item;
-    if (cus->GetComponentDetails(component_ids[j], &item)) {
+    if (component_updater_->GetComponentDetails(component_ids[j], &item)) {
       auto component_entry = std::make_unique<base::DictionaryValue>();
       component_entry->SetString("id", component_ids[j]);
       component_entry->SetString("status", ServiceStatusToString(item.state));

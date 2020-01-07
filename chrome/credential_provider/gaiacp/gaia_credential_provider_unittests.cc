@@ -454,7 +454,7 @@ class GcpCredentialProviderWithGaiaUsersTest
 
 void GcpCredentialProviderWithGaiaUsersTest::SetUp() {
   GcpCredentialProviderTest::SetUp();
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(L"enable_ad_association", 0));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(L"enable_cloud_association", 0));
 }
 
 // TODO(crbug.com/1038339): Test is failing consistently.
@@ -471,7 +471,7 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, DISABLED_ReauthCredentialTest) {
   CComBSTR sid;
   if (is_ad_user) {
     // Add an AD user. Note that this covers the scenario where
-    // enable_ad_association is set to false.
+    // enable_cloud_association is set to false.
     ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
                         L"username", L"password", L"full name", L"comment",
                         L"gaia-id", L"foo@gmail.com", L"domain", &sid));
@@ -549,7 +549,7 @@ class GcpCredentialProviderWithADUsersTest
 
 void GcpCredentialProviderWithADUsersTest::SetUp() {
   GcpCredentialProviderTest::SetUp();
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(L"enable_ad_association", 1));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(L"enable_cloud_association", 1));
 }
 
 // TODO(crbug.com/1038351): Test fails on Windows.

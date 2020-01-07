@@ -1776,15 +1776,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   PrerenderTestURL(url, FINAL_STATUS_UNSUPPORTED_SCHEME, 0);
 }
 
-// Checks that deferred redirects in a synchronous XHR abort the prerender.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredSynchronousXHR) {
-  // Disable load event checks because they race with cancellation.
-  DisableLoadEventCheck();
-  PrerenderTestURL("/prerender/prerender_deferred_sync_xhr.html",
-                   FINAL_STATUS_BAD_DEFERRED_REDIRECT, 0);
-  ui_test_utils::NavigateToURL(current_browser(), dest_url());
-}
-
 // Checks that prerenders are not swapped for navigations with extra headers.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderExtraHeadersNoSwap) {
   PrerenderTestURL("/prerender/prerender_page.html",

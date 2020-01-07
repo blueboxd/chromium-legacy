@@ -544,7 +544,8 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // Notifies observers that |root_window|'s shelf changed alignment.
   // TODO(jamescook): Move to Shelf.
-  void NotifyShelfAlignmentChanged(aura::Window* root_window);
+  void NotifyShelfAlignmentChanged(aura::Window* root_window,
+                                   ShelfAlignment old_alignment);
 
   // Notifies observers that |root_window|'s shelf changed auto-hide behavior.
   // TODO(jamescook): Move to Shelf.

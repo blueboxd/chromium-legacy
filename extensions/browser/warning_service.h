@@ -16,6 +16,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/warning_set.h"
+#include "extensions/common/extension_id.h"
 
 // TODO(battre) Remove the Extension prefix.
 

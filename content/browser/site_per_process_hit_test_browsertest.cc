@@ -95,7 +95,7 @@ class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
 
   void OnInputEvent(const blink::WebInputEvent& event) override {
     events_received_.push_back(event.GetType());
-    event_ = ui::WebInputEventTraits::Clone(event);
+    event_ = event.Clone();
   }
 
   const std::vector<InputEventAckSource>& events_acked() {

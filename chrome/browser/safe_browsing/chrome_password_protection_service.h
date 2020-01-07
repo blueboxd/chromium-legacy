@@ -55,8 +55,9 @@ using StringProvider = base::RepeatingCallback<std::string()>;
 using password_manager::metrics_util::PasswordType;
 using url::Origin;
 
-#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
-// Shows the platform-specific password reuse modal dialog.
+#if !defined(OS_ANDROID)
+// Shows the desktop platforms specific password reuse modal dialog.
+// Implemented in password_reuse_modal_warning_dialog.
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
     ChromePasswordProtectionService* service,
@@ -184,7 +185,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // returns an empty string.
   std::string GetOrganizationName(
       ReusedPasswordAccountType password_type) const;
+#endif
 
+// The following functions are disabled on Android, because enterprise reporting
+// extension is not supported.
+#if !defined(OS_ANDROID)
   // If the browser is not incognito and the user is reusing their enterprise
   // password or is a GSuite user, triggers
   // safeBrowsingPrivate.OnPolicySpecifiedPasswordReuseDetected.
@@ -197,7 +202,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Triggers "safeBrowsingPrivate.OnPolicySpecifiedPasswordChanged" API.
   void ReportPasswordChanged() override;
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   // Returns true if there's any enterprise password reuses unhandled in
   // |web_contents|. "Unhandled" is defined as user hasn't clicked on
   // "Change Password" button in modal warning dialog.
@@ -432,6 +439,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   FRIEND_TEST_ALL_PREFIXES(
       ChromePasswordProtectionServiceTest,
       VerifyOnPolicySpecifiedPasswordReuseDetectedEventForPhishingReuse);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyGetWarningDetailTextSavedDomains);
 
   // Gets prefs associated with |profile_|.
   PrefService* GetPrefs();

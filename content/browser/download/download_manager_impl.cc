@@ -595,6 +595,12 @@ void DownloadManagerImpl::StartDownloadItem(
                             should_persist_new_download_);
     OnDownloadStarted(download, std::move(on_started));
   } else {
+    // If the download already in system, it can only be resumed.
+    if (!info->guid.empty() && GetDownloadByGuid(info->guid)) {
+      LOG(WARNING) << "A download with the same GUID already exists, the new "
+                      "request is ignored.";
+      return;
+    }
     GetNextId(base::BindOnce(&DownloadManagerImpl::CreateNewDownloadItemToStart,
                              weak_factory_.GetWeakPtr(), std::move(info),
                              std::move(on_started), std::move(callback)));

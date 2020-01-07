@@ -49,7 +49,6 @@
 <translation id="1056775291175587022">Няма сетак</translation>
 <translation id="1056898198331236512">Папярэджанне</translation>
 <translation id="1058262162121953039">PUK-код</translation>
-<translation id="1060881073479695738">Праграмы з Крамы Play</translation>
 <translation id="1061745542578250838">Файл "<ph name="FILE_NAME" />" быў заблакіраваны: ён змяшчае канфідэнцыяльнае змесціва.</translation>
 <translation id="1061904396131502319">Набліжаецца час блакіроўкі</translation>
 <translation id="1067048845568873861">Створаны</translation>
@@ -4653,6 +4652,7 @@
 <translation id="7684718995427157417">Каб ствараць і тэсціраваць праграмы, уключыце Android Debug Bridge (ADB). Звярніце ўвагу, што, уключыўшы ADB, вы дазваляеце ўсталёўваць праграмы для Android, якія не былі спраўджаны Google, а для выключэння ADB патрабуецца скід налад да заводскіх значэнняў.</translation>
 <translation id="7685049629764448582">Памяць JavaScript</translation>
 <translation id="7685087414635069102">Патрабуецца PIN-код</translation>
+<translation id="768549422429443215">Дадайце мовы або змяніце іх парадак у спісе.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Пацвердзіце новы пароль</translation>
 <translation id="7690378713476594306">Выбраць са спіса</translation>

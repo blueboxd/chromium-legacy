@@ -66,8 +66,7 @@ std::unique_ptr<InputEvent> ScaleEvent(const WebInputEvent& event,
         latency_info.ScaledBy(scale));
   }
 
-  return std::make_unique<InputEvent>(ui::WebInputEventTraits::Clone(event),
-                                      latency_info);
+  return std::make_unique<InputEvent>(event.Clone(), latency_info);
 }
 
 }  // namespace

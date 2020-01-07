@@ -36,8 +36,8 @@ class MEDIA_EXPORT MediaCryptoContextImpl : public MediaCryptoContext {
   //
   // Note: RegisterPlayer() must be called before SetMediaCryptoReadyCB() to
   // avoid missing any new key notifications.
-  int RegisterPlayer(const base::Closure& new_key_cb,
-                     const base::Closure& cdm_unset_cb) final;
+  int RegisterPlayer(base::RepeatingClosure new_key_cb,
+                     base::RepeatingClosure cdm_unset_cb) final;
   void UnregisterPlayer(int registration_id) final;
 
   // MediaCryptoContext implementation.

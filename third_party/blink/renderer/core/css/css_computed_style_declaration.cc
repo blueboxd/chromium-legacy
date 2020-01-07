@@ -504,7 +504,8 @@ CSSRule* CSSComputedStyleDeclaration::parentRule() const {
 
 String CSSComputedStyleDeclaration::getPropertyValue(
     const String& property_name) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
+  CSSPropertyID property_id =
+      cssPropertyID(GetExecutionContext(), property_name);
   if (!isValidCSSPropertyID(property_id))
     return String();
   if (property_id == CSSPropertyID::kVariable) {
@@ -564,7 +565,8 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
     AtomicString custom_property_name) {
-  DCHECK_EQ(CSSPropertyID::kVariable, cssPropertyID(custom_property_name));
+  DCHECK_EQ(CSSPropertyID::kVariable,
+            cssPropertyID(GetExecutionContext(), custom_property_name));
   return GetPropertyCSSValue(custom_property_name);
 }
 

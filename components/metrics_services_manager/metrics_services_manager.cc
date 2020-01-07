@@ -80,8 +80,8 @@ MetricsServicesManager::GetMetricsServiceClient() {
     metrics_service_client_ = client_->CreateMetricsServiceClient();
     // base::Unretained is safe since |this| owns the metrics_service_client_.
     metrics_service_client_->SetUpdateRunningServicesCallback(
-        base::Bind(&MetricsServicesManager::UpdateRunningServices,
-                   base::Unretained(this)));
+        base::BindRepeating(&MetricsServicesManager::UpdateRunningServices,
+                            base::Unretained(this)));
   }
   return metrics_service_client_.get();
 }

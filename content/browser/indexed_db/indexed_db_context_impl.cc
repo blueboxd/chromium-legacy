@@ -110,6 +110,25 @@ IndexedDBContextImpl::IndexedDBContextImpl(
       base::MakeRefCounted<IndexedDBQuotaClient>(this));
 }
 
+void IndexedDBContextImpl::Bind(
+    mojo::PendingReceiver<storage::mojom::IndexedDBControl> control) {
+  DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
+  receivers_.Add(this, std::move(control));
+}
+
+void IndexedDBContextImpl::GetUsage(GetUsageCallback usage_callback) {
+  DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
+  std::vector<Origin> origins = GetAllOrigins();
+  std::vector<storage::mojom::IndexedDBStorageUsageInfoPtr> result;
+  for (const auto& origin : origins) {
+    storage::mojom::IndexedDBStorageUsageInfoPtr usage_info =
+        storage::mojom::IndexedDBStorageUsageInfo::New(
+            origin, GetOriginDiskUsage(origin), GetOriginLastModified(origin));
+    result.push_back(std::move(usage_info));
+  }
+  std::move(usage_callback).Run(std::move(result));
+}
+
 IndexedDBFactoryImpl* IndexedDBContextImpl::GetIDBFactory() {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   if (!indexeddb_factory_.get()) {
@@ -122,6 +141,11 @@ IndexedDBFactoryImpl* IndexedDBContextImpl::GetIDBFactory() {
   return indexeddb_factory_.get();
 }
 
+base::SequencedTaskRunner* IndexedDBContextImpl::IOTaskRunner() {
+  DCHECK(io_task_runner_.get());
+  return io_task_runner_.get();
+}
+
 std::vector<Origin> IndexedDBContextImpl::GetAllOrigins() {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   std::set<Origin>* origins_set = GetOriginSet();
@@ -132,17 +156,6 @@ bool IndexedDBContextImpl::HasOrigin(const Origin& origin) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
   std::set<Origin>* set = GetOriginSet();
   return set->find(origin) != set->end();
-}
-
-std::vector<StorageUsageInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
-  DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
-  std::vector<Origin> origins = GetAllOrigins();
-  std::vector<StorageUsageInfo> result;
-  for (const auto& origin : origins) {
-    result.push_back(StorageUsageInfo(origin, GetOriginDiskUsage(origin),
-                                      GetOriginLastModified(origin)));
-  }
-  return result;
 }
 
 static bool HostNameComparator(const Origin& i, const Origin& j) {
@@ -631,11 +644,6 @@ std::set<Origin>* IndexedDBContextImpl::GetOriginSet() {
 base::SequencedTaskRunner* IndexedDBContextImpl::IDBTaskRunner() {
   DCHECK(idb_task_runner_.get());
   return idb_task_runner_.get();
-}
-
-base::SequencedTaskRunner* IndexedDBContextImpl::IOTaskRunner() {
-  DCHECK(io_task_runner_.get());
-  return io_task_runner_.get();
 }
 
 }  // namespace content

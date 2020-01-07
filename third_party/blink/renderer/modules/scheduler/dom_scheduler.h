@@ -18,6 +18,7 @@
 namespace blink {
 
 class DOMTask;
+class ExceptionState;
 class ExecutionContext;
 class SchedulerPostTaskOptions;
 class ScriptValue;
@@ -46,7 +47,8 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
   ScriptPromise postTask(ScriptState*,
                          V8Function*,
                          SchedulerPostTaskOptions*,
-                         const HeapVector<ScriptValue>& args);
+                         const HeapVector<ScriptValue>& args,
+                         ExceptionState&);
 
   // Callbacks invoked by DOMTasks when they run.
   void OnTaskStarted(DOMTask*);

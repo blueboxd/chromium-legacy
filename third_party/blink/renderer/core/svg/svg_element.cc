@@ -354,6 +354,7 @@ void SVGElement::ChildrenChanged(const ChildrenChange& change) {
 }
 
 CSSPropertyID SVGElement::CssPropertyIdForSVGAttributeName(
+    const ExecutionContext* execution_context,
     const QualifiedName& attr_name) {
   if (!attr_name.NamespaceURI().IsNull())
     return CSSPropertyID::kInvalid;
@@ -424,7 +425,8 @@ CSSPropertyID SVGElement::CssPropertyIdForSVGAttributeName(
         &svg_names::kWritingModeAttr,
     };
     for (size_t i = 0; i < base::size(attr_names); i++) {
-      CSSPropertyID property_id = cssPropertyID(attr_names[i]->LocalName());
+      CSSPropertyID property_id =
+          cssPropertyID(execution_context, attr_names[i]->LocalName());
       DCHECK_GT(property_id, CSSPropertyID::kInvalid);
       property_name_to_id_map->Set(attr_names[i]->LocalName().Impl(),
                                    property_id);
@@ -735,14 +737,16 @@ bool SVGElement::IsAnimatableCSSProperty(const QualifiedName& attr_name) {
 bool SVGElement::IsPresentationAttribute(const QualifiedName& name) const {
   if (const SVGAnimatedPropertyBase* property = PropertyFromAttribute(name))
     return property->HasPresentationAttributeMapping();
-  return CssPropertyIdForSVGAttributeName(name) > CSSPropertyID::kInvalid;
+  return CssPropertyIdForSVGAttributeName(&GetDocument(), name) >
+         CSSPropertyID::kInvalid;
 }
 
 void SVGElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  CSSPropertyID property_id = CssPropertyIdForSVGAttributeName(name);
+  CSSPropertyID property_id =
+      CssPropertyIdForSVGAttributeName(&GetDocument(), name);
   if (property_id > CSSPropertyID::kInvalid)
     AddPropertyToPresentationAttributeStyle(style, property_id, value);
 }
@@ -876,7 +880,7 @@ void SVGElement::AttributeChanged(const AttributeModificationParams& params) {
 
 void SVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   CSSPropertyID prop_id =
-      SVGElement::CssPropertyIdForSVGAttributeName(attr_name);
+      SVGElement::CssPropertyIdForSVGAttributeName(&GetDocument(), attr_name);
   if (prop_id > CSSPropertyID::kInvalid) {
     InvalidateInstances();
     return;

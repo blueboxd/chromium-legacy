@@ -608,8 +608,8 @@ void TabRestoreServiceImpl::PersistenceDelegate::LoadTabsFromLastSession() {
   // this won't contain the tabs/window that were open at the point of the
   // crash (the call to GetLastSession above requests those).
   base_session_service_->ScheduleGetLastSessionCommands(
-      base::BindRepeating(&PersistenceDelegate::OnGotLastSessionCommands,
-                          base::Unretained(this)),
+      base::BindOnce(&PersistenceDelegate::OnGotLastSessionCommands,
+                     base::Unretained(this)),
       &cancelable_task_tracker_);
 }
 

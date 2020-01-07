@@ -67,18 +67,18 @@ std::unique_ptr<PrefService> PrefServiceHelper::CreatePrefService(
 
   RegisterPlatformPrefs(registry);
 
-  PrefServiceFactory prefServiceFactory;
-  prefServiceFactory.set_user_prefs(
+  PrefServiceFactory pref_service_factory;
+  pref_service_factory.set_user_prefs(
       base::MakeRefCounted<JsonPrefStore>(config_path));
-  prefServiceFactory.set_async(false);
+  pref_service_factory.set_async(false);
 
   PersistentPrefStore::PrefReadError prefs_read_error =
       PersistentPrefStore::PREF_READ_ERROR_NONE;
-  prefServiceFactory.set_read_error_callback(
-      base::Bind(&UserPrefsLoadError, &prefs_read_error));
+  pref_service_factory.set_read_error_callback(
+      base::BindRepeating(&UserPrefsLoadError, &prefs_read_error));
 
   std::unique_ptr<PrefService> pref_service(
-      prefServiceFactory.Create(registry));
+      pref_service_factory.Create(registry));
   if (prefs_read_error != PersistentPrefStore::PREF_READ_ERROR_NONE) {
     LOG(ERROR) << "Cannot initialize chromecast config: "
                << config_path.value()

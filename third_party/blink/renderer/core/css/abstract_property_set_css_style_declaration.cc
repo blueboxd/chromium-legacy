@@ -70,7 +70,8 @@ void AbstractPropertySetCSSStyleDeclaration::setCSSText(
 
 String AbstractPropertySetCSSStyleDeclaration::getPropertyValue(
     const String& property_name) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
+  CSSPropertyID property_id =
+      cssPropertyID(GetExecutionContext(), property_name);
   if (!isValidCSSPropertyID(property_id))
     return String();
   if (property_id == CSSPropertyID::kVariable)
@@ -80,7 +81,8 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyValue(
 
 String AbstractPropertySetCSSStyleDeclaration::getPropertyPriority(
     const String& property_name) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
+  CSSPropertyID property_id =
+      cssPropertyID(GetExecutionContext(), property_name);
   if (!isValidCSSPropertyID(property_id))
     return String();
 
@@ -94,7 +96,8 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyPriority(
 
 String AbstractPropertySetCSSStyleDeclaration::GetPropertyShorthand(
     const String& property_name) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
+  CSSPropertyID property_id =
+      cssPropertyID(GetExecutionContext(), property_name);
 
   // Custom properties don't have shorthands, so we can ignore them here.
   if (!isValidCSSPropertyID(property_id) ||
@@ -108,7 +111,8 @@ String AbstractPropertySetCSSStyleDeclaration::GetPropertyShorthand(
 
 bool AbstractPropertySetCSSStyleDeclaration::IsPropertyImplicit(
     const String& property_name) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
+  CSSPropertyID property_id =
+      cssPropertyID(GetExecutionContext(), property_name);
 
   // Custom properties don't have shorthands, so we can ignore them here.
   if (property_id < firstCSSProperty)
@@ -139,7 +143,8 @@ void AbstractPropertySetCSSStyleDeclaration::setProperty(
 String AbstractPropertySetCSSStyleDeclaration::removeProperty(
     const String& property_name,
     ExceptionState& exception_state) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
+  CSSPropertyID property_id =
+      cssPropertyID(GetExecutionContext(), property_name);
   if (!isValidCSSPropertyID(property_id))
     return String();
 
@@ -171,7 +176,8 @@ AbstractPropertySetCSSStyleDeclaration::GetPropertyCSSValueInternal(
 const CSSValue*
 AbstractPropertySetCSSStyleDeclaration::GetPropertyCSSValueInternal(
     AtomicString custom_property_name) {
-  DCHECK_EQ(CSSPropertyID::kVariable, cssPropertyID(custom_property_name));
+  DCHECK_EQ(CSSPropertyID::kVariable,
+            cssPropertyID(GetExecutionContext(), custom_property_name));
   return PropertySet().GetPropertyCSSValue(custom_property_name);
 }
 

@@ -261,11 +261,6 @@ bool SupervisedUserService::IsSupervisedUserIframeFilterEnabled() const {
       supervised_users::kSupervisedUserIframeFilter);
 }
 
-#if !defined(OS_ANDROID)
-void SupervisedUserService::InitSync(const std::string& refresh_token) {
-}
-#endif  // !defined(OS_ANDROID)
-
 void SupervisedUserService::AddObserver(
     SupervisedUserServiceObserver* observer) {
   observer_list_.AddObserver(observer);
@@ -782,18 +777,6 @@ bool SupervisedUserService::UserMayLoad(const Extension* extension,
   if (!may_load && error)
     *error = GetExtensionsLockedMessage();
   return may_load;
-}
-
-bool SupervisedUserService::UserMayModifySettings(const Extension* extension,
-                                                  base::string16* error) const {
-  DCHECK(ProfileIsSupervised());
-  ExtensionState result = GetExtensionState(*extension);
-  // Only allow the supervised user to modify the settings and enable or disable
-  // the extension if the supervised user has full control.
-  bool may_modify = result == ExtensionState::ALLOWED;
-  if (!may_modify && error)
-    *error = GetExtensionsLockedMessage();
-  return may_modify;
 }
 
 bool SupervisedUserService::MustRemainDisabled(

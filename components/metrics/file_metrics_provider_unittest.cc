@@ -237,8 +237,8 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
                         size_t count) {
     filter_actions_ = actions;
     filter_actions_remaining_ = count;
-    params->filter = base::Bind(&FileMetricsProviderTest::FilterSourcePath,
-                                base::Unretained(this));
+    params->filter = base::BindRepeating(
+        &FileMetricsProviderTest::FilterSourcePath, base::Unretained(this));
   }
 
   const bool create_large_files_;

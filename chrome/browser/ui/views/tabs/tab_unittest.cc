@@ -120,29 +120,30 @@ class FakeTabController : public TabController {
   }
   float GetHoverOpacityForRadialHighlight() const override { return 1.0f; }
 
-  base::string16 GetGroupTitle(tab_groups::TabGroupId group_id) const override {
+  base::string16 GetGroupTitle(
+      const tab_groups::TabGroupId& group_id) const override {
     return base::string16();
   }
 
   tab_groups::TabGroupColorId GetGroupColorId(
-      tab_groups::TabGroupId group_id) const override {
+      const tab_groups::TabGroupId& group_id) const override {
     return tab_groups::TabGroupColorId();
   }
 
   SkColor GetPaintedGroupColor(
-      tab_groups::TabGroupColorId color_id) const override {
+      const tab_groups::TabGroupColorId& color_id) const override {
     return SkColor();
   }
 
   void SetVisualDataForGroup(
-      tab_groups::TabGroupId group,
-      tab_groups::TabGroupVisualData visual_data) override {}
+      const tab_groups::TabGroupId& group,
+      const tab_groups::TabGroupVisualData& visual_data) override {}
 
-  void CloseAllTabsInGroup(tab_groups::TabGroupId group) override {}
+  void CloseAllTabsInGroup(const tab_groups::TabGroupId& group) override {}
 
-  void UngroupAllTabsInGroup(tab_groups::TabGroupId group) override {}
+  void UngroupAllTabsInGroup(const tab_groups::TabGroupId& group) override {}
 
-  void AddNewTabInGroup(tab_groups::TabGroupId group) override {}
+  void AddNewTabInGroup(const tab_groups::TabGroupId& group) override {}
 
   const Browser* GetBrowser() override { return nullptr; }
 

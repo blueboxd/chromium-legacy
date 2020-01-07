@@ -26,6 +26,7 @@ StackCopierSuspend::~StackCopierSuspend() = default;
 bool StackCopierSuspend::CopyStack(StackBuffer* stack_buffer,
                                    uintptr_t* stack_top,
                                    ProfileBuilder* profile_builder,
+                                   TimeTicks* timestamp,
                                    RegisterContext* thread_context) {
   const uintptr_t top = thread_delegate_->GetStackBaseAddress();
   uintptr_t bottom = 0;
@@ -41,6 +42,10 @@ bool StackCopierSuspend::CopyStack(StackBuffer* stack_buffer,
     // necessarily occurs before the thread is suspended by the object.
     std::unique_ptr<SuspendableThreadDelegate::ScopedSuspendThread>
         suspend_thread = thread_delegate_->CreateScopedSuspendThread();
+
+    // TimeTicks::Now() is implemented in terms of reads to the timer tick
+    // counter or TSC register on x86/x86_64 so is reentrant.
+    *timestamp = TimeTicks::Now();
 
     if (!suspend_thread->WasSuccessful())
       return false;

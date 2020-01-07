@@ -1290,6 +1290,15 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     std::unique_ptr<const PermissionSet> granted_permissions =
         extension_prefs_->GetGrantedPermissions(extension->id());
     CHECK(granted_permissions.get());
+    // We check the union of both granted permissions and runtime granted
+    // permissions as it is possible for permissions which were withheld during
+    // installation to have never entered the granted set, but to have later
+    // been granted as runtime permissions.
+    std::unique_ptr<const PermissionSet> runtime_granted_permissions =
+        extension_prefs_->GetRuntimeGrantedPermissions(extension->id());
+    std::unique_ptr<const PermissionSet> total_permissions =
+        PermissionSet::CreateUnion(*granted_permissions,
+                                   *runtime_granted_permissions);
 
     // Here, we check if an extension's privileges have increased in a manner
     // that requires the user's approval. This could occur because the browser
@@ -1297,7 +1306,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     // to a version that requires additional privileges.
     is_privilege_increase =
         PermissionMessageProvider::Get()->IsPrivilegeIncrease(
-            *granted_permissions,
+            *total_permissions,
             extension->permissions_data()->active_permissions(),
             extension->GetType());
 

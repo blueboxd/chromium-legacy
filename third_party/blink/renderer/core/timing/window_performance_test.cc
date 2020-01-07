@@ -80,13 +80,18 @@ class WindowPerformanceTest : public testing::Test {
   void ResetPerformance() {
     page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
     page_holder_->GetDocument().SetURL(KURL("https://example.com"));
-    performance_ = MakeGarbageCollected<WindowPerformance>(
-        page_holder_->GetDocument().domWindow());
+
+    LocalDOMWindow* window = LocalDOMWindow::From(GetScriptState());
+    performance_ = DOMWindowPerformance::performance(*window);
     unified_clock_ = std::make_unique<Performance::UnifiedClock>(
         test_task_runner_->GetMockClock(),
         test_task_runner_->GetMockTickClock());
     performance_->SetClocksForTesting(unified_clock_.get());
     performance_->time_origin_ = GetTimeOrigin();
+  }
+
+  ScriptState* GetScriptState() const {
+    return ToScriptStateForMainWorld(page_holder_->GetDocument().GetFrame());
   }
 
   Persistent<WindowPerformance> performance_;
@@ -190,7 +195,10 @@ TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
 // Make sure the output entries with the same timestamps follow the insertion
 // order. (http://crbug.com/767560)
 TEST_F(WindowPerformanceTest, EnsureEntryListOrder) {
-  V8TestingScope scope;
+  // Need to have an active V8 context for ScriptValues to operate.
+  v8::HandleScope handle_scope(GetScriptState()->GetIsolate());
+  v8::Local<v8::Context> context = GetScriptState()->GetContext();
+  v8::Context::Scope context_scope(context);
   auto initial_offset =
       test_task_runner_->NowTicks().since_origin().InSecondsF();
   test_task_runner_->FastForwardBy(GetTimeOrigin() - base::TimeTicks());
@@ -198,12 +206,12 @@ TEST_F(WindowPerformanceTest, EnsureEntryListOrder) {
   DummyExceptionStateForTesting exception_state;
   test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
   for (int i = 0; i < 8; i++) {
-    performance_->mark(scope.GetScriptState(), AtomicString::Number(i), nullptr,
+    performance_->mark(GetScriptState(), AtomicString::Number(i), nullptr,
                        exception_state);
   }
   test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(2));
   for (int i = 8; i < 17; i++) {
-    performance_->mark(scope.GetScriptState(), AtomicString::Number(i), nullptr,
+    performance_->mark(GetScriptState(), AtomicString::Number(i), nullptr,
                        exception_state);
   }
   PerformanceEntryVector entries = performance_->getEntries();

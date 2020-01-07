@@ -37,7 +37,7 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
   void Initialize(DemuxerStream* stream,
                   CdmContext* cdm_context,
                   RendererClient* client,
-                  const PipelineStatusCB& init_cb) final;
+                  PipelineStatusCallback init_cb) final;
   TimeSource* GetTimeSource() final;
   void Flush(base::OnceClosure callback) final;
   void StartPlaying() final;
@@ -121,7 +121,7 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
   RendererClient* client_ = nullptr;
 
   // Initialize() completion callback.
-  PipelineStatusCB init_cb_;
+  PipelineStatusCallback init_cb_;
 
   std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 

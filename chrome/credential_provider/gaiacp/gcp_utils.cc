@@ -778,6 +778,35 @@ std::string GetDictStringUTF8(const base::Value& dict, const char* name) {
   return value && value->is_string() ? value->GetString() : std::string();
 }
 
+HRESULT SearchForListInStringDictUTF8(
+    const std::string& list_key,
+    const std::string& json_string,
+    const std::initializer_list<base::StringPiece>& path,
+    std::vector<std::string>* output) {
+  DCHECK(path.size() > 0);
+
+  base::Optional<base::Value> json_obj =
+      base::JSONReader::Read(json_string, base::JSON_ALLOW_TRAILING_COMMAS);
+  if (!json_obj || !json_obj->is_dict()) {
+    LOGFN(ERROR) << "base::JSONReader::Read failed to translate to JSON";
+    return E_FAIL;
+  }
+
+  auto* value = json_obj->FindListPath(base::JoinString(path, "."));
+  if (value && value->is_list()) {
+    base::Value::ListStorage& string_list = value->GetList();
+    for (const base::Value& entry : string_list) {
+      if (entry.FindKey(list_key) && entry.FindKey(list_key)->is_string()) {
+        std::string value = entry.FindKey(list_key)->GetString();
+        output->push_back(value);
+      } else {
+        return E_FAIL;
+      }
+    }
+  }
+  return S_OK;
+}
+
 std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
                               const char* name) {
   return GetDictStringUTF8(*dict, name);

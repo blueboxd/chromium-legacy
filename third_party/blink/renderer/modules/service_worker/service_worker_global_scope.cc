@@ -218,10 +218,13 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
       installed_scripts_manager_(std::move(installed_scripts_manager)),
       cache_storage_remote_(std::move(cache_storage_remote)) {
-  // Create the event queue. At this point the timer is not started. It will be
+  // Create the event queue. At this point its timer is not started. It will be
   // started by DidEvaluateScript().
-  event_queue_ = std::make_unique<ServiceWorkerEventQueue>(WTF::BindRepeating(
-      &ServiceWorkerGlobalScope::OnIdleTimeout, WrapWeakPersistent(this)));
+  event_queue_ = std::make_unique<ServiceWorkerEventQueue>(
+      WTF::BindRepeating(&ServiceWorkerGlobalScope::OnBeforeStartEvent,
+                         WrapWeakPersistent(this)),
+      WTF::BindRepeating(&ServiceWorkerGlobalScope::OnIdleTimeout,
+                         WrapWeakPersistent(this)));
 }
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope() = default;
@@ -1288,6 +1291,11 @@ ServiceWorkerGlobalScope::GetServiceWorkerHost() {
   return service_worker_host_.get();
 }
 
+void ServiceWorkerGlobalScope::OnBeforeStartEvent(bool is_offline_event) {
+  DCHECK(IsContextThread());
+  SetIsOfflineMode(is_offline_event);
+}
+
 void ServiceWorkerGlobalScope::OnIdleTimeout() {
   DCHECK(IsContextThread());
   // RequestedTermination() returns true if ServiceWorkerEventQueue agrees
@@ -1833,12 +1841,21 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForMainResource(
 
   // We can use kNone as a |requestor_coep| for the main resource because it
   // must be the same origin.
-  event_queue_->EnqueueNormal(
-      WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
-                WrapWeakPersistent(this), std::move(params),
-                network::mojom::blink::CrossOriginEmbedderPolicy::kNone,
-                std::move(response_callback), std::move(callback)),
-      CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
+  if (params->is_offline_capability_check) {
+    event_queue_->EnqueueOffline(
+        WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
+                  WrapWeakPersistent(this), std::move(params),
+                  network::mojom::blink::CrossOriginEmbedderPolicy::kNone,
+                  std::move(response_callback), std::move(callback)),
+        CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
+  } else {
+    event_queue_->EnqueueNormal(
+        WTF::Bind(&ServiceWorkerGlobalScope::StartFetchEvent,
+                  WrapWeakPersistent(this), std::move(params),
+                  network::mojom::blink::CrossOriginEmbedderPolicy::kNone,
+                  std::move(response_callback), std::move(callback)),
+        CreateAbortCallback(&fetch_event_callbacks_), base::nullopt);
+  }
 }
 
 void ServiceWorkerGlobalScope::DispatchNotificationClickEvent(

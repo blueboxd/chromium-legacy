@@ -79,7 +79,7 @@ CSSPropertyID AnimationInputHelpers::KeyframeAttributeToCSSProperty(
       builder.Append('-');
     builder.Append(property[i]);
   }
-  return cssPropertyID(builder.ToString());
+  return cssPropertyID(&document, builder.ToString());
 }
 
 CSSPropertyID AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(
@@ -92,7 +92,7 @@ CSSPropertyID AnimationInputHelpers::KeyframeAttributeToPresentationAttribute(
   String unprefixed_property = RemoveSVGPrefix(property);
   if (SVGElement::IsAnimatableCSSProperty(QualifiedName(
           g_null_atom, AtomicString(unprefixed_property), g_null_atom)))
-    return cssPropertyID(unprefixed_property);
+    return cssPropertyID(&element->GetDocument(), unprefixed_property);
 
   return CSSPropertyID::kInvalid;
 }

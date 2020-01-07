@@ -1207,6 +1207,11 @@ const IDNTestCase kIdnCases[] = {
     // Whole-script-confusable in Ethiopic.
     {"xn--6xd66aa62c.com", L"ሠዐዐፐ.com", kUnsafe},
     {"xn--6xd66aa62c.et", L"ሠዐዐፐ.et", kSafe},
+
+    // Whole-script-confusable in Greek.
+    {"xn--mxapd.com", L"ικα.com", kUnsafe},
+    {"xn--mxapd.gr", L"ικα.gr", kSafe},
+    {"xn--mxapd.xn--qxam", L"ικα.ελ", kSafe},
 };
 
 namespace test {

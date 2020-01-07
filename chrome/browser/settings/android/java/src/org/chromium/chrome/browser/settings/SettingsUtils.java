@@ -22,7 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.XmlRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.ui.R;
+
 /**
  * A helper class for Settings.
  */
@@ -85,8 +85,7 @@ public class SettingsUtils {
      */
     public static boolean setOverflowMenuVisibility(@Nullable Activity activity, int visibility) {
         if (activity == null) return false;
-        // TODO(chouinard): Remove R qualification once this package has its own android_resources.
-        ViewGroup actionBar = activity.findViewById(android.support.design.R.id.action_bar);
+        ViewGroup actionBar = activity.findViewById(R.id.action_bar);
         int i = actionBar.getChildCount();
         ActionMenuView menuView = null;
         while (i-- > 0) {

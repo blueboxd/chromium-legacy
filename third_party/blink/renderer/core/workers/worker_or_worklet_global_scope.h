@@ -170,6 +170,11 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
     return outside_content_security_policy_headers_;
   }
 
+  void SetIsOfflineMode(bool is_offline_mode) {
+    DCHECK(web_worker_fetch_context_);
+    web_worker_fetch_context_->SetIsOfflineMode(is_offline_mode);
+  }
+
  private:
   void InitializeWebFetchContextIfNeeded();
   ResourceFetcher* CreateFetcherInternal(const FetchClientSettingsObject&,

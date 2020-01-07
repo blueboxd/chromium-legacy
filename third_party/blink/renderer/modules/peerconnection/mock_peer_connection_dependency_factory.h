@@ -172,18 +172,17 @@ class MockPeerConnectionDependencyFactory
   scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoTrackSourceProxy(
       webrtc::VideoTrackSourceInterface* source) override;
   scoped_refptr<webrtc::MediaStreamInterface> CreateLocalMediaStream(
-      const std::string& label) override;
+      const String& label) override;
   scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
-      const std::string& id,
+      const String& id,
       webrtc::VideoTrackSourceInterface* source) override;
   webrtc::SessionDescriptionInterface* CreateSessionDescription(
-      const std::string& type,
-      const std::string& sdp,
+      const String& type,
+      const String& sdp,
       webrtc::SdpParseError* error) override;
-  webrtc::IceCandidateInterface* CreateIceCandidate(
-      const std::string& sdp_mid,
-      int sdp_mline_index,
-      const std::string& sdp) override;
+  webrtc::IceCandidateInterface* CreateIceCandidate(const String& sdp_mid,
+                                                    int sdp_mline_index,
+                                                    const String& sdp) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingTaskRunner()
       override;

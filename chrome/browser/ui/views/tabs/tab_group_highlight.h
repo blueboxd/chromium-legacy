@@ -16,9 +16,9 @@ class TabGroupViews;
 class TabGroupHighlight : public views::View {
  public:
   TabGroupHighlight(TabGroupViews* tab_group_views,
-                    tab_groups::TabGroupId group);
+                    const tab_groups::TabGroupId& group);
 
-  tab_groups::TabGroupId group() const { return group_; }
+  const tab_groups::TabGroupId& group() const { return group_; }
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;

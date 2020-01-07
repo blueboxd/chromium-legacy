@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 
 namespace base {
 class DictionaryValue;

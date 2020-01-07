@@ -32,12 +32,12 @@ class MetricsStateManager final {
  public:
   // A callback that can be invoked to store client info to persistent storage.
   // Storing an empty client_id will resulted in the backup being voided.
-  typedef base::Callback<void(const ClientInfo& client_info)>
+  typedef base::RepeatingCallback<void(const ClientInfo& client_info)>
       StoreClientInfoCallback;
 
   // A callback that can be invoked to load client info stored through the
   // StoreClientInfoCallback.
-  typedef base::Callback<std::unique_ptr<ClientInfo>(void)>
+  typedef base::RepeatingCallback<std::unique_ptr<ClientInfo>(void)>
       LoadClientInfoCallback;
 
   ~MetricsStateManager();

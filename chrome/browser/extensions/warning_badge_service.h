@@ -10,6 +10,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_set.h"
+#include "extensions/common/extension_id.h"
 
 class Profile;
 

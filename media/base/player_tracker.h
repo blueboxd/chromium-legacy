@@ -22,8 +22,8 @@ class MEDIA_EXPORT PlayerTracker {
   // - |cdm_unset_cb| is fired when the CDM is detached from the player. The
   //   player should stop using the CDM and release any ref-count to the CDM.
   // Returns a registration ID which can be used to unregister a player.
-  virtual int RegisterPlayer(const base::Closure& new_key_cb,
-                             const base::Closure& cdm_unset_cb) = 0;
+  virtual int RegisterPlayer(base::RepeatingClosure new_key_cb,
+                             base::RepeatingClosure cdm_unset_cb) = 0;
 
   // Unregisters a previously registered player. This should be called when
   // the CDM is detached from the player (e.g. setMediaKeys(0)), or when the

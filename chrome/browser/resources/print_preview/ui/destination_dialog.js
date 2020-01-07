@@ -330,7 +330,6 @@ Polymer({
         this.$$('select').value = this.activeUser;
       });
     }
-    this.$.printList.forceIronResize();
   },
 
   /** @return {boolean} Whether the dialog is open. */

@@ -79,9 +79,9 @@ TabRestoreServiceDelegateImplIOS::GetTabGroupForTab(int index) const {
   return base::nullopt;
 }
 
-tab_groups::TabGroupVisualData*
+const tab_groups::TabGroupVisualData*
 TabRestoreServiceDelegateImplIOS::GetVisualDataForGroup(
-    tab_groups::TabGroupId group) const {
+    const tab_groups::TabGroupId& group) const {
   // Since we never return a group from GetTabGroupForTab(), this should never
   // be called.
   NOTREACHED();
@@ -89,8 +89,8 @@ TabRestoreServiceDelegateImplIOS::GetVisualDataForGroup(
 }
 
 void TabRestoreServiceDelegateImplIOS::SetVisualDataForGroup(
-    tab_groups::TabGroupId group,
-    tab_groups::TabGroupVisualData visual_data) {
+    const tab_groups::TabGroupId& group,
+    const tab_groups::TabGroupVisualData& visual_data) {
   // Not supported on iOS.
 }
 
@@ -115,7 +115,7 @@ sessions::LiveTab* TabRestoreServiceDelegateImplIOS::AddRestoredTab(
     int selected_navigation,
     const std::string& extension_app_id,
     base::Optional<tab_groups::TabGroupId> group,
-    const tab_groups::TabGroupVisualData group_visual_data,
+    const tab_groups::TabGroupVisualData& group_visual_data,
     bool select,
     bool pin,
     bool from_last_session,

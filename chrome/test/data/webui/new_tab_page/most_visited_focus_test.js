@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 import 'chrome://new-tab-page/most_visited.js';
+import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js';
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
@@ -41,7 +43,11 @@ suite('NewTabPageMostVisitedFocusTest', () => {
   async function addTiles(n) {
     const tiles = Array(n).fill(0).map((x, i) => {
       const char = String.fromCharCode(i + /* 'a' */ 97);
-      return {title: char, url: {url: `https://${char}/`}};
+      return {
+        title: char,
+        titleDirection: mojoBase.mojom.TextDirection.LEFT_TO_RIGHT,
+        url: {url: `https://${char}/`},
+      };
     });
     const tilesRendered = eventToPromise('dom-change', mostVisited.$.tiles);
     testProxy.callbackRouterRemote.setMostVisitedInfo({

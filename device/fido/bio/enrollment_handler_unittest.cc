@@ -24,7 +24,8 @@ class BioEnrollmentHandlerTest : public ::testing::Test {
   void SetUp() override {
     virtual_device_factory_.SetSupportedProtocol(ProtocolVersion::kCtap2);
     virtual_device_factory_.mutable_state()->pin = kPIN;
-    virtual_device_factory_.mutable_state()->retries = 8;
+    virtual_device_factory_.mutable_state()->pin_retries =
+        device::kMaxPinRetries;
   }
 
  public:

@@ -43,6 +43,7 @@ class CSSMediaRule;
 class CSSStyleDeclaration;
 class CSSStyleRule;
 class CSSStyleSheet;
+class Document;
 class Element;
 class ExceptionState;
 class InspectorNetworkAgent;
@@ -59,6 +60,9 @@ class InspectorStyle final : public GarbageCollected<InspectorStyle> {
                  InspectorStyleSheetBase* parent_style_sheet);
 
   CSSStyleDeclaration* CssStyle() { return style_.Get(); }
+  InspectorStyleSheetBase* InspectorStyleSheet() {
+    return parent_style_sheet_.Get();
+  }
   std::unique_ptr<protocol::CSS::CSSStyle> BuildObjectForStyle();
   bool StyleText(String* result);
   bool TextForRange(const SourceRange&, String* result);
@@ -92,6 +96,7 @@ class InspectorStyleSheetBase
   virtual bool SetText(const String&, ExceptionState&) = 0;
   virtual bool GetText(String* result) = 0;
   virtual String SourceMapURL() { return String(); }
+  virtual const Document* GetDocument() = 0;
 
   std::unique_ptr<protocol::CSS::CSSStyle> BuildObjectForStyle(
       CSSStyleDeclaration*);
@@ -181,6 +186,7 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
   const CSSRuleVector& FlatRules();
   CSSRuleSourceData* SourceDataForRule(CSSRule*);
   String SourceMapURL() override;
+  const Document* GetDocument() override;
 
  protected:
   InspectorStyle* GetInspectorStyle(CSSStyleDeclaration*) override;
@@ -249,6 +255,8 @@ class InspectorStyleSheetForInlineStyle final : public InspectorStyleSheetBase {
   CSSRuleSourceData* RuleSourceData();
 
   void Trace(blink::Visitor*) override;
+
+  const Document* GetDocument() override;
 
  protected:
   InspectorStyle* GetInspectorStyle(CSSStyleDeclaration*) override;

@@ -422,7 +422,7 @@ void OnGetKeyDataEx(const base::WeakPtr<AuthAttemptState>& attempt,
     }
   }
 
-  SystemSaltGetter::Get()->GetSystemSalt(base::Bind(
+  SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
       &OnGetSystemSalt, attempt, resolver, ephemeral, create_if_nonexistent));
 }
 
@@ -657,8 +657,8 @@ void CryptohomeAuthenticator::AuthenticateToUnlock(
   remove_user_data_on_failure_ = false;
   check_key_attempted_ = true;
   SystemSaltGetter::Get()->GetSystemSalt(
-      base::Bind(&CheckKey, current_state_->AsWeakPtr(),
-                 scoped_refptr<CryptohomeAuthenticator>(this)));
+      base::BindOnce(&CheckKey, current_state_->AsWeakPtr(),
+                     scoped_refptr<CryptohomeAuthenticator>(this)));
 }
 
 void CryptohomeAuthenticator::LoginAsSupervisedUser(
@@ -846,7 +846,7 @@ void CryptohomeAuthenticator::RecoverEncryptedData(
     const std::string& old_password) {
   migrate_attempted_ = true;
   current_state_->ResetCryptohomeStatus();
-  SystemSaltGetter::Get()->GetSystemSalt(base::Bind(
+  SystemSaltGetter::Get()->GetSystemSalt(base::BindOnce(
       &Migrate, current_state_->AsWeakPtr(),
       scoped_refptr<CryptohomeAuthenticator>(this), true, old_password));
 }
@@ -880,7 +880,7 @@ bool CryptohomeAuthenticator::VerifyOwner() {
 
   CheckSafeModeOwnership(
       current_state_->user_context,
-      base::Bind(&CryptohomeAuthenticator::OnOwnershipChecked, this));
+      base::BindOnce(&CryptohomeAuthenticator::OnOwnershipChecked, this));
   return false;
 }
 

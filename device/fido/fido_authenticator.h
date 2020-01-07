@@ -47,7 +47,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   using GetRetriesCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               base::Optional<pin::RetriesResponse>)>;
-  using GetPINTokenCallback =
+  using GetTokenCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               base::Optional<pin::TokenResponse>)>;
   using SetPINCallback =
@@ -89,10 +89,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   // authenticator locks. It is only valid to call this method if |Options|
   // indicates that the authenticator supports PINs.
   virtual void GetRetries(GetRetriesCallback callback);
-  // GetPINToken uses the given PIN to request a PIN-token from an
+  // GetPINToken uses the given PIN to request a PinUvAuthToken from an
   // authenticator. It is only valid to call this method if |Options| indicates
   // that the authenticator supports PINs.
-  virtual void GetPINToken(std::string pin, GetPINTokenCallback callback);
+  virtual void GetPINToken(std::string pin, GetTokenCallback callback);
+  // GetUvToken uses internal user verification to request a PinUvAuthToken from
+  // an authenticator. It is only valid to call this method if |Options|
+  // indicates that the authenticator supports UV tokens.
+  virtual void GetUvToken(GetTokenCallback callback);
   // SetPIN sets a new PIN on a device that does not currently have one. The
   // length of |pin| must respect |pin::kMinLength| and |pin::kMaxLength|. It is
   // only valid to call this method if |Options| indicates that the

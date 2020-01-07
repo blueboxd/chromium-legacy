@@ -487,13 +487,15 @@ def _handle_perf_results(
   # the problem is fixed on the dashboard side.
   # pool = multiprocessing.Pool(_GetCpuCount())
   pool = multiprocessing.Pool(2)
+  upload_result_timeout = False
   try:
     async_result = pool.map_async(
         _upload_individual_benchmark, invocations)
     # TODO(crbug.com/947035): What timeout is reasonable?
     results = async_result.get(timeout=4000)
   except multiprocessing.TimeoutError:
-    logging.error('Failed uploading benchmarks to perf dashboard in parallel')
+    upload_result_timeout = True
+    logging.error('Timeout uploading benchmarks to perf dashboard in parallel')
     results = []
     for benchmark_name in benchmark_directory_map:
       results.append((benchmark_name, False))
@@ -530,7 +532,7 @@ def _handle_perf_results(
   extra_links[logdog_label] = logdog_stream
   end_time = time.time()
   print_duration('Uploading results to perf dashboard', begin_time, end_time)
-  if upload_failures_counter > 0:
+  if upload_result_timeout or upload_failures_counter > 0:
     return 1, benchmark_upload_result_map
   return 0, benchmark_upload_result_map
 

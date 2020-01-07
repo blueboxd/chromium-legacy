@@ -51,8 +51,7 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
           content::BrowserContext::GetDefaultStoragePartition(profile)
               ->GetFileSystemContext())),
       indexed_dbs_(new CannedBrowsingDataIndexedDBHelper(
-          content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetIndexedDBContext())),
+          content::BrowserContext::GetDefaultStoragePartition(profile))),
       local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
       service_workers_(new CannedBrowsingDataServiceWorkerHelper(
           content::BrowserContext::GetDefaultStoragePartition(profile)

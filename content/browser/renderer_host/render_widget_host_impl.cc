@@ -36,10 +36,7 @@
 #include "cc/trees/browser_controls_params.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/features.h"
-#include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/host/host_frame_sink_manager.h"
-#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
@@ -324,7 +321,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
       hung_renderer_delay_(TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       new_content_rendering_delay_(
           TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
-      compositor_frame_sink_receiver_(this),
       frame_token_message_queue_(std::move(frame_token_message_queue)),
       render_frame_metadata_provider_(
 #if defined(OS_MACOSX)
@@ -377,8 +373,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
         base::BindRepeating(&RenderWidgetHostImpl::ClearDisplayedGraphics,
                             weak_factory_.GetWeakPtr()));
   }
-
-  enable_viz_ = features::IsVizDisplayCompositorEnabled();
 
   delegate_->RenderWidgetCreated(this);
   render_frame_metadata_provider_.AddObserver(this);
@@ -446,15 +440,14 @@ RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
 void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
   if (view) {
     view_ = view->GetWeakPtr();
-    if (enable_viz_) {
-      if (!create_frame_sink_callback_.is_null())
-        std::move(create_frame_sink_callback_).Run(view_->GetFrameSinkId());
-    } else {
-      // Views start out not needing begin frames, so only update its state
-      // if the value has changed.
-      if (needs_begin_frames_)
-        view_->SetNeedsBeginFrames(needs_begin_frames_);
-    }
+    if (!create_frame_sink_callback_.is_null())
+      std::move(create_frame_sink_callback_).Run(view_->GetFrameSinkId());
+
+    // Views start out not needing begin frames, so only update its state if the
+    // value has changed. |needs_begin_frames_| should only ever be true for
+    // Android WebView since begin frames are handled by viz everywhere else.
+    if (needs_begin_frames_)
+      view_->SetNeedsBeginFrames(needs_begin_frames_);
   } else {
     view_.reset();
   }
@@ -2021,19 +2014,6 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
     view_.reset();
   }
 
-  // The display compositor has ownership of shared memory for each
-  // SharedBitmapId that has been reported from the client. Since the client is
-  // gone that memory can be freed. If we don't then it would leak.
-  if (shared_bitmap_manager_) {
-    for (const auto& id : owned_bitmaps_)
-      shared_bitmap_manager_->ChildDeletedSharedBitmap(id);
-  } else {
-    // If the display compositor is not in the browser process, then the
-    // |bitmap_manager| is not present in the process either, and no bitmaps
-    // should have been registered with this class.
-    DCHECK(owned_bitmaps_.empty());
-  }
-
   render_process_blocked_state_changed_subscription_.reset();
   process_->RemovePriorityClient(this);
   process_->RemoveObserver(this);
@@ -2176,31 +2156,6 @@ void RenderWidgetHostImpl::OnRequestSetBounds(const gfx::Rect& bounds) {
     view_->SetBounds(bounds);
   }
   Send(new WidgetMsg_SetBounds_ACK(routing_id_));
-}
-
-void RenderWidgetHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
-  // |has_damage| is not transmitted.
-  viz::BeginFrameAck modified_ack = ack;
-  modified_ack.has_damage = false;
-
-  if (view_)
-    view_->OnDidNotProduceFrame(modified_ack);
-}
-
-void RenderWidgetHostImpl::DidAllocateSharedBitmap(
-    base::ReadOnlySharedMemoryRegion region,
-    const viz::SharedBitmapId& id) {
-  if (!shared_bitmap_manager_->ChildAllocatedSharedBitmap(region.Map(), id)) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RWH_SHARED_BITMAP);
-  }
-  owned_bitmaps_.insert(id);
-}
-
-void RenderWidgetHostImpl::DidDeleteSharedBitmap(
-    const viz::SharedBitmapId& id) {
-  shared_bitmap_manager_->ChildDeletedSharedBitmap(id);
-  owned_bitmaps_.erase(id);
 }
 
 void RenderWidgetHostImpl::DidUpdateVisualProperties(
@@ -2910,41 +2865,23 @@ void RenderWidgetHostImpl::RequestCompositorFrameSink(
         compositor_frame_sink_receiver,
     mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient>
         compositor_frame_sink_client) {
-  if (enable_viz_) {
-      // Connects the viz process end of CompositorFrameSink message pipes. The
-      // renderer compositor may request a new CompositorFrameSink on context
-      // loss, which will destroy the existing CompositorFrameSink.
-      auto callback = base::BindOnce(
-          [](viz::HostFrameSinkManager* manager,
-             mojo::PendingReceiver<viz::mojom::CompositorFrameSink> receiver,
-             mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient> client,
-             const viz::FrameSinkId& frame_sink_id) {
-            manager->CreateCompositorFrameSink(
-                frame_sink_id, std::move(receiver), std::move(client));
-          },
-          base::Unretained(GetHostFrameSinkManager()),
-          std::move(compositor_frame_sink_receiver),
-          std::move(compositor_frame_sink_client));
-
-      if (view_)
-        std::move(callback).Run(view_->GetFrameSinkId());
-      else
-        create_frame_sink_callback_ = std::move(callback);
-
-      return;
-  }
-
-  // Consider any bitmaps registered with the old CompositorFrameSink as gone,
-  // they will be re-registered on the newly requested CompositorFrameSink if
-  // they are meant to be used still. https://crbug.com/862584.
-  for (const auto& id : owned_bitmaps_)
-    shared_bitmap_manager_->ChildDeletedSharedBitmap(id);
-  owned_bitmaps_.clear();
-
-  compositor_frame_sink_receiver_.reset();
-  compositor_frame_sink_receiver_.Bind(
+  // Connects the viz process end of CompositorFrameSink message pipes. The
+  // renderer compositor may request a new CompositorFrameSink on context
+  // loss, which will destroy the existing CompositorFrameSink.
+  auto callback = base::BindOnce(
+      [](mojo::PendingReceiver<viz::mojom::CompositorFrameSink> receiver,
+         mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient> client,
+         const viz::FrameSinkId& frame_sink_id) {
+        GetHostFrameSinkManager()->CreateCompositorFrameSink(
+            frame_sink_id, std::move(receiver), std::move(client));
+      },
       std::move(compositor_frame_sink_receiver),
-      BrowserMainLoop::GetInstance()->GetResizeTaskRunner());
+      std::move(compositor_frame_sink_client));
+
+  if (view_)
+    std::move(callback).Run(view_->GetFrameSinkId());
+  else
+    create_frame_sink_callback_ = std::move(callback);
 }
 
 void RenderWidgetHostImpl::RegisterRenderFrameMetadataObserver(
@@ -2985,38 +2922,6 @@ void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frames) {
   needs_begin_frames_ = needs_begin_frames || browser_fling_needs_begin_frame_;
   if (view_)
     view_->SetNeedsBeginFrames(needs_begin_frames_);
-}
-
-void RenderWidgetHostImpl::SetWantsAnimateOnlyBeginFrames() {
-  if (view_)
-    view_->SetWantsAnimateOnlyBeginFrames();
-}
-
-void RenderWidgetHostImpl::SubmitCompositorFrameSync(
-    const viz::LocalSurfaceId& local_surface_id,
-    viz::CompositorFrame frame,
-    base::Optional<viz::HitTestRegionList> hit_test_region_list,
-    uint64_t submit_time,
-    const SubmitCompositorFrameSyncCallback callback) {
-  NOTIMPLEMENTED();
-}
-
-void RenderWidgetHostImpl::SubmitCompositorFrame(
-    const viz::LocalSurfaceId& local_surface_id,
-    viz::CompositorFrame frame,
-    base::Optional<viz::HitTestRegionList> hit_test_region_list,
-    uint64_t submit_time) {
-  if (view_) {
-    // If Surface Synchronization is on, then |new_content_rendering_timeout_|
-    // is stopped in DidReceiveFirstFrameAfterNavigation.
-    view_->SubmitCompositorFrame(local_surface_id, std::move(frame),
-                                 std::move(hit_test_region_list));
-    view_->DidReceiveRendererFrame();
-  } else {
-    std::vector<viz::ReturnedResource> resources =
-        viz::TransferableResource::ReturnResources(frame.resource_list);
-    renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
-  }
 }
 
 void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {

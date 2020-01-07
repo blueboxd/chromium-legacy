@@ -73,7 +73,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   AppSorting* app_sorting() override;
   void RegisterExtensionWithRequestContexts(
       const Extension* extension,
-      const base::Closure& callback) override;
+      base::OnceClosure callback) override;
   void UnregisterExtensionWithRequestContexts(
       const std::string& extension_id,
       const UnloadedExtensionReason reason) override;

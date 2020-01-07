@@ -899,7 +899,9 @@ TEST_F(BridgedNativeWidgetInitTest, InitNotCalled) {
 }
 
 // Tests the shadow type given in InitParams.
-TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
+// Disabled because shadows are disabled on the bots - see
+// https://crbug.com/899286.
+TEST_F(BridgedNativeWidgetInitTest, DISABLED_ShadowType) {
   // Verify Widget::InitParam defaults and arguments added from SetUp().
   EXPECT_EQ(Widget::InitParams::TYPE_WINDOW_FRAMELESS, type_);
   EXPECT_EQ(Widget::InitParams::WindowOpacity::kOpaque, opacity_);

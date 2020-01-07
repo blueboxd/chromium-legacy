@@ -34,7 +34,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">블루투스 설정을 표시합니다. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">신호 강도 <ph name="SIGNAL_STRENGTH" /></translation>
-<translation id="1316069254387866896">항상 실행기 표시</translation>
+<translation id="1316069254387866896">실행기 항상 표시</translation>
 <translation id="1341651618736211726">더보기</translation>
 <translation id="1346748346194534595">오른쪽</translation>
 <translation id="1351937230027495976">메뉴 접기</translation>
@@ -345,7 +345,6 @@
 <translation id="5777841717266010279">화면 공유를 중단하시겠습니까?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" />에서 <ph name="ROUTE_TITLE" /> 중지</translation>
-<translation id="5860033963881614850">사용 안함</translation>
 <translation id="5895138241574237353">다시 시작</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" />(<ph name="MAIL" />)</translation>

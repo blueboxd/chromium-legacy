@@ -800,7 +800,7 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
       base::OnceCallback<void(std::string)> provide_pin_cb) override {
     NOTREACHED();
   }
-  void FinishCollectPIN() override { NOTREACHED(); }
+  void FinishCollectToken() override { NOTREACHED(); }
   void SetMightCreateResidentCredential(bool v) override {}
 
   bool controls_dispatch_ = false;

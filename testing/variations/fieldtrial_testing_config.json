@@ -1535,7 +1535,6 @@
     "CertDualVerificationTrial": [
         {
             "platforms": [
-                "linux",
                 "mac"
             ],
             "experiments": [
@@ -1543,21 +1542,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CertDualVerificationTrial"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CertVerifierBuiltin": [
-        {
-            "platforms": [
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_V2",
-                    "enable_features": [
-                        "CertVerifierBuiltin"
                     ]
                 }
             ]
@@ -3650,24 +3634,6 @@
             ]
         }
     ],
-    "MixedContentShieldRemoval": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "MixedContentSiteSetting"
-                    ]
-                }
-            ]
-        }
-    ],
     "MyChromeEverywhere": [
         {
             "platforms": [
@@ -5033,7 +4999,8 @@
                     "params": {
                         "http_rtt_multiplier_for_proactive_throttling_2G": "1.0",
                         "http_rtt_multiplier_for_proactive_throttling_3G": "1.0",
-                        "http_rtt_multiplier_for_proactive_throttling_Slow-2G": "1.0"
+                        "http_rtt_multiplier_for_proactive_throttling_Slow-2G": "1.0",
+                        "queued_requests_dispatch_periodicity_ms": "5"
                     },
                     "enable_features": [
                         "ProactivelyThrottleLowPriorityRequests"

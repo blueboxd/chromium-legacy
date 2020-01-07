@@ -255,8 +255,7 @@ void AppBrowserController::DidStartNavigation(
   SetInitialURL(navigation_handle->GetURL());
 }
 
-void AppBrowserController::DidChangeThemeColor(
-    base::Optional<SkColor> theme_color) {
+void AppBrowserController::DidChangeThemeColor() {
   browser_->window()->UpdateFrameColor();
 }
 
@@ -296,7 +295,7 @@ void AppBrowserController::OnTabStripModelChanged(
     const TabStripSelectionChange& selection) {
   if (selection.active_tab_changed()) {
     content::WebContentsObserver::Observe(selection.new_contents);
-    DidChangeThemeColor(GetThemeColor());
+    DidChangeThemeColor();
   }
   if (change.type() == TabStripModelChange::kInserted) {
     for (const auto& contents : change.GetInsert()->contents)

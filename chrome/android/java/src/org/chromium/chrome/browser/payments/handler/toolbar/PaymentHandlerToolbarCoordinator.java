@@ -65,9 +65,10 @@ public class PaymentHandlerToolbarCoordinator {
                                               PaymentHandlerToolbarMediator.MINIMUM_LOAD_PROGRESS)
                                       .with(PaymentHandlerToolbarProperties.SECURITY_ICON,
                                               ConnectionSecurityLevel.NONE)
+                                      .with(PaymentHandlerToolbarProperties.URL, url)
                                       .build();
         PaymentHandlerToolbarMediator mediator =
-                new PaymentHandlerToolbarMediator(model, webContents, url, observer);
+                new PaymentHandlerToolbarMediator(model, webContents, observer);
         webContents.addObserver(mediator);
         PropertyModelChangeProcessor changeProcessor = PropertyModelChangeProcessor.create(
                 model, mToolbarView, PaymentHandlerToolbarViewBinder::bind);

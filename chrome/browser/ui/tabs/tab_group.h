@@ -26,15 +26,15 @@ class TabGroupController;
 class TabGroup {
  public:
   TabGroup(TabGroupController* controller,
-           tab_groups::TabGroupId id,
-           tab_groups::TabGroupVisualData visual_data);
+           const tab_groups::TabGroupId& id,
+           const tab_groups::TabGroupVisualData& visual_data);
   ~TabGroup();
 
-  tab_groups::TabGroupId id() const { return id_; }
-  tab_groups::TabGroupVisualData* visual_data() const {
+  const tab_groups::TabGroupId& id() const { return id_; }
+  const tab_groups::TabGroupVisualData* visual_data() const {
     return visual_data_.get();
   }
-  void SetVisualData(tab_groups::TabGroupVisualData visual_data);
+  void SetVisualData(const tab_groups::TabGroupVisualData& visual_data);
 
   // Returns the user-visible group title that will be displayed in context
   // menus and tooltips. Generates a descriptive placeholder if the user has

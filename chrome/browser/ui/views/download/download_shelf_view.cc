@@ -335,10 +335,6 @@ void DownloadShelfView::OnThemeChanged() {
   UpdateColorsFromTheme();
 }
 
-void DownloadShelfView::LinkClicked(views::Link* source, int event_flags) {
-  chrome::ShowDownloads(browser_);
-}
-
 void DownloadShelfView::ButtonPressed(
     views::Button* button, const ui::Event& event) {
   if (button == close_button_)

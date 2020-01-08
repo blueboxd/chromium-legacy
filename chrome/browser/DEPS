@@ -458,4 +458,7 @@ specific_include_rules = {
   "chrome_authenticator_request_delegate_unittest\.cc": [
     "+third_party/microsoft_webauthn/webauthn.h",
   ],
+  "chrome_find_request_manager_browsertest\.cc": [
+    "+pdf/document_loader_impl.h",
+  ],
 }

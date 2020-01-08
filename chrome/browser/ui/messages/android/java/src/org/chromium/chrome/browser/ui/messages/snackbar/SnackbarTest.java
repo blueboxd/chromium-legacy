@@ -11,7 +11,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;

@@ -19,9 +19,9 @@
         'debugger-step-into-document-write.html', step2);
   }
 
-  function step2(sourceFrame) {
+  async function step2(sourceFrame) {
     TestRunner.addResult('Script source was shown.');
-    SourcesTestRunner.setBreakpoint(sourceFrame, 3, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 3, '', true);
     SourcesTestRunner.waitUntilPaused(step3);
     TestRunner.reloadPage(completeTest);
   }

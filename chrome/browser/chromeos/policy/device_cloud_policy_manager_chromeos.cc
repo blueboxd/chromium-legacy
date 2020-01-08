@@ -427,15 +427,7 @@ void DeviceCloudPolicyManagerChromeOS::CreateStatusUploader() {
   status_uploader_.reset(new StatusUploader(
       client(),
       std::make_unique<DeviceStatusCollector>(
-          local_state_, chromeos::system::StatisticsProvider::GetInstance(),
-          DeviceStatusCollector::VolumeInfoFetcher(),
-          DeviceStatusCollector::CPUStatisticsFetcher(),
-          DeviceStatusCollector::CPUTempFetcher(),
-          DeviceStatusCollector::AndroidStatusFetcher(),
-          DeviceStatusCollector::TpmStatusFetcher(),
-          DeviceStatusCollector::EMMCLifetimeFetcher(),
-          DeviceStatusCollector::StatefulPartitionInfoFetcher(),
-          DeviceStatusCollector::CrosHealthdDataFetcher()),
+          local_state_, chromeos::system::StatisticsProvider::GetInstance()),
       task_runner_, kDeviceStatusUploadFrequency));
 }
 

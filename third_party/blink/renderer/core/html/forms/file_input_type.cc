@@ -116,9 +116,11 @@ FormControlState FileInputType::SaveFormControlState() const {
   return state;
 }
 
-void FileInputType::RestoreFormControlState(const FormControlState& state) {
+bool FileInputType::RestoreFormControlState(const FormControlState& state) {
+  // Check if the state is broken.
+  // See File::AppendToControlState() and File::CreateFromControlState().
   if (state.ValueSize() % 3)
-    return;
+    return false;
   HeapVector<Member<File>> file_vector =
       CreateFilesFrom<File*, HeapVector<Member<File>>>(
           state, &File::CreateFromControlState);
@@ -126,6 +128,9 @@ void FileInputType::RestoreFormControlState(const FormControlState& state) {
   for (const auto& file : file_vector)
     file_list->Append(file);
   SetFilesAndDispatchEvents(file_list);
+  // This function always returns false because SetFilesAndDispatchEvents()
+  // dispatches events if files are changed.
+  return false;
 }
 
 void FileInputType::AppendToFormData(FormData& form_data) const {

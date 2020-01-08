@@ -37,8 +37,11 @@ enum TrustedTypeViolationKind {
   kTrustedScriptAssignment,
   kTrustedScriptURLAssignment,
   kTrustedHTMLAssignmentAndDefaultPolicyFailed,
+  kTrustedHTMLAssignmentAndNoDefaultPolicyExisted,
   kTrustedScriptAssignmentAndDefaultPolicyFailed,
+  kTrustedScriptAssignmentAndNoDefaultPolicyExisted,
   kTrustedScriptURLAssignmentAndDefaultPolicyFailed,
+  kTrustedScriptURLAssignmentAndNoDefaultPolicyExisted,
   kNavigateToJavascriptURL,
   kNavigateToJavascriptURLAndDefaultPolicyFailed,
   kScriptExecution,
@@ -58,12 +61,21 @@ const char* GetMessage(TrustedTypeViolationKind kind) {
     case kTrustedHTMLAssignmentAndDefaultPolicyFailed:
       return "This document requires 'TrustedHTML' assignment and the "
              "'default' policy failed to execute.";
+    case kTrustedHTMLAssignmentAndNoDefaultPolicyExisted:
+      return "This document requires 'TrustedHTML' assignment and no "
+             "'default' policy for 'TrustedHTML' has been defined.";
     case kTrustedScriptAssignmentAndDefaultPolicyFailed:
       return "This document requires 'TrustedScript' assignment and the "
              "'default' policy failed to execute.";
+    case kTrustedScriptAssignmentAndNoDefaultPolicyExisted:
+      return "This document requires 'TrustedScript' assignment and no "
+             "'default' policy for 'TrustedScript' has been defined.";
     case kTrustedScriptURLAssignmentAndDefaultPolicyFailed:
       return "This document requires 'TrustedScriptURL' assignment and the "
              "'default' policy failed to execute.";
+    case kTrustedScriptURLAssignmentAndNoDefaultPolicyExisted:
+      return "This document requires 'TrustedScriptURL' assignment and no "
+             "'default' policy for 'TrustedScriptURL' has been defined.";
     case kNavigateToJavascriptURL:
       return "This document requires 'TrustedScript' assignment. "
              "Navigating to a javascript:-URL is equivalent to a "
@@ -201,8 +213,8 @@ String GetStringFromScriptHelper(
     return script;
   }
 
-  TrustedScript* result =
-      default_policy->CreateScript(doc->GetIsolate(), script, exception_state);
+  TrustedScript* result = default_policy->CreateScript(
+      doc->GetIsolate(), script, HeapVector<ScriptValue>(), exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     return String();
@@ -354,15 +366,16 @@ String GetStringFromTrustedHTML(const String& string,
   }
 
   if (!default_policy->HasCreateHTML()) {
-    if (TrustedTypeFail(kTrustedHTMLAssignmentAndDefaultPolicyFailed,
+    if (TrustedTypeFail(kTrustedHTMLAssignmentAndNoDefaultPolicyExisted,
                         execution_context, exception_state, string)) {
       return g_empty_string;
     } else {
       return string;
     }
   }
-  TrustedHTML* result = default_policy->CreateHTML(
-      execution_context->GetIsolate(), string, exception_state);
+  TrustedHTML* result =
+      default_policy->CreateHTML(execution_context->GetIsolate(), string,
+                                 HeapVector<ScriptValue>(), exception_state);
   if (exception_state.HadException()) {
     return g_empty_string;
   }
@@ -419,7 +432,7 @@ String GetStringFromTrustedScript(const String& potential_script,
   }
 
   if (!default_policy->HasCreateScript()) {
-    if (TrustedTypeFail(kTrustedScriptAssignmentAndDefaultPolicyFailed,
+    if (TrustedTypeFail(kTrustedScriptAssignmentAndNoDefaultPolicyExisted,
                         execution_context, exception_state, potential_script)) {
       return g_empty_string;
     } else {
@@ -427,7 +440,8 @@ String GetStringFromTrustedScript(const String& potential_script,
     }
   }
   TrustedScript* result = default_policy->CreateScript(
-      execution_context->GetIsolate(), potential_script, exception_state);
+      execution_context->GetIsolate(), potential_script,
+      HeapVector<ScriptValue>(), exception_state);
   DCHECK_EQ(!result, exception_state.HadException());
   if (exception_state.HadException()) {
     return g_empty_string;
@@ -474,7 +488,7 @@ String GetStringFromTrustedScriptURL(
   }
 
   if (!default_policy->HasCreateScriptURL()) {
-    if (TrustedTypeFail(kTrustedScriptURLAssignmentAndDefaultPolicyFailed,
+    if (TrustedTypeFail(kTrustedScriptURLAssignmentAndNoDefaultPolicyExisted,
                         execution_context, exception_state, string)) {
       return g_empty_string;
     } else {
@@ -482,7 +496,8 @@ String GetStringFromTrustedScriptURL(
     }
   }
   TrustedScriptURL* result = default_policy->CreateScriptURL(
-      execution_context->GetIsolate(), string, exception_state);
+      execution_context->GetIsolate(), string, HeapVector<ScriptValue>(),
+      exception_state);
 
   if (exception_state.HadException()) {
     return g_empty_string;

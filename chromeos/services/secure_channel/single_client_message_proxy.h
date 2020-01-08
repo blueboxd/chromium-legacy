@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace chromeos {
 

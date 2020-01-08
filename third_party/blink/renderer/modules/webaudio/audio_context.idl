@@ -33,10 +33,9 @@ enum AudioContextLatencyCategory {
 // See https://webaudio.github.io/web-audio-api/#AudioContext
 [
     Exposed=Window,
-    ActiveScriptWrappable,
-    Measure
+    ActiveScriptWrappable
 ] interface AudioContext : BaseAudioContext {
-    [CallWith=Document, RaisesException] constructor(optional AudioContextOptions contextOptions);
+    [CallWith=Document, RaisesException, Measure] constructor(optional AudioContextOptions contextOptions);
     [MeasureAs=AudioContextSuspend, CallWith=ScriptState, ImplementedAs=suspendContext] Promise<void> suspend();
     [MeasureAs=AudioContextClose, CallWith=ScriptState, ImplementedAs=closeContext] Promise<void> close();
     [MeasureAs=AudioContextResume, CallWith=ScriptState, ImplementedAs=resumeContext] Promise<void> resume();

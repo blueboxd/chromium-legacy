@@ -39,8 +39,8 @@ import org.json.JSONArray;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.Supplier;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;

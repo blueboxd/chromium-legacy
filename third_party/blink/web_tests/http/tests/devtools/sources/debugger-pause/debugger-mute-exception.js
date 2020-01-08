@@ -39,10 +39,10 @@
     SourcesTestRunner.showScriptSource('test.js', step2);
   }
 
-  function step2(sourceFrame) {
+  async function step2(sourceFrame) {
     TestRunner.addResult('Script source was shown.');
-    SourcesTestRunner.setBreakpoint(sourceFrame, 10, 'false', true);
-    SourcesTestRunner.setBreakpoint(sourceFrame, 14, 'false', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 10, 'false', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 14, 'false', true);
     TestRunner.evaluateInPage('setTimeout(handleClick, 0)');
     SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(step3);
   }

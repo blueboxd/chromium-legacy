@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.util.Arrays;

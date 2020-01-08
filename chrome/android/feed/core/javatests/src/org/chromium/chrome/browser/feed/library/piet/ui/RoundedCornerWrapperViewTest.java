@@ -18,7 +18,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.common.functional.Suppliers;
 import org.chromium.chrome.browser.feed.library.piet.ui.RoundedCornerDelegateFactory.RoundingStrategy;
 import org.chromium.components.feed.core.proto.ui.piet.RoundedCornersProto.RoundedCorners;

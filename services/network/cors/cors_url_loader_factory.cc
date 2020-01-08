@@ -236,7 +236,8 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
                                   uint32_t options) {
   // CORS needs a proper origin (including a unique opaque origin). If the
   // request doesn't have one, CORS cannot work.
-  if (!request.request_initiator && !IsNavigationRequestMode(request.mode) &&
+  if (!request.request_initiator &&
+      request.mode != network::mojom::RequestMode::kNavigate &&
       request.mode != mojom::RequestMode::kNoCors) {
     LOG(WARNING) << "|mode| is " << request.mode
                  << ", but |request_initiator| is not set.";
@@ -271,8 +272,6 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
   if (process_id_ != mojom::kBrowserProcessId) {
     switch (request.mode) {
       case mojom::RequestMode::kNavigate:
-      case mojom::RequestMode::kNavigateNestedFrame:
-      case mojom::RequestMode::kNavigateNestedObject:
         // Only the browser process can initiate navigations.  This helps ensure
         // that a malicious/compromised renderer cannot bypass CORB by issuing
         // kNavigate, rather than kNoCors requests.  (CORB should apply only to
@@ -323,7 +322,11 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
 
     case InitiatorLockCompatibility::kIncorrectLock:
       // Requests from the renderer need to always specify a correct initiator.
-      NOTREACHED();
+      //
+      // TODO(lukasza): https://crbug.com/1027173: Reintroduce NOTREACHED below
+      // after relaxing request initiator checks to account for requests issued
+      // by the PDF plugin.
+      //
       // TODO(lukasza): https://crbug.com/920634: Report bad message and return
       // false below.
       break;
@@ -365,7 +368,7 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
   // We only support |kInclude| credentials mode with navigations. See also:
   // a note at https://fetch.spec.whatwg.org/#concept-request-credentials-mode.
   if (request.credentials_mode != mojom::CredentialsMode::kInclude &&
-      IsNavigationRequestMode(request.mode)) {
+      request.mode == network::mojom::RequestMode::kNavigate) {
     LOG(WARNING) << "unsupported credentials mode on a navigation request";
     mojo::ReportBadMessage(
         "CorsURLLoaderFactory: unsupported credentials mode on navigation");

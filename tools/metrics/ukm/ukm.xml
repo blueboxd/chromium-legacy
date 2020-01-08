@@ -8319,6 +8319,135 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="SmartCharging">
+  <owner>thanhdng@chromium.org</owner>
+  <owner>jiameng@chromium.org</owner>
+  <summary>
+    Records user activities that are related to charging such as battery
+    percentage, time, device type, etc.
+  </summary>
+  <metric name="BatteryPercentage">
+    <summary>
+      Percentage of the battery.
+    </summary>
+  </metric>
+  <metric name="BatteryPercentageBeforeLastCharge">
+    <summary>
+      The percentage of the battery at the beginning of the last charge.
+    </summary>
+  </metric>
+  <metric name="BatteryPercentageOfLastCharge">
+    <summary>
+      The percentage of the battery that the last charge reached.
+    </summary>
+  </metric>
+  <metric name="DayOfMonth">
+    <summary>
+      Event's day of the month (e.g. 1-31) in local time zone.
+    </summary>
+  </metric>
+  <metric name="DayOfWeek" enum="DayOfWeek">
+    <summary>
+      Event's day of the week in local time zone. Sunday is 0.
+    </summary>
+  </metric>
+  <metric name="DeviceMode">
+    <summary>
+      Mode of the device (e.g. closed lid, tablet).
+    </summary>
+  </metric>
+  <metric name="DeviceType">
+    <summary>
+      Type of the device (e.g. laptop, tablet).
+    </summary>
+  </metric>
+  <metric name="DurationOfLastCharge">
+    <summary>
+      Duratioin of the last time the device was charged in minutes.
+    </summary>
+  </metric>
+  <metric name="DurationRecentAudioPlaying">
+    <summary>
+      Duration of audio playing in the last 30 minutes (bucketized and in
+      minutes).
+    </summary>
+  </metric>
+  <metric name="DurationRecentVideoPlaying">
+    <summary>
+      Duration of video playing in the last 30 minutes (bucketized and in
+      minutes).
+    </summary>
+  </metric>
+  <metric name="EventId">
+    <summary>
+      A unique number that represent order of an event.
+    </summary>
+  </metric>
+  <metric name="HaltFromLastCharge" enum="Boolean">
+    <summary>
+      Whether there's any shutdown/suspend actions between the last charge and
+      current event.
+    </summary>
+  </metric>
+  <metric name="Month" enum="Month">
+    <summary>
+      Event's month (e.g. Jan-Dec) in local time zone. January is 1.
+    </summary>
+  </metric>
+  <metric name="NumRecentKeyEvents">
+    <summary>
+      Number of key events in past 30 minutes.
+    </summary>
+  </metric>
+  <metric name="NumRecentMouseEvents">
+    <summary>
+      Number of mouse events in past 30 minutes.
+    </summary>
+  </metric>
+  <metric name="NumRecentStylusEvents">
+    <summary>
+      Number of stylus events in past 30 minutes.
+    </summary>
+  </metric>
+  <metric name="NumRecentTouchEvents">
+    <summary>
+      Number of touch events in past 30 minutes.
+    </summary>
+  </metric>
+  <metric name="Reason" enum="SmartChargingReason">
+    <summary>
+      Reason for the logging of an event.
+    </summary>
+  </metric>
+  <metric name="ScreenBrightnessPercent">
+    <summary>
+      Brightness of the screen in percent.
+    </summary>
+  </metric>
+  <metric name="TimeOfTheDay">
+    <summary>
+      Time of the event in minutes since midnight in the local time zone.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastCharge">
+    <summary>
+      Time since the last time user unplugged the charger in minutes.
+    </summary>
+  </metric>
+  <metric name="TimezoneDifferenceFromLastCharge">
+    <summary>
+      Timezone difference from the last charge. It is equal to current_timezone
+      - timezone_from_last_charge. The valid range of time zone value will be
+      -12 (UTC -12:00) to +14 (UTC +14:00).
+    </summary>
+  </metric>
+  <metric name="Voltage">
+    <summary>
+      Charge voltage in mV.
+    </summary>
+  </metric>
+</event>
+
 <event name="SMSReceiver">
   <owner>goto@chromium.org</owner>
   <owner>reillyg@chromium.org</owner>

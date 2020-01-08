@@ -8,7 +8,7 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.action.StreamActionApi;

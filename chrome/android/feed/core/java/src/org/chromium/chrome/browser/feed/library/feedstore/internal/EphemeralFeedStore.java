@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.feed.library.feedstore.internal;
 
 import com.google.protobuf.ByteString;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.storage.CommitResult;
 import org.chromium.chrome.browser.feed.library.api.internal.common.PayloadWithId;
 import org.chromium.chrome.browser.feed.library.api.internal.common.SemanticPropertiesWithId;

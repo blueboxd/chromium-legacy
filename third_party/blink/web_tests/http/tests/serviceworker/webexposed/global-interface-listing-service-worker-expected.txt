@@ -3763,6 +3763,7 @@ interface WritableStream
     attribute @@toStringTag
     getter locked
     method abort
+    method close
     method constructor
     method getWriter
 interface WritableStreamDefaultWriter

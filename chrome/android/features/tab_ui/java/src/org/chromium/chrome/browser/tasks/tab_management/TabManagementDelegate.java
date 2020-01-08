@@ -8,7 +8,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.Layout;

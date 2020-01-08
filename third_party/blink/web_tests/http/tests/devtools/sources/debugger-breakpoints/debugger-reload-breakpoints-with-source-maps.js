@@ -15,11 +15,11 @@
     SourcesTestRunner.showScriptSource('source1.js', step2);
   }
 
-  function step2(sourceFrame) {
+  async function step2(sourceFrame) {
     SourcesTestRunner.waitBreakpointSidebarPane()
         .then(waitUntilReady)
         .then(onBreakpointsReady);
-    SourcesTestRunner.setBreakpoint(sourceFrame, 14, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 14, '', true);
 
     function onBreakpointsReady() {
       SourcesTestRunner.dumpBreakpointSidebarPane('before reload:');

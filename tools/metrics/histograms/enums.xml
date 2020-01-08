@@ -13877,6 +13877,16 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="137457845" label="WEB_HISTORY_SERVICE"/>
 </enum>
 
+<enum name="DayOfWeek">
+  <int value="0" label="Sunday"/>
+  <int value="1" label="Monday"/>
+  <int value="2" label="Tuesday"/>
+  <int value="3" label="Wednesday"/>
+  <int value="4" label="Thursday"/>
+  <int value="5" label="Friday"/>
+  <int value="6" label="Saturday"/>
+</enum>
+
 <enum name="DCLayerResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed unsupported quad (not recorded)"/>
@@ -36285,6 +36295,7 @@ from previous Chrome versions.
   <int value="-1998927516" label="enable-md-settings"/>
   <int value="-1996233283"
       label="OmniboxGroupSuggestionsBySearchVsUrl:enabled"/>
+  <int value="-1993730028" label="CrostiniPortForwarding:enabled"/>
   <int value="-1990614981" label="StoragePressureUI:disabled"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
   <int value="-1985452239" label="SmartDim20190221:disabled"/>
@@ -37228,6 +37239,7 @@ from previous Chrome versions.
   <int value="-871520682"
       label="AccessibilityInternalsPageImprovements:enabled"/>
   <int value="-870120067" label="EnableSearchBoxSelection:enabled"/>
+  <int value="-868138290" label="CrostiniPortForwarding:disabled"/>
   <int value="-867087281" label="enable-virtual-keyboard"/>
   <int value="-866993841" label="OfflinePagesCTV2:disabled"/>
   <int value="-864266073" label="cros-regions-mode"/>
@@ -42689,6 +42701,21 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="ERROR_RECEIVE_MACH_MESSAGE">
     An error occurred while trying to receive a Mach port with mach_msg().
   </int>
+</enum>
+
+<enum name="Month">
+  <int value="1" label="January"/>
+  <int value="2" label="Febuary"/>
+  <int value="3" label="March"/>
+  <int value="4" label="April"/>
+  <int value="5" label="May"/>
+  <int value="6" label="June"/>
+  <int value="7" label="July"/>
+  <int value="8" label="August"/>
+  <int value="9" label="September"/>
+  <int value="10" label="October"/>
+  <int value="11" label="November"/>
+  <int value="12" label="December"/>
 </enum>
 
 <enum name="MostVisitedTileIndex">
@@ -58996,6 +59023,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="No Scale"/>
   <int value="2" label="Downscale"/>
   <int value="3" label="Large Downscale"/>
+</enum>
+
+<enum name="SmartChargingReason">
+  <int value="1" label="Charger plugged in"/>
+  <int value="2" label="Charger unplugged"/>
+  <int value="3" label="Periodic log"/>
+  <int value="4" label="Shutdown"/>
+  <int value="5" label="Suspend"/>
 </enum>
 
 <enum name="SmartLockAuthEventPasswordState">

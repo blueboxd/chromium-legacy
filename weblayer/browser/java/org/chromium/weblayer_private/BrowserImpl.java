@@ -108,6 +108,10 @@ public class BrowserImpl extends IBrowser.Stub {
         return mViewController;
     }
 
+    public Context getContext() {
+        return mWindowAndroid.getContext().get();
+    }
+
     @Override
     public IProfile getProfile() {
         StrictModeWorkaround.apply();

@@ -12,7 +12,7 @@ import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;

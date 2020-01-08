@@ -17,11 +17,11 @@
   await TestRunner.evaluateInPageAnonymously(functionText + sourceURL);
   SourcesTestRunner.showScriptSource('foobar.js', didShowScriptSource);
 
-  function didShowScriptSource(sourceFrame) {
+  async function didShowScriptSource(sourceFrame) {
     TestRunner.addResult('Setting breakpoint:');
     TestRunner.addSniffer(
         Bindings.BreakpointManager.ModelBreakpoint.prototype, '_addResolvedLocation', breakpointResolved);
-    SourcesTestRunner.setBreakpoint(sourceFrame, 1, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 1, '', true);
   }
 
   function breakpointResolved(location) {

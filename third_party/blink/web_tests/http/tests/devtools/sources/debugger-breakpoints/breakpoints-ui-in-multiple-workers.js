@@ -11,8 +11,8 @@
   let workerSourceFrame = await SourcesTestRunner.showScriptSourcePromise('worker.js');
   TestRunner.addResult('Set different breakpoints and dump them');
   SourcesTestRunner.toggleBreakpoint(workerSourceFrame, 1, false);
-  SourcesTestRunner.createNewBreakpoint(workerSourceFrame, 2, 'a === 3', true);
-  SourcesTestRunner.createNewBreakpoint(workerSourceFrame, 3, '', false);
+  await SourcesTestRunner.createNewBreakpoint(workerSourceFrame, 2, 'a === 3', true);
+  await SourcesTestRunner.createNewBreakpoint(workerSourceFrame, 3, '', false);
   await SourcesTestRunner.waitDebuggerPluginBreakpoints(workerSourceFrame);
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(workerSourceFrame);
 

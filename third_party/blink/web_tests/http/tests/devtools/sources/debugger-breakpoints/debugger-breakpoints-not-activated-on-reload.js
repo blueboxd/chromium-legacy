@@ -22,9 +22,9 @@
     SourcesTestRunner.showScriptSource(testName, step2);
   }
 
-  function step2(sourceFrame) {
+  async function step2(sourceFrame) {
     TestRunner.addResult('Main resource was shown.');
-    SourcesTestRunner.setBreakpoint(sourceFrame, 8, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 8, '', true);
     UI.panels.sources._toggleBreakpointsActive();
     TestRunner.reloadPage(step3);
   }

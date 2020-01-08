@@ -266,20 +266,27 @@ const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",
 // universal web_app::AppRegistrar) by extensions-based bookmark apps. Note that
 // the new Desktop PWAs implementation (not based on extensions) always uses the
 // new browser controller.
+// TODO(crbug.com/877898): Enable and delete this feature flag before
+// kDesktopPWAsWithoutExtensions launch.
 const base::Feature kDesktopPWAsUnifiedUiController{
     "DesktopPWAsUnifiedUiController", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables use of new Desktop PWAs launch manager by
 // extensions-based bookmark apps. (Note that Bookmark apps not based
 // on extensions unconditionally use the new launch manager.)
+// TODO(crbug.com/877898): Enable and delete this feature flag before
+// kDesktopPWAsWithoutExtensions launch.
 const base::Feature kDesktopPWAsUnifiedLaunch{
     "DesktopPWAsUnifiedLaunch", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables new Desktop PWAs Unified Sync and Storage (USS)
-// implementation that does not use extensions. Requires
+// Enables or disables usage of shared LevelDB instance (ModelTypeStoreService).
+// If this flag is disabled, the new Web Apps system uses its own isolated
+// LevelDB instance for manual testing purposes. Requires
 // kDesktopPWAsWithoutExtensions to be enabled.
-const base::Feature kDesktopPWAsUSS{"DesktopPWAsUSS",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+// TODO(crbug.com/877898): Delete this feature flag before
+// kDesktopPWAsWithoutExtensions launch.
+const base::Feature kDesktopPWAsSharedStoreService{
+    "DesktopPWAsSharedStoreService", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Disables downloads of unsafe file types over HTTP.
 const base::Feature kDisallowUnsafeHttpDownloads{

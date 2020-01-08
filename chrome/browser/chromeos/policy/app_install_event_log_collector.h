@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "components/arc/mojom/policy.mojom.h"
+#include "components/arc/mojom/policy.mojom-forward.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
 class Profile;

@@ -33,7 +33,7 @@ class ChromeTabRestoreServiceClient : public sessions::TabRestoreServiceClient {
   base::FilePath GetPathToSaveTo() override;
   GURL GetNewTabURL() override;
   bool HasLastSession() override;
-  void GetLastSession(const sessions::GetLastSessionCallback& callback,
+  void GetLastSession(sessions::GetLastSessionCallback callback,
                       base::CancelableTaskTracker* tracker) override;
   void OnTabRestored(const GURL& url) override;
 

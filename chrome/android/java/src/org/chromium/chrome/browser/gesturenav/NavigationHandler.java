@@ -13,7 +13,7 @@ import android.view.ViewGroup.LayoutParams;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.gesturenav.NavigationBubble.CloseTarget;
 
 import java.lang.annotation.Retention;

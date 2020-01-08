@@ -1811,10 +1811,13 @@ TEST_F(StyleEngineTest, RejectSelectorForPseudoElement) {
   UpdateAllLifecyclePhases();
 
   StyleEngine& engine = GetStyleEngine();
+  // If the Stats() were already enabled, we would not start with 0 counts.
+  EXPECT_FALSE(engine.Stats());
   engine.SetStatsEnabled(true);
 
   StyleResolverStats* stats = engine.Stats();
   ASSERT_TRUE(stats);
+  EXPECT_EQ(0u, stats->rules_fast_rejected);
 
   Element* div = GetDocument().QuerySelector("div");
   ASSERT_TRUE(div);

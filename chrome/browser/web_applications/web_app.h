@@ -68,6 +68,7 @@ class WebApp {
   }
 
   // Represents which icon sizes we successfully downloaded from the icon_infos.
+  // Icon sizes are sorted in ascending order.
   const std::vector<SquareSizePx>& downloaded_icon_sizes() const {
     return downloaded_icon_sizes_;
   }
@@ -149,6 +150,7 @@ class WebApp {
   void SetIsLocallyInstalled(bool is_locally_installed);
   void SetIsInSyncInstall(bool is_in_sync_install);
   void SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos);
+  // Performs sorting of |sizes| vector. Must be called rarely.
   void SetDownloadedIconSizes(std::vector<SquareSizePx> sizes);
   void SetFileHandlers(FileHandlers file_handlers);
 

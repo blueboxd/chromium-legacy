@@ -29,15 +29,22 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
                             ExceptionState&);
 
   explicit NDEFRecord(device::mojom::NDEFRecordTypeCategory,
-                      const String& /* record_type */,
-                      const String& /* id */,
+                      const String& record_type,
+                      const String& id,
                       WTF::Vector<uint8_t>);
+
+  // For constructing an external type record or a "smart-poster" record whose
+  // payload is an NDEF message.
+  explicit NDEFRecord(device::mojom::NDEFRecordTypeCategory,
+                      const String& record_type,
+                      const String& id,
+                      NDEFMessage*);
 
   // Only for constructing "text" type record. The type category will be
   // device::mojom::NDEFRecordTypeCategory::kStandardized.
-  explicit NDEFRecord(const String& /* id */,
-                      const String& /* encoding */,
-                      const String& /* lang */,
+  explicit NDEFRecord(const String& id,
+                      const String& encoding,
+                      const String& lang,
                       WTF::Vector<uint8_t>);
 
   // Only for constructing "text" type record from just a text. The type
@@ -47,8 +54,8 @@ class MODULES_EXPORT NDEFRecord final : public ScriptWrappable {
 
   // Only for constructing "mime" type record. The type category will be
   // device::mojom::NDEFRecordTypeCategory::kStandardized.
-  explicit NDEFRecord(const String& /* id */,
-                      const String& /* media_type */,
+  explicit NDEFRecord(const String& id,
+                      const String& media_type,
                       WTF::Vector<uint8_t>);
 
   explicit NDEFRecord(const device::mojom::blink::NDEFRecord&);

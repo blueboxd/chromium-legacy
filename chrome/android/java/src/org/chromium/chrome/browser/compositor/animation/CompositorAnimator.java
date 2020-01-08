@@ -18,7 +18,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 
 import java.lang.annotation.Retention;

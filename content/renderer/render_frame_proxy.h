@@ -175,7 +175,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   // blink::WebRemoteFrameClient implementation:
   void FrameDetached(DetachType type) override;
-  void CheckCompleted() override;
   void ForwardPostMessage(blink::WebLocalFrame* sourceFrame,
                           blink::WebRemoteFrame* targetFrame,
                           blink::WebSecurityOrigin target,

@@ -554,14 +554,13 @@ void SessionService::SetLastActiveTime(const SessionID& window_id,
 }
 
 base::CancelableTaskTracker::TaskId SessionService::GetLastSession(
-    const sessions::GetLastSessionCallback& callback,
+    sessions::GetLastSessionCallback callback,
     base::CancelableTaskTracker* tracker) {
   // OnGotSessionCommands maps the SessionCommands to browser state, then run
   // the callback.
   return base_session_service_->ScheduleGetLastSessionCommands(
-      base::Bind(&SessionService::OnGotSessionCommands,
-                 weak_factory_.GetWeakPtr(),
-                 callback),
+      base::BindOnce(&SessionService::OnGotSessionCommands,
+                     weak_factory_.GetWeakPtr(), std::move(callback)),
       tracker);
 }
 
@@ -642,7 +641,7 @@ void SessionService::OnBrowserSetLastActive(Browser* browser) {
 }
 
 void SessionService::OnGotSessionCommands(
-    const sessions::GetLastSessionCallback& callback,
+    sessions::GetLastSessionCallback callback,
     std::vector<std::unique_ptr<sessions::SessionCommand>> commands) {
   std::vector<std::unique_ptr<sessions::SessionWindow>> valid_windows;
   SessionID active_window_id = SessionID::InvalidValue();
@@ -651,7 +650,7 @@ void SessionService::OnGotSessionCommands(
                                        &active_window_id);
   RemoveUnusedRestoreWindows(&valid_windows);
 
-  callback.Run(std::move(valid_windows), active_window_id);
+  std::move(callback).Run(std::move(valid_windows), active_window_id);
 }
 
 void SessionService::BuildCommandsForTab(

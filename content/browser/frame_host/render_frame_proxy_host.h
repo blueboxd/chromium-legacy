@@ -143,12 +143,12 @@ class RenderFrameProxyHost : public IPC::Listener,
   void SetInheritedEffectiveTouchAction(cc::TouchAction touch_action) override;
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
   void DidFocusFrame() override;
+  void CheckCompleted() override;
 
  private:
   // IPC Message handlers.
   void OnDetach();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
-  void OnCheckCompleted();
   void OnRouteMessageEvent(const FrameMsg_PostMessage_Params& params);
   void OnDidChangeOpener(int32_t opener_routing_id);
   void OnAdvanceFocus(blink::WebFocusType type, int32_t source_routing_id);

@@ -35,11 +35,6 @@ namespace {
 const char kAsterisk[] = "*";
 const char kLowerCaseTrue[] = "true";
 
-// TODO(toyoshim): Consider to move following const variables to
-// //net/http/http_request_headers.
-const char kHeadMethod[] = "HEAD";
-const char kPostMethod[] = "POST";
-
 // TODO(toyoshim): Consider to move the following method to
 // //net/base/mime_util, and expose to Blink platform/network in order to
 // replace the existing equivalent method in HTTPParser.
@@ -265,7 +260,7 @@ base::Optional<CorsErrorStatus> CheckAccess(
 bool ShouldCheckCors(const GURL& request_url,
                      const base::Optional<url::Origin>& request_initiator,
                      mojom::RequestMode request_mode) {
-  if (IsNavigationRequestMode(request_mode) ||
+  if (request_mode == network::mojom::RequestMode::kNavigate ||
       request_mode == network::mojom::RequestMode::kNoCors) {
     return false;
   }
@@ -395,7 +390,8 @@ bool IsCorsSafelistedMethod(const std::string& method) {
   // "A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`."
   std::string method_upper = base::ToUpperASCII(method);
   return method_upper == net::HttpRequestHeaders::kGetMethod ||
-         method_upper == kHeadMethod || method_upper == kPostMethod;
+         method_upper == net::HttpRequestHeaders::kHeadMethod ||
+         method_upper == net::HttpRequestHeaders::kPostMethod;
 }
 
 bool IsCorsSafelistedContentType(const std::string& media_type) {
@@ -579,9 +575,10 @@ std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
 }
 
 bool IsForbiddenMethod(const std::string& method) {
-  const std::string lower_method = base::ToLowerASCII(method);
-  return lower_method == "trace" || lower_method == "track" ||
-         lower_method == "connect";
+  const std::string upper_method = base::ToUpperASCII(method);
+  return upper_method == net::HttpRequestHeaders::kConnectMethod ||
+         upper_method == net::HttpRequestHeaders::kTraceMethod ||
+         upper_method == net::HttpRequestHeaders::kTrackMethod;
 }
 
 bool IsOkStatus(int status) {

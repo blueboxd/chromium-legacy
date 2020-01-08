@@ -14,7 +14,7 @@ import android.util.Base64;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.InternalFeedError;

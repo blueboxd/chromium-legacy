@@ -137,7 +137,7 @@ class FakeNfcService : public device::mojom::blink::NFC {
   void CancelWatch(uint32_t id, CancelWatchCallback callback) override {
     if (watches_.erase(id) < 1) {
       std::move(callback).Run(device::mojom::blink::NDEFError::New(
-          device::mojom::blink::NDEFErrorType::NOT_FOUND));
+          device::mojom::blink::NDEFErrorType::NOT_FOUND, ""));
     } else {
       std::move(callback).Run(nullptr);
     }
@@ -242,7 +242,7 @@ TEST_F(NFCProxyTest, ErrorPath) {
 
   // Make the fake NFC service return an error for the incoming watch request.
   nfc_service()->set_watch_error(device::mojom::blink::NDEFError::New(
-      device::mojom::blink::NDEFErrorType::NOT_READABLE));
+      device::mojom::blink::NDEFErrorType::NOT_READABLE, ""));
   base::RunLoop loop;
   nfc_proxy->StartReading(
       reader, scan_options,

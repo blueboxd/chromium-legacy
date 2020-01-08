@@ -60,6 +60,9 @@ crbug.com/dawn/243 wpt_internal/webgpu/cts.html?worker=1&q=cts:validation/create
 crbug.com/1014750 wpt_internal/webgpu/cts.html?worker=0&q=cts:validation/createView:it_is_invalid_to_use_a_texture_view_created_from_a_destroyed_texture= [ Failure ]
 crbug.com/1014750 wpt_internal/webgpu/cts.html?worker=1&q=cts:validation/createView:it_is_invalid_to_use_a_texture_view_created_from_a_destroyed_texture= [ Failure ]
 
+crbug.com/966582 wpt_internal/webgpu/cts.html?worker=0&q=cts:copyImageBitmapToTexture: [ Failure ]
+crbug.com/966582 wpt_internal/webgpu/cts.html?worker=1&q=cts:copyImageBitmapToTexture: [ Failure ]
+
 #
 # Mac (Metal) specific
 #

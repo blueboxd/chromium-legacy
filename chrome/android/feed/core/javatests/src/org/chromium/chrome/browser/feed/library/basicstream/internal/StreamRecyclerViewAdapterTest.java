@@ -37,7 +37,7 @@ import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Header;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;

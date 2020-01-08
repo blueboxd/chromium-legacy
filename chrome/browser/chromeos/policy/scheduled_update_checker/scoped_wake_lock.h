@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
-#include "services/device/public/mojom/wake_lock_provider.mojom.h"
+#include "services/device/public/mojom/wake_lock_provider.mojom-forward.h"
 
 namespace policy {
 

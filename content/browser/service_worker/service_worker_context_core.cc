@@ -29,7 +29,6 @@
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -239,7 +238,7 @@ ServiceWorkerContextCore::ContainerHostIterator::~ContainerHostIterator() =
 ServiceWorkerContainerHost*
 ServiceWorkerContextCore::ContainerHostIterator::GetContainerHost() {
   DCHECK(!IsAtEnd());
-  return container_host_iterator_->second;
+  return container_host_iterator_->second.get();
 }
 
 void ServiceWorkerContextCore::ContainerHostIterator::Advance() {
@@ -283,7 +282,6 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
         observer_list,
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
-      providers_(std::make_unique<ProviderByIdMap>()),
       container_host_by_uuid_(std::make_unique<ContainerHostByClientUUIDMap>()),
       storage_(ServiceWorkerStorage::Create(user_data_directory,
                                             this,
@@ -307,7 +305,6 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     ServiceWorkerContextCore* old_context,
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
-      providers_(old_context->providers_.release()),
       container_host_by_uuid_(old_context->container_host_by_uuid_.release()),
       storage_(ServiceWorkerStorage::Create(this, old_context->storage())),
       job_coordinator_(std::make_unique<ServiceWorkerJobCoordinator>(this)),
@@ -325,18 +322,6 @@ ServiceWorkerContextCore::~ServiceWorkerContextCore() {
     it.second->RemoveObserver(this);
 
   job_coordinator_->ClearForShutdown();
-}
-
-void ServiceWorkerContextCore::AddProviderHost(
-    std::unique_ptr<ServiceWorkerProviderHost> host) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  int provider_id = host->provider_id();
-  providers_->emplace(provider_id, std::move(host));
-}
-
-void ServiceWorkerContextCore::RemoveProviderHost(int provider_id) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  providers_->erase(provider_id);
 }
 
 std::unique_ptr<ServiceWorkerContextCore::ContainerHostIterator>
@@ -404,16 +389,26 @@ void ServiceWorkerContextCore::HasMainFrameWindowClient(const GURL& origin,
 
 void ServiceWorkerContextCore::RegisterContainerHostByClientID(
     const std::string& client_uuid,
-    ServiceWorkerContainerHost* container_host) {
+    std::unique_ptr<ServiceWorkerContainerHost> container_host) {
   DCHECK(container_host->IsContainerForClient());
   DCHECK(!base::Contains(*container_host_by_uuid_, client_uuid));
-  (*container_host_by_uuid_)[client_uuid] = container_host;
+  container_host_by_uuid_->emplace(client_uuid, std::move(container_host));
 }
 
 void ServiceWorkerContextCore::UnregisterContainerHostByClientID(
     const std::string& client_uuid) {
   DCHECK(base::Contains(*container_host_by_uuid_, client_uuid));
   container_host_by_uuid_->erase(client_uuid);
+}
+
+void ServiceWorkerContextCore::UpdateContainerHostClientID(
+    const std::string& current_client_uuid,
+    const std::string& new_client_uuid) {
+  DCHECK(base::Contains(*container_host_by_uuid_, current_client_uuid));
+  std::unique_ptr<ServiceWorkerContainerHost> container_host =
+      std::move(container_host_by_uuid_->find(current_client_uuid)->second);
+  UnregisterContainerHostByClientID(current_client_uuid);
+  RegisterContainerHostByClientID(new_client_uuid, std::move(container_host));
 }
 
 ServiceWorkerContainerHost*
@@ -423,7 +418,7 @@ ServiceWorkerContextCore::GetContainerHostByClientID(
   if (found == container_host_by_uuid_->end())
     return nullptr;
   DCHECK(found->second->IsContainerForClient());
-  return found->second;
+  return found->second.get();
 }
 
 void ServiceWorkerContextCore::RegisterServiceWorker(

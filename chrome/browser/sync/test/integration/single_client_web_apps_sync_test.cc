@@ -25,9 +25,7 @@ namespace {
 class SingleClientWebAppsOsSyncTest : public OsSyncTest {
  public:
   SingleClientWebAppsOsSyncTest() : OsSyncTest(SINGLE_CLIENT) {
-    features_.InitWithFeatures(
-        {features::kDesktopPWAsWithoutExtensions, features::kDesktopPWAsUSS},
-        {});
+    features_.InitAndEnableFeature(features::kDesktopPWAsWithoutExtensions);
   }
   ~SingleClientWebAppsOsSyncTest() override = default;
 
@@ -56,9 +54,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsOsSyncTest,
 class SingleClientWebAppsSyncTest : public SyncTest {
  public:
   SingleClientWebAppsSyncTest() : SyncTest(SINGLE_CLIENT) {
-    features_.InitWithFeatures(
-        {features::kDesktopPWAsWithoutExtensions, features::kDesktopPWAsUSS},
-        {});
+    features_.InitAndEnableFeature(features::kDesktopPWAsWithoutExtensions);
   }
   ~SingleClientWebAppsSyncTest() override = default;
 

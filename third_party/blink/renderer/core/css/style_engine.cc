@@ -1645,7 +1645,7 @@ void StyleEngine::NodeWillBeRemoved(Node& node) {
   if (!layout_object)
     return;
   // Floating or out-of-flow elements do not affect whitespace siblings.
-  if (layout_object->IsFloatingOrOutOfFlowPositioned())
+  if (!layout_object->AffectsWhitespaceSiblings())
     return;
   layout_object = layout_object->Parent();
   while (layout_object->IsAnonymous())

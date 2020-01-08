@@ -1008,6 +1008,10 @@ def convert_constructor_operations_extended_attributes(extended_attributes):
                 raise ValueError('[RaisesException] should not have a value on '
                                  'constructor operations')
             converted["RaisesException"] = 'Constructor'
+        elif name == "MeasureAs":
+            converted["MeasureAs"] = value
+        elif name == "Measure":
+            converted["Measure"] = None
         else:
             raise ValueError(
                 '[{}] is not supported on constructor operations'.format(name))

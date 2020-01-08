@@ -9,7 +9,7 @@ import android.view.Window;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;

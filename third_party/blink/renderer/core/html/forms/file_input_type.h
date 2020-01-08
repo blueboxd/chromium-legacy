@@ -67,7 +67,7 @@ class CORE_EXPORT FileInputType final : public InputType,
   InputTypeView* CreateView() override;
   const AtomicString& FormControlType() const override;
   FormControlState SaveFormControlState() const override;
-  void RestoreFormControlState(const FormControlState&) override;
+  bool RestoreFormControlState(const FormControlState&) override;
   void AppendToFormData(FormData&) const override;
   bool ValueMissing(const String&) const override;
   String ValueMissingText() const override;

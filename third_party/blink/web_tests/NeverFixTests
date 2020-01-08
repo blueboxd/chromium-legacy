@@ -2112,3 +2112,6 @@ crbug.com/626703 [ Win ] external/wpt/payment-method-basic-card/billing-address-
 [ Linux ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/content-index-origin-trial-interfaces.html [ Skip ]
 [ Mac ] virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/content-index-origin-trial-interfaces.html [ Skip ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_fractional_coordinates-manual.html [ Skip ]
+
+# These tests require a preferred dark color-scheme and are only run as virtual tests
+external/wpt/css/css-color-adjust/rendering/dark-color-scheme/* [ Skip ]

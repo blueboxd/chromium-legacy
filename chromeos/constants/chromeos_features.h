@@ -33,6 +33,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCameraSystemWebApp;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kCrostiniBackup;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kCrostiniPortForwarding;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniUseBusterImage;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniGpuSupport;

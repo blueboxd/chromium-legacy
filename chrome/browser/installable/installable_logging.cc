@@ -33,8 +33,8 @@ static const char kManifestMissingSuitableIconMessage[] =
     "attribute, if set, must include \"any\" or \"maskable\".";
 static const char kNoMatchingServiceWorkerMessage[] =
     "No matching service worker detected. You may need to reload the page, or "
-    "check that the service worker for the current page also controls the "
-    "start URL from the manifest";
+    "check that the scope of the service worker for the current page encloses "
+    "the scope and start URL from the manifest.";
 static const char kNoAcceptableIconMessage[] =
     "No supplied icon is at least %dpx square in PNG, SVG or WebP format";
 static const char kCannotDownloadIconMessage[] =

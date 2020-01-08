@@ -14,9 +14,9 @@ import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.Supplier;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeFeatureList;

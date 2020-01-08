@@ -23,7 +23,7 @@
       await BindingsTestRunner.waitForBinding('foo.js');
       var uiSourceCode = await TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem);
       var sourceFrame = await SourcesTestRunner.showUISourceCodePromise(uiSourceCode);
-      SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
+      await SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       const debuggerPlugin = SourcesTestRunner.debuggerPlugin(sourceFrame);
       await TestRunner.addSnifferPromise(
           debuggerPlugin, '_breakpointDecorationsUpdatedForTest');

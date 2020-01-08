@@ -94,6 +94,8 @@ FormControlState HTMLTextAreaElement::SaveFormControlState() const {
 
 void HTMLTextAreaElement::RestoreFormControlState(
     const FormControlState& state) {
+  if (EqualIgnoringNullity(value(), state[0]))
+    return;
   // We don't add kDispatchInputAndChangeEvent to setValue(), and we
   // post tasks to dispatch events instead. This function can be called
   // while we should not dispatch any events.

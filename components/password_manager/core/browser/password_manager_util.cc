@@ -371,10 +371,15 @@ bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
   // Only show the opt-in if:
   // - Sync transport is enabled (i.e. user is signed in, Sync is not disabled
   //   by policy etc) - otherwise there's no point in asking.
+  // - There is no custom Sync passphrase (Sync transport offers no way to enter
+  //   the passphrase yet). Note that checking this requires the SyncEngine to
+  //   be initialized.
   // - Sync feature is NOT enabled - Sync feature doesn't depend on this opt-in.
   // - Not already opted in.
   return sync_service->GetTransportState() !=
              syncer::SyncService::TransportState::DISABLED &&
+         sync_service->IsEngineInitialized() &&
+         !sync_service->GetUserSettings()->IsUsingSecondaryPassphrase() &&
          !sync_service->IsSyncFeatureEnabled() &&
          !IsOptedInForAccountStorage(pref_service, sync_service);
 }

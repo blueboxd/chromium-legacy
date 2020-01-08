@@ -856,18 +856,6 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
-        },
-        "test": "browser_tests",
-        "test_target": "//chrome/test:browser_tests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "content_browsertests",
@@ -931,18 +919,6 @@
         },
         "test": "base_unittests",
         "test_target": "//base:base_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 2
-        },
-        "test": "browser_tests",
-        "test_target": "//chrome/test:browser_tests"
       },
       {
         "merge": {

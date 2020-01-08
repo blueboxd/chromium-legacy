@@ -573,4 +573,17 @@ enum class EnterTabSwitcherSnapshotResult {
   return self.mainController.mainBVC.dispatcher;
 }
 
+#pragma mark - TabSwitcherDelegate
+
+- (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
+    shouldFinishWithActiveModel:(TabModel*)tabModel
+                   focusOmnibox:(BOOL)focusOmnibox {
+  [self.mainController beginDismissingTabSwitcherWithCurrentModel:tabModel
+                                                     focusOmnibox:focusOmnibox];
+}
+
+- (void)tabSwitcherDismissTransitionDidEnd:(id<TabSwitcher>)tabSwitcher {
+  [self.mainController finishDismissingTabSwitcher];
+}
+
 @end

@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.native_page;
 
-import androidx.annotation.Nullable;
+import android.content.Context;
+import android.graphics.Rect;
 
+import org.chromium.base.supplier.DestroyableObservableSupplier;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
@@ -15,37 +16,24 @@ import org.chromium.content_public.browser.LoadUrlParams;
  */
 public interface NativePageHost {
     /**
+     * @return A context to use for inflating views and obtaining resources.
+     */
+    Context getContext();
+
+    /**
      * Load a non-native URL in an active tab. This should be used to either navigate away from
      * the current native page or load external content in a content area (i.e. a tab or web
      * contents).
      * @param urlParams The params describing the URL to be loaded.
      * @param incognito Whether the URL should be loaded in incognito mode.
-     * @return {@link TabLoadStatus.FULL_PRERENDERED_PAGE_LOAD} or
-     *         {@link TabLoadStatus.PARTIAL_PRERENDERED_PAGE_LOAD} if the page has been prerendered.
-     *         {@link TabLoadStatus.DEFAULT_PAGE_LOAD} if it had not
      */
-    int loadUrl(LoadUrlParams urlParams, boolean incognito);
-
-    /**
-     * Determine if the browser is currently in an incognito context.
-     * @return True if the browser is incognito.
-     */
-    boolean isIncognito();
+    void loadUrl(LoadUrlParams urlParams, boolean incognito);
 
     /**
      * If the host is a tab, get the ID of its parent.
      * @return The ID of the parent tab or INVALID_TAB_ID.
      */
     int getParentId();
-
-    /**
-     * Get the currently active tab. This may be the tab that is displaying the native page or the
-     * tab behind the bottom sheet (if enabled). If the bottom sheet is open and displaying the
-     * NTP UI, then the active tab will be null.
-     * @return The active tab.
-     */
-    @Nullable
-    Tab getActiveTab();
 
     /** @return whether the hosted native page is currently visible. */
     boolean isVisible();
@@ -55,4 +43,12 @@ public interface NativePageHost {
      * @return {@link HistoryNavigationDelegate} implementation.
      */
     HistoryNavigationDelegate createHistoryNavigationDelegate();
+
+    /**
+     * Creates a default margin supplier. Once created, the NativePage is responsible for calling
+     * {@link DestroyableObservableSupplier#destroy()} to clean-up the supplier once it is no longer
+     * needed.
+     * @return A {@link DestroyableObservableSupplier} to use for setting margins.
+     */
+    DestroyableObservableSupplier<Rect> createDefaultMarginSupplier();
 }

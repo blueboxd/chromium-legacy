@@ -1230,10 +1230,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_ForwardResourceTimingToParent,
 // out-of-process parent frame.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DispatchLoad)
 
-// Sent by a frame proxy to the browser when a child frame finishes loading, so
-// that the corresponding RenderFrame can check whether its load has completed.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_CheckCompleted)
-
 // Sent to the browser from a frame proxy to post a message to the frame's
 // active renderer.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_RouteMessageEvent,

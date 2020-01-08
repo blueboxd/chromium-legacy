@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/crostini/crostini_export_import_notification.h"
+#include "chrome/browser/chromeos/crostini/crostini_export_import_notification_controller.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -117,8 +117,8 @@ class CrostiniExportImport : public KeyedService,
   // Whether an export or import is currently in progress.
   bool GetExportImportOperationStatus() const;
 
-  CrostiniExportImportNotification* GetNotificationForTesting(
-      ContainerId container_id);
+  CrostiniExportImportNotificationController*
+  GetNotificationControllerForTesting(ContainerId container_id);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CrostiniExportImportTest,

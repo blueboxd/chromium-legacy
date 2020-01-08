@@ -299,11 +299,10 @@ class SingleClientStandaloneTransportOsSyncTest : public OsSyncTest {
  public:
   SingleClientStandaloneTransportOsSyncTest() : OsSyncTest(SINGLE_CLIENT) {
     // Don't auto-start browser sync. Enable in-development types.
-    scoped_features_.InitWithFeatures(
-        {switches::kSyncManualStartChromeOS,
-         features::kDesktopPWAsWithoutExtensions, features::kDesktopPWAsUSS,
-         switches::kSyncWifiConfigurations},
-        {});
+    scoped_features_.InitWithFeatures({switches::kSyncManualStartChromeOS,
+                                       features::kDesktopPWAsWithoutExtensions,
+                                       switches::kSyncWifiConfigurations},
+                                      {});
   }
   ~SingleClientStandaloneTransportOsSyncTest() override = default;
 

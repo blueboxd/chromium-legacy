@@ -1427,7 +1427,7 @@ function CrSettingsSiteDataTest() {}
 CrSettingsSiteDataTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
-  browsePreload: 'chrome://settings/site_settings/site_data.html',
+  browsePreload: 'chrome://settings/siteData',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_util.js',

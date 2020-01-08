@@ -446,6 +446,7 @@ void ServiceWorkerStorage::StoreRegistration(
   data.script_response_time = version->GetInfo().script_response_time;
   for (const blink::mojom::WebFeature feature : version->used_features())
     data.used_features.insert(feature);
+  data.cross_origin_embedder_policy = version->cross_origin_embedder_policy();
 
   ResourceList resources;
   version->script_cache_map()->GetResources(&resources);
@@ -1663,6 +1664,8 @@ ServiceWorkerStorage::GetOrCreateRegistration(
       version->SetValidOriginTrialTokens(*data.origin_trial_tokens);
 
     version->set_used_features(data.used_features);
+    version->set_cross_origin_embedder_policy(
+        data.cross_origin_embedder_policy);
   }
   version->set_script_response_time_for_devtools(data.script_response_time);
 

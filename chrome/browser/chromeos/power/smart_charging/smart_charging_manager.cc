@@ -46,7 +46,8 @@ SmartChargingManager::SmartChargingManager(
           kNumUserInputEventsBuckets)),
       touch_counter_(std::make_unique<ml::RecentEventsCounter>(
           kUserActivityDuration,
-          kNumUserInputEventsBuckets)) {
+          kNumUserInputEventsBuckets)),
+      ukm_logger_(std::make_unique<SmartChargingUkmLogger>()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(detector);
   user_activity_observer_.Add(detector);
@@ -259,7 +260,7 @@ void SmartChargingManager::LogEvent(
   // ukm logger is available.
   user_charging_event_for_test_ = proto;
 
-  // TODO(crbug.com/1028853): Implements logic of this function.
+  ukm_logger_->LogEvent(proto);
 }
 
 void SmartChargingManager::OnTimerFired() {

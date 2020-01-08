@@ -19,9 +19,9 @@
     SourcesTestRunner.showScriptSource('debugger-disable-enable.js', step2);
   }
 
-  function step2(sourceFrame) {
+  async function step2(sourceFrame) {
     TestRunner.addResult('Main resource was shown.');
-    SourcesTestRunner.setBreakpoint(sourceFrame, 11, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 11, '', true);
     TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
     TestRunner.debuggerModel._disableDebugger();
   }

@@ -33,7 +33,7 @@ import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;

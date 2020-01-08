@@ -1187,6 +1187,13 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   if (items_size == 0)
     return;
 
+  Vector<bool> old_selection(items_size);
+  for (wtf_size_t i = 0; i < items_size; ++i) {
+    if (auto* option = DynamicTo<HTMLOptionElement>(items[i].Get()))
+      old_selection[i] = option->Selected();
+    else
+      old_selection[i] = false;
+  }
   SelectOption(nullptr, kDeselectOtherOptionsFlag);
 
   // The saved state should have at least one value and an index.
@@ -1237,7 +1244,15 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   }
 
   SetNeedsValidityCheck();
-  QueueInputAndChangeEvents();
+
+  for (wtf_size_t i = 0; i < items_size; ++i) {
+    if (auto* option = DynamicTo<HTMLOptionElement>(items[i].Get())) {
+      if (old_selection[i] != option->Selected()) {
+        QueueInputAndChangeEvents();
+        break;
+      }
+    }
+  }
 }
 
 void HTMLSelectElement::ParseMultipleAttribute(const AtomicString& value) {

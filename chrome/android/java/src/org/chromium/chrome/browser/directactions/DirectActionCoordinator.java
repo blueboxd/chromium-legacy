@@ -10,8 +10,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 
 import org.chromium.base.Callback;
-import org.chromium.base.Supplier;
 import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.supplier.Supplier;
 
 import java.util.LinkedHashSet;
 import java.util.List;

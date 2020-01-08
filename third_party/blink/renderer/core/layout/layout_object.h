@@ -1884,6 +1884,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return (IsFloating() || IsOutOfFlowPositioned());
   }
 
+  // Outside list markers are in-flow but behave kind of out-of-flowish.
+  // We include them here to prevent code like '<li> <ol></ol></li>' from
+  // generating an anonymous block box for the whitespace between the marker
+  // and the <ol>.
+  bool AffectsWhitespaceSiblings() const {
+    return !IsFloatingOrOutOfFlowPositioned() && !IsLayoutNGListMarker();
+  }
+
   bool HasReflection() const { return bitfields_.HasReflection(); }
 
   // The current selection state for an object.  For blocks, the state refers to

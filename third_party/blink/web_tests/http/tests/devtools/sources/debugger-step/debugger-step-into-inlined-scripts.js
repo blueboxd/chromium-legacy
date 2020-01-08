@@ -19,9 +19,9 @@
         'debugger-step-into-inlined-scripts.html', step2);
   }
 
-  function step2(sourceFrame) {
+  async function step2(sourceFrame) {
     TestRunner.addResult('Script source was shown.');
-    SourcesTestRunner.setBreakpoint(sourceFrame, 6, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 6, '', true);
     SourcesTestRunner.waitUntilPaused(step3);
     TestRunner.reloadPage(completeTest);
   }

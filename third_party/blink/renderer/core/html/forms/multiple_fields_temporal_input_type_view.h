@@ -107,7 +107,7 @@ class MultipleFieldsTemporalInputTypeView final
   void MinOrMaxAttributeChanged() final;
   void ReadonlyAttributeChanged() final;
   void RequiredAttributeChanged() final;
-  void RestoreFormControlState(const FormControlState&) final;
+  bool RestoreFormControlState(const FormControlState&) final;
   FormControlState SaveFormControlState() const final;
   void DidSetValue(const String&, bool value_changed) final;
   void StepAttributeChanged() final;

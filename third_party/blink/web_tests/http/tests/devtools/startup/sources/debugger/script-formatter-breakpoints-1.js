@@ -24,9 +24,9 @@
     function testBreakpointsInOriginalAndFormattedSource(next) {
       SourcesTestRunner.showScriptSource('script-formatter-breakpoints-1.html', didShowScriptSource);
 
-      function didShowScriptSource(frame) {
+      async function didShowScriptSource(frame) {
         sourceFrame = frame;
-        SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
+        await SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
         Promise.all([SourcesTestRunner.waitBreakpointSidebarPane(true), SourcesTestRunner.waitUntilPausedPromise()])
             .then(pausedInF1);
         TestRunner.evaluateInPageWithTimeout('f1()');

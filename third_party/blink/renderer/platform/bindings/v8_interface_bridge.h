@@ -53,6 +53,18 @@ class V8InterfaceBridge : public V8InterfaceBridgeBase {
   static T* ToBlinkUnsafe(v8::Local<v8::Object> receiver) {
     return ToScriptWrappable(receiver)->ToImpl<T>();
   }
+
+  // Migration adapter
+  static void InstallContextDependentAdapter(
+      v8::Local<v8::Context> context,
+      const DOMWrapperWorld& world,
+      v8::Local<v8::Object> instance_object,
+      v8::Local<v8::Object> prototype_object,
+      v8::Local<v8::Function> interface_object,
+      v8::Local<v8::FunctionTemplate> interface_template) {
+    V8T::InstallContextDependentProperties(context, world, instance_object,
+                                           prototype_object, interface_object);
+  }
 };
 
 }  // namespace bindings

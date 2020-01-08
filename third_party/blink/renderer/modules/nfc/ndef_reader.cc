@@ -34,7 +34,8 @@ namespace {
 void OnScanRequestCompleted(ScriptPromiseResolver* resolver,
                             device::mojom::blink::NDEFErrorPtr error) {
   if (error) {
-    resolver->Reject(NDEFErrorTypeToDOMException(error->error_type));
+    resolver->Reject(
+        NDEFErrorTypeToDOMException(error->error_type, error->error_message));
     return;
   }
   resolver->Resolve();
@@ -166,10 +167,9 @@ void NDEFReader::OnReading(const String& serial_number,
       MakeGarbageCollected<NDEFMessage>(message)));
 }
 
-void NDEFReader::OnError(device::mojom::blink::NDEFErrorType error) {
+void NDEFReader::OnError(const String& message) {
   ErrorEvent* event = ErrorEvent::Create(
-      NDEFErrorTypeToDOMException(error)->message(),
-      SourceLocation::Capture(GetExecutionContext()), nullptr);
+      message, SourceLocation::Capture(GetExecutionContext()), nullptr);
   DispatchEvent(*event);
 }
 
@@ -177,11 +177,12 @@ void NDEFReader::OnMojoConnectionError() {
   // If |resolver_| has already settled this rejection is silently ignored.
   if (resolver_) {
     resolver_->Reject(NDEFErrorTypeToDOMException(
-        device::mojom::blink::NDEFErrorType::NOT_SUPPORTED));
+        device::mojom::blink::NDEFErrorType::NOT_SUPPORTED,
+        "WebNFC feature is unavailable."));
   }
 
   // Dispatches an error event.
-  OnError(device::mojom::blink::NDEFErrorType::NOT_SUPPORTED);
+  OnError("WebNFC feature is unavailable.");
 }
 
 void NDEFReader::ContextDestroyed(ExecutionContext*) {

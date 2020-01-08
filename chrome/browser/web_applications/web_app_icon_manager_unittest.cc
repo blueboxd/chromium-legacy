@@ -122,29 +122,38 @@ class WebAppIconManagerTest : public WebAppTest {
   TestFileUtils* file_utils_ = nullptr;
 };
 
-TEST_F(WebAppIconManagerTest, WriteAndReadIcon) {
+TEST_F(WebAppIconManagerTest, WriteAndReadIcons) {
   auto web_app = CreateWebApp();
   const AppId app_id = web_app->app_id();
 
-  const std::vector<int> sizes_px{icon_size::k512};
-  const std::vector<SkColor> colors{SK_ColorYELLOW};
+  const std::vector<int> sizes_px{icon_size::k256, icon_size::k512};
+  const std::vector<SkColor> colors{SK_ColorGREEN, SK_ColorYELLOW};
   WriteIcons(app_id, sizes_px, colors);
 
   web_app->SetDownloadedIconSizes(sizes_px);
 
   controller().RegisterApp(std::move(web_app));
 
-  EXPECT_TRUE(icon_manager().HasIcon(app_id, sizes_px[0]));
+  EXPECT_TRUE(icon_manager().HasIcons(app_id, sizes_px));
   {
     base::RunLoop run_loop;
 
-    icon_manager().ReadIcon(
-        app_id, sizes_px[0],
-        base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
-          EXPECT_FALSE(bitmap.empty());
-          EXPECT_EQ(colors[0], bitmap.getColor(0, 0));
-          run_loop.Quit();
-        }));
+    icon_manager().ReadIcons(
+        app_id, sizes_px,
+        base::BindLambdaForTesting(
+            [&](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
+              EXPECT_EQ(2u, icon_bitmaps.size());
+
+              EXPECT_FALSE(icon_bitmaps[icon_size::k256].empty());
+              EXPECT_EQ(SK_ColorGREEN,
+                        icon_bitmaps[icon_size::k256].getColor(0, 0));
+
+              EXPECT_FALSE(icon_bitmaps[icon_size::k512].empty());
+              EXPECT_EQ(SK_ColorYELLOW,
+                        icon_bitmaps[icon_size::k512].getColor(0, 0));
+
+              run_loop.Quit();
+            }));
 
     run_loop.Run();
   }
@@ -240,31 +249,32 @@ TEST_F(WebAppIconManagerTest, ReadAllIcons) {
   }
 }
 
-TEST_F(WebAppIconManagerTest, ReadIconFailed) {
+TEST_F(WebAppIconManagerTest, ReadIconsFailed) {
   auto web_app = CreateWebApp();
   const AppId app_id = web_app->app_id();
 
-  const int icon_size_px = icon_size::k256;
+  const std::vector<SquareSizePx> icon_sizes_px{icon_size::k256};
 
   // Set icon meta-info but don't write bitmap to disk.
-  web_app->SetDownloadedIconSizes({icon_size_px});
+  web_app->SetDownloadedIconSizes(icon_sizes_px);
 
   controller().RegisterApp(std::move(web_app));
 
-  // Check non-existing icon size.
-  EXPECT_FALSE(icon_manager().HasIcon(app_id, icon_size::k96));
-
-  EXPECT_TRUE(icon_manager().HasIcon(app_id, icon_size_px));
+  EXPECT_FALSE(icon_manager().HasIcons(app_id, {icon_size::k96}));
+  EXPECT_TRUE(icon_manager().HasIcons(app_id, {icon_size::k256}));
+  EXPECT_FALSE(
+      icon_manager().HasIcons(app_id, {icon_size::k96, icon_size::k256}));
 
   // Request existing icon size which doesn't exist on disk.
   base::RunLoop run_loop;
 
-  icon_manager().ReadIcon(
-      app_id, icon_size_px,
-      base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
-        EXPECT_TRUE(bitmap.empty());
-        run_loop.Quit();
-      }));
+  icon_manager().ReadIcons(
+      app_id, icon_sizes_px,
+      base::BindLambdaForTesting(
+          [&](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
+            EXPECT_TRUE(icon_bitmaps.empty());
+            run_loop.Quit();
+          }));
 
   run_loop.Run();
 }
@@ -282,19 +292,22 @@ TEST_F(WebAppIconManagerTest, FindExact) {
 
   controller().RegisterApp(std::move(web_app));
 
-  EXPECT_FALSE(icon_manager().HasIcon(app_id, 40));
+  EXPECT_FALSE(icon_manager().HasIcons(app_id, {40}));
 
   {
     base::RunLoop run_loop;
 
-    EXPECT_TRUE(icon_manager().HasIcon(app_id, 20));
+    EXPECT_TRUE(icon_manager().HasIcons(app_id, {20}));
 
-    icon_manager().ReadIcon(
-        app_id, 20, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
-          EXPECT_FALSE(bitmap.empty());
-          EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 0));
-          run_loop.Quit();
-        }));
+    icon_manager().ReadIcons(
+        app_id, {20},
+        base::BindLambdaForTesting(
+            [&](std::map<SquareSizePx, SkBitmap> icon_bitmaps) {
+              EXPECT_EQ(1u, icon_bitmaps.size());
+              EXPECT_FALSE(icon_bitmaps[20].empty());
+              EXPECT_EQ(SK_ColorBLUE, icon_bitmaps[20].getColor(0, 0));
+              run_loop.Quit();
+            }));
 
     run_loop.Run();
   }
@@ -313,7 +326,7 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
 
   controller().RegisterApp(std::move(web_app));
 
-  EXPECT_FALSE(icon_manager().HasIcon(app_id, 70));
+  EXPECT_FALSE(icon_manager().HasSmallestIcon(app_id, 70));
 
   {
     base::RunLoop run_loop;

@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.gesturenav;
 import android.content.Context;
 import android.view.View;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.NavigationHistory;

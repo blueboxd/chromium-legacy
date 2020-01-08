@@ -11,7 +11,7 @@
 namespace ui {
 
 // Observer that receives the notifications of clipboard change events.
-class COMPONENT_EXPORT(BASE_CLIPBOARD) ClipboardObserver {
+class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardObserver {
  public:
   // Called when clipboard data is changed.
   virtual void OnClipboardDataChanged() = 0;

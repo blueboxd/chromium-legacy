@@ -37,12 +37,6 @@
                    file="a11y_page/captions_browser_proxy.js"
                    type="chrome_html" />
       </if>
-      <if expr="chromeos">
-        <structure name="IDR_SETTINGS_MANIFEST"
-                   file="manifest.json"
-                   type="chrome_html" />
-
-      </if>
       <structure name="IDR_SETTINGS_ABOUT_PAGE_BROWSER_PROXY_HTML"
                  file="about_page/about_page_browser_proxy.html"
                  type="chrome_html" />

@@ -7,8 +7,7 @@
 
 [
     SecureContext,
-    MeasureAs=RelativeOrientationSensorConstructor,
     Exposed=Window
 ] interface RelativeOrientationSensor : OrientationSensor {
-  [CallWith=ExecutionContext, RaisesException] constructor(optional SpatialSensorOptions sensorOptions);
+  [CallWith=ExecutionContext, RaisesException, MeasureAs=RelativeOrientationSensorConstructor] constructor(optional SpatialSensorOptions sensorOptions);
 };

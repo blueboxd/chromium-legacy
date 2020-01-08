@@ -30,35 +30,6 @@ v8::Local<v8::Value> CreateWriterLockReleasedException(v8::Isolate* isolate,
           verbed)));
 }
 
-v8::Local<v8::String> CreateCannotActionOnStateStreamMessage(
-    v8::Isolate* isolate,
-    const char* action,
-    const char* state_name) {
-  return V8String(isolate, String::Format("Cannot %s a %s writable stream",
-                                          action, state_name));
-}
-
-v8::Local<v8::Value> CreateCannotActionOnStateStreamException(
-    v8::Isolate* isolate,
-    const char* action,
-    WritableStream::State state) {
-  const char* state_name = nullptr;
-  switch (state) {
-    case WritableStream::kClosed:
-      state_name = "CLOSED";
-      break;
-
-    case WritableStream::kErrored:
-      state_name = "ERRORED";
-      break;
-
-    default:
-      NOTREACHED();
-  }
-  return v8::Exception::TypeError(
-      CreateCannotActionOnStateStreamMessage(isolate, action, state_name));
-}
-
 }  // namespace
 
 WritableStreamDefaultWriter* WritableStreamDefaultWriter::Create(
@@ -427,13 +398,14 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Write(
   if (WritableStream::CloseQueuedOrInFlight(stream)) {
     return PromiseReject(
         script_state,
-        v8::Exception::TypeError(CreateCannotActionOnStateStreamMessage(
-            isolate, "write to", "closing")));
+        v8::Exception::TypeError(
+            WritableStream::CreateCannotActionOnStateStreamMessage(
+                isolate, "write to", "closing")));
   }
   if (state == WritableStream::kClosed) {
-    return PromiseReject(script_state,
-                         CreateCannotActionOnStateStreamException(
-                             isolate, "write to", WritableStream::kClosed));
+    return PromiseReject(
+        script_state, WritableStream::CreateCannotActionOnStateStreamException(
+                          isolate, "write to", WritableStream::kClosed));
   }
 
   //  9. If state is "erroring", return a promise rejected with
@@ -523,42 +495,8 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Close(
   //  2. Assert: stream is not undefined.
   DCHECK(stream);
 
-  //  3. Let state be stream.[[state]].
-  const auto state = stream->GetState();
-
-  //  4. If state is "closed" or "errored", return a promise rejected with a
-  //     TypeError exception.
-  if (state == WritableStream::kClosed || state == WritableStream::kErrored) {
-    return PromiseReject(script_state,
-                         CreateCannotActionOnStateStreamException(
-                             script_state->GetIsolate(), "close", state));
-  }
-
-  //  5. Assert: state is "writable" or "erroring".
-  DCHECK(state == WritableStream::kWritable ||
-         state == WritableStream::kErroring);
-
-  //  6. Assert: ! WritableStreamCloseQueuedOrInFlight(stream) is false.
-  DCHECK(!WritableStream::CloseQueuedOrInFlight(stream));
-
-  //  7. Let promise be a new promise.
-  auto* promise = MakeGarbageCollected<StreamPromiseResolver>(script_state);
-
-  //  8. Set stream.[[closeRequest]] to promise.
-  stream->SetCloseRequest(promise);
-
-  //  9. If stream.[[backpressure]] is true and state is "writable", resolve
-  //     writer.[[readyPromise]] with undefined.
-  if (stream->HasBackpressure() && state == WritableStream::kWritable) {
-    writer->ready_promise_->ResolveWithUndefined(script_state);
-  }
-
-  // 10. Perform ! WritableStreamDefaultControllerClose(
-  //     stream.[[writableStreamController]]).
-  WritableStreamDefaultController::Close(script_state, stream->Controller());
-
-  // 11. Return promise.
-  return promise->V8Promise(script_state->GetIsolate());
+  //  3. Return ! WritableStreamClose(stream).
+  return WritableStream::Close(script_state, stream);
 }
 
 void WritableStreamDefaultWriter::EnsureClosedPromiseRejected(

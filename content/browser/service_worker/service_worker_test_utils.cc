@@ -249,34 +249,35 @@ void ServiceWorkerRemoteProviderEndpoint::BindForServiceWorker(
   host_remote_.Bind(std::move(info->host_remote));
 }
 
-ServiceWorkerProviderHostAndInfo::ServiceWorkerProviderHostAndInfo(
-    base::WeakPtr<ServiceWorkerProviderHost> host,
+ServiceWorkerContainerHostAndInfo::ServiceWorkerContainerHostAndInfo(
+    base::WeakPtr<ServiceWorkerContainerHost> host,
     blink::mojom::ServiceWorkerProviderInfoForClientPtr info)
     : host(std::move(host)), info(std::move(info)) {}
 
-ServiceWorkerProviderHostAndInfo::~ServiceWorkerProviderHostAndInfo() = default;
+ServiceWorkerContainerHostAndInfo::~ServiceWorkerContainerHostAndInfo() =
+    default;
 
-base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
+base::WeakPtr<ServiceWorkerContainerHost> CreateContainerHostForWindow(
     int process_id,
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
-  std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
-      CreateProviderHostAndInfoForWindow(context, is_parent_frame_secure);
-  base::WeakPtr<ServiceWorkerProviderHost> host =
+  std::unique_ptr<ServiceWorkerContainerHostAndInfo> host_and_info =
+      CreateContainerHostAndInfoForWindow(context, is_parent_frame_secure);
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
       std::move(host_and_info->host);
   output_endpoint->BindForWindow(std::move(host_and_info->info));
 
   // In production code this is called from NavigationRequest in the browser
   // process right before navigation commit.
-  host->container_host()->OnBeginNavigationCommit(
+  container_host->OnBeginNavigationCommit(
       process_id, 1 /* route_id */,
       network::mojom::CrossOriginEmbedderPolicy::kNone);
-  return host;
+  return container_host;
 }
 
-std::unique_ptr<ServiceWorkerProviderHostAndInfo>
-CreateProviderHostAndInfoForWindow(
+std::unique_ptr<ServiceWorkerContainerHostAndInfo>
+CreateContainerHostAndInfoForWindow(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure) {
   mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
@@ -286,8 +287,8 @@ CreateProviderHostAndInfoForWindow(
   auto info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   info->client_receiver = client_remote.InitWithNewEndpointAndPassReceiver();
   host_receiver = info->host_remote.InitWithNewEndpointAndPassReceiver();
-  return std::make_unique<ServiceWorkerProviderHostAndInfo>(
-      ServiceWorkerProviderHost::CreateForWindow(
+  return std::make_unique<ServiceWorkerContainerHostAndInfo>(
+      ServiceWorkerContainerHost::CreateForWindow(
           context, are_ancestors_secure, FrameTreeNode::kFrameTreeNodeInvalidId,
           std::move(host_receiver), std::move(client_remote)),
       std::move(info));
@@ -326,7 +327,7 @@ void StopServiceWorker(ServiceWorkerVersion* version) {
   run_loop.Run();
 }
 
-base::WeakPtr<ServiceWorkerProviderHost>
+std::unique_ptr<ServiceWorkerProviderHost>
 CreateProviderHostForServiceWorkerContext(
     int process_id,
     bool is_parent_frame_secure,
@@ -335,10 +336,9 @@ CreateProviderHostForServiceWorkerContext(
     ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
   auto provider_info =
       blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
-  base::WeakPtr<ServiceWorkerProviderHost> host =
-      ServiceWorkerProviderHost::CreateForServiceWorker(
-          std::move(context), base::WrapRefCounted(hosted_version),
-          &provider_info);
+  auto host = std::make_unique<ServiceWorkerProviderHost>(
+      provider_info->host_remote.InitWithNewEndpointAndPassReceiver(),
+      base::WrapRefCounted(hosted_version), std::move(context));
 
   host->CompleteStartWorkerPreparation(
       process_id,

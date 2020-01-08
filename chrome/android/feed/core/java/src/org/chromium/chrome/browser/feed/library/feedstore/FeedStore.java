@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.feed.library.feedstore;
 
 import com.google.protobuf.ByteString;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.InternalFeedError;

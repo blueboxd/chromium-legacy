@@ -37,8 +37,8 @@ class NativeFileSystemWriter final : public ScriptWrappable,
                       uint64_t position,
                       const ArrayBufferOrArrayBufferViewOrBlobOrUSVString& data,
                       ExceptionState&);
-  ScriptPromise truncate(ScriptState*, uint64_t size);
-  ScriptPromise close(ScriptState*);
+  ScriptPromise truncate(ScriptState*, uint64_t size, ExceptionState&);
+  ScriptPromise close(ScriptState*, ExceptionState&);
 
   void Trace(Visitor*) override;
   void ContextDestroyed(ExecutionContext*) override;
@@ -46,7 +46,10 @@ class NativeFileSystemWriter final : public ScriptWrappable,
  private:
   class StreamWriterClient;
 
-  ScriptPromise WriteBlob(ScriptState*, uint64_t position, Blob*);
+  ScriptPromise WriteBlob(ScriptState*,
+                          uint64_t position,
+                          Blob*,
+                          ExceptionState&);
   ScriptPromise WriteStream(ScriptState*,
                             uint64_t position,
                             ReadableStream* stream,

@@ -941,6 +941,10 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(
           env, collect_user_data_options->billing_postal_code_missing_text));
+  Java_AssistantCollectUserDataModel_setCreditCardExpiredText(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, collect_user_data_options->credit_card_expired_text));
   Java_AssistantCollectUserDataModel_setSupportedBasicCardNetworks(
       env, jmodel,
       base::android::ToJavaArrayOfStrings(

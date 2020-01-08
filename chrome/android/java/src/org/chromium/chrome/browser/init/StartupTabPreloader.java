@@ -9,9 +9,9 @@ import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Supplier;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;

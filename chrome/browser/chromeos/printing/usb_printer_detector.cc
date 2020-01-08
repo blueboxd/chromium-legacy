@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
+#include "services/device/public/mojom/usb_manager.mojom.h"
 #include "services/device/public/mojom/usb_manager_client.mojom.h"
 
 namespace chromeos {

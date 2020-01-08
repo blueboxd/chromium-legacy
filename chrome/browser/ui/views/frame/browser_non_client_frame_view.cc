@@ -166,6 +166,7 @@ void BrowserNonClientFrameView::UpdateFrameColor() {
   // Only web-app windows support dynamic frame colors set by HTML meta tags.
   if (web_app_frame_toolbar_)
     web_app_frame_toolbar_->UpdateCaptionColors();
+  SchedulePaint();
 }
 
 SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {

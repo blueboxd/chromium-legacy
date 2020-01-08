@@ -25,27 +25,27 @@ class Pickle;
 
 namespace ui {
 
-COMPONENT_EXPORT(BASE_CLIPBOARD)
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
 void ReadCustomDataTypes(const void* data,
                          size_t data_length,
                          std::vector<base::string16>* types);
-COMPONENT_EXPORT(BASE_CLIPBOARD)
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
 void ReadCustomDataForType(const void* data,
                            size_t data_length,
                            const base::string16& type,
                            base::string16* result);
-COMPONENT_EXPORT(BASE_CLIPBOARD)
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
 void ReadCustomDataIntoMap(
     const void* data,
     size_t data_length,
     std::unordered_map<base::string16, base::string16>* result);
 
-COMPONENT_EXPORT(BASE_CLIPBOARD)
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
 void WriteCustomDataToPickle(
     const std::unordered_map<base::string16, base::string16>& data,
     base::Pickle* pickle);
 
-COMPONENT_EXPORT(BASE_CLIPBOARD)
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
 void WriteCustomDataToPickle(
     const base::flat_map<base::string16, base::string16>& data,
     base::Pickle* pickle);

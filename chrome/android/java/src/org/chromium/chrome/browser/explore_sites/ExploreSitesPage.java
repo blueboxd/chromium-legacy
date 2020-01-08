@@ -5,14 +5,12 @@
 package org.chromium.chrome.browser.explore_sites;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Base64;
-import android.view.View;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
@@ -161,27 +159,6 @@ public class ExploreSitesPage extends BasicNativePage {
     }
 
     /**
-     * Create a new instance of the explore sites page.
-     */
-    public ExploreSitesPage(ChromeActivity activity, NativePageHost host) {
-        super(activity, host);
-    }
-
-    /**
-     * Returns whether the given URL should render the ExploreSitesPage native page.
-     * @param url The url to check.
-     * @return Whether or not this URL corresponds to the ExploreSitesPage.
-     */
-    public static boolean isExploreSitesUrl(String url) {
-        Uri uri = Uri.parse(url);
-        if (!UrlConstants.CHROME_NATIVE_SCHEME.equals(uri.getScheme())) {
-            return false;
-        }
-
-        return isExploreSitesHost(uri.getHost());
-    }
-
-    /**
      * Returns whether the given host is the ExploreSitesPage's host. Does not check the
      * scheme, which is required to fully validate a URL.
      * @param host The host to check
@@ -191,15 +168,19 @@ public class ExploreSitesPage extends BasicNativePage {
         return UrlConstants.EXPLORE_HOST.equals(host);
     }
 
-    @Override
-    protected void initialize(ChromeActivity activity, final NativePageHost host) {
+    /**
+     * Create a new instance of the explore sites page.
+     */
+    public ExploreSitesPage(ChromeActivity activity, NativePageHost host) {
+        super(host);
+
         mHost = host;
-        mTab = mHost.getActiveTab();
+        mTab = activity.getActivityTab();
 
         mTitle = activity.getString(R.string.explore_sites_title);
         mView = (HistoryNavigationLayout) activity.getLayoutInflater().inflate(
                 R.layout.explore_sites_page_layout, null);
-        mProfile = ((TabImpl) mHost.getActiveTab()).getProfile();
+        mProfile = ((TabImpl) mTab).getProfile();
 
         mDenseVariation = ExploreSitesBridge.getDenseVariation();
         int maxRows;
@@ -253,16 +234,15 @@ public class ExploreSitesPage extends BasicNativePage {
                         context.getResources().getDimensionPixelSize(textSizeDimensionResource));
 
         NativePageNavigationDelegateImpl navDelegate = new NativePageNavigationDelegateImpl(
-                activity, mProfile, host, activity.getTabModelSelector());
+                activity, mProfile, host, activity.getTabModelSelector(), mTab);
 
         // Don't direct reference activity because it might change if tab is reparented.
-        Runnable closeContextMenuCallback =
-                () -> ((TabImpl) host.getActiveTab()).getActivity().closeContextMenu();
+        Runnable closeContextMenuCallback = () -> ((TabImpl) mTab).getActivity().closeContextMenu();
 
         mContextMenuManager = createContextMenuManager(
                 navDelegate, closeContextMenuCallback, CONTEXT_MENU_USER_ACTION_PREFIX);
 
-        host.getActiveTab().getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
+        mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         CategoryCardAdapter adapterDelegate = new CategoryCardAdapter(
                 mModel, mLayoutManager, iconGenerator, mContextMenuManager, navDelegate, mProfile);
@@ -300,6 +280,8 @@ public class ExploreSitesPage extends BasicNativePage {
 
         ExploreSitesBridge.getCatalog(mProfile,
                 ExploreSitesCatalogUpdateRequestSource.EXPLORE_SITES_PAGE, this::translateToModel);
+
+        initWithView(mView);
 
         RecordUserAction.record("Android.ExploreSitesPage.Open");
     }
@@ -458,11 +440,6 @@ public class ExploreSitesPage extends BasicNativePage {
     }
 
     @Override
-    public View getView() {
-        return mView;
-    }
-
-    @Override
     public String getTitle() {
         return mTitle;
     }
@@ -488,7 +465,7 @@ public class ExploreSitesPage extends BasicNativePage {
         if (mTabObserver != null) {
             mTab.removeObserver(mTabObserver);
         }
-        mHost.getActiveTab().getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
+        mTab.getWindowAndroid().removeContextMenuCloseListener(mContextMenuManager);
         super.destroy();
     }
 

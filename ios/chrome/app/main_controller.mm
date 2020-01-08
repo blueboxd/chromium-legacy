@@ -289,7 +289,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @interface MainController () <AppURLLoadingServiceDelegate,
                               BrowserStateStorageSwitching,
                               PrefObserverDelegate,
-                              TabSwitcherDelegate,
                               WebStateListObserving> {
   IBOutlet UIWindow* _window;
 
@@ -419,15 +418,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
          tabOpenedCompletion:(ProceduralBlock)tabOpenedCompletion;
 // Returns whether the restore infobar should be displayed.
 - (bool)mustShowRestoreInfobar;
-// Begins the process of dismissing the tab switcher with the given current
-// model, switching which BVC is suspended if necessary, but not updating the
-// UI.  The omnibox will be focused after the tab switcher dismissal is
-// completed if |focusOmnibox| is YES.
-- (void)beginDismissingTabSwitcherWithCurrentModel:(TabModel*)tabModel
-                                      focusOmnibox:(BOOL)focusOmnibox;
-// Completes the process of dismissing the tab switcher, removing it from the
-// screen and showing the appropriate BVC.
-- (void)finishDismissingTabSwitcher;
 // Switch all global states for the given mode (normal or incognito).
 - (void)switchGlobalStateToMode:(ApplicationMode)mode;
 // Updates the local storage, cookie store, and sets the global state.
@@ -1652,7 +1642,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                                          otrTabModel:self.otrTabModel
                                       activeTabModel:self.currentTabModel];
   self.tabSwitcherIsActive = YES;
-  [_tabSwitcher setDelegate:self];
+  [_tabSwitcher setDelegate:self.sceneController];
 
   [self.mainCoordinator showTabSwitcher:_tabSwitcher];
 }
@@ -1699,19 +1689,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                                   withUrlLoadParams:urlLoadParams
                                             atIndex:self.mainTabModel.count];
   return YES;
-}
-
-#pragma mark - TabSwitcherDelegate
-
-- (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
-    shouldFinishWithActiveModel:(TabModel*)tabModel
-                   focusOmnibox:(BOOL)focusOmnibox {
-  [self beginDismissingTabSwitcherWithCurrentModel:tabModel
-                                      focusOmnibox:focusOmnibox];
-}
-
-- (void)tabSwitcherDismissTransitionDidEnd:(id<TabSwitcher>)tabSwitcher {
-  [self finishDismissingTabSwitcher];
 }
 
 #pragma mark - TabSwitcherDelegate helper methods

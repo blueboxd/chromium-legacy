@@ -232,6 +232,9 @@ Polymer({
 
     /** @private */
     searchFilter_: String,
+
+    /** @private */
+    siteDataFilter_: String,
   },
 
   observers: [

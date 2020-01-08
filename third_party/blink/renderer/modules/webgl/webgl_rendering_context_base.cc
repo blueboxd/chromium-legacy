@@ -2185,12 +2185,8 @@ void WebGLRenderingContextBase::compressedTexImage2D(
   if (!ValidateCompressedTexFormat("compressedTexImage2D", internalformat))
     return;
   GLsizei data_length;
-  if (!base::CheckedNumeric<GLsizei>(data.View()->byteLengthAsSizeT())
-           .AssignIfValid(&data_length)) {
-    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
-                      "src_length exceeds the maximum supported length");
+  if (!ExtractDataLengthIfValid("compressedTexImage2D", data, &data_length))
     return;
-  }
   ContextGL()->CompressedTexImage2D(target, level, internalformat, width,
                                     height, border, data_length,
                                     data.View()->BaseAddressMaybeShared());
@@ -2212,12 +2208,8 @@ void WebGLRenderingContextBase::compressedTexSubImage2D(
   if (!ValidateCompressedTexFormat("compressedTexSubImage2D", format))
     return;
   GLsizei data_length;
-  if (!base::CheckedNumeric<GLsizei>(data.View()->byteLengthAsSizeT())
-           .AssignIfValid(&data_length)) {
-    SynthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
-                      "src_length exceeds the maximum supported length");
+  if (!ExtractDataLengthIfValid("compressedTexSubImage2D", data, &data_length))
     return;
-  }
   ContextGL()->CompressedTexSubImage2D(target, level, xoffset, yoffset, width,
                                        height, format, data_length,
                                        data.View()->BaseAddressMaybeShared());

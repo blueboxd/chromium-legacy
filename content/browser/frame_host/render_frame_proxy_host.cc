@@ -159,7 +159,6 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxyHost, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_CheckCompleted, OnCheckCompleted)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RouteMessageEvent, OnRouteMessageEvent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_AdvanceFocus, OnAdvanceFocus)
@@ -404,7 +403,7 @@ void RenderFrameProxyHost::OnOpenURL(
       std::move(blob_url_loader_factory), params.user_gesture);
 }
 
-void RenderFrameProxyHost::OnCheckCompleted() {
+void RenderFrameProxyHost::CheckCompleted() {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
   target_rfh->GetAssociatedLocalFrame()->CheckCompleted();
 }

@@ -825,11 +825,6 @@
 
     'chromium_swarm_desktop_gtests': {
       'base_unittests': {},
-      'browser_tests': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
       'content_browsertests': {},
       'content_unittests': {},
       'interactive_ui_tests': {},

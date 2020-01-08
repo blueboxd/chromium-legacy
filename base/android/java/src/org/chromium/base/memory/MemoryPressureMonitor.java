@@ -15,10 +15,10 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.MemoryPressureLevel;
 import org.chromium.base.MemoryPressureListener;
-import org.chromium.base.Supplier;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.supplier.Supplier;
 
 import java.util.concurrent.TimeUnit;
 

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/services/cups_proxy/cups_proxy_service.h"
-#include "chrome/services/cups_proxy/public/mojom/proxy.mojom.h"
+#include "chrome/services/cups_proxy/public/mojom/proxy.mojom-forward.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
 

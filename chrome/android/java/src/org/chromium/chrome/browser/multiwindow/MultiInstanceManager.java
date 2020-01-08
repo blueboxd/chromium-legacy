@@ -17,8 +17,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ObservableSupplier;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.flags.FeatureUtilities;

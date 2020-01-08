@@ -20,7 +20,6 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/shared/public/platform_audio_input.h"
 #include "media/base/audio_capturer_source.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace chromeos {
 class CrasAudioHandler;

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.feed.library.feedstore.testing;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.internal.common.PayloadWithId;
 import org.chromium.chrome.browser.feed.library.api.internal.common.SemanticPropertiesWithId;
 import org.chromium.chrome.browser.feed.library.api.internal.store.ContentMutation;

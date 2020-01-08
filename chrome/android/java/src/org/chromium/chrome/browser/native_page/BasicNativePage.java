@@ -4,43 +4,60 @@
 
 package org.chromium.chrome.browser.native_page;
 
+import android.graphics.Rect;
 import android.view.View;
 import android.widget.FrameLayout.LayoutParams;
 
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.base.Callback;
+import org.chromium.base.supplier.DestroyableObservableSupplier;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
- * A basic implementation of a white {@link NativePage} that docks below the toolbar.
+ * A basic implementation of a white {@link NativePage} that docks below the toolbar. This class
+ * handles default behavior for background color, URL updates and margins.
+ *
+ * Sub-classes must call {@link #initWithView(View)} to finish setup.
  */
-public abstract class BasicNativePage
-        implements NativePage, ChromeFullscreenManager.FullscreenListener {
+public abstract class BasicNativePage implements NativePage {
     private final NativePageHost mHost;
-    private final ChromeFullscreenManager mFullscreenManager;
     private final int mBackgroundColor;
-
+    private DestroyableObservableSupplier<Rect> mMarginSupplier;
+    private Callback<Rect> mMarginObserver;
+    private View mView;
     private String mUrl;
 
-    public BasicNativePage(ChromeActivity activity, NativePageHost host) {
-        initialize(activity, host);
+    protected BasicNativePage(NativePageHost host) {
         mHost = host;
-        mBackgroundColor = ChromeColors.getPrimaryBackgroundColor(activity.getResources(), false);
-
-        mFullscreenManager = activity.getFullscreenManager();
-        mFullscreenManager.addListener(this);
-
-        updateMargins();
+        mBackgroundColor =
+                ChromeColors.getPrimaryBackgroundColor(host.getContext().getResources(), false);
     }
 
     /**
-     * Subclasses shall implement this method to initialize the UI that they hold.
+     * Sets the View contained in this native page and finishes BasicNativePage initialization.
      */
-    protected abstract void initialize(ChromeActivity activity, NativePageHost host);
+    protected void initWithView(View view) {
+        assert mView == null : "initWithView() should only be called once";
+        mView = view;
+
+        mMarginObserver = result -> updateMargins(result);
+        mMarginSupplier = mHost.createDefaultMarginSupplier();
+        mMarginSupplier.addObserver(mMarginObserver);
+
+        // Update margins immediately if available rather than waiting for a posted notification.
+        // Waiting for a posted notification could allow a layout pass to occur before the margins
+        // are set.
+        if (mMarginSupplier.get() != null) {
+            updateMargins(mMarginSupplier.get());
+        }
+    }
 
     @Override
-    public abstract View getView();
+    public final View getView() {
+        assert mView != null : "Need to call initWithView()";
+
+        return mView;
+    }
 
     @Override
     public String getUrl() {
@@ -64,25 +81,10 @@ public abstract class BasicNativePage
 
     @Override
     public void destroy() {
-        if (mHost.getActiveTab() == null) return;
-        mFullscreenManager.removeListener(this);
-    }
-
-    @Override
-    public void onContentOffsetChanged(int offset) {}
-
-    @Override
-    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {
-        updateMargins();
-    }
-
-    @Override
-    public void onToggleOverlayVideoMode(boolean enabled) {}
-
-    @Override
-    public void onBottomControlsHeightChanged(
-            int bottomControlsHeight, int bottomControlsMinHeight) {
-        updateMargins();
+        if (mMarginSupplier != null) {
+            mMarginSupplier.removeObserver(mMarginObserver);
+            mMarginSupplier.destroy();
+        }
     }
 
     /**
@@ -96,18 +98,13 @@ public abstract class BasicNativePage
         params.setShouldReplaceCurrentEntry(replaceLastUrl);
         mHost.loadUrl(params, /* incognito = */ false);
     }
-
     /**
      * Updates the top margin depending on whether the browser controls are shown or hidden.
      */
-    private void updateMargins() {
-        int topMargin = mFullscreenManager.getTopControlsHeight()
-                + mFullscreenManager.getTopControlOffset();
-        int bottomMargin = mFullscreenManager.getBottomControlsHeight()
-                - mFullscreenManager.getBottomControlOffset();
+    private void updateMargins(Rect margins) {
         LayoutParams layoutParams =
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        layoutParams.setMargins(0, topMargin, 0, bottomMargin);
+        layoutParams.setMargins(margins.left, margins.top, margins.left, margins.bottom);
         getView().setLayoutParams(layoutParams);
     }
 }

@@ -33,7 +33,7 @@ const Extension* GetBookmarkApp(Profile* profile,
 
 void ReadExtensionIcon(Profile* profile,
                        const web_app::AppId& app_id,
-                       int icon_size_in_px,
+                       SquareSizePx icon_size_in_px,
                        ExtensionIconSet::MatchType match_type,
                        BookmarkAppIconManager::ReadIconCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -48,9 +48,8 @@ void ReadExtensionIcon(Profile* profile,
       base::BindOnce(&OnExtensionIconLoaded, std::move(callback)));
 }
 
-void OnExtensionIconsLoaded(
-    BookmarkAppIconManager::ReadAllIconsCallback callback,
-    const gfx::Image& image) {
+void OnExtensionIconsLoaded(BookmarkAppIconManager::ReadIconsCallback callback,
+                            const gfx::Image& image) {
   std::map<SquareSizePx, SkBitmap> icons_map;
 
   gfx::ImageSkia image_skia = image.AsImageSkia();
@@ -62,19 +61,16 @@ void OnExtensionIconsLoaded(
 
 void ReadExtensionIcons(Profile* profile,
                         const web_app::AppId& app_id,
-                        BookmarkAppIconManager::ReadAllIconsCallback callback) {
+                        const std::vector<SquareSizePx>& icon_sizes_in_px,
+                        BookmarkAppIconManager::ReadIconsCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const Extension* extension = GetBookmarkApp(profile, app_id);
-  DCHECK(extension);
-
-  const ExtensionIconSet& icons = IconsInfo::GetIcons(extension);
+  const Extension* app = GetBookmarkApp(profile, app_id);
+  DCHECK(app);
 
   std::vector<ImageLoader::ImageRepresentation> info_list;
-  for (const ExtensionIconSet::IconMap::value_type& icon_info : icons.map()) {
-    const int size_in_px = icon_info.first;
-
+  for (SquareSizePx size_in_px : icon_sizes_in_px) {
     ExtensionResource resource = IconsInfo::GetIconResource(
-        extension, size_in_px, ExtensionIconSet::MATCH_EXACTLY);
+        app, size_in_px, ExtensionIconSet::MATCH_EXACTLY);
     ImageLoader::ImageRepresentation image_rep{
         resource, ImageLoader::ImageRepresentation::NEVER_RESIZE,
         gfx::Size{size_in_px, size_in_px}, /*scale_factor=*/0.0f};
@@ -83,8 +79,23 @@ void ReadExtensionIcons(Profile* profile,
 
   ImageLoader* loader = ImageLoader::Get(profile);
   loader->LoadImagesAsync(
-      extension, info_list,
+      app, info_list,
       base::BindOnce(&OnExtensionIconsLoaded, std::move(callback)));
+}
+
+void ReadAllExtensionIcons(Profile* profile,
+                           const web_app::AppId& app_id,
+                           BookmarkAppIconManager::ReadIconsCallback callback) {
+  const Extension* app = GetBookmarkApp(profile, app_id);
+  DCHECK(app);
+
+  const ExtensionIconSet& icons = IconsInfo::GetIcons(app);
+
+  std::vector<SquareSizePx> icon_sizes_in_px;
+  for (const ExtensionIconSet::IconMap::value_type& icon_info : icons.map())
+    icon_sizes_in_px.push_back(icon_info.first);
+
+  ReadExtensionIcons(profile, app_id, icon_sizes_in_px, std::move(callback));
 }
 
 }  // anonymous namespace
@@ -94,31 +105,55 @@ BookmarkAppIconManager::BookmarkAppIconManager(Profile* profile)
 
 BookmarkAppIconManager::~BookmarkAppIconManager() = default;
 
-bool BookmarkAppIconManager::HasIcon(const web_app::AppId& app_id,
-                                     int icon_size_in_px) const {
-  return GetBookmarkApp(profile_, app_id);
+bool BookmarkAppIconManager::HasIcons(
+    const web_app::AppId& app_id,
+    const std::vector<SquareSizePx>& icon_sizes_in_px) const {
+  const Extension* app = GetBookmarkApp(profile_, app_id);
+  if (!app)
+    return false;
+
+  const ExtensionIconSet& icons = IconsInfo::GetIcons(app);
+
+  for (SquareSizePx size_in_px : icon_sizes_in_px) {
+    const std::string& path =
+        icons.Get(size_in_px, ExtensionIconSet::MATCH_EXACTLY);
+    if (path.empty())
+      return false;
+  }
+
+  return true;
 }
 
-bool BookmarkAppIconManager::HasSmallestIcon(const web_app::AppId& app_id,
-                                             int icon_size_in_px) const {
-  return GetBookmarkApp(profile_, app_id);
+bool BookmarkAppIconManager::HasSmallestIcon(
+    const web_app::AppId& app_id,
+    SquareSizePx icon_size_in_px) const {
+  const Extension* app = GetBookmarkApp(profile_, app_id);
+  if (!app)
+    return false;
+
+  const ExtensionIconSet& icons = IconsInfo::GetIcons(app);
+
+  const std::string& path =
+      icons.Get(icon_size_in_px, ExtensionIconSet::MATCH_BIGGER);
+
+  return !path.empty();
 }
 
-void BookmarkAppIconManager::ReadIcon(const web_app::AppId& app_id,
-                                      int icon_size_in_px,
-                                      ReadIconCallback callback) const {
-  DCHECK(HasIcon(app_id, icon_size_in_px));
-  ReadExtensionIcon(profile_, app_id, icon_size_in_px,
-                    ExtensionIconSet::MATCH_EXACTLY, std::move(callback));
+void BookmarkAppIconManager::ReadIcons(
+    const web_app::AppId& app_id,
+    const std::vector<SquareSizePx>& icon_sizes_in_px,
+    ReadIconsCallback callback) const {
+  DCHECK(HasIcons(app_id, icon_sizes_in_px));
+  ReadExtensionIcons(profile_, app_id, icon_sizes_in_px, std::move(callback));
 }
 
 void BookmarkAppIconManager::ReadAllIcons(const web_app::AppId& app_id,
-                                          ReadAllIconsCallback callback) const {
-  ReadExtensionIcons(profile_, app_id, std::move(callback));
+                                          ReadIconsCallback callback) const {
+  ReadAllExtensionIcons(profile_, app_id, std::move(callback));
 }
 
 void BookmarkAppIconManager::ReadSmallestIcon(const web_app::AppId& app_id,
-                                              int icon_size_in_px,
+                                              SquareSizePx icon_size_in_px,
                                               ReadIconCallback callback) const {
   DCHECK(HasSmallestIcon(app_id, icon_size_in_px));
   ReadExtensionIcon(profile_, app_id, icon_size_in_px,
@@ -127,7 +162,7 @@ void BookmarkAppIconManager::ReadSmallestIcon(const web_app::AppId& app_id,
 
 void BookmarkAppIconManager::ReadSmallestCompressedIcon(
     const web_app::AppId& app_id,
-    int icon_size_in_px,
+    SquareSizePx icon_size_in_px,
     ReadCompressedIconCallback callback) const {
   NOTIMPLEMENTED();
   DCHECK(HasSmallestIcon(app_id, icon_size_in_px));

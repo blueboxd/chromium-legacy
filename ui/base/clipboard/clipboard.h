@@ -39,7 +39,8 @@ class ScopedClipboardWriter;
 // - specifies an ordering in which to write types to the clipboard
 //   (see PortableFormat).
 // - is generalized for all targets/operating systems.
-class COMPONENT_EXPORT(BASE_CLIPBOARD) Clipboard : public base::ThreadChecker {
+class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
+    : public base::ThreadChecker {
  public:
   static bool IsSupportedClipboardBuffer(ClipboardBuffer buffer) {
     switch (buffer) {

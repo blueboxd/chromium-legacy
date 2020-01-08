@@ -2,6 +2,17 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../external/wpt/html/interaction/focus/the-autofocus-attribute/resources/utils.js"></script>
+<script src="file/resources/file-drag-common.js"></script>
+<style>
+/* Make the top-left corner of the iframe is equal to the top-left corner
+   of the body.  It's required for dragFilesOntoInput(). */
+body {
+  margin: 0;
+}
+iframe {
+  border: none;
+}
+</style>
 <body>
 <iframe src="resources/state-restore-dynamic-controls-frame.html"></iframe>
 <script>
@@ -16,14 +27,16 @@ promise_test(async t => {
   container.firstChild.click();
   container.lastChild.focus();
   eventSender.keyDown('z');
-  doc.querySelector('textarea').focus();
+  dragFilesOntoInput(doc.querySelector('#file-modified'), ['foo.txt']);
+  doc.querySelector('#date-modified').value = '2020-01-08';
+  doc.querySelector('#textarea-modified').focus();
   eventSender.keyDown('y');
-  doc.querySelector('select').focus();
+  doc.querySelector('#select-modified').focus();
   eventSender.keyDown('2');
   assert_true(container.firstChild.checked, 'sanity check for a checkbox');
   assert_equals(container.lastChild.value, 'z', 'sanity check for a text field');
-  assert_equals(doc.querySelector('textarea').value, 'y', 'sanity check for a textarea');
-  assert_equals(doc.querySelector('select').value, '2', 'sanity check for a select');
+  assert_equals(doc.querySelector('#textarea-modified').value, 'y', 'sanity check for a textarea');
+  assert_equals(doc.querySelector('#select-modified').value, '2', 'sanity check for a select');
 
   // Flush asynchronous input/change events
   await timeOut(t, 0);
@@ -50,7 +63,11 @@ promise_test(async t => {
   // Wait for asynchronous input/change events
   await timeOut(t, 0);
   assert_array_equals(inputOrChangeEvents, [
-      'input/checkbox', 'change/checkbox', 'input/text', 'change/text',
-      'input/textarea', 'change/textarea', 'input/select-one', 'change/select-one']);
+      'input/file-modified', 'change/file-modified',
+      'input/checkbox-modified', 'change/checkbox-modified',
+      'input/text-modified', 'change/text-modified',
+      'input/date-modified', 'change/date-modified',
+      'input/textarea-modified', 'change/textarea-modified',
+      'input/select-modified', 'change/select-modified']);
 }, 'Control states should be restored correctly even if controls were inserted before existing controls.');
 </script>

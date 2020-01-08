@@ -97,6 +97,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
  private:
   // Testing the private RemovalTask.
   FRIEND_TEST_ALL_PREFIXES(BrowsingDataRemoverImplTest, MultipleTasks);
+  FRIEND_TEST_ALL_PREFIXES(BrowsingDataRemoverImplTest, MultipleIdenticalTasks);
 
   // For debugging purposes. Please add new deletion tasks at the end.
   // This enum is recorded in a histogram, so don't change or reuse ids.
@@ -129,12 +130,16 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
     RemovalTask(RemovalTask&& other) noexcept;
     ~RemovalTask();
 
+    // Returns true if the deletion parameters are equal.
+    // Does not compare |observer| and |task_started|.
+    bool IsSameDeletion(const RemovalTask& other);
+
     base::Time delete_begin;
     base::Time delete_end;
     int remove_mask;
     int origin_type_mask;
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder;
-    Observer* observer;
+    std::vector<Observer*> observers;
     base::Time task_started;
   };
 
@@ -207,7 +212,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   bool is_removing_;
 
   // Removal tasks to be processed.
-  base::queue<RemovalTask> task_queue_;
+  std::deque<RemovalTask> task_queue_;
 
   // If non-null, the |would_complete_callback_| is called each time an instance
   // is about to complete a browsing data removal process, and has the ability

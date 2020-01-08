@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.view.View;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.lifecycle.Destroyable;

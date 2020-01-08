@@ -1292,8 +1292,8 @@ void SimpleURLLoaderImpl::AttachStringForUpload(
     const std::string& upload_content_type) {
   // Currently only allow a single string to be attached.
   DCHECK(!resource_request_->request_body);
-  DCHECK(resource_request_->method != "GET" &&
-         resource_request_->method != "HEAD");
+  DCHECK(resource_request_->method != net::HttpRequestHeaders::kGetMethod &&
+         resource_request_->method != net::HttpRequestHeaders::kHeadMethod);
 
   resource_request_->request_body = new ResourceRequestBody();
 
@@ -1322,8 +1322,8 @@ void SimpleURLLoaderImpl::AttachFileForUpload(
 
   // Currently only allow a single file to be attached.
   DCHECK(!resource_request_->request_body);
-  DCHECK(resource_request_->method != "GET" &&
-         resource_request_->method != "HEAD");
+  DCHECK(resource_request_->method != net::HttpRequestHeaders::kGetMethod &&
+         resource_request_->method != net::HttpRequestHeaders::kHeadMethod);
 
   // Create an empty body to make DCHECKing that there's no upload body yet
   // simpler.

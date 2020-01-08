@@ -27,10 +27,6 @@ class WebRemoteFrameClient {
   // and release any resources associated with it.
   virtual void FrameDetached(DetachType) {}
 
-  // Notifies the remote frame to check whether it is done loading, after one
-  // of its children finishes loading.
-  virtual void CheckCompleted() {}
-
   // Notifies the embedder that a postMessage was issued to a remote frame.
   virtual void ForwardPostMessage(WebLocalFrame* source_frame,
                                   WebRemoteFrame* target_frame,

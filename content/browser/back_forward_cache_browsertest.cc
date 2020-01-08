@@ -1678,6 +1678,40 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfWebGL) {
                            FROM_HERE);
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfWebHID) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to an empty page.
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // Request for HID devices.
+  EXPECT_EQ("success", EvalJs(current_frame_host(), R"(
+    new Promise(resolve => {
+      navigator.hid.getDevices()
+        .then(m => { resolve("success"); })
+        .catch(() => { resolve("error"); });
+    });
+  )"));
+
+  RenderFrameDeletedObserver deleted(current_frame_host());
+
+  // 2) Navigate away.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // The page uses WebHID so it should be deleted.
+  deleted.WaitUntilDeleted();
+
+  // 3) Go back.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kWebHID, FROM_HERE);
+}
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIfHttpError) {
   ASSERT_TRUE(embedded_test_server()->Start());
 

@@ -732,6 +732,61 @@
   };
 
   /**
+   * Tests opening Quick View containing an audio file that has an album art
+   * image in its metadata.
+   */
+  testcase.openQuickViewAudioWithImageMetadata = async () => {
+    const caller = getCaller();
+
+    // Define a test file containing audio file with metadata.
+    const id3Audio = new TestEntryInfo({
+      type: EntryType.FILE,
+      sourceFileName: 'id3Audio.mp3',
+      targetPath: 'id3Audio.mp3',
+      mimeType: 'audio/mpeg',
+      lastModifiedTime: 'December 25 2015, 11:16 PM',
+      nameText: 'id3Audio.mp3',
+      sizeText: '5KB',
+      typeText: 'id3 encoded MP3 audio',
+    });
+
+    /**
+     * The <webview> resides in the <files-safe-media> shadow DOM, which
+     * is a child of the #quick-view shadow DOM.
+     */
+    const albumArtWebView = ['#quick-view', '#audio-artwork', 'webview'];
+
+    // Open Files app on Downloads containing the audio test file.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [id3Audio], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, id3Audio.nameText);
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewImageLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || elements[0].attributes.loaded !== '') {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+
+    // Wait until the <webview> has loaded the album image of the audio file.
+    await repeatUntil(async () => {
+      return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [albumArtWebView, ['display']]));
+    });
+
+    // Check: the audio album metadata should also be displayed.
+    const album = await getQuickViewMetadataBoxField(appId, 'Album');
+    chrome.test.assertEq(album, 'OK Computer');
+  };
+
+  /**
    * Tests opening Quick View containing an image.
    */
   testcase.openQuickViewImage = async () => {

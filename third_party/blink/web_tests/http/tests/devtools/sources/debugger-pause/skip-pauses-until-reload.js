@@ -19,11 +19,11 @@
         'skip-pauses-until-reload.html', didShowScriptSource);
   }
 
-  function didShowScriptSource(sourceFrame) {
+  async function didShowScriptSource(sourceFrame) {
     TestRunner.addResult('Script source was shown.');
     TestRunner.addResult('Set up breakpoints.');
-    SourcesTestRunner.setBreakpoint(sourceFrame, 8, '', true);
-    SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 8, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
     TestRunner.addResult('Set up to pause on all exceptions.');
     // FIXME: Test is flaky with PauseOnAllExceptions due to races in debugger.
     TestRunner.DebuggerAgent.setPauseOnExceptions(

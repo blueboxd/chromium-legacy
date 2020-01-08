@@ -7,7 +7,7 @@
 
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 
-#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "chromeos/services/ime/public/mojom/input_engine.mojom-forward.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {

@@ -601,6 +601,14 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
       collect_user_data_options_->billing_postal_code_missing_text.empty()) {
     return false;
   }
+  collect_user_data_options_->credit_card_expired_text =
+      collect_user_data.credit_card_expired_text();
+  // TODO(b/146195295): Remove fallback and enforce non-empty backend string.
+  if (collect_user_data_options_->credit_card_expired_text.empty()) {
+    collect_user_data_options_->credit_card_expired_text =
+        l10n_util::GetStringUTF8(
+            IDS_PAYMENTS_VALIDATION_INVALID_CREDIT_CARD_EXPIRED);
+  }
   collect_user_data_options_->request_login_choice =
       collect_user_data.has_login_details();
   collect_user_data_options_->login_section_title.assign(

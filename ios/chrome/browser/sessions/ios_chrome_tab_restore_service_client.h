@@ -37,7 +37,7 @@ class IOSChromeTabRestoreServiceClient
   base::FilePath GetPathToSaveTo() override;
   GURL GetNewTabURL() override;
   bool HasLastSession() override;
-  void GetLastSession(const sessions::GetLastSessionCallback& callback,
+  void GetLastSession(sessions::GetLastSessionCallback callback,
                       base::CancelableTaskTracker* tracker) override;
 
   ios::ChromeBrowserState* browser_state_;

@@ -9,9 +9,9 @@ import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.Supplier;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ServiceTabLauncher;

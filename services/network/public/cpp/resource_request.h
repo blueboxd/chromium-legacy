@@ -59,7 +59,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
 
   // See comments in network.mojom.URLRequest in url_loader.mojom for details
   // of each field.
-  std::string method = "GET";
+  std::string method = net::HttpRequestHeaders::kGetMethod;
   GURL url;
   net::SiteForCookies site_for_cookies;
   bool attach_same_site_cookies = false;

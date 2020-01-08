@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/power/ml/boot_clock.h"
+#include "chrome/browser/chromeos/power/smart_charging/smart_charging_ukm_logger.h"
 #include "chrome/browser/chromeos/power/smart_charging/user_charging_event.pb.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -138,6 +139,8 @@ class SmartChargingManager : public ui::UserActivityObserver,
   base::Optional<double> screen_brightness_percent_;
   base::Optional<power_manager::PowerSupplyProperties::ExternalPower>
       external_power_;
+
+  const std::unique_ptr<SmartChargingUkmLogger> ukm_logger_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<SmartChargingManager> weak_ptr_factory_{this};

@@ -45,8 +45,12 @@ enum NDEFRecordTypeCategory {
   kLocal
 };
 
+// Used to notify errors when pushing/watching.
 struct NDEFError {
   NDEFErrorType error_type;
+
+  // Detailed information about how/why the error happened.
+  string error_message;
 };
 
 // https://w3c.github.io/web-nfc/#dom-ndefrecord
@@ -156,5 +160,5 @@ interface NFCClient {
 
   // Sends |error| to all readers that are trying to read some data from the nfc
   // tag coming nearby.
-  OnError(NDEFErrorType error);
+  OnError(NDEFError error);
 };

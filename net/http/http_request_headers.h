@@ -60,7 +60,13 @@ class NET_EXPORT HttpRequestHeaders {
     DISALLOW_COPY_AND_ASSIGN(Iterator);
   };
 
+  static const char kConnectMethod[];
   static const char kGetMethod[];
+  static const char kHeadMethod[];
+  static const char kOptionsMethod[];
+  static const char kPostMethod[];
+  static const char kTraceMethod[];
+  static const char kTrackMethod[];
 
   static const char kAcceptCharset[];
   static const char kAcceptEncoding[];

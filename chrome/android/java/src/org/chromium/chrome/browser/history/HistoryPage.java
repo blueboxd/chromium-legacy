@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.history;
 
 import android.app.Activity;
-import android.view.View;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -13,7 +12,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.native_page.NativePageHost;
-import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.util.UrlConstants;
 
 /**
@@ -30,20 +28,14 @@ public class HistoryPage extends BasicNativePage {
      * @param host A NativePageHost to load URLs.
      */
     public HistoryPage(ChromeActivity activity, NativePageHost host) {
-        super(activity, host);
-    }
+        super(host);
 
-    @Override
-    protected void initialize(ChromeActivity activity, final NativePageHost host) {
-        mHistoryManager = new HistoryManager(activity, false,
-                ((SnackbarManageable) activity).getSnackbarManager(), host.isIncognito());
-        mTitle = activity.getString(R.string.menu_history);
+        mHistoryManager = new HistoryManager(activity, false, activity.getSnackbarManager(),
+                activity.getCurrentTabModel().isIncognito());
+        mTitle = host.getContext().getResources().getString(R.string.menu_history);
         mHistoryManager.setHistoryNavigationDelegate(host.createHistoryNavigationDelegate());
-    }
 
-    @Override
-    public View getView() {
-        return mHistoryManager.getView();
+        initWithView(mHistoryManager.getView());
     }
 
     @Override

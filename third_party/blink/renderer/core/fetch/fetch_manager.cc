@@ -353,8 +353,6 @@ void FetchManager::Loader::DidReceiveResponse(
         case RequestMode::kCors:
         case RequestMode::kCorsWithForcedPreflight:
         case RequestMode::kNavigate:
-        case RequestMode::kNavigateNestedFrame:
-        case RequestMode::kNavigateNestedObject:
           PerformNetworkError("Fetch API cannot load " +
                               fetch_request_data_->Url().GetString() +
                               ". Redirects to data: URL are allowed only when "
@@ -378,8 +376,6 @@ void FetchManager::Loader::DidReceiveResponse(
         tainting = FetchRequestData::kCorsTainting;
         break;
       case RequestMode::kNavigate:
-      case RequestMode::kNavigateNestedFrame:
-      case RequestMode::kNavigateNestedObject:
         LOG(FATAL);
         break;
     }
@@ -589,7 +585,7 @@ void FetchManager::Loader::Start(ExceptionState& exception_state) {
   if (fetch_request_data_->Origin()->CanReadContent(url) ||
       (fetch_request_data_->IsolatedWorldOrigin() &&
        fetch_request_data_->IsolatedWorldOrigin()->CanReadContent(url)) ||
-      network::IsNavigationRequestMode(fetch_request_data_->Mode())) {
+      fetch_request_data_->Mode() == network::mojom::RequestMode::kNavigate) {
     // "The result of performing a scheme fetch using request."
     PerformSchemeFetch(exception_state);
     return;
@@ -726,8 +722,6 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
       request.SetMode(fetch_request_data_->Mode());
       break;
     case RequestMode::kNavigate:
-    case RequestMode::kNavigateNestedFrame:
-    case RequestMode::kNavigateNestedObject:
       // NetworkService (i.e. CorsURLLoaderFactory::IsSane) rejects kNavigate
       // requests coming from renderers, so using kSameOrigin here.
       // TODO(lukasza): Tweak CorsURLLoaderFactory::IsSane to accept kNavigate

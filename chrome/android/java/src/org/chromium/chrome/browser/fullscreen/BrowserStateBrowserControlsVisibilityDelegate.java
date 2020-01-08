@@ -10,8 +10,8 @@ import android.os.SystemClock;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.ObservableSupplier;
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.content_public.common.BrowserControlsState;

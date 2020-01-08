@@ -27,8 +27,9 @@ class NativeFileSystemFileHandle final : public NativeFileSystemHandle {
   ScriptPromise createWriter(ScriptState*,
                              const FileSystemCreateWriterOptions* options);
   ScriptPromise createWritable(ScriptState*,
-                               const FileSystemCreateWriterOptions* options);
-  ScriptPromise getFile(ScriptState*);
+                               const FileSystemCreateWriterOptions* options,
+                               ExceptionState&);
+  ScriptPromise getFile(ScriptState*, ExceptionState&);
 
   mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> Transfer()
       override;

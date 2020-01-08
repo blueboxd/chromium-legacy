@@ -2038,8 +2038,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "dispatchTabKey") {
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_TAB, 0);
+    // Read optional modifier parameter |shift|.
+    bool shift;
+    if (!value.GetBoolean("shift", &shift)) {
+      shift = false;
+    }
 
+    int flag = shift ? ui::EF_SHIFT_DOWN : 0;
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_TAB, flag);
     // Try to dispatch the event close-to-native without pulling in too many
     // dependencies (i.e. X11/Ozone/Wayland/Mus). aura::WindowTreeHost is pretty
     // high up in the dispatch stack, but we might need event_injector.mojom

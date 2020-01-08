@@ -3342,6 +3342,10 @@ const char kCrostiniAppSearchDescription[] =
 const char kCrostiniBackupName[] = "Crostini Backup";
 const char kCrostiniBackupDescription[] = "Enable Crostini export and import.";
 
+const char kCrostiniPortForwardingName[] = "Crostini Port Forwarding";
+const char kCrostiniPortForwardingDescription[] =
+    "Enable Crostini port forwarding.";
+
 const char kCrostiniUseBusterImageName[] = "New Crostini containers use Buster";
 const char kCrostiniUseBusterImageDescription[] =
     "New Crostini containers use Debian Buster images instead of Debian "

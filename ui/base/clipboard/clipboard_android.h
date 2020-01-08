@@ -43,11 +43,11 @@ class ClipboardAndroid : public Clipboard {
   int64_t GetLastModifiedTimeToJavaTime(JNIEnv* env);
 
   // Sets the callback called whenever the clipboard is modified.
-  COMPONENT_EXPORT(BASE_CLIPBOARD)
+  COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
   void SetModifiedCallback(ModifiedCallback cb);
 
   // Sets the last modified time without calling the above callback.
-  COMPONENT_EXPORT(BASE_CLIPBOARD)
+  COMPONENT_EXPORT(UI_BASE_CLIPBOARD)
   void SetLastModifiedTimeWithoutRunningCallback(base::Time time);
 
  private:

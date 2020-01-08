@@ -19,7 +19,7 @@ import android.view.ViewOutlineProvider;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.browser.feed.library.piet.ui.RoundedCornerDelegateFactory.RoundingStrategy;
 import org.chromium.components.feed.core.proto.ui.piet.RoundedCornersProto.RoundedCorners;

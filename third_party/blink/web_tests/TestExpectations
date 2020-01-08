@@ -3678,10 +3678,13 @@ crbug.com/1035708 external/wpt/css/css-pseudo/spelling-error-001.html [ Failure 
 crbug.com/1035708 external/wpt/css/css-pseudo/grammar-error-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Mac10.10 ] virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-doesnt-send-reports-without-violation.https.sub.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-doesnt-send-reports-without-violation.https.sub.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-subelements-002.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-subelements-002.html [ Failure ]
+crbug.com/626703 [ Win7 ] external/wpt/content-security-policy/object-src/object-src-no-url-allowed.html [ Timeout ]
+crbug.com/626703 [ Win7 ] external/wpt/content-security-policy/plugin-types/plugintypes-nourl-allowed.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text-decor/text-decoration-subelements-003.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text-decor/text-decoration-subelements-003.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] virtual/cascade/external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Failure ]
-crbug.com/626703 [ Mac10.13 ] virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-doesnt-send-reports-without-violation.https.sub.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/infrastructure/reftest/reftest_match_and_mismatch-6.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/infrastructure/reftest/reftest_match_and_mismatch-6.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/infrastructure/reftest/reftest_match_and_mismatch-6.html [ Failure ]
@@ -7183,5 +7186,16 @@ crbug.com/963183 http/tests/devtools/sources/debugger/js-with-inline-stylesheets
 crbug.com/963183 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-1.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/startup/sources/debugger/script-formatter-breakpoints-inline-with-sourceURL.js [ Pass Failure ]
 
+crbug.com/1030086 external/wpt/html/infrastructure/safe-passing-of-structured-data/structured-cloning-error-extra.html [ Pass Failure ]
+crbug.com/1030086 external/wpt/html/infrastructure/safe-passing-of-structured-data/structuredclone_0.html [ Pass Failure ]
+
 # Temporarily disabled to land Linkifier changes in DevTools
 crbug.com/963183 http/tests/devtools/jump-to-previous-editing-location.js [ Pass Failure ]
+
+# Temporarily disable to unblock WebRTC CL roll making it PASS a test
+crbug.com/webrtc/11228 external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
+crbug.com/webrtc/11228 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
+
+# Sheriff 2020-01-08
+crbug.com/850170 virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-doesnt-send-reports-without-violation.https.sub.html [ Pass Timeout ]
+crbug.com/1039643 [ Win ] external/wpt/content-security-policy/object-src/object-src-url-embed-allowed.html [ Pass Timeout ]

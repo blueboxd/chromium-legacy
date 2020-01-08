@@ -21,11 +21,11 @@
     SourcesTestRunner.showScriptSource('debug-inline-scripts.html', step2);
   }
 
-  function step2(sourceFrame) {
+  async function step2(sourceFrame) {
     TestRunner.addResult('Script source was shown.');
 
-    SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
-    SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
 
     SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame).then(() => {
       TestRunner.reloadPage(() => SourcesTestRunner.completeDebuggerTest());

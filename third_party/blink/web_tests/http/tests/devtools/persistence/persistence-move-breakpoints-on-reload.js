@@ -35,8 +35,8 @@
           .then(sourceCode => SourcesTestRunner.showUISourceCodePromise(sourceCode))
           .then(onSourceFrame);
 
-      function onSourceFrame(sourceFrame) {
-        SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
+      async function onSourceFrame(sourceFrame) {
+        await SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
         SourcesTestRunner.waitBreakpointSidebarPane(true).then(dumpBreakpointSidebarPane).then(next);
       }
     },

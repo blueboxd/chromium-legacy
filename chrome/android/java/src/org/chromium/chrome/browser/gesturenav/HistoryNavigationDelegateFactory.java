@@ -9,7 +9,7 @@ import android.os.Build;
 import android.view.View;
 import android.view.WindowInsets;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;

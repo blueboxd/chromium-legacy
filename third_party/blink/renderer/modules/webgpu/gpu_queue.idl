@@ -11,4 +11,8 @@
 
     GPUFence createFence(optional GPUFenceDescriptor descriptor = {});
     void signal(GPUFence fence, unsigned long long signalValue);
+    [RaisesException] void copyImageBitmapToTexture(
+        GPUImageBitmapCopyView source,
+        GPUTextureCopyView destination,
+        GPUExtent3D copySize);
 };

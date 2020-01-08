@@ -19,7 +19,7 @@
 #include "chromeos/dbus/power/native_timer.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/timezone_settings.h"
-#include "services/device/public/mojom/wake_lock.mojom.h"
+#include "services/device/public/mojom/wake_lock.mojom-forward.h"
 #include "third_party/icu/source/i18n/unicode/calendar.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 

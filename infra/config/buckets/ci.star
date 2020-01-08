@@ -1141,6 +1141,7 @@ def fyi_celab_builder(*, name, **kwargs):
           'pool_size': 20,
           'tests': '*',
       },
+      **kwargs
   )
 
 fyi_celab_builder(

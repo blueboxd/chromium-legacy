@@ -532,6 +532,12 @@
              "--enable-blink-features=ForcedColors"]
   },
   {
+    "prefix": "dark-color-scheme",
+    "bases": ["external/wpt/css/css-color-adjust/rendering/dark-color-scheme"],
+    "args": ["--force-dark-mode",
+             "--enable-blink-features=CSSColorScheme"]
+  },
+  {
     "prefix": "force-defer-script",
     "bases": ["defer-script"],
     "args": ["--enable-blink-features=ForceDeferScriptIntervention"]

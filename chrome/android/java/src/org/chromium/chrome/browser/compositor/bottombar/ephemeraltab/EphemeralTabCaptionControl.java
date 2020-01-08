@@ -12,7 +12,7 @@ import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelTextViewInflater;

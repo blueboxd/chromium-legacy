@@ -68,9 +68,9 @@
       SourcesTestRunner.showScriptSource(
           'set-breakpoint.html', didShowScriptSource);
 
-      function didShowScriptSource(sourceFrame) {
+      async function didShowScriptSource(sourceFrame) {
         currentSourceFrame = sourceFrame;
-        SourcesTestRunner.setBreakpoint(currentSourceFrame, 7, '', true);
+        await SourcesTestRunner.setBreakpoint(currentSourceFrame, 7, '', true);
         SourcesTestRunner.waitUntilPaused(didPause);
         TestRunner.evaluateInPage('setTimeout(oneLineTestFunction2, 0)');
       }

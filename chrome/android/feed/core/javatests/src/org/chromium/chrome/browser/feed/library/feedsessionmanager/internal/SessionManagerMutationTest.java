@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.KnownContent;
 import org.chromium.chrome.browser.feed.library.api.common.MutationContext;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;

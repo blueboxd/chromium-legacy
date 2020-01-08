@@ -1072,6 +1072,10 @@
       status: "test",
     },
     {
+      name: "ModuleSharedWorker",
+      status: "test",
+    },
+    {
       name: "MojoJS",
       status: "test",
     },

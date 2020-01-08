@@ -22,6 +22,7 @@ namespace blink {
 class DoubleSequenceOrGPUColorDict;
 class GPUColorDict;
 class GPUProgrammableStageDescriptor;
+class GPUTextureCopyView;
 class UnsignedLongSequenceOrGPUExtent3DDict;
 class UnsignedLongSequenceOrGPUOrigin3DDict;
 
@@ -43,7 +44,7 @@ WGPUColor AsDawnType(const GPUColorDict*);
 WGPUColor AsDawnType(const DoubleSequenceOrGPUColorDict*);
 WGPUExtent3D AsDawnType(const UnsignedLongSequenceOrGPUExtent3DDict*);
 WGPUOrigin3D AsDawnType(const UnsignedLongSequenceOrGPUOrigin3DDict*);
-
+WGPUTextureCopyView AsDawnType(const GPUTextureCopyView* webgpu_view);
 using OwnedProgrammableStageDescriptor =
     std::tuple<WGPUProgrammableStageDescriptor, std::unique_ptr<char[]>>;
 OwnedProgrammableStageDescriptor AsDawnType(

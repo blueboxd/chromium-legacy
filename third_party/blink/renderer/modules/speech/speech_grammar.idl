@@ -26,10 +26,9 @@
 // https://w3c.github.io/speech-api/#speechgrammar
 
 [
-    Measure,
     NoInterfaceObject
 ] interface SpeechGrammar {
-    constructor();
+    [Measure] constructor();
     [URL,CallWith=ScriptState] attribute DOMString src;
     attribute float weight;
 };

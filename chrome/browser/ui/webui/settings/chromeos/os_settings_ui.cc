@@ -126,7 +126,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
   // Add the System Web App resources for Settings.
-  // TODO(jamescook|calamity): Migrate to chromeos::settings::OSSettingsUI.
   if (web_app::SystemWebAppManager::IsEnabled()) {
     html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
     html_source->AddResourcePath("pwa.html", IDR_PWA_HTML);

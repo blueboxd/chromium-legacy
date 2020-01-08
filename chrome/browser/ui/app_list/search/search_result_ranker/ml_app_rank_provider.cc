@@ -250,7 +250,7 @@ assist_ranker::RankerExample CreateRankerExample(
         kAppScheme +
         crx_file::id_util::GenerateId(features.arc_package_name()));
   } else {
-    LOG(ERROR) << "Unknown app type: " << features.app_type();
+    // TODO(crbug.com/1027782): Add DCHECK that this branch is not reached.
   }
   return example;
 }

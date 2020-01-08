@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/web_app.h"
 
+#include <algorithm>
 #include <ios>
 #include <ostream>
 #include <tuple>
@@ -153,6 +154,7 @@ void WebApp::SetIconInfos(std::vector<WebApplicationIconInfo> icon_infos) {
 }
 
 void WebApp::SetDownloadedIconSizes(std::vector<SquareSizePx> sizes) {
+  std::sort(sizes.begin(), sizes.end());
   downloaded_icon_sizes_ = std::move(sizes);
 }
 

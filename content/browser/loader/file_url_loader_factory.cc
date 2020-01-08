@@ -152,7 +152,7 @@ network::mojom::FetchResponseType CalculateResponseType(
     bool is_allowed_access) {
   // Though file:// is out of web standards, let's roughly follow the step 5 of
   // https://fetch.spec.whatwg.org/#main-fetch.
-  if (is_allowed_access || network::IsNavigationRequestMode(mode) ||
+  if (is_allowed_access || mode == network::mojom::RequestMode::kNavigate ||
       mode == network::mojom::RequestMode::kSameOrigin) {
     return network::mojom::FetchResponseType::kBasic;
   } else if (mode == network::mojom::RequestMode::kNoCors) {

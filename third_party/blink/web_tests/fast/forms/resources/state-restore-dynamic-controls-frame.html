@@ -1,17 +1,30 @@
 <!DOCTYPE html>
 <script>
 document.addEventListener('change', e => {
-  parent.inputOrChangeEvents.push('change/' + e.target.type);
+  parent.inputOrChangeEvents.push('change/' + e.target.id);
 });
 document.addEventListener('input', e => {
-  parent.inputOrChangeEvents.push('input/' + e.target.type);
+  parent.inputOrChangeEvents.push('input/' + e.target.id);
 });
 </script>
 <div></div>
-<input type=checkbox disabled>
-<input type=text disabled>
-<textarea></textarea>
-<select><option>1<option>2</select>
+<input type=checkbox disabled id="checkbox-disabled">
+<input type=text disabled id="text-disabled">
+<input type=checkbox id="checkbox-unmodified">
+<input type=text id="text-unmodified">
+<input type=file id="file-modified">
+<input type=file id="file-unmodified">
+<input type=date id="date-modified">
+<input type=date id="date-unmodified">
+<textarea id="textarea-modified"></textarea>
+<textarea id="textarea-unmodified">abc
+def</textarea>
+<select id="select-modified"><option>1<option>2</select>
+<select id="select-unmodified" multiple>
+<option selected>1</option>
+<option>2</option>
+<option selected>3</option>
+</select>
 <script>
-document.querySelector('div').innerHTML = '<input type=checkbox><input type=text>'
+document.querySelector('div').innerHTML = '<input type=checkbox id="checkbox-modified"><input type=text id="text-modified">';
 </script>

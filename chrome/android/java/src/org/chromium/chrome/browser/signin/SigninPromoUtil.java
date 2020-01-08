@@ -11,8 +11,8 @@ import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Supplier;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;

@@ -31,10 +31,9 @@ enum OverSampleType {
 };
 
 [
-    Exposed=Window,
-    Measure
+    Exposed=Window
 ] interface WaveShaperNode : AudioNode {
-    [RaisesException] constructor(BaseAudioContext context, optional WaveShaperOptions options);
+    [RaisesException, Measure] constructor(BaseAudioContext context, optional WaveShaperOptions options);
     [RaisesException=Setter] attribute Float32Array? curve;
     attribute OverSampleType oversample;
 };

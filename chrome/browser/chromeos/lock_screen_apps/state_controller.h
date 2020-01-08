@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/mojom/tray_action.mojom.h"
+#include "ash/public/mojom/tray_action.mojom-forward.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"

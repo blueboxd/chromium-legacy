@@ -945,6 +945,21 @@ DeviceStatusCollector::DeviceStatusCollector(
       pref_service_, prefs::kDeviceActivityTimes);
 }
 
+DeviceStatusCollector::DeviceStatusCollector(
+    PrefService* pref_service,
+    chromeos::system::StatisticsProvider* provider)
+    : DeviceStatusCollector(
+          pref_service,
+          provider,
+          DeviceStatusCollector::VolumeInfoFetcher(),
+          DeviceStatusCollector::CPUStatisticsFetcher(),
+          DeviceStatusCollector::CPUTempFetcher(),
+          DeviceStatusCollector::AndroidStatusFetcher(),
+          DeviceStatusCollector::TpmStatusFetcher(),
+          DeviceStatusCollector::EMMCLifetimeFetcher(),
+          DeviceStatusCollector::StatefulPartitionInfoFetcher(),
+          DeviceStatusCollector::CrosHealthdDataFetcher()) {}
+
 DeviceStatusCollector::~DeviceStatusCollector() {
   power_manager_->RemoveObserver(this);
 }

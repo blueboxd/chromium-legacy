@@ -169,9 +169,9 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     return nullptr;
   }
 
-  void SetProviderHostRenderFrameId(ServiceWorkerProviderHost* host,
-                                    int render_frame_id) {
-    host->container_host()->frame_id_ = render_frame_id;
+  void SetContainerHostRenderFrameId(ServiceWorkerContainerHost* container_host,
+                                     int render_frame_id) {
+    container_host->frame_id_ = render_frame_id;
   }
 
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
@@ -217,12 +217,12 @@ TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
   registration_->SetInstallingVersion(version_);
 
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host =
-      CreateProviderHostForWindow(
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
+      CreateContainerHostForWindow(
           helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
           helper_->context()->AsWeakPtr(), &remote_endpoint);
-  provider_host->container_host()->UpdateUrls(
-      scope, net::SiteForCookies::FromUrl(scope), url::Origin::Create(scope));
+  container_host->UpdateUrls(scope, net::SiteForCookies::FromUrl(scope),
+                             url::Origin::Create(scope));
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
       GetRegistrationFromRemote(remote_endpoint.host_remote()->get(), scope);
   // |version_| is the installing version of |registration_| now.
@@ -358,7 +358,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
   auto* worker =
       helper_->AddNewPendingServiceWorker<MessageEventWorker>(helper_.get());
 
-  // Prepare a ServiceWorkerProviderHost for a window client. A
+  // Prepare a ServiceWorkerContainerHost for a window client. A
   // WebContents/RenderFrameHost must be created too because it's needed for
   // DispatchExtendableMessageEvent to populate ExtendableMessageEvent#source.
   RenderViewHostTestEnabler rvh_test_enabler;
@@ -367,12 +367,12 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
                                                nullptr));
   RenderFrameHost* frame_host = web_contents->GetMainFrame();
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host =
-      CreateProviderHostForWindow(
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
+      CreateContainerHostForWindow(
           frame_host->GetProcess()->GetID(), true /* is_parent_frame_secure */,
           helper_->context()->AsWeakPtr(), &remote_endpoint);
-  SetProviderHostRenderFrameId(provider_host.get(), frame_host->GetRoutingID());
-  ServiceWorkerContainerHost* container_host = provider_host->container_host();
+  SetContainerHostRenderFrameId(container_host.get(),
+                                frame_host->GetRoutingID());
   container_host->UpdateUrls(scope, net::SiteForCookies::FromUrl(scope),
                              url::Origin::Create(scope));
 
@@ -381,7 +381,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
       container_host->GetOrCreateServiceWorkerObjectHost(version_)
           ->CreateCompleteObjectInfoToSend();
   ServiceWorkerObjectHost* object_host =
-      GetServiceWorkerObjectHost(container_host, version_->version_id());
+      GetServiceWorkerObjectHost(container_host.get(), version_->version_id());
 
   // Simulate postMessage() from the window client to the worker.
   blink::TransferableMessage message;

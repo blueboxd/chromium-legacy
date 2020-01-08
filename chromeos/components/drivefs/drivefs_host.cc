@@ -17,7 +17,6 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/drive/drive_notification_manager.h"
 #include "components/drive/drive_notification_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/network/public/cpp/network_connection_tracker.h"

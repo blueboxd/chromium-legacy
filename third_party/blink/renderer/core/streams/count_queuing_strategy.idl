@@ -5,10 +5,9 @@
 // https://streams.spec.whatwg.org/#cqs-class
 
 [
-    Exposed=(Window,Worker,Worklet),
-    MeasureAs=CountQueuingStrategyConstructor
+    Exposed=(Window,Worker,Worklet)
 ] interface CountQueuingStrategy {
-    [CallWith=ScriptState] constructor([PermissiveDictionaryConversion] QueuingStrategyInit init);
+    [CallWith=ScriptState, MeasureAs=CountQueuingStrategyConstructor] constructor([PermissiveDictionaryConversion] QueuingStrategyInit init);
     [CallWith=ScriptState] readonly attribute any highWaterMark;
 
     // size is an accessor that returns a function.

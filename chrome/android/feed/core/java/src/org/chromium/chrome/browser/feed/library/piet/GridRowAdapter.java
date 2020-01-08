@@ -16,7 +16,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.browser.feed.library.piet.AdapterFactory.AdapterKeySupplier;
 import org.chromium.chrome.browser.feed.library.piet.AdapterFactory.SingletonKeySupplier;

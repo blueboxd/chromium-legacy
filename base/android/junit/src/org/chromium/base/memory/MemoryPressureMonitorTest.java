@@ -16,8 +16,8 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.MemoryPressureLevel;
-import org.chromium.base.Supplier;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.util.concurrent.TimeUnit;

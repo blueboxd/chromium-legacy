@@ -396,7 +396,7 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
 
   // Subresource requests from renderer processes should not be allowed to use
   // network::mojom::FetchRequestMode::kNavigate.
-  if (network::IsNavigationRequestMode(request.mode)) {
+  if (request.mode == network::mojom::RequestMode::kNavigate) {
     mojo::ReportBadMessage("APPCACHE_SUBRESOURCE_URL_FACTORY_NAVIGATE");
     return;
   }

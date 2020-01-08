@@ -81,7 +81,11 @@ mojom::blink::HidDeviceFilterPtr ConvertDeviceFilter(
 
 }  // namespace
 
-HID::HID(ExecutionContext& context) : ContextLifecycleObserver(&context) {}
+HID::HID(ExecutionContext& context)
+    : ContextLifecycleObserver(&context),
+      feature_handle_for_scheduler_(context.GetScheduler()->RegisterFeature(
+          SchedulingPolicy::Feature::kWebHID,
+          {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {}
 
 HID::~HID() {
   DCHECK(get_devices_promises_.IsEmpty());

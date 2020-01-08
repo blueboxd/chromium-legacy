@@ -143,11 +143,12 @@ void NDEFWriter::OnRequestPermission(
 void NDEFWriter::OnMojoConnectionError() {
   nfc_proxy_.Clear();
 
-  // If the mojo connection breaks, all push requests will be reject with a
+  // If the mojo connection breaks, all push requests will be rejected with a
   // default error.
   for (ScriptPromiseResolver* resolver : requests_) {
     resolver->Reject(NDEFErrorTypeToDOMException(
-        device::mojom::blink::NDEFErrorType::NOT_SUPPORTED));
+        device::mojom::blink::NDEFErrorType::NOT_SUPPORTED,
+        "WebNFC feature is unavailable."));
   }
   requests_.clear();
 }
@@ -183,10 +184,12 @@ void NDEFWriter::OnRequestCompleted(ScriptPromiseResolver* resolver,
 
   requests_.erase(resolver);
 
-  if (error.is_null())
+  if (error.is_null()) {
     resolver->Resolve();
-  else
-    resolver->Reject(NDEFErrorTypeToDOMException(error->error_type));
+  } else {
+    resolver->Reject(
+        NDEFErrorTypeToDOMException(error->error_type, error->error_message));
+  }
 }
 
 }  // namespace blink

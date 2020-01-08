@@ -228,7 +228,7 @@ void HTMLPlugInElement::AttachLayoutTree(AttachContext& context) {
         ToLayoutImage(layout_object)->ImageResource();
     image_resource->SetImageResource(image_loader_->GetContent());
   }
-  if (!layout_object->IsFloatingOrOutOfFlowPositioned())
+  if (layout_object->AffectsWhitespaceSiblings())
     context.previous_in_flow = layout_object;
 
   dispose_view_ = false;

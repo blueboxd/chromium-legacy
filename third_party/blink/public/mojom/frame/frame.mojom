@@ -196,6 +196,11 @@ interface RemoteFrameHost {
 
   // Sent by the renderer when the frame becomes focused.
   DidFocusFrame();
+
+  // Use to notify a parent remote frame that a local child frame has finished
+  // loading. This will be forwarded to the renderer hosting the parent's local
+  // frame to see if the parent can be marked as completed loading.
+  CheckCompleted();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

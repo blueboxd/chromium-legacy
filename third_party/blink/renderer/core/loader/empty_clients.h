@@ -450,7 +450,6 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
                 bool initiator_frame_is_ad,
                 mojo::PendingRemote<mojom::blink::BlobURLToken>) override {}
   unsigned BackForwardLength() override { return 0; }
-  void CheckCompleted() override {}
   void ForwardPostMessage(MessageEvent*,
                           scoped_refptr<const SecurityOrigin> target,
                           LocalFrame* source_frame) const override {}

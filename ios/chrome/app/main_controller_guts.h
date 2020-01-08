@@ -83,6 +83,18 @@ class ChromeBrowserState;
                                    completion:(ProceduralBlock)completion;
 - (void)showTabSwitcher;
 
+// TabSwitcherDelegate helpers
+
+// Begins the process of dismissing the tab switcher with the given current
+// model, switching which BVC is suspended if necessary, but not updating the
+// UI.  The omnibox will be focused after the tab switcher dismissal is
+// completed if |focusOmnibox| is YES.
+- (void)beginDismissingTabSwitcherWithCurrentModel:(TabModel*)tabModel
+                                      focusOmnibox:(BOOL)focusOmnibox;
+// Completes the process of dismissing the tab switcher, removing it from the
+// screen and showing the appropriate BVC.
+- (void)finishDismissingTabSwitcher;
+
 @end
 
 #endif  // IOS_CHROME_APP_MAIN_CONTROLLER_GUTS_H_

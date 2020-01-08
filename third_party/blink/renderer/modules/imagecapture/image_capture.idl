@@ -6,10 +6,9 @@
 
 [
     ActiveScriptWrappable,
-    MeasureAs=ImageCaptureConstructor,
     Exposed=Window
 ] interface ImageCapture {
-    [CallWith=ExecutionContext, RaisesException] constructor(MediaStreamTrack track);
+    [CallWith=ExecutionContext, RaisesException, MeasureAs=ImageCaptureConstructor] constructor(MediaStreamTrack track);
     [ImplementedAs=videoStreamTrack] readonly attribute MediaStreamTrack track;
 
     [CallWith=ScriptState] Promise<PhotoCapabilities> getPhotoCapabilities();

@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.native_page;
 import android.view.View;
 
 /**
- * An interface for pages that will be shown in a tab using Android views instead of html.
+ * An interface for pages that will be using Android views instead of html/rendered Web content.
  */
 public interface NativePage {
     /**

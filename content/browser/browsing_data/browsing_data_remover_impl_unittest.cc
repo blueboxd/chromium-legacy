@@ -161,8 +161,8 @@ net::CanonicalCookie CreateCookieWithHost(const url::Origin& origin) {
 class StoragePartitionRemovalTestStoragePartition
     : public TestStoragePartition {
  public:
-  StoragePartitionRemovalTestStoragePartition() {}
-  ~StoragePartitionRemovalTestStoragePartition() override {}
+  StoragePartitionRemovalTestStoragePartition() = default;
+  ~StoragePartitionRemovalTestStoragePartition() override = default;
 
   void ClearDataForOrigin(uint32_t remove_mask,
                           uint32_t quota_storage_remove_mask,
@@ -181,11 +181,7 @@ class StoragePartitionRemovalTestStoragePartition
     storage_partition_removal_data_.remove_begin = begin;
     storage_partition_removal_data_.remove_end = end;
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            &StoragePartitionRemovalTestStoragePartition::AsyncRunCallback,
-            base::Unretained(this), std::move(callback)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
   }
 
   void ClearData(uint32_t remove_mask,
@@ -206,11 +202,7 @@ class StoragePartitionRemovalTestStoragePartition
     storage_partition_removal_data_.cookie_deletion_filter =
         std::move(cookie_deletion_filter);
 
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(
-            &StoragePartitionRemovalTestStoragePartition::AsyncRunCallback,
-            base::Unretained(this), std::move(callback)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
   }
 
   void ClearCodeCaches(
@@ -229,10 +221,6 @@ class StoragePartitionRemovalTestStoragePartition
   }
 
  private:
-  void AsyncRunCallback(base::OnceClosure callback) {
-    std::move(callback).Run();
-  }
-
   StoragePartitionRemovalData storage_partition_removal_data_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionRemovalTestStoragePartition);
@@ -257,9 +245,8 @@ class ProbablySameFilterMatcher
       const base::RepeatingCallback<bool(const GURL&)>& filter)
       : to_match_(filter) {}
 
-  virtual bool MatchAndExplain(
-      const base::RepeatingCallback<bool(const GURL&)>& filter,
-      MatchResultListener* listener) const {
+  bool MatchAndExplain(const base::RepeatingCallback<bool(const GURL&)>& filter,
+                       MatchResultListener* listener) const override {
     if (!filter && !to_match_)
       return true;
     if (!filter || !to_match_)
@@ -277,11 +264,11 @@ class ProbablySameFilterMatcher
     return true;
   }
 
-  virtual void DescribeTo(::std::ostream* os) const {
+  void DescribeTo(::std::ostream* os) const override {
     *os << "is probably the same url filter as " << &to_match_;
   }
 
-  virtual void DescribeNegationTo(::std::ostream* os) const {
+  void DescribeNegationTo(::std::ostream* os) const override {
     *os << "is definitely NOT the same url filter as " << &to_match_;
   }
 
@@ -318,7 +305,7 @@ class RemoveDownloadsTester {
     EXPECT_CALL(*download_manager_, Shutdown());
   }
 
-  ~RemoveDownloadsTester() {}
+  ~RemoveDownloadsTester() = default;
 
   MockDownloadManager* download_manager() { return download_manager_; }
 
@@ -337,7 +324,7 @@ class BrowsingDataRemoverImplTest : public testing::Test {
         BrowserContext::GetBrowsingDataRemover(browser_context_.get()));
   }
 
-  ~BrowsingDataRemoverImplTest() override {}
+  ~BrowsingDataRemoverImplTest() override = default;
 
   void TearDown() override {
     mock_policy_ = nullptr;
@@ -1106,7 +1093,7 @@ class InspectableCompletionObserver
  public:
   explicit InspectableCompletionObserver(BrowsingDataRemover* remover)
       : BrowsingDataRemoverCompletionObserver(remover) {}
-  ~InspectableCompletionObserver() override {}
+  ~InspectableCompletionObserver() override = default;
 
   bool called() { return called_; }
 
@@ -1236,10 +1223,10 @@ class MultipleTasksObserver {
         : parent_(parent), observer_(this) {
       observer_.Add(remover);
     }
-    ~Target() override {}
+    ~Target() override = default;
 
     void OnBrowsingDataRemoverDone() override {
-      parent_->SetLastCalledTarget(this);
+      parent_->last_called_targets_.push_back(this);
     }
 
    private:
@@ -1249,28 +1236,23 @@ class MultipleTasksObserver {
   };
 
   explicit MultipleTasksObserver(BrowsingDataRemover* remover)
-      : target_a_(this, remover),
-        target_b_(this, remover),
-        last_called_target_(nullptr) {}
-  ~MultipleTasksObserver() {}
+      : target_a_(this, remover), target_b_(this, remover) {}
+  ~MultipleTasksObserver() = default;
 
-  void ClearLastCalledTarget() { last_called_target_ = nullptr; }
+  void ClearLastCalledTarget() { last_called_targets_.clear(); }
 
-  Target* GetLastCalledTarget() { return last_called_target_; }
+  const std::vector<BrowsingDataRemover::Observer*> GetLastCalledTargets() {
+    return last_called_targets_;
+  }
 
   Target* target_a() { return &target_a_; }
   Target* target_b() { return &target_b_; }
 
  private:
-  void SetLastCalledTarget(Target* target) {
-    DCHECK(!last_called_target_)
-        << "Call ClearLastCalledTarget() before every removal task.";
-    last_called_target_ = target;
-  }
 
   Target target_a_;
   Target target_b_;
-  Target* last_called_target_;
+  std::vector<BrowsingDataRemover::Observer*> last_called_targets_;
 };
 
 TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
@@ -1317,21 +1299,22 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
     // that is a private method, we must call the four public versions of
     // Remove.* instead. This also serves as a test that those methods are all
     // correctly reduced to RemoveInternal().
-    if (!task.observer && task.filter_builder->IsEmptyBlacklist()) {
+    if (task.observers.empty() && task.filter_builder->IsEmptyBlacklist()) {
       remover->Remove(task.delete_begin, task.delete_end, task.remove_mask,
                       task.origin_type_mask);
     } else if (task.filter_builder->IsEmptyBlacklist()) {
       remover->RemoveAndReply(task.delete_begin, task.delete_end,
                               task.remove_mask, task.origin_type_mask,
-                              task.observer);
-    } else if (!task.observer) {
+                              task.observers[0]);
+    } else if (task.observers.empty()) {
       remover->RemoveWithFilter(task.delete_begin, task.delete_end,
                                 task.remove_mask, task.origin_type_mask,
                                 std::move(task.filter_builder));
     } else {
-      remover->RemoveWithFilterAndReply(
-          task.delete_begin, task.delete_end, task.remove_mask,
-          task.origin_type_mask, std::move(task.filter_builder), task.observer);
+      remover->RemoveWithFilterAndReply(task.delete_begin, task.delete_end,
+                                        task.remove_mask, task.origin_type_mask,
+                                        std::move(task.filter_builder),
+                                        task.observers[0]);
     }
   }
 
@@ -1346,7 +1329,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
 
     // Observers, if any, should have been called by now (since we call
     // observers on the same thread).
-    EXPECT_EQ(task.observer, observer.GetLastCalledTarget());
+    EXPECT_EQ(task.observers, observer.GetLastCalledTargets());
 
     // TODO(msramek): If BrowsingDataRemover took ownership of the last used
     // filter builder and exposed it, we could also test it here. Make it so.
@@ -1361,11 +1344,60 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
   RunAllTasksUntilIdle();
 }
 
-// The previous test, BrowsingDataRemoverTest.MultipleTasks, tests that the
-// tasks are not mixed up and they are executed in a correct order. However,
-// the completion inhibitor kept synchronizing the execution in order to verify
-// the parameters. This test demonstrates that even running the tasks without
-// inhibition is executed correctly and doesn't crash.
+// Scheduling multiple identical deletions should immediately execute the first
+// deletion and merge all following deletions.
+TEST_F(BrowsingDataRemoverImplTest, MultipleIdenticalTasks) {
+  BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
+      BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
+  EXPECT_FALSE(remover->is_removing());
+
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  filter_builder->AddRegisterableDomain("example.com");
+
+  MultipleTasksObserver observer(remover);
+  BrowsingDataRemoverCompletionInhibitor completion_inhibitor(remover);
+
+  std::list<BrowsingDataRemoverImpl::RemovalTask> tasks;
+  for (int i = 0; i < 10; i++) {
+    remover->RemoveWithFilterAndReply(
+        base::Time(), base::Time::Max(), BrowsingDataRemover::DATA_TYPE_COOKIES,
+        BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
+        BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::BLACKLIST),
+        observer.target_a());
+  }
+
+  EXPECT_TRUE(remover->is_removing());
+  observer.ClearLastCalledTarget();
+
+  // Finish the task execution synchronously.
+  completion_inhibitor.BlockUntilNearCompletion();
+  completion_inhibitor.ContinueToCompletion();
+
+  // Expect the first observer to be called.
+  EXPECT_EQ(1u, observer.GetLastCalledTargets().size());
+
+  EXPECT_TRUE(remover->is_removing());
+  observer.ClearLastCalledTarget();
+
+  // Finish the task execution synchronously.
+  completion_inhibitor.BlockUntilNearCompletion();
+  completion_inhibitor.ContinueToCompletion();
+
+  // Expect the remaining observer to be called by a batched deletion.
+  EXPECT_EQ(9u, observer.GetLastCalledTargets().size());
+
+  EXPECT_FALSE(remover->is_removing());
+
+  // Run clean up tasks.
+  RunAllTasksUntilIdle();
+}
+
+// BrowsingDataRemoverTest.MultipleTasks, tests that the tasks are not mixed up
+// and they are executed in a correct order. However, the completion inhibitor
+// kept synchronizing the execution in order to verify the parameters.
+// This test demonstrates that even running the tasks without inhibition is
+// executed correctly and doesn't crash.
 TEST_F(BrowsingDataRemoverImplTest, MultipleTasksInQuickSuccession) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
       BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));

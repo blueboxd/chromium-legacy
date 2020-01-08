@@ -20,7 +20,13 @@
 
 namespace net {
 
+const char HttpRequestHeaders::kConnectMethod[] = "CONNECT";
 const char HttpRequestHeaders::kGetMethod[] = "GET";
+const char HttpRequestHeaders::kHeadMethod[] = "HEAD";
+const char HttpRequestHeaders::kOptionsMethod[] = "OPTIONS";
+const char HttpRequestHeaders::kPostMethod[] = "POST";
+const char HttpRequestHeaders::kTraceMethod[] = "TRACE";
+const char HttpRequestHeaders::kTrackMethod[] = "TRACK";
 const char HttpRequestHeaders::kAcceptCharset[] = "Accept-Charset";
 const char HttpRequestHeaders::kAcceptEncoding[] = "Accept-Encoding";
 const char HttpRequestHeaders::kAcceptLanguage[] = "Accept-Language";

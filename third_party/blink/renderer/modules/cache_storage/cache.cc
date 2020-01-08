@@ -90,12 +90,12 @@ CodeCachePolicy GetCodeCachePolicy(ExecutionContext* context,
   if (!RuntimeEnabledFeatures::CacheStorageCodeCacheHintEnabled(context))
     return CodeCachePolicy::kAuto;
 
-  // We should never see an opaque response here.  We should have bailed out
-  // from generating code cache when we failed to determine its mime type.
   // It's important we don't look at the header hint for opaque responses since
   // it could leak cross-origin information.
-  DCHECK_NE(response->GetResponse()->GetType(),
-            network::mojom::FetchResponseType::kOpaque);
+  if (response->GetResponse()->GetType() ==
+      network::mojom::FetchResponseType::kOpaque) {
+    return CodeCachePolicy::kAuto;
+  }
 
   String header_name(
       features::kCacheStorageCodeCacheHintHeaderName.Get().data());
@@ -445,6 +445,10 @@ class Cache::CodeCacheHandleCallbackForPut final
     fetch_api_request_ = request->CreateFetchAPIRequest();
     fetch_api_response_ = response->PopulateFetchAPIResponse(request->url());
     url_ = fetch_api_request_->url;
+    opaque_mode_ = fetch_api_response_->response_type ==
+                           network::mojom::FetchResponseType::kOpaque
+                       ? V8CodeCache::OpaqueMode::kOpaque
+                       : V8CodeCache::OpaqueMode::kNotOpaque;
   }
   ~CodeCacheHandleCallbackForPut() override = default;
 

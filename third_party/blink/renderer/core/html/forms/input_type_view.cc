@@ -177,8 +177,10 @@ FormControlState InputTypeView::SaveFormControlState() const {
   return FormControlState(current_value);
 }
 
-void InputTypeView::RestoreFormControlState(const FormControlState& state) {
+bool InputTypeView::RestoreFormControlState(const FormControlState& state) {
+  String old_value = GetElement().value();
   GetElement().setValue(state[0]);
+  return !EqualIgnoringNullity(old_value, GetElement().value());
 }
 
 bool InputTypeView::HasBadInput() const {

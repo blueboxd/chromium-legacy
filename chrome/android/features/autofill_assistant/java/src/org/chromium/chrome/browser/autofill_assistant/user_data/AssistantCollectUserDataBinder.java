@@ -256,6 +256,10 @@ class AssistantCollectUserDataBinder
             view.mPaymentMethodSection.setBillingPostalCodeMissingText(
                     model.get(AssistantCollectUserDataModel.BILLING_POSTAL_CODE_MISSING_TEXT));
             return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.CREDIT_CARD_EXPIRED_TEXT) {
+            view.mPaymentMethodSection.setCreditCardExpiredText(
+                    model.get(AssistantCollectUserDataModel.CREDIT_CARD_EXPIRED_TEXT));
+            return true;
         } else if (propertyKey == AssistantCollectUserDataModel.AVAILABLE_LOGINS) {
             if (model.get(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE)) {
                 view.mLoginSection.onLoginsChanged(

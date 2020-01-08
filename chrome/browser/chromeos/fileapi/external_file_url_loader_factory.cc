@@ -31,6 +31,7 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_system_backend.h"

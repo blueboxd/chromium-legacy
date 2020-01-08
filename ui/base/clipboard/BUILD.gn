@@ -45,7 +45,7 @@ jumbo_component("clipboard_types") {
     sources += [ "clipboard_format_type.h" ]
   }
 
-  defines = [ "IS_BASE_CLIPBOARD_TYPES_IMPL" ]
+  defines = [ "IS_UI_BASE_CLIPBOARD_TYPES_IMPL" ]
 
   deps = [
     "//base",
@@ -100,7 +100,7 @@ jumbo_component("clipboard") {
     ]
   }
 
-  defines = [ "IS_BASE_CLIPBOARD_IMPL" ]
+  defines = [ "IS_UI_BASE_CLIPBOARD_IMPL" ]
 
   deps = [
     "//base",

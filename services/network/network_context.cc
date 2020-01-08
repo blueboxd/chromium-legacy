@@ -55,6 +55,7 @@
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/proxy_resolution/proxy_config.h"
@@ -1463,7 +1464,7 @@ void NetworkContext::PreconnectSockets(
   }
   net::HttpRequestInfo request_info;
   request_info.url = url;
-  request_info.method = "GET";
+  request_info.method = net::HttpRequestHeaders::kGetMethod;
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
                                        user_agent);
 

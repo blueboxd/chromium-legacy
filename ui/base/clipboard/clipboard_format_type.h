@@ -29,7 +29,7 @@ namespace ui {
 
 // Platform neutral holder for native data representation of a clipboard type.
 // Copyable and assignable, since this is an opaque value type.
-struct COMPONENT_EXPORT(BASE_CLIPBOARD_TYPES) ClipboardFormatType {
+struct COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   ClipboardFormatType();
   ~ClipboardFormatType();
 

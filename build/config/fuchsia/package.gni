@@ -12,8 +12,14 @@ import("//build/config/sysroot.gni")
 #     if different than |target_name|.
 # binary: The executable target which should be launched.
 # manifest: A path to the manifest that will be used.
-#     "testonly" targets default to using //build/config/fuchsia/tests-with-exec.cmx.
+#     "testonly" targets default to using
+#     //build/config/fuchsia/tests-with-exec.cmx.
 #     Non-test targets must explicitly specify a |manifest|.
+# additional_manifests: Manifest files that should be included in the package in
+#     the /meta directory. This allows to package more than one component per
+#     manifest. These manifest files must specify program/binary to run, which
+#     is not required for the main manifest file where this parameter is added
+#     during build.
 # component_name_override: If set, specifies the name of the component.
 #     By default, the component name is the same as the package name.
 # deps: Additional targets to build and include in the package (optional).
@@ -65,6 +71,7 @@ template("fuchsia_package") {
 
     forward_variables_from(invoker,
                            [
+                             "data",
                              "deps",
                              "testonly",
                            ])
@@ -124,6 +131,15 @@ template("fuchsia_package") {
       }
     }
 
+    if (defined(pkg.additional_manifests)) {
+      foreach(filename, pkg.additional_manifests) {
+        args += [
+          "--additional-manifest",
+          rebase_path(filename),
+        ]
+      }
+    }
+
     write_runtime_deps = _runtime_deps_file
   }
 
@@ -141,6 +157,10 @@ template("fuchsia_package") {
       # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
       "${fuchsia_sdk}/.hash",
     ]
+
+    if (defined(pkg.additional_manifests)) {
+      inputs += pkg.additional_manifests
+    }
 
     outputs = [
       _meta_far_file,

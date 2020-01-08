@@ -14,7 +14,7 @@ import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.
 
 import android.view.View;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.host.action.StreamActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;

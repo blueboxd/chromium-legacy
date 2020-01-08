@@ -128,11 +128,17 @@ class IdlCompiler(object):
         for old_ir in old_irs:
             new_ir = make_copy(old_ir)
             self._ir_map.add(new_ir)
+            is_partial = False
+            is_mixin = False
+            if "LegacyTreatAsPartialInterface" in new_ir.extended_attributes:
+                is_partial = True
+            elif hasattr(new_ir, "is_partial") and new_ir.is_partial:
+                is_partial = True
+            elif hasattr(new_ir, "is_mixin") and new_ir.is_mixin:
+                is_mixin = True
             for member in new_ir.iter_all_members():
-                member.code_generator_info.set_defined_in_partial(
-                    hasattr(new_ir, 'is_partial') and new_ir.is_partial)
-                member.code_generator_info.set_defined_in_mixin(
-                    hasattr(new_ir, 'is_mixin') and new_ir.is_mixin)
+                member.code_generator_info.set_defined_in_partial(is_partial)
+                member.code_generator_info.set_defined_in_mixin(is_mixin)
 
     def _propagate_extattrs_per_idl_fragment(self):
         def propagate_extattr(extattr_key_and_attr_name,

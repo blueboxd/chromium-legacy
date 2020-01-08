@@ -5,9 +5,8 @@
 // See https://webaudio.github.io/web-audio-api/#ConstantSourceNode
 [
     Exposed=Window,
-    ActiveScriptWrappable,
-    Measure
+    ActiveScriptWrappable
 ] interface ConstantSourceNode : AudioScheduledSourceNode {
-    [RaisesException] constructor(BaseAudioContext context, optional ConstantSourceOptions options);
+    [RaisesException, Measure] constructor(BaseAudioContext context, optional ConstantSourceOptions options);
     readonly attribute AudioParam offset;
 };

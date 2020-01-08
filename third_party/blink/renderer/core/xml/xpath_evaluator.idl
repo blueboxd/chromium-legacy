@@ -25,10 +25,8 @@
 // Blink, Gecko, Presto, WebKit and all have these APIs on both Document and the
 // constructable XPathEvaluator interface.
 
-[
-    Measure
-] interface XPathEvaluator {
-    constructor();
+interface XPathEvaluator {
+    [Measure] constructor();
     [Measure, RaisesException] XPathExpression createExpression(DOMString expression, optional XPathNSResolver? resolver = null);
 
     [Measure] XPathNSResolver createNSResolver(Node nodeResolver);

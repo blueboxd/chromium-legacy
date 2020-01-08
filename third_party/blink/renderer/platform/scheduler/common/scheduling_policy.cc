@@ -22,6 +22,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kWebVR:
     case Feature::kWebXR:
     case Feature::kSharedWorker:
+    case Feature::kWebHID:
       return false;
     case Feature::kMainResourceHasCacheControlNoStore:
     case Feature::kMainResourceHasCacheControlNoCache:

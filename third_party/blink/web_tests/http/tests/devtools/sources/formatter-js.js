@@ -19,24 +19,24 @@
   var positions = [];
   for (var offset = originalContent.indexOf('{'); offset >= 0; offset = originalContent.indexOf('{', offset + 1))
     positions.push(text.positionFromOffset(offset));
-  var script = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, 0, 0)[0].script();
+  var script = (await Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, 0, 0))[0].script();
 
   TestRunner.addResult('Location mapping with formatted source:');
-  dumpLocations(positions);
+  await dumpLocations(positions);
 
   Formatter.sourceFormatter.discardFormattedUISourceCode(formatData.formattedSourceCode);
 
   TestRunner.addResult('Location mapping without formatted source:');
-  dumpLocations(positions);
+  await dumpLocations(positions);
 
   TestRunner.completeTest();
 
-  function dumpLocations(positions) {
+  async function dumpLocations(positions) {
     for (var position of positions) {
       var rawLocation = TestRunner.debuggerModel.createRawLocation(script, position.lineNumber, position.columnNumber);
       var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(rawLocation);
-      var reverseRawLocation = Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(
-          uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber)[0];
+      var reverseRawLocation = (await Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(
+          uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber))[0];
       TestRunner.addResult(
           `${rawLocation.lineNumber}:${rawLocation.columnNumber} -> ${uiLocation.lineNumber}:${
               uiLocation.columnNumber}` +

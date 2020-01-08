@@ -9,8 +9,8 @@ import android.graphics.Bitmap;
 import android.support.annotation.DrawableRes;
 import android.text.TextUtils;
 
-import org.chromium.base.Supplier;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;

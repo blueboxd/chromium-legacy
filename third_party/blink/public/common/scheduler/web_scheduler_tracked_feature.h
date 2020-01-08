@@ -75,9 +75,10 @@ enum class WebSchedulerTrackedFeature {
   kSharedWorker = 32,
 
   kWebLocks = 33,
+  kWebHID = 34,
 
   // NB: This enum is used in a bitmask, so kMaxValue must be less than 64.
-  kMaxValue = kWebLocks
+  kMaxValue = kWebHID
 };
 
 static_assert(static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue) < 64,

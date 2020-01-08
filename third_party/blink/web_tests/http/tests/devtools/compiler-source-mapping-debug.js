@@ -29,9 +29,9 @@
   SourcesTestRunner.runDebuggerTestSuite([function testSetBreakpoint(next) {
     SourcesTestRunner.showScriptSource('add-elements.js', didShowSource);
 
-    function didShowSource(sourceFrame) {
+    async function didShowSource(sourceFrame) {
       TestRunner.addResult('Script source was shown.');
-      SourcesTestRunner.setBreakpoint(sourceFrame, 14, '', true);
+      await SourcesTestRunner.setBreakpoint(sourceFrame, 14, '', true);
       SourcesTestRunner.waitUntilPaused(paused);
       TestRunner.evaluateInPage('setTimeout(clickButton, 0)');
     }

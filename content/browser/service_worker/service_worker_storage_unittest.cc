@@ -721,6 +721,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   live_version->script_cache_map()->SetResources(resources);
   live_version->set_used_features(
       std::set<blink::mojom::WebFeature>(used_features));
+  live_version->set_cross_origin_embedder_policy(
+      network::mojom::CrossOriginEmbedderPolicy::kRequireCorp);
   live_registration->SetWaitingVersion(live_version);
   live_registration->set_last_update_check(kYesterday);
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
@@ -736,6 +738,9 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
             found_registration->resources_total_size_bytes());
   EXPECT_EQ(used_features,
             found_registration->waiting_version()->used_features());
+  EXPECT_EQ(
+      found_registration->waiting_version()->cross_origin_embedder_policy(),
+      network::mojom::CrossOriginEmbedderPolicy::kRequireCorp);
   found_registration = nullptr;
 
   // But FindRegistrationForScope is always async.
@@ -1408,10 +1413,11 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
                                  registration_->scope().GetOrigin(),
                                  base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, true /* is_parent_frame_secure */,
-      context()->AsWeakPtr(), &remote_endpoint);
-  registration_->active_version()->AddControllee(host->container_host());
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
+      CreateContainerHostForWindow(33 /* dummy render process id */,
+                                   true /* is_parent_frame_secure */,
+                                   context()->AsWeakPtr(), &remote_endpoint);
+  registration_->active_version()->AddControllee(container_host.get());
 
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
@@ -1426,7 +1432,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   base::RunLoop loop;
   storage()->SetPurgingCompleteCallbackForTest(loop.QuitClosure());
   registration_->active_version()->RemoveControllee(
-      host->container_host()->client_uuid());
+      container_host->client_uuid());
   registration_->active_version()->Doom();
   loop.Run();
   EXPECT_TRUE(GetPurgeableResourceIdsFromDB().empty());
@@ -1444,10 +1450,11 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
                                  registration_->scope().GetOrigin(),
                                  base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, true /* is_parent_frame_secure */,
-      context()->AsWeakPtr(), &remote_endpoint);
-  registration_->active_version()->AddControllee(host->container_host());
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
+      CreateContainerHostForWindow(33 /* dummy render process id */,
+                                   true /* is_parent_frame_secure */,
+                                   context()->AsWeakPtr(), &remote_endpoint);
+  registration_->active_version()->AddControllee(container_host.get());
 
   // Deleting the registration should move the resources to the purgeable list
   // but keep them available.
@@ -1579,10 +1586,11 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
                                  registration_->scope().GetOrigin(),
                                  base::DoNothing());
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
-      33 /* dummy render process id */, true /* is_parent_frame_secure */,
-      helper_->context()->AsWeakPtr(), &remote_endpoint);
-  registration_->active_version()->AddControllee(host->container_host());
+  base::WeakPtr<ServiceWorkerContainerHost> container_host =
+      CreateContainerHostForWindow(
+          33 /* dummy render process id */, true /* is_parent_frame_secure */,
+          helper_->context()->AsWeakPtr(), &remote_endpoint);
+  registration_->active_version()->AddControllee(container_host.get());
 
   // Make an updated registration.
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
@@ -1613,7 +1621,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   storage()->SetPurgingCompleteCallbackForTest(loop.QuitClosure());
   scoped_refptr<ServiceWorkerVersion> old_version(
       registration_->active_version());
-  old_version->RemoveControllee(host->container_host()->client_uuid());
+  old_version->RemoveControllee(container_host->client_uuid());
   registration_->ActivateWaitingVersionWhenReady();
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
 

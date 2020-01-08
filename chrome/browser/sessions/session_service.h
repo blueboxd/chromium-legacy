@@ -225,7 +225,7 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   // done. If the callback is supplied an empty vector of SessionWindows
   // it means the session could not be restored.
   base::CancelableTaskTracker::TaskId GetLastSession(
-      const sessions::GetLastSessionCallback& callback,
+      sessions::GetLastSessionCallback callback,
       base::CancelableTaskTracker* tracker);
 
   // BaseSessionServiceDelegate:
@@ -265,7 +265,7 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
 
   // Converts |commands| to SessionWindows and notifies the callback.
   void OnGotSessionCommands(
-      const sessions::GetLastSessionCallback& callback,
+      sessions::GetLastSessionCallback callback,
       std::vector<std::unique_ptr<sessions::SessionCommand>> commands);
 
   // Adds commands to commands that will recreate the state of the specified

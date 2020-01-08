@@ -17,7 +17,7 @@ class ClipboardObserver;
 
 // A singleton instance to monitor and notify ClipboardObservers for clipboard
 // changes.
-class COMPONENT_EXPORT(BASE_CLIPBOARD) ClipboardMonitor {
+class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMonitor {
  public:
   static ClipboardMonitor* GetInstance();
 

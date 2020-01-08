@@ -33,9 +33,12 @@ class WebAppDatabaseFactory : public AbstractWebAppDatabaseFactory {
   syncer::OnceModelTypeStoreFactory GetStoreFactory() override;
 
  private:
-  // TODO(loyso): Consider using shared ModelTypeStoreService from profile.
-  // crbug.com/902214.
+  // If null, the Web Apps system uses the shared ModelTypeStoreService from the
+  // profile. Otherwise, the Web Apps system uses its own ModelTypeStoreService
+  // instance.
   std::unique_ptr<syncer::ModelTypeStoreService> model_type_store_service_;
+
+  Profile* const profile_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppDatabaseFactory);
 };

@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
-#include "components/arc/mojom/intent_helper.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom-forward.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"

@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL Throwing name getter fails serialization assert_throws_exactly: function "() => {
-    worker.postMessage(badError);
-  }" did not throw
-FAIL Errors sent across realms should preserve their type assert_equals: expected "TypeError" but got "Error"
-Harness: the test ran to completion.
-

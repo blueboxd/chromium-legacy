@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.ui;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.Tab;

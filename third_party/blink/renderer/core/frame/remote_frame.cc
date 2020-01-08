@@ -178,7 +178,7 @@ bool RemoteFrame::DetachDocument() {
 
 void RemoteFrame::CheckCompleted() {
   // Notify the client so that the corresponding LocalFrame can do the check.
-  Client()->CheckCompleted();
+  GetRemoteFrameHostRemote().CheckCompleted();
 }
 
 const RemoteSecurityContext* RemoteFrame::GetSecurityContext() const {

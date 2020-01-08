@@ -1347,17 +1347,13 @@ _ALL_PYDEPS_FILES = _ANDROID_SPECIFIC_PYDEPS_FILES + _GENERIC_PYDEPS_FILES
 
 # Bypass the AUTHORS check for these accounts.
 _KNOWN_ROBOTS = set(
-    '%s-chromium-autoroll@skia-buildbots.google.com.iam.gserviceaccount.com' % s
-    for s in ('afdo', 'angle', 'catapult', 'chromite', 'depot-tools',
-              'fuchsia-sdk', 'nacl', 'pdfium', 'perfetto', 'skia',
-              'spirv', 'src-internal', 'webrtc')
   ) | set('%s@appspot.gserviceaccount.com' % s for s in ('findit-for-me',)
   ) | set('%s@developer.gserviceaccount.com' % s for s in ('3su6n15k.default',)
   ) | set('%s@chops-service-accounts.iam.gserviceaccount.com' % s
           for s in ('bling-autoroll-builder', 'v8-ci-autoroll-builder',
                     'wpt-autoroller',)
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
-          for s in ('chromium-autoroll',)
+          for s in ('chromium-autoroll', 'chromium-release-autoroll')
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
           for s in ('chromium-internal-autoroll',))
 

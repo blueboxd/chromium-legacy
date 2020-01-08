@@ -16,7 +16,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.LaunchSourceType;

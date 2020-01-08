@@ -72,8 +72,10 @@ class CORE_EXPORT ScriptValue final {
 
   ScriptValue(v8::Isolate* isolate, v8::Local<v8::Value> value)
       : isolate_(isolate),
-        value_(
-            MakeGarbageCollected<WorldSafeV8ReferenceWrapper>(isolate, value)) {
+        value_(value.IsEmpty()
+                   ? nullptr
+                   : MakeGarbageCollected<WorldSafeV8ReferenceWrapper>(isolate,
+                                                                       value)) {
     DCHECK(isolate_);
   }
 
@@ -81,7 +83,7 @@ class CORE_EXPORT ScriptValue final {
   ScriptValue(v8::Isolate* isolate, v8::MaybeLocal<T> value)
       : isolate_(isolate),
         value_(value.IsEmpty()
-                   ? MakeGarbageCollected<WorldSafeV8ReferenceWrapper>()
+                   ? nullptr
                    : MakeGarbageCollected<WorldSafeV8ReferenceWrapper>(
                          isolate,
                          value.ToLocalChecked())) {
@@ -141,7 +143,7 @@ class CORE_EXPORT ScriptValue final {
     return !value.IsEmpty() && value->IsObject();
   }
 
-  bool IsEmpty() const { return !value_ || value_->IsEmpty(); }
+  bool IsEmpty() const { return !value_; }
 
   void Clear() {
     isolate_ = nullptr;
@@ -161,30 +163,33 @@ class CORE_EXPORT ScriptValue final {
   void Trace(Visitor* visitor) { visitor->Trace(value_); }
 
  private:
-  // WorldSafeV8ReferenceWrapper wraps a WorldSafeV8Reference so that it can be
-  // used on both the stack and heaps. WorldSafeV8Reference cannot be used on
-  // the stack because the conservative scanning does not know how to trace
+  // WorldSafeV8ReferenceWrapper wraps a non-empty WorldSafeV8Reference so that
+  // it can be used on both the stack and heaps.
+  //
+  // TODO(1040038): Currently, WorldSafeV8Reference cannot be used on the stack
+  // because the conservative scanning does not know how to trace
   // TraceWrapperV8Reference.
   class CORE_EXPORT WorldSafeV8ReferenceWrapper
       : public GarbageCollected<WorldSafeV8ReferenceWrapper> {
    public:
-    WorldSafeV8ReferenceWrapper() = default;
     WorldSafeV8ReferenceWrapper(v8::Isolate* isolate,
                                 v8::Local<v8::Value> value)
-        : value_(isolate, value) {}
+        : value_(isolate, value) {
+      DCHECK(!value.IsEmpty());
+    }
 
     virtual ~WorldSafeV8ReferenceWrapper() = default;
     void Trace(blink::Visitor* visitor) { visitor->Trace(value_); }
 
     v8::Local<v8::Value> Get(ScriptState* script_state) const {
+      DCHECK(!value_.IsEmpty());
       return value_.Get(script_state);
     }
 
     v8::Local<v8::Value> GetAcrossWorld(ScriptState* script_state) const {
+      DCHECK(!value_.IsEmpty());
       return value_.GetAcrossWorld(script_state);
     }
-
-    bool IsEmpty() const { return value_.IsEmpty(); }
 
     bool operator==(const WorldSafeV8ReferenceWrapper& other) const {
       return value_ == other.value_;

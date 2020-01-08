@@ -29,7 +29,7 @@ void FakeEmbeddedWorkerInstanceClient::Bind(
         receiver) {
   receiver_.Bind(std::move(receiver));
   receiver_.set_disconnect_handler(
-      base::BindOnce(&FakeEmbeddedWorkerInstanceClient::OnConnectionError,
+      base::BindOnce(&FakeEmbeddedWorkerInstanceClient::CallOnConnectionError,
                      base::Unretained(this)));
 
   if (quit_closure_for_bind_)
@@ -46,7 +46,7 @@ void FakeEmbeddedWorkerInstanceClient::RunUntilBound() {
 
 void FakeEmbeddedWorkerInstanceClient::Disconnect() {
   receiver_.reset();
-  OnConnectionError();
+  CallOnConnectionError();
 }
 
 void FakeEmbeddedWorkerInstanceClient::StartWorker(
@@ -105,7 +105,7 @@ void FakeEmbeddedWorkerInstanceClient::StopWorker() {
   // Destroys |this|. This matches the production implementation, which
   // calls OnStopped() from the worker thread and then posts task
   // to the EmbeddedWorkerInstanceClient to have it self-destruct.
-  OnConnectionError();
+  CallOnConnectionError();
 }
 
 void FakeEmbeddedWorkerInstanceClient::ResumeAfterDownload() {
@@ -124,6 +124,11 @@ void FakeEmbeddedWorkerInstanceClient::DidPopulateScriptCacheMap() {
 void FakeEmbeddedWorkerInstanceClient::OnConnectionError() {
   // Destroys |this|.
   helper_->RemoveInstanceClient(this);
+}
+
+void FakeEmbeddedWorkerInstanceClient::CallOnConnectionError() {
+  // Call OnConnectionError(), which subclasses can override.
+  OnConnectionError();
 }
 
 void FakeEmbeddedWorkerInstanceClient::EvaluateScript() {

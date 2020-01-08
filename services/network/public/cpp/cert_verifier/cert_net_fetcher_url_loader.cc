@@ -75,6 +75,7 @@
 #include "base/timer/timer.h"
 #include "net/base/load_flags.h"
 #include "net/cert/cert_net_fetcher.h"
+#include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -485,7 +486,7 @@ void Job::StartURLLoader(network::mojom::URLLoaderFactory* factory) {
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = request_params_->url;
   if (request_params_->http_method == HTTP_METHOD_POST)
-    request->method = "POST";
+    request->method = net::HttpRequestHeaders::kPostMethod;
   request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   url_loader_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);

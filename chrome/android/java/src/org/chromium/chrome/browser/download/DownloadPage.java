@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.view.View;
-
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
@@ -17,7 +15,6 @@ import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFacto
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.native_page.NativePageHost;
-import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.util.UrlConstants;
 
 /**
@@ -35,21 +32,18 @@ public class DownloadPage extends BasicNativePage implements DownloadManagerCoor
      * @param host A NativePageHost to load urls.
      */
     public DownloadPage(ChromeActivity activity, NativePageHost host) {
-        super(activity, host);
-    }
+        super(host);
 
-    @Override
-    protected void initialize(ChromeActivity activity, final NativePageHost host) {
         ThreadUtils.assertOnUiThread();
 
         DownloadManagerUiConfig config =
                 new DownloadManagerUiConfig.Builder()
-                        .setIsOffTheRecord(host.isIncognito())
+                        .setIsOffTheRecord(activity.getCurrentTabModel().isIncognito())
                         .setIsSeparateActivity(false)
                         .setShowPaginationHeaders(DownloadUtils.shouldShowPaginationHeaders())
                         .build();
         mDownloadCoordinator = DownloadManagerCoordinatorFactory.create(activity, config,
-                ((SnackbarManageable) activity).getSnackbarManager(), activity.getComponentName(),
+                activity.getSnackbarManager(), activity.getComponentName(),
                 activity.getModalDialogManager());
 
         mDownloadCoordinator.addObserver(this);
@@ -63,15 +57,13 @@ public class DownloadPage extends BasicNativePage implements DownloadManagerCoor
         // resumed.
         mActivityStateListener = (activity1, newState) -> {
             if (newState == ActivityState.RESUMED) {
-                DownloadUtils.checkForExternallyRemovedDownloads(host.isIncognito());
+                DownloadUtils.checkForExternallyRemovedDownloads(
+                        activity.getCurrentTabModel().isIncognito());
             }
         };
         ApplicationStatus.registerStateListenerForActivity(mActivityStateListener, activity);
-    }
 
-    @Override
-    public View getView() {
-        return mDownloadCoordinator.getView();
+        initWithView(mDownloadCoordinator.getView());
     }
 
     @Override

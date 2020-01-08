@@ -4,20 +4,30 @@
 
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 
+#include "base/feature_list.h"
+#include "chrome/browser/sync/model_type_store_service_factory.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "components/sync/model_impl/model_type_store_service_impl.h"
 
 namespace web_app {
 
 WebAppDatabaseFactory::WebAppDatabaseFactory(Profile* profile)
-    : model_type_store_service_(
-          std::make_unique<syncer::ModelTypeStoreServiceImpl>(
-              GetWebAppsDirectory(profile))) {}
+    : profile_(profile) {
+  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsSharedStoreService)) {
+    model_type_store_service_ =
+        std::make_unique<syncer::ModelTypeStoreServiceImpl>(
+            GetWebAppsDirectory(profile));
+  }
+}
 
-WebAppDatabaseFactory::~WebAppDatabaseFactory() {}
+WebAppDatabaseFactory::~WebAppDatabaseFactory() = default;
 
 syncer::OnceModelTypeStoreFactory WebAppDatabaseFactory::GetStoreFactory() {
-  return model_type_store_service_->GetStoreFactory();
+  return model_type_store_service_
+             ? model_type_store_service_->GetStoreFactory()
+             : ModelTypeStoreServiceFactory::GetForProfile(profile_)
+                   ->GetStoreFactory();
 }
 
 }  // namespace web_app

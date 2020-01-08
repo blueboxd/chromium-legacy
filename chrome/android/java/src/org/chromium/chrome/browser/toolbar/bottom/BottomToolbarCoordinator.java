@@ -10,7 +10,7 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 
-import org.chromium.base.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ThemeColorProvider;

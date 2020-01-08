@@ -409,7 +409,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     if (options_.grant_universal_access) {
       const auto request_mode = new_request.GetMode();
       DCHECK(request_mode == network::mojom::RequestMode::kNoCors ||
-             network::IsNavigationRequestMode(request_mode));
+             request_mode == network::mojom::RequestMode::kNavigate);
       // Some callers, notablly flash, with |grant_universal_access| want to
       // have an origin matching with referrer.
       KURL referrer(request.ToResourceRequest().ReferrerString());

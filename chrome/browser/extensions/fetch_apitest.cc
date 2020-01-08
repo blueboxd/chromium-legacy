@@ -334,6 +334,39 @@ IN_PROC_BROWSER_TEST_F(ExtensionFetchTest, OriginOnPostWithoutPermissions) {
             ExecuteScriptInBackgroundPage(extension->id(), script));
 }
 
+// An extension background script should be able to fetch resources contained in
+// the extension, and those resources should not be opaque.
+IN_PROC_BROWSER_TEST_F(ExtensionFetchTest, ExtensionResourceShouldNotBeOpaque) {
+  // We use a script to test this feature. Ideally testing with fetch() and
+  // response type is better, but some logic in blink (see the manual
+  // response type handling in blink::FetchManager) would hide potential
+  // breakages, which is why we are using a script.
+  const std::string script = base::StringPrintf(R"(
+      const script = document.createElement('script');
+      window.onerror = (message) => {
+        window.domAutomationController.send('onerror: ' + message);
+      }
+      script.src = 'error.js'
+      document.body.appendChild(script);)");
+  TestExtensionDir dir;
+  dir.WriteManifest(R"JSON(
+     {
+      "background": {"scripts": ["bg.js"]},
+      "manifest_version": 2,
+      "name": "FetchResponseType",
+      "permissions": [],
+      "version": "1"
+     })JSON");
+  dir.WriteFile(FILE_PATH_LITERAL("error.js"), "throw TypeError('hi!')");
+  const Extension* extension = WriteFilesAndLoadTestExtension(&dir);
+  ASSERT_TRUE(extension);
+
+  // We expect that we can read the content of the error here. Otherwise
+  // "onerror: Script error." will be seen.
+  EXPECT_EQ("onerror: Uncaught TypeError: hi!",
+            ExecuteScriptInBackgroundPage(extension->id(), script));
+}
+
 }  // namespace
 
 }  // namespace extensions

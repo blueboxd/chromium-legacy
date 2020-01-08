@@ -20,9 +20,9 @@
   function testLiveEditWhenPausedDoesNotCauseCursorMove(oldText, newText, next) {
     SourcesTestRunner.showScriptSource('edit-me-when-paused-no-reveal.js', didShowScriptSource);
 
-    function didShowScriptSource(sourceFrame) {
+    async function didShowScriptSource(sourceFrame) {
       SourcesTestRunner.waitUntilPaused(paused);
-      SourcesTestRunner.setBreakpoint(sourceFrame, 8, '', true);
+      await SourcesTestRunner.setBreakpoint(sourceFrame, 8, '', true);
       TestRunner.evaluateInPage('f1()', didEvaluateInPage);
     }
 
@@ -54,9 +54,9 @@
   function testLiveEditWhenPausedThenStepIntoCausesCursorMove(oldText, newText, next) {
     SourcesTestRunner.showScriptSource('edit-me-when-paused-no-reveal.js', didShowScriptSource);
 
-    function didShowScriptSource(sourceFrame) {
+    async function didShowScriptSource(sourceFrame) {
       SourcesTestRunner.waitUntilPaused(paused);
-      SourcesTestRunner.setBreakpoint(sourceFrame, 8, '', true);
+      await SourcesTestRunner.setBreakpoint(sourceFrame, 8, '', true);
       TestRunner.evaluateInPage('f1()', didEvaluateInPage);
     }
 

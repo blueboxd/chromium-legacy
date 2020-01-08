@@ -183,19 +183,22 @@ public class NfcImpl implements Nfc {
         if (!checkIfReady(callback)) return;
 
         if (!NdefMessageValidator.isValid(message)) {
-            callback.call(createError(NdefErrorType.INVALID_MESSAGE));
+            callback.call(createError(NdefErrorType.INVALID_MESSAGE,
+                    "Cannot push the message because it's invalid."));
             return;
         }
 
         // Check NdefPushOptions that are not supported by Android platform.
         if (options.target == NdefPushTarget.PEER) {
-            callback.call(createError(NdefErrorType.NOT_SUPPORTED));
+            callback.call(createError(
+                    NdefErrorType.NOT_SUPPORTED, "The \"peer\" target is not supported yet."));
             return;
         }
 
         // If previous pending push operation is not completed, cancel it.
         if (mPendingPushOperation != null) {
-            mPendingPushOperation.complete(createError(NdefErrorType.OPERATION_CANCELLED));
+            mPendingPushOperation.complete(createError(NdefErrorType.OPERATION_CANCELLED,
+                    "Push is cancelled due to a new push request."));
         }
 
         mPendingPushOperation = new PendingPushOperation(message, options, callback);
@@ -216,14 +219,17 @@ public class NfcImpl implements Nfc {
         if (!checkIfReady(callback)) return;
 
         if (target == NdefPushTarget.PEER) {
-            callback.call(createError(NdefErrorType.NOT_SUPPORTED));
+            callback.call(createError(
+                    NdefErrorType.NOT_SUPPORTED, "The \"peer\" target is not supported yet."));
             return;
         }
 
         if (mPendingPushOperation == null) {
-            callback.call(createError(NdefErrorType.CANNOT_CANCEL));
+            callback.call(createError(
+                    NdefErrorType.CANNOT_CANCEL, "No pending push operation to cancel."));
         } else {
-            completePendingPushOperation(createError(NdefErrorType.OPERATION_CANCELLED));
+            completePendingPushOperation(createError(
+                    NdefErrorType.OPERATION_CANCELLED, "The push operation is already cancelled."));
             callback.call(null);
         }
     }
@@ -244,7 +250,8 @@ public class NfcImpl implements Nfc {
         // report a bad message to Mojo but unfortunately Mojo bindings for Java does not support
         // this feature yet. So, we just passes back a generic error instead.
         if (mWatchers.indexOfKey(id) >= 0) {
-            callback.call(createError(NdefErrorType.NOT_READABLE));
+            callback.call(createError(NdefErrorType.NOT_READABLE,
+                    "Cannot start because the received scan request is duplicate."));
             return;
         }
         mWatchers.put(id, options);
@@ -264,7 +271,8 @@ public class NfcImpl implements Nfc {
         if (!checkIfReady(callback)) return;
 
         if (mWatchers.indexOfKey(id) < 0) {
-            callback.call(createError(NdefErrorType.NOT_FOUND));
+            callback.call(
+                    createError(NdefErrorType.NOT_FOUND, "No pending scan operation to cancel."));
         } else {
             mWatchers.remove(id);
             callback.call(null);
@@ -282,7 +290,8 @@ public class NfcImpl implements Nfc {
         if (!checkIfReady(callback)) return;
 
         if (mWatchers.size() == 0) {
-            callback.call(createError(NdefErrorType.NOT_FOUND));
+            callback.call(
+                    createError(NdefErrorType.NOT_FOUND, "No pending scan operation to cancel."));
         } else {
             mWatchers.clear();
             callback.call(null);
@@ -347,9 +356,13 @@ public class NfcImpl implements Nfc {
     /**
      * Helper method that creates NdefError object from NdefErrorType.
      */
-    private NdefError createError(int errorType) {
+    private NdefError createError(int errorType, String errorMessage) {
+        // Guaranteed by callers.
+        assert errorMessage != null;
+
         NdefError error = new NdefError();
         error.errorType = errorType;
+        error.errorMessage = errorMessage;
         return error;
     }
 
@@ -359,11 +372,11 @@ public class NfcImpl implements Nfc {
      */
     private NdefError checkIfReady() {
         if (!mHasPermission || mActivity == null) {
-            return createError(NdefErrorType.NOT_ALLOWED);
+            return createError(NdefErrorType.NOT_ALLOWED, "The operation is not allowed.");
         } else if (mNfcManager == null || mNfcAdapter == null) {
-            return createError(NdefErrorType.NOT_SUPPORTED);
+            return createError(NdefErrorType.NOT_SUPPORTED, "NFC is not supported.");
         } else if (!mNfcAdapter.isEnabled()) {
-            return createError(NdefErrorType.NOT_READABLE);
+            return createError(NdefErrorType.NOT_READABLE, "NFC setting is disabled.");
         }
         return null;
     }
@@ -498,13 +511,16 @@ public class NfcImpl implements Nfc {
             pendingPushOperationCompleted(null);
         } catch (InvalidNdefMessageException e) {
             Log.w(TAG, "Cannot write data to NFC tag. Invalid NdefMessage.");
-            pendingPushOperationCompleted(createError(NdefErrorType.INVALID_MESSAGE));
+            pendingPushOperationCompleted(createError(NdefErrorType.INVALID_MESSAGE,
+                    "Cannot push the message because it's invalid."));
         } catch (TagLostException e) {
-            Log.w(TAG, "Cannot write data to NFC tag. Tag is lost.");
-            pendingPushOperationCompleted(createError(NdefErrorType.IO_ERROR));
+            Log.w(TAG, "Cannot write data to NFC tag. Tag is lost: " + e.getMessage());
+            pendingPushOperationCompleted(createError(NdefErrorType.IO_ERROR,
+                    "Failed to write because the tag is lost: " + e.getMessage()));
         } catch (FormatException | IllegalStateException | IOException e) {
-            Log.w(TAG, "Cannot write data to NFC tag. IO_ERROR.");
-            pendingPushOperationCompleted(createError(NdefErrorType.IO_ERROR));
+            Log.w(TAG, "Cannot write data to NFC tag: " + e.getMessage());
+            pendingPushOperationCompleted(createError(NdefErrorType.IO_ERROR,
+                    "Failed to write due to an IO error: " + e.getMessage()));
         }
     }
 
@@ -544,21 +560,26 @@ public class NfcImpl implements Nfc {
             NdefMessage webNdefMessage = NdefMessageUtils.toNdefMessage(message);
             notifyMatchingWatchers(webNdefMessage);
         } catch (UnsupportedEncodingException e) {
-            Log.w(TAG, "Cannot read data from NFC tag. Cannot convert to NdefMessage.");
-            notifyErrorToAllWatchers(NdefErrorType.INVALID_MESSAGE);
+            Log.w(TAG,
+                    "Cannot read data from NFC tag. Cannot convert to NdefMessage:"
+                            + e.getMessage());
+            notifyErrorToAllWatchers(createError(NdefErrorType.INVALID_MESSAGE,
+                    "Failed to decode the NdefMessage read from the tag: " + e.getMessage()));
         } catch (TagLostException e) {
-            Log.w(TAG, "Cannot read data from NFC tag. Tag is lost.");
-            notifyErrorToAllWatchers(NdefErrorType.IO_ERROR);
+            Log.w(TAG, "Cannot read data from NFC tag. Tag is lost: " + e.getMessage());
+            notifyErrorToAllWatchers(createError(NdefErrorType.IO_ERROR,
+                    "Failed to read because the tag is lost: " + e.getMessage()));
         } catch (FormatException | IllegalStateException | IOException e) {
-            Log.w(TAG, "Cannot read data from NFC tag. IO_ERROR.");
-            notifyErrorToAllWatchers(NdefErrorType.IO_ERROR);
+            Log.w(TAG, "Cannot read data from NFC tag. IO_ERROR: " + e.getMessage());
+            notifyErrorToAllWatchers(createError(NdefErrorType.IO_ERROR,
+                    "Failed to read due to an IO error: " + e.getMessage()));
         }
     }
 
     /**
      * Notify all active watchers that an error happened when trying to read the tag coming nearby.
      */
-    private void notifyErrorToAllWatchers(int error) {
+    private void notifyErrorToAllWatchers(NdefError error) {
         for (int i = 0; i < mWatchers.size(); i++) {
             mClient.onError(error);
         }
@@ -640,8 +661,10 @@ public class NfcImpl implements Nfc {
         // This tag is not NDEF compatible.
         if (mTagHandler == null) {
             Log.w(TAG, "This tag is not NDEF compatible.");
-            notifyErrorToAllWatchers(NdefErrorType.NOT_SUPPORTED);
-            pendingPushOperationCompleted(createError(NdefErrorType.NOT_SUPPORTED));
+            notifyErrorToAllWatchers(
+                    createError(NdefErrorType.NOT_SUPPORTED, "This tag is not NDEF compatible."));
+            pendingPushOperationCompleted(
+                    createError(NdefErrorType.NOT_SUPPORTED, "This tag is not NDEF compatible."));
             return;
         }
 

@@ -26,7 +26,7 @@ import org.mockito.Mock;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.common.functional.Suppliers;
 import org.chromium.chrome.browser.feed.library.piet.ui.RoundedCornerMaskCache.Corner;
 import org.chromium.chrome.browser.feed.library.piet.ui.RoundedCornerMaskCache.RoundedCornerBitmaps;

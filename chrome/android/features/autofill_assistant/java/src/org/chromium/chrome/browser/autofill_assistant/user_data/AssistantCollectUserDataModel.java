@@ -124,6 +124,9 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<String> BILLING_POSTAL_CODE_MISSING_TEXT =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableObjectPropertyKey<String> CREDIT_CARD_EXPIRED_TEXT =
+            new WritableObjectPropertyKey<>();
+
     public static final WritableBooleanPropertyKey REQUEST_DATE_RANGE =
             new WritableBooleanPropertyKey();
 
@@ -161,10 +164,11 @@ public class AssistantCollectUserDataModel extends PropertyModel {
                 ACCEPT_TERMS_AND_CONDITIONS_TEXT, SHOW_TERMS_AS_CHECKBOX, REQUEST_LOGIN_CHOICE,
                 AVAILABLE_PROFILES, AVAILABLE_AUTOFILL_PAYMENT_METHODS,
                 SUPPORTED_BASIC_CARD_NETWORKS, AVAILABLE_LOGINS, EXPANDED_SECTION,
-                REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT, REQUEST_DATE_RANGE,
-                DATE_RANGE_START, DATE_RANGE_START_LABEL, DATE_RANGE_END, DATE_RANGE_END_LABEL,
-                PREPENDED_SECTIONS, APPENDED_SECTIONS, TERMS_REQUIRE_REVIEW_TEXT,
-                PRIVACY_NOTICE_TEXT, GENERIC_USER_INTERFACE);
+                REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT,
+                CREDIT_CARD_EXPIRED_TEXT, REQUEST_DATE_RANGE, DATE_RANGE_START,
+                DATE_RANGE_START_LABEL, DATE_RANGE_END, DATE_RANGE_END_LABEL, PREPENDED_SECTIONS,
+                APPENDED_SECTIONS, TERMS_REQUIRE_REVIEW_TEXT, PRIVACY_NOTICE_TEXT,
+                GENERIC_USER_INTERFACE);
 
         /**
          * Set initial state for basic type properties (others are implicitly null).
@@ -228,6 +232,11 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setBillingPostalCodeMissingText(String text) {
         set(BILLING_POSTAL_CODE_MISSING_TEXT, text);
+    }
+
+    @CalledByNative
+    private void setCreditCardExpiredText(String text) {
+        set(CREDIT_CARD_EXPIRED_TEXT, text);
     }
 
     @CalledByNative

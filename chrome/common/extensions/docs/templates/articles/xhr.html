@@ -243,3 +243,19 @@ default policy doesn't restrict connections to hosts, be careful when explicitly
 adding either the <code>connect-src</code> or <code>default-src</code>
 directives.
 </p>
+
+<h2 id="origin-neither-GET-nor-HEAD">Origin header for requests with neither
+GET nor HEAD methods</h2>
+
+<p>A request with an HTTP method that is neither GET nor HEAD (such as POST)
+always has an Origin header, regardless of whether the request is cross-origin.
+<span class="availability">Starting from Chrome 80</span>, the origin of
+the destination URL, not the extension's security origin, is attached to the
+header if all of the following conditions are met:
+<ul>
+<li>The request is made in a frame with the extension's security origin, such as
+the background page, the popup, or an extension tab.</li>
+<li>The request has a method that is neither GET nor HEAD.</li>
+<li>The extension has cross-origin permission to the destination URL.</li>
+</ul>
+</p>

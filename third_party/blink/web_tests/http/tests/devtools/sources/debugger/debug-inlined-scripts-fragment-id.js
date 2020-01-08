@@ -21,9 +21,9 @@
     SourcesTestRunner.showScriptSource('inline-scripts.html', step2);
   }
 
-  function step2(sourceFrame) {
+  async function step2(sourceFrame) {
     TestRunner.addResult('Script source was shown.');
-    SourcesTestRunner.setBreakpoint(sourceFrame, 5, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 5, '', true);
     SourcesTestRunner.waitUntilPaused(step3);
     TestRunner.reloadPage(SourcesTestRunner.completeDebuggerTest.bind(SourcesTestRunner));
   }

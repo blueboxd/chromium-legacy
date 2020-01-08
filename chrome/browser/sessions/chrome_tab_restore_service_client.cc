@@ -114,12 +114,12 @@ bool ChromeTabRestoreServiceClient::HasLastSession() {
 }
 
 void ChromeTabRestoreServiceClient::GetLastSession(
-    const sessions::GetLastSessionCallback& callback,
+    sessions::GetLastSessionCallback callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(HasLastSession());
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
-  SessionServiceFactory::GetForProfile(profile_)
-      ->GetLastSession(callback, tracker);
+  SessionServiceFactory::GetForProfile(profile_)->GetLastSession(
+      std::move(callback), tracker);
 #endif
 }
 

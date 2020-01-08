@@ -79,6 +79,8 @@ void VerifyRegistrationData(const RegistrationData& expected,
   EXPECT_EQ(expected.resources_total_size_bytes,
             actual.resources_total_size_bytes);
   EXPECT_EQ(expected.script_response_time, actual.script_response_time);
+  EXPECT_EQ(expected.cross_origin_embedder_policy,
+            actual.cross_origin_embedder_policy);
 }
 
 void VerifyResourceRecords(const std::vector<Resource>& expected,
@@ -463,6 +465,8 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data1.version_id = 1000;
   data1.resources_total_size_bytes = 100;
   data1.script_response_time = base::Time::FromJsTime(0);
+  data1.cross_origin_embedder_policy =
+      network::mojom::CrossOriginEmbedderPolicy::kNone;
   std::vector<Resource> resources1;
   resources1.push_back(CreateResource(1, data1.script, 100));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -486,6 +490,8 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data2.version_id = 2000;
   data2.resources_total_size_bytes = 200;
   data2.script_response_time = base::Time::FromJsTime(42);
+  data2.cross_origin_embedder_policy =
+      network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
   std::vector<Resource> resources2;
   resources2.push_back(CreateResource(2, data2.script, 200));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -509,6 +515,8 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data3.version_id = 3000;
   data3.resources_total_size_bytes = 300;
   data3.script_response_time = base::Time::FromJsTime(420);
+  data3.cross_origin_embedder_policy =
+      network::mojom::CrossOriginEmbedderPolicy::kNone;
   std::vector<Resource> resources3;
   resources3.push_back(CreateResource(3, data3.script, 300));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -523,6 +531,8 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data4.version_id = 4000;
   data4.resources_total_size_bytes = 400;
   data4.script_response_time = base::Time::FromJsTime(4200);
+  data4.cross_origin_embedder_policy =
+      network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
   std::vector<Resource> resources4;
   resources4.push_back(CreateResource(4, data4.script, 400));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -569,6 +579,8 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   data1.script = URL(origin1, "/script1.js");
   data1.version_id = 1000;
   data1.resources_total_size_bytes = 100;
+  data1.cross_origin_embedder_policy =
+      network::mojom::CrossOriginEmbedderPolicy::kNone;
   std::vector<Resource> resources1;
   resources1.push_back(CreateResource(1, data1.script, 100));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -583,6 +595,8 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   data2.version_id = 2000;
   data2.resources_total_size_bytes = 200;
   data2.update_via_cache = blink::mojom::ServiceWorkerUpdateViaCache::kNone;
+  data2.cross_origin_embedder_policy =
+      network::mojom::CrossOriginEmbedderPolicy::kRequireCorp;
   std::vector<Resource> resources2;
   resources2.push_back(CreateResource(2, data2.script, 200));
   ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
@@ -2234,6 +2248,36 @@ TEST(ServiceWorkerDatabaseTest, InvalidWebFeature) {
       blink::mojom::WebFeature::kBackgroundSync,
       blink::mojom::WebFeature::kNetInfoType};
   EXPECT_EQ(expect, registration.used_features);
+}
+
+TEST(ServiceWorkerDatabaseTest, NoCrossOriginEmbedderPolicy) {
+  std::unique_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+
+  // Prepare a registration proto that doesn't have Cross Origin Embedder
+  // Policy.
+  ServiceWorkerRegistrationData data;
+  data.set_registration_id(1);
+  data.set_scope_url("https://example.com");
+  data.set_script_url("https://example.com/sw");
+  data.set_version_id(1);
+  data.set_is_active(true);
+  data.set_has_fetch_handler(true);
+  data.set_last_update_check_time(
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  database->next_avail_registration_id_ = 2;
+  database->next_avail_version_id_ = 2;
+
+  // Write the serialization.
+  std::string value;
+  ASSERT_TRUE(data.SerializeToString(&value));
+
+  // Parse the serialized data. The policy is kNone if it's not set.
+  RegistrationData registration;
+  ASSERT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->ParseRegistrationData(value, &registration));
+  EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicy::kNone,
+            registration.cross_origin_embedder_policy);
 }
 
 }  // namespace content

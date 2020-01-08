@@ -69,9 +69,10 @@ FormControlState PasswordInputType::SaveFormControlState() const {
   return FormControlState();
 }
 
-void PasswordInputType::RestoreFormControlState(const FormControlState&) {
+bool PasswordInputType::RestoreFormControlState(const FormControlState&) {
   // Should never save/restore password fields.
   NOTREACHED();
+  return false;
 }
 
 bool PasswordInputType::ShouldRespectListAttribute() {

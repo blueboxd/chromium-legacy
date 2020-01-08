@@ -101,7 +101,7 @@
         await SourcesTestRunner.waitUntilDebuggerPluginLoaded(sourceFrame);
         SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame)
             .then(breakpointAdded);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
+        await SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
       function breakpointAdded() {
@@ -132,7 +132,7 @@
         await SourcesTestRunner.waitUntilDebuggerPluginLoaded(sourceFrame);
         SourcesTestRunner.waitDebuggerPluginBreakpoints(testSourceFrame)
             .then(breakpointAdded);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
+        await SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
       function breakpointAdded() {

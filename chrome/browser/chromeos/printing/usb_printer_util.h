@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/usb_device.mojom.h"
+#include "services/device/public/mojom/usb_device.mojom-forward.h"
 
 namespace chromeos {
 

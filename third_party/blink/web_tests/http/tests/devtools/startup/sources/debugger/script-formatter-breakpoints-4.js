@@ -23,12 +23,12 @@
     function testBreakpointSetInOriginalAndRemovedInFormatted(next) {
       SourcesTestRunner.showScriptSource('script-formatter-breakpoints-4.html', didShowScriptSource);
 
-      function didShowScriptSource(sourceFrame) {
+      async function didShowScriptSource(sourceFrame) {
         TestRunner.addResult('Adding breakpoint.');
         TestRunner.addSniffer(
             Bindings.BreakpointManager.ModelBreakpoint.prototype,
             '_addResolvedLocation', breakpointResolved);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
+        await SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
       }
 
       function breakpointResolved() {
@@ -43,7 +43,7 @@
         var formattedSourceFrame = panel.visibleView;
         await SourcesTestRunner.waitUntilDebuggerPluginLoaded(
             formattedSourceFrame);
-        SourcesTestRunner.removeBreakpoint(formattedSourceFrame, 11);
+        await SourcesTestRunner.removeBreakpoint(formattedSourceFrame, 11);
         TestRunner.addResult('Unformatting.');
         Formatter.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
         var breakpoints = Bindings.breakpointManager._storage._setting.get();

@@ -33,7 +33,7 @@
         var formattedSourceFrame = panel.visibleView;
         await SourcesTestRunner.waitUntilDebuggerPluginLoaded(
             formattedSourceFrame);
-        SourcesTestRunner.setBreakpoint(formattedSourceFrame, 3, '', true);
+        await SourcesTestRunner.setBreakpoint(formattedSourceFrame, 3, '', true);
         SourcesTestRunner.waitBreakpointSidebarPane().then(evaluateF2);
       }
 

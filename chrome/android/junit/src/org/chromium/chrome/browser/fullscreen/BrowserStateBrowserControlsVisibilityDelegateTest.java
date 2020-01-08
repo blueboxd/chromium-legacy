@@ -22,7 +22,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ObservableSupplierImpl;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.common.BrowserControlsState;

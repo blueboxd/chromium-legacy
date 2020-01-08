@@ -23,7 +23,7 @@
   await SourcesTestRunner.startDebuggerTestPromise();
   TestRunner.evaluateInPageWithTimeout('testFunction()');
   var sourceFrame = await waitForPausedUISourceCode();
-  SourcesTestRunner.createNewBreakpoint(sourceFrame, 10, '', true);
+  await SourcesTestRunner.createNewBreakpoint(sourceFrame, 10, '', true);
   await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
   await SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
   SourcesTestRunner.completeDebuggerTest();

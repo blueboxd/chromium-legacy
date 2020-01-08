@@ -17,7 +17,7 @@
 
 namespace ui {
 
-class COMPONENT_EXPORT(BASE_CLIPBOARD) ClipboardMac : public Clipboard {
+class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMac : public Clipboard {
  private:
   FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, ReadImageRetina);
   FRIEND_TEST_ALL_PREFIXES(ClipboardMacTest, ReadImageNonRetina);

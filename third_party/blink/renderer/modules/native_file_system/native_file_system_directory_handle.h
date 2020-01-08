@@ -39,7 +39,8 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
                             const FileSystemRemoveOptions*);
 
   static ScriptPromise getSystemDirectory(ScriptState*,
-                                          const GetSystemDirectoryOptions*);
+                                          const GetSystemDirectoryOptions*,
+                                          ExceptionState&);
 
   mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> Transfer()
       override;

@@ -1426,6 +1426,8 @@ message CollectUserDataProto {
   // The error message to display when the billing address is missing the
   // postal code. This field is mandatory if |require_postal_code| is true.
   optional string billing_postal_code_missing_text = 15;
+  // The error message to display when the selected credit card is expired.
+  optional string credit_card_expired_text = 23;
   // The login details that should be gathered.
   optional LoginDetailsProto login_details = 16;
   // The date/time range that should be gathered.

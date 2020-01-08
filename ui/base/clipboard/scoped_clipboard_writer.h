@@ -27,7 +27,7 @@ namespace ui {
 // Upon deletion, the class atomically writes all data to the clipboard,
 // avoiding any potential race condition with other processes that are also
 // writing to the system clipboard.
-class COMPONENT_EXPORT(BASE_CLIPBOARD) ScopedClipboardWriter {
+class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ScopedClipboardWriter {
  public:
   // Create an instance that is a simple wrapper around the clipboard of the
   // given buffer.

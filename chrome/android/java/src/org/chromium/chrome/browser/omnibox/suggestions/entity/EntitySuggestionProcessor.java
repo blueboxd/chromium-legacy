@@ -12,10 +12,10 @@ import android.text.TextUtils;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
-import org.chromium.base.Supplier;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;

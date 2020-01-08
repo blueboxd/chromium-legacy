@@ -283,7 +283,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // "If any of |init|'s members are present, then:"
   if (AreAnyMembersPresent(init)) {
     // "If |request|'s |mode| is "navigate", then set it to "same-origin".
-    if (network::IsNavigationRequestMode(request->Mode()))
+    if (request->Mode() == network::mojom::RequestMode::kNavigate)
       request->SetMode(network::mojom::RequestMode::kSameOrigin);
 
     // TODO(yhirano): Implement the following substep:
@@ -735,8 +735,6 @@ String Request::mode() const {
     case network::mojom::RequestMode::kCorsWithForcedPreflight:
       return "cors";
     case network::mojom::RequestMode::kNavigate:
-    case network::mojom::RequestMode::kNavigateNestedFrame:
-    case network::mojom::RequestMode::kNavigateNestedObject:
       return "navigate";
   }
   NOTREACHED();

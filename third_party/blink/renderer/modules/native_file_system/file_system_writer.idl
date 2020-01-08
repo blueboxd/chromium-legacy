@@ -10,7 +10,7 @@
     RuntimeEnabled=NativeFileSystem
 ] interface FileSystemWriter {
     [CallWith=ScriptState, RaisesException] Promise<void> write(unsigned long long position, (BufferSource or Blob or USVString) data);
-    [CallWith=ScriptState] Promise<void> truncate(unsigned long long size);
+    [CallWith=ScriptState, RaisesException] Promise<void> truncate(unsigned long long size);
 
-    [CallWith=ScriptState] Promise<void> close();
+    [CallWith=ScriptState, RaisesException] Promise<void> close();
 };

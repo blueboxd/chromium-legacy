@@ -86,12 +86,16 @@ ExternalInstallOptions CreateInstallOptions(const GURL& url) {
   return install_options;
 }
 
-InstallResultCode InstallApp(Profile* profile,
-                             ExternalInstallOptions install_options) {
+InstallResultCode PendingAppManagerInstall(
+    Profile* profile,
+    ExternalInstallOptions install_options) {
+  DCHECK(profile);
+  auto* provider = WebAppProviderBase::GetProviderBase(profile);
+  DCHECK(provider);
   base::RunLoop run_loop;
   InstallResultCode result_code;
 
-  WebAppProviderBase::GetProviderBase(profile)->pending_app_manager().Install(
+  provider->pending_app_manager().Install(
       std::move(install_options),
       base::BindLambdaForTesting(
           [&result_code, &run_loop](const GURL& provided_url,

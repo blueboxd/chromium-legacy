@@ -429,9 +429,11 @@ void CorsURLLoader::StartRequest() {
   //
   // We exclude navigation requests to keep the existing behavior.
   // TODO(yhirano): Reconsider this.
-  if (!IsNavigationRequestMode(request_.mode) && request_.request_initiator &&
+  if (request_.mode != network::mojom::RequestMode::kNavigate &&
+      request_.request_initiator &&
       (fetch_cors_flag_ ||
-       (request_.method != "GET" && request_.method != "HEAD"))) {
+       (request_.method != net::HttpRequestHeaders::kGetMethod &&
+        request_.method != net::HttpRequestHeaders::kHeadMethod))) {
     if (tainted_) {
       request_.headers.SetHeader(net::HttpRequestHeaders::kOrigin,
                                  url::Origin().Serialize());

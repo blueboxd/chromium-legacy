@@ -81,7 +81,7 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   // Algorithm step 1 through 5 of the CORS-preflight fetch,
   // https://fetch.spec.whatwg.org/#cors-preflight-fetch.
   preflight_request->url = request.url;
-  preflight_request->method = "OPTIONS";
+  preflight_request->method = net::HttpRequestHeaders::kOptionsMethod;
   preflight_request->priority = request.priority;
   preflight_request->fetch_request_context_type =
       request.fetch_request_context_type;

@@ -882,7 +882,8 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
   bool do_streamon = false;
   // Enqueue all the inputs we can.
   const size_t old_inputs_queued = input_queue_->QueuedBuffersCount();
-  while (!encoder_input_queue_.empty()) {
+  while (!encoder_input_queue_.empty() &&
+         input_queue_->FreeBuffersCount() > 0) {
     // A null frame indicates a flush.
     if (encoder_input_queue_.front().frame == nullptr) {
       DVLOGF(3) << "All input frames needed to be flushed are enqueued.";
@@ -910,8 +911,9 @@ void V4L2VideoEncodeAccelerator::Enqueue() {
       break;
     }
     auto input_buffer = input_queue_->GetFreeBuffer();
-    if (!input_buffer)
-      break;
+    // input_buffer cannot be base::nullopt since we checked for
+    // input_queue_->FreeBuffersCount() > 0 before entering the loop.
+    DCHECK(input_buffer);
     if (!EnqueueInputRecord(std::move(*input_buffer)))
       return;
   }

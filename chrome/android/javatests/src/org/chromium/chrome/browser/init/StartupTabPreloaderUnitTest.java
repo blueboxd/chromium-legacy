@@ -14,7 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;

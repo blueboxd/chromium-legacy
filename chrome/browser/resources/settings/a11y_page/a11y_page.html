@@ -10,7 +10,7 @@
 <link rel="import" href="captions_browser_proxy.html">
 </if>
 
-<if expr="not is_macosx and not is_chromeos">
+<if expr="not is_macosx and not chromeos">
 <link rel="import" href="captions_subpage.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
 </if>
@@ -51,7 +51,7 @@
             external>
         </cr-link-row>
       </div>
-<if expr="not is_macosx and not is_chromeos">
+<if expr="not is_macosx and not chromeos">
       <template is="dom-if" if="[[showCaptionSettings_]]">
         <template is="dom-if" route-path="/captions">
           <settings-subpage

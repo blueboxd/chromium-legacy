@@ -153,7 +153,7 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsUnifiedLaunch;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDesktopPWAsUSS;
+extern const base::Feature kDesktopPWAsSharedStoreService;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDisallowUnsafeHttpDownloads;

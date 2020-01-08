@@ -43,7 +43,7 @@ mojom::blink::PresentationConnectionMessagePtr MakeBinaryMessage(
       WTF::Vector<uint8_t>());
   WTF::Vector<uint8_t>& data = message->get_data();
   data.Append(static_cast<const uint8_t*>(buffer->Data()),
-              buffer->DeprecatedByteLengthAsUnsigned());
+              base::checked_cast<wtf_size_t>(buffer->ByteLengthAsSizeT()));
   return message;
 }
 
@@ -457,6 +457,15 @@ void PresentationConnection::send(DOMArrayBuffer* array_buffer,
   DCHECK(array_buffer->Buffer());
   if (!CanSendMessage(exception_state))
     return;
+  if (!base::CheckedNumeric<wtf_size_t>(array_buffer->ByteLengthAsSizeT())
+           .IsValid()) {
+    static_assert(
+        4294967295 == std::numeric_limits<wtf_size_t>::max(),
+        "Change the error message below if this static_assert fails.");
+    exception_state.ThrowRangeError(
+        "ArrayBuffer size exceeds the maximum supported size (4294967295)");
+    return;
+  }
 
   messages_.push_back(MakeGarbageCollected<Message>(array_buffer));
   HandleMessageQueue();
@@ -468,6 +477,16 @@ void PresentationConnection::send(
   DCHECK(array_buffer_view);
   if (!CanSendMessage(exception_state))
     return;
+  if (!base::CheckedNumeric<wtf_size_t>(
+           array_buffer_view.View()->byteLengthAsSizeT())
+           .IsValid()) {
+    static_assert(
+        4294967295 == std::numeric_limits<wtf_size_t>::max(),
+        "Change the error message below if this static_assert fails.");
+    exception_state.ThrowRangeError(
+        "ArrayBuffer size exceeds the maximum supported size (4294967295)");
+    return;
+  }
 
   messages_.push_back(
       MakeGarbageCollected<Message>(array_buffer_view.View()->buffer()));
@@ -629,7 +648,16 @@ void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
   DCHECK_EQ(messages_.front()->type, kMessageTypeBlob);
   DCHECK(buffer);
   DCHECK(buffer->Buffer());
-
+  if (!base::CheckedNumeric<wtf_size_t>(buffer->ByteLengthAsSizeT())
+           .IsValid()) {
+    // TODO(crbug.com/1036565): generate error message? The problem is that the
+    // content of {buffer} is copied into a WTF::Vector, but a DOMArrayBuffer
+    // has a bigger maximum size than a WTF::Vector. Ignore the current failed
+    // blob item and continue with next items.
+    messages_.pop_front();
+    blob_loader_.Clear();
+    HandleMessageQueue();
+  }
   // Send the loaded blob immediately here and continue processing the queue.
   SendMessageToTargetConnection(MakeBinaryMessage(buffer));
 
@@ -641,7 +669,7 @@ void PresentationConnection::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
 void PresentationConnection::DidFailLoadingBlob(FileErrorCode error_code) {
   DCHECK(!messages_.IsEmpty());
   DCHECK_EQ(messages_.front()->type, kMessageTypeBlob);
-  // FIXME: generate error message?
+  // TODO(crbug.com/1036565): generate error message?
   // Ignore the current failed blob item and continue with next items.
   messages_.pop_front();
   blob_loader_.Clear();

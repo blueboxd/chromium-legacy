@@ -47,7 +47,7 @@
         TestRunner.waitForUISourceCode('source2.js').then(secondUISourceCodeAdded);
       }
 
-      function secondUISourceCodeAdded(uiSourceCode) {
+      async function secondUISourceCodeAdded(uiSourceCode) {
         TestRunner.addResult('source2.js UISourceCode arrived');
         var uiSourceCode1 =
             Workspace.workspace.uiSourceCodeForURL('http://127.0.0.1:8000/devtools/resources/source1.js');
@@ -60,11 +60,11 @@
         SourcesTestRunner.checkUILocation(originalUISourceCode, 1, 200, uiLocation(script, 1, 200));
 
         SourcesTestRunner.checkRawLocation(
-            script, 0, 48, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode1, 3, 10)[0]);
+            script, 0, 48, (await Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode1, 3, 10))[0]);
         SourcesTestRunner.checkRawLocation(
-            script, 1, 85, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode2, 1, 0)[0]);
+            script, 1, 85, (await Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode2, 1, 0))[0]);
         SourcesTestRunner.checkRawLocation(
-            script, 1, 140, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode2, 5, 2)[0]);
+            script, 1, 140, (await Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode2, 5, 2))[0]);
 
         TestRunner.addResult('Location checks passed. Requesting content');
         uiSourceCode1.requestContent().then(didRequestContent1);
@@ -112,11 +112,11 @@
         TestRunner.waitForUISourceCode('source3.js').then(originalUISourceCodeAdded);
       }
 
-      function originalUISourceCodeAdded(uiSourceCode) {
+      async function originalUISourceCodeAdded(uiSourceCode) {
         TestRunner.addResult('source3.js UISourceCode arrived');
         SourcesTestRunner.checkUILocation(uiSourceCode, 2, 4, uiLocation(script, 0, 18));
         SourcesTestRunner.checkRawLocation(
-            script, 0, 18, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, 2, 4)[0]);
+            script, 0, 18, (await Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(uiSourceCode, 2, 4))[0]);
 
         TestRunner.addResult('Location checks passed. Requesting content');
         uiSourceCode.requestContent().then(didRequestContent);

@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.metrics;
 
 import android.os.SystemClock;
 
-import org.chromium.base.ObservableSupplier;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;

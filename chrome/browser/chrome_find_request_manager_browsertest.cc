@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,11 +15,16 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/find_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
+#include "pdf/document_loader_impl.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 
 namespace content {
@@ -31,7 +39,6 @@ class ChromeFindRequestManagerTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
-    ASSERT_TRUE(embedded_test_server()->Start());
 
     // Swap the WebContents's delegate for our test delegate.
     normal_delegate_ = contents()->GetDelegate();
@@ -89,6 +96,7 @@ class ChromeFindRequestManagerTest : public InProcessBrowserTest {
 #define MAYBE_FindInPDF FindInPDF
 #endif
 IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, MAYBE_FindInPDF) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   LoadAndWait("/find_in_pdf_page.pdf");
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
@@ -106,6 +114,132 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, MAYBE_FindInPDF) {
   EXPECT_EQ(3, results.active_match_ordinal);
 }
 
+void SendRangeResponse(net::test_server::ControllableHttpResponse* response,
+                       const std::string& pdf_contents) {
+  int range_start = -1;
+  int range_end = -1;
+  {
+    auto it = response->http_request()->headers.find("Range");
+    ASSERT_NE(response->http_request()->headers.end(), it);
+    base::StringPiece range_header = it->second;
+    base::StringPiece kBytesPrefix = "bytes=";
+    ASSERT_TRUE(range_header.starts_with(kBytesPrefix));
+    range_header.remove_prefix(kBytesPrefix.size());
+    auto dash_pos = range_header.find('-');
+    ASSERT_NE(std::string::npos, dash_pos);
+    ASSERT_LT(0u, dash_pos);
+    ASSERT_LT(dash_pos, range_header.size() - 1);
+    ASSERT_TRUE(
+        base::StringToInt(range_header.substr(0, dash_pos), &range_start));
+    ASSERT_TRUE(
+        base::StringToInt(range_header.substr(dash_pos + 1), &range_end));
+  }
+  ASSERT_LT(0, range_start);
+  ASSERT_LT(range_start, range_end);
+  ASSERT_LT(static_cast<size_t>(range_end), pdf_contents.size());
+  int range_length = range_end - range_start + 1;
+  response->Send("HTTP/1.1 206 Partial Content\r\n");
+  response->Send(base::StringPrintf("Content-Range: bytes %d-%d/%zu\r\n",
+                                    range_start, range_end,
+                                    pdf_contents.size()));
+  response->Send(base::StringPrintf("Content-Length: %d\r\n", range_length));
+  response->Send("\r\n");
+  response->Send(pdf_contents.substr(range_start, range_length));
+  response->Done();
+}
+
+// Tests searching in a PDF received in chunks via range-requests.  See also
+// https://crbug.com/1027173.
+IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindInChunkedPDF) {
+  constexpr uint32_t kStalledResponseSize =
+      chrome_pdf::DocumentLoaderImpl::kDefaultRequestSize + 123;
+
+  // Load contents of a big, linearized pdf test file.
+  // See also //content/test/data/linearized.pdf.README file.
+  std::string pdf_contents;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking_io;
+    base::FilePath content_test_dir;
+    ASSERT_TRUE(
+        base::PathService::Get(content::DIR_TEST_DATA, &content_test_dir));
+    base::FilePath real_pdf_path =
+        content_test_dir.AppendASCII("linearized.pdf");
+    ASSERT_TRUE(base::ReadFileToString(real_pdf_path, &pdf_contents));
+  }
+  DCHECK_GT(pdf_contents.size(), kStalledResponseSize);
+
+  // Set up handling of HTTP responses from within the test.
+  const char kSimulatedPdfPath[] = "/simulated/chunked.pdf";
+  net::test_server::ControllableHttpResponse nav_response(
+      embedded_test_server(), kSimulatedPdfPath);
+  net::test_server::ControllableHttpResponse range_response1(
+      embedded_test_server(), kSimulatedPdfPath);
+  net::test_server::ControllableHttpResponse range_response2(
+      embedded_test_server(), kSimulatedPdfPath);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL pdf_url = embedded_test_server()->GetURL("a.com", kSimulatedPdfPath);
+
+  // Kick-off browser-initiated navigation to a PDF file.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  TestNavigationObserver navigation_observer(web_contents);
+  content::NavigationController::LoadURLParams params(pdf_url);
+  params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  web_contents->GetController().LoadURLWithParams(params);
+
+  // Have the test HTTP server handle the 1st request (navigation).  This
+  // request is handler in the test, rather than by embedded_test_server, to
+  // stall the request after it delivers the first kStalledResponseSize bytes of
+  // data (the stalling ensures that the range request will be processed in the
+  // next test steps).
+  nav_response.WaitForRequest();
+  nav_response.Send("HTTP/1.1 200 OK\r\n");
+  nav_response.Send("Accept-Ranges: bytes\r\n");
+  nav_response.Send(
+      base::StringPrintf("Content-Length: %zu\r\n", pdf_contents.size()));
+  nav_response.Send("Content-Type: application/pdf\r\n");
+  nav_response.Send("Pragma: no-cache\r\n");
+  nav_response.Send("Cache-Control: no-cache, no-store, must-revalidate\r\n");
+  nav_response.Send("\r\n");
+  nav_response.Send(pdf_contents.substr(0, kStalledResponseSize));
+
+  // At this point the navigation should be considered successful (even though
+  // we haven't loaded all the bytes of the PDF yet).
+  navigation_observer.Wait();
+  ASSERT_TRUE(navigation_observer.last_navigation_succeeded());
+
+  // Have the test handle the 2 range requests (subresource requests initiated
+  // by the PDF plugin and proxied through a renderer process for
+  // MimeHandlerView extension).  These requests are handled in the test, rather
+  // than by embedded_test_server, to verify that we are indeed getting range
+  // requests (i.e. this is a sanity check that the test still tests the right
+  // thing).
+  range_response1.WaitForRequest();
+  SendRangeResponse(&range_response1, pdf_contents);
+  range_response2.WaitForRequest();
+  SendRangeResponse(&range_response2, pdf_contents);
+
+  // Finish the first HTTP response and verify that the PDF has loaded
+  // successfully.
+  nav_response.Done();
+  ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
+
+  // Verify that find-in-page works fine.
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("FXCMAP_CMap", options.Clone());
+  options->find_next = true;
+  Find("FXCMAP_CMap", options.Clone());
+  Find("FXCMAP_CMap", options.Clone());
+  delegate()->WaitForFinalReply();
+
+  FindResults results = delegate()->GetFindResults();
+  EXPECT_EQ(last_request_id(), results.request_id);
+  EXPECT_EQ(15, results.number_of_matches);
+  EXPECT_EQ(3, results.active_match_ordinal);
+}
+
 // Tests searching in a page with embedded PDFs. Note that this test, the
 // FindInPDF test, and the find tests in web_view_browsertest.cc ensure that
 // find-in-page works across GuestViews.
@@ -115,6 +249,7 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, MAYBE_FindInPDF) {
 // fixed and enabled in a subsequent patch.
 IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest,
                        DISABLED_FindInEmbeddedPDFs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   LoadAndWait("/find_in_embedded_pdf_page.html");
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
@@ -134,6 +269,7 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindMissingStringInPDF) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   LoadAndWait("/find_in_pdf_page.pdf");
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 
@@ -152,6 +288,7 @@ IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest, FindMissingStringInPDF) {
 // done by a user typing into the find bar.
 IN_PROC_BROWSER_TEST_F(ChromeFindRequestManagerTest,
                        CharacterByCharacterFindInPDF) {
+  ASSERT_TRUE(embedded_test_server()->Start());
   LoadAndWait("/find_in_pdf_page.pdf");
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(contents()));
 

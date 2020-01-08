@@ -177,6 +177,13 @@ class DeviceStatusCollector : public StatusCollector,
       const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
       const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
       const CrosHealthdDataFetcher& cros_healthd_data_fetcher);
+
+  // Constructor with default callbacks. These callbacks are always executed on
+  // Blocking Pool. Caller is responsible for passing already initialized
+  // |pref_service|.
+  DeviceStatusCollector(PrefService* pref_service,
+                        chromeos::system::StatisticsProvider* provider);
+
   ~DeviceStatusCollector() override;
 
   // StatusCollector:

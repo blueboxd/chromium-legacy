@@ -39,7 +39,6 @@
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
-#import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_constants.h"
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"

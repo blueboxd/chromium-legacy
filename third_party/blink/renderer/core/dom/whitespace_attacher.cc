@@ -34,7 +34,7 @@ void WhitespaceAttacher::DidReattach(Node* node, LayoutObject* prev_in_flow) {
     layout_object = prev_in_flow;
 
   // Only in-flow boxes affect subsequent whitespace.
-  if (layout_object && !layout_object->IsFloatingOrOutOfFlowPositioned())
+  if (layout_object && layout_object->AffectsWhitespaceSiblings())
     ReattachWhitespaceSiblings(layout_object);
 }
 
@@ -102,7 +102,7 @@ void WhitespaceAttacher::DidVisitElement(Element* element) {
     SetLastTextNode(nullptr);
     return;
   }
-  if (layout_object->IsFloatingOrOutOfFlowPositioned())
+  if (!layout_object->AffectsWhitespaceSiblings())
     return;
   ReattachWhitespaceSiblings(layout_object);
 }
@@ -136,7 +136,7 @@ void WhitespaceAttacher::ReattachWhitespaceSiblings(
       if (sibling_layout_object)
         context.previous_in_flow = sibling_layout_object;
     } else if (sibling_layout_object &&
-               !sibling_layout_object->IsFloatingOrOutOfFlowPositioned()) {
+               sibling_layout_object->AffectsWhitespaceSiblings()) {
       break;
     }
     context.next_sibling_valid = false;
@@ -183,7 +183,7 @@ void WhitespaceAttacher::UpdateLastTextNodeFromDisplayContents() {
       last_text_node_ = text;
       return;
     }
-    if (layout_object && !layout_object->IsFloatingOrOutOfFlowPositioned()) {
+    if (layout_object && layout_object->AffectsWhitespaceSiblings()) {
       last_text_node_ = nullptr;
       break;
     }

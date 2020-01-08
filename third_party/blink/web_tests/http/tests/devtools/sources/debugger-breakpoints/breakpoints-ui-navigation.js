@@ -12,16 +12,16 @@
   let sourceFrame = await SourcesTestRunner.showScriptSourcePromise('a.html');
   TestRunner.addResult('Set different breakpoints in inline script and dump them');
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 3, false);
-  SourcesTestRunner.createNewBreakpoint(sourceFrame, 5, 'a === 3', true);
-  SourcesTestRunner.createNewBreakpoint(sourceFrame, 6, '', false);
+  await SourcesTestRunner.createNewBreakpoint(sourceFrame, 5, 'a === 3', true);
+  await SourcesTestRunner.createNewBreakpoint(sourceFrame, 6, '', false);
   await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   sourceFrame = await SourcesTestRunner.showScriptSourcePromise('a.js');
   TestRunner.addResult('Set different breakpoints and dump them');
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 9, false);
-  SourcesTestRunner.createNewBreakpoint(sourceFrame, 10, 'a === 3', true);
-  SourcesTestRunner.createNewBreakpoint(sourceFrame, 5, '', false);
+  await SourcesTestRunner.createNewBreakpoint(sourceFrame, 10, 'a === 3', true);
+  await SourcesTestRunner.createNewBreakpoint(sourceFrame, 5, '', false);
   await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 

@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.gesturenav;
 
 import android.view.ViewGroup;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.content_public.browser.WebContents;
 
 /**

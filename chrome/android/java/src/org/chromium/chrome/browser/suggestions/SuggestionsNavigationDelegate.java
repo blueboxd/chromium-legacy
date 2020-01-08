@@ -30,8 +30,8 @@ public class SuggestionsNavigationDelegate extends NativePageNavigationDelegateI
     private static final String NEW_TAB_URL_HELP = "https://support.google.com/chrome/?p=new_tab";
 
     public SuggestionsNavigationDelegate(ChromeActivity activity, Profile profile,
-            NativePageHost host, TabModelSelector tabModelSelector) {
-        super(activity, profile, host, tabModelSelector);
+            NativePageHost host, TabModelSelector tabModelSelector, Tab tab) {
+        super(activity, profile, host, tabModelSelector, tab);
     }
 
     @Override

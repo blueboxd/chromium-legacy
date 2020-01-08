@@ -2496,6 +2496,131 @@ def make_cross_component_init(cg_context, function_name, class_name):
 
 
 # ----------------------------------------------------------------------------
+# WrapperTypeInfo
+# ----------------------------------------------------------------------------
+
+# FN = function name
+FN_GET_WRAPPER_TYPE_INFO = name_style.func("GetWrapperTypeInfo")
+
+# MN = member name
+MN_WRAPPER_TYPE_INFO = name_style.member_var("wrapper_type_info_")
+
+
+def make_wrapper_type_info(cg_context, function_name, member_var_name,
+                           install_context_dependent_func_name):
+    assert isinstance(cg_context, CodeGenContext)
+    assert isinstance(function_name, str)
+    assert isinstance(member_var_name, str)
+    assert _is_none_or_str(install_context_dependent_func_name)
+
+    func_def = CxxFuncDefNode(
+        name=function_name,
+        arg_decls=[],
+        return_type="constexpr WrapperTypeInfo*",
+        static=True)
+    func_def.set_base_template_vars(cg_context.template_bindings())
+    func_def.body.append(TextNode("return &{};".format(member_var_name)))
+
+    member_var_def = TextNode(
+        "static WrapperTypeInfo {};".format(member_var_name))
+
+    pattern = """\
+// Migration adapter
+static v8::Local<v8::FunctionTemplate> DomTemplate(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world) {{
+  return V8DOMConfiguration::DomClassTemplate(
+      isolate, world,
+      const_cast<WrapperTypeInfo*>(${class_name}::GetWrapperTypeInfo()),
+      ${class_name}::InstallInterfaceTemplate);
+}}
+
+WrapperTypeInfo ${class_name}::wrapper_type_info_{{
+    gin::kEmbedderBlink,
+    DomTemplate,
+    {install_context_dependent_func},
+    "${{class_like.identifier}}",
+    {wrapper_type_info_of_inherited},
+    {wrapper_type_prototype},
+    {wrapper_class_id},
+    {active_script_wrappable_inheritance},
+}};"""
+    class_like = cg_context.class_like
+    install_context_dependent_func = (
+        "${class_name}::InstallContextDependentAdapter"
+        if install_context_dependent_func_name else "nullptr")
+    if class_like.inherited:
+        wrapper_type_info_of_inherited = "{}::GetWrapperTypeInfo()".format(
+            v8_bridge_class_name(class_like.inherited))
+    else:
+        wrapper_type_info_of_inherited = "nullptr"
+    wrapper_type_prototype = ("WrapperTypeInfo::kWrapperTypeObjectPrototype"
+                              if isinstance(class_like, web_idl.Interface) else
+                              "WrapperTypeInfo::kWrapperTypeNoPrototype")
+    wrapper_class_id = ("WrapperTypeInfo::kNodeClassId"
+                        if class_like.does_implement("Node") else
+                        "WrapperTypeInfo::kObjectClassId")
+    active_script_wrappable_inheritance = (
+        "WrapperTypeInfo::kInheritFromActiveScriptWrappable"
+        if "ActiveScriptWrappable" in class_like.extended_attributes else
+        "WrapperTypeInfo::kNotInheritFromActiveScriptWrappable")
+    text = _format(
+        pattern,
+        install_context_dependent_func=install_context_dependent_func,
+        wrapper_type_info_of_inherited=wrapper_type_info_of_inherited,
+        wrapper_type_prototype=wrapper_type_prototype,
+        wrapper_class_id=wrapper_class_id,
+        active_script_wrappable_inheritance=active_script_wrappable_inheritance
+    )
+    bridge_wrapper_type_info_def = TextNode(text)
+
+    blink_class = blink_class_name(class_like)
+    pattern = ("const WrapperTypeInfo& {blink_class}::wrapper_type_info_ = "
+               "${class_name}::wrapper_type_info_;")
+    blink_wrapper_type_info_def = TextNode(
+        _format(pattern, blink_class=blink_class))
+
+    if "ActiveScriptWrappable" in class_like.extended_attributes:
+        pattern = """\
+// [ActiveScriptWrappable]
+static_assert(
+    std::is_base_of<ActiveScriptWrappableBase, {blink_class}>::value,
+    "{blink_class} does not inherit from ActiveScriptWrappable<> despite "
+    "the IDL has [ActiveScriptWrappable] extended attribute.");
+static_assert(
+    !std::is_same<decltype(&{blink_class}::HasPendingActivity),
+                  decltype(&ScriptWrappable::HasPendingActivity)>::value,
+    "{blink_class} is not overriding hasPendingActivity() despite "
+    "the IDL has [ActiveScriptWrappable] extended attribute.");"""
+    else:
+        pattern = """\
+// non-[ActiveScriptWrappable]
+static_assert(
+    !std::is_base_of<ActiveScriptWrappableBase, {blink_class}>::value,
+    "{blink_class} inherits from ActiveScriptWrappable<> without "
+    "[ActiveScriptWrappable] extended attribute.");
+static_assert(
+    std::is_same<decltype(&{blink_class}::HasPendingActivity),
+                 decltype(&ScriptWrappable::HasPendingActivity)>::value,
+    "{blink_class} is overriding hasPendingActivity() without "
+    "[ActiveScriptWrappable] extended attribute.");"""
+    check_active_script_wrappable = TextNode(
+        _format(pattern, blink_class=blink_class))
+
+    wrapper_type_info_def = ListNode([
+        bridge_wrapper_type_info_def,
+        EmptyNode(),
+        blink_wrapper_type_info_def,
+        EmptyNode(),
+        check_active_script_wrappable,
+    ])
+    wrapper_type_info_def.set_base_template_vars(
+        cg_context.template_bindings())
+
+    return func_def, member_var_def, wrapper_type_info_def
+
+
+# ----------------------------------------------------------------------------
 # Main functions
 # ----------------------------------------------------------------------------
 
@@ -2561,6 +2686,8 @@ def generate_interface(interface):
         final=True,
         export=component_export(api_component))
     api_class_def.set_base_template_vars(cg_context.template_bindings())
+    api_class_def.bottom_section.append(
+        TextNode("friend class {};".format(blink_class_name(interface))))
     if is_cross_components:
         impl_class_def = CxxClassDefNode(
             impl_class_name,
@@ -2689,6 +2816,16 @@ def generate_interface(interface):
         install_context_dependent_props_trampoline,
     ])
 
+    # WrapperTypeInfo
+    (get_wrapper_type_info_def, wrapper_type_info_var_def,
+     wrapper_type_info_init) = make_wrapper_type_info(
+         cg_context,
+         FN_GET_WRAPPER_TYPE_INFO,
+         MN_WRAPPER_TYPE_INFO,
+         install_context_dependent_func_name=(
+             install_context_dependent_props_def
+             and FN_INSTALL_CONTEXT_DEPENDENT_PROPS))
+
     # Header part (copyright, include directives, and forward declarations)
     api_header_node.extend([
         make_copyright_header(),
@@ -2751,6 +2888,10 @@ def generate_interface(interface):
         "third_party/blink/renderer/platform/bindings/v8_interface_bridge.h",
     ])
     api_header_node.accumulator.add_class_decl(blink_class_name(interface))
+    api_source_node.accumulator.add_include_headers([
+        interface.code_generator_info.blink_headers[0],
+        "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h",
+    ])
     if is_cross_components:
         impl_header_node.accumulator.add_include_headers([
             api_header_path,
@@ -2771,6 +2912,15 @@ def generate_interface(interface):
     api_header_blink_ns.body.append(api_class_def)
     if is_cross_components:
         impl_header_blink_ns.body.append(impl_class_def)
+
+    api_class_def.public_section.append(get_wrapper_type_info_def)
+    api_class_def.public_section.append(EmptyNode())
+    api_class_def.private_section.append(wrapper_type_info_var_def)
+    api_class_def.private_section.append(EmptyNode())
+    api_source_blink_ns.body.extend([
+        wrapper_type_info_init,
+        EmptyNode(),
+    ])
 
     if is_cross_components:
         api_class_def.public_section.append(installer_function_trampolines)

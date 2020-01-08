@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_bridge.h"
-#include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
+#include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"

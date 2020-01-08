@@ -375,7 +375,6 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
 
   // Web Apps sync is disabled by default.
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions) &&
-      base::FeatureList::IsEnabled(features::kDesktopPWAsUSS) &&
       web_app::WebAppProvider::Get(profile_)) {
     if (!disabled_types.Has(syncer::WEB_APPS)) {
       controllers.push_back(CreateWebAppsModelTypeController(sync_service));
@@ -624,7 +623,6 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
     case syncer::WEB_APPS: {
       DCHECK(base::FeatureList::IsEnabled(
           features::kDesktopPWAsWithoutExtensions));
-      DCHECK(base::FeatureList::IsEnabled(features::kDesktopPWAsUSS));
       auto* provider = web_app::WebAppProvider::Get(profile_);
       DCHECK(provider);
 

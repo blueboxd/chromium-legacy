@@ -8,7 +8,7 @@ import android.support.annotation.VisibleForTesting;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;
 import org.chromium.chrome.browser.feed.library.api.internal.common.PayloadWithId;
 import org.chromium.chrome.browser.feed.library.api.internal.common.ThreadUtils;

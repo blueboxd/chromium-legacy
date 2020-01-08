@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.DebugBehavior;
 import org.chromium.chrome.browser.feed.library.common.functional.Suppliers;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;

@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.feed.library.piet.ui;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.components.feed.core.proto.ui.piet.GradientsProto.LinearGradient;
 
 /** Class to display gradients according to the Piet spec (angle + color stops at %ages) */

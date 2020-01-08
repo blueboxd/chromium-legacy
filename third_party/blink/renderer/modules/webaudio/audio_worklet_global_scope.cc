@@ -40,7 +40,13 @@ AudioWorkletGlobalScope::AudioWorkletGlobalScope(
     WorkerThread* thread)
     : WorkletGlobalScope(std::move(creation_params),
                          thread->GetWorkerReportingProxy(),
-                         thread) {}
+                         thread) {
+  // Audio is prone to jank introduced by e.g. the garbage collector. Workers
+  // are generally put in a background mode (as they are non-visible). Audio is
+  // an exception here, requiring low-latency behavior similar to any visible
+  // state.
+  GetIsolate()->IsolateInForegroundNotification();
+}
 
 AudioWorkletGlobalScope::~AudioWorkletGlobalScope() = default;
 

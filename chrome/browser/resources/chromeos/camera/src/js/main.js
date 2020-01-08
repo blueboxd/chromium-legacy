@@ -57,16 +57,17 @@ cca.App = class {
      */
     this.cameraView_ = (() => {
       const intent = this.backgroundOps_.getIntent();
+      const perfLogger = this.backgroundOps_.getPerfLogger();
       if (intent !== null && intent.shouldHandleResult) {
         cca.state.set(cca.state.State.SHOULD_HANDLE_INTENT_RESULT, true);
         return new cca.views.CameraIntent(
             intent, this.infoUpdater_, this.photoPreferrer_,
-            this.videoPreferrer_);
+            this.videoPreferrer_, perfLogger);
       } else {
+        const mode = intent !== null ? intent.mode : cca.Mode.PHOTO;
         return new cca.views.Camera(
             this.galleryButton_, this.infoUpdater_, this.photoPreferrer_,
-            this.videoPreferrer_,
-            intent !== null ? intent.mode : cca.Mode.PHOTO);
+            this.videoPreferrer_, mode, perfLogger);
       }
     })();
 

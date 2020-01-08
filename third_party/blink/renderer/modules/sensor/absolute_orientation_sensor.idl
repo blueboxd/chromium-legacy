@@ -7,8 +7,7 @@
 
 [
     SecureContext,
-    MeasureAs=AbsoluteOrientationSensorConstructor,
     Exposed=Window
 ] interface AbsoluteOrientationSensor : OrientationSensor {
-  [CallWith=ExecutionContext, RaisesException] constructor(optional SpatialSensorOptions sensorOptions);
+  [CallWith=ExecutionContext, RaisesException, MeasureAs=AbsoluteOrientationSensorConstructor] constructor(optional SpatialSensorOptions sensorOptions);
 };

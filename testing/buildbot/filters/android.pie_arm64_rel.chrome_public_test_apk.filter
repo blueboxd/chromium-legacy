@@ -38,9 +38,6 @@
 # crbug/836460
 -org.chromium.chrome.browser.settings.autofill.AutofillProfilesFragmentTest.testKeyboardShownOnDpadCenter
 
-# crbug/1036532
--org.chromium.chrome.browser.signin.SigninTest.testConsumerSignin
-
 # crbug/1036545
 -org.chromium.chrome.browser.suggestions.tile.TileGroupTest.testDismissTileUndo
 -org.chromium.chrome.browser.suggestions.tile.TileGroupTest.testDismissTileWithContextMenu

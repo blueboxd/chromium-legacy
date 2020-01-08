@@ -11,6 +11,8 @@ import android.provider.Settings;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.supplier.Supplier;
+
 import java.io.File;
 
 /**

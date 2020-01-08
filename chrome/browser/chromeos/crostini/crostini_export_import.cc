@@ -107,8 +107,8 @@ CrostiniExportImport::OperationData* CrostiniExportImport::NewOperationData(
     ExportImportType type,
     ContainerId container_id) {
   TrackerFactory factory =
-      base::BindOnce(&CrostiniExportImportNotification::Create, profile_,
-                     container_id, GetUniqueNotificationId());
+      base::BindOnce(&CrostiniExportImportNotificationController::Create,
+                     profile_, container_id, GetUniqueNotificationId());
   return NewOperationData(type, std::move(container_id), std::move(factory));
 }
 
@@ -616,13 +616,14 @@ bool CrostiniExportImport::GetExportImportOperationStatus() const {
   return status_trackers_.find(id) != status_trackers_.end();
 }
 
-CrostiniExportImportNotification*
-CrostiniExportImport::GetNotificationForTesting(ContainerId container_id) {
+CrostiniExportImportNotificationController*
+CrostiniExportImport::GetNotificationControllerForTesting(
+    ContainerId container_id) {
   auto it = status_trackers_.find(container_id);
   if (it == status_trackers_.end()) {
     return nullptr;
   }
-  return static_cast<CrostiniExportImportNotification*>(it->second);
+  return static_cast<CrostiniExportImportNotificationController*>(it->second);
 }
 
 }  // namespace crostini

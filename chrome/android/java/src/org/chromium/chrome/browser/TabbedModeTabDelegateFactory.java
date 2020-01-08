@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;

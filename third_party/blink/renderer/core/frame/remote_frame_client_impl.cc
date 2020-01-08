@@ -124,10 +124,6 @@ unsigned RemoteFrameClientImpl::BackForwardLength() {
   return 2;
 }
 
-void RemoteFrameClientImpl::CheckCompleted() {
-  web_frame_->Client()->CheckCompleted();
-}
-
 void RemoteFrameClientImpl::ForwardPostMessage(
     MessageEvent* event,
     scoped_refptr<const SecurityOrigin> target,

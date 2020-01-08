@@ -77,10 +77,8 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::EXTENSIONS);
     datatypes.push_back(syncer::EXTENSION_SETTINGS);
     datatypes.push_back(syncer::APP_SETTINGS);
-    if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions) &&
-        base::FeatureList::IsEnabled(features::kDesktopPWAsUSS)) {
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
       datatypes.push_back(syncer::WEB_APPS);
-    }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_ANDROID)

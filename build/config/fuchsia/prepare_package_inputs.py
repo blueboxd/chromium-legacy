@@ -154,6 +154,11 @@ def BuildManifest(args):
                       os.path.relpath(args.component_manifest_path,
                                       args.out_dir)))
 
+    for manifest in args.additional_manifest:
+      manifest.write('meta/%s=%s\n' %
+                     (os.path.basename(manifest),
+                      os.path.relpath(manifest, args.out_dir)))
+
     depfile.write(
         "%s: %s" % (os.path.relpath(args.package_manifest_path, args.out_dir),
                     " ".join([os.path.relpath(f, args.out_dir)
@@ -179,6 +184,8 @@ def main():
       help='Path to write GN deps file.')
   parser.add_argument('--exclude-file', action='append', default=[],
       help='Package-relative file path to exclude from the package.')
+  parser.add_argument('--additional-manifest', action='append', default=[],
+      help='Additional component manifest file to include in the package.')
   parser.add_argument('--package-manifest-path', required=True,
                       help='Package manifest (file listing) output path.')
   parser.add_argument('--component-manifest-path', required=True,

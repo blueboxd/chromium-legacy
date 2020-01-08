@@ -130,9 +130,11 @@ BrowsingDataRemoverImpl::~BrowsingDataRemoverImpl() {
   // TODO(bauerb): If it becomes a problem that browsing data might not actually
   // be fully cleared when an observer is notified, add a success flag.
   while (!task_queue_.empty()) {
-    if (observer_list_.HasObserver(task_queue_.front().observer))
-      task_queue_.front().observer->OnBrowsingDataRemoverDone();
-    task_queue_.pop();
+    for (Observer* observer : task_queue_.front().observers) {
+      if (observer_list_.HasObserver(observer))
+        observer->OnBrowsingDataRemoverDone();
+    }
+    task_queue_.pop_front();
   }
 }
 
@@ -220,8 +222,20 @@ void BrowsingDataRemoverImpl::RemoveInternal(
     DCHECK(filter_builder->IsEmptyBlacklist());
   }
 
-  task_queue_.emplace(delete_begin, delete_end, remove_mask, origin_type_mask,
-                      std::move(filter_builder), observer);
+  RemovalTask task(delete_begin, delete_end, remove_mask, origin_type_mask,
+                   std::move(filter_builder), observer);
+
+  // If there is an identical deletion task that is not already running,
+  // we don't have to perform the deletion twice.
+  for (size_t i = 1; i < task_queue_.size(); i++) {
+    if (task_queue_[i].IsSameDeletion(task)) {
+      if (observer)
+        task_queue_[i].observers.push_back(observer);
+      return;
+    }
+  }
+
+  task_queue_.push_back(std::move(task));
 
   // If this is the only scheduled task, execute it immediately. Otherwise,
   // it will be automatically executed when all tasks scheduled before it
@@ -445,11 +459,14 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         delete_begin, delete_end, nullable_filter,
         CreateTaskCompletionClosureForMojo(TracingDataType::kCodeCaches));
 
-    // When clearing cache, wipe accumulated network related data
-    // (TransportSecurityState and HttpServerPropertiesManager data).
-    network_context->ClearNetworkingHistorySince(
-        delete_begin,
-        CreateTaskCompletionClosureForMojo(TracingDataType::kNetworkHistory));
+    // TODO(crbug.com/1985971) : Implement filtering for NetworkHistory.
+    if (filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+      // When clearing cache, wipe accumulated network related data
+      // (TransportSecurityState and HttpServerPropertiesManager data).
+      network_context->ClearNetworkingHistorySince(
+          delete_begin,
+          CreateTaskCompletionClosureForMojo(TracingDataType::kNetworkHistory));
+    }
 
     // Clears the PrefetchedSignedExchangeCache of all RenderFrameHostImpls.
     RenderFrameHostImpl::ClearAllPrefetchedSignedExchangeCache();
@@ -538,13 +555,23 @@ BrowsingDataRemoverImpl::RemovalTask::RemovalTask(
       delete_end(delete_end),
       remove_mask(remove_mask),
       origin_type_mask(origin_type_mask),
-      filter_builder(std::move(filter_builder)),
-      observer(observer) {}
+      filter_builder(std::move(filter_builder)) {
+  if (observer)
+    observers.push_back(observer);
+}
 
 BrowsingDataRemoverImpl::RemovalTask::RemovalTask(
     RemovalTask&& other) noexcept = default;
 
-BrowsingDataRemoverImpl::RemovalTask::~RemovalTask() {}
+BrowsingDataRemoverImpl::RemovalTask::~RemovalTask() = default;
+
+bool BrowsingDataRemoverImpl::RemovalTask::IsSameDeletion(
+    const RemovalTask& other) {
+  return delete_begin == other.delete_begin && delete_end == other.delete_end &&
+         remove_mask == other.remove_mask &&
+         origin_type_mask == other.origin_type_mask &&
+         *filter_builder == *other.filter_builder;
+}
 
 void BrowsingDataRemoverImpl::Notify() {
   // Some tests call |RemoveImpl| directly, without using the task scheduler.
@@ -562,8 +589,10 @@ void BrowsingDataRemoverImpl::Notify() {
   DCHECK(!task_queue_.empty());
 
   const RemovalTask& task = task_queue_.front();
-  if (task.observer != nullptr && observer_list_.HasObserver(task.observer)) {
-    task.observer->OnBrowsingDataRemoverDone();
+  for (Observer* observer : task.observers) {
+    if (observer_list_.HasObserver(observer)) {
+      observer->OnBrowsingDataRemoverDone();
+    }
   }
   if (task.filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
     base::TimeDelta delta = base::Time::Now() - task.task_started;
@@ -579,7 +608,7 @@ void BrowsingDataRemoverImpl::Notify() {
     }
   }
 
-  task_queue_.pop();
+  task_queue_.pop_front();
 
   if (task_queue_.empty()) {
     // All removal tasks have finished. Inform the observers that we're idle.

@@ -76,7 +76,7 @@ ScriptPromise NativeFileSystemWritableFileStream::truncate(
   WritableStreamDefaultWriter* writer =
       WritableStream::AcquireDefaultWriter(script_state, this, exception_state);
   if (exception_state.HadException())
-    return ScriptPromise::Reject(script_state, exception_state);
+    return ScriptPromise();
 
   auto* options = WriteParams::Create();
   options->setType("truncate");
@@ -95,7 +95,7 @@ ScriptPromise NativeFileSystemWritableFileStream::close(
   WritableStreamDefaultWriter* writer =
       WritableStream::AcquireDefaultWriter(script_state, this, exception_state);
   if (exception_state.HadException())
-    return ScriptPromise::Reject(script_state, exception_state);
+    return ScriptPromise();
 
   ScriptPromise promise = writer->close(script_state);
 
@@ -110,7 +110,7 @@ ScriptPromise NativeFileSystemWritableFileStream::seek(
   WritableStreamDefaultWriter* writer =
       WritableStream::AcquireDefaultWriter(script_state, this, exception_state);
   if (exception_state.HadException())
-    return ScriptPromise::Reject(script_state, exception_state);
+    return ScriptPromise();
 
   auto* options = WriteParams::Create();
   options->setType("seek");

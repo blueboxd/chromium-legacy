@@ -1989,6 +1989,14 @@ void HashTable<Key,
   AsAtomicPtr(&table_)->store(tmp_table, std::memory_order_relaxed);
   Allocator::template BackingWriteBarrierForHashTable<HashTable>(table_);
   Allocator::template BackingWriteBarrierForHashTable<HashTable>(other.table_);
+  if (IsWeak<ValueType>::value) {
+    // Weak processing is omitted when no backing store is present. In case such
+    // an empty table is later on used it needs to be strongified.
+    if (table_)
+      Allocator::TraceBackingStoreIfMarked(table_);
+    if (other.table_)
+      Allocator::TraceBackingStoreIfMarked(other.table_);
+  }
   std::swap(table_size_, other.table_size_);
   std::swap(key_count_, other.key_count_);
   // std::swap does not work for bit fields.

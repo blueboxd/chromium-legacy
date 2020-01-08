@@ -14,11 +14,10 @@ enum RTCQuicTransportState {
 // https://w3c.github.io/webrtc-quic/#quic-transport*
 [
    Exposed=Window,
-   Measure,
    RuntimeEnabled=RTCQuicTransport,
    SecureContext
 ] interface RTCQuicTransport : EventTarget {
-    [CallWith=ExecutionContext, RaisesException] constructor(RTCIceTransport transport);
+    [CallWith=ExecutionContext, RaisesException, Measure] constructor(RTCIceTransport transport);
     [Measure] readonly attribute RTCIceTransport transport;
     [Measure] readonly attribute RTCQuicTransportState state;
     [Measure] readonly attribute unsigned short? maxDatagramLength;

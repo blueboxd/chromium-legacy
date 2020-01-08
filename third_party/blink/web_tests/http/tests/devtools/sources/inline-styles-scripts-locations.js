@@ -30,18 +30,18 @@
   async function dumpLocations(type, lineCount, source) {
     TestRunner.addResult(`Scanning ${lineCount} lines for ${type} locations. Note that location line/column numbers are zero-based.`);
     for (let line = 0; line < lineCount; ++line) {
-      const rawLocations = getLocations(line);
+      const rawLocations = await getLocations(line);
       if (rawLocations.length) {
         const results = rawLocations.map(async loc => `${loc.lineNumber}:${loc.columnNumber} (${await checkValidity(loc)})`);
         const rawLocationsString = (await Promise.all(results)).join('  ');
         TestRunner.addResult(`uiLocation ${line}:0 resolves to: ${rawLocationsString}`)
       }
     }
-    function getLocations(line) {
+    async function getLocations(line) {
       if (type === "css")
         return Bindings.cssWorkspaceBinding.uiLocationToRawLocations(source.uiLocation(line, 0));
       if (type === "script")
-        return Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(source, line, 0);
+        return await Bindings.debuggerWorkspaceBinding.uiLocationToRawLocations(source, line, 0);
       return null;
     }
     async function checkValidity(location) {

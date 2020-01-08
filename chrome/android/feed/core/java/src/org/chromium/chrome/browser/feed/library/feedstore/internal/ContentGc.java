@@ -8,7 +8,7 @@ import static org.chromium.chrome.browser.feed.library.feedstore.internal.FeedSt
 import static org.chromium.chrome.browser.feed.library.feedstore.internal.FeedStoreConstants.SHARED_STATE_PREFIX;
 import static org.chromium.chrome.browser.feed.library.feedstore.internal.FeedStoreConstants.UPLOADABLE_ACTION_PREFIX;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
 import org.chromium.chrome.browser.feed.library.api.host.logging.Task;

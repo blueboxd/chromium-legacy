@@ -126,8 +126,12 @@ class PLATFORM_EXPORT HeapAllocator {
   static bool ExpandHashTableBacking(void*, size_t);
 
   static void TraceBackingStoreIfMarked(void* address) {
-    // Trace backing store elements only if backing store was marked.
-    if (HeapObjectHeader::FromPayload(address)->IsMarked()) {
+    // Trace backing store elements only if backing store was marked. The
+    // sweeper may be active on the backing store which requires atomic mark bit
+    // access. A precise filter is performed in
+    // MarkingVisitor::TraceMarkedBackingStore.
+    if (HeapObjectHeader::FromPayload(address)
+            ->IsMarked<HeapObjectHeader::AccessMode::kAtomic>()) {
       MarkingVisitor::TraceMarkedBackingStore(address);
     }
   }

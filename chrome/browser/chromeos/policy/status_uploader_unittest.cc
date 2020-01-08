@@ -56,18 +56,7 @@ constexpr base::TimeDelta kMinImmediateUploadInterval =
 class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
   explicit MockDeviceStatusCollector(PrefService* local_state)
-      : DeviceStatusCollector(
-            local_state,
-            nullptr,
-            policy::DeviceStatusCollector::VolumeInfoFetcher(),
-            policy::DeviceStatusCollector::CPUStatisticsFetcher(),
-            policy::DeviceStatusCollector::CPUTempFetcher(),
-            policy::DeviceStatusCollector::AndroidStatusFetcher(),
-            policy::DeviceStatusCollector::TpmStatusFetcher(),
-            policy::DeviceStatusCollector::EMMCLifetimeFetcher(),
-            policy::DeviceStatusCollector::StatefulPartitionInfoFetcher(),
-            policy::DeviceStatusCollector::CrosHealthdDataFetcher()) {}
-
+      : DeviceStatusCollector(local_state, nullptr) {}
   MOCK_METHOD1(GetStatusAsync, void(const policy::StatusCollectorCallback&));
 
   MOCK_METHOD0(OnSubmittedSuccessfully, void());

@@ -5,11 +5,10 @@
 // https://wicg.github.io/scroll-animations/#scrolltimeline-interface
 
 [
-    MeasureAs=ScrollTimelineConstructor,
     RuntimeEnabled=ScrollTimeline,
     Exposed=Window
 ] interface ScrollTimeline : AnimationTimeline {
-    [CallWith=Document, RaisesException] constructor(optional ScrollTimelineOptions options);
+    [CallWith=Document, RaisesException, MeasureAs=ScrollTimelineConstructor] constructor(optional ScrollTimelineOptions options);
     readonly attribute Element? scrollSource;
     readonly attribute ScrollDirection orientation;
     readonly attribute DOMString startScrollOffset;

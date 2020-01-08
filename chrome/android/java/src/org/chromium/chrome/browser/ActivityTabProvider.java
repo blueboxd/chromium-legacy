@@ -8,7 +8,7 @@ import androidx.annotation.CallSuper;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;

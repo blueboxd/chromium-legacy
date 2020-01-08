@@ -664,7 +664,7 @@ class ImgurMobileStory2019(_MediaBrowsingStory):
     # button click it to enable further scroll. This button would only be added
     # after we scrolled a bit. So can't wait for this button at the start.
     accepted_continue = False
-    for _ in xrange(25):
+    for _ in xrange(15):
       result = action_runner.EvaluateJavaScript(
           'document.querySelectorAll(".Button-tertiary").length')
       if result and not accepted_continue:

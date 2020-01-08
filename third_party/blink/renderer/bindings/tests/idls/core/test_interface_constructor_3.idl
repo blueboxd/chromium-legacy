@@ -30,5 +30,5 @@
 
 // Test for length > 0, non-overloaded constructor.
 interface TestInterfaceConstructor3 {
-    constructor(DOMString stringArg);
+    [MeasureAs=TestInterfaceConstructor3] constructor(DOMString stringArg);
 };

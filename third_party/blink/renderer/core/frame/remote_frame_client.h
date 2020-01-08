@@ -37,10 +37,6 @@ class RemoteFrameClient : public FrameClient {
                         mojo::PendingRemote<mojom::blink::BlobURLToken>) = 0;
   unsigned BackForwardLength() override = 0;
 
-  // Notifies the remote frame to check whether it is done loading, after one
-  // of its children finishes loading.
-  virtual void CheckCompleted() = 0;
-
   // Forwards a postMessage for a remote frame.
   virtual void ForwardPostMessage(MessageEvent*,
                                   scoped_refptr<const SecurityOrigin> target,

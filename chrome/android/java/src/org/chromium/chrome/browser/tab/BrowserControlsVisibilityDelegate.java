@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.tab;
 
-import org.chromium.base.ObservableSupplierImpl;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.content_public.common.BrowserControlsState;
 
 /**

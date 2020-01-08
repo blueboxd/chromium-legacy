@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "net/base/load_flags.h"
 #include "net/cert/ct_serialization.h"
+#include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request_context.h"
@@ -260,11 +261,12 @@ void ExpectCTReporter::SendPreflight(const GURL& report_uri,
                                       kExpectCTReporterTrafficAnnotation);
   url_request->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE);
   url_request->set_allow_credentials(false);
-  url_request->set_method("OPTIONS");
+  url_request->set_method(net::HttpRequestHeaders::kOptionsMethod);
 
   net::HttpRequestHeaders extra_headers;
   extra_headers.SetHeader("Origin", "null");
-  extra_headers.SetHeader("Access-Control-Request-Method", "POST");
+  extra_headers.SetHeader("Access-Control-Request-Method",
+                          net::HttpRequestHeaders::kPostMethod);
   extra_headers.SetHeader("Access-Control-Request-Headers", "content-type");
   url_request->SetExtraRequestHeaders(extra_headers);
 

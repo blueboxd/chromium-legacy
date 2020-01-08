@@ -237,27 +237,36 @@ static NDEFRecord* CreateUnknownRecord(const String& id,
       bytes);
 }
 
-static NDEFRecord* CreateExternalRecord(const String& record_type,
-                                        const String& id,
-                                        const NDEFRecordDataSource& data,
-                                        ExceptionState& exception_state) {
-  // TODO(https://crbug.com/520391): Add support in case of |data| being an
-  // NDEFMessageInit.
-
+static NDEFRecord* CreateExternalRecord(
+    const ExecutionContext* execution_context,
+    const String& record_type,
+    const String& id,
+    const NDEFRecordDataSource& data,
+    ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#dfn-map-external-data-to-ndef
-  if (!IsBufferSource(data)) {
-    exception_state.ThrowTypeError(
-        "The data for external type NDEFRecord must be a BufferSource.");
-    return nullptr;
+  if (IsBufferSource(data)) {
+    WTF::Vector<uint8_t> bytes;
+    if (!GetBytesOfBufferSource(data, &bytes, exception_state)) {
+      return nullptr;
+    }
+    return MakeGarbageCollected<NDEFRecord>(
+        device::mojom::NDEFRecordTypeCategory::kExternal, record_type, id,
+        bytes);
+  } else if (data.IsNDEFMessageInit()) {
+    NDEFMessage* payload_message = NDEFMessage::Create(
+        execution_context, data.GetAsNDEFMessageInit(), exception_state);
+    if (exception_state.HadException())
+      return nullptr;
+    DCHECK(payload_message);
+    return MakeGarbageCollected<NDEFRecord>(
+        device::mojom::NDEFRecordTypeCategory::kExternal, record_type, id,
+        payload_message);
   }
 
-  WTF::Vector<uint8_t> bytes;
-  if (!GetBytesOfBufferSource(data, &bytes, exception_state)) {
-    return nullptr;
-  }
-  NDEFRecord* record = MakeGarbageCollected<NDEFRecord>(
-      device::mojom::NDEFRecordTypeCategory::kExternal, record_type, id, bytes);
-  return record;
+  exception_state.ThrowTypeError(
+      "The data for external type NDEFRecord must be a BufferSource or an "
+      "NDEFMessageInit.");
+  return nullptr;
 }
 
 }  // namespace
@@ -307,8 +316,8 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
     exception_state.ThrowTypeError("smart-poster type is not supported yet");
     return nullptr;
   } else if (IsValidExternalType(record_type)) {
-    return CreateExternalRecord(record_type, init->id(), init->data(),
-                                exception_state);
+    return CreateExternalRecord(execution_context, record_type, init->id(),
+                                init->data(), exception_state);
   } else {
     // TODO(https://crbug.com/520391): Support local type records.
   }
@@ -327,6 +336,20 @@ NDEFRecord::NDEFRecord(device::mojom::NDEFRecordTypeCategory category,
       payload_data_(std::move(data)) {
   DCHECK_EQ(category_ == device::mojom::NDEFRecordTypeCategory::kExternal,
             IsValidExternalType(record_type_));
+}
+
+NDEFRecord::NDEFRecord(device::mojom::NDEFRecordTypeCategory category,
+                       const String& record_type,
+                       const String& id,
+                       NDEFMessage* payload_message)
+    : category_(category),
+      record_type_(record_type),
+      id_(id),
+      payload_message_(payload_message) {
+  DCHECK_EQ(category_ == device::mojom::NDEFRecordTypeCategory::kExternal,
+            IsValidExternalType(record_type_));
+  DCHECK(record_type_ == "smart-poster" ||
+         category_ == device::mojom::NDEFRecordTypeCategory::kExternal);
 }
 
 NDEFRecord::NDEFRecord(const String& id,

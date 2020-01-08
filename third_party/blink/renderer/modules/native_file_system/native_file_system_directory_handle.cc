@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -159,21 +160,18 @@ ScriptPromise NativeFileSystemDirectoryHandle::removeEntry(
 // static
 ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
     ScriptState* script_state,
-    const GetSystemDirectoryOptions* options) {
+    const GetSystemDirectoryOptions* options,
+    ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->GetSecurityOrigin()->CanAccessNativeFileSystem()) {
     if (context->GetSecurityContext().IsSandboxed(WebSandboxFlags::kOrigin)) {
-      return ScriptPromise::RejectWithDOMException(
-          script_state,
-          MakeGarbageCollected<DOMException>(
-              DOMExceptionCode::kSecurityError,
-              "System directory access is denied because the context is "
-              "sandboxed and lacks the 'allow-same-origin' flag."));
+      exception_state.ThrowSecurityError(
+          "System directory access is denied because the context is "
+          "sandboxed and lacks the 'allow-same-origin' flag.");
+      return ScriptPromise();
     } else {
-      return ScriptPromise::RejectWithDOMException(
-          script_state, MakeGarbageCollected<DOMException>(
-                            DOMExceptionCode::kSecurityError,
-                            "System directory access is denied."));
+      exception_state.ThrowSecurityError("System directory access is denied.");
+      return ScriptPromise();
     }
   }
 

@@ -50,7 +50,7 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
         version_.get(), context->AsWeakPtr(), &remote_endpoint_);
 
     factory_ = std::make_unique<ServiceWorkerScriptLoaderFactory>(
-        helper_->context()->AsWeakPtr(), provider_host_,
+        helper_->context()->AsWeakPtr(), provider_host_->GetWeakPtr(),
         helper_->url_loader_factory_getter()->GetNetworkFactory());
   }
 
@@ -79,7 +79,7 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
   GURL script_url_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  std::unique_ptr<ServiceWorkerProviderHost> provider_host_;
   ServiceWorkerRemoteProviderEndpoint remote_endpoint_;
   std::unique_ptr<ServiceWorkerScriptLoaderFactory> factory_;
 };
@@ -103,7 +103,7 @@ TEST_F(ServiceWorkerScriptLoaderFactoryTest, Redundant) {
 }
 
 TEST_F(ServiceWorkerScriptLoaderFactoryTest, NoProviderHost) {
-  helper_->context()->RemoveProviderHost(provider_host_->provider_id());
+  provider_host_.reset();
 
   network::TestURLLoaderClient client;
   mojo::PendingRemote<network::mojom::URLLoader> loader =

@@ -11,6 +11,7 @@
 namespace blink {
 
 class ChooseFileSystemEntriesOptions;
+class ExceptionState;
 class LocalDOMWindow;
 class ScriptPromise;
 class ScriptState;
@@ -22,7 +23,8 @@ class WindowNativeFileSystem {
   static ScriptPromise chooseFileSystemEntries(
       ScriptState*,
       LocalDOMWindow&,
-      const ChooseFileSystemEntriesOptions*);
+      const ChooseFileSystemEntriesOptions*,
+      ExceptionState&);
 };
 
 }  // namespace blink

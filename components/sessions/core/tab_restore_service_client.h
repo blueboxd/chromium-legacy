@@ -32,8 +32,8 @@ struct SessionWindow;
 // Callback from TabRestoreServiceClient::GetLastSession.
 // The second parameter is the id of the window that was last active.
 using GetLastSessionCallback =
-    base::Callback<void(std::vector<std::unique_ptr<SessionWindow>>,
-                        SessionID)>;
+    base::OnceCallback<void(std::vector<std::unique_ptr<SessionWindow>>,
+                            SessionID)>;
 
 // A client interface that needs to be supplied to the tab restore service by
 // the embedder.
@@ -78,7 +78,7 @@ class SESSIONS_EXPORT TabRestoreServiceClient {
   // Fetches the contents of the last session, notifying the callback when
   // done. If the callback is supplied an empty vector of SessionWindows
   // it means the session could not be restored.
-  virtual void GetLastSession(const GetLastSessionCallback& callback,
+  virtual void GetLastSession(GetLastSessionCallback callback,
                               base::CancelableTaskTracker* tracker) = 0;
 
   // Called when a tab is restored. |url| is the URL that the tab is currently

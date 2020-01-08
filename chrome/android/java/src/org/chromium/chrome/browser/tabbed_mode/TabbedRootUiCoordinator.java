@@ -8,8 +8,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ObservableSupplier;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;

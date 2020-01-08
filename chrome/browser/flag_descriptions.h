@@ -1981,6 +1981,9 @@ extern const char kCrostiniAppSearchDescription[];
 extern const char kCrostiniBackupName[];
 extern const char kCrostiniBackupDescription[];
 
+extern const char kCrostiniPortForwardingName[];
+extern const char kCrostiniPortForwardingDescription[];
+
 extern const char kCrostiniUseBusterImageName[];
 extern const char kCrostiniUseBusterImageDescription[];
 

@@ -31,6 +31,10 @@
     user-select: none;
     white-space: nowrap;
   }
+
+  [role='row']:focus-within {
+    z-index: 1;
+  }
 </style>
 <iron-list id="list"
     items="[[displayedList_]]"

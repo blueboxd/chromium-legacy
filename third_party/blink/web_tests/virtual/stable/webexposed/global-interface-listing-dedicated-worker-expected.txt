@@ -2663,6 +2663,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter locked
 [Worker]     method abort
+[Worker]     method close
 [Worker]     method constructor
 [Worker]     method getWriter
 [Worker] interface WritableStreamDefaultWriter

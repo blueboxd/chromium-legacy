@@ -71,7 +71,7 @@ class GURL;
 // Shows the Find In Page bar.
 - (void)showFindInPage;
 
-// Close and disable Find In Page bar.
+// Closes and disables the Find In Page bar.
 - (void)closeFindInPage;
 
 // Search the current tab for the query string in the Find In Page bar.

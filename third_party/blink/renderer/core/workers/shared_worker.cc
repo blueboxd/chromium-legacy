@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_client_holder.h"
+#include "third_party/blink/renderer/core/workers/worker_options.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -67,13 +68,7 @@ SharedWorker::SharedWorker(ExecutionContext* context)
 
 SharedWorker* SharedWorker::Create(ExecutionContext* context,
                                    const String& url,
-                                   ExceptionState& exception_state) {
-  return SharedWorker::Create(context, url, /*name=*/String(), exception_state);
-}
-
-SharedWorker* SharedWorker::Create(ExecutionContext* context,
-                                   const String& url,
-                                   const String& name,
+                                   const StringOrWorkerOptions& options,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -111,14 +106,23 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
         script_url, blob_url_token.InitWithNewPipeAndPassReceiver());
   }
 
-  // |name| should not be null according to the HTML spec, but the current impl
-  // wrongly allows it when |name| is omitted. See TODO comment in
-  // shared_worker.idl.
-  // TODO(nhiroki): Stop assigning null to |name| as a default value, and remove
-  // this hack.
-  String worker_name = "";
-  if (!name.IsNull())
-    worker_name = name;
+  String worker_name;
+  if (options.IsString()) {
+    worker_name = options.GetAsString();
+  } else if (options.IsWorkerOptions()) {
+    WorkerOptions* worker_options = options.GetAsWorkerOptions();
+    if (worker_options->type() == "module" &&
+        !RuntimeEnabledFeatures::ModuleSharedWorkerEnabled()) {
+      exception_state.ThrowTypeError(
+          "Module scripts are not supported on SharedWorker yet. "
+          "(see https://crbug.com/824646)");
+      return nullptr;
+    }
+    worker_name = worker_options->name();
+  } else {
+    NOTREACHED();
+  }
+  DCHECK(!worker_name.IsNull());
 
   SharedWorkerClientHolder::From(*document)->Connect(
       worker, std::move(remote_port), script_url, std::move(blob_url_token),

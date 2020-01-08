@@ -21,6 +21,8 @@ void FakeRemoteFrameHost::VisibilityChanged(
 
 void FakeRemoteFrameHost::DidFocusFrame() {}
 
+void FakeRemoteFrameHost::CheckCompleted() {}
+
 void FakeRemoteFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrameHost>(

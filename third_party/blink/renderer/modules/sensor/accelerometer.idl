@@ -7,10 +7,9 @@
 
 [
     SecureContext,
-    MeasureAs=AccelerometerConstructor,
     Exposed=Window
 ] interface Accelerometer : Sensor {
-    [CallWith=ExecutionContext, RaisesException] constructor(optional SpatialSensorOptions sensorOptions);
+    [CallWith=ExecutionContext, RaisesException, MeasureAs=AccelerometerConstructor] constructor(optional SpatialSensorOptions sensorOptions);
     readonly attribute unrestricted double? x;
     readonly attribute unrestricted double? y;
     readonly attribute unrestricted double? z;

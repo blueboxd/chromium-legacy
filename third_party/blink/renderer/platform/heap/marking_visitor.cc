@@ -97,10 +97,16 @@ void MarkingVisitorCommon::VisitBackingStoreWeakly(
     WeakCallback weak_callback,
     void* weak_callback_parameter) {
   RegisterBackingStoreReference(object_slot);
+
+  // In case there's no object present, weakness processing is omitted. The GC
+  // relies on the fact that in such cases touching the weak data structure will
+  // strongify its references.
   if (!object)
     return;
-  RegisterWeakCallback(weak_callback, weak_callback_parameter);
 
+  // Register final weak processing of the backing store.
+  RegisterWeakCallback(weak_callback, weak_callback_parameter);
+  // Register ephemeron callbacks if necessary.
   if (weak_desc.callback)
     weak_table_worklist_.Push(weak_desc);
 }

@@ -14,7 +14,7 @@ import android.support.annotation.VisibleForTesting;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 
 /** Generates a linear gradient according to CSS behavior */
 class GradientShader extends ShapeDrawable.ShaderFactory {

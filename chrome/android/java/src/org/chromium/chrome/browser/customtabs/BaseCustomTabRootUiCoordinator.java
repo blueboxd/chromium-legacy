@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import org.chromium.base.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;

@@ -51,12 +51,13 @@ public class FeedNewTabPage
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
      * @param activityTabProvider Allows us to check if we are the current tab.
      * @param activityLifecycleDispatcher Allows us to subscribe to backgrounding events.
+     * @param tab The {@link TabImpl} that contains this new tab page.
      */
     public FeedNewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
             TabModelSelector tabModelSelector, ActivityTabProvider activityTabProvider,
-            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+            ActivityLifecycleDispatcher activityLifecycleDispatcher, TabImpl tab) {
         super(activity, nativePageHost, tabModelSelector, activityTabProvider,
-                activityLifecycleDispatcher);
+                activityLifecycleDispatcher, tab);
 
         // Don't store a direct reference to the activity, because it might change later if the tab
         // is reparented.

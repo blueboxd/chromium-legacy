@@ -272,6 +272,55 @@ class ListHashSet
   typename Allocator::AllocatorProvider allocator_provider_;
 };
 
+template <typename T>
+class ListHashSetNodeBasePointer {
+  using NodeType = ListHashSetNodeBase<T>;
+
+ public:
+  ListHashSetNodeBasePointer& operator=(
+      const ListHashSetNodeBasePointer& other) {
+    SetSafe(other);
+    return *this;
+  }
+
+  template <typename U>
+  ListHashSetNodeBasePointer& operator=(
+      const ListHashSetNodeBasePointer<U>& other) {
+    SetSafe(other);
+    return *this;
+  }
+
+  template <typename U>
+  ListHashSetNodeBasePointer& operator=(U* other) {
+    SetSafe(other);
+    return *this;
+  }
+
+  ListHashSetNodeBasePointer& operator=(std::nullptr_t) {
+    SetSafe(nullptr);
+    return *this;
+  }
+
+  NodeType* Get() const { return node_; }
+  explicit operator bool() const { return Get(); }
+  operator NodeType*() const { return Get(); }
+  NodeType* operator->() const { return Get(); }
+  NodeType& operator*() const { return *Get(); }
+
+ private:
+  void SetSafe(NodeType* node) {
+    return AsAtomicPtr(&node_)->store(node, std::memory_order_relaxed);
+  }
+  NodeType* GetSafe() const {
+    return AsAtomicPtr(&node_)->load(std::memory_order_relaxed);
+  }
+
+  NodeType* node_ = nullptr;
+
+  template <typename ValueArg, typename AllocatorArg>
+  friend class ListHashSetNode;
+};
+
 // ListHashSetNode has this base class to hold the members because the MSVC
 // compiler otherwise gets into circular template dependencies when trying to do
 // sizeof on a node.
@@ -285,8 +334,8 @@ class ListHashSetNodeBase {
 
  public:
   ValueArg value_;
-  ListHashSetNodeBase* prev_ = nullptr;
-  ListHashSetNodeBase* next_ = nullptr;
+  ListHashSetNodeBasePointer<ValueArg> prev_;
+  ListHashSetNodeBasePointer<ValueArg> next_;
 #if DCHECK_IS_ON()
   bool is_allocated_ = true;
 #endif
@@ -463,15 +512,15 @@ class ListHashSetNode : public ListHashSetNodeBase<ValueArg> {
     if (WasAlreadyDestructed())
       return;
     NodeAllocator::TraceValue(visitor, this);
-    visitor->Trace(Next());
-    visitor->Trace(Prev());
+    visitor->Trace(reinterpret_cast<ListHashSetNode*>(this->next_.GetSafe()));
+    visitor->Trace(reinterpret_cast<ListHashSetNode*>(this->prev_.GetSafe()));
   }
 
   ListHashSetNode* Next() const {
-    return reinterpret_cast<ListHashSetNode*>(this->next_);
+    return reinterpret_cast<ListHashSetNode*>(this->next_.Get());
   }
   ListHashSetNode* Prev() const {
-    return reinterpret_cast<ListHashSetNode*>(this->prev_);
+    return reinterpret_cast<ListHashSetNode*>(this->prev_.Get());
   }
 
   // Don't add fields here, the ListHashSetNodeBase and this should have the

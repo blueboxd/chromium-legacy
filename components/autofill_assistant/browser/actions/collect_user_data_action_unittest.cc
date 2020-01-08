@@ -572,6 +572,11 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_Payment) {
   user_data.billing_address->SetRawInfo(autofill::ADDRESS_HOME_ZIP,
                                         base::UTF8ToUTF16("B1675"));
   EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+
+  // Expired credit card.
+  user_data.card->SetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
+                             base::UTF8ToUTF16("2019"));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 }
 
 TEST_F(CollectUserDataActionTest, UserDataComplete_Terms) {

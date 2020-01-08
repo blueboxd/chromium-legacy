@@ -29,7 +29,7 @@
     TestRunner.debuggerModel.removeEventListener(
         SDK.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
     TestRunner.addResult('Debugger disabled.');
-    SourcesTestRunner.setBreakpoint(testSourceFrame, 3, '', true);
+    await SourcesTestRunner.setBreakpoint(testSourceFrame, 3, '', true);
     TestRunner.addResult('Breakpoint added');
     await TestRunner.debuggerModel._enableDebugger();
     step4();

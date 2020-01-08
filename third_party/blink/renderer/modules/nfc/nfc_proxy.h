@@ -60,7 +60,7 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
   void OnWatch(const Vector<uint32_t>&,
                const String&,
                device::mojom::blink::NDEFMessagePtr) override;
-  void OnError(device::mojom::blink::NDEFErrorType) override;
+  void OnError(device::mojom::blink::NDEFErrorPtr) override;
 
   void OnReaderRegistered(NDEFReader*,
                           uint32_t watch_id,

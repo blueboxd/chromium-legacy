@@ -31,16 +31,18 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
     private static final String TAG = "PageNavDelegate";
     private final Profile mProfile;
     private final TabModelSelector mTabModelSelector;
+    private final Tab mTab;
 
     protected final ChromeActivity mActivity;
     protected final NativePageHost mHost;
 
     public NativePageNavigationDelegateImpl(ChromeActivity activity, Profile profile,
-            NativePageHost host, TabModelSelector tabModelSelector) {
+            NativePageHost host, TabModelSelector tabModelSelector, Tab tab) {
         mActivity = activity;
         mProfile = profile;
         mHost = host;
         mTabModelSelector = tabModelSelector;
+        mTab = tab;
     }
 
     @Override
@@ -56,7 +58,7 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
         switch (windowOpenDisposition) {
             case WindowOpenDisposition.CURRENT_TAB:
                 mHost.loadUrl(loadUrlParams, mTabModelSelector.isIncognitoSelected());
-                loadingTab = mHost.getActiveTab();
+                loadingTab = mTab;
                 break;
             case WindowOpenDisposition.NEW_BACKGROUND_TAB:
                 loadingTab = openUrlInNewTab(loadUrlParams);
@@ -84,7 +86,7 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
 
     private Tab openUrlInNewTab(LoadUrlParams loadUrlParams) {
         Tab tab = mTabModelSelector.openNewTab(loadUrlParams,
-                TabLaunchType.FROM_LONGPRESS_BACKGROUND, mHost.getActiveTab(),
+                TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab,
                 /* incognito = */ false);
 
         // If animations are disabled in the DeviceClassManager, a toast is already displayed for
@@ -100,9 +102,8 @@ public class NativePageNavigationDelegateImpl implements NativePageNavigationDel
     }
 
     private void saveUrlForOffline(String url) {
-        if (mHost.getActiveTab() != null) {
-            OfflinePageBridge.getForProfile(mProfile).scheduleDownload(
-                    mHost.getActiveTab().getWebContents(),
+        if (mTab != null) {
+            OfflinePageBridge.getForProfile(mProfile).scheduleDownload(mTab.getWebContents(),
                     OfflinePageBridge.NTP_SUGGESTIONS_NAMESPACE, url, DownloadUiActionFlags.ALL);
         } else {
             RequestCoordinatorBridge.getForProfile(mProfile).savePageLater(

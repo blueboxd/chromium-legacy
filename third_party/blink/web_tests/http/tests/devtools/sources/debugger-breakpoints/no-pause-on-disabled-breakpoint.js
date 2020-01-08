@@ -21,7 +21,7 @@
   await new Promise(resolve => SourcesTestRunner.resumeExecution(resolve));
 
   TestRunner.addResult('Disable breakpoint');
-  SourcesTestRunner.toggleBreakpoint(sourceFrame, 9, true);
+  await SourcesTestRunner.toggleBreakpoint(sourceFrame, 9, true);
 
   TestRunner.addResult('Run function and check that pause happens after function');
   TestRunner.evaluateInPage('main(); debugger;//# sourceURL=test.js');

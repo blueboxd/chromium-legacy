@@ -19,7 +19,6 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/assistant_audio_decoder.mojom.h"
 #include "libassistant/shared/public/platform_audio_output.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"

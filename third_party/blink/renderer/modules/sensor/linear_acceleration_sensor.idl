@@ -7,8 +7,7 @@
 
 [
     SecureContext,
-    MeasureAs=LinearAccelerationSensorConstructor,
     Exposed=Window
 ] interface LinearAccelerationSensor : Accelerometer {
-  [CallWith=ExecutionContext, RaisesException] constructor(optional SpatialSensorOptions sensorOptions);
+  [CallWith=ExecutionContext, RaisesException, MeasureAs=LinearAccelerationSensorConstructor] constructor(optional SpatialSensorOptions sensorOptions);
 };

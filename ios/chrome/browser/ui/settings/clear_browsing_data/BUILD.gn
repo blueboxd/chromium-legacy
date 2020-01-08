@@ -7,8 +7,6 @@ source_set("clear_browsing_data") {
   sources = [
     "browsing_data_counter_wrapper_producer.h",
     "browsing_data_counter_wrapper_producer.mm",
-    "clear_browsing_data_collection_view_controller.h",
-    "clear_browsing_data_collection_view_controller.mm",
     "clear_browsing_data_consumer.h",
     "clear_browsing_data_local_commands.h",
     "clear_browsing_data_manager.h",
@@ -68,7 +66,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "clear_browsing_data_collection_view_controller_unittest.mm",
     "clear_browsing_data_manager_unittest.mm",
     "time_range_selector_table_view_controller_unittest.mm",
   ]

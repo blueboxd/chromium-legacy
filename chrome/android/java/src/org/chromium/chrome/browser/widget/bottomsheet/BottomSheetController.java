@@ -10,7 +10,7 @@ import android.view.Window;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Supplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;

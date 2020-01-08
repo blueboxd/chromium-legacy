@@ -217,7 +217,8 @@ class WebAppEngagementBrowserTest : public WebAppControllerBrowserTestBase {
   }
 
   void InstallDefaultAppAndCountApps(ExternalInstallOptions install_options) {
-    result_code_ = InstallApp(browser()->profile(), std::move(install_options));
+    result_code_ = PendingAppManagerInstall(browser()->profile(),
+                                            std::move(install_options));
     CountUserInstalledApps();
   }
 

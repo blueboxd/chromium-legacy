@@ -300,7 +300,8 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
       browser_context);
 }
 
-ChromeBrowsingDataRemoverDelegate::~ChromeBrowsingDataRemoverDelegate() {}
+ChromeBrowsingDataRemoverDelegate::~ChromeBrowsingDataRemoverDelegate() =
+    default;
 
 void ChromeBrowsingDataRemoverDelegate::Shutdown() {
   history_task_tracker_.TryCancelAll();

@@ -2,17 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for views.
- */
-cca.views = cca.views || {};
+// eslint-disable-next-line no-unused-vars
+import {assertNotReached} from '../chrome_util.js';
+import {PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+        VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+} from '../device/constraints_preferrer.js';
+// eslint-disable-next-line no-unused-vars
+import {DeviceInfoUpdater} from '../device/device_info_updater.js';
+// eslint-disable-next-line no-unused-vars
+import {Intent} from '../intent.js';
+import * as metrics from '../metrics.js';
+import {IntentVideoSaver} from '../models/intent_video_saver.js';
+// eslint-disable-next-line no-unused-vars
+import {ResultSaver} from '../models/result_saver.js';
+// eslint-disable-next-line no-unused-vars
+import {PerfLogger} from '../perf.js';
+import * as state from '../state.js';
+import * as toast from '../toast.js';
+import * as util from '../util.js';
+import {Camera} from './camera.js';
+import {PhotoResult,  // eslint-disable-line no-unused-vars
+        VideoResult,  // eslint-disable-line no-unused-vars
+} from './camera/modes.js';
+import {ReviewResult} from './camera/review_result.js';
 
 /**
  * The maximum number of pixels in the downscaled intent photo result. Reference
@@ -20,27 +32,27 @@ cca.views = cca.views || {};
  * @type {number}
  * @const
  */
-cca.views.DOWNSCALE_INTENT_MAX_PIXEL_NUM = 50 * 1024;
+const DOWNSCALE_INTENT_MAX_PIXEL_NUM = 50 * 1024;
 
 /**
- * Creates the camera-intent-view controller.
+ * Camera-intent-view controller.
  */
-cca.views.CameraIntent = class extends cca.views.Camera {
+export class CameraIntent extends Camera {
   /**
-   * @param {!cca.intent.Intent} intent
-   * @param {!cca.device.DeviceInfoUpdater} infoUpdater
-   * @param {!cca.device.PhotoConstraintsPreferrer} photoPreferrer
-   * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
+   * @param {!Intent} intent
+   * @param {!DeviceInfoUpdater} infoUpdater
+   * @param {!PhotoConstraintsPreferrer} photoPreferrer
+   * @param {!VideoConstraintsPreferrer} videoPreferrer
+   * @param {!PerfLogger} perfLogger
    */
-  constructor(intent, infoUpdater, photoPreferrer, videoPreferrer) {
-    const resultSaver = /** @type {!cca.models.ResultSaver} */ ({
+  constructor(intent, infoUpdater, photoPreferrer, videoPreferrer, perfLogger) {
+    const resultSaver = /** @type {!ResultSaver} */ ({
       savePhoto: async (blob) => {
         if (intent.shouldDownScale) {
-          const image = await cca.util.blobToImage(blob);
+          const image = await util.blobToImage(blob);
           const ratio = Math.sqrt(
-              cca.views.DOWNSCALE_INTENT_MAX_PIXEL_NUM /
-              (image.width * image.height));
-          blob = await cca.util.scalePicture(
+              DOWNSCALE_INTENT_MAX_PIXEL_NUM / (image.width * image.height));
+          blob = await util.scalePicture(
               image.src, false, Math.floor(image.width * ratio),
               Math.floor(image.height * ratio));
         }
@@ -48,29 +60,30 @@ cca.views.CameraIntent = class extends cca.views.Camera {
         await this.intent_.appendData(new Uint8Array(buf));
       },
       startSaveVideo: async () => {
-        return await cca.models.IntentVideoSaver.create(intent);
+        return await IntentVideoSaver.create(intent);
       },
       finishSaveVideo: async (video, savedName) => {
         this.videoResultFile_ = await video.endWrite();
       },
     });
     super(
-        resultSaver, infoUpdater, photoPreferrer, videoPreferrer, intent.mode);
+        resultSaver, infoUpdater, photoPreferrer, videoPreferrer, intent.mode,
+        perfLogger);
 
     /**
-     * @type {!cca.intent.Intent}
+     * @type {!Intent}
      * @private
      */
     this.intent_ = intent;
 
     /**
-     * @type {?cca.views.camera.PhotoResult}
+     * @type {?PhotoResult}
      * @private
      */
     this.photoResult_ = null;
 
     /**
-     * @type {?cca.views.camera.VideoResult}
+     * @type {?VideoResult}
      * @private
      */
     this.videoResult_ = null;
@@ -82,10 +95,10 @@ cca.views.CameraIntent = class extends cca.views.Camera {
     this.videoResultFile_ = null;
 
     /**
-     * @type {!cca.views.camera.ReviewResult}
+     * @type {!ReviewResult}
      * @private
      */
-    this.reviewResult_ = new cca.views.camera.ReviewResult();
+    this.reviewResult_ = new ReviewResult();
   }
 
   /**
@@ -96,7 +109,7 @@ cca.views.CameraIntent = class extends cca.views.Camera {
     try {
       await this.resultSaver_.savePhoto(result.blob, name);
     } catch (e) {
-      cca.toast.show('error_msg_save_file_failed');
+      toast.show('error_msg_save_file_failed');
       throw e;
     }
   }
@@ -109,7 +122,7 @@ cca.views.CameraIntent = class extends cca.views.Camera {
     try {
       await this.resultSaver_.finishSaveVideo(result.videoSaver, name);
     } catch (e) {
-      cca.toast.show('error_msg_save_file_failed');
+      toast.show('error_msg_save_file_failed');
       throw e;
     }
   }
@@ -129,7 +142,7 @@ cca.views.CameraIntent = class extends cca.views.Camera {
     return (async () => {
       await take;
 
-      cca.state.set(cca.state.State.SUSPEND, true);
+      state.set(state.State.SUSPEND, true);
       await this.start();
       const confirmed = await (() => {
         if (this.photoResult_ !== null) {
@@ -137,22 +150,22 @@ cca.views.CameraIntent = class extends cca.views.Camera {
         } else if (this.videoResultFile_ !== null) {
           return this.reviewResult_.openVideo(this.videoResultFile_);
         } else {
-          cca.assertNotReached('End take without intent result.');
+          assertNotReached('End take without intent result.');
         }
       })();
       const result = this.photoResult_ || this.videoResult_;
-      cca.metrics.log(
-          cca.metrics.Type.CAPTURE, this.facingMode_, result.duration || 0,
+      metrics.log(
+          metrics.Type.CAPTURE, this.facingMode_, result.duration || 0,
           result.resolution,
-          confirmed ? cca.metrics.IntentResultType.CONFIRMED :
-                      cca.metrics.IntentResultType.CANCELED);
+          confirmed ? metrics.IntentResultType.CONFIRMED :
+                      metrics.IntentResultType.CANCELED);
       if (confirmed) {
         await this.intent_.finish();
         window.close();
         return;
       }
       this.focus();  // Refocus the visible shutter button for ChromeVox.
-      cca.state.set(cca.state.State.SUSPEND, false);
+      state.set(state.State.SUSPEND, false);
       await this.intent_.clearData();
       await this.start();
     })();
@@ -164,4 +177,7 @@ cca.views.CameraIntent = class extends cca.views.Camera {
   async startWithDevice_(deviceId) {
     return this.startWithMode_(deviceId, this.defaultMode_);
   }
-};
+}
+
+/** @const */
+cca.views.CameraIntent = CameraIntent;

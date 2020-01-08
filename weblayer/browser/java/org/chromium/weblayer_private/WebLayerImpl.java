@@ -111,6 +111,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                             @Override
                             public void onSuccess() {
                                 CrashReporterControllerImpl.getInstance().notifyNativeInitialized();
+                                configureNetworkChangeNotifier();
                                 loadedCallback.onReceiveValue(true);
                             }
                             @Override
@@ -134,6 +135,15 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                 .startBrowserProcessesSync(
                         /* singleProcess*/ false);
         CrashReporterControllerImpl.getInstance().notifyNativeInitialized();
+        configureNetworkChangeNotifier();
+    }
+
+    // Configure NetworkChangeNotifier to auto detect changes in network
+    // connectivity.
+    private void configureNetworkChangeNotifier() {
+        NetworkChangeNotifier.init();
+        NetworkChangeNotifier.setAutoDetectConnectivityState(
+                new WebLayerNetworkChangeNotifierRegistrationPolicy());
     }
 
     private void init(IObjectWrapper appContextWrapper, IObjectWrapper remoteContextWrapper) {
@@ -197,12 +207,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             LibraryLoader.getInstance().ensureInitialized();
         }
         GmsBridge.getInstance().setSafeBrowsingHandler();
-
-        // Configure NetworkChangeNotifier to auto detect changes in network
-        // connectivity.
-        NetworkChangeNotifier.init();
-        NetworkChangeNotifier.setAutoDetectConnectivityState(
-                new WebLayerNetworkChangeNotifierRegistrationPolicy());
     }
 
     @Override

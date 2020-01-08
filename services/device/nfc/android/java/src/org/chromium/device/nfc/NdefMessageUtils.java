@@ -155,8 +155,12 @@ public final class NdefMessageUtils {
         }
 
         if (record.category == NdefRecordTypeCategory.EXTERNAL) {
-            if (isValidExternalType(record.recordType)) {
-                return createPlatformExternalRecord(record.recordType, record.id, record.data);
+            // It's impossible for a valid record to have non-empty |data| and non-null
+            // |payloadMessage| at the same time.
+            if (isValidExternalType(record.recordType)
+                    && (record.data.length == 0 || record.payloadMessage == null)) {
+                return createPlatformExternalRecord(
+                        record.recordType, record.id, record.data, record.payloadMessage);
             }
             throw new InvalidNdefMessageException();
         }
@@ -318,7 +322,7 @@ public final class NdefMessageUtils {
         nfcRecord.category = NdefRecordTypeCategory.EXTERNAL;
         nfcRecord.recordType = type;
         nfcRecord.data = payload;
-        nfcRecord.payloadMessage = getNdefMessageFromPayload(payload);
+        nfcRecord.payloadMessage = getNdefMessageFromPayloadBytes(payload);
         return nfcRecord;
     }
 
@@ -419,9 +423,16 @@ public final class NdefMessageUtils {
      * Creates a TNF_EXTERNAL_TYPE android.nfc.NdefRecord.
      */
     public static android.nfc.NdefRecord createPlatformExternalRecord(
-            String recordType, String id, byte[] payload) {
+            String recordType, String id, byte[] payload, NdefMessage payloadMessage) {
         // Already guaranteed by the caller.
         assert recordType != null && !recordType.isEmpty();
+
+        // |payloadMessage| being non-null means this record has an NDEF message as its payload.
+        if (payloadMessage != null) {
+            // Should be guaranteed by the caller that |payload| is an empty byte array.
+            assert payload.length == 0;
+            payload = getBytesFromPayloadNdefMessage(payloadMessage);
+        }
 
         // NFC Forum requires that the domain and type used in an external record are treated as
         // case insensitive, however Android intent filtering is always case sensitive. So we force
@@ -458,11 +469,24 @@ public final class NdefMessageUtils {
      * Tries to construct a android.nfc.NdefMessage from the raw bytes |payload| then converts it to
      * a Mojo NdefMessage and returns. Returns null for anything wrong.
      */
-    private static NdefMessage getNdefMessageFromPayload(byte[] payload) {
+    private static NdefMessage getNdefMessageFromPayloadBytes(byte[] payload) {
         try {
             android.nfc.NdefMessage payloadMessage = new android.nfc.NdefMessage(payload);
             return toNdefMessage(payloadMessage);
         } catch (FormatException | UnsupportedEncodingException e) {
+        }
+        return null;
+    }
+
+    /**
+     * Tries to convert the Mojo NdefMessage |payloadMessage| to an android.nfc.NdefMessage then
+     * returns its raw bytes. Returns null for anything wrong.
+     */
+    private static byte[] getBytesFromPayloadNdefMessage(NdefMessage payloadMessage) {
+        try {
+            android.nfc.NdefMessage message = toNdefMessage(payloadMessage);
+            return message.toByteArray();
+        } catch (InvalidNdefMessageException e) {
         }
         return null;
     }

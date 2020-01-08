@@ -335,7 +335,7 @@ public class NFCTest {
         // Test external record conversion.
         android.nfc.NdefMessage extNdefMessage = new android.nfc.NdefMessage(
                 NdefMessageUtils.createPlatformExternalRecord(DUMMY_EXTERNAL_TYPE, DUMMY_RECORD_ID,
-                        ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT)));
+                        ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT), null /* payloadMessage */));
         NdefMessage extMojoNdefMessage = NdefMessageUtils.toNdefMessage(extNdefMessage);
         assertEquals(1, extMojoNdefMessage.data.length);
         assertEquals(NdefRecordTypeCategory.EXTERNAL, extMojoNdefMessage.data[0].category);
@@ -351,9 +351,9 @@ public class NFCTest {
                 android.nfc.NdefRecord.createTextRecord(LANG_EN_US, TEST_TEXT));
         byte[] payloadBytes = payloadMessage.toByteArray();
         // Put |payloadBytes| as payload of an external record.
-        android.nfc.NdefMessage extNdefMessage1 =
-                new android.nfc.NdefMessage(NdefMessageUtils.createPlatformExternalRecord(
-                        DUMMY_EXTERNAL_TYPE, DUMMY_RECORD_ID, payloadBytes));
+        android.nfc.NdefMessage extNdefMessage1 = new android.nfc.NdefMessage(
+                NdefMessageUtils.createPlatformExternalRecord(DUMMY_EXTERNAL_TYPE, DUMMY_RECORD_ID,
+                        payloadBytes, null /* payloadMessage */));
         NdefMessage extMojoNdefMessage1 = NdefMessageUtils.toNdefMessage(extNdefMessage1);
         assertEquals(1, extMojoNdefMessage1.data.length);
         assertEquals(NdefRecordTypeCategory.EXTERNAL, extMojoNdefMessage1.data[0].category);
@@ -375,7 +375,7 @@ public class NFCTest {
      */
     @Test
     @Feature({"NFCTest"})
-    public void testMojoToNdefConversion() throws InvalidNdefMessageException {
+    public void testMojoToNdefConversion() throws InvalidNdefMessageException, FormatException {
         // Test url record conversion.
         NdefRecord urlMojoNdefRecord = new NdefRecord();
         urlMojoNdefRecord.category = NdefRecordTypeCategory.STANDARDIZED;
@@ -525,6 +525,42 @@ public class NFCTest {
         assertEquals(DUMMY_EXTERNAL_TYPE, new String(extNdefMessage.getRecords()[0].getType()));
         assertEquals(DUMMY_RECORD_ID, new String(extNdefMessage.getRecords()[0].getId()));
         assertEquals(TEST_TEXT, new String(extNdefMessage.getRecords()[0].getPayload()));
+
+        // Test conversion for external records with the payload being a ndef message.
+        NdefRecord payloadMojoRecord = new NdefRecord();
+        payloadMojoRecord.category = NdefRecordTypeCategory.STANDARDIZED;
+        payloadMojoRecord.recordType = NdefMessageUtils.RECORD_TYPE_URL;
+        payloadMojoRecord.id = DUMMY_RECORD_ID;
+        payloadMojoRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_URL);
+        // Prepare an external record that embeds |payloadMojoRecord| in its payload.
+        NdefRecord extMojoNdefRecord1 = new NdefRecord();
+        extMojoNdefRecord1.category = NdefRecordTypeCategory.EXTERNAL;
+        extMojoNdefRecord1.recordType = DUMMY_EXTERNAL_TYPE;
+        extMojoNdefRecord1.id = DUMMY_RECORD_ID;
+        // device.mojom.NDEFRecord.data is not allowed to be null, instead, empty byte array is just
+        // what's passed from Blink.
+        extMojoNdefRecord1.data = new byte[0];
+        extMojoNdefRecord1.payloadMessage = createMojoNdefMessage(payloadMojoRecord);
+        // Do the conversion.
+        android.nfc.NdefMessage extNdefMessage1 =
+                NdefMessageUtils.toNdefMessage(createMojoNdefMessage(extMojoNdefRecord1));
+        assertEquals(1, extNdefMessage1.getRecords().length);
+        assertEquals(
+                android.nfc.NdefRecord.TNF_EXTERNAL_TYPE, extNdefMessage1.getRecords()[0].getTnf());
+        assertEquals(DUMMY_EXTERNAL_TYPE, new String(extNdefMessage1.getRecords()[0].getType()));
+        assertEquals(DUMMY_RECORD_ID, new String(extNdefMessage1.getRecords()[0].getId()));
+        // The payload raw bytes should be able to construct an ndef message containing an ndef
+        // record that has content corresponding with the original |payloadMojoRecord|.
+        android.nfc.NdefMessage payloadMessage =
+                new android.nfc.NdefMessage(extNdefMessage1.getRecords()[0].getPayload());
+        assertNotNull(payloadMessage);
+        assertEquals(1, payloadMessage.getRecords().length);
+        assertEquals(
+                android.nfc.NdefRecord.TNF_WELL_KNOWN, payloadMessage.getRecords()[0].getTnf());
+        assertEquals(new String(android.nfc.NdefRecord.RTD_URI),
+                new String(payloadMessage.getRecords()[0].getType()));
+        assertEquals(DUMMY_RECORD_ID, new String(payloadMessage.getRecords()[0].getId()));
+        assertEquals(TEST_URL, payloadMessage.getRecords()[0].toUri().toString());
 
         // Test EMPTY record conversion.
         NdefRecord emptyMojoNdefRecord = new NdefRecord();
@@ -814,7 +850,7 @@ public class NFCTest {
         // Prepare the external type record.
         android.nfc.NdefMessage extNdefMessage = new android.nfc.NdefMessage(
                 NdefMessageUtils.createPlatformExternalRecord(DUMMY_EXTERNAL_TYPE, DUMMY_RECORD_ID,
-                        ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT)));
+                        ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT), null /* payloadMessage */));
         try {
             doReturn(extNdefMessage).when(mNfcTagHandler).read();
         } catch (IOException | FormatException e) {
@@ -969,7 +1005,9 @@ public class NFCTest {
         nfc.processPendingOperationsForTesting(null);
 
         // An error is notified.
-        verify(mNfcClient, times(1)).onError(NdefErrorType.NOT_SUPPORTED);
+        verify(mNfcClient, times(1)).onError(mErrorCaptor.capture());
+        assertNotNull(mErrorCaptor.getValue());
+        assertEquals(NdefErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
         // No watch.
         verify(mNfcClient, times(0))
                 .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
@@ -996,7 +1034,7 @@ public class NFCTest {
         nfc.processPendingOperationsForTesting(null);
 
         // An error is NOT notified.
-        verify(mNfcClient, times(0)).onError(NdefErrorType.NOT_SUPPORTED);
+        verify(mNfcClient, times(0)).onError(mErrorCaptor.capture());
         // No watch.
         verify(mNfcClient, times(0))
                 .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
@@ -1025,7 +1063,9 @@ public class NFCTest {
         verify(mNfcClient, times(0))
                 .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
                         any(NdefMessage.class));
-        verify(mNfcClient, times(1)).onError(NdefErrorType.IO_ERROR);
+        verify(mNfcClient, times(1)).onError(mErrorCaptor.capture());
+        assertNotNull(mErrorCaptor.getValue());
+        assertEquals(NdefErrorType.IO_ERROR, mErrorCaptor.getValue().errorType);
     }
 
     /**

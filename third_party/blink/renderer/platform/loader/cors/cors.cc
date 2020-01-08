@@ -392,7 +392,7 @@ bool CalculateCorsFlag(const KURL& url,
                        const SecurityOrigin* initiator_origin,
                        const SecurityOrigin* isolated_world_origin,
                        network::mojom::RequestMode request_mode) {
-  if (network::IsNavigationRequestMode(request_mode) ||
+  if (request_mode == network::mojom::RequestMode::kNavigate ||
       request_mode == network::mojom::RequestMode::kNoCors) {
     return false;
   }

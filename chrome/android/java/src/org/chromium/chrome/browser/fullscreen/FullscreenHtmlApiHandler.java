@@ -20,8 +20,8 @@ import android.view.WindowManager;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ObservableSupplier;
-import org.chromium.base.ObservableSupplierImpl;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;

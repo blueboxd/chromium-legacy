@@ -136,7 +136,7 @@ bool IOSChromeTabRestoreServiceClient::HasLastSession() {
 }
 
 void IOSChromeTabRestoreServiceClient::GetLastSession(
-    const sessions::GetLastSessionCallback& callback,
+    sessions::GetLastSessionCallback callback,
     base::CancelableTaskTracker* tracker) {
   NOTREACHED();
 }

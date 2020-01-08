@@ -42,6 +42,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
 
     public static void addObserver(Observer observer) {
         sLifecycleObservers.addObserver(observer);
+        if (sNumAttachedBrowserFragments > 0) observer.onFirstBrowserFragmentAttached();
     }
 
     public static void removeObserver(Observer observer) {
@@ -55,7 +56,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
                 profileManager.getProfile(fragmentArgs.getString(BrowserFragmentArgs.PROFILE_NAME));
     }
 
-    private void incrementBrowserFramentsAndNotifyObservers() {
+    private void incrementBrowserFragmentsAndNotifyObservers() {
         assert sNumAttachedBrowserFragments >= 0;
         sNumAttachedBrowserFragments++;
         if (sNumAttachedBrowserFragments != 1) return;
@@ -80,7 +81,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         mContext = ClassLoaderContextWrapperFactory.get(context);
         if (mBrowser != null) { // On first creation, onAttach is called before onCreate
             mBrowser.onFragmentAttached(mContext, new FragmentWindowAndroid(mContext, this));
-            incrementBrowserFramentsAndNotifyObservers();
+            incrementBrowserFragmentsAndNotifyObservers();
         }
     }
 
@@ -91,7 +92,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         mBrowser = new BrowserImpl(mProfile, savedInstanceState);
         if (mContext != null) {
             mBrowser.onFragmentAttached(mContext, new FragmentWindowAndroid(mContext, this));
-            incrementBrowserFramentsAndNotifyObservers();
+            incrementBrowserFragmentsAndNotifyObservers();
         }
     }
 

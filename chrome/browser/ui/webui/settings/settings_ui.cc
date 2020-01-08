@@ -97,7 +97,6 @@
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
@@ -119,9 +118,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/grit/browser_resources.h"
 #include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -297,17 +294,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   // Add the metrics handler to write uma stats.
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
-
-#if defined(OS_CHROMEOS)
-  // Add the System Web App resources for Settings.
-  // TODO(jamescook|calamity): Migrate to chromeos::settings::OSSettingsUI.
-  if (web_app::SystemWebAppManager::IsEnabled()) {
-    html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
-    html_source->AddResourcePath("pwa.html", IDR_PWA_HTML);
-    web_app::SetManifestRequestFilter(html_source, IDR_SETTINGS_MANIFEST,
-                                      IDS_SETTINGS_SETTINGS);
-  }
-#endif  // defined (OS_CHROMEOS)
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   html_source->AddResourcePath("crisper.js", IDR_SETTINGS_CRISPER_JS);

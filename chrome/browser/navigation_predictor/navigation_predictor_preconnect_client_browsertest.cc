@@ -291,7 +291,7 @@ class NavigationPredictorPreconnectClientBrowserTestWithSearch
 #define MAYBE_PreconnectSearchWithFeature PreconnectSearchWithFeature
 #endif
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTestWithSearch,
-                       PreconnectSearchWithFeature) {
+                       MAYBE_PreconnectSearchWithFeature) {
   static const char kShortName[] = "test";
   static const char kSearchURL[] =
       "/anchors_different_area.html?q={searchTerms}";

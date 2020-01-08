@@ -32,12 +32,12 @@
           breakpoints[i].lineNumber);
   }
 
-  function didShowScriptSource(sourceFrame) {
+  async function didShowScriptSource(sourceFrame) {
     TestRunner.addResult('Setting breakpoint:');
     TestRunner.addSniffer(
         Bindings.BreakpointManager.ModelBreakpoint.prototype,
         '_addResolvedLocation', breakpointResolved);
-    SourcesTestRunner.setBreakpoint(sourceFrame, 7, '', true);
+    await SourcesTestRunner.setBreakpoint(sourceFrame, 7, '', true);
   }
 
   function breakpointResolved(location) {

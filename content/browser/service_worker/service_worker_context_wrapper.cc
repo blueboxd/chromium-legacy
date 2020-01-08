@@ -29,6 +29,7 @@
 #include "content/browser/service_worker/service_worker_context_watcher.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_quota_client.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"

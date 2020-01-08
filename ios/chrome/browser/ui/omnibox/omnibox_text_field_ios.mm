@@ -152,6 +152,9 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 - (void)setText:(NSAttributedString*)text
     userTextLength:(size_t)userTextLength {
   DCHECK_LE(userTextLength, [text length]);
+  if (userTextLength > 0) {
+    [self exitPreEditState];
+  }
 
   NSUInteger autocompleteLength = [text length] - userTextLength;
   [self setTextInternal:text autocompleteLength:autocompleteLength];

@@ -21,7 +21,7 @@ class GURL;
 namespace ui {
 
 // Contains helper functions for working with the clipboard and IDataObjects.
-class COMPONENT_EXPORT(BASE_CLIPBOARD) ClipboardUtil {
+class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardUtil {
  public:
   /////////////////////////////////////////////////////////////////////////////
   // These methods check to see if |data_object| has the requested type.

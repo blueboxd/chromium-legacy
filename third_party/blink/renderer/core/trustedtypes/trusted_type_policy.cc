@@ -19,26 +19,31 @@ TrustedTypePolicy::TrustedTypePolicy(const String& policy_name,
 
 TrustedHTML* TrustedTypePolicy::createHTML(ScriptState* script_state,
                                            const String& input,
+                                           const HeapVector<ScriptValue>& args,
                                            ExceptionState& exception_state) {
-  return CreateHTML(script_state->GetIsolate(), input, exception_state);
+  return CreateHTML(script_state->GetIsolate(), input, args, exception_state);
 }
 
 TrustedScript* TrustedTypePolicy::createScript(
     ScriptState* script_state,
     const String& input,
+    const HeapVector<ScriptValue>& args,
     ExceptionState& exception_state) {
-  return CreateScript(script_state->GetIsolate(), input, exception_state);
+  return CreateScript(script_state->GetIsolate(), input, args, exception_state);
 }
 
 TrustedScriptURL* TrustedTypePolicy::createScriptURL(
     ScriptState* script_state,
     const String& input,
+    const HeapVector<ScriptValue>& args,
     ExceptionState& exception_state) {
-  return CreateScriptURL(script_state->GetIsolate(), input, exception_state);
+  return CreateScriptURL(script_state->GetIsolate(), input, args,
+                         exception_state);
 }
 
 TrustedHTML* TrustedTypePolicy::CreateHTML(v8::Isolate* isolate,
                                            const String& input,
+                                           const HeapVector<ScriptValue>& args,
                                            ExceptionState& exception_state) {
   if (!policy_options_->createHTML()) {
     exception_state.ThrowTypeError(
@@ -48,7 +53,7 @@ TrustedHTML* TrustedTypePolicy::CreateHTML(v8::Isolate* isolate,
   }
   v8::TryCatch try_catch(isolate);
   String html;
-  if (!policy_options_->createHTML()->Invoke(nullptr, input).To(&html)) {
+  if (!policy_options_->createHTML()->Invoke(nullptr, input, args).To(&html)) {
     DCHECK(try_catch.HasCaught());
     exception_state.RethrowV8Exception(try_catch.Exception());
     return nullptr;
@@ -59,6 +64,7 @@ TrustedHTML* TrustedTypePolicy::CreateHTML(v8::Isolate* isolate,
 TrustedScript* TrustedTypePolicy::CreateScript(
     v8::Isolate* isolate,
     const String& input,
+    const HeapVector<ScriptValue>& args,
     ExceptionState& exception_state) {
   if (!policy_options_->createScript()) {
     exception_state.ThrowTypeError(
@@ -68,7 +74,9 @@ TrustedScript* TrustedTypePolicy::CreateScript(
   }
   v8::TryCatch try_catch(isolate);
   String script;
-  if (!policy_options_->createScript()->Invoke(nullptr, input).To(&script)) {
+  if (!policy_options_->createScript()
+           ->Invoke(nullptr, input, args)
+           .To(&script)) {
     DCHECK(try_catch.HasCaught());
     exception_state.RethrowV8Exception(try_catch.Exception());
     return nullptr;
@@ -79,6 +87,7 @@ TrustedScript* TrustedTypePolicy::CreateScript(
 TrustedScriptURL* TrustedTypePolicy::CreateScriptURL(
     v8::Isolate* isolate,
     const String& input,
+    const HeapVector<ScriptValue>& args,
     ExceptionState& exception_state) {
   if (!policy_options_->createScriptURL()) {
     exception_state.ThrowTypeError("Policy " + name_ +
@@ -89,7 +98,7 @@ TrustedScriptURL* TrustedTypePolicy::CreateScriptURL(
   v8::TryCatch try_catch(isolate);
   String script_url;
   if (!policy_options_->createScriptURL()
-           ->Invoke(nullptr, input)
+           ->Invoke(nullptr, input, args)
            .To(&script_url)) {
     DCHECK(try_catch.HasCaught());
     exception_state.RethrowV8Exception(try_catch.Exception());

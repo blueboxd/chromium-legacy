@@ -18,9 +18,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
@@ -88,6 +90,8 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 CORE_EXPORT void ConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceConstructor3_Constructor");
 
+  ExecutionContext* execution_context_for_measurement = CurrentExecutionContext(info.GetIsolate());
+  UseCounter::Count(execution_context_for_measurement, WebFeature::kTestInterfaceConstructor3);
   if (!info.IsConstructCall()) {
     V8ThrowException::ThrowTypeError(
         info.GetIsolate(),

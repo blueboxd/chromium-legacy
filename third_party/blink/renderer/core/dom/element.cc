@@ -2927,7 +2927,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
   AttachPseudoElement(kPseudoIdFirstLetter, children_context);
 
   if (layout_object) {
-    if (!layout_object->IsFloatingOrOutOfFlowPositioned())
+    if (layout_object->AffectsWhitespaceSiblings())
       context.previous_in_flow = layout_object;
   } else {
     context.previous_in_flow = children_context.previous_in_flow;

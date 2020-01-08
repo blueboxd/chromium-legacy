@@ -13,8 +13,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.chromium.base.Supplier;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.gesturenav.NavigationSheetMediator.ItemProperties;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;

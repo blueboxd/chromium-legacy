@@ -36,29 +36,28 @@ class WebAppIconManager : public AppIconManager {
   void DeleteData(AppId app_id, WriteDataCallback callback);
 
   // AppIconManager:
-  bool HasIcon(const AppId& app_id, int icon_size_in_px) const override;
-  bool HasSmallestIcon(const AppId& app_id, int icon_size_in_px) const override;
-  void ReadIcon(const AppId& app_id,
-                int icon_size_in_px,
-                ReadIconCallback callback) const override;
+  bool HasIcons(
+      const AppId& app_id,
+      const std::vector<SquareSizePx>& icon_sizes_in_px) const override;
+  bool HasSmallestIcon(const AppId& app_id,
+                       SquareSizePx icon_size_in_px) const override;
+  void ReadIcons(const AppId& app_id,
+                 const std::vector<SquareSizePx>& icon_sizes_in_px,
+                 ReadIconsCallback callback) const override;
   void ReadAllIcons(const AppId& app_id,
-                    ReadAllIconsCallback callback) const override;
+                    ReadIconsCallback callback) const override;
   void ReadSmallestIcon(const AppId& app_id,
-                        int icon_size_in_px,
+                        SquareSizePx icon_size_in_px,
                         ReadIconCallback callback) const override;
   void ReadSmallestCompressedIcon(
       const AppId& app_id,
-      int icon_size_in_px,
+      SquareSizePx icon_size_in_px,
       ReadCompressedIconCallback callback) const override;
 
  private:
   bool FindBestSizeInPx(const AppId& app_id,
                         int icon_size_in_px,
                         int* best_size_in_px) const;
-
-  void ReadIconInternal(const AppId& app_id,
-                        int icon_size_in_px,
-                        ReadIconCallback callback) const;
 
   const WebAppRegistrar& registrar_;
   base::FilePath web_apps_directory_;

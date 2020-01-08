@@ -24,6 +24,7 @@ class FakeRemoteFrameHost : public mojom::blink::RemoteFrameHost {
   void SetInheritedEffectiveTouchAction(cc::TouchAction touch_action) override;
   void VisibilityChanged(mojom::blink::FrameVisibility visibility) override;
   void DidFocusFrame() override;
+  void CheckCompleted() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

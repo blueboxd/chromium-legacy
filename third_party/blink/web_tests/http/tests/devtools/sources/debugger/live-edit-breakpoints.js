@@ -56,14 +56,14 @@
 
       SourcesTestRunner.showScriptSource('edit-me-breakpoints.js', didShowScriptSource);
 
-      function didShowScriptSource(sourceFrame) {
+      async function didShowScriptSource(sourceFrame) {
         javaScriptSourceFrame = sourceFrame;
         uiSourceCode = sourceFrame._uiSourceCode;
 
         TestRunner.addResult('Setting breakpoint:');
         TestRunner.addSniffer(
             Bindings.BreakpointManager.ModelBreakpoint.prototype, '_didSetBreakpointInDebugger', breakpointResolved);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
+        await SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
       function breakpointResolved(callback, breakpointId, locations) {
@@ -94,10 +94,10 @@
         SourcesTestRunner.undoSourceEditing(javaScriptSourceFrame);
       }
 
-      function breakpointResolvedAgain() {
+      async function breakpointResolvedAgain() {
         dumpBreakpointStorageAndLocations();
         TestRunner.addResult('Finally removing breakpoint:');
-        SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
+        await SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
 
         dumpBreakpointStorageAndLocations();
         next();
@@ -109,14 +109,14 @@
 
       SourcesTestRunner.showScriptSource('edit-me-breakpoints.js', didShowScriptSource);
 
-      function didShowScriptSource(sourceFrame) {
+      async function didShowScriptSource(sourceFrame) {
         javaScriptSourceFrame = sourceFrame;
         uiSourceCode = sourceFrame._uiSourceCode;
 
         TestRunner.addResult('Setting breakpoint:');
         TestRunner.addSniffer(
             Bindings.BreakpointManager.ModelBreakpoint.prototype, '_didSetBreakpointInDebugger', breakpointResolved);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
+        await SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
       function breakpointResolved(callback, breakpointId, locations) {
@@ -147,10 +147,10 @@
         SourcesTestRunner.commitSource(javaScriptSourceFrame);
       }
 
-      function breakpointResolvedAgain() {
+      async function breakpointResolvedAgain() {
         dumpBreakpointStorageAndLocations();
         TestRunner.addResult('Finally removing breakpoint:');
-        SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
+        await SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
 
         dumpBreakpointStorageAndLocations();
         next();
@@ -162,14 +162,14 @@
 
       SourcesTestRunner.showScriptSource('edit-me-breakpoints.js', didShowScriptSource);
 
-      function didShowScriptSource(sourceFrame) {
+      async function didShowScriptSource(sourceFrame) {
         javaScriptSourceFrame = sourceFrame;
         uiSourceCode = sourceFrame._uiSourceCode;
 
         TestRunner.addResult('Setting breakpoint:');
         TestRunner.addSniffer(
             Bindings.BreakpointManager.ModelBreakpoint.prototype, '_didSetBreakpointInDebugger', breakpointResolved);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
+        await SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
       function breakpointResolved(callback, breakpointId, locations) {
@@ -212,10 +212,10 @@
         SourcesTestRunner.commitSource(javaScriptSourceFrame);
       }
 
-      function breakpointResolvedAgain() {
+      async function breakpointResolvedAgain() {
         dumpBreakpointStorageAndLocations();
         TestRunner.addResult('Finally removing breakpoint:');
-        SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
+        await SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
 
         dumpBreakpointStorageAndLocations();
         next();
@@ -227,14 +227,14 @@
 
       SourcesTestRunner.showScriptSource('edit-me-breakpoints.js', didShowScriptSource);
 
-      function didShowScriptSource(sourceFrame) {
+      async function didShowScriptSource(sourceFrame) {
         javaScriptSourceFrame = sourceFrame;
         uiSourceCode = sourceFrame._uiSourceCode;
 
         TestRunner.addResult('Setting breakpoint:');
         TestRunner.addSniffer(
             Bindings.BreakpointManager.ModelBreakpoint.prototype, '_didSetBreakpointInDebugger', breakpointResolved);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
+        await SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
       function breakpointResolved(callback, breakpointId, locations) {
@@ -277,10 +277,10 @@
         SourcesTestRunner.commitSource(javaScriptSourceFrame);
       }
 
-      function breakpointResolvedAgain() {
+      async function breakpointResolvedAgain() {
         dumpBreakpointStorageAndLocations();
         TestRunner.addResult('Finally removing breakpoint:');
-        SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
+        await SourcesTestRunner.removeBreakpoint(javaScriptSourceFrame, 2);
 
         dumpBreakpointStorageAndLocations();
         next();

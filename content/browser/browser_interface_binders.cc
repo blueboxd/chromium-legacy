@@ -320,7 +320,6 @@ void RunOrPostTaskToBindServiceWorkerReceiver(
     void (RenderProcessHost::*method)(Args...),
     Args... args) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(host->IsProviderForServiceWorker());
   content::RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(

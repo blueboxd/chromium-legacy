@@ -15,7 +15,7 @@
   await SourcesTestRunner.waitUntilResumedPromise();
   let sourceFrame =
       await SourcesTestRunner.showScriptSourcePromise('example.ts');
-  SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
+  await SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
   TestRunner.reloadPage();
   SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(
       () => SourcesTestRunner.completeDebuggerTest());

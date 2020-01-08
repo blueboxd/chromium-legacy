@@ -808,6 +808,57 @@ public class AutofillAssistantCollectUserDataUiTest {
     }
 
     /**
+     * For expired credit cards, an error message should be displayed.
+     */
+    @Test
+    @MediumTest
+    public void testExpiredCreditCard() throws Exception {
+        // add credit card without postcode.
+        PersonalDataManager.AutofillProfile profile =
+                mHelper.createDummyProfile("John Doe", "john@gmail.com", "");
+        String profileId = mHelper.setProfile(profile);
+        PersonalDataManager.CreditCard creditCard = mHelper.createDummyCreditCard(profileId);
+        creditCard.setYear("2019");
+
+        AssistantCollectUserDataModel.PaymentTuple expiredPaymentTuple =
+                new AssistantCollectUserDataModel.PaymentTuple(creditCard, profile);
+
+        AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // WEB_CONTENTS are necessary for the creation of the editors.
+            model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
+            model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
+            model.set(AssistantCollectUserDataModel.CREDIT_CARD_EXPIRED_TEXT, "Card is expired");
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
+                    Collections.singletonList(expiredPaymentTuple));
+            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, expiredPaymentTuple);
+        });
+
+        // check that the card is not accepted (i.e. an error message is shown).
+        onView(is(getPaymentSummaryErrorView(viewHolder))).check(matches(isDisplayed()));
+        onView(is(getPaymentSummaryErrorView(viewHolder)))
+                .check(matches(withText("Card is expired")));
+
+        creditCard.setYear("2050");
+        AssistantCollectUserDataModel.PaymentTuple validPaymentTuple =
+                new AssistantCollectUserDataModel.PaymentTuple(creditCard, profile);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.AVAILABLE_AUTOFILL_PAYMENT_METHODS,
+                    Collections.singletonList(validPaymentTuple));
+            model.set(AssistantCollectUserDataModel.PAYMENT_METHOD, validPaymentTuple);
+        });
+
+        // check that the card is now accepted.
+        onView(is(getPaymentSummaryErrorView(viewHolder))).check(matches(not(isDisplayed())));
+    }
+
+    /**
      * Test that requiring a billing postal code for a billing address that has it does not display
      * an error message.
      */

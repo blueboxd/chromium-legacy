@@ -26,7 +26,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
+#include "services/viz/public/mojom/compositing/video_detector_observer.mojom-forward.h"
 #include "ui/aura/window.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"

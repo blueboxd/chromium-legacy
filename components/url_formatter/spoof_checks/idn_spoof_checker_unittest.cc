@@ -1217,6 +1217,25 @@ const IDNTestCase kIdnCases[] = {
     {"xn--mbbkpm.com", L"ոսւօ.com", kUnsafe},
     {"xn--mbbkpm.am", L"ոսւօ.am", kSafe},
     {"xn--mbbkpm.xn--y9a3aq", L"ոսւօ.հայ", kSafe},
+
+    // Whole-script-confusable in Bengali:
+    {"xn--07baub.com", L"০৭০৭.com", kUnsafe},
+    // Whole-script-confusable in Devanagari:
+    {"xn--62ba6j.com", L"ऽ०ऽ.com", kUnsafe},
+    // Whole-script-confusable in Gujarati:
+    {"xn--becd.com", L"ડટ.com", kUnsafe},
+    // Whole-script-confusable in Gurmukhi:
+    {"xn--occacb.com", L"੦੧੦੧.com", kUnsafe},
+    // Whole-script-confusable in Kannada:
+    {"xn--stca6jf.com", L"ಽ೦ಽ೧.com", kUnsafe},
+    // Whole-script-confusable in Malayalam:
+    {"xn--lwccv.com", L"ടഠധ.com", kUnsafe},
+    // Whole-script-confusable in Oriya:
+    {"xn--zhca6ub.com", L"୮ଠ୮ଠ.com", kUnsafe},
+    // Whole-script-confusable in Tamil:
+    {"xn--mlca6ab.com", L"டபடப.com", kUnsafe},
+    // Whole-script-confusable in Telugu:
+    {"xn--brcaabbb.com", L"౧౦౧౦౧౦.com", kUnsafe},
 };
 
 namespace test {

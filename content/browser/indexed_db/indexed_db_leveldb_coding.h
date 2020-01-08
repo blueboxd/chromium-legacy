@@ -296,7 +296,7 @@ class DatabaseMetaDataKey {
   // All keys <= 0 are invalid.  This one's just a convenient example.
   static const int64_t kInvalidBlobNumber;
 
-  static bool IsValidBlobNumber(int64_t blob_number);
+  CONTENT_EXPORT static bool IsValidBlobNumber(int64_t blob_number);
   CONTENT_EXPORT static std::string Encode(int64_t database_id,
                                            MetaDataType type);
 };

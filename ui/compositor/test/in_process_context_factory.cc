@@ -125,6 +125,10 @@ class DirectOutputSurface : public viz::OutputSurface {
   gfx::OverlayTransform GetDisplayTransform() override {
     return gfx::OVERLAY_TRANSFORM_NONE;
   }
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
+      override {
+    return nullptr;
+  }
 
  private:
   void OnSwapBuffersComplete() {

@@ -401,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithAllowFileAccessFromFiles,
       shell(),
       CreateTestDataURL("image-taint.html?test=no_cors_with_file_access")));
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
-}  // namespace
+}
 
 IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithAllowFileAccessFromFiles,
                        CorsImagefileTaint) {
@@ -410,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithAllowFileAccessFromFiles,
       shell(),
       CreateTestDataURL("image-taint.html?test=cors_with_file_access")));
   EXPECT_EQ(pass_string(), watcher->WaitAndGetTitle());
-}  // namespace content
+}
 
 IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTestWithDisableWebSecurity,
                        NoCorsImagefileTaint) {

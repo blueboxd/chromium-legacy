@@ -710,6 +710,11 @@ void GuestViewBase::UpdatePreferredSize(WebContents* target_web_contents,
   }
 }
 
+content::WebContents* GuestViewBase::GetResponsibleWebContents(
+    content::WebContents* source) {
+  return owner_web_contents();
+}
+
 void GuestViewBase::UpdateTargetURL(WebContents* source, const GURL& url) {
   if (!attached() || !embedder_web_contents()->GetDelegate())
     return;

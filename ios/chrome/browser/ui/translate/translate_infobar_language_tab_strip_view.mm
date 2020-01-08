@@ -172,7 +172,7 @@ CGFloat kScrollViewTrailingGradientStart = 0.975;
         @"targetLanguage" : self.targetLanguageTab,
       },
       @{
-        @"infobarHeight" : @(kInfobarHeight),
+        @"infobarHeight" : @(kTranslateInfobarHeight),
       });
 }
 

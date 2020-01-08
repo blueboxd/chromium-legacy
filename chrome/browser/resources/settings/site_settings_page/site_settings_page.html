@@ -237,6 +237,22 @@
       </cr-link-row>
     </template>
 
+    <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
+      <cr-link-row
+          class="hr two-line"
+          data-route="SITE_SETTINGS_HID_DEVICES"
+          icon-class="subpage-arrow"
+          id="hid-devices"
+          label="$i18n{siteSettingsHidDevices}"
+          on-click="onTapNavigate_"
+          start-icon="settings:hid-device"
+          sub-label="[[defaultSettingLabel_(
+              default_.hidDevices,
+              '$i18nPolymer{siteSettingsHidDevicesAsk}',
+              '$i18nPolymer{siteSettingsHidDevicesBlock}')]]">
+      </cr-link-row>
+    </template>
+
     <cr-link-row class="hr" data-route="SITE_SETTINGS_PDF_DOCUMENTS"
         id="pdf-documents" label="$i18n{siteSettingsPdfDocuments}"
         on-click="onTapNavigate_" start-icon="settings:pdf"

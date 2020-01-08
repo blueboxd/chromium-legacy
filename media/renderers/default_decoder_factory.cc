@@ -60,6 +60,10 @@ void DefaultDecoderFactory::CreateAudioDecoders(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     MediaLog* media_log,
     std::vector<std::unique_ptr<AudioDecoder>>* audio_decoders) {
+  base::AutoLock auto_lock(shutdown_lock_);
+  if (is_shutdown_)
+    return;
+
 #if !defined(OS_ANDROID)
   // DecryptingAudioDecoder is only needed in External Clear Key testing to
   // cover the audio decrypt-and-decode path.
@@ -87,6 +91,10 @@ void DefaultDecoderFactory::CreateVideoDecoders(
     const RequestOverlayInfoCB& request_overlay_info_cb,
     const gfx::ColorSpace& target_color_space,
     std::vector<std::unique_ptr<VideoDecoder>>* video_decoders) {
+  base::AutoLock auto_lock(shutdown_lock_);
+  if (is_shutdown_)
+    return;
+
 #if !defined(OS_ANDROID)
   video_decoders->push_back(
       std::make_unique<DecryptingVideoDecoder>(task_runner, media_log));
@@ -134,6 +142,12 @@ void DefaultDecoderFactory::CreateVideoDecoders(
 #if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   video_decoders->push_back(std::make_unique<FFmpegVideoDecoder>(media_log));
 #endif
+}
+
+void DefaultDecoderFactory::Shutdown() {
+  base::AutoLock auto_lock(shutdown_lock_);
+  external_decoder_factory_.reset();
+  is_shutdown_ = true;
 }
 
 }  // namespace media

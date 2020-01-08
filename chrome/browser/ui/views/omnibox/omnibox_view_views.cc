@@ -572,6 +572,8 @@ bool OmniboxViewViews::ShouldDoLearning() {
 }
 
 void OmniboxViewViews::OnThemeChanged() {
+  views::Textfield::OnThemeChanged();
+
   const SkColor dimmed_text_color = GetOmniboxColor(
       GetThemeProvider(), OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
   set_placeholder_text_color(dimmed_text_color);

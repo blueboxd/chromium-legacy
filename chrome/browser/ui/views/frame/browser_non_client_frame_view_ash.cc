@@ -14,7 +14,6 @@
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/touch_uma.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/wm/window_util.h"

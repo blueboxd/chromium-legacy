@@ -141,7 +141,7 @@
     <style name="Base.Theme.Chromium.Settings" parent="Theme.Chromium.WithActionBar">
         <item name="android:spinnerItemStyle">@style/PreferenceSpinnerItem</item>
         <item name="actionBarStyle">@style/SettingsActionBarModern</item>
-        <item name="preferenceTheme">@style/Theme.Chromium.PreferenceTheme</item>
+        <item name="preferenceTheme">@style/PreferenceTheme</item>
     </style>
 
     <!-- TODO(huayinz): Verify if these text styles are up to date with UX and override styles in
@@ -195,59 +195,59 @@
     </style>
 
     <!-- Settings -->
-    <style name="Theme.Chromium.PreferenceTheme">
-        <item name="preferenceStyle">@style/Theme.Chromium.PreferenceItem</item>
-        <item name="preferenceFragmentCompatStyle">@style/Theme.Chromium.PreferenceFragment</item>
-        <item name="preferenceFragmentListStyle">@style/Theme.Chromium.PreferenceFragmentList</item>
-        <item name="dialogPreferenceStyle">@style/Theme.Chromium.DialogPreference</item>
-        <item name="checkBoxPreferenceStyle">@style/Theme.Chromium.CheckBoxPreference</item>
-        <item name="switchPreferenceCompatStyle">@style/Theme.Chromium.SwitchPreference</item>
+    <style name="PreferenceTheme">
+        <item name="preferenceStyle">@style/PreferenceItem</item>
+        <item name="preferenceFragmentCompatStyle">@style/SettingsFragment</item>
+        <item name="preferenceFragmentListStyle">@style/SettingsFragmentList</item>
+        <item name="dialogPreferenceStyle">@style/DialogPreference</item>
+        <item name="checkBoxPreferenceStyle">@style/CheckBoxPreference</item>
+        <item name="switchPreferenceCompatStyle">@style/SwitchPreference</item>
     </style>
 
-    <style name="Theme.Chromium.PreferenceFragment">
+    <style name="SettingsFragment">
         <item name="android:divider">@drawable/list_divider_compat</item>
     </style>
 
-    <style name="Theme.Chromium.PreferenceItem">
+    <style name="PreferenceItem">
         <item name="android:layout">@layout/preference_compat</item>
     </style>
 
     <!-- TODO(crbug.com/971791): The asymmetric start and end paddings here preserve the same
          overall padding as the pre-support library custom preference layout. Following migration to
          the support library preferences, we should investigate simplifying these styles.-->
-    <style name="Theme.Chromium.PreferenceLayoutCompat">
+    <style name="PreferenceLayoutCompat">
         <item name="android:paddingStart">8dp</item>
         <item name="android:paddingEnd">10dp</item>
         <item name="android:minHeight">?android:attr/listPreferredItemHeight</item>
         <item name="android:background">?android:attr/selectableItemBackground</item>
     </style>
 
-    <style name="Theme.Chromium.PreferenceDescriptionCompat">
+    <style name="PreferenceDescriptionCompat">
         <item name="android:paddingTop">6dp</item>
         <item name="android:paddingBottom">6dp</item>
         <item name="android:paddingEnd">8dp</item>
     </style>
 
-    <style name="Theme.Chromium.PreferenceWidgetCompat">
+    <style name="PreferenceWidgetCompat">
         <item name="android:minWidth">48dp</item>
     </style>
 
-    <style name="Theme.Chromium.PreferenceFragmentList">
+    <style name="SettingsFragmentList">
         <item name="android:paddingStart">@dimen/pref_list_padding_kitkat</item>
         <item name="android:paddingEnd">@dimen/pref_list_padding_kitkat</item>
     </style>
 
-    <style name="Theme.Chromium.DialogPreference">
+    <style name="DialogPreference">
         <item name="android:layout">@layout/preference_compat</item>
         <item name="android:negativeButtonText">@android:string/cancel</item>
     </style>
 
-    <style name="Theme.Chromium.CheckBoxPreference">
+    <style name="CheckBoxPreference">
         <item name="android:layout">@layout/preference_compat</item>
         <item name="android:widgetLayout">@layout/preference_widget_checkbox</item>
     </style>
 
-    <style name="Theme.Chromium.SwitchPreference">
+    <style name="SwitchPreference">
         <item name="android:layout">@layout/preference_compat</item>
         <item name="android:widgetLayout">@layout/preference_widget_switch_compat</item>
     </style>

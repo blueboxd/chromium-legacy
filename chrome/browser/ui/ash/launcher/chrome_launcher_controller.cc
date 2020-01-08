@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_arc_tracker.h"
 #include "chrome/browser/ui/ash/launcher/app_service/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_service/launcher_app_service_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
@@ -684,6 +685,12 @@ ChromeLauncherController::GetV1ApplicationsFromAppId(
 }
 
 std::vector<aura::Window*> ChromeLauncherController::GetArcWindows() {
+  if (base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
+    if (app_service_app_window_controller_)
+      return app_service_app_window_controller_->GetArcWindows();
+    return std::vector<aura::Window*>();
+  }
+
   std::vector<aura::Window*> windows =
       arc_app_window_controller_->GetObservedWindows();
   std::vector<aura::Window*> arc_windows;

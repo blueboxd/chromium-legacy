@@ -18,7 +18,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_impl_io_data.h"
+#include "chrome/browser/profiles/profile_io_data_handle.h"
 #include "chrome/common/buildflags.h"
 #include "components/keyed_service/core/simple_factory_key.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -285,7 +285,7 @@ class ProfileImpl : public Profile {
   // See comment in GetOffTheRecordPrefs. Field exists so something owns the
   // dummy.
   std::unique_ptr<sync_preferences::PrefServiceSyncable> dummy_otr_prefs_;
-  ProfileImplIOData::Handle io_data_;
+  ProfileIODataHandle io_data_;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;

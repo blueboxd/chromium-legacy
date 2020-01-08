@@ -144,7 +144,7 @@
 <translation id="5677946354068040947">más opciones</translation>
 <translation id="576709008726043716">introducción</translation>
 <translation id="57838592816432529">Silenciar</translation>
-<translation id="5860033963881614850">No</translation>
+<translation id="5860033963881614850">Desactivado</translation>
 <translation id="588258955323874662">Pantalla completa</translation>
 <translation id="5888666972993069672">Transmitiendo ahora a <ph name="DEVICE_FRIENDLY_NAME" /></translation>
 <translation id="591047860372322273">cuadro de búsqueda</translation>
@@ -257,7 +257,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Mes</translation>
 <translation id="901493112792887934">tiempo actual en segundos</translation>
-<translation id="901834265349196618">correo electrónico</translation>
+<translation id="901834265349196618">Correo electrónico</translation>
 <translation id="9048119486235211610">navegación</translation>
 <translation id="9062295712474918030">documento</translation>
 <translation id="9093215626363556771">salir del modo de pantalla en pantalla</translation>

@@ -412,6 +412,7 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
     ImageFactory* image_factory,
     GpuChannelManagerDelegate* gpu_channel_manager_delegate,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    SingleTaskSequence* task_sequence,
     gpu::raster::GrShaderCache* gr_shader_cache,
     GpuProcessActivityFlags* activity_flags) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
@@ -447,7 +448,17 @@ gpu::ContextResult InProcessCommandBuffer::Initialize(
       base::BindOnce(&InProcessCommandBuffer::InitializeOnGpuThread,
                      base::Unretained(this), params);
 
-  task_sequence_ = task_executor_->CreateSequence();
+  // If a |task_sequence| is passed in, command buffer is meant to share it with
+  // other users, take the raw pointer in this case because the |task_sequence|
+  // would be kept alive by VizProcessContextProvider. If no |task_sequence| is
+  // passed in, create one here.
+  if (task_sequence) {
+    task_sequence_ = task_sequence;
+  } else {
+    task_scheduler_holder_ =
+        base::MakeRefCounted<gpu::GpuTaskSchedulerHelper>(task_executor_);
+    task_sequence_ = task_scheduler_holder_->GetTaskSequence();
+  }
 
   // Here we block by using a WaitableEvent to make sure InitializeOnGpuThread
   // is finished as part of Initialize function. This also makes sure we won't

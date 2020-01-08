@@ -35,6 +35,9 @@ enum class OptimizationGuideDecision {
 struct OptimizationMetadata {
   // Only applicable for NOSCRIPT and RESOURCE_LOADING optimization types.
   proto::PreviewsMetadata previews_metadata;
+
+  // Only applicable for the PERFORMANCE_HINTS optimization type.
+  proto::PerformanceHintsMetadata performance_hints_metadata;
 };
 
 class OptimizationGuideDecider {

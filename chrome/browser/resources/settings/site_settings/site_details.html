@@ -111,6 +111,41 @@
       </div>
     </cr-dialog>
 
+    <!-- New version of confirm clear data dialog to show if storage
+         pressure UI flag is enabled. -->
+    <cr-dialog id="confirmClearStorageNew" close-text="$i18n{close}"
+        on-close="onClearStorageDialogClosed_">
+      <style include="clear-storage-dialog-shared"></style>
+      <div slot="title">
+        $i18n{siteSettingsSiteClearStorageDialogTitle}
+      </div>
+      <div slot="body">
+        [[i18n('siteSettingsSiteClearStorageConfirmationNew', pageTitle)]]
+        <div class="detail-list">
+          <div class="detail">
+            <iron-icon icon="all-sites:logout"></iron-icon>
+            $i18n{siteSettingsSiteClearStorageSignOut}
+          </div>
+          <div class="detail">
+            <iron-icon icon="all-sites:offline"></iron-icon>
+            $i18n{siteSettingsSiteClearStorageOfflineData}
+          </div>
+          <div class="detail">
+            <iron-icon icon="all-sites:apps"></iron-icon>
+            $i18n{siteSettingsSiteClearStorageApps}
+          </div>
+        </div>
+      </div>
+      <div slot="button-container">
+        <cr-button class="cancel-button" on-click="onCloseDialog_">
+          $i18n{cancel}
+        </cr-button>
+        <cr-button class="action-button" on-click="onClearStorage_">
+          $i18n{siteSettingsSiteClearStorage}
+        </cr-button>
+      </div>
+    </cr-dialog>
+
     <div id="usage">
       <div class="settings-box first line-only">
         <h2 class="first">$i18n{siteSettingsUsage}</h2>
@@ -219,6 +254,13 @@
             category="{{ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}}"
             icon="settings:save-original" id="nativeFileSystemWrite"
             label="$i18n{siteSettingsNativeFileSystemWrite}">
+        </site-details-permission>
+      </template>
+      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
+        <site-details-permission
+            category="[[ContentSettingsTypes.HID_DEVICES]]"
+            icon="settings:hid-device" id="hidDevices"
+            label="$i18n{siteSettingsHidDevices}">
         </site-details-permission>
       </template>
       <site-details-permission

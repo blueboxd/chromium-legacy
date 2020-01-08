@@ -538,9 +538,8 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
   bool has_other_effects = effect.BlendMode() != SkBlendMode::kSrcOver ||
                            effect.GetColorFilter() != kColorFilterNone;
   DCHECK(!has_filter || !(has_opacity || has_other_effects));
-
-  // TODO(crbug.com/904592): Add support for non-composited backdrop-filter
-  // here.
+  // We always composite backdrop filters.
+  DCHECK(effect.BackdropFilter().IsEmpty());
 
   // Apply effects.
   cc_list_.StartPaint();

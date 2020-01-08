@@ -25,6 +25,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
@@ -67,6 +68,11 @@ enum InputMethodCategory {
   INPUT_METHOD_CATEGORY_ARC,   // ARC input methods
   INPUT_METHOD_CATEGORY_MAX
 };
+
+const chromeos::input_method::ImeKeyset kKeysets[] = {
+    chromeos::input_method::ImeKeyset::kEmoji,
+    chromeos::input_method::ImeKeyset::kHandwriting,
+    chromeos::input_method::ImeKeyset::kVoice};
 
 InputMethodCategory GetInputMethodCategory(const std::string& input_method_id) {
   const std::string component_id =
@@ -1320,16 +1326,41 @@ void InputMethodManagerImpl::OverrideKeyboardKeyset(
     return;
   }
 
-  // For system IME extension, the input view url is overridden as:
+  // For IME component extension, the input view url is overridden as:
   // chrome-extension://${extension_id}/inputview.html#id=us.compact.qwerty
   // &language=en-US&passwordLayout=us.compact.qwerty&name=keyboard_us
-  // Fow emoji, handwriting and voice input, we append the keyset to the end of
+  // For emoji, handwriting and voice input, we append the keyset to the end of
   // id like: id=${keyset}.emoji/hwt/voice.
   auto j = overridden_ref.find("&", i + 1);
-  if (j == std::string::npos) {
-    overridden_ref += "." + KeysetToString(keyset);
+  std::string id_string = overridden_ref.substr(i, j - i);
+  // Remove existing keyset string.
+  for (const chromeos::input_method::ImeKeyset keyset : kKeysets) {
+    std::string keyset_string = KeysetToString(keyset);
+    auto k = id_string.find("." + keyset_string);
+    if (k != std::string::npos) {
+      id_string.replace(k, keyset_string.length() + 1, "");
+    }
+  }
+  id_string += "." + KeysetToString(keyset);
+  overridden_ref.replace(i, j - i, id_string);
+
+  // Always add a timestamp tag to make sure the hash tags are changed, so that
+  // the frontend will reload.
+  auto ts_start = overridden_ref.find("&ts=");
+  std::string ts_tag =
+      base::StringPrintf("&ts=%ld", base::Time::NowFromSystemTime()
+                                        .ToDeltaSinceWindowsEpoch()
+                                        .InMicroseconds());
+  if (ts_start == std::string::npos) {
+    overridden_ref += ts_tag;
   } else {
-    overridden_ref.replace(j, 0, "." + KeysetToString(keyset));
+    auto ts_end = overridden_ref.find("&", ts_start + 1);
+    if (ts_end == std::string::npos) {
+      overridden_ref.replace(ts_start, overridden_ref.length() - ts_start,
+                             ts_tag);
+    } else {
+      overridden_ref.replace(ts_start, ts_end - ts_start, ts_tag);
+    }
   }
 
   GURL::Replacements replacements;

@@ -924,6 +924,22 @@ const char kWebRtcStunProbeTrialParameter[] = "webrtc-stun-probe-trial";
 // without restarting the browser and relaunching without this flag.
 const char kWebRtcLocalEventLogging[] = "webrtc-event-logging";
 
+// Forcibly enable and select the specified runtime for webxr.
+// Note that this provides an alternative means of enabling a runtime, and will
+// also functionally disable all other runtimes.
+const char kWebXrForceRuntime[] = "force-webxr-runtime";
+
+// Tell WebXr to assume that it does not support any runtimes.
+const char kWebXrRuntimeNone[] = "no-vr-runtime";
+
+const char kWebXrRuntimeOrientationSensors[] = "orientation-sensors";
+
+// The following are the runtimes that WebXr supports.
+const char kWebXrRuntimeOculus[] = "oculus";
+const char kWebXrRuntimeOpenVr[] = "openvr";
+const char kWebXrRuntimeOpenXr[] = "openxr";
+const char kWebXrRuntimeWMR[] = "windows-mixed-reality";
+
 // This switch allows the Web Components v0 APIs to be re-enabled temporarily
 // from M80 through M84.
 // TODO(937746): Remove this after M84.

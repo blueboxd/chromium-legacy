@@ -835,8 +835,8 @@ void PaintArtifactCompositor::CollectPendingLayers(
 }
 
 void SynthesizedClip::UpdateLayer(bool needs_layer,
-                                  const FloatRoundedRect& rrect,
-                                  scoped_refptr<const RefCountedPath> path) {
+                                  const ClipPaintPropertyNode& clip,
+                                  const TransformPaintPropertyNode& transform) {
   if (!needs_layer) {
     layer_.reset();
     return;
@@ -846,33 +846,37 @@ void SynthesizedClip::UpdateLayer(bool needs_layer,
     layer_->SetIsDrawable(true);
   }
 
-  IntRect layer_bounds = EnclosingIntRect(rrect.Rect());
-  gfx::Vector2dF new_layer_origin(layer_bounds.X(), layer_bounds.Y());
-
-  SkRRect new_local_rrect = rrect;
-  new_local_rrect.offset(-new_layer_origin.x(), -new_layer_origin.y());
-
-  bool path_in_layer_changed = false;
-  if (path_ == path) {
-    path_in_layer_changed = path && layer_origin_ != new_layer_origin;
-  } else if (!path_ || !path) {
-    path_in_layer_changed = true;
+  const RefCountedPath* path = clip.ClipPath();
+  SkRRect new_rrect = clip.ClipRect();
+  IntRect layer_bounds = EnclosingIntRect(clip.ClipRect().Rect());
+  bool needs_display = false;
+  if (!path && &transform == &clip.LocalTransformSpace()) {
+    new_rrect.offset(-layer_bounds.X(), -layer_bounds.Y());
+    needs_display = !rrect_is_local_ || new_rrect != rrect_;
+    translation_2d_or_matrix_ = GeometryMapper::Translation2DOrMatrix();
+    rrect_is_local_ = true;
   } else {
-    SkPath new_path = path->GetSkPath();
-    new_path.offset(layer_origin_.x() - new_layer_origin.x(),
-                    layer_origin_.y() - new_layer_origin.y());
-    path_in_layer_changed = path_->GetSkPath() != new_path;
+    auto new_translation_2d_or_matrix =
+        GeometryMapper::SourceToDestinationProjection(
+            clip.LocalTransformSpace(), transform);
+    new_translation_2d_or_matrix.MapRect(layer_bounds);
+    new_translation_2d_or_matrix.PostTranslate(-layer_bounds.X(),
+                                               -layer_bounds.Y());
+    needs_display = rrect_is_local_ || new_rrect != rrect_ ||
+                    new_translation_2d_or_matrix != translation_2d_or_matrix_ ||
+                    (path_ != path && (!path_ || !path || *path_ != *path));
+    translation_2d_or_matrix_ = new_translation_2d_or_matrix;
+    rrect_is_local_ = false;
   }
 
-  if (local_rrect_ != new_local_rrect || path_in_layer_changed) {
+  if (needs_display)
     layer_->SetNeedsDisplay();
-  }
-  layer_->SetOffsetToTransformParent(new_layer_origin);
-  layer_->SetBounds(gfx::Size(layer_bounds.Width(), layer_bounds.Height()));
 
-  layer_origin_ = new_layer_origin;
-  local_rrect_ = new_local_rrect;
-  path_ = std::move(path);
+  layer_->SetOffsetToTransformParent(
+      gfx::Vector2dF(layer_bounds.X(), layer_bounds.Y()));
+  layer_->SetBounds(gfx::Size(layer_bounds.Size()));
+  rrect_ = new_rrect;
+  path_ = path;
 }
 
 scoped_refptr<cc::DisplayItemList> SynthesizedClip::PaintContentsToDisplayList(
@@ -882,16 +886,22 @@ scoped_refptr<cc::DisplayItemList> SynthesizedClip::PaintContentsToDisplayList(
   PaintFlags flags;
   flags.setAntiAlias(true);
   cc_list->StartPaint();
-  if (!path_) {
-    cc_list->push<cc::DrawRRectOp>(local_rrect_, flags);
+  if (rrect_is_local_) {
+    cc_list->push<cc::DrawRRectOp>(rrect_, flags);
   } else {
     cc_list->push<cc::SaveOp>();
-    cc_list->push<cc::TranslateOp>(-layer_origin_.x(), -layer_origin_.y());
-    cc_list->push<cc::ClipPathOp>(path_->GetSkPath(), SkClipOp::kIntersect,
-                                  true);
-    SkRRect rrect = local_rrect_;
-    rrect.offset(layer_origin_.x(), layer_origin_.y());
-    cc_list->push<cc::DrawRRectOp>(rrect, flags);
+    if (translation_2d_or_matrix_.IsIdentityOr2DTranslation()) {
+      const auto& translation = translation_2d_or_matrix_.Translation2D();
+      cc_list->push<cc::TranslateOp>(translation.Width(), translation.Height());
+    } else {
+      cc_list->push<cc::ConcatOp>(TransformationMatrix::ToSkMatrix44(
+          translation_2d_or_matrix_.Matrix()));
+    }
+    if (path_) {
+      cc_list->push<cc::ClipPathOp>(path_->GetSkPath(), SkClipOp::kIntersect,
+                                    true);
+    }
+    cc_list->push<cc::DrawRRectOp>(rrect_, flags);
     cc_list->push<cc::RestoreOp>();
   }
   cc_list->EndPaintOfUnpaired(gfx::Rect(layer_->bounds()));
@@ -900,26 +910,26 @@ scoped_refptr<cc::DisplayItemList> SynthesizedClip::PaintContentsToDisplayList(
 }
 
 SynthesizedClip& PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
-    const ClipPaintPropertyNode& node,
+    const ClipPaintPropertyNode& clip,
+    const TransformPaintPropertyNode& transform,
     bool needs_layer,
     CompositorElementId& mask_isolation_id,
     CompositorElementId& mask_effect_id) {
   auto* entry =
       std::find_if(synthesized_clip_cache_.begin(),
-                   synthesized_clip_cache_.end(), [&node](const auto& entry) {
-                     return entry.key == &node && !entry.in_use;
+                   synthesized_clip_cache_.end(), [&clip](const auto& entry) {
+                     return entry.key == &clip && !entry.in_use;
                    });
   if (entry == synthesized_clip_cache_.end()) {
-    auto clip = std::make_unique<SynthesizedClip>();
-    synthesized_clip_cache_.push_back(
-        SynthesizedClipEntry{&node, std::move(clip), false});
+    synthesized_clip_cache_.push_back(SynthesizedClipEntry{
+        &clip, std::make_unique<SynthesizedClip>(), false});
     entry = synthesized_clip_cache_.end() - 1;
   }
 
   entry->in_use = true;
   SynthesizedClip& synthesized_clip = *entry->synthesized_clip;
   if (needs_layer) {
-    synthesized_clip.UpdateLayer(needs_layer, node.ClipRect(), node.ClipPath());
+    synthesized_clip.UpdateLayer(needs_layer, clip, transform);
     synthesized_clip.Layer()->SetLayerTreeHost(root_layer_->layer_tree_host());
   }
   mask_isolation_id = synthesized_clip.GetMaskIsolationId();

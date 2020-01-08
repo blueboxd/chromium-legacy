@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/synchronization/lock.h"
 #include "media/base/decoder_factory.h"
 #include "media/base/media_export.h"
 
@@ -33,8 +34,16 @@ class MEDIA_EXPORT DefaultDecoderFactory : public DecoderFactory {
       const gfx::ColorSpace& target_color_space,
       std::vector<std::unique_ptr<VideoDecoder>>* video_decoders) final;
 
+  // Called from the renderer thread to prevent any more decoders from being
+  // vended on other threads.
+  void Shutdown();
+
  private:
-  std::unique_ptr<DecoderFactory> external_decoder_factory_;
+  base::Lock shutdown_lock_;
+  bool is_shutdown_ GUARDED_BY(shutdown_lock_) = false;
+
+  std::unique_ptr<DecoderFactory> external_decoder_factory_
+      GUARDED_BY(shutdown_lock_);
 
   DISALLOW_COPY_AND_ASSIGN(DefaultDecoderFactory);
 };

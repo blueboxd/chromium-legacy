@@ -42,12 +42,6 @@ bool ShouldInterruptForMethod(const String& method) {
          method == "Emulation.setScriptExecutionDisabled";
 }
 
-Vector<uint8_t> UnwrapMessage(const mojom::blink::DevToolsMessagePtr& message) {
-  Vector<uint8_t> unwrap_message;
-  unwrap_message.Append(message->data.data(), message->data.size());
-  return unwrap_message;
-}
-
 std::vector<uint8_t> Get8BitStringFrom(v8_inspector::StringBuffer* msg) {
   const v8_inspector::StringView& s = msg->string();
   DCHECK(s.is8Bit());
@@ -82,10 +76,9 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
   void DeleteSoon() { io_task_runner_->DeleteSoon(FROM_HERE, this); }
 
   // mojom::blink::DevToolsSession implementation.
-  void DispatchProtocolCommand(
-      int call_id,
-      const String& method,
-      mojom::blink::DevToolsMessagePtr message) override {
+  void DispatchProtocolCommand(int call_id,
+                               const String& method,
+                               base::span<const uint8_t> message) override {
     TRACE_EVENT_WITH_FLOW1("devtools", "IOSession::DispatchProtocolCommand",
                            call_id,
                            TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN,
@@ -95,14 +88,16 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
       CHECK(false);
     // Post a task to the worker or main renderer thread that will interrupt V8
     // and be run immediately. Only methods that do not run JS code are safe.
+    Vector<uint8_t> message_copy;
+    message_copy.Append(message.data(), message.size());
     if (ShouldInterruptForMethod(method)) {
       inspector_task_runner_->AppendTask(CrossThreadBindOnce(
           &::blink::DevToolsSession::DispatchProtocolCommandImpl, session_,
-          call_id, method, UnwrapMessage(message)));
+          call_id, method, std::move(message_copy)));
     } else {
       inspector_task_runner_->AppendTaskDontInterrupt(CrossThreadBindOnce(
           &::blink::DevToolsSession::DispatchProtocolCommandImpl, session_,
-          call_id, method, UnwrapMessage(message)));
+          call_id, method, std::move(message_copy)));
     }
   }
 
@@ -197,17 +192,17 @@ void DevToolsSession::FlushProtocolNotifications() {
 void DevToolsSession::DispatchProtocolCommand(
     int call_id,
     const String& method,
-    blink::mojom::blink::DevToolsMessagePtr message_ptr) {
+    base::span<const uint8_t> message) {
   TRACE_EVENT_WITH_FLOW1(
       "devtools", "DevToolsSession::DispatchProtocolCommand", call_id,
       TRACE_EVENT_FLAG_FLOW_OUT | TRACE_EVENT_FLAG_FLOW_IN, "call_id", call_id);
-  return DispatchProtocolCommandImpl(call_id, method,
-                                     UnwrapMessage(message_ptr));
+  return DispatchProtocolCommandImpl(call_id, method, message);
 }
 
-void DevToolsSession::DispatchProtocolCommandImpl(int call_id,
-                                                  const String& method,
-                                                  Vector<uint8_t> data) {
+void DevToolsSession::DispatchProtocolCommandImpl(
+    int call_id,
+    const String& method,
+    base::span<const uint8_t> data) {
   DCHECK(crdtp::cbor::IsCBORMessage(
       crdtp::span<uint8_t>(data.data(), data.size())));
 

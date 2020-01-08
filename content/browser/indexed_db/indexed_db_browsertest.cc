@@ -26,6 +26,7 @@
 #include "base/test/thread_test_helper.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "components/services/storage/indexed_db/scopes/varint_coding.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
@@ -61,6 +62,7 @@
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_settings.h"
+#include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -1128,6 +1130,109 @@ class IndexedDBBrowserTestSingleProcess : public IndexedDBBrowserTest {
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestSingleProcess,
                        MAYBE_RenderThreadShutdownTest) {
   SimpleTest(GetTestUrl("indexeddb", "shutdown_with_requests.html"));
+}
+
+// The blob key corruption test runs in a separate class to avoid corrupting
+// an IDB store that other tests use.
+// This test is for https://crbug.com/1039446.
+class IndexedDBBrowserTestBlobKeyCorruption : public IndexedDBBrowserTest {
+ public:
+  void SetUp() override {
+    GetTestClassFactory()->Reset();
+    IndexedDBClassFactory::SetIndexedDBClassFactoryGetter(GetIDBClassFactory);
+    ContentBrowserTest::SetUp();
+  }
+
+  int64_t GetNextBlobNumber(const Origin& origin, int64_t database_id) {
+    int64_t number;
+    base::RunLoop loop;
+    IndexedDBContextImpl* context = GetContext();
+    context->IDBTaskRunner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          IndexedDBOriginStateHandle handle;
+          leveldb::Status s;
+          std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
+              context->GetIDBFactory()->GetOrOpenOriginFactory(
+                  origin, context->data_path(), /*create_if_missing=*/true);
+          CHECK(s.ok()) << s.ToString();
+          CHECK(handle.IsHeld());
+
+          TransactionalLevelDBDatabase* db =
+              handle.origin_state()->backing_store()->db();
+
+          const std::string key_gen_key = DatabaseMetaDataKey::Encode(
+              database_id,
+              DatabaseMetaDataKey::BLOB_KEY_GENERATOR_CURRENT_NUMBER);
+          std::string data;
+          bool found = false;
+          bool ok = db->Get(key_gen_key, &data, &found).ok();
+          CHECK(found);
+          CHECK(ok);
+          base::StringPiece slice(data);
+          CHECK(DecodeVarInt(&slice, &number));
+          CHECK(DatabaseMetaDataKey::IsValidBlobNumber(number));
+          loop.Quit();
+        }));
+    loop.Run();
+    return number;
+  }
+
+  base::FilePath PathForBlob(const Origin& origin,
+                             int64_t database_id,
+                             int64_t blob_number) {
+    base::FilePath path;
+    base::RunLoop loop;
+    IndexedDBContextImpl* context = GetContext();
+    context->IDBTaskRunner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          IndexedDBOriginStateHandle handle;
+          leveldb::Status s;
+          std::tie(handle, s, std::ignore, std::ignore, std::ignore) =
+              context->GetIDBFactory()->GetOrOpenOriginFactory(
+                  origin, context->data_path(), /*create_if_missing=*/true);
+          CHECK(s.ok()) << s.ToString();
+          CHECK(handle.IsHeld());
+
+          IndexedDBBackingStore* backing_store =
+              handle.origin_state()->backing_store();
+          path = backing_store->GetBlobFileName(database_id, blob_number);
+          loop.Quit();
+        }));
+    loop.Run();
+    return path;
+  }
+};
+
+// Verify the blob key corruption state recovery:
+// - Create a file that should be the 'first' blob file.
+// - open a database that tries to write a blob.
+// - verify the new blob key is correct.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestBlobKeyCorruption, LifecycleTest) {
+  ASSERT_TRUE(embedded_test_server()->Started() ||
+              embedded_test_server()->InitializeAndListen());
+  const Origin origin = Origin::Create(embedded_test_server()->base_url());
+  embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+      &StaticFileRequestHandler, s_indexeddb_test_prefix, this));
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Set up the IndexedDB instance so it contains our reference data.
+  std::string test_file =
+      std::string(s_indexeddb_test_prefix) + "write_and_read_blob.html";
+  SimpleTest(embedded_test_server()->GetURL(test_file));
+  int64_t next_blob_number = GetNextBlobNumber(origin, 1);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FilePath first_blob = PathForBlob(origin, 1, next_blob_number - 1);
+  base::FilePath corrupt_blob = PathForBlob(origin, 1, next_blob_number);
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_TRUE(base::PathExists(first_blob));
+    EXPECT_FALSE(base::PathExists(corrupt_blob));
+    const char kCorruptData[] = "corrupt";
+    base::WriteFile(corrupt_blob, kCorruptData, sizeof(kCorruptData));
+  }
+
+  SimpleTest(embedded_test_server()->GetURL(test_file));
 }
 
 }  // namespace content

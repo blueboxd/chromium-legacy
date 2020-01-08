@@ -4,6 +4,8 @@
 
 #include "media/mojo/clients/mojo_video_decoder.h"
 
+#include <atomic>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
@@ -13,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -33,6 +36,22 @@
 #include "mojo/public/cpp/bindings/shared_remote.h"
 
 namespace media {
+
+namespace {
+// Number of functional instances of MojoVideoDecoder in the current process.
+std::atomic<int>& get_mojo_instance_counter() {
+  static base::NoDestructor<std::atomic<int>> gInstanceCounter(0);
+  return *gInstanceCounter;
+}
+}  // namespace
+
+const char kMojoVideoDecoderInitialPlaybackSuccessCodecCounterUMA[] =
+    "Media.MojoVideoDecoder.InitialPlaybackSuccessCodecCounter";
+
+const char kMojoVideoDecoderInitialPlaybackErrorCodecCounterUMA[] =
+    "Media.MojoVideoDecoder.InitialPlaybackErrorCodecCounter";
+
+const int kMojoDecoderInitialPlaybackFrameCount = 150;
 
 // Provides a thread-safe channel for VideoFrame destruction events.
 class MojoVideoFrameHandleReleaser
@@ -104,6 +123,8 @@ MojoVideoDecoder::MojoVideoDecoder(
 
 MojoVideoDecoder::~MojoVideoDecoder() {
   DVLOG(1) << __func__;
+  if (remote_decoder_bound_)
+    get_mojo_instance_counter()--;
   if (request_overlay_info_cb_ && overlay_info_requested_)
     request_overlay_info_cb_.Run(false, ProvideOverlayInfoCB());
 }
@@ -149,8 +170,10 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  if (!remote_decoder_bound_)
+  if (!remote_decoder_bound_) {
     BindRemoteDecoder();
+    get_mojo_instance_counter()++;
+  }
 
   if (has_connection_error_) {
     task_runner_->PostTask(FROM_HERE,
@@ -199,6 +222,7 @@ void MojoVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   mojom::DecoderBufferPtr mojo_buffer =
       mojo_decoder_buffer_writer_->WriteDecoderBuffer(std::move(buffer));
   if (!mojo_buffer) {
+    ReportInitialPlaybackErrorUMA();
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(decode_cb), DecodeStatus::DECODE_ERROR));
@@ -245,6 +269,17 @@ void MojoVideoDecoder::OnVideoFrameDecoded(
   }
 
   output_cb_.Run(frame);
+  total_frames_decoded_++;
+  if (!initial_playback_outcome_reported_ &&
+      total_frames_decoded_ >= kMojoDecoderInitialPlaybackFrameCount) {
+    initial_playback_outcome_reported_ = true;
+    UMA_HISTOGRAM_COUNTS_100(
+        kMojoVideoDecoderInitialPlaybackSuccessCodecCounterUMA,
+        get_mojo_instance_counter());
+    DVLOG(3)
+        << "Report Media.MojoVideoDecoder.InitialPlaybackSuccessCodecCounter:"
+        << get_mojo_instance_counter();
+  }
 }
 
 void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id, DecodeStatus status) {
@@ -257,6 +292,9 @@ void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id, DecodeStatus status) {
     Stop();
     return;
   }
+
+  if (status == DecodeStatus::DECODE_ERROR)
+    ReportInitialPlaybackErrorUMA();
 
   DecodeCB decode_cb = std::move(it->second);
   pending_decodes_.erase(it);
@@ -379,6 +417,7 @@ void MojoVideoDecoder::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   has_connection_error_ = true;
+  ReportInitialPlaybackErrorUMA();
 
   // |init_cb_| is likely to reentrantly destruct |this|, so we check for that
   // using an on-stack WeakPtr.
@@ -400,6 +439,19 @@ void MojoVideoDecoder::Stop() {
 
   if (reset_cb_)
     std::move(reset_cb_).Run();
+}
+
+void MojoVideoDecoder::ReportInitialPlaybackErrorUMA() {
+  if (initial_playback_outcome_reported_)
+    return;
+
+  DCHECK(get_mojo_instance_counter() > 0);
+  DVLOG(3) << "Report Media.MojoVideoDecoder.InitialPlaybackErrorCodecCounter:"
+           << get_mojo_instance_counter();
+
+  UMA_HISTOGRAM_COUNTS_100(kMojoVideoDecoderInitialPlaybackErrorCodecCounterUMA,
+                           get_mojo_instance_counter());
+  initial_playback_outcome_reported_ = true;
 }
 
 }  // namespace media

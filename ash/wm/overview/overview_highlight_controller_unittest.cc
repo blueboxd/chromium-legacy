@@ -391,6 +391,16 @@ class DesksOverviewHighlightControllerTest
     return highlight_bounds.ApproximatelyEqual(view_bounds, tolerance);
   }
 
+ protected:
+  static void CheckDeskBarViewSize(const DesksBarView* view,
+                                   const std::string& scope) {
+    SCOPED_TRACE(scope);
+    // See kBarHeight in desks_bar_view.cc.
+    EXPECT_EQ(104, view->bounds().height());
+    EXPECT_EQ(view->bounds().height(),
+              view->GetWidget()->GetWindowBoundsInScreen().height());
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(DesksOverviewHighlightControllerTest);
@@ -406,12 +416,15 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingBasic) {
   ToggleOverview();
   const auto* desk_bar_view =
       GetDesksBarViewForRoot(Shell::GetPrimaryRootWindow());
+
+  CheckDeskBarViewSize(desk_bar_view, "initial");
   EXPECT_EQ(2u, desk_bar_view->mini_views().size());
 
   // Tests that the first highlighted item is the first mini view.
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view->mini_views()[0].get(), GetHighlightedView());
   EXPECT_FALSE(OverviewHighlightShown());
+  CheckDeskBarViewSize(desk_bar_view, "first mini view");
 
   // Tests that after tabbing through the mini views, we highlight the new desk
   // button.
@@ -419,12 +432,14 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingBasic) {
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view->new_desk_button(), GetHighlightedView());
   EXPECT_FALSE(OverviewHighlightShown());
+  CheckDeskBarViewSize(desk_bar_view, "new desk button");
 
   // Tests that the overview item gets highlighted after the new desk button.
   SendKey(ui::VKEY_TAB);
   auto* item2 = GetOverviewItemForWindow(window2.get());
   EXPECT_EQ(item2->overview_item_view(), GetHighlightedView());
   EXPECT_TRUE(OverviewHighlightShown());
+  CheckDeskBarViewSize(desk_bar_view, "overview item");
 
   // Tests that after tabbing through the overview items, we go back to the
   // first mini view.
@@ -432,6 +447,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingBasic) {
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view->mini_views()[0].get(), GetHighlightedView());
   EXPECT_FALSE(OverviewHighlightShown());
+  CheckDeskBarViewSize(desk_bar_view, "go back to first");
 }
 
 // Tests that we can reverse tab through the desk mini views, new desk button

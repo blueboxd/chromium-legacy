@@ -21,6 +21,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
@@ -32,12 +33,15 @@ namespace {
 // transformed to fit to the virtual screen size when laid-out. This is to avoid
 // scaling the image at painting time, then scaling it back to the screen size
 // in the compositor.
-class LayerControlView : public views::View {
+class WallpaperWidgetDelegate : public views::WidgetDelegateView {
  public:
-  explicit LayerControlView(views::View* view) {
+  explicit WallpaperWidgetDelegate(views::View* view) {
     AddChildView(view);
     view->SetPaintToLayer();
   }
+
+  // views::WidgetDelegateView:
+  bool CanMaximize() const override { return true; }
 
   // Overrides views::View.
   void Layout() override {
@@ -61,7 +65,7 @@ class LayerControlView : public views::View {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LayerControlView);
+  DISALLOW_COPY_AND_ASSIGN(WallpaperWidgetDelegate);
 };
 
 }  // namespace
@@ -214,10 +218,11 @@ std::unique_ptr<views::Widget> CreateWallpaperWidget(
   if (controller->GetWallpaper().isNull())
     params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.parent = root_window->GetChildById(container_id);
+  WallpaperView* wallpaper_view = new WallpaperView(property);
+  params.delegate = new WallpaperWidgetDelegate(wallpaper_view);
+
   wallpaper_widget->Init(std::move(params));
   // Owned by views.
-  WallpaperView* wallpaper_view = new WallpaperView(property);
-  wallpaper_widget->SetContentsView(new LayerControlView(wallpaper_view));
   *out_wallpaper_view = wallpaper_view;
   int animation_type =
       controller->ShouldShowInitialAnimation()

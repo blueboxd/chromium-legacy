@@ -1116,6 +1116,8 @@ component("ash") {
     "wm/ash_focus_rules.h",
     "wm/back_gesture_affordance.cc",
     "wm/back_gesture_affordance.h",
+    "wm/back_gesture_metrics.cc",
+    "wm/back_gesture_metrics.h",
     "wm/base_state.cc",
     "wm/base_state.h",
     "wm/client_controlled_state.cc",

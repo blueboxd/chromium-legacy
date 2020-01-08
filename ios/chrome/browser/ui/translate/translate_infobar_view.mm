@@ -172,7 +172,8 @@ const CGFloat kIconTrailingMargin = 12;
   // in fullscreen mode (i.e., progress == 0), thus hiding the infobar, to the
   // maximum bottom padding calculated above.
   CGFloat bottomPadding =
-      progress * (maxBottomPadding + kInfobarHeight) - kInfobarHeight;
+      progress * (maxBottomPadding + kTranslateInfobarHeight) -
+      kTranslateInfobarHeight;
 
   // If the fullscreen progress is greater than the previous progress, i.e., we
   // are exiting the fullscreen mode, update the bottom padding only if the
@@ -303,7 +304,7 @@ const CGFloat kIconTrailingMargin = 12;
         @"iconSize" : @(kIconSize),
         @"iconLeadingMargin" : @(kIconLeadingMargin),
         @"iconTrailingMargin" : @(kIconTrailingMargin),
-        @"infobarHeight" : @(kInfobarHeight),
+        @"infobarHeight" : @(kTranslateInfobarHeight),
         @"buttonSize" : @(kButtonSize),
       });
   AddSameCenterYConstraint(contentView, self.iconView);

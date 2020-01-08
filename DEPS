@@ -181,7 +181,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '496a206edeb5dd675c7da50708dab27d3679f14e',
+  'skia_revision': '511124e5a896914d4b3085f9dc52890e2932bd43',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -193,7 +193,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '2c63b83c8a32e69362c8c61bab160cc53f1e03e6',
+  'angle_revision': 'db49bc7dd0759fac8cb4065aa2afc3172aed7948',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -775,7 +775,7 @@ deps = {
     Var('chromium_git') + '/angle/angle.git' + '@' +  Var('angle_revision'),
 
   'src/third_party/dav1d/libdav1d':
-    Var('chromium_git') + '/external/github.com/videolan/dav1d.git' + '@' + '940eee483a852ec54349ef36f19713bb2b895b57',
+    Var('chromium_git') + '/external/github.com/videolan/dav1d.git' + '@' + '115fe773fe0e266a0918fbb950e1acfa5ee2b0bd',
 
   'src/third_party/dawn':
     Var('dawn_git') + '/dawn.git' + '@' +  Var('dawn_revision'),
@@ -904,7 +904,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '1961043388e63c48946322de077bebbb333fde6a',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '3a797afd61ff49d783b9b319e6cdfb33d493e3f4',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1568,7 +1568,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@c5147e51f2268b6c9b3c6423413b9d2b80d7e753',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d065442915f46cdc0cbe686b3c16a05f2fdf1c59',
     'condition': 'checkout_src_internal',
   },
 

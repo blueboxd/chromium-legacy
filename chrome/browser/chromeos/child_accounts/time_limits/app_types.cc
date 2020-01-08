@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 
+#include "base/logging.h"
+
 namespace chromeos {
 
 namespace app_time {
@@ -88,8 +90,21 @@ AppLimit& AppLimit::operator=(AppLimit&&) = default;
 
 AppLimit::~AppLimit() = default;
 
+AppActivity::ActiveTime::ActiveTime(base::Time start, base::Time end)
+    : active_from_(start), active_to_(end) {
+  DCHECK_GT(end, start);
+}
+
+AppActivity::ActiveTime::ActiveTime(const AppActivity::ActiveTime& rhs) =
+    default;
+
+AppActivity::ActiveTime& AppActivity::ActiveTime::operator=(
+    const AppActivity::ActiveTime& rhs) = default;
+
 AppActivity::AppActivity(AppState app_state)
-    : app_state_(app_state), last_updated_(base::Time::Now()) {}
+    : app_state_(app_state),
+      running_active_time_(base::TimeDelta::FromSeconds(0)),
+      last_updated_time_ticks_(base::TimeTicks::Now()) {}
 AppActivity::AppActivity(const AppActivity&) = default;
 AppActivity& AppActivity::operator=(const AppActivity&) = default;
 AppActivity::AppActivity(AppActivity&&) = default;
@@ -98,12 +113,38 @@ AppActivity::~AppActivity() = default;
 
 void AppActivity::SetAppState(AppState app_state) {
   app_state_ = app_state;
-  last_updated_ = base::Time::Now();
+  last_updated_time_ticks_ = base::TimeTicks::Now();
 }
 
-void AppActivity::SetActiveTime(base::TimeDelta active_time) {
-  active_time_ = active_time;
-  last_updated_ = base::Time::Now();
+void AppActivity::SetAppActive(base::Time timestamp) {
+  DCHECK(!is_active_);
+  DCHECK(app_state_ == AppState::kAvailable ||
+         app_state_ == AppState::kAlwaysAvailable);
+  is_active_ = true;
+  last_updated_time_ticks_ = base::TimeTicks::Now();
+}
+
+void AppActivity::SetAppInactive(base::Time timestamp) {
+  if (!is_active_)
+    return;
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta active_time = now - last_updated_time_ticks_;
+  base::Time start_time = timestamp - active_time;
+
+  is_active_ = false;
+  active_times_.push_back(ActiveTime(start_time, timestamp));
+
+  running_active_time_ += active_time;
+  last_updated_time_ticks_ = now;
+}
+
+base::TimeDelta AppActivity::RunningActiveTime() const {
+  if (!is_active_)
+    return running_active_time_;
+
+  return running_active_time_ +
+         (base::TimeTicks::Now() - last_updated_time_ticks_);
 }
 
 }  // namespace app_time

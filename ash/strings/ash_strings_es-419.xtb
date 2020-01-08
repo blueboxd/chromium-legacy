@@ -11,7 +11,7 @@
 <translation id="109942774857561566">Me aburro</translation>
 <translation id="1104084341931202936">Mostrar la configuración de accesibilidad</translation>
 <translation id="1104621072296271835">Tus dispositivos funcionan incluso mejor juntos</translation>
-<translation id="112308213915226829">Ocultar la biblioteca automáticamente</translation>
+<translation id="112308213915226829">Auto-ocultar biblioteca</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
 <translation id="1175572348579024023">Desplazamiento</translation>
 <translation id="1178581264944972037">Detener</translation>
@@ -34,7 +34,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Mostrar la configuración de Bluetooth: <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Intensidad de la señal: <ph name="SIGNAL_STRENGTH" /></translation>
-<translation id="1316069254387866896">Mostrar siempre la biblioteca</translation>
+<translation id="1316069254387866896">Siempre mostrar biblio.</translation>
 <translation id="1341651618736211726">Ampliado</translation>
 <translation id="1346748346194534595">Derecha</translation>
 <translation id="1351937230027495976">Contraer menú</translation>
@@ -180,7 +180,7 @@
 <translation id="3321628682574733415">Código parental incorrecto</translation>
 <translation id="332587331255250389">Reemplaza la batería</translation>
 <translation id="3351879221545518001">Estás transmitiendo la pantalla.</translation>
-<translation id="3364721542077212959">Herramientas de pluma stylus</translation>
+<translation id="3364721542077212959">Herramientas de la pluma stylus</translation>
 <translation id="3368922792935385530">Conectado</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (puerto lateral derecho delantero)</translation>
 <translation id="3386978599540877378">la lupa de pantalla completa</translation>
@@ -349,14 +349,14 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Mayúscula + Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
-<translation id="5916664084637901428">Sí</translation>
+<translation id="5916664084637901428">Activado</translation>
 <translation id="5947494881799873997">Revertir</translation>
 <translation id="595202126637698455">Seguimiento de rendimiento habilitado</translation>
 <translation id="5957083217255311415">Los datos móviles están desactivados.</translation>
 <translation id="5958529069007801266">Usuario supervisado</translation>
 <translation id="5977415296283489383">Auriculares</translation>
 <translation id="5978382165065462689">Se está compartiendo el control de la pantalla mediante la Asistencia remota.</translation>
-<translation id="5980301590375426705">Salir de la sesión de invitado</translation>
+<translation id="5980301590375426705">Cerrar sesión de invitado</translation>
 <translation id="598882571027504733">Para obtener la actualización, reinicia tu Chromebook con el teclado conectado.</translation>
 <translation id="5992218262414051481">Se habilitó el modo de contraste alto. Presiona Ctrl+Buscar+H de nuevo para desactivarlo.</translation>
 <translation id="6018164090099858612">Saliendo del modo de espejo</translation>
@@ -597,7 +597,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="9205817095063786319">Dispositivo administrado por <ph name="DOMAIN" /></translation>
 <translation id="9210037371811586452">Saliendo del modo de escritorio unificado</translation>
 <translation id="9211681782751733685">Tiempo restante hasta que se cargue por completo la batería: <ph name="TIME_REMAINING" /></translation>
-<translation id="9215934040295798075">Establecer fondo de pantalla</translation>
+<translation id="9215934040295798075">Fondo de pantalla</translation>
 <translation id="921989828232331238">Tus padres bloquearon el dispositivo por el día</translation>
 <translation id="923686485342484400">Presiona Control Mayús Q dos veces para salir.</translation>
 <translation id="938963181863597773">¿Qué eventos tengo en mi calendario?</translation>

@@ -56,6 +56,12 @@ GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(base::TimeDelta timeout,
 
 GpuWatchdogThreadImplV2::~GpuWatchdogThreadImplV2() {
   DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
+  // Stop() might take too long and the watchdog timeout is triggered.
+  // Disarm first before calling Stop() to avoid a crash.
+  if (IsArmed())
+    Disarm();
+  PauseWatchdog();
+
   Stop();  // stop the watchdog thread
 
   base::MessageLoopCurrent::Get()->RemoveTaskObserver(this);

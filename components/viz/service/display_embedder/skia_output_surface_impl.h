@@ -86,6 +86,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
   base::ScopedClosureRunner GetCacheBackBufferCb() override;
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
+      override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;
@@ -253,10 +255,12 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // increments or flips.
   gfx::OverlayTransform pre_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
 
-  // |task_sequence| is used to schedule task on GPU as a single
-  // sequence. In regular Viz it is implemented by SchedulerSequence. For
-  // Android WebView it is implemented on top of WebView's task queue.
-  std::unique_ptr<gpu::SingleTaskSequence> task_sequence_;
+  // |gpu_task_scheduler_| holds a gpu::SingleTaskSequence, and helps schedule
+  // tasks on GPU as a single sequence. It is shared with OverlayProcessor so
+  // compositing and overlay processing are in order. A gpu::SingleTaskSequence
+  // in regular Viz is implemented by SchedulerSequence. In Android WebView
+  // gpu::SingleTaskSequence is implemented on top of WebView's task queue.
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler_;
 
   // |impl_on_gpu| is created and destroyed on the GPU thread.
   std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;

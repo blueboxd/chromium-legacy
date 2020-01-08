@@ -1307,12 +1307,14 @@ TEST_F(InputMethodManagerImplTest, MigrateInputMethodTest) {
 
 TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
   InitComponentExtension();
+
   const GURL inputview_url(
       "chrome-extension://"
       "inputview.html#id=us.compact.qwerty&language=en-US&passwordLayout=us."
       "compact.qwerty&name=keyboard_us");
   GetActiveIMEState()->input_view_url = inputview_url;
-  EXPECT_EQ(inputview_url, GetActiveIMEState()->GetInputViewUrl());
+  EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
+              ::testing::StartsWith(inputview_url.spec()));
 
   // Override the keyboard url ref with 'emoji'.
   const GURL overridden_url_emoji(
@@ -1320,7 +1322,8 @@ TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
       "inputview.html#id=us.compact.qwerty.emoji&language=en-US&passwordLayout="
       "us.compact.qwerty&name=keyboard_us");
   manager_->OverrideKeyboardKeyset(chromeos::input_method::ImeKeyset::kEmoji);
-  EXPECT_EQ(overridden_url_emoji, GetActiveIMEState()->GetInputViewUrl());
+  EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
+              ::testing::StartsWith(overridden_url_emoji.spec()));
 
   // Override the keyboard url ref with 'hwt'.
   GetActiveIMEState()->input_view_url = inputview_url;
@@ -1330,7 +1333,8 @@ TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
       "us.compact.qwerty&name=keyboard_us");
   manager_->OverrideKeyboardKeyset(
       chromeos::input_method::ImeKeyset::kHandwriting);
-  EXPECT_EQ(overridden_url_hwt, GetActiveIMEState()->GetInputViewUrl());
+  EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
+              ::testing::StartsWith(overridden_url_hwt.spec()));
 
   // Override the keyboard url ref with 'voice'.
   GetActiveIMEState()->input_view_url = inputview_url;
@@ -1339,7 +1343,8 @@ TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
       "inputview.html#id=us.compact.qwerty.voice&language=en-US"
       "&passwordLayout=us.compact.qwerty&name=keyboard_us");
   manager_->OverrideKeyboardKeyset(chromeos::input_method::ImeKeyset::kVoice);
-  EXPECT_EQ(overridden_url_voice, GetActiveIMEState()->GetInputViewUrl());
+  EXPECT_THAT(GetActiveIMEState()->GetInputViewUrl().spec(),
+              ::testing::StartsWith(overridden_url_voice.spec()));
 }
 
 TEST_F(InputMethodManagerImplTest, OverrideDefaultKeyboardUrlRef) {

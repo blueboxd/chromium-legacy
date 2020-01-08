@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/big_buffer.mojom";
+import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
@@ -121,7 +122,9 @@ interface DevToolsSession {
   // |method| is a method name as defined in protocol (e.g. "Runtime.evaluate").
   // |call_id| is a command id as defined in protocol, and is going to be
   // reported back to host in a response message (see DevToolsSessionHost).
-  DispatchProtocolCommand(int32 call_id, string method, DevToolsMessage message);
+  DispatchProtocolCommand(int32 call_id,
+                          string method,
+                          mojo_base.mojom.ReadOnlyBuffer message);
 };
 
 // A peer of DevToolsSession representing a remote debugging client

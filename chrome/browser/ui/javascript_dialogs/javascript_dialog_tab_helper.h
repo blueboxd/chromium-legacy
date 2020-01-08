@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -103,6 +104,8 @@ class JavaScriptDialogTabHelper
   bool IsShowingDialogForTesting() const;
   void ClickDialogButtonForTesting(bool accept,
                                    const base::string16& user_input);
+  using DialogDismissedCallback = base::OnceCallback<void(DismissalCause)>;
+  void SetDialogDismissedCallbackForTesting(DialogDismissedCallback callback);
 
   // JavaScriptDialogManager:
   void RunJavaScriptDialog(content::WebContents* web_contents,
@@ -205,6 +208,9 @@ class JavaScriptDialogTabHelper
 
   // A closure to be fired when a dialog is shown. For testing only.
   base::OnceClosure dialog_shown_;
+
+  // A closure to be fired when a dialog is dismissed. For testing only.
+  DialogDismissedCallback dialog_dismissed_;
 
 #if !defined(OS_ANDROID)
   // If this instance is observing a TabStripModel, then this member is not

@@ -16,6 +16,8 @@
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
+#include "device/base/features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/orientation/orientation_device_provider.h"
 #include "device/vr/vr_device_provider.h"
@@ -45,6 +47,19 @@ XRRuntimeManager* g_xr_runtime_manager = nullptr;
 base::LazyInstance<base::ObserverList<XRRuntimeManagerObserver>>::Leaky
     g_xr_runtime_manager_observers;
 
+#if !defined(OS_ANDROID)
+bool IsEnabled(const base::CommandLine* command_line,
+               const base::Feature& feature,
+               const std::string& name) {
+  if (!command_line->HasSwitch(switches::kWebXrForceRuntime))
+    return base::FeatureList::IsEnabled(feature);
+
+  return (base::CompareCaseInsensitiveASCII(
+              command_line->GetSwitchValueASCII(switches::kWebXrForceRuntime),
+              name) == 0);
+}
+#endif
+
 }  // namespace
 
 scoped_refptr<XRRuntimeManager> XRRuntimeManager::GetOrCreateInstance() {
@@ -71,11 +86,23 @@ scoped_refptr<XRRuntimeManager> XRRuntimeManager::GetOrCreateInstance() {
   providers.emplace_back(std::make_unique<vr::IsolatedVRDeviceProvider>());
 #endif  // defined(OS_ANDROID)
 
-  mojo::PendingRemote<device::mojom::SensorProvider> sensor_provider;
-  content::GetDeviceService().BindSensorProvider(
-      sensor_provider.InitWithNewPipeAndPassReceiver());
-  providers.emplace_back(std::make_unique<device::VROrientationDeviceProvider>(
-      std::move(sensor_provider)));
+  bool orientation_provider_enabled = true;
+
+#if !defined(OS_ANDROID)
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  orientation_provider_enabled =
+      IsEnabled(cmd_line, device::kWebXrOrientationSensorDevice,
+                switches::kWebXrRuntimeOrientationSensors);
+#endif
+
+  if (orientation_provider_enabled) {
+    mojo::PendingRemote<device::mojom::SensorProvider> sensor_provider;
+    content::GetDeviceService().BindSensorProvider(
+        sensor_provider.InitWithNewPipeAndPassReceiver());
+    providers.emplace_back(
+        std::make_unique<device::VROrientationDeviceProvider>(
+            std::move(sensor_provider)));
+  }
   return CreateInstance(std::move(providers));
 }
 

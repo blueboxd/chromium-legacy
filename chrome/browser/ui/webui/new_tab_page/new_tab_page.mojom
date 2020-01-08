@@ -87,7 +87,7 @@ interface PageHandler {
   // Adds tile.
   AddMostVisitedTile(url.mojom.Url url, string title) => (bool success);
   // Deletes tile by |url|.
-  DeleteMostVisitedTile(url.mojom.Url url) => (bool success);
+  DeleteMostVisitedTile(url.mojom.Url url);
   // Moves tile identified by url to a new position at index |new_pos|.
   ReorderMostVisitedTile(url.mojom.Url url, uint8 new_pos);
   // Replaces the custom and most-visited tiles with the default tile set.
@@ -95,6 +95,8 @@ interface PageHandler {
   // Undoes the last action done to the tiles (add, delete, reorder, restore or
   // update). Note that only the last action can be undone.
   UndoMostVisitedTileAction();
+  // Called to update the tiles.
+  UpdateMostVisitedInfo();
   // Updates a tile by url.
   UpdateMostVisitedTile(url.mojom.Url url, url.mojom.Url new_url,
                         string new_title)
@@ -118,10 +120,6 @@ interface Page {
   // Updates the page with most-visited info which includes whether the
   // tiles should be shown, if links can be customized and the tiles.
   SetMostVisitedInfo(MostVisitedInfo info);
-  // Set custom links enabled separate from |SetMostVisitedInfo|.
-  SetCustomLinksEnabled(bool enabled);
-  // Set whether most-visited section should be shown.
-  SetMostVisitedVisible(bool visible);
   // Sets the current theme.
   SetTheme(Theme theme);
 };

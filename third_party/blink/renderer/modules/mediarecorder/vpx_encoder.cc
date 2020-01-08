@@ -44,10 +44,10 @@ void VpxEncoder::ShutdownEncoder(std::unique_ptr<Thread> encoding_thread,
 
 VpxEncoder::VpxEncoder(
     bool use_vp9,
-    const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
+    const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
     int32_t bits_per_second,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
-    : VideoTrackRecorder::Encoder(on_encoded_video_callback,
+    : VideoTrackRecorder::Encoder(on_encoded_video_cb,
                                   bits_per_second,
                                   std::move(main_task_runner)),
       use_vp9_(use_vp9) {
@@ -139,7 +139,7 @@ void VpxEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
       *origin_task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(
           OnFrameEncodeCompleted,
-          WTF::Passed(CrossThreadBindRepeating(on_encoded_video_callback_)),
+          WTF::Passed(CrossThreadBindRepeating(on_encoded_video_cb_)),
           video_params, std::move(data), std::move(alpha_data),
           capture_timestamp, keyframe));
 }

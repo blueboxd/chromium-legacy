@@ -2574,6 +2574,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Ash_Tablet_BackGesture">
+  <owner>minch@chromium.org</owner>
+  <owner>tclaiborne@chromium.org</owner>
+  <description>
+    User tried to swipe back from the left side of the window to go back in
+    tablet mode.
+  </description>
+</action>
+
 <action name="AutoDetectChange">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

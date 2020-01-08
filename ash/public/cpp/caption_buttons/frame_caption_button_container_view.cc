@@ -417,11 +417,6 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
       frame_->Maximize();
       RecordAction(UserMetricsAction("MaxButton_Clk_Maximize"));
     }
-
-    if (event.IsGestureEvent()) {
-      UMA_HISTOGRAM_ENUMERATION("Ash.GestureTarget", GESTURE_FRAMEMAXIMIZE_TAP,
-                                GESTURE_ACTION_COUNT);
-    }
   } else if (sender == close_button_) {
     frame_->Close();
     if (TabletMode::Get()->InTabletMode())

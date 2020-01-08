@@ -1440,6 +1440,48 @@ TEST_F(OptimizationGuideHintsManagerTest,
   EXPECT_EQ(nullptr, navigation_data->page_hint());
 }
 
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationAndPopulatesPerformanceHintsMetadata) {
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint = config.add_hints();
+  hint->set_key("somedomain.org");
+  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint->set_version("someversion");
+  optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("/news/");
+  optimization_guide::proto::Optimization* opt =
+      page_hint->add_whitelisted_optimizations();
+  opt->set_optimization_type(optimization_guide::proto::PERFORMANCE_HINTS);
+  optimization_guide::proto::PerformanceHint* performance_hint =
+      opt->mutable_performance_hints_metadata()->add_performance_hints();
+  performance_hint->set_wildcard_pattern("somedomain.org");
+  performance_hint->set_performance_class(
+      optimization_guide::proto::PERFORMANCE_SLOW);
+
+  ProcessHints(config, "1.0.0.0");
+
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_with_hints());
+  base::RunLoop run_loop;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+  run_loop.Run();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(), optimization_guide::proto::PERFORMANCE_HINTS,
+          &optimization_metadata);
+  // Make sure performance hints metadata is populated.
+  EXPECT_EQ(1, optimization_metadata.performance_hints_metadata
+                   .performance_hints_size());
+
+  // Make sure decisions are logged correctly.
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
+            optimization_type_decision);
+}
+
 TEST_F(OptimizationGuideHintsManagerTest, IsGoogleURL) {
   const struct {
     const char* url;

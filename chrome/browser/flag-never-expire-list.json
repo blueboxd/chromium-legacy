@@ -88,5 +88,6 @@
   "use-angle",
   "use_messages_staging_url",
   "use-sync-sandbox",
-  "wallet-service-use-sandbox"
+  "wallet-service-use-sandbox",
+  "webxr-runtime"
 ]

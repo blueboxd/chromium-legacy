@@ -320,11 +320,6 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorKeepSocketBrowserTest,
     EXPECT_TRUE(ukm_recorder->EntryHasMetric(
         kv.second.get(),
         ukm::builders::PageLoad::kMainFrameResource_SocketReusedName));
-
-    EXPECT_EQ(
-        0, *(ukm_recorder->GetEntryMetric(
-               kv.second.get(),
-               ukm::builders::PageLoad::kMainFrameResource_SocketReusedName)));
   }
 }
 

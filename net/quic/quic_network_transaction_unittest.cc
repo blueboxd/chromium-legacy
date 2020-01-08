@@ -524,17 +524,6 @@ class QuicNetworkTransactionTest
         smallest_received, least_unacked, fin, data);
   }
 
-  std::unique_ptr<quic::QuicEncryptedPacket> ConstructClientForceHolDataPacket(
-      uint64_t packet_number,
-      quic::QuicStreamId stream_id,
-      bool should_include_version,
-      bool fin,
-      quic::QuicStreamOffset* offset,
-      quiche::QuicheStringPiece data) {
-    return client_maker_.MakeForceHolDataPacket(
-        packet_number, stream_id, should_include_version, fin, offset, data);
-  }
-
   std::unique_ptr<quic::QuicEncryptedPacket>
   ConstructClientRequestHeadersPacket(uint64_t packet_number,
                                       quic::QuicStreamId stream_id,

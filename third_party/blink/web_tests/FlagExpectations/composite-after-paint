@@ -198,12 +198,6 @@ paint/invalidation/reflection/scroll-fixed-reflected-layer.html [ Failure ]
 crbug.com/900241 paint/invalidation/animation/opacity-animation.html [ Failure ]
 crbug.com/900241 paint/invalidation/animation/transform-animation.html [ Failure ]
 
-# Backdrop filter
-crbug.com/923429 css3/filters/backdrop-filter-plus-mask.html [ Failure ]
-crbug.com/923429 css3/filters/backdrop-filter-plus-mask-large.html [ Failure ]
-crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-plus-mask.html [ Failure ]
-crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-plus-mask-large.html [ Failure ]
-
 crbug.com/940033 virtual/threaded-prefer-compositing/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Pass Failure ]
 
 # Crash during PictureLayer::GetPicture() when DisplayItemList is finished twice.

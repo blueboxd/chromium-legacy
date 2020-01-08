@@ -88,6 +88,8 @@ class FakeOutputSurface : public OutputSurface {
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
 #endif
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
+      override;
 
   void set_framebuffer(GLint framebuffer, GLenum format) {
     framebuffer_ = framebuffer;

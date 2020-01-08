@@ -114,4 +114,9 @@ gfx::OverlayTransform PixelTestOutputSurface::GetDisplayTransform() {
   return gfx::OVERLAY_TRANSFORM_NONE;
 }
 
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+PixelTestOutputSurface::GetGpuTaskSchedulerHelper() {
+  return nullptr;
+}
+
 }  // namespace cc

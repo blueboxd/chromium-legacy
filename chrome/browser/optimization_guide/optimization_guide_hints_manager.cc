@@ -777,7 +777,7 @@ OptimizationGuideHintsManager::CanApplyOptimization(
 
   // Clear out optimization metadata if provided.
   if (optimization_metadata)
-    (*optimization_metadata).previews_metadata.Clear();
+    *optimization_metadata = {};
 
   const auto& url = navigation_handle->GetURL();
   // If the URL doesn't have a host, we cannot query the hint for it, so just
@@ -864,9 +864,20 @@ OptimizationGuideHintsManager::CanApplyOptimization(
 
     // We found an optimization that can be applied. Populate optimization
     // metadata if applicable and return.
-    if (optimization_metadata && optimization.has_previews_metadata()) {
-      (*optimization_metadata).previews_metadata =
-          optimization.previews_metadata();
+    if (optimization_metadata) {
+      switch (optimization.metadata_case()) {
+        case optimization_guide::proto::Optimization::kPreviewsMetadata:
+          optimization_metadata->previews_metadata =
+              optimization.previews_metadata();
+          break;
+        case optimization_guide::proto::Optimization::kPerformanceHintsMetadata:
+          optimization_metadata->performance_hints_metadata =
+              optimization.performance_hints_metadata();
+          break;
+        default:
+          NOTREACHED();
+          break;
+      }
     }
     return optimization_guide::OptimizationTypeDecision::kAllowedByHint;
   }

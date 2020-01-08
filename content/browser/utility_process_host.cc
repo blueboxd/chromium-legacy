@@ -426,6 +426,7 @@ bool UtilityProcessHost::StartProcess() {
       switches::kForceWaveAudio,
       switches::kTrySupportedChannelLayouts,
       switches::kWaveOutBuffers,
+      switches::kWebXrForceRuntime,
       service_manager::switches::kAddXrAppContainerCaps,
 #endif
     };

@@ -1007,6 +1007,24 @@ class BrowseFlipKartMobileStory(_ArticleBrowsingStory):
     action_runner.WaitForElement(text="Sunglasses")
 
 
+class BrowseFlipKartMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:shopping:flipkart:2019'
+  URL = 'https://flipkart.com/search?q=Sunglasses'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+
+  ITEM_SELECTOR = '.r-1hvjb8t'
+  BACK_SELECTOR = '._3NH1qf'
+  ITEMS_TO_VISIT = 4
+
+  def _WaitForNavigation(self, action_runner):
+    action_runner.WaitForElement(text='View Details')
+
+  def _NavigateBack(self, action_runner):
+    action_runner.ClickElement(selector=self.BACK_SELECTOR)
+    action_runner.WaitForElement(text="sunglasses")
+
+
 class BrowseAmazonMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:shopping:amazon'
   URL = 'https://www.amazon.co.in/s/?field-keywords=Mobile'

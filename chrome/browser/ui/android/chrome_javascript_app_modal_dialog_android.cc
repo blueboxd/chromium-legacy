@@ -23,7 +23,7 @@ void ChromeJavascriptAppModalDialogAndroid::ShowAppModalDialog() {
     return;
   }
 
-  DoShowAppModalDialog(tab->IsUserInteractable());
+  DoShowAppModalDialog();
 }
 
 ChromeJavascriptAppModalDialogAndroid::

@@ -75,11 +75,11 @@ ContextResult GLInProcessContext::Initialize(
   command_buffer_ = std::make_unique<InProcessCommandBuffer>(
       task_executor, GURL("chrome://gpu/GLInProcessContext::Initialize"));
 
-  auto result =
-      command_buffer_->Initialize(surface, is_offscreen, window, attribs,
-                                  gpu_memory_buffer_manager, image_factory,
-                                  /*gpu_channel_manager_delegate=*/nullptr,
-                                  std::move(task_runner), nullptr, nullptr);
+  auto result = command_buffer_->Initialize(
+      surface, is_offscreen, window, attribs, gpu_memory_buffer_manager,
+      image_factory,
+      /*gpu_channel_manager_delegate=*/nullptr, std::move(task_runner),
+      /*task_sequence=*/nullptr, nullptr, nullptr);
   if (result != ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return result;

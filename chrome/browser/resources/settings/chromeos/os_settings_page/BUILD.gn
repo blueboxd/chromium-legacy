@@ -12,7 +12,7 @@ js_type_check("closure_compile") {
 
 js_library("os_settings_page") {
   deps = [
-    "../..:page_visibility",
+    "..:os_page_visibility",
     "../..:route",
     "../..:search_settings",
     "../../prefs:prefs_behavior",

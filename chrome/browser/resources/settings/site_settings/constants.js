@@ -39,6 +39,7 @@ settings.ContentSettingsTypes = {
   MIXEDSCRIPT: 'mixed-script',
   BLUETOOTH_SCANNING: 'bluetooth-scanning',
   NATIVE_FILE_SYSTEM_WRITE: 'native-file-system-write',
+  HID_DEVICES: 'hid-devices',
 };
 
 /**
@@ -66,6 +67,7 @@ settings.ChooserType = {
   NONE: '',
   USB_DEVICES: 'usb-devices-data',
   SERIAL_PORTS: 'serial-ports-data',
+  HID_DEVICES: 'hid-devices-data',
 };
 
 /**

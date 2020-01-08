@@ -297,6 +297,8 @@ class Dispatcher : public content::RenderThreadObserver,
   std::unique_ptr<NativeExtensionBindingsSystem> CreateBindingsSystem(
       std::unique_ptr<IPCMessageSender> ipc_sender);
 
+  void ResumeEvaluationOnWorkerThread(const ExtensionId& extension_id);
+
   // The delegate for this dispatcher to handle embedder-specific logic.
   std::unique_ptr<DispatcherDelegate> delegate_;
 

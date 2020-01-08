@@ -53,6 +53,8 @@ class GLOutputSurface : public OutputSurface {
   base::ScopedClosureRunner GetCacheBackBufferCb() override;
 
   gpu::SurfaceHandle GetSurfaceHandle() const override;
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
+      override;
 
  protected:
   OutputSurfaceClient* client() const { return client_; }

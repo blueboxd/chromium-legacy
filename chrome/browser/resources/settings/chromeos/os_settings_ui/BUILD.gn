@@ -12,8 +12,8 @@ js_type_check("closure_compile") {
 
 js_library("os_settings_ui") {
   deps = [
+    "..:os_page_visibility",
     "../..:global_scroll_target_behavior",
-    "../..:page_visibility",
     "../../prefs",
     "../os_settings_main:os_settings_main",
     "../os_toolbar",

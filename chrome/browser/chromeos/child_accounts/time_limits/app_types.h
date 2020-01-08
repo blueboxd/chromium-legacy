@@ -7,6 +7,7 @@
 
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "base/time/time.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -83,6 +84,11 @@ class AppLimit {
   AppLimit& operator=(AppLimit&&);
   ~AppLimit();
 
+  AppRestriction restriction() const { return restriction_; }
+  const base::Optional<base::TimeDelta>& daily_limit() const {
+    return daily_limit_;
+  }
+
  private:
   // Usage restriction applied to the app.
   AppRestriction restriction_ = AppRestriction::kUnknown;
@@ -98,6 +104,20 @@ class AppLimit {
 // Contains information about app usage.
 class AppActivity {
  public:
+  class ActiveTime {
+   public:
+    ActiveTime(base::Time start, base::Time end);
+    ActiveTime(const ActiveTime& rhs);
+    ActiveTime& operator=(const ActiveTime& rhs);
+
+    base::Time active_from() const { return active_from_; }
+    base::Time active_to() const { return active_to_; }
+
+   private:
+    base::Time active_from_;
+    base::Time active_to_;
+  };
+
   // Creates AppActivity and sets current |app_state_|.
   explicit AppActivity(AppState app_state);
   AppActivity(const AppActivity&);
@@ -107,23 +127,36 @@ class AppActivity {
   ~AppActivity();
 
   void SetAppState(AppState app_state);
-  void SetActiveTime(base::TimeDelta active_time);
+  void SetAppActive(base::Time timestamp);
+  void SetAppInactive(base::Time timestamp);
 
+  void ResetRunningActiveTime() {
+    running_active_time_ = base::TimeDelta::FromSeconds(0);
+  }
+
+  base::TimeDelta RunningActiveTime() const;
+
+  bool is_active() const { return is_active_; }
   AppState app_state() const { return app_state_; }
-  base::TimeDelta active_time() const { return active_time_; }
+  const std::vector<ActiveTime>& active_times() const { return active_times_; }
 
  private:
+  // boolean to specify if the application is active.
+  bool is_active_ = false;
+
   // Current state of the app.
   // There might be relevant activity recoded for app that was uninstalled
   // recently.
   AppState app_state_ = AppState::kAvailable;
 
-  // The time app was active.
-  // TODO(agawronska): This will become more complicated.
-  base::TimeDelta active_time_;
+  // Keeps the sum of the active times since the last reset.
+  base::TimeDelta running_active_time_;
 
-  // UTC timestamp for the last time the activity was updated.
-  base::Time last_updated_;
+  // The time app was active.
+  std::vector<ActiveTime> active_times_;
+
+  // Time tick for the last time the activity was updated.
+  base::TimeTicks last_updated_time_ticks_;
 };
 
 }  // namespace app_time

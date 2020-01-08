@@ -47,7 +47,8 @@ class InfoMap;
 // is no IO thread).
 class ProfileIOData {
  public:
-  virtual ~ProfileIOData();
+  ProfileIOData();
+  ~ProfileIOData();
 
   static ProfileIOData* FromResourceContext(content::ResourceContext* rc);
 
@@ -78,6 +79,12 @@ class ProfileIOData {
   }
 #endif
 
+  void InitializeOnUIThread(Profile* profile);
+
+  // Called when the Profile is destroyed. Triggers destruction of the
+  // ProfileIOData.
+  void ShutdownOnUIThread();
+
  protected:
   // Created on the UI thread, read on the IO thread during ProfileIOData lazy
   // initialization.
@@ -97,23 +104,6 @@ class ProfileIOData {
 #endif
   };
 
-  ProfileIOData();
-
-  void InitializeOnUIThread(Profile* profile);
-
-  // Called when the Profile is destroyed. Triggers destruction of the
-  // ProfileIOData.
-  void ShutdownOnUIThread();
-
-  bool initialized() const {
-    return initialized_;
-  }
-
-  // Destroys the ResourceContext first, to cancel any URLRequests that are
-  // using it still, before we destroy the member variables that those
-  // URLRequests may be accessing.
-  void DestroyResourceContext();
-
  private:
   class ResourceContext : public content::ResourceContext {
    public:
@@ -125,23 +115,6 @@ class ProfileIOData {
 
     ProfileIOData* const io_data_;
   };
-
-  // --------------------------------------------
-  // Virtual interface for subtypes to implement:
-  // --------------------------------------------
-
-  // The order *DOES* matter for the majority of these member variables, so
-  // don't move them around unless you know what you're doing!
-  // General rules:
-  //   * ResourceContext references the URLRequestContexts, so
-  //   URLRequestContexts must outlive ResourceContext, hence ResourceContext
-  //   should be destroyed first.
-  //   * URLRequestContexts reference a whole bunch of members, so
-  //   URLRequestContext needs to be destroyed before them.
-  //   * Therefore, ResourceContext should be listed last, and then the
-  //   URLRequestContexts, and then the URLRequestContext members.
-  //   * Note that URLRequestContext members have a directed dependency graph
-  //   too, so they must themselves be ordered correctly.
 
   // Tracks whether or not we've been lazily initialized.
   mutable bool initialized_;

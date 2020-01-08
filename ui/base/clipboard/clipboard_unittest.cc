@@ -41,16 +41,16 @@ struct PlatformClipboardTraits {
   }
 };
 
-class BaseClipboardTestName {
+class PlatformClipboardTestName {
  public:
   template <typename T>
   static std::string GetName(int index) {
-    return "BaseClipboardTest";
+    return "PlatformClipboardTest";
   }
 };
 
 using TypesToTest = PlatformClipboardTraits;
-using NamesOfTypesToTest = BaseClipboardTestName;
+using NamesOfTypesToTest = PlatformClipboardTestName;
 
 }  // namespace ui
 

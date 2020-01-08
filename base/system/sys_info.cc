@@ -90,9 +90,14 @@ std::string SysInfo::HardwareModelName() {
 
 void SysInfo::GetHardwareInfo(base::OnceCallback<void(HardwareInfo)> callback) {
 #if defined(OS_WIN)
+  // On Windows the calls to GetHardwareInfoSync can take a really long time to
+  // complete as they depend on WMI, using the CONTINUE_ON_SHUTDOWN traits will
+  // prevent this task from blocking shutdown.
   base::PostTaskAndReplyWithResult(
-      base::CreateCOMSTATaskRunner({ThreadPool()}).get(), FROM_HERE,
-      base::BindOnce(&GetHardwareInfoSync), std::move(callback));
+      base::CreateCOMSTATaskRunner(
+          {ThreadPool(), TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
+          .get(),
+      FROM_HERE, base::BindOnce(&GetHardwareInfoSync), std::move(callback));
 #elif defined(OS_ANDROID) || defined(OS_MACOSX)
   base::PostTaskAndReplyWithResult(
       FROM_HERE, base::BindOnce(&GetHardwareInfoSync), std::move(callback));

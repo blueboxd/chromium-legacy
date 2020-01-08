@@ -207,6 +207,9 @@ const SiteSettingsBehaviorImpl = {
     addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.MIXEDSCRIPT,
         'enableInsecureContentContentSetting');
+    addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.HID_DEVICES,
+        'enableExperimentalWebPlatformFeatures');
     return this.contentTypes_.slice(0);
   },
 

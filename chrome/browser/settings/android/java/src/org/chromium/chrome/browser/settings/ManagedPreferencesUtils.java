@@ -15,7 +15,6 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -27,7 +26,6 @@ import java.util.Locale;
  * Utilities and common methods to handle settings managed by policies.
  */
 public class ManagedPreferencesUtils {
-
     /**
      * Shows a toast indicating that the previous action is managed by the system administrator.
      *

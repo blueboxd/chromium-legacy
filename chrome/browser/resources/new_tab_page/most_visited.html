@@ -124,7 +124,8 @@
   }
 
   :host(:not([reordering_])) cr-icon-button:active,
-  :host(:not([reordering_])) cr-icon-button:focus,
+  :host-context(.focus-outline-visible):host(:not([reordering_]))
+      cr-icon-button:focus,
   :host(:not([reordering_])) cr-icon-button:hover {
     --cr-icon-button-fill-color: var(--icon-button-color-active);
     opacity: 1;

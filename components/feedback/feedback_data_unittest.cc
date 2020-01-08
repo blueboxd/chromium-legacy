@@ -82,9 +82,9 @@ class FeedbackDataTest : public testing::Test {
     run_loop_->Run();
   }
 
-  void set_send_report_callback() { quit_closure_.Run(); }
+  void set_send_report_callback() { std::move(quit_closure_).Run(); }
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
   std::unique_ptr<base::RunLoop> run_loop_;
   content::BrowserTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;

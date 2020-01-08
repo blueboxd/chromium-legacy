@@ -44,7 +44,7 @@ class JavascriptAppModalDialogAndroid : public NativeAppModalDialog {
   const base::android::ScopedJavaGlobalRef<jobject>& GetDialogObject() const;
 
  protected:
-  void DoShowAppModalDialog(bool is_web_contents_foremost);
+  void DoShowAppModalDialog();
 
   JavaScriptAppModalDialog* dialog() { return dialog_.get(); }
 

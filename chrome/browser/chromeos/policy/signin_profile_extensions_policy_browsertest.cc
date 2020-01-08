@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -15,6 +16,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -338,6 +340,59 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
   EXPECT_NE(default_storage_partition, storage_partition_for_app);
   EXPECT_NE(default_storage_partition, storage_partition_for_extension);
   EXPECT_NE(storage_partition_for_app, storage_partition_for_extension);
+}
+
+// Class for testing the sign-in profile extensions with the simulated absence
+// of network connectivity.
+class SigninProfileExtensionsPolicyOfflineLaunchTest
+    : public SigninProfileExtensionsPolicyTest {
+ protected:
+  void SetUpOnMainThread() override {
+    SigninProfileExtensionsPolicyTest::SetUpOnMainThread();
+
+    test_extension_registry_observer_ =
+        std::make_unique<extensions::TestExtensionRegistryObserver>(
+            extensions::ExtensionRegistry::Get(GetInitialProfile()),
+            kWhitelistedAppId);
+
+    AddExtensionForForceInstallation(kWhitelistedAppId,
+                                     kWhitelistedAppUpdateManifestPath);
+
+    // In the non-PRE test, this simulates inability to make network requests
+    // for fetching the extension update manifest and CRX files. In the PRE test
+    // the server is not shut down, in order to allow the initial installation
+    // of the extension.
+    if (!content::IsPreTest())
+      EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+  }
+
+  void TearDownOnMainThread() override {
+    test_extension_registry_observer_.reset();
+
+    SigninProfileExtensionsPolicyTest::TearDownOnMainThread();
+  }
+
+  void WaitForTestExtensionLoaded() {
+    test_extension_registry_observer_->WaitForExtensionLoaded();
+  }
+
+ private:
+  std::unique_ptr<extensions::TestExtensionRegistryObserver>
+      test_extension_registry_observer_;
+};
+
+// This is the preparation step for the actual test. Here the whitelisted app
+// gets installed into the sign-in profile.
+IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyOfflineLaunchTest,
+                       PRE_Test) {
+  WaitForTestExtensionLoaded();
+}
+
+// Tests that the whitelisted app gets launched using the cached version even
+// when there's no network connection (i.e., neither the extension update
+// manifest nor the CRX file can be fetched during this browser execution).
+IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyOfflineLaunchTest, Test) {
+  WaitForTestExtensionLoaded();
 }
 
 }  // namespace policy

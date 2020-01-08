@@ -36,7 +36,7 @@ JavascriptAppModalDialogAndroid::JavascriptAppModalDialogAndroid(
       parent_jobject_weak_ref_(env, parent->GetJavaObject().obj()) {}
 
 void JavascriptAppModalDialogAndroid::ShowAppModalDialog() {
-  DoShowAppModalDialog(true);
+  DoShowAppModalDialog();
 }
 
 void JavascriptAppModalDialogAndroid::ActivateAppModalDialog() {
@@ -86,8 +86,7 @@ JavascriptAppModalDialogAndroid::GetDialogObject() const {
   return dialog_jobject_;
 }
 
-void JavascriptAppModalDialogAndroid::DoShowAppModalDialog(
-    bool is_web_contents_foremost) {
+void JavascriptAppModalDialogAndroid::DoShowAppModalDialog() {
   JNIEnv* env = AttachCurrentThread();
   // Keep a strong ref to the parent window while we make the call to java to
   // display the dialog.
@@ -105,8 +104,6 @@ void JavascriptAppModalDialogAndroid::DoShowAppModalDialog(
 
   switch (dialog_->javascript_dialog_type()) {
     case content::JAVASCRIPT_DIALOG_TYPE_ALERT: {
-      UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Alert",
-                            is_web_contents_foremost);
       dialog_object = Java_JavascriptAppModalDialog_createAlertDialog(
           env, title, message, dialog_->display_suppress_checkbox());
       break;
@@ -117,16 +114,12 @@ void JavascriptAppModalDialogAndroid::DoShowAppModalDialog(
             env, title, message, dialog_->is_reload(),
             dialog_->display_suppress_checkbox());
       } else {
-        UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Confirm",
-                              is_web_contents_foremost);
         dialog_object = Java_JavascriptAppModalDialog_createConfirmDialog(
             env, title, message, dialog_->display_suppress_checkbox());
       }
       break;
     }
     case content::JAVASCRIPT_DIALOG_TYPE_PROMPT: {
-      UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Prompt",
-                            is_web_contents_foremost);
       ScopedJavaLocalRef<jstring> default_prompt_text =
           ConvertUTF16ToJavaString(env, dialog_->default_prompt_text());
       dialog_object = Java_JavascriptAppModalDialog_createPromptDialog(

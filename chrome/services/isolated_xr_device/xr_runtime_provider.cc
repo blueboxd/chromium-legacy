@@ -5,8 +5,11 @@
 #include "chrome/services/isolated_xr_device/xr_runtime_provider.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/common/chrome_features.h"
+#include "content/public/common/content_switches.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/vr_device_base.h"
 
@@ -74,6 +77,19 @@ void SetRuntimeStatus(device::mojom::IsolatedXRRuntimeProviderClient* client,
   }
 }
 
+// If none of the runtimes are enabled, this function will be unused.
+// This is a bit more scalable than wrapping it in all the typedefs
+bool ALLOW_UNUSED_TYPE IsEnabled(const base::CommandLine* command_line,
+                                 const base::Feature& feature,
+                                 const std::string& name) {
+  if (!command_line->HasSwitch(switches::kWebXrForceRuntime))
+    return base::FeatureList::IsEnabled(feature);
+
+  return (base::CompareCaseInsensitiveASCII(
+              command_line->GetSwitchValueASCII(switches::kWebXrForceRuntime),
+              name) == 0);
+}
+
 }  // namespace
 
 // This function is called periodically to check the availability of hardware
@@ -85,8 +101,7 @@ void IsolatedXRRuntimeProvider::PollForDeviceChanges() {
 
   // If none of the following runtimes are enabled,
   // we'll get an error for 'preferred_device_enabled' being unused.
-  // Cast it to void (nop) here to mitigate that error.
-  (void)preferred_device_enabled;
+  ALLOW_UNUSED_LOCAL(preferred_device_enabled);
 
 #if BUILDFLAG(ENABLE_OPENXR)
   if (!preferred_device_enabled && IsOpenXrHardwareAvailable()) {
@@ -134,23 +149,31 @@ void IsolatedXRRuntimeProvider::PollForDeviceChanges() {
 
 void IsolatedXRRuntimeProvider::SetupPollingForDeviceChanges() {
   bool any_runtimes_available = false;
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  // If none of the following runtimes are enabled,
+  // we'll get an error for 'command_line' being unused.
+  ALLOW_UNUSED_LOCAL(command_line);
 
 #if BUILDFLAG(ENABLE_OCULUS_VR)
-  if (base::FeatureList::IsEnabled(features::kOculusVR)) {
+  if (IsEnabled(command_line, features::kOculusVR,
+                switches::kWebXrRuntimeOculus)) {
     should_check_oculus_ = device::OculusDevice::IsApiAvailable();
     any_runtimes_available |= should_check_oculus_;
   }
 #endif
 
 #if BUILDFLAG(ENABLE_OPENVR)
-  if (base::FeatureList::IsEnabled(features::kOpenVR)) {
+  if (IsEnabled(command_line, features::kOpenVR,
+                switches::kWebXrRuntimeOpenVr)) {
     should_check_openvr_ = device::OpenVRDevice::IsApiAvailable();
     any_runtimes_available |= should_check_openvr_;
   }
 #endif
 
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
-  if (base::FeatureList::IsEnabled(features::kWindowsMixedReality)) {
+  if (IsEnabled(command_line, features::kWindowsMixedReality,
+                switches::kWebXrRuntimeWMR)) {
     wmr_statics_ = device::MixedRealityDeviceStatics::CreateInstance();
     should_check_wmr_ = wmr_statics_->IsApiAvailable();
     any_runtimes_available |= should_check_wmr_;
@@ -158,7 +181,8 @@ void IsolatedXRRuntimeProvider::SetupPollingForDeviceChanges() {
 #endif
 
 #if BUILDFLAG(ENABLE_OPENXR)
-  if (base::FeatureList::IsEnabled(features::kOpenXR)) {
+  if (IsEnabled(command_line, features::kOpenXR,
+                switches::kWebXrRuntimeOpenXr)) {
     openxr_statics_ = std::make_unique<device::OpenXrStatics>();
     should_check_openxr_ = openxr_statics_->IsApiAvailable();
     any_runtimes_available |= should_check_openxr_;

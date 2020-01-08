@@ -22,8 +22,6 @@ class SystemGestureEventFilter : public ui::EventHandler {
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
-  void OnTouchEvent(ui::TouchEvent* event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   friend class SystemGestureEventFilterTest;

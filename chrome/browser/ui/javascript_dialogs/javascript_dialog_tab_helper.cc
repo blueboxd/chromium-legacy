@@ -168,6 +168,11 @@ void JavaScriptDialogTabHelper::ClickDialogButtonForTesting(
   CloseDialog(DismissalCause::kDialogButtonClicked, accept, user_input);
 }
 
+void JavaScriptDialogTabHelper::SetDialogDismissedCallbackForTesting(
+    DialogDismissedCallback callback) {
+  dialog_dismissed_ = std::move(callback);
+}
+
 void JavaScriptDialogTabHelper::RunJavaScriptDialog(
     content::WebContents* alerting_web_contents,
     content::RenderFrameHost* render_frame_host,
@@ -185,7 +190,6 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
       WebContentsObserver::web_contents();
   DialogOriginRelationship origin_relationship =
       GetDialogOriginRelationship(alerting_web_contents, render_frame_host);
-  bool foremost = IsWebContentsForemost(parent_web_contents);
   navigation_metrics::Scheme scheme =
       navigation_metrics::GetScheme(alerting_frame_url);
   switch (dialog_type) {
@@ -193,7 +197,6 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.OriginRelationship.Alert",
                                 origin_relationship,
                                 DialogOriginRelationship::COUNT);
-      UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Alert", foremost);
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.Scheme.Alert", scheme,
                                 navigation_metrics::Scheme::COUNT);
       break;
@@ -201,7 +204,6 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.OriginRelationship.Confirm",
                                 origin_relationship,
                                 DialogOriginRelationship::COUNT);
-      UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Confirm", foremost);
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.Scheme.Confirm", scheme,
                                 navigation_metrics::Scheme::COUNT);
       break;
@@ -209,7 +211,6 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.OriginRelationship.Prompt",
                                 origin_relationship,
                                 DialogOriginRelationship::COUNT);
-      UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Prompt", foremost);
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.Scheme.Prompt", scheme,
                                 navigation_metrics::Scheme::COUNT);
       break;
@@ -324,17 +325,13 @@ void JavaScriptDialogTabHelper::RunBeforeUnloadDialog(
   DCHECK_EQ(web_contents,
             content::WebContents::FromRenderFrameHost(render_frame_host));
 
-  content::WebContents* parent_web_contents =
-      WebContentsObserver::web_contents();
   DialogOriginRelationship origin_relationship =
       GetDialogOriginRelationship(web_contents, render_frame_host);
-  bool foremost = IsWebContentsForemost(parent_web_contents);
   navigation_metrics::Scheme scheme =
       navigation_metrics::GetScheme(render_frame_host->GetLastCommittedURL());
   UMA_HISTOGRAM_ENUMERATION("JSDialogs.OriginRelationship.BeforeUnload",
                             origin_relationship,
                             DialogOriginRelationship::COUNT);
-  UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.BeforeUnload", foremost);
   UMA_HISTOGRAM_ENUMERATION("JSDialogs.Scheme.BeforeUnload", scheme,
                             navigation_metrics::Scheme::COUNT);
 
@@ -444,18 +441,8 @@ void JavaScriptDialogTabHelper::OnTabStripModelChanged(
 #endif
 
 void JavaScriptDialogTabHelper::LogDialogDismissalCause(DismissalCause cause) {
-  // Log to UMA.
-  switch (dialog_type_) {
-    case content::JAVASCRIPT_DIALOG_TYPE_ALERT:
-      UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Alert", cause);
-      break;
-    case content::JAVASCRIPT_DIALOG_TYPE_CONFIRM:
-      UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Confirm", cause);
-      break;
-    case content::JAVASCRIPT_DIALOG_TYPE_PROMPT:
-      UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Prompt", cause);
-      break;
-  }
+  if (dialog_dismissed_)
+    std::move(dialog_dismissed_).Run(cause);
 
   // Log to UKM.
   //

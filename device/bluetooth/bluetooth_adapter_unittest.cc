@@ -2034,12 +2034,12 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceTwice) {
 
 #if defined(OS_WIN)
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     BluetoothTestWinrt,
     ::testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     BluetoothTestWinrtOnly,
     ::testing::Values(true));
 #endif  // defined(OS_WIN)

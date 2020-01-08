@@ -32,6 +32,8 @@ TEST(LocationTest, CurrentYieldsCorrectValue) {
   EXPECT_EQ(here.line_number(), previous_line + 1);
   EXPECT_STREQ("TestBody", here.function_name());
 #endif
+#elif defined(OFFICIAL_BUILD)
+#error Location builtins must be supported in official builds.
 #endif
   ALLOW_UNUSED_LOCAL(previous_line);
 }

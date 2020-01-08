@@ -35,12 +35,10 @@ void H264Encoder::ShutdownEncoder(std::unique_ptr<Thread> encoding_thread,
 }
 
 H264Encoder::H264Encoder(
-    const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
+    const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
     int32_t bits_per_second,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : Encoder(on_encoded_video_callback,
-              bits_per_second,
-              std::move(task_runner)) {
+    : Encoder(on_encoded_video_cb, bits_per_second, std::move(task_runner)) {
   DCHECK(encoding_thread_);
 }
 
@@ -112,7 +110,7 @@ void H264Encoder::EncodeOnEncodingTaskRunner(
       *origin_task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(
           OnFrameEncodeCompleted,
-          WTF::Passed(CrossThreadBindRepeating(on_encoded_video_callback_)),
+          WTF::Passed(CrossThreadBindRepeating(on_encoded_video_cb_)),
           video_params, std::move(data), std::string(), capture_timestamp,
           is_key_frame));
 }

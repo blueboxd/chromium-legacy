@@ -23,6 +23,7 @@
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/metrics/user_metrics.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
@@ -990,6 +991,11 @@ bool ToplevelWindowEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
       if (!going_back_started_)
         break;
       back_start_location_ = screen_location;
+
+      base::RecordAction(base::UserMetricsAction("Ash_Tablet_BackGesture"));
+      back_gesture_start_scenario_type_ = GetStartScenarioType(
+          dragged_from_splitview_divider_, back_start_location_);
+      RecordStartScenarioType(back_gesture_start_scenario_type_);
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       if (!going_back_started_)
@@ -1003,6 +1009,7 @@ bool ToplevelWindowEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
       if (!going_back_started_)
         break;
       DCHECK(back_gesture_affordance_);
+      BackGestureEndType end_type = BackGestureEndType::kNone;
       if (back_gesture_affordance_->IsActivated() ||
           (event->type() == ui::ET_SCROLL_FLING_START &&
            event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
@@ -1010,6 +1017,7 @@ bool ToplevelWindowEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
             back_start_location_, dragged_from_splitview_divider_);
         if (TabletModeWindowManager::ShouldMinimizeTopWindowOnBack()) {
           WindowState::Get(TabletModeWindowManager::GetTopWindow())->Minimize();
+          end_type = BackGestureEndType::kMinimize;
         } else {
           aura::Window* root_window =
               window_util::GetRootWindowAt(screen_location);
@@ -1021,11 +1029,17 @@ bool ToplevelWindowEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
                                          ui::VKEY_BROWSER_BACK, ui::EF_NONE);
           ignore_result(
               root_window->GetHost()->SendEventToSink(&release_key_event));
+          end_type = BackGestureEndType::kBack;
         }
         back_gesture_affordance_->Complete();
       } else {
         back_gesture_affordance_->Abort();
+        end_type = BackGestureEndType::kAbort;
       }
+      RecordEndScenarioType(
+          GetEndScenarioType(back_gesture_start_scenario_type_, end_type));
+      RecordUnderneathWindowType(
+          GetUnderneathWindowType(back_gesture_start_scenario_type_));
       return true;
     }
     case ui::ET_GESTURE_END:
@@ -1060,6 +1074,13 @@ bool ToplevelWindowEventHandler::CanStartGoingBack(
   if (shell->home_screen_controller()->IsHomeScreenVisible() &&
       shell->app_list_controller()->GetAppListViewState() !=
           AppListViewState::kFullscreenSearch) {
+    return false;
+  }
+
+  // Do not enable back gesture if MRU window list is empty and it is not in
+  // overview mode.
+  if (!Shell::Get()->overview_controller()->InOverviewSession() &&
+      !TabletModeWindowManager::GetTopWindow()) {
     return false;
   }
 

@@ -274,7 +274,7 @@
 <translation id="4299729908419173967">brasileño</translation>
 <translation id="4309915981827077375">Información general</translation>
 <translation id="4326192123064055915">Café</translation>
-<translation id="4336032328163998280">No se ha podido realizar la operación de copia (<ph name="ERROR_MESSAGE" />).</translation>
+<translation id="4336032328163998280">No se ha podido copiar (<ph name="ERROR_MESSAGE" />).</translation>
 <translation id="4364327530094270451">Melón</translation>
 <translation id="4372884569765913867">1x1</translation>
 <translation id="4394214039309501350">Enlace externo</translation>
@@ -431,7 +431,7 @@
 <translation id="5892290200158927959">Teclado francés (BÉPO)</translation>
 <translation id="5911887972742538906">No se ha podido instalar la aplicación de Linux.</translation>
 <translation id="5912396950572065471">Formato</translation>
-<translation id="5913638992615760742">No se ha podido realizar la operación de copia porque se ha producido un error inesperado: <ph name="ERROR_MESSAGE" /></translation>
+<translation id="5913638992615760742">No se ha podido copiar debido a un error inesperado: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5923484009666796948">Introducción de japonés (para teclado japonés)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
 <translation id="5949281959820712067">Da permiso a las aplicaciones de Linux para modificar archivos en tu cuenta de Google Drive. Los cambios realizados se sincronizarán con tus otros dispositivos.</translation>

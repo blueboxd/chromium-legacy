@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_node_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
+#include "chrome/browser/chromeos/arc/accessibility/geometry_util.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "components/exo/wm_helper.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
@@ -19,6 +20,8 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -235,39 +238,26 @@ const gfx::Rect AXTreeSourceArc::GetBounds(
   if (!wm_helper)
     return info_data_bounds;
 
-  // TODO(katie): offset_container_id should work and we shouldn't have to
-  // go into this code path for each node.
-  aura::Window* toplevel_window = active_window->GetToplevelWindow();
-
   views::Widget* widget = views::Widget::GetWidgetForNativeView(active_window);
   DCHECK(widget);
+
+  gfx::RectF info_data_bounds_f =
+      arc::ToChromeBounds(info_data_bounds, wm_helper, widget);
+
+  // TODO(katie): offset_container_id should work and we shouldn't have to
+  // go into this code path for each node.
   DCHECK(widget->widget_delegate());
   DCHECK(widget->widget_delegate()->GetContentsView());
-  const gfx::Rect bounds =
+  const gfx::Rect root_bounds =
       widget->widget_delegate()->GetContentsView()->GetBoundsInScreen();
-
-  float scale = wm_helper->GetDefaultDeviceScaleFactor();
 
   // Bounds of root node is relative to its container, i.e. contents view
   // (ShellSurfaceBase).
-  info_data_bounds.Offset(
-      static_cast<int>(-1.0f * scale * static_cast<float>(bounds.x())),
-      static_cast<int>(-1.0f * scale * static_cast<float>(bounds.y())));
+  info_data_bounds_f.Offset(-1 * root_bounds.x(), -1 * root_bounds.y());
 
-  // On Android side, content is rendered without considering height of
-  // caption bar, e.g. content is rendered at y:0 instead of y:32 where 32 is
-  // height of caption bar. Add back height of caption bar here.
-  if (widget->IsMaximized()) {
-    info_data_bounds.Offset(
-        0, static_cast<int>(scale *
-                            static_cast<float>(widget->non_client_view()
-                                                   ->frame_view()
-                                                   ->GetBoundsForClientView()
-                                                   .y())));
-  }
-  return gfx::ScaleToEnclosingRect(
-      info_data_bounds,
-      toplevel_window->layer()->device_scale_factor() / scale);
+  arc::ScaleDeviceFactor(info_data_bounds_f,
+                         active_window->GetToplevelWindow());
+  return gfx::ToEnclosingRect(info_data_bounds_f);
 }
 
 void AXTreeSourceArc::InvalidateTree() {

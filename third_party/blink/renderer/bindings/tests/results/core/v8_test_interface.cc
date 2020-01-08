@@ -1730,6 +1730,23 @@ static void VoidOptionalDictArgWithEmptyDefaultMethod(const v8::FunctionCallback
   impl->voidOptionalDictArgWithEmptyDefault(test_dict);
 }
 
+static void VoidOptionalUnionArgWithEmptyDefaultMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "voidOptionalUnionArgWithEmptyDefault");
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  StringOrTestDictionary arg;
+  if (!info[0]->IsUndefined()) {
+    V8StringOrTestDictionary::ToImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::kNotNullable, exception_state);
+    if (exception_state.HadException())
+      return;
+  } else {
+    arg.SetTestDictionary(MakeGarbageCollected<TestDictionary>());
+  }
+
+  impl->voidOptionalUnionArgWithEmptyDefault(arg);
+}
+
 static void VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
 
@@ -3454,6 +3471,12 @@ void V8TestInterface::VoidOptionalDictArgWithEmptyDefaultMethodCallback(const v8
   test_interface_implementation_v8_internal::VoidOptionalDictArgWithEmptyDefaultMethod(info);
 }
 
+void V8TestInterface::VoidOptionalUnionArgWithEmptyDefaultMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidOptionalUnionArgWithEmptyDefault");
+
+  test_interface_implementation_v8_internal::VoidOptionalUnionArgWithEmptyDefaultMethod(info);
+}
+
 void V8TestInterface::VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidMethod");
 
@@ -3874,6 +3897,7 @@ static constexpr V8DOMConfiguration::MethodConfiguration kV8TestInterfaceMethods
     {"voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", V8TestInterface::VoidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodTestEnumArg", V8TestInterface::VoidMethodTestEnumArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidOptionalDictArgWithEmptyDefault", V8TestInterface::VoidOptionalDictArgWithEmptyDefaultMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"voidOptionalUnionArgWithEmptyDefault", V8TestInterface::VoidOptionalUnionArgWithEmptyDefaultMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethod", V8TestInterface::VoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kMainWorld},
     {"voidMethod", V8TestInterface::VoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kNonMainWorlds},
     {"alwaysExposedMethod", V8TestInterface::AlwaysExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},

@@ -66,9 +66,9 @@ Polymer({
     },
 
     /**
-     * @private {!PageVisibility}
+     * @private {!OSPageVisibility}
      */
-    pageVisibility_: {type: Object, value: settings.pageVisibility},
+    pageVisibility_: {type: Object, value: settings.osPageVisibility},
 
     /** @private */
     havePlayStoreApp_: Boolean,

@@ -101,6 +101,7 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
                            bool to_different_document) override;
   void PortalWebContentsCreated(WebContents* portal_web_contents) override;
   void CloseContents(WebContents*) override;
+  WebContents* GetResponsibleWebContents(WebContents* web_contents) override;
 
   // Returns the token which uniquely identifies this Portal.
   const base::UnguessableToken& portal_token() const { return portal_token_; }

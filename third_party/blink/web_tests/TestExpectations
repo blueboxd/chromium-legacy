@@ -6775,6 +6775,11 @@ crbug.com/991243 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/semanti
 # are not enabled.
 crbug.com/970285 external/wpt/forced-colors-mode/* [ Failure ]
 
+# Virtual forced colors mode tests should fail on macOS since macOS high
+# contrast does not imply forced colors mode.
+crbug.com/970285 [ Mac ] virtual/forced-high-contrast-cascade/* [ Failure ]
+crbug.com/970285 [ Mac ] virtual/forced-high-contrast-colors/* [ Failure ]
+
 # Sheriff 2019-08-14
 crbug.com/993671 [ Win ] http/tests/media/video-frame-size-change.html [ Pass Failure ]
 crbug.com/993671 [ Win ] virtual/audio-service/http/tests/media/video-frame-size-change.html [ Pass Failure ]

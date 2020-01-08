@@ -63,6 +63,18 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
 }
 
 ExtensionsToolbarContainer::~ExtensionsToolbarContainer() {
+  // Create a copy of the anchored widgets, since |anchored_widgets_| will
+  // be modified by closing them.
+  std::vector<views::Widget*> widgets;
+  widgets.reserve(anchored_widgets_.size());
+  for (auto& anchored_widget : anchored_widgets_)
+    widgets.push_back(anchored_widget.widget);
+  for (views::Widget* widget : widgets)
+    widget->Close();
+  // The widgets should close synchronously (resulting in OnWidgetClosing()),
+  // so |anchored_widgets_| should now be empty.
+  CHECK(anchored_widgets_.empty());
+
   if (active_bubble_)
     active_bubble_->GetWidget()->Close();
   // We should synchronously receive the OnWidgetClosing() event, so we should
@@ -85,6 +97,55 @@ ToolbarActionView* ExtensionsToolbarContainer::GetViewForId(
   return it->second.get();
 }
 
+void ExtensionsToolbarContainer::ShowWidgetForExtension(
+    views::Widget* widget,
+    const std::string& extension_id) {
+  anchored_widgets_.push_back({widget, extension_id});
+  widget->AddObserver(this);
+  UpdateIconVisibility(extension_id);
+
+  static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
+      ->PostOrQueueAction(base::BindOnce(
+          &ExtensionsToolbarContainer::AnchorAndShowWidgetImmediately,
+          weak_ptr_factory_.GetWeakPtr(), widget));
+}
+
+void ExtensionsToolbarContainer::UpdateIconVisibility(
+    const std::string& extension_id) {
+  auto it = icons_.find(extension_id);
+  if (it == icons_.end())
+    return;
+  it->second->SetVisible(
+      IsActionVisibleOnToolbar(it->second->view_controller()));
+}
+
+void ExtensionsToolbarContainer::AnchorAndShowWidgetImmediately(
+    views::Widget* widget) {
+  auto iter = std::find_if(
+      anchored_widgets_.begin(), anchored_widgets_.end(),
+      [widget](const auto& info) { return info.widget == widget; });
+
+  if (iter == anchored_widgets_.end()) {
+    // This should mean that the Widget destructed before we got to showing it.
+    // |widget| is invalid here and should not be shown.
+    return;
+  }
+
+  // TODO(pbos): Make extension removal close associated widgets. Right now, it
+  // seems possible that:
+  // * ShowWidgetForExtension starts
+  // * Extension gets removed
+  // * AnchorAndShowWidgetImmediately runs.
+  // Revisit how to handle that, likely the Widget should Close on removal which
+  // would remove the AnchoredWidget entry.
+
+  views::View* const anchor_view = GetViewForId(iter->extension_id);
+  widget->widget_delegate()->AsBubbleDialogDelegate()->SetAnchorView(
+      anchor_view && anchor_view->GetVisible() ? anchor_view
+                                               : extensions_button_);
+  widget->Show();
+}
+
 ToolbarActionViewController* ExtensionsToolbarContainer::GetActionForId(
     const std::string& action_id) {
   for (const auto& action : actions_) {
@@ -101,6 +162,12 @@ ToolbarActionViewController* ExtensionsToolbarContainer::GetPoppedOutAction()
 
 bool ExtensionsToolbarContainer::IsActionVisibleOnToolbar(
     const ToolbarActionViewController* action) const {
+  const std::string& extension_id = action->GetId();
+  for (const auto& anchored_widget : anchored_widgets_) {
+    if (anchored_widget.extension_id == extension_id)
+      return true;
+  }
+
   return model_->IsActionPinned(action->GetId()) ||
          action == popped_out_action_ ||
          (active_bubble_ &&
@@ -111,10 +178,7 @@ void ExtensionsToolbarContainer::UndoPopOut() {
   DCHECK(popped_out_action_);
   ToolbarActionViewController* const popped_out_action = popped_out_action_;
   popped_out_action_ = nullptr;
-  // Note that we only hide this view if it was not pinned while being popped
-  // out.
-  icons_[popped_out_action->GetId()]->SetVisible(
-      IsActionVisibleOnToolbar(popped_out_action));
+  UpdateIconVisibility(popped_out_action->GetId());
 }
 
 void ExtensionsToolbarContainer::SetPopupOwner(
@@ -146,7 +210,7 @@ void ExtensionsToolbarContainer::PopOutAction(
   // TODO(pbos): Highlight popout differently.
   DCHECK(!popped_out_action_);
   popped_out_action_ = action;
-  icons_[popped_out_action_->GetId()]->SetVisible(true);
+  UpdateIconVisibility(popped_out_action_->GetId());
   ReorderViews();
   static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
       ->PostOrQueueAction(closure);
@@ -245,7 +309,7 @@ void ExtensionsToolbarContainer::OnToolbarModelInitialized() {
 
 void ExtensionsToolbarContainer::OnToolbarPinnedActionsChanged() {
   for (auto& it : icons_)
-    it.second->SetVisible(IsActionVisibleOnToolbar(GetActionForId(it.first)));
+    UpdateIconVisibility(it.first);
   ReorderViews();
 }
 
@@ -422,11 +486,22 @@ int ExtensionsToolbarContainer::OnPerformDrop(
 }
 
 void ExtensionsToolbarContainer::OnWidgetClosing(views::Widget* widget) {
-  ClearActiveBubble(widget);
+  auto iter = std::find_if(
+      anchored_widgets_.begin(), anchored_widgets_.end(),
+      [widget](const auto& info) { return info.widget == widget; });
+  if (iter != anchored_widgets_.end()) {
+    iter->widget->RemoveObserver(this);
+    const std::string extension_id = std::move(iter->extension_id);
+    anchored_widgets_.erase(iter);
+    UpdateIconVisibility(extension_id);
+  }
+
+  if (active_bubble_ && active_bubble_->GetWidget() == widget)
+    ClearActiveBubble(widget);
 }
 
 void ExtensionsToolbarContainer::OnWidgetDestroying(views::Widget* widget) {
-  ClearActiveBubble(widget);
+  OnWidgetClosing(widget);
 }
 
 void ExtensionsToolbarContainer::ClearActiveBubble(views::Widget* widget) {

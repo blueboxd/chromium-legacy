@@ -2365,6 +2365,9 @@
         'mixins': [
           'win10_nvidia_quadro_p400_stable',
         ],
+        'remove_mixins': [
+          'swarming_containment_auto',
+        ],
         'test_suites': {
           'gtest_tests': 'gpu_win_gtests',
           'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
@@ -3485,6 +3488,7 @@
           'all',
         ],
         'mixins': [
+          'fuchsia_aemu',
           'linux-xenial',
         ],
         'swarming': {

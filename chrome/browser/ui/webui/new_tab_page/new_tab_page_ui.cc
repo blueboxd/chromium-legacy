@@ -48,7 +48,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource() {
       {"linkCancel", IDS_NTP_CUSTOM_LINKS_CANCEL},
       {"linkCantCreate", IDS_NTP_CUSTOM_LINKS_CANT_CREATE},
       {"linkCantEdit", IDS_NTP_CUSTOM_LINKS_CANT_EDIT},
-      {"linkCantRemove", IDS_NTP_CUSTOM_LINKS_CANT_REMOVE},
       {"linkDone", IDS_NTP_CUSTOM_LINKS_DONE},
       {"linkEditedMsg", IDS_NTP_CONFIRM_MSG_SHORTCUT_EDITED},
       {"linkRemove", IDS_NTP_CUSTOM_LINKS_REMOVE},

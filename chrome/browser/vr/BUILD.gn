@@ -293,6 +293,7 @@ component("vr_common") {
     "//components/rappor/public:public",
     "//components/ukm/content",
     "//content/public/browser",
+    "//device/base",
     "//device/vr",
     "//device/vr/buildflags:buildflags",
     "//device/vr/public/mojom",

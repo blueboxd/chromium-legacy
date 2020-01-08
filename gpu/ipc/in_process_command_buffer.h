@@ -42,6 +42,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/gl_in_process_context_export.h"
+#include "gpu/ipc/gpu_task_scheduler_helper.h"
 #include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/service/display_context.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
@@ -58,6 +59,10 @@ class GLShareGroup;
 namespace gfx {
 struct GpuFenceHandle;
 class Size;
+}
+
+namespace viz {
+class GpuTaskSchedulerHelper;
 }
 
 namespace gpu {
@@ -108,6 +113,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       ImageFactory* image_factory,
       GpuChannelManagerDelegate* gpu_channel_manager_delegate,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      SingleTaskSequence* task_sequence,
       gpu::raster::GrShaderCache* gr_shader_cache,
       GpuProcessActivityFlags* activity_flags);
 
@@ -377,7 +383,12 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   // Accessed on both threads:
   base::WaitableEvent flush_event_;
   CommandBufferTaskExecutor* const task_executor_;
-  std::unique_ptr<gpu::SingleTaskSequence> task_sequence_;
+
+  // If no SingleTaskSequence is passed in, create our own.
+  scoped_refptr<GpuTaskSchedulerHelper> task_scheduler_holder_;
+
+  // Pointer to the SingleTaskSequence that actually does the scheduling.
+  SingleTaskSequence* task_sequence_;
   std::unique_ptr<SharedImageInterface> shared_image_interface_;
 
   // The group of contexts that share namespaces with this context.

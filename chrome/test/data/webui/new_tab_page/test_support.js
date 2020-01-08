@@ -35,6 +35,7 @@ class FakePageHandler {
       'reorderMostVisitedTile',
       'restoreMostVisitedDefaults',
       'undoMostVisitedTileAction',
+      'updateMostVisitedInfo',
       'updateMostVisitedTile',
       'getChromeThemes',
       'applyDefaultTheme',
@@ -85,6 +86,11 @@ class FakePageHandler {
   /** @override */
   undoMostVisitedTileAction() {
     this.callTracker_.methodCalled('undoMostVisitedTileAction');
+  }
+
+  /** @override */
+  updateMostVisitedInfo() {
+    this.callTracker_.methodCalled('updateMostVisitedInfo');
   }
 
   /** @override */

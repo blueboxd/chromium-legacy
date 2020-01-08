@@ -193,6 +193,10 @@ class InstantService : public KeyedService,
   // Fetches the image for the given |fetch_url|.
   void FetchCustomBackground(base::TimeTicks timestamp, const GURL& fetch_url);
 
+  // Returns true if this is a Google NTP and the user has chosen to show custom
+  // links.
+  bool IsCustomLinksEnabled();
+
  private:
   friend class InstantExtendedTest;
   friend class InstantUnitTestBase;
@@ -243,10 +247,6 @@ class InstantService : public KeyedService,
 
   void NotifyAboutMostVisitedInfo();
   void NotifyAboutNtpTheme();
-
-  // Returns true if this is a Google NTP and the user has chosen to show custom
-  // links.
-  bool IsCustomLinksEnabled();
 
   void BuildNtpTheme();
 

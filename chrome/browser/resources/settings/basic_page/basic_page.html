@@ -139,9 +139,7 @@
             restamp>
           <settings-section page-title="$i18n{autofillPageTitle}"
               section="autofill">
-            <settings-autofill-page prefs="{{prefs}}"
-                page-visibility="[[pageVisibility]]">
-            </settings-autofill-page>
+            <settings-autofill-page prefs="{{prefs}}"></settings-autofill-page>
           </settings-section>
         </template>
         <template is="dom-if" if="[[showPage_(pageVisibility.privacy)]]"
@@ -232,9 +230,7 @@
                 restamp>
               <settings-section page-title="$i18n{a11yPageTitle}"
                   section="a11y">
-                <settings-a11y-page prefs="{{prefs}}"
-                    page-visibility="[[pageVisibility.a11y]]">
-                </settings-a11y-page>
+                <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
               </settings-section>
             </template>
 <if expr="not chromeos">
@@ -247,9 +243,7 @@
                 restamp>
               <settings-section page-title="$i18n{resetPageTitle}"
                   section="reset">
-                <settings-reset-page prefs="{{prefs}}"
-                    page-visibility="[[pageVisibility.reset]]">
-                </settings-reset-page>
+                <settings-reset-page prefs="{{prefs}}"></settings-reset-page>
               </settings-section>
             </template>
           </div>

@@ -43,6 +43,7 @@ if (enable_vr) {
     deps = [
       "//base",
       "//components/ukm:ukm",
+      "//content/public/common",
       "//device/base",
       "//device/vr/buildflags",
       "//device/vr/public/mojom",

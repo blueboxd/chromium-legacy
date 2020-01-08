@@ -2452,7 +2452,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4446933390699670756">Duplicado</translation>
 <translation id="4449996769074858870">Esta pestaña está reproduciendo audio.</translation>
 <translation id="4450974146388585462">Diagnosticar</translation>
-<translation id="4451757071857432900">Bloqueados en sitios web que muestran anuncios invasivos o engañosos (opción recomendada)</translation>
+<translation id="4451757071857432900">Bloqueados en sitios web que muestran anuncios invasivos o engañosos (recomendado)</translation>
 <translation id="4453946976636652378">Busca <ph name="SEARCH_ENGINE_NAME" /> o introduce una URL</translation>
 <translation id="4459169140545916303">Activo hace <ph name="DEVICE_LAST_ACTIVATED_TIME" /> días</translation>
 <translation id="4460014764210899310">Sin agrupar</translation>
@@ -2492,7 +2492,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="452039078290142656">dispositivos desconocidos de <ph name="VENDOR_NAME" /></translation>
 <translation id="4522570452068850558">Detalles</translation>
 <translation id="4522600456902129422">Seguir permitiendo que este sitio web vea el portapapeles</translation>
-<translation id="4524832533047962394">El modo de inscripción proporcionado no es compatible con esta versión del sistema operativo. Asegúrate de que estás usando la versión más reciente.</translation>
+<translation id="4524832533047962394">El modo de registro proporcionado no es compatible con esta versión del sistema operativo. Asegúrate de que estás usando la versión más reciente.</translation>
 <translation id="4525382759303819021">Descarga las últimas actualizaciones y recomendaciones de aplicaciones de Play Store</translation>
 <translation id="4530494379350999373">Origen</translation>
 <translation id="4532646538815530781">Este sitio web está usando sensores de movimiento.</translation>
@@ -3052,7 +3052,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5368779022775404937">Inicia sesión en <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Habilitar la aceleración del ratón</translation>
 <translation id="5370819323174483825">&amp;Volver a cargar</translation>
-<translation id="5372529912055771682">El modo de inscripción proporcionado no es compatible con esta versión del sistema operativo. Comprueba que estés utilizando la última versión y vuelve a intentarlo.</translation>
+<translation id="5372529912055771682">El modo de registro proporcionado no es compatible con esta versión del sistema operativo. Comprueba que estés utilizando la última versión y vuelve a intentarlo.</translation>
 <translation id="5372579129492968947">No fijar extensión</translation>
 <translation id="5376169624176189338">Haz clic para retroceder una página o pulsa unos segundos para ver el historial</translation>
 <translation id="5376931455988532197">El archivo es demasiado grande.</translation>
@@ -3764,7 +3764,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6362853299801475928">&amp;Notificar un error...</translation>
 <translation id="6365069501305898914">Facebook</translation>
 <translation id="6365411474437319296">Añadir familiares y amigos</translation>
-<translation id="636850387210749493">Inscripción de empresa</translation>
+<translation id="636850387210749493">Registro de empresa</translation>
 <translation id="6370021412472292592">No se ha podido cargar el archivo de manifiesto.</translation>
 <translation id="6374077068638737855">Iceweasel</translation>
 <translation id="6374469231428023295">Volver a intentarlo</translation>
@@ -4225,7 +4225,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7063129466199351735">Procesando accesos directos...</translation>
 <translation id="7063311912041006059">URL con <ph name="SPECIAL_SYMBOL" /> en el lugar de la consulta</translation>
 <translation id="7063957500469387217">Establecer o administrar impresoras en Google Cloud Print.</translation>
-<translation id="7065223852455347715">Este dispositivo está bloqueado en un modo que evita la inscripción de empresa. Si quieres registrar el dispositivo, primero debes pasar por el proceso de recuperación del dispositivo.</translation>
+<translation id="7065223852455347715">Este dispositivo está bloqueado en un modo que evita el registro de empresa. Si quieres registrar el dispositivo, primero debes pasar por el proceso de recuperación del dispositivo.</translation>
 <translation id="7065534935986314333">Acerca del sistema</translation>
 <translation id="706626672220389329">No se ha podido activar el recurso compartido. El recurso especificado ya está activado.</translation>
 <translation id="7066944511817949584">Error al conectar con "<ph name="DEVICE_NAME" />"</translation>

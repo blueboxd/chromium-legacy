@@ -123,6 +123,7 @@ constexpr char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
 
 OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
     : profile_(real_profile),
+      io_data_(this),
       start_time_(base::Time::Now()),
       key_(std::make_unique<ProfileKey>(profile_->GetPath(),
                                         profile_->GetProfileKey())) {
@@ -141,13 +142,6 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
 }
 
 void OffTheRecordProfileImpl::Init() {
-  // The construction of OffTheRecordProfileIOData::Handle needs the profile
-  // type returned by this->GetProfileType().  Since GetProfileType() is a
-  // virtual member function, we cannot call the function defined in the most
-  // derived class (e.g. GuestSessionProfile) until a ctor finishes.  Thus,
-  // we have to instantiate OffTheRecordProfileIOData::Handle here after a ctor.
-  InitIoData();
-
   FullBrowserTransitionManager::Get()->OnProfileCreated(this);
 
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
@@ -230,10 +224,6 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
         "Profile.Incognito.Lifetime", duration.InMinutes(), 1,
         base::TimeDelta::FromDays(28).InMinutes(), 100);
   }
-}
-
-void OffTheRecordProfileImpl::InitIoData() {
-  io_data_.reset(new OffTheRecordProfileIOData::Handle(this));
 }
 
 #if !defined(OS_ANDROID)
@@ -407,7 +397,7 @@ OffTheRecordProfileImpl::GetURLLoaderFactory() {
 }
 
 content::ResourceContext* OffTheRecordProfileImpl::GetResourceContext() {
-  return io_data_->GetResourceContext();
+  return io_data_.GetResourceContext();
 }
 
 content::BrowserPluginGuestManager* OffTheRecordProfileImpl::GetGuestManager() {

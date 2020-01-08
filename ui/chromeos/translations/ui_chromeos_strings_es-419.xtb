@@ -205,7 +205,7 @@
 <translation id="3466147780910026086">Analizando el dispositivo de medios…</translation>
 <translation id="3468522857997926824">Se guardaron <ph name="FILE_COUNT" /> fotos en una copia de seguridad en <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />.</translation>
 <translation id="3470502288861289375">Copiando…</translation>
-<translation id="3473378059788601120">Se copió en <ph name="FOLDER_NAME" />.</translation>
+<translation id="3473378059788601120">Copiado(s) en <ph name="FOLDER_NAME" />.</translation>
 <translation id="3475447146579922140">Hoja de cálculo de Google</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> errores</translation>
 <translation id="3519867315646775981">Transliteración (shalom ← שלום)</translation>
@@ -274,7 +274,7 @@
 <translation id="4299729908419173967">Brasileño</translation>
 <translation id="4309915981827077375">Información general</translation>
 <translation id="4326192123064055915">Café</translation>
-<translation id="4336032328163998280">Se produjo un error al realizar la operación de copia (<ph name="ERROR_MESSAGE" />).</translation>
+<translation id="4336032328163998280">Error al copiar. (<ph name="ERROR_MESSAGE" />).</translation>
 <translation id="4364327530094270451">Melón</translation>
 <translation id="4372884569765913867">1 x 1</translation>
 <translation id="4394214039309501350">Vínculo externo</translation>
@@ -288,7 +288,7 @@
 <translation id="4552678318981539154">Comprar más almacenamiento</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984">Archivo <ph name="FILE_TYPE" /></translation>
-<translation id="457386861538956877">Más ...</translation>
+<translation id="457386861538956877">Más...</translation>
 <translation id="4579744207439506346">Se agregó <ph name="ENTRY_NAME" /> a la selección.</translation>
 <translation id="4582497162516204941">Instalar con Linux (Beta)</translation>
 <translation id="4594543368593301662">Se muestran los resultados de <ph name="SEARCH_TERM" />.</translation>
@@ -604,7 +604,7 @@
 <translation id="7898607018410277265">Teclado guyaratí (fonético nuevo)</translation>
 <translation id="7917972308273378936">Teclado lituano</translation>
 <translation id="7925686952655276919">No utilizar datos móviles para la sincronización</translation>
-<translation id="7928710562641958568">Dispositivo de expulsión</translation>
+<translation id="7928710562641958568">Expulsar dispositivo</translation>
 <translation id="7943385054491506837">Inglés (Estados Unidos; Colemak)</translation>
 <translation id="7953739707111622108">Este dispositivo no puede abrirse porque no se reconoció su sistema de archivos.</translation>
 <translation id="7969525169268594403">Esloveno</translation>

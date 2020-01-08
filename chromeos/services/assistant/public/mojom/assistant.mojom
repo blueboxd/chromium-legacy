@@ -163,6 +163,8 @@ enum AssistantQuerySource {
   kProactiveSuggestions = 6,
   kLibAssistantInitiated = 7,
   kWarmerWelcome = 8,
+  kConversationStarter = 9,
+  kWhatsOnMyScreen = 10,
 };
 
 // Subscribes to Assistant's interaction event. These events are server driven
@@ -342,12 +344,22 @@ enum AssistantInteractionResolution {
   kMultiDeviceHotwordLoss,
 };
 
+// Enumeration of possible Assistant suggestion types.
+enum AssistantSuggestionType {
+  kUnspecified,
+  kConversationStarter,
+};
+
 // Models an Assistant suggestion.
 struct AssistantSuggestion {
+  AssistantSuggestionType type = kUnspecified;
+
   // Display text. e.g. "Cancel".
   string text;
+
   // Optional URL for icon. e.g. "https://www.gstatic.com/icon.png".
   url.mojom.Url icon_url;
+
   // Optional URL for action. e.g.
   // "https://www.google.com/search?query=action".
   url.mojom.Url action_url;

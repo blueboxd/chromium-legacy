@@ -112,8 +112,7 @@ RulesetMatcher::RulesetMatcher(
     size_t priority,
     api::declarative_net_request::SourceType source_type,
     const ExtensionId& extension_id)
-    : RulesetMatcherBase(extension_id, source_type),
-      ruleset_data_(std::move(ruleset_data)),
+    : ruleset_data_(std::move(ruleset_data)),
       root_(flat::GetExtensionIndexedRuleset(ruleset_data_.data())),
       id_(id),
       priority_(priority),

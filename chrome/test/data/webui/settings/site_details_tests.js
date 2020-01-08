@@ -100,6 +100,9 @@ suite('SiteDetails', function() {
       test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.MIXEDSCRIPT,
           [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.HID_DEVICES,
+          [test_util.createRawSiteException('https://foo.com:443')]),
     ], [
       test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.USB_DEVICES,
@@ -137,6 +140,7 @@ suite('SiteDetails', function() {
     }
     const experimentalSiteDetailsContentSettingsTypes = [
       settings.ContentSettingsTypes.BLUETOOTH_SCANNING,
+      settings.ContentSettingsTypes.HID_DEVICES,
     ];
 
     // A list of optionally shown content settings mapped to their loadTimeData

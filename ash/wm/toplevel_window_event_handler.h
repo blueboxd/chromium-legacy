@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/wm/back_gesture_metrics.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -242,6 +243,10 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // window that is underneath to do other things (e.g, highlight a menu item)
   // instead of going back.
   ui::GestureProviderAura gesture_provider_;
+
+  // Start scenario type of the back gesture, used for related metrics.
+  BackGestureStartScenarioType back_gesture_start_scenario_type_ =
+      BackGestureStartScenarioType::kMaxValue;
 
   base::WeakPtrFactory<ToplevelWindowEventHandler> weak_factory_{this};
 

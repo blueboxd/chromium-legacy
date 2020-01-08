@@ -12,8 +12,10 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/i18n/rtl.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
@@ -89,7 +91,21 @@ int AshMessagePopupCollection::GetToastOriginX(
 }
 
 int AshMessagePopupCollection::GetBaseline() const {
-  return work_area_.bottom() - kUnifiedMenuPadding - tray_bubble_height_;
+  int baseline =
+      work_area_.bottom() - kUnifiedMenuPadding - tray_bubble_height_;
+
+  // The work area in tablet mode always uses the in-app shelf height, which
+  // ignores the height of the hotseat. We need to add additional height to the
+  // baseline to compensate.
+  bool in_tablet_mode = Shell::Get()->tablet_mode_controller() &&
+                        Shell::Get()->tablet_mode_controller()->InTabletMode();
+  bool is_bottom_alignment = shelf_->alignment() == ShelfAlignment::kBottom;
+  if (chromeos::switches::ShouldShowShelfHotseat() && in_tablet_mode &&
+      !ShelfConfig::Get()->is_in_app() && is_bottom_alignment) {
+    baseline -= kPopupCollectionHotseatHeightCompensation;
+  }
+
+  return baseline;
 }
 
 gfx::Rect AshMessagePopupCollection::GetWorkArea() const {

@@ -30,6 +30,14 @@ class MediaLog;
 class MojoDecoderBufferWriter;
 class MojoVideoFrameHandleReleaser;
 
+extern const char kMojoVideoDecoderInitialPlaybackSuccessCodecCounterUMA[];
+
+extern const char kMojoVideoDecoderInitialPlaybackErrorCodecCounterUMA[];
+
+// How many frames the decoder needs to process before reporting:
+// kMojoVideoDecoderInitialPlaybackSuccessCodecCounterUMA
+extern const int kMojoDecoderInitialPlaybackFrameCount;
+
 // A VideoDecoder, for use in the renderer process, that proxies to a
 // mojom::VideoDecoder. It is assumed that the other side will be implemented by
 // MojoVideoDecoderService, running in the GPU process, and that the remote
@@ -89,6 +97,8 @@ class MojoVideoDecoder final : public VideoDecoder,
   // Cleans up callbacks and blocks future calls.
   void Stop();
 
+  void ReportInitialPlaybackErrorUMA();
+
   // Task runner that the decoder runs on (media thread).
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -129,6 +139,11 @@ class MojoVideoDecoder final : public VideoDecoder,
   bool initialized_ = false;
   bool needs_bitstream_conversion_ = false;
   bool can_read_without_stalling_ = true;
+
+  // True if UMA metrics of success/failure after first few seconds of playback
+  // have been already reported.
+  bool initial_playback_outcome_reported_ = false;
+  int total_frames_decoded_ = 0;
   int32_t max_decode_requests_ = 1;
 
   VideoDecoderImplementation video_decoder_implementation_;

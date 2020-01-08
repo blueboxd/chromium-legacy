@@ -45,10 +45,6 @@ struct RequestParams {
   mutable base::flat_map<const RegexRulesMatcher*, std::vector<RegexRuleInfo>>
       potential_regex_matches;
 
-  // Pointer to the corresponding WebRequestInfo object. Outlives this struct.
-  // Can be null for some unit tests.
-  const WebRequestInfo* request_info = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(RequestParams);
 };
 

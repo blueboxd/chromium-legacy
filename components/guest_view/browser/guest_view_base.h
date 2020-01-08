@@ -237,6 +237,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
       const content::NativeWebKeyboardEvent& event) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
+  content::WebContents* GetResponsibleWebContents(
+      content::WebContents* web_contents) override;
 
   // WebContentsObserver implementation.
   void DidFinishNavigation(

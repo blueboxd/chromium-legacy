@@ -11,6 +11,7 @@ Polymer({
   is: 'all-sites',
 
   behaviors: [
+    I18nBehavior,
     SiteSettingsBehavior,
     WebUIListenerBehavior,
     settings.RouteObserverBehavior,
@@ -18,6 +19,11 @@ Polymer({
   ],
 
   properties: {
+    // TODO(https://crbug.com/1037809): Refactor siteGroupMap to use an Object
+    // instead of a Map so that it's observable by Polymore more naturally. As
+    // it stands, one cannot use computed properties based off the value of
+    // siteGroupMap nor can one use observable functions to listen to changes
+    // to siteGroupMap.
     /**
      * Map containing sites to display in the widget, grouped into their
      * eTLD+1 names.
@@ -103,16 +109,36 @@ Polymer({
     actionMenuModel_: Object,
 
     /**
+     * @private
+     * Used to determine if user is attempting to clear all site data
+     * rather than a single site or origin's data.
+     */
+    clearAllData_: Boolean,
+
+    /**
      * The selected sort method.
      * @type {!settings.SortMethod|undefined}
      * @private
      */
     sortMethod_: String,
 
-    /** @private */
+    /**
+     * Used to determine if clear all data UI should be displayed.
+     * @private
+     */
     storagePressureFlagEnabled_: {
       type: Boolean,
       value: () => loadTimeData.getBoolean('enableStoragePressureUI'),
+    },
+
+    /**
+     * The total usage of all sites for this profile.
+     * @type {string}
+     * @private
+     */
+    totalUsage_: {
+      type: String,
+      value: '0 B',
     },
   },
 
@@ -193,6 +219,7 @@ Polymer({
         newMap.set(siteGroup.etldPlus1, siteGroup);
       });
       this.siteGroupMap = newMap;
+      this.updateTotalUsage_();
       this.forceListUpdate_();
     });
   },
@@ -210,8 +237,26 @@ Polymer({
       newMap.set(storageSiteGroup.etldPlus1, storageSiteGroup);
     });
     this.siteGroupMap = newMap;
+    this.updateTotalUsage_();
     this.forceListUpdate_();
     this.focusOnLastSelectedEntry_();
+  },
+
+  /**
+   * Update the total usage by all sites for this profile after updates
+   * to the list
+   * @private
+   */
+  updateTotalUsage_: function() {
+    let usageSum = 0;
+    for (const [etldPlus1, siteGroup] of this.siteGroupMap) {
+      siteGroup.origins.forEach(origin => {
+        usageSum += origin.usage;
+      });
+    }
+    this.browserProxy.getFormattedBytes(usageSum).then(totalUsage => {
+      this.totalUsage_ = totalUsage;
+    });
   },
 
   /**
@@ -409,6 +454,17 @@ Polymer({
     }
   },
 
+  /**
+   * Confirms the clearing of all storage data for all sites.
+   * @param {!Event} e
+   * @private
+   */
+  onConfirmClearAllData_: function(e) {
+    e.preventDefault();
+    this.clearAllData_ = true;
+    this.$.confirmClearAllData.get().showModal();
+  },
+
   /** @private */
   onCloseDialog_: function(e) {
     e.target.closest('cr-dialog').close();
@@ -486,13 +542,12 @@ Polymer({
   },
 
   /**
-   * Clear data and cookies for an etldPlus1.
-   * @param {!Event} e
+   * Helper to remove data and cookies for an etldPlus1.
+   * @param {!number} index The index of the target siteGroup in filteredList_
+   *                        that should be cleared.
    * @private
    */
-  onClearData_: function(e) {
-    const index = this.actionMenuModel_.index;
-    // Clean up the SiteGroup.
+  clearDataForSiteGroupIndex_: function(index) {
     this.browserProxy.clearEtldPlus1DataAndCookies(
         this.filteredList_[index].etldPlus1);
     const updatedSiteGroup = {
@@ -514,7 +569,32 @@ Polymer({
     } else {
       this.splice('filteredList_', index, 1);
     }
+    this.siteGroupMap.delete(updatedSiteGroup.etldPlus1);
+  },
+
+  /**
+   * Clear data and cookies for an etldPlus1.
+   * @param {!Event} e
+   * @private
+   */
+  onClearData_: function(e) {
+    this.clearDataForSiteGroupIndex_(this.actionMenuModel_.index);
     this.$.allSitesList.fire('iron-resize');
+    this.updateTotalUsage_();
+    this.onCloseDialog_(e);
+  },
+
+  /**
+   * Clear data and cookies for all sites.
+   * @param {!Event} e
+   * @private
+   */
+  onClearAllData_: function(e) {
+    for (let index = this.filteredList_.length - 1; index >= 0; index--) {
+      this.clearDataForSiteGroupIndex_(index);
+    }
+    this.$.allSitesList.fire('iron-resize');
+    this.totalUsage_ = '0 B';
     this.onCloseDialog_(e);
   },
 });

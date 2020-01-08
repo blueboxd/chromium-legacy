@@ -344,4 +344,9 @@ bool WebContentsDelegate::IsFrameLowPriority(
   return false;
 }
 
+WebContents* WebContentsDelegate::GetResponsibleWebContents(
+    WebContents* web_contents) {
+  return web_contents;
+}
+
 }  // namespace content

@@ -81,6 +81,10 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       mask_layer_(nullptr),
       contents_layer_(nullptr),
       contents_layer_id_(0) {
+  // TODO(crbug.com/1033240): Debugging information for the referenced bug.
+  // Remove when it is fixed.
+  CHECK(&client_);
+
 #if DCHECK_IS_ON()
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   client.VerifyNotPainting();
@@ -284,6 +288,9 @@ bool GraphicsLayer::PaintRecursively() {
 
 void GraphicsLayer::PaintRecursivelyInternal(
     Vector<GraphicsLayer*>& repainted_layers) {
+  // TODO(crbug.com/1033240): Debugging information for the referenced bug.
+  // Remove when it is fixed.
+  CHECK(&client_);
   if (client_.PaintBlockedByDisplayLockIncludingAncestors(
           DisplayLockContextLifecycleTarget::kSelf)) {
     return;

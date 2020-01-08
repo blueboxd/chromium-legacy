@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace cc {
 class ClipTree;
@@ -39,6 +38,7 @@ class PropertyTreeManagerClient {
  public:
   virtual SynthesizedClip& CreateOrReuseSynthesizedClipLayer(
       const ClipPaintPropertyNode&,
+      const TransformPaintPropertyNode&,
       bool needs_layer,
       CompositorElementId& mask_isolation_id,
       CompositorElementId& mask_effect_id) = 0;
@@ -156,8 +156,10 @@ class PropertyTreeManager {
     kSyntheticFor2dAxisAlignment = 1 << 1
   };
 
-  static bool SupportsShaderBasedRoundedCorner(const ClipPaintPropertyNode&,
-                                               CcEffectType type);
+  static bool SupportsShaderBasedRoundedCorner(
+      const ClipPaintPropertyNode&,
+      CcEffectType type,
+      const EffectPaintPropertyNode* next_effect);
 
   struct EffectState {
     // The cc effect node that has the corresponding drawing state to the
@@ -176,6 +178,12 @@ class PropertyTreeManager {
     // the effect if the type is kEffect, or set to the synthesized clip node.
     // It's never nullptr.
     const ClipPaintPropertyNode* clip;
+
+    // The transform space of this state. It's |&effect->LocalTransformSpace()|
+    // if this state is of kEffect type or synthetic with backdrop filters
+    // moved up from the original effect.
+    // Otherwise it's |&clip->LocalTransformSpace()|.
+    const TransformPaintPropertyNode* transform;
 
     // Whether the transform space of this state may be 2d axis misaligned to
     // the containing render surface. As there may be new render surfaces
@@ -201,28 +209,35 @@ class PropertyTreeManager {
     // self and the next render surface. This is used to force a render surface
     // for all ancestor synthetic rounded clips if a descendant is found.
     bool contained_by_non_render_surface_synthetic_rounded_clip;
-
-    // The transform space of the state.
-    const TransformPaintPropertyNode& Transform() const;
   };
 
   void CollectAnimationElementId(CompositorElementId);
   void BuildEffectNodesRecursively(const EffectPaintPropertyNode& next_effect);
   void ForceRenderSurfaceIfSyntheticRoundedCornerClip(EffectState& state);
-  SkBlendMode SynthesizeCcEffectsForClipsIfNeeded(
+
+  // When we create a synthetic clip, if the next effect has backdrop effect
+  // (exotic blending or backdrop filter), the backdrop effect should be set
+  // on the synthetic mask isolation effect node instead of the cc effect node
+  // that is created for the original blink effect node, to ensure the backdrop
+  // effect will see the correct backdrop input.
+  enum BackdropEffectState {
+    kNoBackdropEffect,
+    kBackdropEffectHasSetOnSyntheticEffect,
+    kBackdropEffectToBeSetOnCcEffectNode,
+  };
+  BackdropEffectState SynthesizeCcEffectsForClipsIfNeeded(
       const ClipPaintPropertyNode& target_clip,
-      SkBlendMode delegated_blend);
+      const EffectPaintPropertyNode* next_effect);
+
   void EmitClipMaskLayer();
   void CloseCcEffect();
-
-  // For a given effect node, this returns the blend mode, clip property node,
-  // and an int indicating cc clip node's id.
-  std::tuple<SkBlendMode, const ClipPaintPropertyNode*, int>
-  GetBlendModeAndOutputClipForEffect(const EffectPaintPropertyNode&);
   void PopulateCcEffectNode(cc::EffectNode&,
-                            const EffectPaintPropertyNode&,
+                            const EffectPaintPropertyNode& effect,
                             int output_clip_id,
-                            SkBlendMode);
+                            BackdropEffectState);
+  void PopulateCcEffectNodeBackdropEffect(
+      cc::EffectNode& effect_node,
+      const EffectPaintPropertyNode& backdrop_effect);
 
   bool IsCurrentCcEffectSynthetic() const { return current_.effect_type; }
   bool IsCurrentCcEffectSyntheticForNonTrivialClip() const {
@@ -237,7 +252,8 @@ class PropertyTreeManager {
   void SetCurrentEffectState(const cc::EffectNode&,
                              CcEffectType,
                              const EffectPaintPropertyNode&,
-                             const ClipPaintPropertyNode&);
+                             const ClipPaintPropertyNode&,
+                             const TransformPaintPropertyNode&);
   void SetCurrentEffectRenderSurfaceReason(cc::RenderSurfaceReason);
 
   cc::TransformTree& GetTransformTree();

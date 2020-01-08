@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -73,10 +74,10 @@ class SynthesizedClip : private cc::ContentLayerClient {
   }
 
   void UpdateLayer(bool needs_layer,
-                   const FloatRoundedRect& rrect,
-                   scoped_refptr<const RefCountedPath> path);
+                   const ClipPaintPropertyNode&,
+                   const TransformPaintPropertyNode&);
 
-  cc::Layer* Layer() { return layer_.get(); }
+  cc::PictureLayer* Layer() { return layer_.get(); }
   CompositorElementId GetMaskIsolationId() const { return mask_isolation_id_; }
   CompositorElementId GetMaskEffectId() const { return mask_effect_id_; }
 
@@ -91,8 +92,9 @@ class SynthesizedClip : private cc::ContentLayerClient {
 
  private:
   scoped_refptr<cc::PictureLayer> layer_;
-  gfx::Vector2dF layer_origin_;
-  SkRRect local_rrect_ = SkRRect::MakeEmpty();
+  GeometryMapper::Translation2DOrMatrix translation_2d_or_matrix_;
+  bool rrect_is_local_ = false;
+  SkRRect rrect_;
   scoped_refptr<const RefCountedPath> path_;
   CompositorElementId mask_isolation_id_;
   CompositorElementId mask_effect_id_;
@@ -315,6 +317,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // However, |mask_isolation_id| is always set.
   SynthesizedClip& CreateOrReuseSynthesizedClipLayer(
       const ClipPaintPropertyNode&,
+      const TransformPaintPropertyNode&,
       bool needs_layer,
       CompositorElementId& mask_isolation_id,
       CompositorElementId& mask_effect_id) final;

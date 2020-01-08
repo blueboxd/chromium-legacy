@@ -8,6 +8,6 @@
 #error "This file requires ARC support."
 #endif
 
-const CGFloat kInfobarHeight = 54;
+const CGFloat kTranslateInfobarHeight = 54;
 
 NSString* const kTranslateInfobarViewId = @"kTranslateInfobarViewId";

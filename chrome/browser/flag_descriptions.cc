@@ -2340,6 +2340,19 @@ const char kWebXrDescription[] =
     "Enables access to experimental APIs to interact with Virtual Reality (VR) "
     "and Augmented Reality (AR) devices.";
 
+const char kWebXrForceRuntimeName[] = "Force WebXr Runtime";
+const char kWebXrForceRuntimeDescription[] =
+    "Force the browser to use a particular runtime, even if it would not "
+    "usually be enabled or would otherwise not be selected based on the "
+    "attached hardware.";
+
+const char kWebXrRuntimeChoiceNone[] = "No Runtime";
+const char kWebXrRuntimeChoiceOrientationSensors[] = "Orientation sensors";
+const char kWebXrRuntimeChoiceOculus[] = "Oculus";
+const char kWebXrRuntimeChoiceOpenVR[] = "SteamVR (OpenVR)";
+const char kWebXrRuntimeChoiceOpenXR[] = "OpenXR";
+const char kWebXrRuntimeChoiceWindowsMixedReality[] = "Windows Mixed Reality";
+
 const char kWebXrArModuleName[] = "WebXR AR Module";
 const char kWebXrArModuleDescription[] =
     "Enables access to Augmented Reality features defined in the WebXR AR "
@@ -3967,46 +3980,11 @@ const char kDcheckIsFatalDescription[] =
     "rather than crashing. If enabled, DCHECKs will crash the calling process.";
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
-#if BUILDFLAG(ENABLE_VR)
-
-const char kWebXrOrientationSensorDeviceName[] = "Orientation sensors for XR";
-const char kWebXrOrientationSensorDeviceDescription[] =
-    "Allow use of orientation sensors for XR if present";
-
-#if BUILDFLAG(ENABLE_OCULUS_VR)
-const char kOculusVRName[] = "Oculus hardware support";
-const char kOculusVRDescription[] =
-    "If enabled, Chrome will use Oculus devices for VR (supported only on "
-    "Windows 10 or later).";
-#endif  // ENABLE_OCULUS_VR
-
-#if BUILDFLAG(ENABLE_OPENVR)
-const char kOpenVRName[] = "OpenVR hardware support";
-const char kOpenVRDescription[] =
-    "If enabled, Chrome will use OpenVR devices for VR (supported only on "
-    "Windows 10 or later).";
-#endif  // ENABLE_OPENVR
-
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-const char kWindowsMixedRealityName[] = "Windows Mixed Reality support";
-const char kWindowsMixedRealityDescription[] =
-    "If enabled, Chrome will use Windows Mixed Reality devices for VR"
-    " (supported only on Windows 10 or later).";
-#endif  // ENABLE_WINDOWS_MR
-
-#if BUILDFLAG(ENABLE_OPENXR)
-const char kOpenXRName[] = "OpenXR support";
-const char kOpenXRDescription[] =
-    "If enabled, Chrome will use OpenXR Backend for VR.";
-#endif  // ENABLE_OPENXR
-
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
 const char kXRSandboxName[] = "XR device sandboxing";
 const char kXRSandboxDescription[] =
     "If enabled, Chrome will host VR APIs in a restricted process on desktop.";
-#endif  // !defined(OS_ANDROID)
-
-#endif  // ENABLE_VR
+#endif  // ENABLE_VR && !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_NACL)
 const char kNaclName[] = "Native Client";

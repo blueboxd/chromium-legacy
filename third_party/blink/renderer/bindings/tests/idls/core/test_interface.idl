@@ -75,6 +75,7 @@
     void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg(unrestricted double unrestrictedDoubleArg, unrestricted float unrestrictedFloatArg);
     void voidMethodTestEnumArg(TestEnum testEnumArg);
     void voidOptionalDictArgWithEmptyDefault(optional TestDictionary testDict={});
+    void voidOptionalUnionArgWithEmptyDefault(optional (DOMString or TestDictionary) arg={});
     [PerWorldBindings] void voidMethod();
 
     // Anonymous indexed property operations

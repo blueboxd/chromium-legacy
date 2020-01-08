@@ -2393,7 +2393,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4364327530094270451">Melone</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> condivide una finestra.</translation>
 <translation id="4364830672918311045">Mostra notifiche</translation>
-<translation id="436499142539576997">Impossibile recuperare i dati dell'app, ma tentativo di esecuzione dell'app comunque in corso…</translation>
+<translation id="436499142539576997">Impossibile recuperare i dati dell'app, tentativo di esecuzione dell'app comunque in corso…</translation>
 <translation id="4370975561335139969">L'indirizzo email e la password non corrispondono</translation>
 <translation id="437184764829821926">Impostazioni avanzate carattere</translation>
 <translation id="4374831787438678295">Programma di installazione di Linux</translation>
@@ -3891,7 +3891,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6555810572223193255">Pulizia al momento non disponibile</translation>
 <translation id="6556866813142980365">Ripeti</translation>
 <translation id="6557290421156335491">Le mie scorciatoie</translation>
-<translation id="6561560012278703671">Usa messaggi più discreti (i messaggi di notifica non ti interrompono)</translation>
+<translation id="6561560012278703671">Usa messaggi più discreti (impedisce alle notifiche di disturbarti)</translation>
 <translation id="6561726789132298588">invio</translation>
 <translation id="656293578423618167">Il percorso o il nome del file è troppo lungo. Salva il file con un nome più corto o in un'altra posizione.</translation>
 <translation id="6563469144985748109">Il tuo gestore non ha ancora approvato la richiesta</translation>

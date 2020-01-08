@@ -383,6 +383,15 @@ AppWindowBase* AppServiceAppWindowLauncherController::GetAppWindow(
   return aura_window_to_app_window_[window].get();
 }
 
+std::vector<aura::Window*>
+AppServiceAppWindowLauncherController::GetArcWindows() {
+  std::vector<aura::Window*> arc_windows;
+  std::copy_if(window_list_.begin(), window_list_.end(),
+               std::inserter(arc_windows, arc_windows.end()),
+               [](aura::Window* w) { return arc::IsArcAppWindow(w); });
+  return arc_windows;
+}
+
 void AppServiceAppWindowLauncherController::SetWindowActivated(
     aura::Window* window,
     bool active) {

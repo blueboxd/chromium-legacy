@@ -136,6 +136,9 @@ class ArcAccessibilityHelperBridge
       const ui::AXActionData& data,
       const base::Optional<gfx::Rect>& result_rect) const;
 
+  base::Optional<gfx::Rect> OnGetTextLocationDataResultInternal(
+      const base::Optional<gfx::Rect>& result_rect) const;
+
   void OnAccessibilityStatusChanged(
       const chromeos::AccessibilityStatusEventDetails& event_details);
   arc::mojom::AccessibilityFilterType GetFilterTypeForProfile(Profile* profile);

@@ -284,6 +284,7 @@ public class PortalsTest {
     @Test
     @MediumTest
     @Feature({"Portals"})
+    @DisabledTest(message = "https://crbug.com/1024850")
     public void testTouchTransferAfterReactivation() throws Exception {
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(
                 "/chrome/test/data/android/portals/touch-transfer-after-reactivation.html"));

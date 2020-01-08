@@ -19,7 +19,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/bind_test_util.h"
 #include "base/test/icu_test_util.h"
 #include "base/values.h"
 #include "chrome/browser/printing/print_test_utils.h"
@@ -847,8 +846,7 @@ TEST_F(PrintPreviewHandlerTest, GetPreview) {
   base::RunLoop run_loop;
   TestPrintPreviewPrintRenderFrame print_render_frame(
       GetInitiatorAssociatedInterfaceProvider());
-  print_render_frame.SetCompletionClosure(
-      base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+  print_render_frame.SetCompletionClosure(run_loop.QuitClosure());
 
   base::Value print_ticket = GetPrintPreviewTicket();
   std::unique_ptr<base::ListValue> list_args =
@@ -878,8 +876,7 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   base::RunLoop run_loop;
   TestPrintPreviewPrintRenderFrame print_render_frame(
       GetInitiatorAssociatedInterfaceProvider());
-  print_render_frame.SetCompletionClosure(
-      base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+  print_render_frame.SetCompletionClosure(run_loop.QuitClosure());
 
   const char callback_id_in[] = "test-callback-id-1";
   base::Value print_ticket = GetPrintPreviewTicket();

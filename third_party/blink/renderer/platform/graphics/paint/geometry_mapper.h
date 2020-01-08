@@ -103,6 +103,15 @@ class PLATFORM_EXPORT GeometryMapper {
       return TransformationMatrix::ToSkMatrix44(Matrix());
     }
 
+    bool operator==(const Translation2DOrMatrix& other) {
+      return translation_2d_ == other.translation_2d_ &&
+             matrix_ == other.matrix_;
+    }
+
+    bool operator!=(const Translation2DOrMatrix& other) {
+      return !(*this == other);
+    }
+
    private:
     FloatSize translation_2d_;
     base::Optional<TransformationMatrix> matrix_;

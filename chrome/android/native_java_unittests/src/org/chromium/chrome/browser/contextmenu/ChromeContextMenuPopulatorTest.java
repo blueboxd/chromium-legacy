@@ -11,32 +11,18 @@ import static org.mockito.Mockito.when;
 
 import android.util.Pair;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.test.DisableHistogramsRule;
-import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.blink_public.common.ContextMenuDataMediaType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuMode;
-import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulatorTest.ShadowUrlUtilities;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.share.ShareDelegate;
-;
-import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.base.MenuSourceType;
 
@@ -47,20 +33,12 @@ import java.util.List;
 /**
  * Unit tests for the context menu logic of Chrome.
  */
-@RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
 public class ChromeContextMenuPopulatorTest {
     private static final String PAGE_URL = "http://www.blah.com";
     private static final String LINK_URL = "http://www.blah.com/other_blah";
     private static final String LINK_TEXT = "BLAH!";
     private static final String IMAGE_SRC_URL = "http://www.blah.com/image.jpg";
     private static final String IMAGE_TITLE_TEXT = "IMAGE!";
-
-    @Rule
-    public DisableHistogramsRule mDisableHistogramsRule = new DisableHistogramsRule();
-
-    @Rule
-    public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
 
     @Mock
     private ContextMenuItemDelegate mItemDelegate;
@@ -71,7 +49,14 @@ public class ChromeContextMenuPopulatorTest {
 
     private ChromeContextMenuPopulator mPopulator;
 
-    @Before
+    @CalledByNative
+    public static ChromeContextMenuPopulatorTest create() {
+        return new ChromeContextMenuPopulatorTest();
+    }
+
+    private ChromeContextMenuPopulatorTest() {}
+
+    @CalledByNative
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
@@ -99,10 +84,8 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     private void checkMenuOptions(ContextMenuParams params, int[]... tabs) {
-        // clang-format off
         List<Pair<Integer, List<ContextMenuItem>>> contextMenuState =
-                mPopulator.buildContextMenu(null, RuntimeEnvironment.application, params);
-        // clang-format on
+                mPopulator.buildContextMenu(null, ContextUtils.getApplicationContext(), params);
 
         assertEquals("Number of tabs doesn't match", tabs[0] == null ? 0 : tabs.length,
                 contextMenuState.size());
@@ -126,7 +109,7 @@ public class ChromeContextMenuPopulatorTest {
         }
     }
 
-    @Test
+    @CalledByNative
     public void testHttpLink() {
         FirstRunStatus.setFirstRunFlowComplete(false);
         ContextMenuParams contextMenuParams = new ContextMenuParams(0, PAGE_URL, LINK_URL,
@@ -163,11 +146,47 @@ public class ChromeContextMenuPopulatorTest {
         checkMenuOptions(contextMenuParams, expected4);
     }
 
-    @Test
+    @CalledByNative
     public void testMailLink() {
         FirstRunStatus.setFirstRunFlowComplete(false);
         ContextMenuParams contextMenuParams =
-                new ContextMenuParams(0, PAGE_URL, "mailto:marcin@mwiacek.com", "MAIL!", "", "", "",
+                new ContextMenuParams(0, PAGE_URL, "mailto:marcin@mwiacek.com", "MAIL!", "",
+                        PAGE_URL, "", null, false, 0, 0, MenuSourceType.MENU_SOURCE_TOUCH);
+
+        int[] expected = {R.id.contextmenu_copy};
+        checkMenuOptions(contextMenuParams, expected);
+
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
+        checkMenuOptions(contextMenuParams, expected);
+
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
+        checkMenuOptions(contextMenuParams, expected);
+
+        FirstRunStatus.setFirstRunFlowComplete(true);
+
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.NORMAL);
+        int[] expected2 = {R.id.contextmenu_share_link, R.id.contextmenu_send_message,
+                R.id.contextmenu_add_to_contacts, R.id.contextmenu_copy};
+        checkMenuOptions(contextMenuParams, expected2);
+
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
+        int[] expected3 = {R.id.contextmenu_open_in_browser_id, R.id.contextmenu_share_link,
+                R.id.contextmenu_send_message, R.id.contextmenu_add_to_contacts,
+                R.id.contextmenu_copy};
+        checkMenuOptions(contextMenuParams, expected3);
+
+        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
+        int[] expected4 = {R.id.contextmenu_share_link, R.id.contextmenu_send_message,
+                R.id.contextmenu_add_to_contacts, R.id.contextmenu_copy,
+                R.id.contextmenu_open_in_chrome};
+        checkMenuOptions(contextMenuParams, expected4);
+    }
+
+    @CalledByNative
+    public void testTelLink() {
+        FirstRunStatus.setFirstRunFlowComplete(false);
+        ContextMenuParams contextMenuParams =
+                new ContextMenuParams(0, PAGE_URL, "tel:0048221234567", "PHONE!", "", PAGE_URL, "",
                         null, false, 0, 0, MenuSourceType.MENU_SOURCE_TOUCH);
 
         int[] expected = {R.id.contextmenu_copy};
@@ -182,70 +201,32 @@ public class ChromeContextMenuPopulatorTest {
         FirstRunStatus.setFirstRunFlowComplete(true);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.NORMAL);
-        int[] expected2 = {R.id.contextmenu_open_in_new_tab, R.id.contextmenu_open_in_incognito_tab,
-                R.id.contextmenu_open_in_other_window, R.id.contextmenu_save_link_as,
-                R.id.contextmenu_share_link, R.id.contextmenu_send_message,
-                R.id.contextmenu_add_to_contacts, R.id.contextmenu_copy};
+        int[] expected2 = {R.id.contextmenu_share_link, R.id.contextmenu_call,
+                R.id.contextmenu_send_message, R.id.contextmenu_add_to_contacts,
+                R.id.contextmenu_copy};
         checkMenuOptions(contextMenuParams, expected2);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
-        int[] expected3 = {R.id.contextmenu_open_in_browser_id, R.id.contextmenu_save_link_as,
-                R.id.contextmenu_share_link, R.id.contextmenu_send_message,
+        int[] expected3 = {R.id.contextmenu_open_in_browser_id, R.id.contextmenu_share_link,
+                R.id.contextmenu_call, R.id.contextmenu_send_message,
                 R.id.contextmenu_add_to_contacts, R.id.contextmenu_copy};
         checkMenuOptions(contextMenuParams, expected3);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
-        int[] expected4 = {R.id.contextmenu_save_link_as, R.id.contextmenu_share_link,
+        int[] expected4 = {R.id.contextmenu_share_link, R.id.contextmenu_call,
                 R.id.contextmenu_send_message, R.id.contextmenu_add_to_contacts,
                 R.id.contextmenu_copy, R.id.contextmenu_open_in_chrome};
         checkMenuOptions(contextMenuParams, expected4);
     }
 
-    @Test
-    public void testTelLink() {
-        FirstRunStatus.setFirstRunFlowComplete(false);
-        ContextMenuParams contextMenuParams =
-                new ContextMenuParams(0, PAGE_URL, "tel:0048221234567", "PHONE!", "", "", "", null,
-                        false, 0, 0, MenuSourceType.MENU_SOURCE_TOUCH);
-
-        int[] expected = {R.id.contextmenu_copy};
-        checkMenuOptions(contextMenuParams, expected);
-
-        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
-        checkMenuOptions(contextMenuParams, expected);
-
-        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
-        checkMenuOptions(contextMenuParams, expected);
-
-        FirstRunStatus.setFirstRunFlowComplete(true);
-
-        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.NORMAL);
-        int[] expected2 = {R.id.contextmenu_open_in_new_tab, R.id.contextmenu_open_in_incognito_tab,
-                R.id.contextmenu_open_in_other_window, R.id.contextmenu_save_link_as,
-                R.id.contextmenu_share_link, R.id.contextmenu_call, R.id.contextmenu_send_message,
-                R.id.contextmenu_add_to_contacts, R.id.contextmenu_copy};
-        checkMenuOptions(contextMenuParams, expected2);
-
-        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
-        int[] expected3 = {R.id.contextmenu_open_in_browser_id, R.id.contextmenu_save_link_as,
-                R.id.contextmenu_share_link, R.id.contextmenu_call, R.id.contextmenu_send_message,
-                R.id.contextmenu_add_to_contacts, R.id.contextmenu_copy};
-        checkMenuOptions(contextMenuParams, expected3);
-
-        initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
-        int[] expected4 = {R.id.contextmenu_save_link_as, R.id.contextmenu_share_link,
-                R.id.contextmenu_call, R.id.contextmenu_send_message,
-                R.id.contextmenu_add_to_contacts, R.id.contextmenu_copy,
-                R.id.contextmenu_open_in_chrome};
-        checkMenuOptions(contextMenuParams, expected4);
-    }
-
-    @Test
+    @CalledByNative
     public void testVideoLink() {
         FirstRunStatus.setFirstRunFlowComplete(false);
-        ContextMenuParams contextMenuParams = new ContextMenuParams(ContextMenuDataMediaType.VIDEO,
-                PAGE_URL, "http://www.blah.com/I_love_mouse_video.avi", "VIDEO!", "", "", "", null,
-                true, 0, 0, MenuSourceType.MENU_SOURCE_TOUCH);
+        String sourceUrl = "http://www.blah.com/";
+        String url = sourceUrl + "I_love_mouse_video.avi";
+        ContextMenuParams contextMenuParams =
+                new ContextMenuParams(ContextMenuDataMediaType.VIDEO, PAGE_URL, url, "VIDEO!", "",
+                        sourceUrl, "", null, true, 0, 0, MenuSourceType.MENU_SOURCE_TOUCH);
 
         int[] expectedTab1 = {R.id.contextmenu_copy_link_address, R.id.contextmenu_copy_link_text};
         checkMenuOptions(contextMenuParams, expectedTab1);
@@ -279,7 +260,7 @@ public class ChromeContextMenuPopulatorTest {
         checkMenuOptions(contextMenuParams, expected4Tab1, expected4Tab2);
     }
 
-    @Test
+    @CalledByNative
     public void testImageHiFi() {
         FirstRunStatus.setFirstRunFlowComplete(false);
         ContextMenuParams contextMenuParams = new ContextMenuParams(ContextMenuDataMediaType.IMAGE,
@@ -313,7 +294,7 @@ public class ChromeContextMenuPopulatorTest {
         checkMenuOptions(contextMenuParams, expected4);
     }
 
-    @Test
+    @CalledByNative
     public void testHttpLinkWithImageHiFi() {
         FirstRunStatus.setFirstRunFlowComplete(false);
         ContextMenuParams contextMenuParams = new ContextMenuParams(ContextMenuDataMediaType.IMAGE,
@@ -354,21 +335,5 @@ public class ChromeContextMenuPopulatorTest {
         int[] expected4Tab2 = {R.id.contextmenu_save_image, R.id.contextmenu_share_image,
                 R.id.contextmenu_open_in_chrome};
         checkMenuOptions(contextMenuParams, expected4Tab1, expected4Tab2);
-    }
-
-    /**
-     * Shadow for UrlUtilities
-     */
-    @Implements(UrlUtilities.class)
-    public static class ShadowUrlUtilities {
-        @Implementation
-        public static boolean isDownloadableScheme(String uri) {
-            return true;
-        }
-
-        @Implementation
-        public static boolean isAcceptedScheme(String uri) {
-            return true;
-        }
     }
 }

@@ -956,12 +956,6 @@ void Dispatcher::OnDispatchOnDisconnect(int worker_thread_id,
       NULL);  // All render frames.
 }
 
-void ResumeEvaluationOnWorkerThread(
-    blink::WebServiceWorkerContextProxy* context_proxy) {
-  DCHECK(context_proxy);
-  context_proxy->ResumeEvaluation();
-}
-
 void Dispatcher::OnLoaded(
     const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions) {
   for (const auto& param : loaded_extensions) {
@@ -1011,12 +1005,11 @@ void Dispatcher::OnLoaded(
       if (it != service_workers_paused_for_on_loaded_message_.end()) {
         scoped_refptr<base::SingleThreadTaskRunner> task_runner =
             std::move(it->second->task_runner);
-        blink::WebServiceWorkerContextProxy* context_proxy =
-            it->second->context_proxy;
-        service_workers_paused_for_on_loaded_message_.erase(it);
+        // Using base::Unretained() should be fine as this won't get destructed.
         task_runner->PostTask(
             FROM_HERE,
-            base::BindOnce(&ResumeEvaluationOnWorkerThread, context_proxy));
+            base::BindOnce(&Dispatcher::ResumeEvaluationOnWorkerThread,
+                           base::Unretained(this), extension->id()));
       }
     }
   }
@@ -1442,6 +1435,18 @@ std::unique_ptr<NativeExtensionBindingsSystem> Dispatcher::CreateBindingsSystem(
       std::make_unique<NativeExtensionBindingsSystem>(std::move(ipc_sender));
   delegate_->InitializeBindingsSystem(this, bindings_system.get());
   return bindings_system;
+}
+
+void Dispatcher::ResumeEvaluationOnWorkerThread(
+    const ExtensionId& extension_id) {
+  base::AutoLock lock(service_workers_paused_for_on_loaded_message_lock_);
+  auto it = service_workers_paused_for_on_loaded_message_.find(extension_id);
+  if (it != service_workers_paused_for_on_loaded_message_.end()) {
+    blink::WebServiceWorkerContextProxy* context_proxy =
+        it->second->context_proxy;
+    context_proxy->ResumeEvaluation();
+    service_workers_paused_for_on_loaded_message_.erase(it);
+  }
 }
 
 }  // namespace extensions

@@ -312,7 +312,21 @@ _ANDROID_GO_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('speedometer'),
     _GetBenchmarkConfig('speedometer2')])
 _ANDROID_GO_WEBVIEW_BENCHMARK_CONFIGS = _ANDROID_GO_BENCHMARK_CONFIGS
-_ANDROID_NEXUS_5_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2
+# Note that Nexus 5 bot capacity is very low, so we must severely limit
+# the benchmarks that we run on it and abridge large benchmarks in order
+# to run them on it. See crbug.com/1030840 for details.
+_ANDROID_NEXUS_5_BENCHMARK_CONFIGS = PerfSuite(
+    OFFICIAL_BENCHMARK_CONFIGS
+).Remove([
+    'blink_perf.display_locking', 'jetstream2', 'blink_perf.layout'
+]).Abridge([
+    'rendering.mobile',
+    # TODO(crbug.com/1039851): Abridge common_mobile after we make
+    # a better abridged story set for it:
+    #'system_health.common_mobile',
+    'system_health.memory_mobile',
+    'v8.browsing_mobile'
+])
 _ANDROID_NEXUS_5_EXECUTABLE_CONFIGS = frozenset([
     _TRACING_PERFTESTS, _COMPONENTS_PERFTESTS, _GPU_PERFTESTS])
 _ANDROID_NEXUS_5X_BENCHMARK_CONFIGS = PerfSuite(

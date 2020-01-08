@@ -2883,22 +2883,6 @@ bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
                                           const base::string16& message,
                                           const base::string16& default_value,
                                           base::string16* result) {
-  int32_t message_length = static_cast<int32_t>(message.length());
-  if (frame_->HasStickyUserActivation()) {
-    UMA_HISTOGRAM_COUNTS_1M("JSDialogs.CharacterCount.UserGestureSinceLoad",
-                            message_length);
-  } else {
-    UMA_HISTOGRAM_COUNTS_1M("JSDialogs.CharacterCount.NoUserGestureSinceLoad",
-                            message_length);
-  }
-
-  if (is_main_frame_)
-    UMA_HISTOGRAM_COUNTS_1M("JSDialogs.CharacterCount.MainFrame",
-                            message_length);
-  else
-    UMA_HISTOGRAM_COUNTS_1M("JSDialogs.CharacterCount.Subframe",
-                            message_length);
-
   // 10k ought to be enough for anyone.
   const base::string16::size_type kMaxMessageSize = 10 * 1024;
   base::string16 truncated_message = message.substr(0, kMaxMessageSize);

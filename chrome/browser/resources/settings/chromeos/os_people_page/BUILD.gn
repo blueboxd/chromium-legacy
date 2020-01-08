@@ -129,7 +129,7 @@ js_library("os_people_page") {
     ":lock_screen",
     ":lock_state_behavior",
     ":os_sync_controls",
-    "../../:page_visibility",
+    "..:os_page_visibility",
     "../../:route",
     "../../settings_page:settings_animated_pages",
     "../localized_link:localized_link",

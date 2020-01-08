@@ -123,14 +123,13 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
   // passed, a new encoding thread is created and used.
   class Encoder : public WTF::ThreadSafeRefCounted<Encoder> {
    public:
-    Encoder(
-        const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
-        int32_t bits_per_second,
-        scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-        scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner =
-            nullptr);
+    Encoder(const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
+            int32_t bits_per_second,
+            scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+            scoped_refptr<base::SingleThreadTaskRunner> encoding_task_runner =
+                nullptr);
 
-    // Start encoding |frame|, returning via |on_encoded_video_callback_|. This
+    // Start encoding |frame|, returning via |on_encoded_video_cb_|. This
     // call will also trigger an encode configuration upon first frame arrival
     // or parameter change, and an EncodeOnEncodingTaskRunner() to actually
     // encode the frame. If the |frame|'s data is not directly available (e.g.
@@ -205,7 +204,7 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
     std::atomic_bool paused_;
 
     // This callback should be exercised on IO thread.
-    const OnEncodedVideoCB on_encoded_video_callback_;
+    const OnEncodedVideoCB on_encoded_video_cb_;
 
     // Target bitrate for video encoding. If 0, a standard bitrate is used.
     const int32_t bits_per_second_;
@@ -302,7 +301,7 @@ class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
  private:
   friend class VideoTrackRecorderTest;
   void InitializeEncoder(CodecId codec,
-                         const OnEncodedVideoCB& on_encoded_video_callback,
+                         const OnEncodedVideoCB& on_encoded_video_cb,
                          int32_t bits_per_second,
                          bool allow_vea_encoder,
                          scoped_refptr<media::VideoFrame> frame,
@@ -324,7 +323,7 @@ class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
   base::RepeatingCallback<void(bool allow_vea_encoder,
                                scoped_refptr<media::VideoFrame> frame,
                                base::TimeTicks capture_time)>
-      initialize_encoder_callback_;
+      initialize_encoder_cb_;
 
   bool should_pause_encoder_on_initialization_;
 
@@ -362,7 +361,7 @@ class MODULES_EXPORT VideoTrackRecorderPassthrough : public VideoTrackRecorder {
 
   // This enum class tracks encoded frame waiting and dispatching state. This
   // is needed to guarantee we're dispatching decodable content to
-  // |on_encoded_video_callback|. Examples of times where this is needed is
+  // |on_encoded_video_cb|. Examples of times where this is needed is
   // startup and Pause/Resume.
   enum class KeyFrameState {
     kWaitingForKeyFrame,

@@ -248,4 +248,10 @@ base::ScopedClosureRunner GLOutputSurface::GetCacheBackBufferCb() {
 gpu::SurfaceHandle GLOutputSurface::GetSurfaceHandle() const {
   return surface_handle_;
 }
+
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+GLOutputSurface::GetGpuTaskSchedulerHelper() {
+  return viz_context_provider_->GetGpuTaskSchedulerHelper();
+}
+
 }  // namespace viz

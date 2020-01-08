@@ -135,8 +135,7 @@ SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   ScheduleGpuTask(std::move(callback), {});
   event.Wait();
 
-  // Delete task sequence.
-  task_sequence_.reset();
+  gpu_task_scheduler_.reset();
 }
 
 gpu::SurfaceHandle SkiaOutputSurfaceImpl::GetSurfaceHandle() const {
@@ -167,7 +166,7 @@ void SkiaOutputSurfaceImpl::EnsureBackbuffer() {
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::EnsureBackbuffer,
                                  base::Unretained(impl_on_gpu_.get()));
-  task_sequence_->ScheduleOrRetainTask(std::move(callback), {});
+  gpu_task_scheduler_->ScheduleOrRetainGpuTask(std::move(callback), {});
 }
 
 void SkiaOutputSurfaceImpl::DiscardBackbuffer() {
@@ -176,7 +175,7 @@ void SkiaOutputSurfaceImpl::DiscardBackbuffer() {
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::DiscardBackbuffer,
                                  base::Unretained(impl_on_gpu_.get()));
-  task_sequence_->ScheduleOrRetainTask(std::move(callback), {});
+  gpu_task_scheduler_->ScheduleOrRetainGpuTask(std::move(callback), {});
 }
 
 void SkiaOutputSurfaceImpl::RecreateRootRecorder() {
@@ -238,7 +237,7 @@ void SkiaOutputSurfaceImpl::SetUpdateVSyncParametersCallback(
 void SkiaOutputSurfaceImpl::SetGpuVSyncEnabled(bool enabled) {
   auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SetGpuVSyncEnabled,
                              base::Unretained(impl_on_gpu_.get()), enabled);
-  task_sequence_->ScheduleOrRetainTask(std::move(task), {});
+  gpu_task_scheduler_->ScheduleOrRetainGpuTask(std::move(task), {});
 }
 
 void SkiaOutputSurfaceImpl::SetGpuVSyncCallback(GpuVSyncCallback callback) {
@@ -377,7 +376,7 @@ void SkiaOutputSurfaceImpl::ReleaseImageContexts(
   auto callback = base::BindOnce(
       &SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts,
       base::Unretained(impl_on_gpu_.get()), std::move(image_contexts));
-  task_sequence_->ScheduleOrRetainTask(std::move(callback), {});
+  gpu_task_scheduler_->ScheduleOrRetainGpuTask(std::move(callback), {});
 }
 
 std::unique_ptr<ExternalUseClient::ImageContext>
@@ -615,8 +614,10 @@ void SkiaOutputSurfaceImpl::SendOverlayPromotionNotification(
 bool SkiaOutputSurfaceImpl::Initialize() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Before start scheduling GPU task, set up |task_sequence_|.
-  task_sequence_ = dependency_->CreateSequence();
+  // Before starting to schedule GPU task, set up |gpu_task_scheduler_| that
+  // holds a task sequence.
+  gpu_task_scheduler_ = base::MakeRefCounted<gpu::GpuTaskSchedulerHelper>(
+      dependency_->CreateSequence());
 
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 
@@ -669,7 +670,8 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(
       base::BindOnce(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
 
   impl_on_gpu_ = SkiaOutputSurfaceImplOnGpu::Create(
-      dependency_.get(), renderer_settings_, task_sequence_->GetSequenceId(),
+      dependency_.get(), renderer_settings_,
+      gpu_task_scheduler_->GetSequenceId(),
       std::move(did_swap_buffer_complete_callback),
       std::move(buffer_presented_callback), std::move(context_lost_callback),
       std::move(vsync_callback_runner));
@@ -769,8 +771,8 @@ void SkiaOutputSurfaceImpl::ScheduleGpuTask(
         std::move(callback).Run();
       },
       std::move(callback));
-  task_sequence_->ScheduleTask(std::move(wrapped_closure),
-                               std::move(sync_tokens));
+  gpu_task_scheduler_->ScheduleGpuTask(std::move(wrapped_closure),
+                                       std::move(sync_tokens));
 }
 
 GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
@@ -905,6 +907,11 @@ void SkiaOutputSurfaceImpl::ContextLost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto& observer : observers_)
     observer.OnContextLost();
+}
+
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+SkiaOutputSurfaceImpl::GetGpuTaskSchedulerHelper() {
+  return gpu_task_scheduler_;
 }
 
 }  // namespace viz

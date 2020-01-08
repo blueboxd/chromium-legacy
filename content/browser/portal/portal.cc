@@ -467,6 +467,10 @@ void Portal::CloseContents(WebContents* web_contents) {
   DestroySelf();  // Deletes |this|.
 }
 
+WebContents* Portal::GetResponsibleWebContents(WebContents* web_contents) {
+  return WebContents::FromRenderFrameHost(owner_render_frame_host_);
+}
+
 base::UnguessableToken Portal::GetDevToolsFrameToken() const {
   return portal_contents_->GetMainFrame()->GetDevToolsFrameToken();
 }

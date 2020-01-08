@@ -21,6 +21,7 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "gpu/ipc/gpu_task_scheduler_helper.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/latency/latency_info.h"
@@ -224,6 +225,13 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   static void UpdateLatencyInfoOnSwap(
       const gfx::SwapResponse& response,
       std::vector<ui::LatencyInfo>* latency_info);
+
+  // This is used to share the same method to schedule task on the gpu thread
+  // between the output surface and the overlay processor.
+  // TODO(weiliangc): Consider making this outside of output surface and pass in
+  // instead of passing it out here.
+  virtual scoped_refptr<gpu::GpuTaskSchedulerHelper>
+  GetGpuTaskSchedulerHelper() = 0;
 
  protected:
   struct OutputSurface::Capabilities capabilities_;

@@ -92,13 +92,13 @@ class MockMediaDevicesDispatcherHost
             mojom::blink::VideoInputDeviceCapabilities::New();
         capabilities->device_id = kFakeVideoInputDeviceId1;
         capabilities->group_id = kFakeCommonGroupId1;
-        capabilities->facing_mode = blink::mojom::FacingMode::NONE;
+        capabilities->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
         video_input_capabilities.push_back(std::move(capabilities));
 
         capabilities = mojom::blink::VideoInputDeviceCapabilities::New();
         capabilities->device_id = kFakeVideoInputDeviceId2;
         capabilities->group_id = kFakeVideoInputGroupId2;
-        capabilities->facing_mode = blink::mojom::FacingMode::USER;
+        capabilities->facing_mode = media::MEDIA_VIDEO_FACING_USER;
         video_input_capabilities.push_back(std::move(capabilities));
       }
     }
@@ -185,7 +185,7 @@ class MediaDevicesTest : public testing::Test {
   void SimulateDeviceChange() {
     DCHECK(listener());
     listener()->OnDevicesChanged(
-        blink::mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT,
+        mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT,
         Vector<MediaDeviceInfoPtr>());
   }
 

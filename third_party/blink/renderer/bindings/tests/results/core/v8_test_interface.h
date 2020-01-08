@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_test_dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_empty.h"
@@ -192,6 +193,7 @@ class V8TestInterface {
   CORE_EXPORT static void VoidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void VoidMethodTestEnumArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void VoidOptionalDictArgWithEmptyDefaultMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void VoidOptionalUnionArgWithEmptyDefaultMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void VoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void AlwaysExposedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

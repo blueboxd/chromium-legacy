@@ -10,15 +10,12 @@
 namespace content {
 
 blink::ForcedColors WebThemeEngineMac::GetForcedColors() const {
-  return ui::NativeTheme::GetInstanceForWeb()->UsesHighContrastColors()
-             ? blink::ForcedColors::kActive
-             : blink::ForcedColors::kNone;
+  return forced_colors_;
 }
 
 void WebThemeEngineMac::SetForcedColors(
     const blink::ForcedColors forced_colors) {
-  ui::NativeTheme::GetInstanceForWeb()->set_high_contrast(
-      forced_colors == blink::ForcedColors::kActive);
+  forced_colors_ = forced_colors;
 }
 
 blink::PreferredColorScheme WebThemeEngineMac::PreferredColorScheme() const {

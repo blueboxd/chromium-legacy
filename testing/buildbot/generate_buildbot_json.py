@@ -940,22 +940,39 @@ class BBJSONGenerator(object):
       if not isinstance(mixins, list):
         raise BBGenErr("'%s' in %s '%s' must be a list" % (mixins, typ, name))
 
+    test_name = test.get('name')
+    remove_mixins = set()
+    if 'remove_mixins' in builder:
+      must_be_list(builder['remove_mixins'], 'builder', builder_name)
+      for rm in builder['remove_mixins']:
+        valid_mixin(rm)
+        remove_mixins.add(rm)
+    if 'remove_mixins' in test:
+      must_be_list(test['remove_mixins'], 'test', test_name)
+      for rm in test['remove_mixins']:
+        valid_mixin(rm)
+        remove_mixins.add(rm)
+      del test['remove_mixins']
+
     if 'mixins' in waterfall:
       must_be_list(waterfall['mixins'], 'waterfall', waterfall['name'])
       for mixin in waterfall['mixins']:
+        if mixin in remove_mixins:
+          continue
         valid_mixin(mixin)
         test = self.apply_mixin(self.mixins[mixin], test)
 
     if 'mixins' in builder:
       must_be_list(builder['mixins'], 'builder', builder_name)
       for mixin in builder['mixins']:
+        if mixin in remove_mixins:
+          continue
         valid_mixin(mixin)
         test = self.apply_mixin(self.mixins[mixin], test)
 
     if not 'mixins' in test:
       return test
 
-    test_name = test.get('name')
     if not test_name:
       test_name = test.get('test')
     if not test_name: # pragma: no cover
@@ -963,6 +980,9 @@ class BBJSONGenerator(object):
       test_name = str(test)
     must_be_list(test['mixins'], 'test', test_name)
     for mixin in test['mixins']:
+      # We don't bother checking if the given mixin is in remove_mixins here
+      # since this is already the lowest level, so if a mixin is added here that
+      # we don't want, we can just delete its entry.
       valid_mixin(mixin)
       test = self.apply_mixin(self.mixins[mixin], test)
       del test['mixins']

@@ -35,7 +35,7 @@
 <translation id="1231733316453485619">Attivare la sincronizzazione?</translation>
 <translation id="123724288017357924">Ricarica pag. corr. Ignora i contenuti nella cache</translation>
 <translation id="124116460088058876">Altre lingue</translation>
-<translation id="1242008676835033345">Incorporata su <ph name="WEBSITE_URL" /></translation>
+<translation id="1242008676835033345">Incorporato su <ph name="WEBSITE_URL" /></translation>
 <translation id="124678866338384709">Chiudi scheda corrente</translation>
 <translation id="1258753120186372309">Doodle di Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Cerca ed esplora</translation>
@@ -739,7 +739,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6545864417968258051">Scansione Bluetooth</translation>
 <translation id="6560414384669816528">Ricerche con Sogou</translation>
 <translation id="656065428026159829">Mostra altri</translation>
-<translation id="6561560012278703671">Usa messaggi più discreti (i messaggi di notifica non ti interrompono)</translation>
+<translation id="6561560012278703671">Usa messaggi più discreti (impedisce alle notifiche di disturbarti)</translation>
 <translation id="6566259936974865419">Chrome ti ha fatto risparmiare <ph name="GIGABYTES" /> GB</translation>
 <translation id="6573096386450695060">Consenti sempre</translation>
 <translation id="6573431926118603307">Le schede aperte in Chrome sugli altri dispositivi verranno visualizzate qui.</translation>

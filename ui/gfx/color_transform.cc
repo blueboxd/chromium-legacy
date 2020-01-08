@@ -88,19 +88,6 @@ float FromLinear(ColorSpace::TransferID id, float v) {
         return a * pow(v, 0.45f) - (a - 1.0f);
     }
 
-    case ColorSpace::TransferID::SMPTEST2084: {
-      // Go from scRGB levels to 0-1.
-      v *= 80.0f / 10000.0f;
-      v = max(0.0f, v);
-      float m1 = (2610.0f / 4096.0f) / 4.0f;
-      float m2 = (2523.0f / 4096.0f) * 128.0f;
-      float c1 = 3424.0f / 4096.0f;
-      float c2 = (2413.0f / 4096.0f) * 32.0f;
-      float c3 = (2392.0f / 4096.0f) * 32.0f;
-      float p = powf(v, m1);
-      return powf((c1 + c2 * p) / (1.0f + c3 * p), m2);
-    }
-
     // Spec: http://www.arib.or.jp/english/html/overview/doc/2-STD-B67v1_0.pdf
     case ColorSpace::TransferID::ARIB_STD_B67: {
       const float a = 0.17883277f;
@@ -156,22 +143,6 @@ float ToLinear(ColorSpace::TransferID id, float v) {
       else if (v <= from_linear_b)
         return v / 4.5f;
       return pow((v + a - 1.0f) / a, 1.0f / 0.45f);
-    }
-
-    case ColorSpace::TransferID::SMPTEST2084: {
-      v = max(0.0f, v);
-      float m1 = (2610.0f / 4096.0f) / 4.0f;
-      float m2 = (2523.0f / 4096.0f) * 128.0f;
-      float c1 = 3424.0f / 4096.0f;
-      float c2 = (2413.0f / 4096.0f) * 32.0f;
-      float c3 = (2392.0f / 4096.0f) * 32.0f;
-      float p = pow(v, 1.0f / m2);
-      v = powf(max(p - c1, 0.0f) / (c2 - c3 * p), 1.0f / m1);
-      // This matches the scRGB definition that 1.0 means 80 nits.
-      // TODO(hubbe): It would be *nice* if 1.0 meant more than that, but
-      // that might be difficult to do right now.
-      v *= 10000.0f / 80.0f;
-      return v;
     }
 
     // Spec: http://www.arib.or.jp/english/html/overview/doc/2-STD-B67v1_0.pdf
@@ -508,6 +479,91 @@ class ColorTransformSkTransferFn : public ColorTransformPerChannelTransferFn {
   skcms_TransferFunction fn_;
 };
 
+class ColorTransformPQFromLinear : public ColorTransformPerChannelTransferFn {
+ public:
+  explicit ColorTransformPQFromLinear(float sdr_white_level)
+      : ColorTransformPerChannelTransferFn(false),
+        sdr_white_level_(sdr_white_level) {}
+
+  // ColorTransformPerChannelTransferFn implementation:
+  float Evaluate(float v) const override {
+    v *= sdr_white_level_ / 10000.0f;
+    v = max(0.0f, v);
+    float m1 = (2610.0f / 4096.0f) / 4.0f;
+    float m2 = (2523.0f / 4096.0f) * 128.0f;
+    float c1 = 3424.0f / 4096.0f;
+    float c2 = (2413.0f / 4096.0f) * 32.0f;
+    float c3 = (2392.0f / 4096.0f) * 32.0f;
+    float p = powf(v, m1);
+    return powf((c1 + c2 * p) / (1.0f + c3 * p), m2);
+  }
+  void AppendTransferShaderSource(std::stringstream* src,
+                                  bool is_glsl) const override {
+    std::string scalar_type = is_glsl ? "float" : "half";
+    *src << "  v *= " << sdr_white_level_
+         << " / 10000.0;\n"
+            "  v = max(0.0, v);\n"
+         << "  " << scalar_type << " m1 = (2610.0 / 4096.0) / 4.0;\n"
+         << "  " << scalar_type << " m2 = (2523.0 / 4096.0) * 128.0;\n"
+         << "  " << scalar_type << " c1 = 3424.0 / 4096.0;\n"
+         << "  " << scalar_type << " c2 = (2413.0 / 4096.0) * 32.0;\n"
+         << "  " << scalar_type
+         << " c3 = (2392.0 / 4096.0) * 32.0;\n"
+            "  v =  pow((c1 + c2 * pow(v, m1)) / \n"
+            "           (1.0 + c3 * pow(v, m1)), m2);\n";
+  }
+
+ private:
+  const float sdr_white_level_;
+};
+
+class ColorTransformPQToLinear : public ColorTransformPerChannelTransferFn {
+ public:
+  explicit ColorTransformPQToLinear(float sdr_white_level)
+      : ColorTransformPerChannelTransferFn(false),
+        sdr_white_level_(sdr_white_level) {}
+
+  // ColorTransformPerChannelTransferFn implementation:
+  float Evaluate(float v) const override {
+    v = max(0.0f, v);
+    float m1 = (2610.0f / 4096.0f) / 4.0f;
+    float m2 = (2523.0f / 4096.0f) * 128.0f;
+    float c1 = 3424.0f / 4096.0f;
+    float c2 = (2413.0f / 4096.0f) * 32.0f;
+    float c3 = (2392.0f / 4096.0f) * 32.0f;
+    float p = pow(v, 1.0f / m2);
+    v = powf(max(p - c1, 0.0f) / (c2 - c3 * p), 1.0f / m1);
+    v *= 10000.0f / sdr_white_level_;
+    return v;
+  }
+  void AppendTransferShaderSource(std::stringstream* src,
+                                  bool is_glsl) const override {
+    std::string scalar_type = is_glsl ? "float" : "half";
+    *src << "  v = max(0.0, v);\n"
+         << "  " << scalar_type << " m1 = (2610.0 / 4096.0) / 4.0;\n"
+         << "  " << scalar_type << " m2 = (2523.0 / 4096.0) * 128.0;\n"
+         << "  " << scalar_type << " c1 = 3424.0 / 4096.0;\n"
+         << "  " << scalar_type << " c2 = (2413.0 / 4096.0) * 32.0;\n"
+         << "  " << scalar_type << " c3 = (2392.0 / 4096.0) * 32.0;\n";
+    if (is_glsl) {
+      *src << "  #ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+              "  highp float v2 = v;\n"
+              "  #else\n"
+              "  float v2 = v;\n"
+              "  #endif\n";
+    } else {
+      *src << "  " << scalar_type << " v2 = v;\n";
+    }
+    *src << "  v2 = pow(max(pow(v2, 1.0 / m2) - c1, 0.0) /\n"
+            "              (c2 - c3 * pow(v2, 1.0 / m2)), 1.0 / m1);\n"
+            "  v = v2 * 10000.0 / "
+         << sdr_white_level_ << ";\n";
+  }
+
+ private:
+  const float sdr_white_level_;
+};
+
 class ColorTransformFromLinear : public ColorTransformPerChannelTransferFn {
  public:
   // ColorTransformStep implementation.
@@ -555,18 +611,6 @@ class ColorTransformFromLinear : public ColorTransformPerChannelTransferFn {
                 "    v = 4.5 * v;\n"
                 "  else\n"
                 "    v = a * pow(v, 0.45) - (a - 1.0);\n";
-        return;
-      case ColorSpace::TransferID::SMPTEST2084:
-        *src << "  v *= 80.0 / 10000.0;\n"
-                "  v = max(0.0, v);\n"
-             << "  " << scalar_type << " m1 = (2610.0 / 4096.0) / 4.0;\n"
-             << "  " << scalar_type << " m2 = (2523.0 / 4096.0) * 128.0;\n"
-             << "  " << scalar_type << " c1 = 3424.0 / 4096.0;\n"
-             << "  " << scalar_type << " c2 = (2413.0 / 4096.0) * 32.0;\n"
-             << "  " << scalar_type
-             << " c3 = (2392.0 / 4096.0) * 32.0;\n"
-                "  v =  pow((c1 + c2 * pow(v, m1)) / \n"
-                "           (1.0 + c3 * pow(v, m1)), m2);\n";
         return;
       case ColorSpace::TransferID::ARIB_STD_B67:
         *src << "  " << scalar_type << " a = 0.17883277;\n"
@@ -647,26 +691,6 @@ class ColorTransformToLinear : public ColorTransformPerChannelTransferFn {
                 "    v = v / 4.5;\n"
                 "  else\n"
                 "    v = pow((v + a - 1.0) / a, 1.0 / 0.45);\n";
-        return;
-      case ColorSpace::TransferID::SMPTEST2084:
-        *src << "  v = max(0.0, v);\n"
-             << "  " << scalar_type << " m1 = (2610.0 / 4096.0) / 4.0;\n"
-             << "  " << scalar_type << " m2 = (2523.0 / 4096.0) * 128.0;\n"
-             << "  " << scalar_type << " c1 = 3424.0 / 4096.0;\n"
-             << "  " << scalar_type << " c2 = (2413.0 / 4096.0) * 32.0;\n"
-             << "  " << scalar_type << " c3 = (2392.0 / 4096.0) * 32.0;\n";
-        if (is_glsl) {
-          *src << "  #ifdef GL_FRAGMENT_PRECISION_HIGH\n"
-                  "  highp float v2 = v;\n"
-                  "  #else\n"
-                  "  float v2 = v;\n"
-                  "  #endif\n";
-        } else {
-          *src << "  " << scalar_type << " v2 = v;\n";
-        }
-        *src << "  v2 = pow(max(pow(v2, 1.0 / m2) - c1, 0.0) /\n"
-                "              (c2 - c3 * pow(v2, 1.0 / m2)), 1.0 / m1);\n"
-                "  v = v2 * 10000.0 / 80.0;\n";
         return;
       case ColorSpace::TransferID::ARIB_STD_B67:
         *src << "  v = max(0.0, v);\n"
@@ -779,6 +803,9 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   if (src.GetTransferFunction(&src_to_linear_fn)) {
     steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
         src_to_linear_fn, src.HasExtendedSkTransferFn()));
+  } else if (src.GetTransferID() == ColorSpace::TransferID::SMPTEST2084) {
+    steps_.push_back(std::make_unique<ColorTransformPQToLinear>(
+        ColorSpace::kDefaultSDRWhiteLevel));
   } else {
     steps_.push_back(
         std::make_unique<ColorTransformToLinear>(src.GetTransferID()));
@@ -804,6 +831,9 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
   if (dst.GetInverseTransferFunction(&dst_from_linear_fn)) {
     steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
         dst_from_linear_fn, dst.HasExtendedSkTransferFn()));
+  } else if (dst.GetTransferID() == ColorSpace::TransferID::SMPTEST2084) {
+    steps_.push_back(std::make_unique<ColorTransformPQFromLinear>(
+        ColorSpace::kDefaultSDRWhiteLevel));
   } else {
     steps_.push_back(
         std::make_unique<ColorTransformFromLinear>(dst.GetTransferID()));

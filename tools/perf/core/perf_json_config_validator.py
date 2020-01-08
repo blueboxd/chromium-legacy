@@ -88,15 +88,11 @@ def _ValidateShardingData(builder_name, test_config):
 def _ValidateBrowserType(builder_name, test_config):
   browser_options = _ParseBrowserFlags(test_config['args'])
   if 'WebView' in builder_name or 'webview' in builder_name:
-    webview_browsers = (
-        'android-webview',
-        'android-webview-bundle',
-        'android-webview-google',
-        'android-webview-google-bundle',
-    )
-    if browser_options.browser not in webview_browsers:
-      raise ValueError('The browser type for %s must be one of %s' % (
-          builder_name, ', '.join(webview_browsers)))
+    if browser_options.browser not in (
+        'android-webview', 'android-webview-google'):
+      raise ValueError(
+          "%s must use 'android-webview' or 'android-webview-google' "
+          "browser" % builder_name)
   elif 'Android' in builder_name or 'android' in builder_name:
     android_browsers = (
         'android-chromium',
@@ -104,7 +100,7 @@ def _ValidateBrowserType(builder_name, test_config):
         'android-chrome-bundle',
         'exact')
     if browser_options.browser not in android_browsers:
-      raise ValueError('The browser type for %s must be one of %s' % (
+      raise ValueError( 'The browser type for %s must be one of %s' % (
           builder_name, ', '.join(android_browsers)))
   elif 'chromeos' in builder_name:
     if browser_options.browser != 'cros-chrome':

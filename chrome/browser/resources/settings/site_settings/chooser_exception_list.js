@@ -113,6 +113,9 @@ Polymer({
       case settings.ChooserType.SERIAL_PORTS:
         this.emptyListMessage_ = this.i18n('noSerialPortsFound');
         break;
+      case settings.ChooserType.HID_DEVICES:
+        this.emptyListMessage_ = this.i18n('noHidDevicesFound');
+        break;
       default:
         this.emptyListMessage_ = '';
     }

@@ -152,7 +152,7 @@
 <translation id="2099625543891475722">tus rasgos físicos, como tu altura</translation>
 <translation id="2100273922101894616">Iniciar sesión automáticamente</translation>
 <translation id="2100314319871056947">Prueba a compartir el texto dividiéndolo en partes más pequeñas</translation>
-<translation id="2107397443965016585">Preguntar antes de permitir que los sitios web reproduzcan contenido protegido (opción recomendada)</translation>
+<translation id="2107397443965016585">Preguntar antes de permitir que los sitios web reproduzcan contenido protegido (recomendado)</translation>
 <translation id="2111511281910874386">Ir a la página</translation>
 <translation id="2122601567107267586">No se ha podido abrir la aplicación</translation>
 <translation id="2126426811489709554">Con la tecnología de Chrome</translation>
@@ -1090,7 +1090,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="945632385593298557">Acceder al micrófono</translation>
 <translation id="95817756606698420">Chrome puede utilizar <ph name="BEGIN_BOLD" />Sogou<ph name="END_BOLD" /> para hacer búsquedas en China. Puedes cambiar esta opción en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
-<translation id="965817943346481315">Bloquear si el sitio web muestra anuncios invasivos o engañosos (opción recomendada)</translation>
+<translation id="965817943346481315">Bloquear si el sitio web muestra anuncios invasivos o engañosos (recomendado)</translation>
 <translation id="968900484120156207">Las páginas que visites aparecerán aquí.</translation>
 <translation id="970715775301869095">Quedan <ph name="MINUTES" /> minutos</translation>
 <translation id="974555521953189084">Introduce la frase de contraseña para iniciar la sincronización</translation>

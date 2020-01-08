@@ -13,6 +13,8 @@ component("gl_in_process_context") {
     "gl_in_process_context_export.h",
     "gpu_in_process_thread_service.cc",
     "gpu_in_process_thread_service.h",
+    "gpu_task_scheduler_helper.cc",
+    "gpu_task_scheduler_helper.h",
     "in_process_command_buffer.cc",
     "in_process_command_buffer.h",
     "scheduler_sequence.cc",

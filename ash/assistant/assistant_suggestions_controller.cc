@@ -129,12 +129,14 @@ void AssistantSuggestionsController::UpdateConversationStarters() {
 
   using chromeos::assistant::mojom::AssistantSuggestion;
   using chromeos::assistant::mojom::AssistantSuggestionPtr;
+  using chromeos::assistant::mojom::AssistantSuggestionType;
 
   std::vector<AssistantSuggestionPtr> conversation_starters;
 
   auto AddConversationStarter = [&conversation_starters](
                                     int message_id, GURL action_url = GURL()) {
     AssistantSuggestionPtr starter = AssistantSuggestion::New();
+    starter->type = AssistantSuggestionType::kConversationStarter;
     starter->text = l10n_util::GetStringUTF8(message_id);
     starter->action_url = action_url;
     conversation_starters.push_back(std::move(starter));

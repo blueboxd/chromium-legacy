@@ -493,7 +493,9 @@ def argument_set_default_value(argument):
                                 % idl_type.name)
             # Union container objects are "null" initially.
             return '/* null default value */'
-        if isinstance(default_value.value, basestring):
+        if default_value.value == "{}":
+            member_type = idl_type.dictionary_member_type
+        elif isinstance(default_value.value, basestring):
             member_type = idl_type.string_member_type
         elif isinstance(default_value.value, (int, float)):
             member_type = idl_type.numeric_member_type

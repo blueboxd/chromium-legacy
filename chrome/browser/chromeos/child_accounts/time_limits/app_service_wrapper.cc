@@ -151,9 +151,9 @@ void AppServiceWrapper::OnInstanceUpdate(const apps::InstanceUpdate& update) {
   bool is_active = update.State() & apps::InstanceState::kActive;
   for (auto& listener : listeners_) {
     if (is_active) {
-      listener.OnAppActive(app_id, update.LastUpdatedTime());
+      listener.OnAppActive(app_id, update.Window(), update.LastUpdatedTime());
     } else {
-      listener.OnAppInactive(app_id, update.LastUpdatedTime());
+      listener.OnAppInactive(app_id, update.Window(), update.LastUpdatedTime());
     }
   }
 }

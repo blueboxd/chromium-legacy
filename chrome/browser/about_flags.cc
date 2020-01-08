@@ -351,6 +351,37 @@ const FeatureEntry::Choice kUseAngleChoices[] = {
      gl::kANGLEImplementationD3D11on12Name}};
 #endif
 
+#if BUILDFLAG(ENABLE_VR)
+const FeatureEntry::Choice kWebXrForceRuntimeChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kWebXrRuntimeChoiceNone, switches::kWebXrForceRuntime,
+     switches::kWebXrRuntimeNone},
+
+    {flag_descriptions::kWebXrRuntimeChoiceOrientationSensors,
+     switches::kWebXrForceRuntime, switches::kWebXrRuntimeOrientationSensors},
+
+#if BUILDFLAG(ENABLE_OCULUS_VR)
+    {flag_descriptions::kWebXrRuntimeChoiceOculus, switches::kWebXrForceRuntime,
+     switches::kWebXrRuntimeOculus},
+#endif  // ENABLE_OCULUS_VR
+
+#if BUILDFLAG(ENABLE_OPENVR)
+    {flag_descriptions::kWebXrRuntimeChoiceOpenVR, switches::kWebXrForceRuntime,
+     switches::kWebXrRuntimeOpenVr},
+#endif  // ENABLE_OPENVR
+
+#if BUILDFLAG(ENABLE_OPENXR)
+    {flag_descriptions::kWebXrRuntimeChoiceOpenXR, switches::kWebXrForceRuntime,
+     switches::kWebXrRuntimeOpenXr},
+#endif  // ENABLE_OPENXR
+
+#if BUILDFLAG(ENABLE_WINDOWS_MR)
+    {flag_descriptions::kWebXrRuntimeChoiceWindowsMixedReality,
+     switches::kWebXrForceRuntime, switches::kWebXrRuntimeWMR},
+#endif  // ENABLE_WINDOWS_MR
+};
+#endif  // ENABLE_VR
+
 #if defined(OS_ANDROID)
 const FeatureEntry::Choice kReaderModeHeuristicsChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -2269,30 +2300,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"webxr-incubations", flag_descriptions::kWebXrIncubationsName,
      flag_descriptions::kWebXrIncubationsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrIncubations)},
-    {"webxr-orientation-sensor-device",
-     flag_descriptions::kWebXrOrientationSensorDeviceName,
-     flag_descriptions::kWebXrOrientationSensorDeviceDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(device::kWebXrOrientationSensorDevice)},
-#if BUILDFLAG(ENABLE_OCULUS_VR)
-    {"oculus-vr", flag_descriptions::kOculusVRName,
-     flag_descriptions::kOculusVRDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kOculusVR)},
-#endif  // ENABLE_OCULUS_VR
-#if BUILDFLAG(ENABLE_OPENVR)
-    {"openvr", flag_descriptions::kOpenVRName,
-     flag_descriptions::kOpenVRDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kOpenVR)},
-#endif  // ENABLE_OPENVR
-#if BUILDFLAG(ENABLE_WINDOWS_MR)
-    {"windows-mixed-reality", flag_descriptions::kWindowsMixedRealityName,
-     flag_descriptions::kWindowsMixedRealityDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kWindowsMixedReality)},
-#endif  // ENABLE_WINDOWS_MR
-#if BUILDFLAG(ENABLE_OPENXR)
-    {"openxr", flag_descriptions::kOpenXRName,
-     flag_descriptions::kOpenXRDescription, kOsWin,
-     FEATURE_VALUE_TYPE(features::kOpenXR)},
-#endif  // ENABLE_OPENXR
+    {"webxr-runtime", flag_descriptions::kWebXrForceRuntimeName,
+     flag_descriptions::kWebXrForceRuntimeDescription, kOsDesktop,
+     MULTI_VALUE_TYPE(kWebXrForceRuntimeChoices)},
 #if !defined(OS_ANDROID)
     {"xr-sandbox", flag_descriptions::kXRSandboxName,
      flag_descriptions::kXRSandboxDescription, kOsWin,

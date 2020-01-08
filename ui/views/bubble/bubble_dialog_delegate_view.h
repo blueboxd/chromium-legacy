@@ -73,6 +73,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   bool close_on_deactivate() const { return close_on_deactivate_; }
   void set_close_on_deactivate(bool close) { close_on_deactivate_ = close; }
 
+  void SetAnchorView(View* anchor_view);
   View* GetAnchorView() const;
   Widget* anchor_widget() const { return anchor_widget_; }
 
@@ -183,7 +184,6 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // valid view gets passed, the anchor rect will get ignored. If the view gets
   // deleted, but no new view gets set, the last known anchor postion will get
   // returned.
-  void SetAnchorView(View* anchor_view);
   void SetAnchorRect(const gfx::Rect& rect);
 
   // Resize and potentially move the bubble to fit the content's preferred size.

@@ -54,6 +54,8 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
 #endif
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
+      override;
 
  private:
   void SwapBuffersCallback(base::TimeTicks swap_time,

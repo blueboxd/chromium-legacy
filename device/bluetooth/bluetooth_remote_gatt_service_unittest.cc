@@ -598,7 +598,7 @@ TEST_F(BluetoothRemoteGattServiceTest, ExtraDidDiscoverCharacteristicsCall) {
 
 #if defined(OS_WIN)
 INSTANTIATE_TEST_SUITE_P(
-    /* no prefix */,
+    All,
     BluetoothRemoteGattServiceTestWinrt,
     ::testing::Bool());
 #endif  // defined(OS_WIN)

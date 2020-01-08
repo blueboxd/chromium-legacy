@@ -341,7 +341,7 @@
 <translation id="3587482841069643663">Todos</translation>
 <translation id="358794129225322306">Permite que un sitio descargue varios archivos automáticamente.</translation>
 <translation id="3590487821116122040">Almacenamiento de sitios que Chrome no considera importantes (por ejemplo, sitios que no visitas a menudo o sin configuración guardada)</translation>
-<translation id="3599863153486145794">Borra el historial de todos los dispositivos en los que accediste. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
+<translation id="3599863153486145794">Borra el historial de todos los dispositivos en los que accediste. Es posible que tu cuenta de Google tenga otros tipos de historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar los sitios que reproducen sonido</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3631987586758005671">Compartiendo con <ph name="DEVICE_NAME" /></translation>
@@ -405,7 +405,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4116038641877404294">Descarga las páginas para usarlas sin conexión</translation>
 <translation id="4135200667068010335">La lista de dispositivos con los que se puede compartir una pestaña está cerrada.</translation>
 <translation id="4149994727733219643">Vista simplificada para páginas web</translation>
-<translation id="4165986682804962316">Configuración del sitio</translation>
+<translation id="4165986682804962316">Configuración de sitios</translation>
 <translation id="4170011742729630528">El servicio no se encuentra disponible; vuelve a intentarlo más tarde.</translation>
 <translation id="4179980317383591987">Datos utilizados: <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -436,7 +436,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4415276339145661267">Administrar tu Cuenta de Google</translation>
 <translation id="4432792777822557199">De ahora en más, las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4433925000917964731">Google proporcionó la página básica</translation>
-<translation id="4434045419905280838">Ventanas emergentes y redirec.</translation>
+<translation id="4434045419905280838">Ventanas emergentes y redireccionamientos</translation>
 <translation id="4440958355523780886">Google proporcionó la página básica. Presiona para cargar la versión original.</translation>
 <translation id="4452411734226507615">Cierra la pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Se agregó a favoritos en <ph name="FOLDER_NAME" /></translation>
@@ -619,7 +619,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5665379678064389456">Crear evento en <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Anular la solicitud de inhabilitación del zoom de un sitio web</translation>
-<translation id="5677928146339483299">Bloqueados</translation>
+<translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5684874026226664614">No se puede traducir esta página.</translation>
 <translation id="5686790454216892815">El nombre del archivo es demasiado largo</translation>
 <translation id="5689516760719285838">Ubicación</translation>

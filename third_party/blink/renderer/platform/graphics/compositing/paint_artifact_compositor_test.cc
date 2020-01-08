@@ -2672,7 +2672,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipSimple) {
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //          l0
+  //       content0
   // [ mask_isolation_0 ]
   // [        e0        ]
   // One content layer.
@@ -2682,9 +2682,6 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipSimple) {
   EXPECT_FALSE(SynthesizedClipLayerAt(0));
 
   const cc::Layer* content0 = LayerAt(0);
-
-  constexpr int c0_id = 1;
-  constexpr int e0_id = 1;
 
   int c1_id = content0->clip_tree_index();
   const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
@@ -2719,19 +2716,16 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRotatedNotSupported) {
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //           l1
-  // l0 [ mask_effect_0 ]
-  // [ mask_isolation_0 ]
-  // [        e0        ]
+  //             clip_mask0
+  // content0 [ mask_effect_0 ]
+  // [    mask_isolation_0    ]
+  // [           e0           ]
   // One content layer.
   ASSERT_EQ(2u, LayerCount());
   ASSERT_EQ(1u, SynthesizedClipLayerCount());
 
   const cc::Layer* content0 = LayerAt(0);
   const cc::Layer* clip_mask0 = LayerAt(1);
-
-  constexpr int c0_id = 1;
-  constexpr int e0_id = 1;
 
   int c1_id = content0->clip_tree_index();
   const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
@@ -2772,7 +2766,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClip90DegRotationSupported) {
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //          l0
+  //       content0
   // [ mask_isolation_0 ]
   // [        e0        ]
   // One content layer.
@@ -2782,9 +2776,6 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClip90DegRotationSupported) {
   EXPECT_FALSE(SynthesizedClipLayerAt(0));
 
   const cc::Layer* content0 = LayerAt(0);
-
-  constexpr int c0_id = 1;
-  constexpr int e0_id = 1;
 
   int c1_id = content0->clip_tree_index();
   const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
@@ -2817,19 +2808,16 @@ TEST_P(PaintArtifactCompositorTest,
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //           l1
-  // l0 [ mask_effect_0 ]
-  // [ mask_isolation_0 ]
-  // [        e0        ]
+  //             clip_mask0
+  // content0 [ mask_effect_0 ]
+  // [    mask_isolation_0    ]
+  // [           e0           ]
   // One content layer.
   ASSERT_EQ(2u, LayerCount());
   ASSERT_EQ(1u, SynthesizedClipLayerCount());
 
   const cc::Layer* content0 = LayerAt(0);
   const cc::Layer* clip_mask0 = LayerAt(1);
-
-  constexpr int c0_id = 1;
-  constexpr int e0_id = 1;
 
   int c1_id = content0->clip_tree_index();
   const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
@@ -2901,12 +2889,12 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipNested) {
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //            l0
-  //    [ mask_isolation_2 ]
-  // l1 [ mask_isolation_1 ]
-  // [       filter        ]
-  // [  mask_isolation_0   ]
-  // [         e0          ]
+  //               content1
+  //          [ mask_isolation_2 ]
+  // content0 [ mask_isolation_1 ]
+  // [          filter           ]
+  // [     mask_isolation_0      ]
+  // [            e0             ]
   // Two content layers.
   ///
   // mask_isolation_1 will have a render surface. mask_isolation_2 will not
@@ -2924,9 +2912,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipNested) {
   const cc::Layer* content0 = LayerAt(0);
   const cc::Layer* content1 = LayerAt(1);
 
-  constexpr int c0_id = 1;
   constexpr int c1_id = 2;
-  constexpr int e0_id = 1;
   constexpr int e1_id = 2;
 
   int c3_id = content1->clip_tree_index();
@@ -2991,7 +2977,7 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipIsNotDrawable) {
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //           l1
+  //       content0
   // [ mask_isolation_0 ]
   // [        e0        ]
   // One content layer, no clip mask (because layer doesn't draw content).
@@ -3001,9 +2987,6 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipIsNotDrawable) {
   ASSERT_EQ(nullptr, SynthesizedClipLayerAt(0));
 
   const cc::Layer* content0 = LayerAt(0);
-
-  constexpr int c0_id = 1;
-  constexpr int e0_id = 1;
 
   int c1_id = content0->clip_tree_index();
   const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
@@ -3076,19 +3059,16 @@ TEST_P(PaintArtifactCompositorTest,
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //   l0         l1
-  // [ e1 ][ mask_effect_0 ]
-  // [  mask_isolation_0   ]
-  // [         e0          ]
+  // content0   clip_mask0
+  // [  e1  ][ mask_effect_0 ]
+  // [   mask_isolation_0    ]
+  // [          e0           ]
   // One content layer, one clip mask.
   ASSERT_EQ(2u, LayerCount());
   ASSERT_EQ(1u, SynthesizedClipLayerCount());
 
   const cc::Layer* content0 = LayerAt(0);
   const cc::Layer* clip_mask0 = LayerAt(1);
-
-  constexpr int c0_id = 1;
-  constexpr int e0_id = 1;
 
   int c1_id = content0->clip_tree_index();
   const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
@@ -3134,10 +3114,9 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipContiguous) {
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //              l2
-  // l0 l1
-  // [  mask_isolation_0   ]
-  // [         e0          ]
+  //   content0  content1
+  // [  mask_isolation_0  ]
+  // [         e0         ]
   // Two content layers, one clip mask.
   ASSERT_EQ(2u, LayerCount());
   // There is still a "synthesized layer" but it's null.
@@ -3146,10 +3125,6 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipContiguous) {
 
   const cc::Layer* content0 = LayerAt(0);
   const cc::Layer* content1 = LayerAt(1);
-
-  constexpr int t0_id = 1;
-  constexpr int c0_id = 1;
-  constexpr int e0_id = 1;
 
   EXPECT_EQ(t0_id, content0->transform_tree_index());
   int c1_id = content0->clip_tree_index();
@@ -3197,13 +3172,13 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //           l1                      l4
-  // l0                   l3
-  // [ mask_isolation_0 ] l2 [ mask_isolation_1 ]
-  // [                    e0                    ]
+  //       content0                     content2
+  // [ mask_isolation_0 ] content1 [ mask_isolation_1 ]
+  // [                       e0                       ]
   // Three content layers.
   ASSERT_EQ(3u, LayerCount());
-  // There are still "synthesized layers" but they're null.
+  // There are still "synthesized layers" but they're null because they use
+  // fast rounded corners.
   ASSERT_EQ(2u, SynthesizedClipLayerCount());
   EXPECT_FALSE(SynthesizedClipLayerAt(0));
   EXPECT_FALSE(SynthesizedClipLayerAt(1));
@@ -3211,10 +3186,6 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDiscontiguous) {
   const cc::Layer* content0 = LayerAt(0);
   const cc::Layer* content1 = LayerAt(1);
   const cc::Layer* content2 = LayerAt(2);
-
-  constexpr int t0_id = 1;
-  constexpr int c0_id = 1;
-  constexpr int e0_id = 1;
 
   EXPECT_EQ(t0_id, content0->transform_tree_index());
   int c1_id = content0->clip_tree_index();
@@ -3272,10 +3243,10 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipAcrossChildEffect) {
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //      l1             l3
-  // l0 [ e1 ] l2
-  // [      mask_isolation_0      ]
-  // [             e0             ]
+  //          content1
+  // content0 [  e1  ] content2
+  // [    mask_isolation_0    ]
+  // [           e0           ]
   // Three content layers.
   ASSERT_EQ(3u, LayerCount());
   // There is still a "synthesized layer" but it's null.
@@ -3285,9 +3256,6 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipAcrossChildEffect) {
   const cc::Layer* content0 = LayerAt(0);
   const cc::Layer* content1 = LayerAt(1);
   const cc::Layer* content2 = LayerAt(2);
-
-  constexpr int c0_id = 1;
-  constexpr int e0_id = 1;
 
   int c1_id = content0->clip_tree_index();
   const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
@@ -3339,14 +3307,14 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRespectOutputClip) {
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //                               l3
-  //           l1        l2                         l5
-  // l0                   [ mask_isolation_1 ] l4
+  //                           content1
+  //       content0      [ mask_isolation_1 ]      content2
   // [ mask_isolation_0 ][        e1        ][ mask_isolation_2  ]
   // [                            e0                             ]
   // Three content layers.
   ASSERT_EQ(3u, LayerCount());
-  // There are still "synthesized layers" but they're null.
+  // There are still "synthesized layers" but they're null because they use
+  // fast rounded corners.
   ASSERT_EQ(3u, SynthesizedClipLayerCount());
   EXPECT_FALSE(SynthesizedClipLayerAt(0));
   EXPECT_FALSE(SynthesizedClipLayerAt(1));
@@ -3355,9 +3323,6 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipRespectOutputClip) {
   const cc::Layer* content0 = LayerAt(0);
   const cc::Layer* content1 = LayerAt(1);
   const cc::Layer* content2 = LayerAt(2);
-
-  constexpr int c0_id = 1;
-  constexpr int e0_id = 1;
 
   int c1_id = content0->clip_tree_index();
   const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
@@ -3427,13 +3392,14 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBlending) {
   Update(artifact.Build());
 
   // Expectation in effect stack diagram:
-  //           l1          l2         l3                   l5
-  // l0                  [ e1 ]               l4
+  //                     content1
+  //       content0      [  e1  ]                     content2
   // [ mask_isolation_0 ][  mask_isolation_1   ][ mask_isolation_2  ]
   // [                              e0                              ]
   // Three content layers.
   ASSERT_EQ(3u, LayerCount());
-  // There are still "synthesized layers" but they're null.
+  // There are still "synthesized layers" but they're null because they use
+  // fast rounded corners.
   ASSERT_EQ(3u, SynthesizedClipLayerCount());
   EXPECT_FALSE(SynthesizedClipLayerAt(0));
   EXPECT_FALSE(SynthesizedClipLayerAt(1));
@@ -3442,9 +3408,6 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBlending) {
   const cc::Layer* content0 = LayerAt(0);
   const cc::Layer* content1 = LayerAt(1);
   const cc::Layer* content2 = LayerAt(2);
-
-  constexpr int c0_id = 1;
-  constexpr int e0_id = 1;
 
   int c1_id = content0->clip_tree_index();
   const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
@@ -3481,6 +3444,113 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBlending) {
   EXPECT_NE(mask_isolation_1_id, mask_isolation_2_id);
   ASSERT_EQ(e0_id, mask_isolation_2.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+  EXPECT_TRUE(mask_isolation_2.is_fast_rounded_corner);
+  EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+            mask_isolation_2.rounded_corner_bounds);
+}
+
+TEST_P(PaintArtifactCompositorTest, SynthesizedClipDelegateBackdropFilter) {
+  // This tests the case that an effect with backdrop filter cannot share
+  // the synthesized mask with its siblings because its backdrop filter has to
+  // be applied by the outermost mask in the correct transform space.
+  FloatSize corner(5, 5);
+  FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
+                         corner);
+  auto c1 = CreateClip(c0(), t0(), rrect);
+
+  auto t1 = Create2DTranslation(t0(), 10, 20);
+  CompositorFilterOperations blur_filter;
+  blur_filter.AppendBlurFilter(5);
+  auto e1 = CreateBackdropFilterEffect(e0(), *t1, c1.get(), blur_filter,
+                                       FloatPoint());
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(*t1, *c1, e0())
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
+  artifact.Chunk(*t1, *c1, *e1)
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
+  artifact.Chunk(*t1, *c1, e0())
+      .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
+  Update(artifact.Build());
+
+  // Expectation in effect stack diagram:
+  //                     content1
+  //       content0      [  e1  ]  clip_mask1        content2
+  // [ mask_isolation_0 ][  mask_isolation_1  ][ mask_isolation_2  ]
+  // [                             e0                              ]
+  // Three content layers.
+  ASSERT_EQ(4u, LayerCount());
+  const cc::Layer* content0 = LayerAt(0);
+  const cc::Layer* content1 = LayerAt(1);
+  const cc::Layer* clip_mask1 = LayerAt(2);
+  const cc::Layer* content2 = LayerAt(3);
+
+  // Three synthesized layers, two of which are null because because they use
+  // fast rounded corners. One real synthesized layer is needed because the
+  // rounded clip and the backdrop filter are in different transform spaces.
+  EXPECT_FALSE(SynthesizedClipLayerAt(0));
+  EXPECT_EQ(clip_mask1, SynthesizedClipLayerAt(1));
+  EXPECT_FALSE(SynthesizedClipLayerAt(2));
+
+  int t1_id = content0->transform_tree_index();
+  EXPECT_EQ(t0_id, GetPropertyTrees().transform_tree.Node(t1_id)->parent_id);
+  int c1_id = content0->clip_tree_index();
+  const cc::ClipNode& cc_c1 = *GetPropertyTrees().clip_tree.Node(c1_id);
+  EXPECT_EQ(gfx::RectF(50, 50, 300, 200), cc_c1.clip);
+  ASSERT_EQ(c0_id, cc_c1.parent_id);
+  EXPECT_EQ(t0_id, cc_c1.transform_id);
+  int mask_isolation_0_id = content0->effect_tree_index();
+  const cc::EffectNode& mask_isolation_0 =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
+  ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
+  EXPECT_EQ(t0_id, mask_isolation_0.transform_id);
+  EXPECT_TRUE(mask_isolation_0.backdrop_filters.IsEmpty());
+  EXPECT_TRUE(mask_isolation_0.is_fast_rounded_corner);
+  EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
+            mask_isolation_0.rounded_corner_bounds);
+
+  EXPECT_EQ(t1_id, content1->transform_tree_index());
+  EXPECT_EQ(c1_id, content1->clip_tree_index());
+  int e1_id = content1->effect_tree_index();
+  const cc::EffectNode& cc_e1 = *GetPropertyTrees().effect_tree.Node(e1_id);
+  EXPECT_TRUE(cc_e1.backdrop_filters.IsEmpty());
+  EXPECT_EQ(t1_id, cc_e1.transform_id);
+  EXPECT_EQ(c1_id, cc_e1.clip_id);
+  EXPECT_FALSE(cc_e1.backdrop_mask_element_id);
+
+  int mask_isolation_1_id = cc_e1.parent_id;
+  const cc::EffectNode& mask_isolation_1 =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_1_id);
+  EXPECT_NE(mask_isolation_0_id, mask_isolation_1_id);
+  ASSERT_EQ(e0_id, mask_isolation_1.parent_id);
+  EXPECT_EQ(t1_id, mask_isolation_1.transform_id);
+  EXPECT_EQ(c1_id, mask_isolation_1.clip_id);
+  EXPECT_FALSE(mask_isolation_1.backdrop_filters.IsEmpty());
+  EXPECT_FALSE(mask_isolation_1.is_fast_rounded_corner);
+  EXPECT_EQ(gfx::RRectF(), mask_isolation_1.rounded_corner_bounds);
+
+  EXPECT_EQ(t0_id, clip_mask1->transform_tree_index());
+  EXPECT_EQ(c1_id, clip_mask1->clip_tree_index());
+  const cc::EffectNode& mask =
+      *GetPropertyTrees().effect_tree.Node(clip_mask1->effect_tree_index());
+  ASSERT_EQ(mask_isolation_1_id, mask.parent_id);
+  EXPECT_EQ(SkBlendMode::kDstIn, mask.blend_mode);
+  EXPECT_TRUE(static_cast<const cc::PictureLayer*>(clip_mask1)
+                  ->is_backdrop_filter_mask());
+  EXPECT_TRUE(clip_mask1->element_id());
+  EXPECT_EQ(clip_mask1->element_id(),
+            mask_isolation_1.backdrop_mask_element_id);
+
+  EXPECT_EQ(t1_id, content2->transform_tree_index());
+  EXPECT_EQ(c1_id, content2->clip_tree_index());
+  int mask_isolation_2_id = content2->effect_tree_index();
+  const cc::EffectNode& mask_isolation_2 =
+      *GetPropertyTrees().effect_tree.Node(mask_isolation_2_id);
+  EXPECT_NE(mask_isolation_0_id, mask_isolation_2_id);
+  EXPECT_NE(mask_isolation_1_id, mask_isolation_2_id);
+  ASSERT_EQ(e0_id, mask_isolation_2.parent_id);
+  EXPECT_EQ(t0_id, mask_isolation_2.transform_id);
+  EXPECT_TRUE(mask_isolation_2.backdrop_filters.IsEmpty());
   EXPECT_TRUE(mask_isolation_2.is_fast_rounded_corner);
   EXPECT_EQ(gfx::RRectF(50, 50, 300, 200, 5),
             mask_isolation_2.rounded_corner_bounds);
@@ -3969,9 +4039,7 @@ TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfacesWithBackdropChildren) {
   auto a = CreateOpacityEffect(*e, 0.5f);
   CompositorFilterOperations blur_filter;
   blur_filter.AppendBlurFilter(5);
-  auto bd = CreateBackdropFilterEffect(
-      *a, blur_filter, FloatPoint(),
-      CompositingReason::kActiveBackdropFilterAnimation);
+  auto bd = CreateBackdropFilterEffect(*a, blur_filter, FloatPoint());
 
   TestPaintArtifact artifact;
   IntRect r(150, 150, 100, 100);
@@ -4127,8 +4195,7 @@ TEST_P(PaintArtifactCompositorTest, FilterAnimationCreatesRenderSurface) {
 TEST_P(PaintArtifactCompositorTest, BackdropFilterCreatesRenderSurface) {
   CompositorFilterOperations filter;
   filter.AppendBlurFilter(5);
-  auto e1 = CreateBackdropFilterEffect(e0(), filter, FloatPoint(),
-                                       CompositingReason::kBackdropFilter);
+  auto e1 = CreateBackdropFilterEffect(e0(), filter, FloatPoint());
   Update(TestPaintArtifact()
              .Chunk(t0(), c0(), *e1)
              .RectDrawing(IntRect(150, 150, 100, 100), Color::kWhite)

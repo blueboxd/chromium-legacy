@@ -131,9 +131,8 @@ void AssistantInteractionController::OnDeepLinkReceived(
     assistant_controller_->ui_controller()->ShowUi(
         AssistantEntryPoint::kDeepLink);
 
-    // Currently the only way to trigger this deeplink is via suggestion chip.
-    // TODO(b/119841827): Use source specified from deep link.
-    StartScreenContextInteraction(AssistantQuerySource::kSuggestionChip);
+    // The "What's on my screen" chip initiates a screen context interaction.
+    StartScreenContextInteraction(AssistantQuerySource::kWhatsOnMyScreen);
     return;
   }
 
@@ -528,9 +527,13 @@ void AssistantInteractionController::OnSuggestionChipPressed(
   // is because suggestion chips pressed after a voice query should continue to
   // return TTS, as really the text interaction is just a continuation of the
   // user's preceding voice interaction.
-  StartTextInteraction(suggestion->text, /*allow_tts=*/model_.response() &&
-                                             model_.response()->has_tts(),
-                       /*query_source=*/AssistantQuerySource::kSuggestionChip);
+  StartTextInteraction(
+      suggestion->text,
+      /*allow_tts=*/model_.response() && model_.response()->has_tts(),
+      /*query_source=*/suggestion->type ==
+              AssistantSuggestionType::kConversationStarter
+          ? AssistantQuerySource::kConversationStarter
+          : AssistantQuerySource::kSuggestionChip);
 }
 
 void AssistantInteractionController::OnSuggestionsResponse(

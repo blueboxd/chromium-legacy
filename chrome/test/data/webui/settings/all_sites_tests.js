@@ -581,4 +581,83 @@ suite('AllSites', function() {
         assertEquals(testElement.filteredList_[0].origins[0].usage, 0);
         assertEquals(testElement.filteredList_[0].origins[0].numCookies, 0);
       });
+
+  function clearDataViaClearAllButton(buttonType) {
+    assertTrue(buttonType == 'cancel-button' || buttonType == 'action-button');
+    Polymer.dom.flush();
+    siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+    assertTrue(siteEntries.length >= 1);
+    const clearAllButton =
+        testElement.$.clearAllButton.querySelector('cr-button');
+    const confirmClearAllData = testElement.$.confirmClearAllData.get();
+
+    // Open the clear all data dialog.
+    // Test clicking on the clear all button opens the clear all dialog.
+    assertFalse(confirmClearAllData.open);
+    clearAllButton.click();
+    assertTrue(confirmClearAllData.open);
+
+    // Open the clear data dialog and tap the |buttonType| button.
+    const actionButtonList =
+        testElement.$.confirmClearAllData.get().getElementsByClassName(
+            buttonType);
+    assertEquals(1, actionButtonList.length);
+    actionButtonList[0].click();
+
+    // Check the dialog and overflow menu are now both closed.
+    assertFalse(confirmClearAllData.open);
+  }
+
+  test('cancelling the confirm dialog on clear all data works', function() {
+    testElement.siteGroupMap.set(
+        TEST_MULTIPLE_SITE_GROUP.etldPlus1,
+        JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP)));
+    testElement.forceListUpdate_();
+    clearDataViaClearAllButton('cancel-button');
+  });
+
+  test('clearing data via clear all dialog', function() {
+    // Test when all origins has no permission settings and no data.
+    // Clone this object to avoid propagating changes made in this test.
+    testElement.siteGroupMap.set(
+        TEST_MULTIPLE_SITE_GROUP.etldPlus1,
+        JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP)));
+    const googleSiteGroup = test_util.createSiteGroup('google.com', [
+      'https://www.google.com',
+      'https://docs.google.com',
+      'https://mail.google.com',
+    ]);
+    testElement.siteGroupMap.set(googleSiteGroup.etldPlus1, googleSiteGroup);
+    testElement.forceListUpdate_();
+    clearDataViaClearAllButton('action-button');
+    // Ensure a call was made to clearEtldPlus1DataAndCookies.
+    assertEquals(2, browserProxy.getCallCount('clearEtldPlus1DataAndCookies'));
+    assertEquals(testElement.filteredList_.length, 0);
+  });
+
+  test(
+      'clear data via clear all button (one origin has permission)',
+      function() {
+        // Test when there is one origin has permissions settings.
+        // Clone this object to avoid propagating changes made in this test.
+        const siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        siteGroup.origins[0].hasPermissionSettings = true;
+        testElement.siteGroupMap.set(
+            siteGroup.etldPlus1, JSON.parse(JSON.stringify(siteGroup)));
+        const googleSiteGroup = test_util.createSiteGroup('google.com', [
+          'https://www.google.com',
+          'https://docs.google.com',
+          'https://mail.google.com',
+        ]);
+        testElement.siteGroupMap.set(
+            googleSiteGroup.etldPlus1, googleSiteGroup);
+        testElement.forceListUpdate_();
+        assertEquals(testElement.filteredList_.length, 2);
+        assertEquals(
+            testElement.filteredList_[0].origins.length,
+            siteGroup.origins.length);
+        clearDataViaClearAllButton('action-button');
+        assertEquals(testElement.filteredList_.length, 1);
+        assertEquals(testElement.filteredList_[0].origins.length, 1);
+      });
 });

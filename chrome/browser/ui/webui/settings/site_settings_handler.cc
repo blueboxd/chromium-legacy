@@ -20,6 +20,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/hid/hid_chooser_context.h"
+#include "chrome/browser/hid/hid_chooser_context_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
@@ -1352,6 +1354,10 @@ void SiteSettingsHandler::ObserveSourcesForProfile(Profile* profile) {
   if (!chooser_observer_.IsObserving(serial_context))
     chooser_observer_.Add(serial_context);
 
+  auto* hid_context = HidChooserContextFactory::GetForProfile(profile);
+  if (!chooser_observer_.IsObserving(hid_context))
+    chooser_observer_.Add(hid_context);
+
   observed_profiles_.Add(profile);
 }
 
@@ -1367,6 +1373,10 @@ void SiteSettingsHandler::StopObservingSourcesForProfile(Profile* profile) {
   auto* serial_context = SerialChooserContextFactory::GetForProfile(profile);
   if (chooser_observer_.IsObserving(serial_context))
     chooser_observer_.Remove(serial_context);
+
+  auto* hid_context = HidChooserContextFactory::GetForProfile(profile);
+  if (chooser_observer_.IsObserving(hid_context))
+    chooser_observer_.Remove(hid_context);
 
   observed_profiles_.Remove(profile);
 }

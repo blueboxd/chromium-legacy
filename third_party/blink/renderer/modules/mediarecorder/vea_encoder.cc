@@ -36,16 +36,16 @@ const uint32_t kMaxKeyframeInterval = 100;
 }  // anonymous namespace
 
 scoped_refptr<VEAEncoder> VEAEncoder::Create(
-    const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
-    const VideoTrackRecorder::OnErrorCB& on_error_callback,
+    const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
+    const VideoTrackRecorder::OnErrorCB& on_error_cb,
     int32_t bits_per_second,
     media::VideoCodecProfile codec,
     const gfx::Size& size,
     bool use_native_input,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  auto encoder = base::AdoptRef(
-      new VEAEncoder(on_encoded_video_callback, on_error_callback,
-                     bits_per_second, codec, size, std::move(task_runner)));
+  auto encoder = base::AdoptRef(new VEAEncoder(on_encoded_video_cb, on_error_cb,
+                                               bits_per_second, codec, size,
+                                               std::move(task_runner)));
   PostCrossThreadTask(
       *encoder->encoding_task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(&VEAEncoder::ConfigureEncoderOnEncodingTaskRunner,
@@ -58,13 +58,13 @@ bool VEAEncoder::OutputBuffer::IsValid() {
 }
 
 VEAEncoder::VEAEncoder(
-    const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
-    const VideoTrackRecorder::OnErrorCB& on_error_callback,
+    const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
+    const VideoTrackRecorder::OnErrorCB& on_error_cb,
     int32_t bits_per_second,
     media::VideoCodecProfile codec,
     const gfx::Size& size,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : Encoder(on_encoded_video_callback,
+    : Encoder(on_encoded_video_cb,
               bits_per_second > 0 ? bits_per_second
                                   : size.GetArea() * kVEADefaultBitratePerPixel,
               std::move(task_runner),
@@ -74,7 +74,7 @@ VEAEncoder::VEAEncoder(
       error_notified_(false),
       num_frames_after_keyframe_(0),
       force_next_frame_to_be_keyframe_(false),
-      on_error_callback_(on_error_callback) {
+      on_error_cb_(on_error_cb) {
   DCHECK(gpu_factories_);
   DCHECK_GE(size.width(), kVEAEncoderMinResolutionWidth);
   DCHECK_GE(size.height(), kVEAEncoderMinResolutionHeight);
@@ -152,7 +152,7 @@ void VEAEncoder::BitstreamBufferReady(
       *origin_task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(
           OnFrameEncodeCompleted,
-          WTF::Passed(CrossThreadBindRepeating(on_encoded_video_callback_)),
+          WTF::Passed(CrossThreadBindRepeating(on_encoded_video_cb_)),
           front_frame.first, std::move(data), std::string(), front_frame.second,
           metadata.key_frame));
 
@@ -164,7 +164,7 @@ void VEAEncoder::NotifyError(media::VideoEncodeAccelerator::Error error) {
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   UMA_HISTOGRAM_ENUMERATION("Media.MediaRecorder.VEAError", error,
                             media::VideoEncodeAccelerator::kErrorMax + 1);
-  on_error_callback_.Run();
+  on_error_cb_.Run();
   error_notified_ = true;
 }
 

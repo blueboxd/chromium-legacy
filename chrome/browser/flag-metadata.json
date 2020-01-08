@@ -2676,11 +2676,6 @@
     "expiry_milestone": 85
   },
   {
-    "name": "oculus-vr",
-    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "offline-indicator-always-http-probe",
     "owners": [ "jianli", "offline-dev" ],
     "expiry_milestone": 76
@@ -2939,16 +2934,6 @@
     "name": "on-the-fly-mhtml-hash-computation",
     "owners": [ "mtlieuu", "offline-dev@chromium.org" ],
     "expiry_milestone": 76
-  },
-  {
-    "name": "openvr",
-    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 82
-  },
-  {
-    "name": "openxr",
-    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 82
   },
   {
     "name": "out-of-blink-cors",
@@ -3722,9 +3707,13 @@
     "expiry_milestone": 82
   },
   {
-    "name": "webxr-orientation-sensor-device",
-    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 82
+    "name": "webxr-runtime",
+    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
+    // This flag allows QA and Developers to force running on a particular
+    // runtime, even if ordinarily Chrome would prefer a different runtime for
+    // the particular hardware. Useful to debug user issues or multiple runtimes
+    // with a single headset.
+    "expiry_milestone": -1
   },
   {
     "name": "win-use-hybrid-spellchecker",
@@ -3735,11 +3724,6 @@
     "name": "win-use-native-spellchecker",
     "owners": [ "gujen@google.com", "chrome-language@google.com" ],
     "expiry_milestone": 83
-  },
-  {
-    "name": "windows-mixed-reality",
-    "owners": [ "//device/vr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 82
   },
   {
     "name": "xr-sandbox",

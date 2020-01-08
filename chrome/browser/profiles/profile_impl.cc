@@ -669,11 +669,6 @@ void ProfileImpl::DoFinalInit() {
   }
 #endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
-  // Make sure we initialize the ProfileIOData after everything else has been
-  // initialized that we might be reading from the IO thread.
-
-  io_data_.Init(GetPath());
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   ChromePluginServiceFilter::GetInstance()->RegisterProfile(this);
 #endif

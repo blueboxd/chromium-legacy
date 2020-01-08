@@ -243,7 +243,7 @@
 <translation id="1329584516321524826">Mise à jour à l'instant</translation>
 <translation id="1330145147221172764">Activer le clavier à l'écran</translation>
 <translation id="1331977651797684645">C'était moi.</translation>
-<translation id="1333489022424033687">Certaines fonctionnalités de <ph name="ORIGIN" /> risquent de ne pas s'exécuter si vous n'effacez pas les données que d'autres sites ont stockées sur votre appareil</translation>
+<translation id="1333489022424033687">Certaines fonctionnalités du site <ph name="ORIGIN" /> risquent de ne pas s'exécuter si vous n'effacez pas les données que d'autres sites ont stockées sur votre appareil</translation>
 <translation id="133535873114485416">Mode de saisie préféré</translation>
 <translation id="1335929031622236846">Enregistrer l'appareil</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> souhaite ouvrir cette application.</translation>
@@ -4109,7 +4109,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6892812721183419409">Ouvrir le lien avec le compte <ph name="USER" /></translation>
 <translation id="6895032998810961280">Signaler à Google les détails concernant les logiciels malveillants, les paramètres système et les processus qui ont été trouvés sur votre ordinateur au cours de ce nettoyage</translation>
 <translation id="6896758677409633944">Copier</translation>
-<translation id="6897363604023044284">Sélectionner les données à effacer</translation>
+<translation id="6897363604023044284">Choisir les données de sites à effacer</translation>
 <translation id="6898440773573063262">Les applications kiosque peuvent désormais être configurées pour se lancer automatiquement sur cet appareil.</translation>
 <translation id="6898699227549475383">Organisation (O)</translation>
 <translation id="6900284862687837908">Application en arrière-plan : <ph name="BACKGROUND_APP_URL" /></translation>

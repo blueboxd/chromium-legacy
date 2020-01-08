@@ -370,4 +370,9 @@ void FakeSkiaOutputSurface::SendOverlayPromotionNotification(
   NOTIMPLEMENTED();
 }
 
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+FakeSkiaOutputSurface::GetGpuTaskSchedulerHelper() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
 }  // namespace viz

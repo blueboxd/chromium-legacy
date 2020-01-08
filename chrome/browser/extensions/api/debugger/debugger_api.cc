@@ -111,6 +111,14 @@ bool ExtensionCanAttachToURL(const Extension& extension,
   return true;
 }
 
+constexpr char kBrowserTargetId[] = "browser";
+
+constexpr char kPerfettoUIExtensionId[] = "lfmkphfpdbjijhpomgecfikhfohaoine";
+
+bool ExtensionMayAttachToBrowser(const Extension& extension) {
+  return extension.id() == kPerfettoUIExtensionId;
+}
+
 }  // namespace
 
 // ExtensionDevToolsClientHost ------------------------------------------------
@@ -373,7 +381,7 @@ bool ExtensionDevToolsClientHost::MayAttachToURL(const GURL& url,
 }
 
 bool ExtensionDevToolsClientHost::MayAttachToBrowser() {
-  return false;
+  return ExtensionMayAttachToBrowser(*extension_);
 }
 
 bool ExtensionDevToolsClientHost::MayReadLocalFiles() {
@@ -443,6 +451,26 @@ bool DebuggerFunction::InitAgentHost() {
         agent_host_ = nullptr;
         return false;
       }
+    } else if (*debuggee_.target_id == kBrowserTargetId &&
+               ExtensionMayAttachToBrowser(*extension())) {
+      // TODO(caseq): get rid of the below code, browser agent host should
+      // really be a singleton.
+      // Re-use existing browser agent hosts.
+      const std::string& extension_id = extension()->id();
+      AttachedClientHosts& hosts = g_attached_client_hosts.Get();
+      auto it = std::find_if(
+          hosts.begin(), hosts.end(),
+          [&extension_id](ExtensionDevToolsClientHost* client_host) {
+            return client_host->extension_id() == extension_id &&
+                   client_host->agent_host() &&
+                   client_host->agent_host()->GetType() ==
+                       DevToolsAgentHost::kTypeBrowser;
+          });
+      agent_host_ = it != hosts.end()
+                        ? (*it)->agent_host()
+                        : DevToolsAgentHost::CreateForBrowser(
+                              nullptr /* tethering_task_runner */,
+                              DevToolsAgentHost::CreateServerSocketCallback());
     }
   } else {
     error_ = debugger_api_constants::kInvalidTargetError;

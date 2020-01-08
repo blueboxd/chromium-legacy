@@ -15,6 +15,7 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
+#include "gpu/ipc/gpu_task_scheduler_helper.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -38,6 +39,7 @@ class GrContextForGLES2Interface;
 
 namespace viz {
 class ContextLostObserver;
+class GpuTaskSchedulerHelper;
 class RendererSettings;
 
 // A ContextProvider used in the viz process to setup an InProcessCommandBuffer
@@ -81,6 +83,8 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
 
   base::ScopedClosureRunner GetCacheBackBufferCb();
 
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper();
+
  private:
   friend class base::RefCountedThreadSafe<VizProcessContextProvider>;
   ~VizProcessContextProvider() override;
@@ -100,6 +104,9 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
 
   const gpu::ContextCreationAttribs attributes_;
 
+  // The |gpu_task_scheduler_helper_| has 1:1 relationship with the Display
+  // compositor.
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler_helper_;
   std::unique_ptr<gpu::InProcessCommandBuffer> command_buffer_;
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;

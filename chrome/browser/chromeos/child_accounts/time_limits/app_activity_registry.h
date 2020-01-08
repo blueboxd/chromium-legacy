@@ -6,9 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_APP_ACTIVITY_REGISTRY_H_
 
 #include <map>
+#include <set>
 
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace chromeos {
 namespace app_time {
@@ -29,8 +35,22 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   void OnAppUninstalled(const AppId& app_id) override;
   void OnAppAvailable(const AppId& app_id) override;
   void OnAppBlocked(const AppId& app_id) override;
-  void OnAppActive(const AppId& app_id, base::Time timestamp) override;
-  void OnAppInactive(const AppId& app_id, base::Time timestamp) override;
+  void OnAppActive(const AppId& app_id,
+                   aura::Window* window,
+                   base::Time timestamp) override;
+  void OnAppInactive(const AppId& app_id,
+                     aura::Window* window,
+                     base::Time timestamp) override;
+
+  bool IsAppInstalled(const AppId& app_id) const;
+  bool IsAppAvailable(const AppId& app_id) const;
+  bool IsAppBlocked(const AppId& app_id) const;
+  bool IsAppTimeLimitReached(const AppId& app_id) const;
+  bool IsAppActive(const AppId& app_id) const;
+
+  // Returns the total active time for the application since the last time limit
+  // reset.
+  base::TimeDelta GetActiveTime(const AppId& app_id) const;
 
  private:
   // Bundles detailed data stored for a specific app.
@@ -44,6 +64,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
     // Contains information about current app state and logged activity.
     AppActivity activity{AppState::kAvailable};
 
+    // Contains the set of active windows for the application.
+    std::set<aura::Window*> active_windows;
+
     // Contains information about restriction set for the app.
     base::Optional<AppLimit> limit;
   };
@@ -55,6 +78,10 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Should only be called if app exists in the registry.
   AppState GetAppState(const AppId& app_id) const;
   void SetAppState(const AppId& app_id, AppState app_state);
+
+  // Methods to set the application as active and inactive respectively.
+  void SetAppActive(const AppId& app_id, base::Time timestamp);
+  void SetAppInactive(const AppId& app_id, base::Time timestamp);
 
   // Removes uninstalled apps from the registry. Should be called after the
   // recent data was successfully uploaded to server.

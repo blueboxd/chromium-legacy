@@ -59,10 +59,9 @@ void FeedbackData::CompressSystemInfo() {
   if (trace_id_ != 0) {
     TracingManager* manager = TracingManager::Get();
     ++pending_op_count_;
-    if (!manager ||
-        !manager->GetTraceData(
-            trace_id_,
-            base::Bind(&FeedbackData::OnGetTraceData, this, trace_id_))) {
+    if (!manager || !manager->GetTraceData(
+                        trace_id_, base::BindOnce(&FeedbackData::OnGetTraceData,
+                                                  this, trace_id_))) {
       pending_op_count_--;
       trace_id_ = 0;
     }

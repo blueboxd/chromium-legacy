@@ -403,6 +403,8 @@ class RootWindowMenuModelAdapter : public AppMenuModelAdapter {
   DISALLOW_COPY_AND_ASSIGN(RootWindowMenuModelAdapter);
 };
 
+// A layout manager that fills its container when the child window's resize
+// behavior is set to be maximizable.
 class FillLayoutManager : public aura::LayoutManager {
  public:
   explicit FillLayoutManager(aura::Window* container) : container_(container) {}
@@ -424,8 +426,14 @@ class FillLayoutManager : public aura::LayoutManager {
 
  private:
   void Relayout() {
-    for (auto* child : container_->children())
-      child->SetBounds(gfx::Rect(container_->bounds().size()));
+    // Fill the window that is set to be maximizable.
+    const gfx::Rect fullscreen(container_->bounds().size());
+    for (auto* child : container_->children()) {
+      const int resize_behavior =
+          child->GetProperty(aura::client::kResizeBehaviorKey);
+      if (resize_behavior & aura::client::kResizeBehaviorCanMaximize)
+        child->SetBounds(fullscreen);
+    }
   }
 
   aura::Window* container_;

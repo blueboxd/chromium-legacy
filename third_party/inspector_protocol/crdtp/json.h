@@ -50,10 +50,6 @@ CRDTP_EXPORT Status ConvertJSONToCBOR(span<uint8_t> json,
 
 CRDTP_EXPORT Status ConvertJSONToCBOR(span<uint16_t> json,
                                       std::vector<uint8_t>* cbor);
-
-CRDTP_EXPORT Status ConvertJSONToCBOR(span<uint8_t> json, std::string* cbor);
-
-CRDTP_EXPORT Status ConvertJSONToCBOR(span<uint16_t> json, std::string* cbor);
 }  // namespace json
 }  // namespace crdtp
 

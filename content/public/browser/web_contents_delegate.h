@@ -675,6 +675,21 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual bool IsFrameLowPriority(const WebContents* web_contents,
                                   const RenderFrameHost* render_frame_host);
 
+  // Returns the user-visible WebContents that is responsible for the activity
+  // in the provided WebContents. For example, this delegate may be aware that
+  // the contents is embedded in some other contents, or hosts background
+  // activity on behalf of a user-visible tab which should be used to display
+  // dialogs and similar affordances to the user.
+  //
+  // This may be distinct from the outer web contents (for example, the
+  // responsible contents may logically "own" a contents but not currently embed
+  // it for rendering).
+  //
+  // For most delegates (where the WebContents is a tab, window or other
+  // directly user-visible feature), simply returning the contents is
+  // appropriate.
+  virtual WebContents* GetResponsibleWebContents(WebContents* web_contents);
+
  protected:
   virtual ~WebContentsDelegate();
 

@@ -220,6 +220,25 @@ IDNSpoofChecker::IDNSpoofChecker() {
        "[[:Armn:]]",
        "[ագզէլհյոսւօՙ]",
        {"am"}},
+      // Indic scripts in the recommended set. No ccTLDs are allowlisted.
+      {// Bengali
+       "[[:Beng:]]", "[০৭]"},
+      {// Devanagari
+       "[[:Deva:]]", "[ऽ०ॱ]"},
+      {// Gujarati
+       "[[:Gujr:]]", "[ડટ૦૧]"},
+      {// Gurmukhi
+       "[[:Guru:]]", "[੦੧]"},
+      {// Kannada
+       "[[:Knda:]]", "[ಽ೦೧]"},
+      {// Malayalam
+       "[[:Mlym:]]", "[ടഠധനറ൦]"},
+      {// Oriya
+       "[[:Orya:]]", "[ଠ୦୮]"},
+      {// Tamil
+       "[[:Taml:]]", "[டப௦]"},
+      {// Telugu
+       "[[:Telu:]]", "[౦౧]"},
   };
   for (const WholeScriptConfusableData& data : kWholeScriptConfusables) {
     auto all_letters = std::make_unique<icu::UnicodeSet>(

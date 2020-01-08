@@ -130,6 +130,7 @@ Polymer({
 
     if (this.enableExperimentalWebPlatformFeatures_) {
       pairs.push([R.SITE_SETTINGS_BLUETOOTH_SCANNING, 'bluetooth-scanning']);
+      pairs.push([R.SITE_SETTINGS_HID_DEVICES, 'hid-devices']);
     }
 
     if (this.enableNativeFileSystemWriteContentSetting_) {

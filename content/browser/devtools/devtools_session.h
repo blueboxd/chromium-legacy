@@ -70,10 +70,24 @@ class DevToolsSession : public protocol::FrontendChannel,
                                    base::span<const uint8_t> message);
 
  private:
+  struct PendingMessage {
+    int call_id;
+    std::string method;
+    std::vector<uint8_t> payload;
+
+    PendingMessage() = delete;
+    PendingMessage(const PendingMessage&) = delete;
+    PendingMessage& operator=(const PendingMessage&) = delete;
+
+    PendingMessage(PendingMessage&&);
+    PendingMessage(int call_id,
+                   const std::string& method,
+                   crdtp::span<uint8_t> payload);
+    ~PendingMessage();
+  };
+
   void MojoConnectionDestroyed();
-  void DispatchProtocolMessageToAgent(int call_id,
-                                      const std::string& method,
-                                      crdtp::span<uint8_t> message);
+  void DispatchToAgent(const PendingMessage& message);
   void HandleCommand(std::unique_ptr<protocol::DictionaryValue> value,
                      base::span<const uint8_t> message);
   bool DispatchProtocolMessageInternal(
@@ -118,15 +132,11 @@ class DevToolsSession : public protocol::FrontendChannel,
 
   bool suspended_sending_messages_to_agent_ = false;
 
-  struct Message {
-    int call_id;
-    std::string method;
-    std::string message;
-  };
   // Messages that were sent to the agent or queued after suspending.
-  std::list<Message> pending_messages_;
+  std::list<PendingMessage> pending_messages_;
   // Pending messages that were sent and are thus waiting for a response.
-  base::flat_map<int, std::list<Message>::iterator> waiting_for_response_;
+  base::flat_map<int, std::list<PendingMessage>::iterator>
+      waiting_for_response_;
 
   // |session_state_cookie_| always corresponds to a state before
   // any of the waiting for response messages have been handled.

@@ -1695,6 +1695,9 @@
     ],
     "gtest_tests": [
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1712,6 +1715,9 @@
         "test_target": "//third_party/angle/src/tests:angle_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1729,6 +1735,9 @@
         "test_target": "//base:base_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1746,6 +1755,9 @@
         "test_target": "//third_party/blink/common:blink_common_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1763,6 +1775,9 @@
         "test_target": "//third_party/blink/renderer/platform/heap:blink_heap_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1780,6 +1795,9 @@
         "test_target": "//third_party/blink/renderer/platform:blink_platform_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1797,6 +1815,9 @@
         "test_target": "//fuchsia/runners:cast_runner_browsertests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1814,6 +1835,9 @@
         "test_target": "//fuchsia/runners:cast_runner_integration_tests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1832,7 +1856,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter",
+          "--device=aemu"
         ],
         "merge": {
           "args": [],
@@ -1851,6 +1876,9 @@
         "test_target": "//content/test:content_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1868,6 +1896,9 @@
         "test_target": "//fuchsia/base:cr_fuchsia_base_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1885,6 +1916,9 @@
         "test_target": "//components/cronet:cronet_tests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1902,6 +1936,9 @@
         "test_target": "//components/cronet:cronet_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1919,6 +1956,9 @@
         "test_target": "//crypto:crypto_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1936,6 +1976,9 @@
         "test_target": "//build/fuchsia/fidlgen_js:fidlgen_js_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1953,6 +1996,9 @@
         "test_target": "//ui/gfx:gfx_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1970,6 +2016,9 @@
         "test_target": "//gpu:gpu_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -1987,6 +2036,9 @@
         "test_target": "//fuchsia/http:http_service_tests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2004,6 +2056,9 @@
         "test_target": "//ipc:ipc_tests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2022,7 +2077,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter",
+          "--device=aemu"
         ],
         "merge": {
           "args": [],
@@ -2042,7 +2098,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.net_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.net_unittests.filter",
+          "--device=aemu"
         ],
         "merge": {
           "args": [],
@@ -2061,6 +2118,9 @@
         "test_target": "//net:net_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2078,6 +2138,9 @@
         "test_target": "//third_party/perfetto:perfetto_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2096,7 +2159,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.services_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.services_unittests.filter",
+          "--device=aemu"
         ],
         "merge": {
           "args": [],
@@ -2115,6 +2179,9 @@
         "test_target": "//services:services_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2132,6 +2199,9 @@
         "test_target": "//skia:skia_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2150,7 +2220,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter",
+          "--device=aemu"
         ],
         "merge": {
           "args": [],
@@ -2170,7 +2241,8 @@
       },
       {
         "args": [
-          "--child-arg=--ozone-platform=headless"
+          "--child-arg=--ozone-platform=headless",
+          "--device=aemu"
         ],
         "merge": {
           "args": [],
@@ -2189,6 +2261,9 @@
         "test_target": "//components/viz:viz_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2206,6 +2281,9 @@
         "test_target": "//fuchsia/engine:web_engine_browsertests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2223,6 +2301,9 @@
         "test_target": "//fuchsia/engine:web_engine_integration_tests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2240,6 +2321,9 @@
         "test_target": "//fuchsia/engine:web_engine_unittests"
       },
       {
+        "args": [
+          "--device=aemu"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2261,6 +2345,7 @@
       {
         "args": [
           "--num-retries=3",
+          "--device=aemu",
           "--platform=fuchsia"
         ],
         "isolate_name": "blink_web_tests",

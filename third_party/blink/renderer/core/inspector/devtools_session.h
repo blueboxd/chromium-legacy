@@ -63,13 +63,12 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
   class IOSession;
 
   // mojom::blink::DevToolsSession implementation.
-  void DispatchProtocolCommand(
-      int call_id,
-      const String& method,
-      mojom::blink::DevToolsMessagePtr message) override;
+  void DispatchProtocolCommand(int call_id,
+                               const String& method,
+                               base::span<const uint8_t> message) override;
   void DispatchProtocolCommandImpl(int call_id,
                                    const String& method,
-                                   Vector<uint8_t> message);
+                                   base::span<const uint8_t> message);
 
   // protocol::FrontendChannel implementation.
   void sendProtocolResponse(

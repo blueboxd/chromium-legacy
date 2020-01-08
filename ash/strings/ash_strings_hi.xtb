@@ -17,7 +17,7 @@
 <translation id="1178581264944972037">रोकें</translation>
 <translation id="1190609913194133056">सूचना केंद्र</translation>
 <translation id="1195412055398077112">ओवरस्कैन</translation>
-<translation id="119944043368869598">सारा डेटा साफ़ करें</translation>
+<translation id="119944043368869598">सारा डेटा मिटाएं</translation>
 <translation id="1247372569136754018">माइक्रोफ़ोन (आंतरिक)</translation>
 <translation id="1249456112629248620">इस <ph name="FEATURE_NAME" /> सेटिंग को लागू करने का काम आपका एडमिन करता है.</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> से चार्ज हो रहा है</translation>
@@ -74,7 +74,7 @@
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> पर स्क्रीन शेयर कर रहा है</translation>
 <translation id="1885785240814121742">फ़िंगरप्रिंट से अनलॉक करें</translation>
 <translation id="1919743966458266018">काम के प्रबंधक को खोलने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
-<translation id="1923539912171292317">अपने-आपक्‍लिक</translation>
+<translation id="1923539912171292317">अपने-आप क्‍लिक</translation>
 <translation id="1928739107511554905">अपडेट पाने के लिए, अटैच किए गए कीबोर्ड से अपने Chromebook को रीस्टार्ट करने के लिए टचस्क्रीन का इस्तेमाल करें.</translation>
 <translation id="1951012854035635156">सहायक</translation>
 <translation id="1957803754585243749">0°</translation>
@@ -100,7 +100,7 @@
 <translation id="2222338659135520253">साइन इन करना ज़रूरी है</translation>
 <translation id="225680501294068881">डिवाइस स्कैन किए जा रहे हैं...</translation>
 <translation id="2268130516524549846">ब्लूटूथ अक्षम किया गया</translation>
-<translation id="2268813581635650749">सभी प्रस्थान करें</translation>
+<translation id="2268813581635650749">सभी को साइन आउट करें</translation>
 <translation id="2277103315734023688">आगे बढ़ाएं</translation>
 <translation id="2292698582925480719">डिसप्ले पैमाना</translation>
 <translation id="2298170939937364391">फ़ुलस्क्रीन पर सामग्री को बड़ा करके दिखाने की सुविधा चालू है. उसे टॉगल करके बंद करने के लिए फिर से Ctrl+Search+M दबाएं.</translation>
@@ -119,7 +119,7 @@
 <translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" जोड़ने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया पुष्टि करें कि यह पासकी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">सूचनाएं</translation>
 <translation id="2484513351006226581">कीबोर्ड लेआउट स्विच करने के लिए <ph name="KEYBOARD_SHORTCUT" /> दबाएं.</translation>
-<translation id="2501920221385095727">रोचक कुंजियां</translation>
+<translation id="2501920221385095727">स्टिकी बटन</translation>
 <translation id="2509468283778169019">CAPS LOCK चालू है</translation>
 <translation id="2517825809102302935">आज रात के लिए बंद करें</translation>
 <translation id="2542089167727451762">अपनी प्रोफ़ाइल फ़ोटो पर टैप करें</translation>
@@ -238,7 +238,7 @@
 <translation id="4129129681837227511">अपनी लॉक स्क्रीन पर सूचनाएं देखने की सेटिंग बदलने के लिए स्क्रीन अनलॉक करें</translation>
 <translation id="4146833061457621061">गाने चलाओ</translation>
 <translation id="4181841719683918333">भाषाएं</translation>
-<translation id="4195877955194704651">ऑटोमैटिक क्लिक बटन</translation>
+<translation id="4195877955194704651">अपने-आप क्लिक बटन</translation>
 <translation id="4217571870635786043">लिखवाना</translation>
 <translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> के लिए स्मार्ट कार्ड पिन</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -284,7 +284,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">डिसकनेक्ट करें</translation>
 <translation id="4814539958450445987">लॉगिन स्क्रीन</translation>
-<translation id="4831034276697007977">क्या आप वाकई अपने आप क्लिक करने की सुविधा बंद करना चाहते हैं?</translation>
+<translation id="4831034276697007977">क्या आप वाकई अपने-आप क्लिक होने की सुविधा बंद करना चाहते हैं?</translation>
 <translation id="4849058404725798627">कीबोर्ड फ़ोकस वाला ऑब्जेक्ट हाइलाइट करें</translation>
 <translation id="485592688953820832">कोई कार्रवाई नहीं (रोकें)</translation>
 <translation id="4868492592575313542">चालू किया गया</translation>
@@ -356,7 +356,7 @@
 <translation id="5958529069007801266">निगरानी में रखा गया उपयोगकर्ता</translation>
 <translation id="5977415296283489383">हेडफ़ोन</translation>
 <translation id="5978382165065462689">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायका के द्वारा शेयर किया जा रहा है.</translation>
-<translation id="5980301590375426705">अतिथि सत्र से बाहर निकलें</translation>
+<translation id="5980301590375426705">मेहमान मोड से बाहर निकलें</translation>
 <translation id="598882571027504733">अपडेट पाने के लिए, अटैच किए गए कीबोर्ड से अपने Chromebook को रीस्टार्ट करें.</translation>
 <translation id="5992218262414051481">हाई कंट्रास्ट मोड चालू है. उसे टॉगल करने के लिए फिर से Ctrl+Search+H दबाएं.</translation>
 <translation id="6018164090099858612">मिरर मोड से बाहर निकाला जा रहा है</translation>
@@ -468,7 +468,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> का समर्थन नहीं करता. रिज़ॉल्यूशन को <ph name="FALLBACK_RESOLUTION" /> में बदल दिया गया था</translation>
 <translation id="7562368315689366235">इमोजी पैलेट</translation>
 <translation id="7564874036684306347">विंडो को किसी दूसरे डेस्कटॉप पर ले जाने से अनचाहा बर्ताव हो सकता है. इसके बाद की सूचनाएं, विंडो और संवाद डेस्कटॉप के बीच बंट सकती हैं.</translation>
-<translation id="7568294522609223312">अपने आप क्लिक करने की सुविधा बंद करें</translation>
+<translation id="7568294522609223312">अपने-आप क्लिक होने की सुविधा बंद करें</translation>
 <translation id="7569509451529460200">ब्रेल और ChromeVox सक्षम हैं</translation>
 <translation id="7593891976182323525">Search या Shift</translation>
 <translation id="7600875258240007829">सभी सूचनाएं देखें</translation>

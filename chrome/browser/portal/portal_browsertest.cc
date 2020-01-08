@@ -4,9 +4,13 @@
 
 #include <vector>
 
+#include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/login/login_handler.h"
+#include "chrome/browser/ui/login/login_handler_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -68,4 +72,44 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   EXPECT_EQ(main_web_contents,
             DevToolsWindow::GetInTabWebContents(
                 browser()->tab_strip_model()->GetActiveWebContents(), nullptr));
+}
+
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, HttpBasicAuthenticationInPortal) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+
+  EXPECT_EQ(true,
+            content::EvalJs(contents,
+                            "new Promise((resolve, reject) => {\n"
+                            "  let portal = document.createElement('portal');\n"
+                            "  portal.src = '/title2.html';\n"
+                            "  portal.onload = () => resolve(true);\n"
+                            "  document.body.appendChild(portal);\n"
+                            "})"));
+  const auto& inner_contents = contents->GetInnerWebContents();
+  ASSERT_EQ(inner_contents.size(), 1u);
+  WebContents* portal_contents = inner_contents[0];
+  content::NavigationController& portal_controller =
+      portal_contents->GetController();
+
+  LoginPromptBrowserTestObserver login_observer;
+  login_observer.Register(
+      content::Source<content::NavigationController>(&portal_controller));
+  WindowedAuthNeededObserver auth_needed(&portal_controller);
+  ASSERT_TRUE(content::ExecJs(portal_contents,
+                              "location.href = '/auth-basic?realm=Aperture'"));
+  auth_needed.Wait();
+
+  WindowedAuthSuppliedObserver auth_supplied(&portal_controller);
+  LoginHandler* login_handler = login_observer.handlers().front();
+  EXPECT_EQ(login_handler->auth_info().realm, "Aperture");
+  login_handler->SetAuth(base::ASCIIToUTF16("basicuser"),
+                         base::ASCIIToUTF16("secret"));
+  auth_supplied.Wait();
+
+  base::string16 expected_title = base::ASCIIToUTF16("basicuser/secret");
+  content::TitleWatcher title_watcher(portal_contents, expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }

@@ -23,27 +23,27 @@
 
     <style name="Theme.Chromium.Settings" parent="Base.V21.Theme.Chromium.Settings" />
 
-    <style name="Theme.Chromium.PreferenceFragment">
+    <style name="SettingsFragment">
         <item name="android:divider">?android:attr/listDivider</item>
     </style>
 
-    <style name="Theme.Chromium.PreferenceFragmentList">
+    <style name="SettingsFragmentList">
         <item name="android:paddingStart">0dp</item>
         <item name="android:paddingEnd">0dp</item>
     </style>
 
-    <style name="Theme.Chromium.PreferenceLayoutCompat">
+    <style name="PreferenceLayoutCompat">
         <item name="android:paddingStart">?android:attr/listPreferredItemPaddingStart</item>
         <item name="android:paddingEnd">?android:attr/listPreferredItemPaddingEnd</item>
         <item name="android:minHeight">?android:attr/listPreferredItemHeightSmall</item>
     </style>
 
-    <style name="Theme.Chromium.PreferenceDescriptionCompat">
+    <style name="PreferenceDescriptionCompat">
         <item name="android:paddingTop">16dp</item>
         <item name="android:paddingBottom">16dp</item>
     </style>
 
-    <style name="Theme.Chromium.PreferenceWidgetCompat">
+    <style name="PreferenceWidgetCompat">
         <item name="android:paddingStart">16dp</item>
     </style>
 

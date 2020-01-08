@@ -23,5 +23,8 @@ public class NativeTestApplication extends Application {
         if (BuildConfig.IS_MULTIDEX_ENABLED) {
             ChromiumMultiDexInstaller.install(this);
         }
+
+        // This is required for Mockito to initialize mocks without running under Instrumentation.
+        System.setProperty("org.mockito.android.target", getCacheDir().getPath());
     }
 }

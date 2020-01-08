@@ -200,6 +200,8 @@ constexpr int kStatusAreaLeftPaddingForOverflow = 100;
 constexpr int kStatusAreaForceCollapseAvailableWidth = 200;
 constexpr int kStatusAreaOverflowGradientSize = 24;
 
+constexpr int kPopupCollectionHotseatHeightCompensation = 16;
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_

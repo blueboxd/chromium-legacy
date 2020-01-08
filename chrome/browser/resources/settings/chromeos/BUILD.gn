@@ -72,6 +72,7 @@ if (optimize_webui) {
 
 group("closure_compile") {
   deps = [
+    ":os_page_visibility",
     "bluetooth_page:closure_compile",
     "crostini_page:closure_compile",
     "date_time_page:closure_compile",
@@ -94,5 +95,12 @@ group("closure_compile") {
     "os_settings_ui:closure_compile",
     "personalization_page:closure_compile",
     "plugin_vm_page:closure_compile",
+  ]
+}
+
+js_library("os_page_visibility") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
   ]
 }

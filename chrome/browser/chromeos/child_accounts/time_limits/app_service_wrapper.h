@@ -53,15 +53,22 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
 
     // Called when app with |app_id| becomes active.
     // Active means that the app is in usage (visible in foreground).
+    // |window| If the app is launched multiple times, |window| indicates which
+    // of the windows is active.
     // |timestamp| indicates the time when the app became active.
-    virtual void OnAppActive(const AppId& app_id, base::Time timestamp) {}
+    virtual void OnAppActive(const AppId& app_id,
+                             aura::Window* window,
+                             base::Time timestamp) {}
 
     // Called when app with |app_id| becomes inactive.
     // Inactive means that the app is not in the foreground. It still can run
     // and be partially visible. |timestamp| indicates the time when the app
-    // became inactive. Note: This can be called for the app that is already
-    // inactive.
-    virtual void OnAppInactive(const AppId& app_id, base::Time timestamp) {}
+    // became inactive. |window| to specify which of the application's
+    // potentially multiple windows became incactive.Note: This can be called
+    // for the app that is already inactive.
+    virtual void OnAppInactive(const AppId& app_id,
+                               aura::Window* window,
+                               base::Time timestamp) {}
   };
 
   explicit AppServiceWrapper(Profile* profile);

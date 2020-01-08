@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/chromeos/arc/accessibility/geometry_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
@@ -35,6 +36,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/widget.h"
 
@@ -69,23 +71,9 @@ void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data,
   if (!active_window)
     return;
 
-  gfx::Rect bounds_in_screen = gfx::ScaleToEnclosingRect(
-      node_data->bounds_in_screen,
-      1.0f / wm_helper->GetDefaultDeviceScaleFactor());
-
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(active_window);
-  DCHECK(widget);
-
-  // On Android side, content is rendered without considering height of
-  // caption bar, e.g. Content is rendered at y:0 instead of y:32 where 32 is
-  // height of caption bar. Add back height of caption bar here.
-  if (widget->IsMaximized()) {
-    bounds_in_screen.Offset(
-        0, static_cast<int>(static_cast<float>(widget->non_client_view()
-                                                   ->frame_view()
-                                                   ->GetBoundsForClientView()
-                                                   .y())));
-  }
+  gfx::Rect bounds_in_screen = gfx::ToEnclosingRect(arc::ToChromeBounds(
+      node_data->bounds_in_screen, wm_helper,
+      views::Widget::GetWidgetForNativeView(active_window)));
 
   accessibility_manager->OnViewFocusedInArc(bounds_in_screen);
 }
@@ -708,7 +696,27 @@ void ArcAccessibilityHelperBridge::OnGetTextLocationDataResult(
   if (!tree_source)
     return;
 
-  tree_source->NotifyGetTextLocationDataResult(data, result_rect);
+  tree_source->NotifyGetTextLocationDataResult(
+      data, OnGetTextLocationDataResultInternal(result_rect));
+}
+
+base::Optional<gfx::Rect>
+ArcAccessibilityHelperBridge::OnGetTextLocationDataResultInternal(
+    const base::Optional<gfx::Rect>& result_rect) const {
+  if (!result_rect)
+    return base::nullopt;
+
+  exo::WMHelper* wm_helper = exo::WMHelper::GetInstance();
+  if (!wm_helper)
+    return base::nullopt;
+
+  aura::Window* active_window = wm_helper->GetActiveWindow();
+  if (!active_window)
+    return base::nullopt;
+
+  gfx::RectF rect_f = arc::ToChromeScale(*result_rect, wm_helper);
+  arc::ScaleDeviceFactor(rect_f, active_window->GetToplevelWindow());
+  return gfx::ToEnclosingRect(rect_f);
 }
 
 void ArcAccessibilityHelperBridge::OnAccessibilityStatusChanged(

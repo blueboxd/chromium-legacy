@@ -293,9 +293,6 @@ blink::WebThemeEngine* RendererBlinkPlatformImpl::ThemeEngine() {
   if (!theme_engine)
     theme_engine = BlinkPlatformImpl::ThemeEngine();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceHighContrast))
-    theme_engine->SetForcedColors(blink::ForcedColors::kActive);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceDarkMode))
     theme_engine->SetPreferredColorScheme(blink::PreferredColorScheme::kDark);
   return theme_engine;

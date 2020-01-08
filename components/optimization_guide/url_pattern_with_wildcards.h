@@ -23,7 +23,10 @@ namespace optimization_guide {
 class URLPatternWithWildcards {
  public:
   explicit URLPatternWithWildcards(const std::string& url_pattern);
+  URLPatternWithWildcards(const URLPatternWithWildcards& other);
   ~URLPatternWithWildcards();
+
+  URLPatternWithWildcards& operator=(const URLPatternWithWildcards&) = default;
 
   // Returns true if |url_string| matches |this| pattern.
   bool Matches(const std::string& url_string) const;
@@ -31,9 +34,7 @@ class URLPatternWithWildcards {
  private:
   // A single pattern string is split into multiple strings (each separated by
   // '*'), and stored in |split_subpatterns_|.
-  const std::vector<std::string> split_subpatterns_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLPatternWithWildcards);
+  std::vector<std::string> split_subpatterns_;
 };
 
 }  // namespace optimization_guide

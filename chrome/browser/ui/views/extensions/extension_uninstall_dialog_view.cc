@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
@@ -38,29 +39,6 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace {
-
-ToolbarActionView* GetExtensionAnchorView(const std::string& extension_id,
-                                          gfx::NativeWindow window) {
-  BrowserView* browser_view =
-      BrowserView::GetBrowserViewForNativeWindow(window);
-  if (!browser_view)
-    return nullptr;
-  DCHECK(browser_view->toolbar_button_provider());
-  ExtensionsToolbarContainer* const container =
-      browser_view->toolbar_button_provider()->GetExtensionsToolbarContainer();
-  if (container)
-    return container->GetViewForId(extension_id);
-  DCHECK(browser_view->toolbar_button_provider()->GetBrowserActionsContainer());
-  // TODO(pbos): Pop out extensions so that they can become visible before
-  // showing the uninstall dialog.
-  ToolbarActionView* const reference_view =
-      browser_view->toolbar_button_provider()
-          ->GetBrowserActionsContainer()
-          ->GetViewForId(extension_id);
-  return reference_view && reference_view->GetVisible() ? reference_view
-                                                        : nullptr;
-}
-
 class ExtensionUninstallDialogDelegateView;
 
 // Views implementation of the uninstall dialog.
@@ -146,12 +124,35 @@ ExtensionUninstallDialogViews::~ExtensionUninstallDialogViews() {
 }
 
 void ExtensionUninstallDialogViews::Show() {
-  ToolbarActionView* anchor_view =
-      parent() ? GetExtensionAnchorView(extension()->id(), parent()) : nullptr;
+  BrowserView* const browser_view =
+      parent() ? BrowserView::GetBrowserViewForNativeWindow(parent()) : nullptr;
+  ToolbarActionView* anchor_view = nullptr;
+  ExtensionsToolbarContainer* const container =
+      browser_view ? browser_view->toolbar_button_provider()
+                         ->GetExtensionsToolbarContainer()
+                   : nullptr;
+  if (container) {
+    anchor_view = container->GetViewForId(extension()->id());
+  } else if (browser_view &&
+             !base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    ToolbarActionView* const reference_view =
+        browser_view->toolbar_button_provider()
+            ->GetBrowserActionsContainer()
+            ->GetViewForId(extension()->id());
+    if (reference_view && reference_view->GetVisible())
+      anchor_view = reference_view;
+  }
   view_ = new ExtensionUninstallDialogDelegateView(
       this, anchor_view, extension(), triggering_extension(), &icon());
   if (anchor_view) {
-    views::BubbleDialogDelegateView::CreateBubble(view_)->Show();
+    if (container) {
+      container->ShowWidgetForExtension(
+          views::BubbleDialogDelegateView::CreateBubble(view_),
+          extension()->id());
+    } else {
+      DCHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+      views::BubbleDialogDelegateView::CreateBubble(view_)->Show();
+    }
   } else {
     constrained_window::CreateBrowserModalDialogViews(view_, parent())->Show();
   }

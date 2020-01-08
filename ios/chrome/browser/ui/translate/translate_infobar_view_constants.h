@@ -7,8 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-// Height of the infobar.
-extern const CGFloat kInfobarHeight;
+// Height of the translate infobar.
+extern const CGFloat kTranslateInfobarHeight;
 
 // The a11y identifier for the translate infobar view.
 extern NSString* const kTranslateInfobarViewId;

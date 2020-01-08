@@ -34,12 +34,6 @@ static constexpr int kSecondaryRootNodeId = 1;
 
 }  // namespace
 
-inline const TransformPaintPropertyNode&
-PropertyTreeManager::EffectState::Transform() const {
-  return effect_type == CcEffectType::kEffect ? effect->LocalTransformSpace()
-                                              : clip->LocalTransformSpace();
-}
-
 PropertyTreeManager::PropertyTreeManager(
     PropertyTreeManagerClient& client,
     cc::PropertyTrees& property_trees,
@@ -298,9 +292,9 @@ void PropertyTreeManager::SetupRootEffectNode() {
 
   EffectPaintPropertyNode::Root().SetCcNodeId(new_sequence_number_,
                                               effect_node.id);
-  SetCurrentEffectState(effect_node, CcEffectType::kEffect,
-                        EffectPaintPropertyNode::Root(),
-                        ClipPaintPropertyNode::Root());
+  SetCurrentEffectState(
+      effect_node, CcEffectType::kEffect, EffectPaintPropertyNode::Root(),
+      ClipPaintPropertyNode::Root(), TransformPaintPropertyNode::Root());
 }
 
 void PropertyTreeManager::SetupRootScrollNode() {
@@ -351,15 +345,17 @@ void PropertyTreeManager::SetCurrentEffectState(
     const cc::EffectNode& cc_effect_node,
     CcEffectType effect_type,
     const EffectPaintPropertyNode& effect,
-    const ClipPaintPropertyNode& clip) {
+    const ClipPaintPropertyNode& clip,
+    const TransformPaintPropertyNode& transform) {
   const auto* previous_transform =
-      effect.IsRoot() ? nullptr : &current_.Transform();
+      effect.IsRoot() ? nullptr : current_.transform;
   current_.effect_id = cc_effect_node.id;
   current_.effect_type = effect_type;
   DCHECK(!effect.IsParentAlias() || !effect.Parent());
   current_.effect = &effect;
   DCHECK(!clip.IsParentAlias() || !clip.Parent());
   current_.clip = &clip;
+  current_.transform = &transform;
 
   if (cc_effect_node.HasRenderSurface()) {
     current_.may_be_2d_axis_misaligned_to_render_surface =
@@ -368,7 +364,7 @@ void PropertyTreeManager::SetCurrentEffectState(
   } else {
     if (current_.may_be_2d_axis_misaligned_to_render_surface ==
             EffectState::kAligned &&
-        previous_transform != &current_.Transform()) {
+        previous_transform != current_.transform) {
       current_.may_be_2d_axis_misaligned_to_render_surface =
           EffectState::kUnknown;
     }
@@ -466,8 +462,8 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
       transform_node.FlattensInheritedTransform() && transform_node.Parent() &&
       transform_node.Parent()->RenderingContextId() &&
       !transform_node.Parent()->FlattensInheritedTransform()) {
-    SetCurrentEffectRenderSurfaceReason(
-        cc::RenderSurfaceReason::k3dTransformFlattening);
+    current_cc_effect->render_surface_reason =
+        cc::RenderSurfaceReason::k3dTransformFlattening;
   }
 
   transform_node.SetCcNodeId(new_sequence_number_, id);
@@ -582,23 +578,23 @@ int PropertyTreeManager::EnsureCompositorScrollNode(
 }
 
 void PropertyTreeManager::EmitClipMaskLayer() {
-  cc::EffectNode& mask_isolation = *GetEffectTree().Node(current_.effect_id);
-
+  cc::EffectNode* mask_isolation = GetEffectTree().Node(current_.effect_id);
+  DCHECK(mask_isolation);
   bool needs_layer =
-      !pending_synthetic_mask_layers_.Contains(mask_isolation.id) &&
-      mask_isolation.rounded_corner_bounds.IsEmpty();
+      !pending_synthetic_mask_layers_.Contains(mask_isolation->id) &&
+      mask_isolation->rounded_corner_bounds.IsEmpty();
 
   int clip_id = EnsureCompositorClipNode(*current_.clip);
   CompositorElementId mask_isolation_id, mask_effect_id;
   SynthesizedClip& clip = client_.CreateOrReuseSynthesizedClipLayer(
-      *current_.clip, needs_layer, mask_isolation_id, mask_effect_id);
+      *current_.clip, *current_.transform, needs_layer, mask_isolation_id,
+      mask_effect_id);
 
   // Assignment of mask_isolation.stable_id was delayed until now.
   // See PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded().
   DCHECK_EQ(static_cast<uint64_t>(cc::EffectNode::INVALID_STABLE_ID),
-            mask_isolation.stable_id);
-
-  mask_isolation.stable_id = mask_isolation_id.GetStableId();
+            mask_isolation->stable_id);
+  mask_isolation->stable_id = mask_isolation_id.GetStableId();
 
   if (!needs_layer)
     return;
@@ -609,7 +605,11 @@ void PropertyTreeManager::EmitClipMaskLayer() {
   mask_effect.clip_id = clip_id;
   mask_effect.blend_mode = SkBlendMode::kDstIn;
 
-  cc::Layer* mask_layer = clip.Layer();
+  // The address of mask_isolation may have changed when we insert
+  // |mask_effect| into the tree.
+  mask_isolation = GetEffectTree().Node(current_.effect_id);
+
+  cc::PictureLayer* mask_layer = clip.Layer();
 
   const auto& clip_space = current_.clip->LocalTransformSpace();
   layer_list_builder_.Add(mask_layer);
@@ -624,21 +624,29 @@ void PropertyTreeManager::EmitClipMaskLayer() {
   mask_layer->SetScrollTreeIndex(scroll_id);
   mask_layer->SetClipTreeIndex(clip_id);
   mask_layer->SetEffectTreeIndex(mask_effect.id);
+
+  if (!mask_isolation->backdrop_filters.IsEmpty()) {
+    mask_layer->SetIsBackdropFilterMask(true);
+    auto element_id = CompositorElementIdFromUniqueObjectId(
+        mask_effect.stable_id, CompositorElementIdNamespace::kEffectMask);
+    mask_layer->SetElementId(element_id);
+    mask_isolation->backdrop_mask_element_id = element_id;
+  }
 }
 
 void PropertyTreeManager::CloseCcEffect() {
   DCHECK(effect_stack_.size());
   const auto& previous_state = effect_stack_.back();
 
-  // An effect with exotic blending or backdrop-filter that is masked by a
-  // synthesized clip must have its blending to the outermost synthesized clip.
+  // A backdrop effect (exotic blending or backdrop filter) that is masked by a
+  // synthesized clip must have its effect to the outermost synthesized clip.
   // These operations need access to the backdrop of the enclosing effect. With
   // the isolation for a synthesized clip, a blank backdrop will be seen.
-  // Therefore the blending is delegated to the outermost synthesized clip, thus
-  // the clip can't be shared with sibling layers, and must be closed now.
+  // Therefore the backdrop effect is delegated to the outermost synthesized
+  // clip, thus the clip can't be shared with sibling layers, and must be
+  // closed now.
   bool clear_synthetic_effects =
-      !IsCurrentCcEffectSynthetic() &&
-      current_.effect->BlendMode() != SkBlendMode::kSrcOver;
+      !IsCurrentCcEffectSynthetic() && current_.effect->HasBackdropEffect();
 
   // We are about to close an effect that was synthesized for isolating
   // a clip mask. Now emit the actual clip mask that will be composited on
@@ -715,7 +723,7 @@ int PropertyTreeManager::SwitchToEffectNodeWithSynthesizedClip(
     CloseCcEffect();
 
   BuildEffectNodesRecursively(next_effect);
-  SynthesizeCcEffectsForClipsIfNeeded(next_clip, SkBlendMode::kSrcOver);
+  SynthesizeCcEffectsForClipsIfNeeded(next_clip, /*next_effect*/ nullptr);
 
   if (layer_draws_content)
     pending_synthetic_mask_layers_.clear();
@@ -752,8 +760,8 @@ bool PropertyTreeManager::EffectStateMayBe2dAxisMisalignedToRenderSurface(
           EffectState::kMisaligned;
     } else {
       state.may_be_2d_axis_misaligned_to_render_surface =
-          TransformsMayBe2dAxisMisaligned(effect_stack_[index - 1].Transform(),
-                                          current_.Transform())
+          TransformsMayBe2dAxisMisaligned(*effect_stack_[index - 1].transform,
+                                          *current_.transform)
               ? EffectState::kMisaligned
               : EffectState::kAligned;
     }
@@ -778,7 +786,7 @@ PropertyTreeManager::CcEffectType PropertyTreeManager::SyntheticEffectType(
   // surface to correctly apply the clip.
   if (CurrentEffectMayBe2dAxisMisalignedToRenderSurface() ||
       TransformsMayBe2dAxisMisaligned(clip.LocalTransformSpace(),
-                                      current_.Transform()))
+                                      *current_.transform))
     effect_type |= CcEffectType::kSyntheticFor2dAxisAlignment;
   return static_cast<CcEffectType>(effect_type);
 }
@@ -793,11 +801,19 @@ void PropertyTreeManager::ForceRenderSurfaceIfSyntheticRoundedCornerClip(
 
 bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
     const ClipPaintPropertyNode& clip,
-    PropertyTreeManager::CcEffectType type) {
+    PropertyTreeManager::CcEffectType type,
+    const EffectPaintPropertyNode* next_effect) {
   if (type & CcEffectType::kSyntheticFor2dAxisAlignment)
     return false;
 
   if (clip.ClipPath())
+    return false;
+
+  // Don't use shader based rounded corner if the next effect has backdrop
+  // filter and the clip is in different transform space, because we will use
+  // the effect's transform space for the mask isolation effect node.
+  if (next_effect && !next_effect->BackdropFilter().IsEmpty() &&
+      &next_effect->LocalTransformSpace() != &clip.LocalTransformSpace())
     return false;
 
   auto WidthAndHeightAreTheSame = [](const FloatSize& size) {
@@ -827,20 +843,49 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
   return true;
 }
 
-SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
+static cc::RenderSurfaceReason RenderSurfaceReasonForBackdropEffect(
+    const EffectPaintPropertyNode& backdrop_effect) {
+  DCHECK(backdrop_effect.HasBackdropEffect());
+  if (backdrop_effect.BlendMode() != SkBlendMode::kSrcOver)
+    return cc::RenderSurfaceReason::kBlendMode;
+  if (!backdrop_effect.BackdropFilter().IsEmpty())
+    return cc::RenderSurfaceReason::kBackdropFilter;
+  DCHECK(backdrop_effect.HasActiveBackdropFilterAnimation());
+  return cc::RenderSurfaceReason::kBackdropFilterAnimation;
+}
+
+void PropertyTreeManager::PopulateCcEffectNodeBackdropEffect(
+    cc::EffectNode& effect_node,
+    const EffectPaintPropertyNode& backdrop_effect) {
+  DCHECK(backdrop_effect.HasBackdropEffect());
+
+  effect_node.backdrop_filters =
+      backdrop_effect.BackdropFilter().AsCcFilterOperations();
+  effect_node.backdrop_filter_bounds = backdrop_effect.BackdropFilterBounds();
+  effect_node.filters_origin = backdrop_effect.FiltersOrigin();
+  effect_node.blend_mode = backdrop_effect.BlendMode();
+  if (effect_node.render_surface_reason == cc::RenderSurfaceReason::kNone) {
+    effect_node.render_surface_reason =
+        RenderSurfaceReasonForBackdropEffect(backdrop_effect);
+  }
+}
+
+PropertyTreeManager::BackdropEffectState
+PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const ClipPaintPropertyNode& target_clip_arg,
-    SkBlendMode delegated_blend) {
+    const EffectPaintPropertyNode* next_effect) {
   const auto* target_clip = &target_clip_arg.Unalias();
-  if (delegated_blend != SkBlendMode::kSrcOver) {
-    // Exit all synthetic effect node if the next child has exotic blending mode
-    // because it has to access the backdrop of enclosing effect.
+  auto backdrop_effect_state = kNoBackdropEffect;
+  if (next_effect && next_effect->HasBackdropEffect()) {
+    // Exit all synthetic effect node if the next child has backdrop effect
+    // (exotic blending mode or backdrop filter) because it has to access the
+    // backdrop of enclosing effect.
     while (IsCurrentCcEffectSynthetic())
       CloseCcEffect();
 
-    // An effect node can't omit render surface if it has child with exotic
-    // blending mode. See comments below for more detail.
-    // TODO(crbug.com/504464): Remove premature optimization here.
-    SetCurrentEffectRenderSurfaceReason(cc::RenderSurfaceReason::kBlendMode);
+    SetCurrentEffectRenderSurfaceReason(
+        RenderSurfaceReasonForBackdropEffect(*next_effect));
+    backdrop_effect_state = kBackdropEffectToBeSetOnCcEffectNode;
   } else {
     // Exit synthetic effects until there are no more synthesized clips below
     // our lowest common ancestor.
@@ -853,7 +898,7 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
         // In CompositeAfterPaint this should never happen.
         if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
           NOTREACHED();
-        return delegated_blend;
+        return backdrop_effect_state;
       }
       const auto* pre_exit_clip = current_.clip;
       CloseCcEffect();
@@ -882,8 +927,11 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     // In CompositeAfterPaint this should never happen.
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       NOTREACHED();
-    return delegated_blend;
+    return backdrop_effect_state;
   }
+
+  if (pending_clips.IsEmpty())
+    return backdrop_effect_state;
 
   for (size_t i = pending_clips.size(); i--;) {
     const auto& pending_clip = pending_clips[i];
@@ -894,27 +942,14 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     // surface which is axis-aligned with the clip.
     cc::EffectNode& synthetic_effect = *GetEffectTree().Node(
         GetEffectTree().Insert(cc::EffectNode(), current_.effect_id));
+
     if (pending_clip.type & CcEffectType::kSyntheticForNonTrivialClip) {
       synthetic_effect.clip_id = EnsureCompositorClipNode(*pending_clip.clip);
       // For non-trivial clip, isolation_effect.stable_id will be assigned later
       // when the effect is closed. For now the default value INVALID_STABLE_ID
       // is used. See PropertyTreeManager::EmitClipMaskLayer().
-    } else {
-      synthetic_effect.stable_id =
-          CompositorElementIdFromUniqueObjectId(NewUniqueObjectId())
-              .GetStableId();
-      // The clip of the synthetic effect is the parent of the clip, so that
-      // the clip itself will be applied in the render surface.
-      DCHECK(pending_clip.clip->Parent());
-      synthetic_effect.clip_id =
-          EnsureCompositorClipNode(*pending_clip.clip->Parent());
-    }
-    const auto& transform = pending_clip.clip->LocalTransformSpace();
-    synthetic_effect.transform_id = EnsureCompositorTransformNode(transform);
-    synthetic_effect.double_sided = !transform.IsBackfaceHidden();
-    if (pending_clip.type & CcEffectType::kSyntheticForNonTrivialClip) {
       if (SupportsShaderBasedRoundedCorner(*pending_clip.clip,
-                                           pending_clip.type)) {
+                                           pending_clip.type, next_effect)) {
         synthetic_effect.rounded_corner_bounds =
             gfx::RRectF(pending_clip.clip->ClipRect());
         synthetic_effect.is_fast_rounded_corner = true;
@@ -939,26 +974,45 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
                 : cc::RenderSurfaceReason::kClipPath;
       }
       pending_synthetic_mask_layers_.insert(synthetic_effect.id);
+    } else {
+      DCHECK(pending_clip.type & CcEffectType::kSyntheticFor2dAxisAlignment);
+      synthetic_effect.stable_id =
+          CompositorElementIdFromUniqueObjectId(NewUniqueObjectId())
+              .GetStableId();
+      // The clip of the synthetic effect is the parent of the clip, so that
+      // the clip itself will be applied in the render surface.
+      DCHECK(pending_clip.clip->Parent());
+      synthetic_effect.clip_id =
+          EnsureCompositorClipNode(*pending_clip.clip->Parent());
     }
+
     if (pending_clip.type & CcEffectType::kSyntheticFor2dAxisAlignment) {
       synthetic_effect.render_surface_reason =
           cc::RenderSurfaceReason::kClipAxisAlignment;
     }
 
-    // Clip and kDstIn do not commute. This shall never be reached because
-    // kDstIn is only used internally to implement CSS clip-path and mask,
-    // and there is never a difference between the output clip of the effect
-    // and the mask content.
-    DCHECK(delegated_blend != SkBlendMode::kDstIn);
-    synthetic_effect.blend_mode = delegated_blend;
-    delegated_blend = SkBlendMode::kSrcOver;
+    const TransformPaintPropertyNode* transform = nullptr;
+    if (backdrop_effect_state == kBackdropEffectToBeSetOnCcEffectNode) {
+      // Move the backdrop effect from the original effect up to the outermost
+      // synthetic effect to ensure the backdrop effect can access the correct
+      // backdrop.
+      DCHECK(next_effect);
+      transform = &next_effect->LocalTransformSpace();
+      PopulateCcEffectNodeBackdropEffect(synthetic_effect, *next_effect);
+      backdrop_effect_state = kBackdropEffectHasSetOnSyntheticEffect;
+    } else {
+      transform = &pending_clip.clip->LocalTransformSpace();
+    }
+
+    synthetic_effect.transform_id = EnsureCompositorTransformNode(*transform);
+    synthetic_effect.double_sided = !transform->IsBackfaceHidden();
 
     effect_stack_.emplace_back(current_);
     SetCurrentEffectState(synthetic_effect, pending_clip.type, *current_.effect,
-                          *pending_clip.clip);
+                          *pending_clip.clip, *transform);
   }
 
-  return delegated_blend;
+  return backdrop_effect_state;
 }
 
 void PropertyTreeManager::BuildEffectNodesRecursively(
@@ -977,26 +1031,35 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
          "be contiguous.";
 #endif
 
-  // If we don't have an output clip, then we'll use the clip of the last
-  // non-synthetic effect. This means we should close all synthetic effects on
-  // the stack first.
-  if (!next_effect.OutputClip()) {
+  auto backdrop_effect_state = kNoBackdropEffect;
+  int output_clip_id = 0;
+  const auto* output_clip = SafeUnalias(next_effect.OutputClip());
+  if (output_clip) {
+    backdrop_effect_state =
+        SynthesizeCcEffectsForClipsIfNeeded(*output_clip, &next_effect);
+    output_clip_id = EnsureCompositorClipNode(*output_clip);
+  } else {
+    // If we don't have an output clip, then we'll use the clip of the last
+    // non-synthetic effect. This means we should close all synthetic effects
+    // on the stack first.
     while (IsCurrentCcEffectSynthetic())
       CloseCcEffect();
-  }
 
-  SkBlendMode blend_mode;
-  const ClipPaintPropertyNode* output_clip;
-  int output_clip_id;
-  std::tie(blend_mode, output_clip, output_clip_id) =
-      GetBlendModeAndOutputClipForEffect(next_effect);
+    if (next_effect.HasBackdropEffect())
+      backdrop_effect_state = kBackdropEffectToBeSetOnCcEffectNode;
+    output_clip = current_.clip;
+    DCHECK(output_clip);
+    output_clip_id = GetEffectTree().Node(current_.effect_id)->clip_id;
+    DCHECK_EQ(output_clip_id, EnsureCompositorClipNode(*output_clip));
+  }
 
   int effect_node_id =
       GetEffectTree().Insert(cc::EffectNode(), current_.effect_id);
   auto& effect_node = *GetEffectTree().Node(effect_node_id);
   next_effect.SetCcNodeId(new_sequence_number_, effect_node_id);
 
-  PopulateCcEffectNode(effect_node, next_effect, output_clip_id, blend_mode);
+  PopulateCcEffectNode(effect_node, next_effect, output_clip_id,
+                       backdrop_effect_state);
 
   CompositorElementId compositor_element_id =
       next_effect.GetCompositorElementId();
@@ -1009,45 +1072,18 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
 
   effect_stack_.emplace_back(current_);
   SetCurrentEffectState(effect_node, CcEffectType::kEffect, next_effect,
-                        *output_clip);
-}
-
-std::tuple<SkBlendMode, const ClipPaintPropertyNode*, int>
-PropertyTreeManager::GetBlendModeAndOutputClipForEffect(
-    const EffectPaintPropertyNode& effect) {
-  SkBlendMode blend_mode;
-  int output_clip_id;
-  const auto* output_clip = SafeUnalias(effect.OutputClip());
-  if (output_clip) {
-    blend_mode =
-        SynthesizeCcEffectsForClipsIfNeeded(*output_clip, effect.BlendMode());
-    output_clip_id = EnsureCompositorClipNode(*output_clip);
-  } else {
-    DCHECK(!IsCurrentCcEffectSynthetic());
-    // An effect node can't omit render surface if it has child with exotic
-    // blending mode.
-    // TODO(crbug.com/504464): Remove premature optimization here.
-    if (effect.BlendMode() != SkBlendMode::kSrcOver)
-      SetCurrentEffectRenderSurfaceReason(cc::RenderSurfaceReason::kBlendMode);
-
-    blend_mode = effect.BlendMode();
-    output_clip = current_.clip;
-    DCHECK(output_clip);
-    output_clip_id = GetEffectTree().Node(current_.effect_id)->clip_id;
-    DCHECK_EQ(output_clip_id, EnsureCompositorClipNode(*output_clip));
-  }
-  return std::make_tuple(blend_mode, output_clip, output_clip_id);
+                        *output_clip, next_effect.LocalTransformSpace());
 }
 
 void PropertyTreeManager::PopulateCcEffectNode(
     cc::EffectNode& effect_node,
     const EffectPaintPropertyNode& effect,
     int output_clip_id,
-    SkBlendMode blend_mode) {
+    BackdropEffectState backdrop_effect_state) {
   effect_node.stable_id = effect.GetCompositorElementId().GetStableId();
   effect_node.clip_id = output_clip_id;
 
-  // An effect with filters or backdrop filters needs a render surface.
+  // An effect with filters or backdrop effect needs a render surface.
   // Also, kDstIn and kSrcOver blend modes have fast paths if only one layer
   // is under the blend mode. This value is adjusted in PaintArtifactCompositor
   // ::UpdateRenderSurfaceForEffects() to account for more than one layer.
@@ -1056,38 +1092,34 @@ void PropertyTreeManager::PopulateCcEffectNode(
   } else if (effect.HasActiveFilterAnimation()) {
     effect_node.render_surface_reason =
         cc::RenderSurfaceReason::kFilterAnimation;
-  } else if (!effect.BackdropFilter().IsEmpty()) {
-    effect_node.render_surface_reason =
-        cc::RenderSurfaceReason::kBackdropFilter;
-  } else if (effect.HasActiveBackdropFilterAnimation()) {
-    effect_node.render_surface_reason =
-        cc::RenderSurfaceReason::kBackdropFilterAnimation;
-  } else if (blend_mode != SkBlendMode::kSrcOver &&
-             blend_mode != SkBlendMode::kDstIn) {
-    effect_node.render_surface_reason = cc::RenderSurfaceReason::kBlendMode;
   }
+  // If needed, render surface reason for backdrop effect will be set in
+  // PopuluateCcEffectNodeBackdropEffect() below.
 
   effect_node.opacity = effect.Opacity();
   if (effect.GetColorFilter() != kColorFilterNone) {
     // Currently color filter is only used by SVG masks.
     // We are cutting corner here by support only specific configuration.
-    DCHECK(effect.GetColorFilter() == kColorFilterLuminanceToAlpha);
-    DCHECK(blend_mode == SkBlendMode::kDstIn);
+    DCHECK_EQ(effect.GetColorFilter(), kColorFilterLuminanceToAlpha);
+    DCHECK_EQ(effect.BlendMode(), SkBlendMode::kDstIn);
     DCHECK(effect.Filter().IsEmpty());
     effect_node.filters.Append(cc::FilterOperation::CreateReferenceFilter(
         sk_make_sp<ColorFilterPaintFilter>(SkLumaColorFilter::Make(),
                                            nullptr)));
+    effect_node.blend_mode = SkBlendMode::kDstIn;
   } else {
-    effect_node.filters = effect.Filter().AsCcFilterOperations();
-    effect_node.backdrop_filters =
-        effect.BackdropFilter().AsCcFilterOperations();
-    effect_node.backdrop_filter_bounds = effect.BackdropFilterBounds();
-    effect_node.backdrop_mask_element_id = effect.BackdropMaskElementId();
-    effect_node.filters_origin = effect.FiltersOrigin();
     effect_node.transform_id =
         EnsureCompositorTransformNode(effect.LocalTransformSpace());
+    if (backdrop_effect_state == kBackdropEffectToBeSetOnCcEffectNode) {
+      // We never have backdrop effect and filter on the same effect node.
+      DCHECK(effect.Filter().IsEmpty());
+      PopulateCcEffectNodeBackdropEffect(effect_node, effect);
+      effect_node.backdrop_mask_element_id = effect.BackdropMaskElementId();
+    } else {
+      effect_node.filters = effect.Filter().AsCcFilterOperations();
+      effect_node.filters_origin = effect.FiltersOrigin();
+    }
   }
-  effect_node.blend_mode = blend_mode;
   effect_node.double_sided = !effect.LocalTransformSpace().IsBackfaceHidden();
   effect_node.effect_changed = effect.NodeChangeAffectsRaster();
 }

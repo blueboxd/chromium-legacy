@@ -57,6 +57,16 @@ const char kSessionId[] = "sessionId";
 const char kTargetClosedMessage[] = "Inspected target navigated or closed";
 }  // namespace
 
+DevToolsSession::PendingMessage::PendingMessage(PendingMessage&&) = default;
+DevToolsSession::PendingMessage::PendingMessage(int call_id,
+                                                const std::string& method,
+                                                crdtp::span<uint8_t> payload)
+    : call_id(call_id),
+      method(method),
+      payload(payload.begin(), payload.end()) {}
+
+DevToolsSession::PendingMessage::~PendingMessage() = default;
+
 DevToolsSession::DevToolsSession(DevToolsAgentHostClient* client)
     : client_(client), dispatcher_(new protocol::UberDispatcher(this)) {}
 
@@ -141,7 +151,7 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
   // resume, as we will not get any responses from the old agent at this point.
   if (suspended_sending_messages_to_agent_) {
     for (auto it = pending_messages_.begin(); it != pending_messages_.end();) {
-      const Message& message = *it;
+      const PendingMessage& message = *it;
       if (waiting_for_response_.count(message.call_id) &&
           TerminateOnCrossProcessNavigation(message.method)) {
         // Send error to the client and remove the message from pending.
@@ -164,11 +174,9 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
   // - auto attached to a new OOPIF
   // - cross-process navigation in the main frame
   // Therefore, we re-send outstanding messages to the new host.
-  for (const Message& message : pending_messages_) {
-    if (waiting_for_response_.count(message.call_id)) {
-      DispatchProtocolMessageToAgent(message.call_id, message.method,
-                                     crdtp::SpanFrom(message.message));
-    }
+  for (const PendingMessage& message : pending_messages_) {
+    if (waiting_for_response_.count(message.call_id))
+      DispatchToAgent(message);
   }
 }
 
@@ -271,42 +279,34 @@ void DevToolsSession::fallThrough(int call_id,
   // In browser-only mode, we should've handled everything in dispatcher.
   DCHECK(!browser_only_);
 
-  auto it = pending_messages_.insert(
-      pending_messages_.end(),
-      {call_id, method, std::string(message.begin(), message.end())});
+  auto it = pending_messages_.emplace(pending_messages_.end(), call_id, method,
+                                      message);
   if (suspended_sending_messages_to_agent_)
     return;
 
-  DispatchProtocolMessageToAgent(call_id, method, message);
+  DispatchToAgent(pending_messages_.back());
   waiting_for_response_[call_id] = it;
 }
 
-void DevToolsSession::DispatchProtocolMessageToAgent(
-    int call_id,
-    const std::string& method,
-    crdtp::span<uint8_t> message) {
+void DevToolsSession::DispatchToAgent(const PendingMessage& message) {
   DCHECK(!browser_only_);
-  auto message_ptr = blink::mojom::DevToolsMessage::New();
-  message_ptr->data =
-      mojo_base::BigBuffer(base::make_span(message.data(), message.size()));
-
-  if (ShouldSendOnIO(method)) {
+  if (ShouldSendOnIO(message.method)) {
     if (io_session_) {
       TRACE_EVENT_WITH_FLOW2(
-          "devtools", "DevToolsSession::DispatchProtocolMessageToAgent on IO",
-          call_id, TRACE_EVENT_FLAG_FLOW_OUT, "method", method.c_str(),
-          "call_id", call_id);
-      io_session_->DispatchProtocolCommand(call_id, method,
-                                           std::move(message_ptr));
+          "devtools", "DevToolsSession::DispatchToAgent on IO", message.call_id,
+          TRACE_EVENT_FLAG_FLOW_OUT, "method", message.method, "call_id",
+          message.call_id);
+      io_session_->DispatchProtocolCommand(message.call_id, message.method,
+                                           message.payload);
     }
   } else {
     if (session_) {
-      TRACE_EVENT_WITH_FLOW2("devtools",
-                             "DevToolsSession::DispatchProtocolMessageToAgent",
-                             call_id, TRACE_EVENT_FLAG_FLOW_OUT, "method",
-                             method.c_str(), "call_id", call_id);
-      session_->DispatchProtocolCommand(call_id, method,
-                                        std::move(message_ptr));
+      TRACE_EVENT_WITH_FLOW2("devtools", "DevToolsSession::DispatchToAgent",
+                             message.call_id, TRACE_EVENT_FLAG_FLOW_OUT,
+                             "method", message.method, "call_id",
+                             message.call_id);
+      session_->DispatchProtocolCommand(message.call_id, message.method,
+                                        message.payload);
     }
   }
 }
@@ -321,11 +321,10 @@ void DevToolsSession::ResumeSendingMessagesToAgent() {
   suspended_sending_messages_to_agent_ = false;
   for (auto it = pending_messages_.begin(); it != pending_messages_.end();
        ++it) {
-    const Message& message = *it;
+    const PendingMessage& message = *it;
     if (waiting_for_response_.count(message.call_id))
       continue;
-    DispatchProtocolMessageToAgent(message.call_id, message.method,
-                                   crdtp::SpanFrom(message.message));
+    DispatchToAgent(message);
     waiting_for_response_[message.call_id] = it;
   }
 }

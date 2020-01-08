@@ -242,13 +242,16 @@ void VizProcessContextProvider::InitializeContext(
     const gpu::SharedMemoryLimits& mem_limits) {
   const bool is_offscreen = surface_handle == gpu::kNullSurfaceHandle;
 
+  gpu_task_scheduler_helper_ =
+      base::MakeRefCounted<gpu::GpuTaskSchedulerHelper>(task_executor);
   command_buffer_ = std::make_unique<gpu::InProcessCommandBuffer>(
       task_executor,
       GURL("chrome://gpu/VizProcessContextProvider::InitializeContext"));
   context_result_ = command_buffer_->Initialize(
       /*surface=*/nullptr, is_offscreen, surface_handle, attributes_,
       gpu_memory_buffer_manager, image_factory, gpu_channel_manager_delegate,
-      base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr);
+      base::ThreadTaskRunnerHandle::Get(),
+      gpu_task_scheduler_helper_->GetTaskSequence(), nullptr, nullptr);
   if (context_result_ != gpu::ContextResult::kSuccess) {
     DLOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return;
@@ -262,6 +265,8 @@ void VizProcessContextProvider::InitializeContext(
     DLOG(ERROR) << "Failed to initialize GLES2CmdHelper";
     return;
   }
+
+  gpu_task_scheduler_helper_->Initialize(gles2_helper_.get());
 
   transfer_buffer_ = std::make_unique<gpu::TransferBuffer>(gles2_helper_.get());
 
@@ -324,6 +329,11 @@ bool VizProcessContextProvider::OnMemoryDump(
 
 base::ScopedClosureRunner VizProcessContextProvider::GetCacheBackBufferCb() {
   return command_buffer_->GetCacheBackBufferCb();
+}
+
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+VizProcessContextProvider::GetGpuTaskSchedulerHelper() {
+  return gpu_task_scheduler_helper_;
 }
 
 }  // namespace viz

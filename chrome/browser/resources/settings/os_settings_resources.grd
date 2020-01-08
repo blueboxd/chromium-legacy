@@ -717,6 +717,12 @@
       <structure name="IDR_OS_SETTINGS_CUPS_NEARBY_PRINTERS_JS"
                  file="chromeos/os_printing_page/cups_nearby_printers.js"
                  type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_OS_PAGE_VISIBILITY_HTML"
+                 file="chromeos/os_page_visibility.html"
+                 type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_OS_PAGE_VISIBILITY_JS"
+                 file="chromeos/os_page_visibility.js"
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_PAGE_VISIBILITY_HTML"
                  file="page_visibility.html"
                  type="chrome_html" />

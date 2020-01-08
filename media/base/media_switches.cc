@@ -331,7 +331,7 @@ const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
 
 // Show toolbar button that opens dialog for controlling media sessions.
 const base::Feature kGlobalMediaControls{"GlobalMediaControls",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Show Cast sessions in Global Media Controls. It is no-op if
 // kGlobalMediaControls is not enabled.

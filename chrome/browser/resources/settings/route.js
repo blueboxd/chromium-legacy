@@ -100,6 +100,7 @@
  *   SITE_SETTINGS_DATA_DETAILS: (undefined|!settings.Route),
  *   SITE_SETTINGS_FLASH: (undefined|!settings.Route),
  *   SITE_SETTINGS_HANDLERS: (undefined|!settings.Route),
+ *   SITE_SETTINGS_HID_DEVICES: (undefined|!settings.Route),
  *   SITE_SETTINGS_IMAGES: (undefined|!settings.Route),
  *   SITE_SETTINGS_MIXEDSCRIPT: (undefined|!settings.Route),
  *   SITE_SETTINGS_JAVASCRIPT: (undefined|!settings.Route),
@@ -321,6 +322,7 @@ cr.define('settings', function() {
     if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {
       r.SITE_SETTINGS_BLUETOOTH_SCANNING =
           r.SITE_SETTINGS.createChild('bluetoothScanning');
+      r.SITE_SETTINGS_HID_DEVICES = r.SITE_SETTINGS.createChild('hidDevices');
     }
     if (loadTimeData.getBoolean('enableNativeFileSystemWriteContentSetting')) {
       r.SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE =
@@ -821,9 +823,7 @@ cr.define('settings', function() {
     }
 
     // <if expr="chromeos">
-    const showOSSettings = loadTimeData.valueExists('showOSSettings') &&
-        loadTimeData.getBoolean('showOSSettings');
-    if (isOSSettings || showOSSettings) {
+    if (isOSSettings) {
       addOSSettingsRoutes(availableRoutes);
     }
     // </if>

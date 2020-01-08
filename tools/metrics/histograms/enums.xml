@@ -3138,6 +3138,8 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="kProactiveSuggestions"/>
   <int value="7" label="kLibAssistantInitiated"/>
   <int value="8" label="kWarmerWelcome"/>
+  <int value="9" label="kConversationStarter"/>
+  <int value="10" label="kWhatsOnMyScreen"/>
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix">
@@ -5002,6 +5004,47 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Slow back navigation"/>
   <int value="2" label="Fast forward navigation with WKBackForwardList"/>
   <int value="3" label="Slow forward navigation"/>
+</enum>
+
+<enum name="BackGestureEndScenarioType">
+  <int value="0" label="Swiped back on non-snapped window and aborted"/>
+  <int value="1" label="Swiped back on non-snapped window and went back"/>
+  <int value="2" label="Swiped back on non-snapped window and minimized"/>
+  <int value="3" label="Swiped back on left snapped window and aborted"/>
+  <int value="4" label="Swiped back on left snapped window and went back"/>
+  <int value="5" label="Swiped back on left snapped window and minimized"/>
+  <int value="6" label="Swiped back on right snapped window and aborted"/>
+  <int value="7" label="Swiped back on right snapped window and went back"/>
+  <int value="8" label="Swiped back on right snapped window and minimized"/>
+  <int value="9" label="Swiped back on top snapped window and aborted"/>
+  <int value="10" label="Swiped back on top snapped window and went back"/>
+  <int value="11" label="Swiped back on top snapped window and minimized"/>
+  <int value="12" label="Swiped back on bottom snapped window and aborted"/>
+  <int value="13" label="Swiped back on bottom snapped window and went back"/>
+  <int value="14" label="Swiped back on bottom snapped window and minimized"/>
+  <int value="15" label="Swiped back in overview and aborted"/>
+  <int value="16" label="Swiped back in overview and went back"/>
+</enum>
+
+<enum name="BackGestureStartScenarioType">
+  <int value="0" label="Swiping back on non-snapped window"/>
+  <int value="1" label="Swiping back on left snapped window"/>
+  <int value="2" label="Swiping back on right snapped window"/>
+  <int value="3" label="Swiping back on top snapped window"/>
+  <int value="4" label="Swiping back on bottom snapped window"/>
+  <int value="5" label="Swiping back in overview"/>
+  <int value="6" label="Swiping back in left overview"/>
+  <int value="7" label="Swiping back in right overview"/>
+  <int value="8" label="Swiping back in top overview"/>
+  <int value="9" label="Swiping back in bottom overview"/>
+</enum>
+
+<enum name="BackGestureUnderneathWindowType">
+  <int value="0" label="Swiping back on Chrome Browser"/>
+  <int value="1" label="Swiping back on ChromeOS App"/>
+  <int value="2" label="Swiping back on Arc App"/>
+  <int value="3" label="Swiping back in Overview"/>
+  <int value="4" label="Swiping back on others app"/>
 </enum>
 
 <enum name="BackgroundedRendererTransition">
@@ -36713,6 +36756,7 @@ from previous Chrome versions.
   <int value="-1423348289" label="NupPrinting:disabled"/>
   <int value="-1423193305"
       label="AutofillRationalizeRepeatedServerPredictions:enabled"/>
+  <int value="-1421676705" label="force-webxr-runtime"/>
   <int value="-1420542268" label="AutofillEnableAccountWalletStorage:disabled"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
   <int value="-1417642561" label="AutofillCreditCardUploadFeedback:enabled"/>

@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "components/constrained_window/constrained_window_views.h"
-#include "components/guest_view/browser/guest_view_base.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/gfx/mac/coordinate_conversion.h"

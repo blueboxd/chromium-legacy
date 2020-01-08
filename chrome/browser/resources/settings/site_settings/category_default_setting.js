@@ -182,6 +182,7 @@ Polymer({
       case settings.ContentSettingsTypes.SERIAL_PORTS:
       case settings.ContentSettingsTypes.BLUETOOTH_SCANNING:
       case settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE:
+      case settings.ContentSettingsTypes.HID_DEVICES:
         // "Ask" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,

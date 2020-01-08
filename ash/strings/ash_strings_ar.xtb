@@ -72,7 +72,7 @@
 <translation id="1850504506766569011">‏تم إيقاف تشغيل Wi-Fi.</translation>
 <translation id="1864454756846565995">‏جهاز USB-C (المنفذ الخلفي)</translation>
 <translation id="1882897271359938046">نسخ إلى <ph name="DISPLAY_NAME" /></translation>
-<translation id="1885785240814121742">إلغاء القفل باستخدام بصمة الإصبع</translation>
+<translation id="1885785240814121742">فتح القفل باستخدام بصمة الإصبع</translation>
 <translation id="1919743966458266018">لقد تغيّر اختصار فتح إدارة المهام. يُرجى استخدام <ph name="NEW_SHORTCUT" /> بدلاً من <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">النقرات التلقائية</translation>
 <translation id="1928739107511554905">‏للحصول على التحديث، استخدم الشاشة التي تعمل باللمس لإعادة تشغيل جهاز Chromebook، مع توصيل لوحة المفاتيح المرفقة.</translation>
@@ -474,7 +474,7 @@
 <translation id="7600875258240007829">الاطّلاع على جميع الإشعارات</translation>
 <translation id="7642647758716480637">فتح الإعدادات للشبكة <ph name="NETWORK_NAME" />،<ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (المالك)</translation>
-<translation id="7647488630410863958">إلغاء قفل الجهاز لعرض الإشعارات</translation>
+<translation id="7647488630410863958">فتح قفل الجهاز لعرض الإشعارات</translation>
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7654687942625752712">اضغط مع الاستمرار على مفتاحي مستوى الصوت لمدة خمس ثوانٍ لإيقاف التعليقات والملاحظات المنطوقة.</translation>
 <translation id="7705524343798198388">VPN</translation>

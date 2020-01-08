@@ -53,6 +53,15 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
     return popup_owner_;
   }
 
+  // Get the view corresponding to the extension |id|, if any.
+  ToolbarActionView* GetViewForId(const std::string& id);
+
+  // Pop out and show the extension corresponding to |extension_id|, then show
+  // the Widget when the icon is visible. If the icon is already visible the
+  // action will be posted immediately (not run synchronously).
+  void ShowWidgetForExtension(views::Widget* widget,
+                              const std::string& extension_id);
+
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;
   bool GetDropFormats(int* formats,
@@ -97,15 +106,32 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
                            const gfx::Point& press_pt,
                            const gfx::Point& p) override;
 
-  ToolbarActionView* GetViewForId(const std::string& id);
+ private:
+  // A struct representing the position and action being dragged.
+  struct DropInfo;
+
+  // Pairing of widgets associated with this container and the extension they
+  // are associated with. This is used to keep track of icons that are popped
+  // out due to a widget showing (or being queued to show).
+  struct AnchoredWidget {
+    views::Widget* widget;
+    std::string extension_id;
+  };
+
+  // Updates the view's visibility state according to
+  // IsActionVisibleOnToolbar(). Note that IsActionVisibleOnToolbar() does not
+  // return View visibility but whether the action should be visible or not
+  // (according to pin and pop-out state).
+  void UpdateIconVisibility(const std::string& extension_id);
+
+  // Set |widget|'s anchor (to the corresponding extension) and then show it.
+  // Posted from |ShowWidgetForExtension|.
+  void AnchorAndShowWidgetImmediately(views::Widget* widget);
 
   void ShowActiveBubble(
       views::View* anchor_view,
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller);
 
- private:
-  // A struct representing the position and action being dragged.
-  struct DropInfo;
 
   // Creates toolbar actions and icons corresponding to the model. This is only
   // called in the constructor or when the model initializes and should not be
@@ -176,6 +202,10 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
 
   // The extension bubble that is actively showing, if any.
   ToolbarActionsBarBubbleViews* active_bubble_ = nullptr;
+
+  // The widgets currently popped out and, for each, the extension it is
+  // associated with. See AnchoredWidget.
+  std::vector<AnchoredWidget> anchored_widgets_;
 
   // The DropInfo for the current drag-and-drop operation, or a null pointer if
   // there is none.

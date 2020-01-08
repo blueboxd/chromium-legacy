@@ -174,6 +174,11 @@ MediaFactory::~MediaFactory() {
   // new tasks using the DecoderFactory will execute, so we don't need to worry
   // about additional posted tasks from Stop().
   if (decoder_factory_) {
+    // Prevent any new decoders from being created to avoid future access to the
+    // external decoder factory (MojoDecoderFactory) since it requires access to
+    // the (about to be destructed) RenderFrame.
+    decoder_factory_->Shutdown();
+
     // DeleteSoon() shouldn't ever fail, we should always have a RenderThread at
     // this time and subsequently a media thread. To fail, the media thread must
     // be dead/dying (which only happens at ~RenderThreadImpl), in which case

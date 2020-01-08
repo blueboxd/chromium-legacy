@@ -337,7 +337,7 @@ BUILDERS = {
         'isolate': 'performance_test_suite',
       }
     ],
-    'platform': 'android-chrome-bundle',
+    'platform': 'android-chrome',
     'dimension': {
       'device_os': 'OMB1.180119.001',
       'device_type': 'gobo',
@@ -352,7 +352,7 @@ BUILDERS = {
         'isolate': 'performance_webview_test_suite',
       }
     ],
-    'platform': 'android-webview-google-bundle',
+    'platform': 'android-webview-google',
     'dimension': {
       'pool': 'chrome.tests.perf-webview',
       'os': 'Android',
@@ -464,7 +464,7 @@ BUILDERS = {
         'isolate': 'performance_webview_test_suite',
       }
     ],
-    'platform': 'android-webview-google-bundle',
+    'platform': 'android-webview-google',
     'dimension': {
       'pool': 'chrome.tests.perf-webview',
       'os': 'Android',
@@ -494,7 +494,7 @@ BUILDERS = {
         'isolate': 'performance_test_suite',
       }
     ],
-    'platform': 'android-chrome-bundle',
+    'platform': 'android-chrome',
     'dimension': {
       'pool': 'chrome.tests.perf',
       'os': 'Android',

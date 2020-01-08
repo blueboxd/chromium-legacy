@@ -256,6 +256,14 @@ CONTENT_EXPORT extern const char kWebRtcStunProbeTrialParameter[];
 CONTENT_EXPORT extern const char kWebRtcLocalEventLogging[];
 CONTENT_EXPORT extern const char kWebComponentsV0Enabled[];
 
+CONTENT_EXPORT extern const char kWebXrForceRuntime[];
+CONTENT_EXPORT extern const char kWebXrRuntimeNone[];
+CONTENT_EXPORT extern const char kWebXrRuntimeOrientationSensors[];
+CONTENT_EXPORT extern const char kWebXrRuntimeOculus[];
+CONTENT_EXPORT extern const char kWebXrRuntimeOpenVr[];
+CONTENT_EXPORT extern const char kWebXrRuntimeOpenXr[];
+CONTENT_EXPORT extern const char kWebXrRuntimeWMR[];
+
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kDisableMediaSessionAPI[];
 CONTENT_EXPORT extern const char kDisableOverscrollEdgeEffect[];

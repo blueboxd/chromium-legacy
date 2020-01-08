@@ -131,6 +131,7 @@ class MostVisitedElement extends PolymerElement {
       /** @private */
       showAdd_: {
         type: Boolean,
+        value: false,
         computed: 'computeShowAdd_(tiles_, maxTiles_, customLinksEnabled_)',
       },
 
@@ -169,11 +170,7 @@ class MostVisitedElement extends PolymerElement {
     /** @private {?Debouncer} */
     this.resizeDebouncer_ = null;
     /** @private {?number} */
-    this.setCustomLinksEnabledListenerId_ = null;
-    /** @private {?number} */
     this.setMostVisitedInfoListenerId_ = null;
-    /** @private {?number} */
-    this.setMostVisitedVisibleListenerId_ = null;
     /** @private {number} */
     this.actionMenuTargetIndex_ = -1;
 
@@ -192,20 +189,13 @@ class MostVisitedElement extends PolymerElement {
     super.connectedCallback();
     /** @private {boolean} */
     this.isRtl_ = window.getComputedStyle(this)['direction'] === 'rtl';
-    this.setCustomLinksEnabledListenerId_ =
-        this.callbackRouter_.setCustomLinksEnabled.addListener(enabled => {
-          this.customLinksEnabled_ = enabled;
-        });
     this.setMostVisitedInfoListenerId_ =
         this.callbackRouter_.setMostVisitedInfo.addListener(info => {
           this.visible_ = info.visible;
           this.customLinksEnabled_ = info.customLinksEnabled;
           this.tiles_ = info.tiles.slice(0, 10);
         });
-    this.setMostVisitedVisibleListenerId_ =
-        this.callbackRouter_.setMostVisitedVisible.addListener(visible => {
-          this.visible_ = visible;
-        });
+    this.pageHandler_.updateMostVisitedInfo();
     FocusOutlineManager.forDocument(document);
   }
 
@@ -213,11 +203,7 @@ class MostVisitedElement extends PolymerElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(
-        assert(this.setCustomLinksEnabledListenerId_));
-    this.callbackRouter_.removeListener(
         assert(this.setMostVisitedInfoListenerId_));
-    this.callbackRouter_.removeListener(
-        assert(this.setMostVisitedVisibleListenerId_));
     this.mediaListenerWideWidth_.removeListener(
         assert(this.boundOnWidthChange_));
     this.mediaListenerMediumWidth_.removeListener(
@@ -269,7 +255,6 @@ class MostVisitedElement extends PolymerElement {
     } else if (this.screenWidth_ === ScreenWidth.MEDIUM) {
       maxColumns = 4;
     }
-
 
     const tileCount = Math.min(
         this.maxTiles_,
@@ -749,8 +734,8 @@ class MostVisitedElement extends PolymerElement {
    */
   async tileRemove_(index) {
     const {title, url} = this.tiles_[index];
-    const {success} = await this.pageHandler_.deleteMostVisitedTile(url);
-    this.toast_(success ? 'linkRemove' : 'linkCantRemove', success);
+    this.pageHandler_.deleteMostVisitedTile(url);
+    this.toast_('linkRemovedMsg', /* showButtons= */ true);
     this.tileFocus_(index);
   }
 

@@ -1377,6 +1377,16 @@ extern const char kWebUITabStripDemoOptionsDescription[];
 extern const char kWebXrName[];
 extern const char kWebXrDescription[];
 
+extern const char kWebXrForceRuntimeName[];
+extern const char kWebXrForceRuntimeDescription[];
+
+extern const char kWebXrRuntimeChoiceNone[];
+extern const char kWebXrRuntimeChoiceOrientationSensors[];
+extern const char kWebXrRuntimeChoiceOculus[];
+extern const char kWebXrRuntimeChoiceOpenVR[];
+extern const char kWebXrRuntimeChoiceOpenXR[];
+extern const char kWebXrRuntimeChoiceWindowsMixedReality[];
+
 extern const char kWebXrArModuleName[];
 extern const char kWebXrArModuleDescription[];
 

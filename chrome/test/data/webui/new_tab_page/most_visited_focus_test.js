@@ -149,7 +149,8 @@ suite('NewTabPageMostVisitedFocusTest', () => {
     keydown(tile, 'ArrowLeft');
   });
 
-  test('up/left/right/down addShortcut and no tiles', () => {
+  test('up/left/right/down addShortcut and no tiles', async () => {
+    await addTiles(0);
     mostVisited.$.addShortcut.focus();
     ['ArrowUp', 'ArrowLeft', 'ArrowRight', 'ArrowDown'].forEach(key => {
       keydown(mostVisited.$.addShortcut, key);

@@ -141,6 +141,9 @@
         "browse:shopping:flipkart": {
             "DEFAULT": "system_health_mobile_061.wprgo"
         },
+        "browse:shopping:flipkart:2019": {
+            "DEFAULT": "system_health_mobile_605f2323f8.wprgo"
+        },
         "browse:shopping:lazada": {
             "DEFAULT": "system_health_mobile_053.wprgo"
         },

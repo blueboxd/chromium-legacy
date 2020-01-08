@@ -386,6 +386,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   WebContentsImpl* GetOuterWebContents() override;
   WebContentsImpl* GetOutermostWebContents() override;
   std::vector<WebContents*> GetInnerWebContents() override;
+  WebContentsImpl* GetResponsibleWebContents() override;
   void DidChangeVisibleSecurityState() override;
   void NotifyPreferencesChanged() override;
   void SyncRendererPrefs() override;

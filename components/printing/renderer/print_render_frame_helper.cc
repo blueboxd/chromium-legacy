@@ -36,7 +36,6 @@
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/escape.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
 #include "printing/units.h"
@@ -568,51 +567,6 @@ PrintMsg_Print_Params CalculatePrintParamsForCss(
   }
 
   return result_params;
-}
-
-// Helper to compute the site (scheme and eTLD+1) for the provided frame, based
-// on the frame's origin.
-std::string GetSiteForFrame(blink::WebFrame* frame) {
-  return frame->GetSecurityOrigin().Protocol().Utf8() + "://" +
-         net::registry_controlled_domains::GetDomainAndRegistry(
-             frame->GetSecurityOrigin().Host().Utf8(),
-             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-}
-
-// Records metrics on how frequently printed frames contain RemoteFrames and/or
-// cross-origin frames, to help estimate how often site isolation might
-// affect printing.
-void RecordSiteIsolationPrintMetrics(blink::WebFrame* printed_frame) {
-  int remote_frame_count = 0;
-  int cross_site_frame_count = 0;
-  int cross_site_visible_frame_count = 0;
-  for (blink::WebFrame* frame = printed_frame; frame;
-       frame = frame->TraverseNext()) {
-    if (frame->IsWebRemoteFrame())
-      remote_frame_count++;
-
-    // For platforms that don't yet have site isolation, estimate how often
-    // printing would involve OOPIFs once site isolation is deployed.  Note
-    // that we want to only compare eTLD+1 and skip cross-origin but same-site
-    // cases (e.g., https://subdomain.example.com and https://example.com), as
-    // those do not typically end up in separate processes.
-    if (!frame->GetSecurityOrigin().CanAccess(
-            printed_frame->GetSecurityOrigin()) &&
-        GetSiteForFrame(frame) != GetSiteForFrame(printed_frame)) {
-      cross_site_frame_count++;
-      if (frame->IsWebLocalFrame() &&
-          frame->ToWebLocalFrame()->HasVisibleContent())
-        cross_site_visible_frame_count++;
-    }
-  }
-
-  base::UmaHistogramCounts100("PrintPreview.SiteIsolation.RemoteFrameCount",
-                              remote_frame_count);
-  base::UmaHistogramCounts100("PrintPreview.SiteIsolation.CrossSiteFrameCount",
-                              cross_site_frame_count);
-  base::UmaHistogramCounts100(
-      "PrintPreview.SiteIsolation.CrossSiteVisibleFrameCount",
-      cross_site_visible_frame_count);
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -1888,8 +1842,6 @@ void PrintRenderFrameHelper::PrintPages() {
     base::UmaHistogramCounts1M("PrintPreview.PageCount.SystemDialog",
                                printed_count);
   }
-
-  RecordSiteIsolationPrintMetrics(prep_frame_view_->frame());
 
   bool is_pdf = IsPrintingNodeOrPdfFrame(prep_frame_view_->frame(),
                                          prep_frame_view_->node());

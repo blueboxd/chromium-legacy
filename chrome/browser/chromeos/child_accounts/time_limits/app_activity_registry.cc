@@ -24,7 +24,6 @@ AppActivityRegistry::AppDetails::~AppDetails() = default;
 AppActivityRegistry::AppActivityRegistry(AppServiceWrapper* app_service_wrapper)
     : app_service_wrapper_(app_service_wrapper) {
   DCHECK(app_service_wrapper_);
-
   app_service_wrapper_->AddObserver(this);
 }
 
@@ -35,7 +34,7 @@ AppActivityRegistry::~AppActivityRegistry() {
 void AppActivityRegistry::OnAppInstalled(const AppId& app_id) {
   // App might be already present in registry, because we preserve info between
   // sessions and app service does not. Make sure not to override cached state.
-  if (base::Contains(activity_registry_, app_id))
+  if (!base::Contains(activity_registry_, app_id))
     Add(app_id);
 }
 
@@ -57,13 +56,78 @@ void AppActivityRegistry::OnAppBlocked(const AppId& app_id) {
 }
 
 void AppActivityRegistry::OnAppActive(const AppId& app_id,
+                                      aura::Window* window,
                                       base::Time timestamp) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  if (!base::Contains(activity_registry_, app_id))
+    return;
+
+  AppDetails& app_details = activity_registry_[app_id];
+
+  DCHECK(IsAppAvailable(app_id));
+
+  std::set<aura::Window*>& active_windows = app_details.active_windows;
+
+  active_windows.insert(window);
+
+  // No need to set app as active if there were already active windows for the
+  // app
+  if (active_windows.size() > 1)
+    return;
+
+  SetAppActive(app_id, timestamp);
+  // TODO(yilkal) : post timer to check if app is going to reaching its set time
+  // limit.
 }
 
 void AppActivityRegistry::OnAppInactive(const AppId& app_id,
+                                        aura::Window* window,
                                         base::Time timestamp) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  if (!base::Contains(activity_registry_, app_id))
+    return;
+
+  std::set<aura::Window*>& active_windows =
+      activity_registry_[app_id].active_windows;
+
+  if (!base::Contains(active_windows, window))
+    return;
+
+  active_windows.erase(window);
+  if (active_windows.size() > 0)
+    return;
+
+  SetAppInactive(app_id, timestamp);
+}
+
+bool AppActivityRegistry::IsAppInstalled(const AppId& app_id) const {
+  if (base::Contains(activity_registry_, app_id))
+    return GetAppState(app_id) != AppState::kUninstalled;
+  return false;
+}
+
+bool AppActivityRegistry::IsAppAvailable(const AppId& app_id) const {
+  DCHECK(base::Contains(activity_registry_, app_id));
+  auto state = GetAppState(app_id);
+  return state == AppState::kAvailable || state == AppState::kAlwaysAvailable;
+}
+
+bool AppActivityRegistry::IsAppBlocked(const AppId& app_id) const {
+  DCHECK(base::Contains(activity_registry_, app_id));
+  return GetAppState(app_id) == AppState::kBlocked;
+}
+
+bool AppActivityRegistry::IsAppTimeLimitReached(const AppId& app_id) const {
+  DCHECK(base::Contains(activity_registry_, app_id));
+  return GetAppState(app_id) == AppState::kLimitReached;
+}
+
+bool AppActivityRegistry::IsAppActive(const AppId& app_id) const {
+  DCHECK(base::Contains(activity_registry_, app_id));
+  return activity_registry_.at(app_id).activity.is_active();
+}
+
+base::TimeDelta AppActivityRegistry::GetActiveTime(const AppId& app_id) const {
+  DCHECK(base::Contains(activity_registry_, app_id));
+  return activity_registry_.at(app_id).activity.RunningActiveTime();
 }
 
 void AppActivityRegistry::Add(const AppId& app_id) {
@@ -80,6 +144,18 @@ AppState AppActivityRegistry::GetAppState(const AppId& app_id) const {
 void AppActivityRegistry::SetAppState(const AppId& app_id, AppState app_state) {
   DCHECK(base::Contains(activity_registry_, app_id));
   activity_registry_.at(app_id).activity.SetAppState(app_state);
+}
+
+void AppActivityRegistry::SetAppActive(const AppId& app_id,
+                                       base::Time timestamp) {
+  DCHECK(base::Contains(activity_registry_, app_id));
+  activity_registry_.at(app_id).activity.SetAppActive(timestamp);
+}
+
+void AppActivityRegistry::SetAppInactive(const AppId& app_id,
+                                         base::Time timestamp) {
+  DCHECK(base::Contains(activity_registry_, app_id));
+  activity_registry_.at(app_id).activity.SetAppInactive(timestamp);
 }
 
 void AppActivityRegistry::CleanRegistry() {

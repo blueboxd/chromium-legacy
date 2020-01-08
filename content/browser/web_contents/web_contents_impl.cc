@@ -5729,6 +5729,20 @@ std::vector<WebContents*> WebContentsImpl::GetInnerWebContents() {
   return all_inner_contents;
 }
 
+WebContentsImpl* WebContentsImpl::GetResponsibleWebContents() {
+  // Iteratively ask delegates which other contents is responsible until a fixed
+  // point is found.
+  WebContentsImpl* contents = this;
+  while (WebContentsDelegate* delegate = contents->GetDelegate()) {
+    auto* responsible_contents = static_cast<WebContentsImpl*>(
+        delegate->GetResponsibleWebContents(contents));
+    if (responsible_contents == contents)
+      break;
+    contents = responsible_contents;
+  }
+  return contents;
+}
+
 WebContentsImpl* WebContentsImpl::GetFocusedWebContents() {
   return GetOutermostWebContents()->node_.focused_web_contents();
 }

@@ -132,6 +132,10 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
   gfx::OverlayTransform GetDisplayTransform() override {
     return gfx::OVERLAY_TRANSFORM_NONE;
   }
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
+      override {
+    return nullptr;
+  }
 };
 
 base::TimeDelta SynchronousLayerTreeFrameSink::StubDisplayClient::

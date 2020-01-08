@@ -17,8 +17,6 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 
-import org.chromium.chrome.R;
-
 /**
  * A preference that supports some Chrome-specific customizations:
  *

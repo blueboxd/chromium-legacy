@@ -176,6 +176,9 @@ base::string16 Accelerator::GetShortcutText() const {
 #endif
   }
 
+#if defined(OS_MACOSX)
+  shortcut = ApplyShortFormModifiers(shortcut);
+#else
   // Checking whether the character used for the accelerator is alphanumeric.
   // If it is not, then we need to adjust the string later on if the locale is
   // right-to-left. See below for more information of why such adjustment is
@@ -188,11 +191,7 @@ base::string16 Accelerator::GetShortcutText() const {
     shortcut_rtl.assign(shortcut);
   }
 
-#if defined(OS_MACOSX)
-  shortcut = ApplyShortFormModifiers(shortcut);
-#else
   shortcut = ApplyLongFormModifiers(shortcut);
-#endif
 
   // For some reason, menus in Windows ignore standard Unicode directionality
   // marks (such as LRE, PDF, etc.). On RTL locales, we use RTL menus and
@@ -223,6 +222,7 @@ base::string16 Accelerator::GetShortcutText() const {
     shortcut_rtl.append(shortcut, 0, shortcut.length() - key_length - 1);
     shortcut.swap(shortcut_rtl);
   }
+#endif  // OS_MACOSX
 
   return shortcut;
 }

@@ -27,46 +27,6 @@ import org.chromium.content_public.browser.BrowserStartupController;
  * Reads, writes, and migrates preferences related to network usage and privacy.
  */
 public class PrivacyPreferencesManager implements CrashReportingPermissionManager{
-    // "crash_dump_upload", "crash_dump_upload_no_cellular" - Deprecated prefs used for
-    // 3-option setting for usage and crash reporting. Last used in M55, removed in M78.
-
-    // "cellular_experiment" - Deprecated pref corresponding to the finch experiment
-    // controlling migration from 3-option setting to ON/OFF toggle for usage and crash
-    // reporting. Last used in M55, removed in M78.
-
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB = "physical_web";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_SHARING = "physical_web_sharing";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_HAS_DEFERRED_METRICS_KEY =
-            "PhysicalWeb.HasDeferredMetrics";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_OPT_IN_DECLINE_BUTTON_PRESS_COUNT =
-            "PhysicalWeb.OptIn.DeclineButtonPressed";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_OPT_IN_ENABLE_BUTTON_PRESS_COUNT =
-            "PhysicalWeb.OptIn.EnableButtonPressed";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_PREFS_FEATURE_DISABLED_COUNT =
-            "PhysicalWeb.Prefs.FeatureDisabled";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_PREFS_FEATURE_ENABLED_COUNT =
-            "PhysicalWeb.Prefs.FeatureEnabled";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_PREFS_LOCATION_DENIED_COUNT =
-            "PhysicalWeb.Prefs.LocationDenied";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_PREFS_LOCATION_GRANTED_COUNT =
-            "PhysicalWeb.Prefs.LocationGranted";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_PWS_BACKGROUND_RESOLVE_TIMES =
-            "PhysicalWeb.ResolveTime.Background";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_PWS_FOREGROUND_RESOLVE_TIMES =
-            "PhysicalWeb.ResolveTime.Foreground";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_PWS_REFRESH_RESOLVE_TIMES =
-            "PhysicalWeb.ResolveTime.Refresh";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_URL_SELECTED_COUNT =
-            "PhysicalWeb.UrlSelected";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_TOTAL_URLS_INITIAL_COUNTS =
-            "PhysicalWeb.TotalUrls.OnInitialDisplay";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_TOTAL_URLS_REFRESH_COUNTS =
-            "PhysicalWeb.TotalUrls.OnRefresh";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_ACTIVITY_REFERRALS =
-            "PhysicalWeb.ActivityReferral";
-    private static final String DEPRECATED_PREF_PHYSICAL_WEB_PHYSICAL_WEB_STATE =
-            "PhysicalWeb.State";
-
     public static final String PREF_METRICS_REPORTING = "metrics_reporting";
     private static final String PREF_METRICS_IN_SAMPLE = "in_metrics_sample";
     private static final String PREF_NETWORK_PREDICTIONS = "network_predictions";
@@ -84,8 +44,6 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     PrivacyPreferencesManager(Context context) {
         mContext = context;
         mSharedPreferences = ContextUtils.getAppSharedPreferences();
-
-        migratePhysicalWebPreferences();
     }
 
     public static PrivacyPreferencesManager getInstance() {
@@ -93,29 +51,6 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
             sInstance = new PrivacyPreferencesManager(ContextUtils.getApplicationContext());
         }
         return sInstance;
-    }
-
-    // TODO(https://crbug.com/826540): Remove some time after 5/2019.
-    public void migratePhysicalWebPreferences() {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.remove(DEPRECATED_PREF_PHYSICAL_WEB)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_SHARING)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_HAS_DEFERRED_METRICS_KEY)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_OPT_IN_DECLINE_BUTTON_PRESS_COUNT)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_OPT_IN_ENABLE_BUTTON_PRESS_COUNT)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_PREFS_FEATURE_DISABLED_COUNT)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_PREFS_FEATURE_ENABLED_COUNT)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_PREFS_LOCATION_DENIED_COUNT)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_PREFS_LOCATION_GRANTED_COUNT)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_PWS_BACKGROUND_RESOLVE_TIMES)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_PWS_FOREGROUND_RESOLVE_TIMES)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_PWS_REFRESH_RESOLVE_TIMES)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_URL_SELECTED_COUNT)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_TOTAL_URLS_INITIAL_COUNTS)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_TOTAL_URLS_REFRESH_COUNTS)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_ACTIVITY_REFERRALS)
-                .remove(DEPRECATED_PREF_PHYSICAL_WEB_PHYSICAL_WEB_STATE)
-                .apply();
     }
 
     /**

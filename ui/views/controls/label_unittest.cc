@@ -260,14 +260,14 @@ class LabelSelectionTest : public LabelTest {
   DISALLOW_COPY_AND_ASSIGN(LabelSelectionTest);
 };
 
-// Crashes on Linux only. http://crbug.com/612406
+TEST_F(LabelTest, FontPropertySymbol) {
 #if defined(OS_LINUX)
-#define MAYBE_FontPropertySymbol DISABLED_FontPropertySymbol
+  // On linux, the fonts are mocked with a custom FontConfig. The "Courier New"
+  // family name is mapped to Cousine-Regular.ttf (see: $build/test_fonts/*).
+  std::string font_name("Courier New");
 #else
-#define MAYBE_FontPropertySymbol FontPropertySymbol
-#endif
-TEST_F(LabelTest, MAYBE_FontPropertySymbol) {
   std::string font_name("symbol");
+#endif
   gfx::Font font(font_name, 26);
   label()->SetFontList(gfx::FontList(font));
   gfx::Font font_used = label()->font_list().GetPrimaryFont();

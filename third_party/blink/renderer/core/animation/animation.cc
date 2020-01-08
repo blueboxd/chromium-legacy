@@ -1534,6 +1534,9 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
   if (EffectivePlaybackRate() == 0)
     reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
 
+  if (!CurrentTimeInternal())
+    reasons |= CompositorAnimations::kInvalidAnimationOrEffect;
+
   // Cannot composite an infinite duration animation with a negative playback
   // rate. TODO(crbug.com/1029167): Fix calculation of compositor timing to
   // enable compositing provided the iteration duration is finite. Having an
@@ -1596,18 +1599,16 @@ void Animation::StartAnimationOnCompositor(
     }
   } else {
     base::Optional<double> current_time = CurrentTimeInternal();
-    if (current_time) {
-      time_offset =
-          reversed ? EffectEnd() - current_time.value() : current_time.value();
-      time_offset = time_offset / fabs(EffectivePlaybackRate());
-    } else {
-      time_offset = NullValue();
-    }
+    DCHECK(current_time);
+    time_offset =
+        reversed ? EffectEnd() - current_time.value() : current_time.value();
+    time_offset = time_offset / fabs(EffectivePlaybackRate());
   }
 
   DCHECK(!start_time || !IsNull(start_time.value()));
   DCHECK_NE(compositor_group_, 0);
   DCHECK(To<KeyframeEffect>(content_.Get()));
+  DCHECK(std::isfinite(time_offset));
   To<KeyframeEffect>(content_.Get())
       ->StartAnimationOnCompositor(compositor_group_, start_time, time_offset,
                                    EffectivePlaybackRate());

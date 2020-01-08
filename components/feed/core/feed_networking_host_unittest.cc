@@ -246,7 +246,6 @@ TEST_F(FeedNetworkingHostTest, ShouldSetHeadersCorrectly) {
   MockResponseDoneCallback done_callback;
   net::HttpRequestHeaders headers;
   base::RunLoop interceptor_run_loop;
-  base::HistogramTester histogram_tester;
 
   test_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
@@ -254,9 +253,9 @@ TEST_F(FeedNetworkingHostTest, ShouldSetHeadersCorrectly) {
         interceptor_run_loop.Quit();
       }));
 
-  SendRequestAndRespond("http://foobar.com/feed", "POST", "", "",
-                      net::HTTP_OK, network::URLLoaderCompletionStatus(),
-                      &done_callback);
+  SendRequestAndRespond("http://foobar.com/feed", "POST", "body", "",
+                        net::HTTP_OK, network::URLLoaderCompletionStatus(),
+                        &done_callback);
 
   std::string content_encoding;
   std::string authorization;
@@ -265,6 +264,23 @@ TEST_F(FeedNetworkingHostTest, ShouldSetHeadersCorrectly) {
 
   EXPECT_EQ(content_encoding, "gzip");
   EXPECT_EQ(authorization, "Bearer access_token");
+}
+
+TEST_F(FeedNetworkingHostTest, ShouldNotSendContentEncodingForEmptyBody) {
+  MockResponseDoneCallback done_callback;
+  net::HttpRequestHeaders headers;
+  base::RunLoop interceptor_run_loop;
+
+  test_factory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        headers = request.headers;
+        interceptor_run_loop.Quit();
+      }));
+
+  SendRequestAndRespond("http://foobar.com/feed", "GET", "", "", net::HTTP_OK,
+                        network::URLLoaderCompletionStatus(), &done_callback);
+
+  EXPECT_FALSE(headers.HasHeader("content-encoding"));
 }
 
 TEST_F(FeedNetworkingHostTest, ShouldReportSizeHistograms) {

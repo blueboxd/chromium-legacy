@@ -77,7 +77,8 @@ class NetworkFetch {
                                 signin::AccessTokenInfo access_token_info);
   void StartLoader();
   std::unique_ptr<network::SimpleURLLoader> MakeLoader();
-  void SetRequestHeaders(network::ResourceRequest* request) const;
+  void SetRequestHeaders(bool has_request_body,
+                         network::ResourceRequest* request) const;
   void PopulateRequestBody(network::SimpleURLLoader* loader);
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response);
 
@@ -232,7 +233,7 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
     resource_request->site_for_cookies = net::SiteForCookies::FromUrl(url);
   }
 
-  SetRequestHeaders(resource_request.get());
+  SetRequestHeaders(!request_body_.empty(), resource_request.get());
 
   auto simple_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -243,10 +244,13 @@ std::unique_ptr<network::SimpleURLLoader> NetworkFetch::MakeLoader() {
   return simple_loader;
 }
 
-void NetworkFetch::SetRequestHeaders(network::ResourceRequest* request) const {
-  request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
-                             kContentType);
-  request->headers.SetHeader(kContentEncoding, kGzip);
+void NetworkFetch::SetRequestHeaders(bool has_request_body,
+                                     network::ResourceRequest* request) const {
+  if (has_request_body) {
+    request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                               kContentType);
+    request->headers.SetHeader(kContentEncoding, kGzip);
+  }
 
   variations::SignedIn signed_in_status = variations::SignedIn::kNo;
   if (!access_token_.empty()) {

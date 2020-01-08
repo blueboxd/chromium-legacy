@@ -84,8 +84,6 @@ cc::ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
 //   A1 A2   A3      +---+   A3
 //                   |   |
 //                   A1  A2
-// The snap container data does not need to be updated because it will be
-// updated at the end of the layout.
 void SnapCoordinator::AddSnapContainer(LayoutBox& snap_container) {
   snap_containers_.insert(&snap_container);
 
@@ -107,6 +105,15 @@ void SnapCoordinator::AddSnapContainer(LayoutBox& snap_container) {
   }
   for (auto* snap_area : snap_areas_to_reassign)
     snap_area->SetSnapContainer(&snap_container);
+
+  // The new snap container will not have attached its ScrollableArea yet, so we
+  // cannot invalidate the snap container data at this point. However, the snap
+  // container data is set to needing an update by default, so we only need to
+  // update the flag for the ancestor.
+  if (snap_areas_to_reassign.size()) {
+    ancestor_snap_container->GetScrollableArea()
+        ->SetSnapContainerDataNeedsUpdate(true);
+  }
 }
 
 void SnapCoordinator::RemoveSnapContainer(LayoutBox& snap_container) {
@@ -119,8 +126,8 @@ void SnapCoordinator::RemoveSnapContainer(LayoutBox& snap_container) {
   // - If it is detached, then we simply clear its snap areas since they will be
   // detached as well.
   if (ancestor_snap_container) {
-    // No need to update the ancestor's snap container data because it will be
-    // updated at the end of the layout.
+    ancestor_snap_container->GetScrollableArea()
+        ->SetSnapContainerDataNeedsUpdate(true);
     snap_container.ReassignSnapAreas(*ancestor_snap_container);
   } else {
     DCHECK(!snap_container.Parent());
@@ -141,12 +148,14 @@ void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container) {
       snap_container.GetDocument().documentElement())
     return;
 
+  PaintLayerScrollableArea* scrollable_area =
+      snap_container.GetScrollableArea();
   // Per specification snap positions only affect *scroll containers* [1]. So if
   // the layout box is not a scroll container we ignore it here even if it has
   // non-none scroll-snap-type. Note that in blink, existence of scrollable area
   // directly maps to being a scroll container in the specification. [1]
   // https://drafts.csswg.org/css-scroll-snap/#overview
-  if (!snap_container.GetScrollableArea()) {
+  if (!scrollable_area) {
     DCHECK(!snap_containers_.Contains(&snap_container));
     return;
   }
@@ -157,9 +166,7 @@ void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container) {
   // subtree for whom it is the nearest ancestor scroll container per spec [1].
   //
   // [1] https://drafts.csswg.org/css-scroll-snap/#overview
-
-  // TODO(sunyunjia): Only update when the localframe doesn't need layout.
-  UpdateSnapContainerData(snap_container);
+  scrollable_area->SetSnapContainerDataNeedsUpdate(true);
 }
 
 void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
@@ -169,7 +176,7 @@ void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
       scroll_snap_align.alignment_block == cc::SnapAlignment::kNone) {
     snap_area.SetSnapContainer(nullptr);
     if (old_container)
-      UpdateSnapContainerData(*old_container);
+      old_container->GetScrollableArea()->SetSnapContainerDataNeedsUpdate(true);
     return;
   }
 
@@ -181,18 +188,21 @@ void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
     snap_area.SetSnapContainer(new_container);
     // TODO(sunyunjia): consider keep the SnapAreas in a map so it is
     // easier to update.
-    // TODO(sunyunjia): Only update when the localframe doesn't need layout.
-    UpdateSnapContainerData(*new_container);
+    new_container->GetScrollableArea()->SetSnapContainerDataNeedsUpdate(true);
     if (old_container && old_container != new_container)
-      UpdateSnapContainerData(*old_container);
+      old_container->GetScrollableArea()->SetSnapContainerDataNeedsUpdate(true);
   }
 }
 
-void SnapCoordinator::ReSnapAllContainers() {
+void SnapCoordinator::ResnapAllContainersIfNeeded() {
   for (const auto* container : snap_containers_) {
+    if (!container->GetScrollableArea()->NeedsResnap())
+      continue;
+
     auto* scrollable_area = ScrollableArea::GetForScrolling(container);
     ScrollOffset initial_offset = scrollable_area->GetScrollOffset();
     scrollable_area->SnapAfterLayout();
+    container->GetScrollableArea()->SetNeedsResnap(false);
 
     // If this is the first time resnapping all containers then this means this
     // is the initial layout. We record whenever the initial scroll offset
@@ -209,9 +219,11 @@ void SnapCoordinator::ReSnapAllContainers() {
   did_first_resnap_all_containers_ = true;
 }
 
-void SnapCoordinator::UpdateAllSnapContainerData() {
-  for (auto* container : snap_containers_)
-    UpdateSnapContainerData(*container);
+void SnapCoordinator::UpdateAllSnapContainerDataIfNeeded() {
+  for (auto* container : snap_containers_) {
+    if (container->GetScrollableArea()->SnapContainerDataNeedsUpdate())
+      UpdateSnapContainerData(*container);
+  }
 }
 
 void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
@@ -219,6 +231,7 @@ void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
       ScrollableArea::GetForScrolling(&snap_container);
   const auto* old_snap_container_data = scrollable_area->GetSnapContainerData();
   auto snap_type = GetPhysicalSnapType(snap_container);
+  scrollable_area->SetSnapContainerDataNeedsUpdate(false);
 
   // Scrollers that don't have any snap areas assigned to them and don't snap
   // require no further processing. These are the most common types and thus
@@ -228,7 +241,6 @@ void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
 
   cc::SnapContainerData snap_container_data(snap_type);
 
-  DCHECK(scrollable_area);
   DCHECK(snap_containers_.Contains(&snap_container));
 
   // When snap type is 'none' we don't perform any snapping so there is no need
@@ -306,11 +318,12 @@ void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
     }
     snap_container_data.SetTargetSnapAreaElementIds(new_target_ids);
   }
-
   if (!old_snap_container_data ||
       *old_snap_container_data != snap_container_data) {
     snap_container.SetNeedsPaintPropertyUpdate();
     scrollable_area->SetSnapContainerData(snap_container_data);
+    // If the snap container data changed then we need to resnap.
+    scrollable_area->SetNeedsResnap(true);
   }
 }
 

@@ -122,9 +122,16 @@ class CORE_EXPORT RootFrameViewport final
                                       unsigned = 0) const final;
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final;
   ScrollbarTheme& GetPageScrollbarTheme() const override;
+
+  // RootFrameViewport delegates these scroll-snap methods to its layout
+  // viewport.
   const cc::SnapContainerData* GetSnapContainerData() const override;
   void SetSnapContainerData(base::Optional<cc::SnapContainerData>) override;
   bool SetTargetSnapAreaElementIds(cc::TargetSnapAreaElementIds) override;
+  bool SnapContainerDataNeedsUpdate() const override;
+  void SetSnapContainerDataNeedsUpdate(bool) override;
+  bool NeedsResnap() const override;
+  void SetNeedsResnap(bool) override;
   base::Optional<FloatPoint> GetSnapPositionAndSetTarget(
       const cc::SnapSelectionStrategy& strategy) override;
 

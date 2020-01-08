@@ -23,19 +23,21 @@ namespace {
 
 // TODO(c.padhi): Merge this method with ToWebFacingMode() in
 // media_stream_constraints_util_video_device.h, see https://crbug.com/821668.
-WebMediaStreamTrack::FacingMode ToWebFacingMode(
-    media::VideoFacingMode facing_mode) {
+WebMediaStreamTrack::FacingMode ToWebFacingMode(mojom::FacingMode facing_mode) {
   switch (facing_mode) {
-    case media::MEDIA_VIDEO_FACING_NONE:
+    case mojom::FacingMode::NONE:
       return WebMediaStreamTrack::FacingMode::kNone;
-    case media::MEDIA_VIDEO_FACING_USER:
+    case mojom::FacingMode::USER:
       return WebMediaStreamTrack::FacingMode::kUser;
-    case media::MEDIA_VIDEO_FACING_ENVIRONMENT:
+    case mojom::FacingMode::ENVIRONMENT:
       return WebMediaStreamTrack::FacingMode::kEnvironment;
-    default:
-      NOTREACHED();
-      return WebMediaStreamTrack::FacingMode::kNone;
+    case mojom::FacingMode::LEFT:
+      return WebMediaStreamTrack::FacingMode::kLeft;
+    case mojom::FacingMode::RIGHT:
+      return WebMediaStreamTrack::FacingMode::kRight;
   }
+  NOTREACHED();
+  return WebMediaStreamTrack::FacingMode::kNone;
 }
 
 }  // namespace
@@ -43,7 +45,7 @@ WebMediaStreamTrack::FacingMode ToWebFacingMode(
 InputDeviceInfo::InputDeviceInfo(const String& device_id,
                                  const String& label,
                                  const String& group_id,
-                                 mojom::blink::MediaDeviceType device_type)
+                                 MediaDeviceType device_type)
     : MediaDeviceInfo(device_id, label, group_id, device_type) {}
 
 void InputDeviceInfo::SetVideoInputCapabilities(
@@ -105,7 +107,7 @@ MediaTrackCapabilities* InputDeviceInfo::getCapabilities() const {
   capabilities->setDeviceId(deviceId());
   capabilities->setGroupId(groupId());
 
-  if (DeviceType() == mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT) {
+  if (DeviceType() == MediaDeviceType::MEDIA_AUDIO_INPUT) {
     capabilities->setEchoCancellation({true, false});
     capabilities->setAutoGainControl({true, false});
     capabilities->setNoiseSuppression({true, false});
@@ -139,7 +141,7 @@ MediaTrackCapabilities* InputDeviceInfo::getCapabilities() const {
     }
   }
 
-  if (DeviceType() == mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT) {
+  if (DeviceType() == MediaDeviceType::MEDIA_VIDEO_INPUT) {
     if (!platform_capabilities_.width.empty()) {
       LongRange* width = LongRange::Create();
       width->setMin(platform_capabilities_.width[0]);

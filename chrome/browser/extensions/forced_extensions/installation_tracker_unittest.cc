@@ -165,8 +165,9 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
       kExtensionId2,
       InstallationReporter::FailureReason::CRX_INSTALL_ERROR_OTHER,
       CrxInstallErrorDetail::UNEXPECTED_ID);
-  EXPECT_TRUE(fake_timer_->IsRunning());
-  fake_timer_->Fire();
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
   histogram_tester_.ExpectTotalCount(kLoadTimeStats, 0);
   histogram_tester_.ExpectUniqueSample(kTimedOutStats, 2, 1);
   histogram_tester_.ExpectUniqueSample(kTimedOutNotInstalledStats, 2, 1);

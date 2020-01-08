@@ -35,7 +35,7 @@ namespace blink {
 MediaDeviceInfo::MediaDeviceInfo(const String& device_id,
                                  const String& label,
                                  const String& group_id,
-                                 mojom::blink::MediaDeviceType device_type)
+                                 MediaDeviceType device_type)
     : device_id_(device_id),
       label_(label),
       group_id_(group_id),
@@ -47,11 +47,11 @@ String MediaDeviceInfo::deviceId() const {
 
 String MediaDeviceInfo::kind() const {
   switch (device_type_) {
-    case mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT:
+    case MediaDeviceType::MEDIA_AUDIO_INPUT:
       return "audioinput";
-    case mojom::blink::MediaDeviceType::MEDIA_AUDIO_OUTPUT:
+    case MediaDeviceType::MEDIA_AUDIO_OUTPUT:
       return "audiooutput";
-    case mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT:
+    case MediaDeviceType::MEDIA_VIDEO_INPUT:
       return "videoinput";
     default:
       NOTREACHED();
@@ -67,7 +67,7 @@ String MediaDeviceInfo::groupId() const {
   return group_id_;
 }
 
-mojom::blink::MediaDeviceType MediaDeviceInfo::DeviceType() const {
+MediaDeviceType MediaDeviceInfo::DeviceType() const {
   return device_type_;
 }
 

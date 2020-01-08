@@ -595,6 +595,5 @@ class IdlCompiler(object):
             self._db.register(
                 DatabaseBody.Kind.UNION,
                 Union(
-                    Identifier(key),  # dummy identifier
                     union_types=union_types,
                     typedef_backrefs=grouped_typedefs.get(key, [])))

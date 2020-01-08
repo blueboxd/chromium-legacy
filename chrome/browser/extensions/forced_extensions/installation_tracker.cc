@@ -35,7 +35,8 @@ InstallationTracker::InstallationTracker(
       pref_service_(profile->GetPrefs()),
       start_time_(base::Time::Now()),
       timer_(std::move(timer)) {
-  observer_.Add(registry_);
+  registry_observer_.Add(registry_);
+  reporter_observer_.Add(InstallationReporter::Get(profile_));
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
       pref_names::kInstallForceList,
@@ -132,7 +133,8 @@ void InstallationTracker::OnForcedExtensionsPrefChanged() {
 }
 
 void InstallationTracker::OnShutdown(ExtensionRegistry*) {
-  observer_.RemoveAll();
+  registry_observer_.RemoveAll();
+  reporter_observer_.RemoveAll();
   pref_change_registrar_.RemoveAll();
   timer_->Stop();
 }
@@ -237,7 +239,8 @@ void InstallationTracker::ReportResults() {
   }
   reported_ = true;
   InstallationReporter::Get(profile_)->Clear();
-  observer_.RemoveAll();
+  registry_observer_.RemoveAll();
+  reporter_observer_.RemoveAll();
   pref_change_registrar_.RemoveAll();
   timer_->Stop();
 }

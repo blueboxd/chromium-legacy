@@ -121,7 +121,10 @@ class InstallationTracker : public ExtensionRegistryObserver,
   // Tracks whether stats were already reported for the session.
   bool reported_ = false;
 
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_{this};
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      registry_observer_{this};
+  ScopedObserver<InstallationReporter, InstallationReporter::Observer>
+      reporter_observer_{this};
 
   // Tracks installation reporting timeout.
   std::unique_ptr<base::OneShotTimer> timer_;

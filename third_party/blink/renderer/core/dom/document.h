@@ -1370,6 +1370,7 @@ class CORE_EXPORT Document : public ContainerNode,
   int NodeCount() const { return node_count_; }
 
   SnapCoordinator& GetSnapCoordinator();
+  void PerformScrollSnappingTasks();
 
   void DidEnforceInsecureRequestPolicy();
   void DidEnforceInsecureNavigationsSet();

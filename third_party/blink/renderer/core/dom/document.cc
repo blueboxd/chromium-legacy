@@ -3107,6 +3107,7 @@ void Document::UpdateStyleAndLayout(ForcedLayoutStatus status) {
 
   if (LocalFrameView* frame_view_anchored = View())
     frame_view_anchored->PerformScrollAnchoringAdjustments();
+  PerformScrollSnappingTasks();
 
   if (status == IsForcedLayout && frame_view)
     frame_view->DidFinishForcedLayout();
@@ -7563,6 +7564,13 @@ SnapCoordinator& Document::GetSnapCoordinator() {
     snap_coordinator_ = MakeGarbageCollected<SnapCoordinator>();
 
   return *snap_coordinator_;
+}
+
+void Document::PerformScrollSnappingTasks() {
+  SnapCoordinator& snap_coordinator = GetSnapCoordinator();
+  snap_coordinator.UpdateAllSnapContainerDataIfNeeded();
+  if (RuntimeEnabledFeatures::ScrollSnapAfterLayoutEnabled())
+    snap_coordinator.ResnapAllContainersIfNeeded();
 }
 
 void Document::SetContextFeatures(ContextFeatures& features) {

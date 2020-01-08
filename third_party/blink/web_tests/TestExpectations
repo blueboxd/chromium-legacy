@@ -7152,7 +7152,6 @@ crbug.com/859169 http/tests/devtools/layers/layer-compositing-reasons.js [ Pass 
 crbug.com/1036626 http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]
 crbug.com/1036626 virtual/threaded/http/tests/devtools/tracing/tracing-record-input-events.js [ Pass Failure ]
 crbug.com/1036054 [ Mac10.13 ] virtual/threaded/fast/scroll-snap/snap-to-area-with-fractional-offset.html [ Pass Timeout ]
-crbug.com/960944 animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
 crbug.com/1033381 synthetic_gestures/smooth-scroll-tiny-delta.html [ Pass Crash ]
 
 # Sheriff 2019-12-27

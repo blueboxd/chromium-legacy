@@ -108,10 +108,7 @@ def blink_type_info(idl_type):
         assert False, "Blink does not support/accept IDL void type."
 
     if real_type.type_definition_object is not None:
-        type_def_obj = real_type.type_definition_object
-        blink_impl_type = (
-            type_def_obj.code_generator_info.receiver_implemented_as
-            or name_style.class_(type_def_obj.identifier))
+        blink_impl_type = blink_class_name(real_type.type_definition_object)
         return TypeInfo(
             blink_impl_type,
             member_fmt="Member<{}>",
@@ -137,7 +134,12 @@ def blink_type_info(idl_type):
         return TypeInfo("ScriptPromise", ref_fmt="{}&")
 
     if real_type.is_union:
-        return TypeInfo("ToBeImplementedUnion")
+        def_obj = real_type.union_definition_object
+        blink_impl_type = blink_class_name(def_obj)
+        return TypeInfo(
+            blink_impl_type,
+            ref_fmt="{}&",
+            is_nullable=def_obj.does_include_nullable_type)
 
     if real_type.is_nullable:
         inner_type = blink_type_info(real_type.inner_type)

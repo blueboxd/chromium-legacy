@@ -32,6 +32,8 @@
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+using blink::mojom::blink::MediaDeviceType;
+
 namespace blink {
 
 class ScriptState;
@@ -44,14 +46,14 @@ class MODULES_EXPORT MediaDeviceInfo : public ScriptWrappable {
   MediaDeviceInfo(const String& device_id,
                   const String& label,
                   const String& group_id,
-                  mojom::blink::MediaDeviceType);
+                  MediaDeviceType);
 
   String deviceId() const;
   String kind() const;
   String label() const;
   String groupId() const;
 
-  mojom::blink::MediaDeviceType DeviceType() const;
+  MediaDeviceType DeviceType() const;
 
   ScriptValue toJSONForBinding(ScriptState*);
 
@@ -59,7 +61,7 @@ class MODULES_EXPORT MediaDeviceInfo : public ScriptWrappable {
   String device_id_;
   String label_;
   String group_id_;
-  mojom::blink::MediaDeviceType device_type_;
+  MediaDeviceType device_type_;
 };
 
 using MediaDeviceInfoVector = HeapVector<Member<MediaDeviceInfo>>;

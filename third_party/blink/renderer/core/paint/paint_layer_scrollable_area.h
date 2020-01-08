@@ -77,6 +77,8 @@ struct CORE_EXPORT PaintLayerScrollableAreaRareData {
 
   StickyConstraintsMap sticky_constraints_map_;
   base::Optional<cc::SnapContainerData> snap_container_data_;
+  bool snap_container_data_needs_update_ = true;
+  bool needs_resnap_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PaintLayerScrollableAreaRareData);
 };
@@ -570,6 +572,10 @@ class CORE_EXPORT PaintLayerScrollableArea final
   const cc::SnapContainerData* GetSnapContainerData() const override;
   void SetSnapContainerData(base::Optional<cc::SnapContainerData>) override;
   bool SetTargetSnapAreaElementIds(cc::TargetSnapAreaElementIds) override;
+  bool SnapContainerDataNeedsUpdate() const override;
+  void SetSnapContainerDataNeedsUpdate(bool) override;
+  bool NeedsResnap() const override;
+  void SetNeedsResnap(bool) override;
 
   base::Optional<FloatPoint> GetSnapPositionAndSetTarget(
       const cc::SnapSelectionStrategy& strategy) override;

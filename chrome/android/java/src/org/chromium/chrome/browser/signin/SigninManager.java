@@ -22,7 +22,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
-import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountInfo;
@@ -411,11 +410,8 @@ public class SigninManager
     private void progressSignInFlowSeedSystemAccounts() {
         if (mAccountTrackerService.checkAndSeedSystemAccounts()) {
             progressSignInFlowCheckPolicy();
-        } else if (AccountIdProvider.getInstance().canBeUsed()) {
-            mSignInState.mBlockedOnAccountSeeding = true;
         } else {
-            Log.w(TAG, "Cancelling the sign-in process as Google Play services is unavailable");
-            abortSignIn();
+            mSignInState.mBlockedOnAccountSeeding = true;
         }
     }
 

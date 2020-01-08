@@ -1837,11 +1837,6 @@ void LocalFrameView::PerformPostLayoutTasks() {
           this->GetScrollingCoordinator()) {
     scrolling_coordinator->NotifyGeometryChanged(this);
   }
-  SnapCoordinator& snap_coordinator =
-      frame_->GetDocument()->GetSnapCoordinator();
-  snap_coordinator.UpdateAllSnapContainerData();
-  if (RuntimeEnabledFeatures::ScrollSnapAfterLayoutEnabled())
-    snap_coordinator.ReSnapAllContainers();
 
   SendResizeEventIfNeeded();
 }
@@ -2377,6 +2372,8 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.PerformScrollAnchoringAdjustments();
   });
+
+  frame_->GetDocument()->PerformScrollSnappingTasks();
 
   EnqueueScrollEvents();
 

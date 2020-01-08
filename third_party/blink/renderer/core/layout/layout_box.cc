@@ -473,7 +473,6 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
     const ComputedStyle& old_style) {
   DCHECK(Style());
   SnapCoordinator& snap_coordinator = GetDocument().GetSnapCoordinator();
-
   // scroll-snap-type and scroll-padding invalidate the snap container.
   if (old_style.GetScrollSnapType() != StyleRef().GetScrollSnapType() ||
       old_style.ScrollPaddingBottom() != StyleRef().ScrollPaddingBottom() ||

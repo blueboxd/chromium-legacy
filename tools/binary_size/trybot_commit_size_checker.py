@@ -264,14 +264,17 @@ https://chromium.googlesource.com/chromium/src/+/master/docs/speed/binary_size/a
 
   binary_size_listings = []
   for delta in size_deltas:
-    if delta.actual == 0:
-      continue
     listing = {
         'name': delta.name,
         'delta': '{} {}'.format(_FormatSign(delta.actual), delta.units),
         'limit': '{} {}'.format(_FormatSign(delta.expected), delta.units),
         'allowed': delta.IsAllowable(),
     }
+    if delta is resource_sizes_delta:
+      listing['name'] = 'Android Binary Size',
+    # The main 'binary size' delta is always shown even if unchanged.
+    elif delta.actual == 0:
+      continue
     binary_size_listings.append(listing)
 
   binary_size_extras = [

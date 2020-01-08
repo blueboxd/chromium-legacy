@@ -672,6 +672,22 @@ bool RootFrameViewport::SetTargetSnapAreaElementIds(
   return LayoutViewport().SetTargetSnapAreaElementIds(snap_target_ids);
 }
 
+bool RootFrameViewport::SnapContainerDataNeedsUpdate() const {
+  return LayoutViewport().SnapContainerDataNeedsUpdate();
+}
+
+void RootFrameViewport::SetSnapContainerDataNeedsUpdate(bool needs_update) {
+  LayoutViewport().SetSnapContainerDataNeedsUpdate(needs_update);
+}
+
+bool RootFrameViewport::NeedsResnap() const {
+  return LayoutViewport().NeedsResnap();
+}
+
+void RootFrameViewport::SetNeedsResnap(bool needs_resnap) {
+  LayoutViewport().SetNeedsResnap(needs_resnap);
+}
+
 base::Optional<FloatPoint> RootFrameViewport::GetSnapPositionAndSetTarget(
     const cc::SnapSelectionStrategy& strategy) {
   return LayoutViewport().GetSnapPositionAndSetTarget(strategy);

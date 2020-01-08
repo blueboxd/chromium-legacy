@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from .composition_parts import Identifier
+from .composition_parts import WithCodeGeneratorInfo
 from .composition_parts import WithComponent
 from .composition_parts import WithDebugInfo
 from .composition_parts import WithIdentifier
@@ -9,7 +11,8 @@ from .idl_type import IdlType
 from .typedef import Typedef
 
 
-class Union(WithIdentifier, WithComponent, WithDebugInfo):
+class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
+            WithDebugInfo):
     """
     Union class makes a group of union types with the same flattened member
     types and the same result whether it includes a nullable type or not.
@@ -28,7 +31,7 @@ class Union(WithIdentifier, WithComponent, WithDebugInfo):
     expected to define an implementation class for each Union instance.
     """
 
-    def __init__(self, identifier, union_types, typedef_backrefs):
+    def __init__(self, union_types, typedef_backrefs):
         """
         Args:
             union_types: Union types of which this object consists.  All types
@@ -56,6 +59,7 @@ class Union(WithIdentifier, WithComponent, WithDebugInfo):
             assert union_type.flattened_member_types == flattened_members
             assert (union_type.does_include_nullable_type ==
                     does_include_nullable_type)
+            union_type.set_union_definition_object(self)
             for direct_member in union_type.member_types:
                 if direct_member.is_nullable:
                     nullable_members.add(direct_member)
@@ -76,8 +80,15 @@ class Union(WithIdentifier, WithComponent, WithDebugInfo):
         for idl_type in flattened_members:
             idl_type.apply_to_all_composing_elements(collect_components)
 
+        type_names = sorted(
+            [idl_type.type_name for idl_type in flattened_members])
+        if does_include_nullable_type:
+            type_names.append('Null')
+        identifier = Identifier('Or'.join(type_names))
+
         WithIdentifier.__init__(self, identifier)
-        WithComponent.__init__(self, sorted(components))
+        WithCodeGeneratorInfo.__init__(self, readonly=True)
+        WithComponent.__init__(self, sorted(components), readonly=True)
         WithDebugInfo.__init__(self)
 
         # Sort improves reproducibility.

@@ -1101,7 +1101,9 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
   } else if (!HasScrollbar() && resizer_will_change) {
     Layer()->DirtyStackingContextZOrderLists();
   }
-
+  // The snap container data will be updated at the end of the layout update. If
+  // the data changes, then this will try to re-snap.
+  SetSnapContainerDataNeedsUpdate(true);
   {
     // Hits in
     // compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
@@ -1179,8 +1181,7 @@ void PaintLayerScrollableArea::DidChangeGlobalRootScroller() {
   // Recalculate the snap container data since the scrolling behaviour for this
   // layout box changed (i.e. it either became the layout viewport or it
   // is no longer the layout viewport).
-  GetLayoutBox()->GetDocument().GetSnapCoordinator().UpdateSnapContainerData(
-      *GetLayoutBox());
+  SetSnapContainerDataNeedsUpdate(true);
 }
 
 bool PaintLayerScrollableArea::ShouldPerformScrollAnchoring() const {
@@ -1757,6 +1758,23 @@ bool PaintLayerScrollableArea::SetTargetSnapAreaElementIds(
     return true;
   }
   return false;
+}
+
+bool PaintLayerScrollableArea::SnapContainerDataNeedsUpdate() const {
+  return RareData() ? RareData()->snap_container_data_needs_update_ : false;
+}
+
+void PaintLayerScrollableArea::SetSnapContainerDataNeedsUpdate(
+    bool needs_update) {
+  EnsureRareData().snap_container_data_needs_update_ = needs_update;
+}
+
+bool PaintLayerScrollableArea::NeedsResnap() const {
+  return RareData() ? RareData()->needs_resnap_ : false;
+}
+
+void PaintLayerScrollableArea::SetNeedsResnap(bool needs_resnap) {
+  EnsureRareData().needs_resnap_ = needs_resnap;
 }
 
 base::Optional<FloatPoint>

@@ -49,15 +49,17 @@ class CORE_EXPORT SnapCoordinator final
   cc::SnapAreaData CalculateSnapAreaData(const LayoutBox& snap_area,
                                          const LayoutBox& snap_container);
 
-  // Called by LocalFrameView::PerformPostLayoutTasks(), so that the snap data
-  // are updated whenever a layout happens.
-  void UpdateAllSnapContainerData();
-  void UpdateSnapContainerData(LayoutBox&);
+  // Called by Document::PerformScrollSnappingTasks() whenever a style or layout
+  // change happens. This will update all snap container data that was affected
+  // by the style/layout change.
+  void UpdateAllSnapContainerDataIfNeeded();
 
   // Resnaps all snap containers to their current snap target, or to the
   // closest snap point if there is no target (e.g. on the initial layout or if
   // the previous snapped target was removed).
-  void ReSnapAllContainers();
+  void ResnapAllContainersIfNeeded();
+
+  void UpdateSnapContainerData(LayoutBox&);
 
 #ifndef NDEBUG
   void ShowSnapAreaMap();

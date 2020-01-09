@@ -234,7 +234,6 @@ DWORD IsReparsePoint(const std::wstring& full_path) {
             (path.rfind(L'\\') == kNTDotPrefixLen - 1)) {
           break;
         }
-        NOTREACHED_NT();
         return error;
       }
     } else if (FILE_ATTRIBUTE_REPARSE_POINT & attributes) {

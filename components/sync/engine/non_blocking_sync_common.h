@@ -62,20 +62,22 @@ struct CommitResponseData {
 
 struct UpdateResponseData {
   UpdateResponseData();
+  UpdateResponseData(UpdateResponseData&&) = default;
+  UpdateResponseData& operator=(UpdateResponseData&&) = default;
   ~UpdateResponseData();
 
-  std::unique_ptr<EntityData> entity;
+  UpdateResponseData(const UpdateResponseData&) = delete;
+  UpdateResponseData& operator=(const UpdateResponseData&) = delete;
+
+  EntityData entity;
 
   int64_t response_version = 0;
   std::string encryption_key_name;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UpdateResponseData);
 };
 
 using CommitRequestDataList = std::vector<std::unique_ptr<CommitRequestData>>;
 using CommitResponseDataList = std::vector<CommitResponseData>;
-using UpdateResponseDataList = std::vector<std::unique_ptr<UpdateResponseData>>;
+using UpdateResponseDataList = std::vector<UpdateResponseData>;
 
 // Returns the estimate of dynamically allocated memory in bytes.
 size_t EstimateMemoryUsage(const CommitRequestData& value);

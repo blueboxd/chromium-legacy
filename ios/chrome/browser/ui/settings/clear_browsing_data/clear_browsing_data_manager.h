@@ -23,8 +23,6 @@ enum class BrowsingDataRemoveMask;
 enum ClearBrowsingDataSectionIdentifier {
   // Section holding types of data that can be cleared.
   SectionIdentifierDataTypes = kSectionIdentifierEnumZero,
-  // Section containing button to clear browsing data.
-  SectionIdentifierClearBrowsingDataButton,
   // Section for informational footnote about user's Google Account data.
   SectionIdentifierGoogleAccount,
   // Section for footnote about synced data being cleared.
@@ -47,8 +45,6 @@ enum ClearBrowsingDataItemType {
   ItemTypeDataTypeSavedPasswords,
   // Items representing autofill data.
   ItemTypeDataTypeAutofill,
-  // Clear data button.
-  ItemTypeClearBrowsingDataButton,
   // Footer noting account will not be signed out.
   ItemTypeFooterGoogleAccount,
   // Footer noting user will not be signed out of chrome and other forms of
@@ -64,13 +60,6 @@ enum ClearBrowsingDataItemType {
   ItemTypeTimeRange,
 };
 
-// Differentiation between two types of view controllers that the
-// ClearBrowsingDataManager could be serving.
-enum class ClearBrowsingDataListType {
-  kListTypeTableView,
-  kListTypeCollectionView,
-};
-
 // Manager that serves as the bulk of the logic for
 // ClearBrowsingDataConsumer.
 @interface ClearBrowsingDataManager : NSObject
@@ -80,14 +69,11 @@ enum class ClearBrowsingDataListType {
 // Reference to the LinkDelegate for CollectionViewFooterItem.
 @property(nonatomic, weak) id<CollectionViewFooterLinkDelegate> linkDelegate;
 
-// Default init method. |browserState| can't be nil and
-// |listType| determines what kind of items to populate model with.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                            listType:(ClearBrowsingDataListType)listType;
+// Default init method. |browserState| can't be nil.
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState;
 
 // Designated initializer to allow dependency injection (in tests).
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                              listType:(ClearBrowsingDataListType)listType
                    browsingDataRemover:(BrowsingDataRemover*)remover
     browsingDataCounterWrapperProducer:
         (BrowsingDataCounterWrapperProducer*)producer NS_DESIGNATED_INITIALIZER;
@@ -103,15 +89,6 @@ enum class ClearBrowsingDataListType {
 
 // Returns a ActionSheetCoordinator that has action block to clear data of type
 // |dataTypeMaskToRemove|.
-// When action triggered by a UIButton.
-- (ActionSheetCoordinator*)
-    actionSheetCoordinatorWithDataTypesToRemove:
-        (BrowsingDataRemoveMask)dataTypeMaskToRemove
-                             baseViewController:
-                                 (UIViewController*)baseViewController
-                                     sourceRect:(CGRect)sourceRect
-                                     sourceView:(UIView*)sourceView;
-// When action triggered by a UIBarButtonItem.
 - (ActionSheetCoordinator*)
     actionSheetCoordinatorWithDataTypesToRemove:
         (BrowsingDataRemoveMask)dataTypeMaskToRemove

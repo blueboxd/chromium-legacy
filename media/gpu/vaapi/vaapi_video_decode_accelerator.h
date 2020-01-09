@@ -44,6 +44,7 @@ class GLImage;
 namespace media {
 
 class AcceleratedVideoDecoder;
+class VaapiVideoDecoderDelegate;
 class VaapiPicture;
 
 // Class to provide video decode acceleration for Intel systems with hardware
@@ -246,6 +247,9 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
   // Only used on |decoder_thread_task_runner_|.
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
+  // TODO(crbug.com/1022246): Instead of having the raw pointer here, getting
+  // the pointer from AcceleratedVideoDecoder.
+  VaapiVideoDecoderDelegate* decoder_delegate_ = nullptr;
 
   // Filled in during Initialize().
   BufferAllocationMode buffer_allocation_mode_;

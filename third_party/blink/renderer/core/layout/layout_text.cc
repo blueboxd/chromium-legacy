@@ -222,13 +222,20 @@ void LayoutText::RemoveAndDestroyTextBoxes() {
       for (InlineTextBox* box : TextBoxes())
         box->Remove();
     } else {
-      if (NGPaintFragment* first_inline_fragment = FirstInlineFragment()) {
+      if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+        if (has_abstract_inline_text_box_)
+          ClearFirstInlineFragmentItemIndex();
+      } else if (NGPaintFragment* first_inline_fragment =
+                     FirstInlineFragment()) {
         first_inline_fragment->LayoutObjectWillBeDestroyed();
         SetFirstInlineFragment(nullptr);
       }
       if (Parent())
         Parent()->DirtyLinesFromChangedChild(this);
     }
+  } else if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    if (has_abstract_inline_text_box_)
+      ClearFirstInlineFragmentItemIndex();
   } else if (NGPaintFragment* first_inline_fragment = FirstInlineFragment()) {
     // Still do this to clear the global hash map in  NGAbstractInlineTextBox.
     SetFirstInlineFragment(nullptr);
@@ -266,7 +273,20 @@ void LayoutText::RemoveTextBox(InlineTextBox* box) {
 
 void LayoutText::DeleteTextBoxes() {
   if (!IsInLayoutNGInlineFormattingContext())
-    MutableTextBoxes().DeleteLineBoxes();
+    return MutableTextBoxes().DeleteLineBoxes();
+  DetachAbstractInlineTextBoxesIfNeeded();
+}
+
+void LayoutText::DetachAbstractInlineTextBoxesIfNeeded() {
+  // TODO(layout-dev): Because We should call |WillDestroy()| once for
+  // associated fragments, when you reuse fragments, you should construct
+  // NGAbstractInlineTextBox for them.
+  if (!has_abstract_inline_text_box_)
+    return;
+  NGInlineCursor cursor;
+  for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())
+    NGAbstractInlineTextBox::WillDestroy(cursor);
+  has_abstract_inline_text_box_ = false;
 }
 
 void LayoutText::SetFirstInlineFragment(NGPaintFragment* first_fragment) {
@@ -275,20 +295,14 @@ void LayoutText::SetFirstInlineFragment(NGPaintFragment* first_fragment) {
   // |!fragment|.
   DCHECK(!first_fragment ||
          !RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
-  // TODO(layout-dev): Because We should call |WillDestroy()| once for
-  // associated fragments, when you reuse fragments, you should construct
-  // NGAbstractInlineTextBox for them.
-  if (has_abstract_inline_text_box_) {
-    for (NGPaintFragment* fragment : NGPaintFragment::InlineFragmentsFor(this))
-      NGAbstractInlineTextBox::WillDestroy(fragment);
-    has_abstract_inline_text_box_ = false;
-  }
+  DetachAbstractInlineTextBoxesIfNeeded();
   first_paint_fragment_ = first_fragment;
 }
 
 void LayoutText::ClearFirstInlineFragmentItemIndex() {
   CHECK(IsInLayoutNGInlineFormattingContext()) << *this;
   DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+  DetachAbstractInlineTextBoxesIfNeeded();
   first_fragment_item_index_ = 0u;
 }
 
@@ -297,7 +311,10 @@ void LayoutText::SetFirstInlineFragmentItemIndex(wtf_size_t index) {
   // TODO(yosin): Call |NGAbstractInlineTextBox::WillDestroy()|.
   DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   DCHECK_NE(index, 0u);
-  first_fragment_item_index_ = index;
+  DetachAbstractInlineTextBoxesIfNeeded();
+  // TDOO(yosin): Once we update all |LayoutObject::FirstInlineFragment()|,
+  // we should enable below.
+  // first_fragment_item_index_ = index;
 }
 
 void LayoutText::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
@@ -306,6 +323,10 @@ void LayoutText::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
   // Because |first_paint_fragment_| and |text_boxes_| are union, when one is
   // deleted, the other should be initialized to nullptr.
   DCHECK(new_value ? !first_paint_fragment_ : !text_boxes_.First());
+
+  // Because there are no inline boxes associated to this text, we should not
+  // have abstract inline text boxes too.
+  DCHECK(!has_abstract_inline_text_box_);
 }
 
 Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
@@ -2420,12 +2441,10 @@ void LayoutText::MomentarilyRevealLastTypedCharacter(
 }
 
 scoped_refptr<AbstractInlineTextBox> LayoutText::FirstAbstractInlineTextBox() {
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
-    if (!fragments.IsEmpty() &&
-        fragments.IsInLayoutNGInlineFormattingContext()) {
-      return NGAbstractInlineTextBox::GetOrCreate(fragments.front());
-    }
+  if (IsInLayoutNGInlineFormattingContext()) {
+    NGInlineCursor cursor;
+    cursor.MoveTo(*this);
+    return NGAbstractInlineTextBox::GetOrCreate(cursor);
   }
   return LegacyAbstractInlineTextBox::GetOrCreate(LineLayoutText(this),
                                                   FirstTextBox());

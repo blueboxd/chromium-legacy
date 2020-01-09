@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer_factory.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
@@ -21,8 +21,8 @@ PluginVmImageDownloadClient::PluginVmImageDownloadClient(Profile* profile)
     : profile_(profile) {}
 PluginVmImageDownloadClient::~PluginVmImageDownloadClient() = default;
 
-PluginVmImageManager* PluginVmImageDownloadClient::GetManager() {
-  return PluginVmImageManagerFactory::GetForProfile(profile_);
+PluginVmInstaller* PluginVmImageDownloadClient::GetInstaller() {
+  return PluginVmInstallerFactory::GetForProfile(profile_);
 }
 
 // TODO(okalitova): Remove logs.
@@ -58,7 +58,7 @@ void PluginVmImageDownloadClient::OnDownloadStarted(
   }
 
   content_length_ = headers ? headers->GetContentLength() : -1;
-  GetManager()->OnDownloadStarted();
+  GetInstaller()->OnDownloadStarted();
 }
 
 void PluginVmImageDownloadClient::OnDownloadUpdated(const std::string& guid,
@@ -67,7 +67,7 @@ void PluginVmImageDownloadClient::OnDownloadUpdated(const std::string& guid,
   DCHECK(old_downloads_.find(guid) == old_downloads_.end());
   VLOG(1) << __func__ << " called";
   VLOG(1) << bytes_downloaded << " bytes downloaded";
-  GetManager()->OnDownloadProgressUpdated(bytes_downloaded, content_length_);
+  GetInstaller()->OnDownloadProgressUpdated(bytes_downloaded, content_length_);
 }
 
 void PluginVmImageDownloadClient::OnDownloadFailed(
@@ -75,13 +75,12 @@ void PluginVmImageDownloadClient::OnDownloadFailed(
     const download::CompletionInfo& completion_info,
     download::Client::FailureReason clientReason) {
   VLOG(1) << __func__ << " called";
-  auto managerReason =
-      PluginVmImageManager::FailureReason::DOWNLOAD_FAILED_UNKNOWN;
+  auto failureReason =
+      PluginVmInstaller::FailureReason::DOWNLOAD_FAILED_UNKNOWN;
   switch (clientReason) {
     case download::Client::FailureReason::NETWORK:
       VLOG(1) << "Failure reason: NETWORK";
-      managerReason =
-          PluginVmImageManager::FailureReason::DOWNLOAD_FAILED_NETWORK;
+      failureReason = PluginVmInstaller::FailureReason::DOWNLOAD_FAILED_NETWORK;
       break;
     case download::Client::FailureReason::UPLOAD_TIMEDOUT:
       VLOG(1) << "Failure reason: UPLOAD_TIMEDOUT";
@@ -94,23 +93,22 @@ void PluginVmImageDownloadClient::OnDownloadFailed(
       break;
     case download::Client::FailureReason::ABORTED:
       VLOG(1) << "Failure reason: ABORTED";
-      managerReason =
-          PluginVmImageManager::FailureReason::DOWNLOAD_FAILED_ABORTED;
+      failureReason = PluginVmInstaller::FailureReason::DOWNLOAD_FAILED_ABORTED;
       break;
     case download::Client::FailureReason::CANCELLED:
       VLOG(1) << "Failure reason: CANCELLED";
       break;
   }
 
-  // We do not want to notify PluginVmImageManager about the status of
-  // downloads that are tracked by download service from its initialization.
+  // We do not want to notify PluginVmInstaller about the status of downloads
+  // that are tracked by download service from its initialization.
   if (old_downloads_.find(guid) != old_downloads_.end())
     return;
 
   if (clientReason == download::Client::FailureReason::CANCELLED)
-    GetManager()->OnDownloadCancelled();
+    GetInstaller()->OnDownloadCancelled();
   else
-    GetManager()->OnDownloadFailed(managerReason);
+    GetInstaller()->OnDownloadFailed(failureReason);
 }
 
 void PluginVmImageDownloadClient::OnDownloadSucceeded(
@@ -119,7 +117,7 @@ void PluginVmImageDownloadClient::OnDownloadSucceeded(
   DCHECK(old_downloads_.find(guid) == old_downloads_.end());
   VLOG(1) << __func__ << " called";
   VLOG(1) << "Downloaded file is in " << completion_info.path.value();
-  GetManager()->OnDownloadCompleted(completion_info);
+  GetInstaller()->OnDownloadCompleted(completion_info);
 }
 
 bool PluginVmImageDownloadClient::CanServiceRemoveDownloadedFile(

@@ -1293,7 +1293,7 @@ CrSettingsSiteListTest.prototype = {
     'test_util.js',
     '../test_util.js',
     'test_site_settings_prefs_browser_proxy.js',
-    'chromeos/test_multidevice_browser_proxy.js',
+    'test_android_info_browser_proxy.js',
     'site_list_tests.js',
   ]),
 };

@@ -59,7 +59,7 @@ class ClientTagBasedRemoteUpdateHandler {
   // |storage_key_to_clear| must not be null and allows the implementation to
   // indicate that a certain storage key is now obsolete and should be cleared,
   // which is leveraged in certain conflict resolution scenarios.
-  ProcessorEntity* ProcessUpdate(std::unique_ptr<UpdateResponseData> update,
+  ProcessorEntity* ProcessUpdate(UpdateResponseData update,
                                  EntityChangeList* entity_changes,
                                  std::string* storage_key_to_clear);
 
@@ -69,7 +69,7 @@ class ClientTagBasedRemoteUpdateHandler {
       MetadataChangeList* metadata_changes);
 
   // Resolve a conflict between |update| and the pending commit in |entity|.
-  ConflictResolution ResolveConflict(std::unique_ptr<UpdateResponseData> update,
+  ConflictResolution ResolveConflict(UpdateResponseData update,
                                      ProcessorEntity* entity,
                                      EntityChangeList* changes,
                                      std::string* storage_key_to_clear);

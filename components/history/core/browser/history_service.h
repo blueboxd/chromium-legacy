@@ -468,7 +468,7 @@ class HistoryService : public KeyedService {
 
   // Generic Stuff -------------------------------------------------------------
 
-  // Schedules a HistoryDBTask for running on the history backend. See
+  // Schedules a HistoryDBTask for running on the history backend thread. See
   // HistoryDBTask for details on what this does. Takes ownership of |task|.
   virtual base::CancelableTaskTracker::TaskId ScheduleDBTask(
       const base::Location& from_here,
@@ -493,15 +493,15 @@ class HistoryService : public KeyedService {
 
   // Testing -------------------------------------------------------------------
 
-  // Runs |flushed| after the backend has processed all other pre-existing
-  // tasks.
+  // Runs |flushed| after bouncing off the history thread.
   void FlushForTest(base::OnceClosure flushed);
 
   // Designed for unit tests, this passes the given task on to the history
   // backend to be called once the history backend has terminated. This allows
-  // callers to know when the history backend has been safely deleted and the
-  // database files can be deleted and the next test run.
-
+  // callers to know when the history thread is complete and the database files
+  // can be deleted and the next test run. Otherwise, the history thread may
+  // still be running, causing problems in subsequent tests.
+  //
   // There can be only one closing task, so this will override any previously
   // set task. We will take ownership of the pointer and delete it when done.
   // The task will be run on the calling thread (this function is threadsafe).
@@ -511,9 +511,9 @@ class HistoryService : public KeyedService {
   // into the database. This assumes the URL doesn't exist in the database
   //
   // Calling this function many times may be slow because each call will
-  // post a separate database transaction in a task. If this functionality
-  // is needed for importing many URLs, callers should use AddPagesWithDetails()
-  // instead.
+  // dispatch to the history thread and will be a separate database
+  // transaction. If this functionality is needed for importing many URLs,
+  // callers should use AddPagesWithDetails() instead.
   //
   // Note that this routine (and AddPageWithDetails()) always adds a single
   // visit using the |last_visit| timestamp, and a PageTransition type of LINK,
@@ -594,9 +594,9 @@ class HistoryService : public KeyedService {
   // that is only set by unittests which causes the backend to not init its DB.
   bool Init(bool no_db, const HistoryDatabaseParams& history_database_params);
 
-  // Called by the HistoryURLProvider class to schedule an autocomplete, it will
-  // be called back with the history database so it can query. See
-  // history_url_provider.h for a diagram.
+  // Called by the HistoryURLProvider class to schedule an autocomplete, it
+  // will be called back on the internal history thread with the history
+  // database so it can query. See history_url_provider.h for a diagram.
   void ScheduleAutocomplete(
       base::OnceCallback<void(HistoryBackend*, URLDatabase*)> callback);
 
@@ -834,8 +834,8 @@ class HistoryService : public KeyedService {
   void NotifyProfileError(sql::InitStatus init_status,
                           const std::string& diagnostics);
 
-  // Call to post a given task for running on the history backend sequence with
-  // the specified priority. The task will have ownership taken.
+  // Call to schedule a given task for running on the history thread with the
+  // specified priority. The task will have ownership taken.
   void ScheduleTask(SchedulePriority priority, base::OnceClosure task);
 
   // Called when the favicons for the given page URLs (e.g.
@@ -858,16 +858,17 @@ class HistoryService : public KeyedService {
   // Cleanup() is called.
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
-  // This class has most of the implementation. You MUST communicate with this
-  // class ONLY through |backend_task_runner_|.
+  // This class has most of the implementation and runs on the 'thread_'.
+  // You MUST communicate with this class ONLY through the thread_'s
+  // task_runner().
   //
   // This pointer will be null once Cleanup() has been called, meaning no
-  // more tasks should be scheduled.
+  // more calls should be made to the history thread.
   scoped_refptr<HistoryBackend> history_backend_;
 
   // A cache of the user-typed URLs kept in memory that is used by the
   // autocomplete system. This will be null until the database has been created
-  // in the backend.
+  // on the background thread.
   // TODO(mrossetti): Consider changing ownership. See http://crbug.com/138321
   std::unique_ptr<InMemoryHistoryBackend> in_memory_backend_;
 

@@ -30,6 +30,9 @@ class NavigationController {
 
   virtual bool CanGoForward() = 0;
 
+  // Navigates to the specified absolute index.
+  virtual void GoToIndex(int index) = 0;
+
   virtual void Reload() = 0;
 
   virtual void Stop() = 0;

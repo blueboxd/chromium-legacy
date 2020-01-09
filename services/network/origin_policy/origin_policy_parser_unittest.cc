@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "services/network/origin_policy/origin_policy_parser.h"
+#include "base/strings/stringprintf.h"
+#include "services/network/public/cpp/isolation_opt_in_hints.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -226,6 +228,93 @@ TEST(OriginPolicyParser, FeatureNonString) {
       { "features": { "policy": ["geolocation 'self' http://maps.google.com"]
       } )");
   ASSERT_FALSE(policy_contents->feature_policy.has_value());
+}
+
+namespace {
+
+void TestHintsHelper(const std::vector<std::string>& target_hints) {
+  std::string hints_substr;
+  for (auto hint_str : target_hints) {
+    hints_substr += base::StringPrintf("%s\"%s\": true",
+                                       (!hints_substr.empty() ? ", " : ""),
+                                       hint_str.c_str());
+  }
+  std::string manifest_string =
+      base::StringPrintf("{ \"isolation\": { %s }}", hints_substr.c_str());
+  auto policy_contents = OriginPolicyParser::Parse(manifest_string);
+
+  ASSERT_TRUE(policy_contents->isolation_optin_hints.has_value());
+  for (auto target_hint_str : target_hints) {
+    IsolationOptInHints target_hint =
+        GetIsolationOptInHintFromString(target_hint_str);
+    EXPECT_EQ(target_hint,
+              target_hint & policy_contents->isolation_optin_hints.value());
+  }
+}
+
+}  // namespace
+
+TEST(OriginPolicyParser, IsolationOptInNoIsolationKey) {
+  auto policy_contents = OriginPolicyParser::Parse(R"({})");
+  ASSERT_FALSE(policy_contents->isolation_optin_hints.has_value());
+}
+
+TEST(OriginPolicyParser, IsolationOptInNoDict) {
+  auto policy_contents = OriginPolicyParser::Parse(R"({ "isolation": true })");
+  ASSERT_TRUE(policy_contents->isolation_optin_hints.has_value());
+  EXPECT_EQ(IsolationOptInHints::NO_HINTS,
+            policy_contents->isolation_optin_hints.value());
+
+  ASSERT_FALSE(OriginPolicyParser::Parse(R"({ "isolation": false })")
+                   ->isolation_optin_hints.has_value());
+}
+
+TEST(OriginPolicyParser, IsolationOptInEmptyDict) {
+  TestHintsHelper({});
+}
+
+TEST(OriginPolicyParser, IsolationOptInTestOneHint) {
+  TestHintsHelper({"prefer_isolated_event_loop"});
+  TestHintsHelper({"prefer_isolated_memory"});
+  TestHintsHelper({"for_side_channel_protection"});
+  TestHintsHelper({"for_memory_measurement"});
+}
+
+TEST(OriginPolicyParser, IsolationOptInTestTwoHints) {
+  TestHintsHelper({"prefer_isolated_event_loop", "prefer_isolated_memory"});
+  TestHintsHelper(
+      {"prefer_isolated_event_loop", "for_side_channel_protection"});
+  TestHintsHelper({"prefer_isolated_event_loop", "for_memory_measurement"});
+  TestHintsHelper({"prefer_isolated_memory", "for_side_channel_protection"});
+  TestHintsHelper({"prefer_isolated_memory", "for_memory_measurement"});
+  TestHintsHelper({"for_side_channel_protection", "for_memory_measurement"});
+}
+
+TEST(OriginPolicyParser, IsolationOptInTestThreeHints) {
+  TestHintsHelper({"prefer_isolated_event_loop", "prefer_isolated_memory",
+                   "for_side_channel_protection"});
+}
+
+TEST(OriginPolicyParser, IsolationOptInIgnoreUnrecognisedKeys) {
+  std::string manifest_string = R"( { "isolation": {
+    "prefer_isolated_event_loop": true,
+    "foo": true }
+  } )";
+  auto policy_contents = OriginPolicyParser::Parse(manifest_string);
+  ASSERT_TRUE(policy_contents->isolation_optin_hints.has_value());
+  EXPECT_EQ(IsolationOptInHints::PREFER_ISOLATED_EVENT_LOOP,
+            policy_contents->isolation_optin_hints.value());
+}
+
+TEST(OriginPolicyParser, IsolationOptInIgnoreFalseValues) {
+  std::string manifest_string = R"( { "isolation": {
+    "prefer_isolated_event_loop": false
+    }
+  } )";
+  auto policy_contents = OriginPolicyParser::Parse(manifest_string);
+  ASSERT_TRUE(policy_contents->isolation_optin_hints.has_value());
+  EXPECT_EQ(IsolationOptInHints::NO_HINTS,
+            policy_contents->isolation_optin_hints.value());
 }
 
 }  // namespace network

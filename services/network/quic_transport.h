@@ -6,6 +6,8 @@
 #define SERVICES_NETWORK_QUIC_TRANSPORT_H_
 
 #include <memory>
+
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -34,6 +36,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) QuicTransport final
     : public mojom::QuicTransport,
       public net::QuicTransportClient::Visitor {
  public:
+  class Stream;
+  using BidirectionalStreamAcceptanceCallback =
+      base::OnceCallback<void(uint32_t,
+                              mojo::ScopedDataPipeConsumerHandle,
+                              mojo::ScopedDataPipeProducerHandle)>;
+  using UnidirectionalStreamAcceptanceCallback =
+      base::OnceCallback<void(uint32_t, mojo::ScopedDataPipeConsumerHandle)>;
   QuicTransport(const GURL& url,
                 const url::Origin& origin,
                 const net::NetworkIsolationKey& key,
@@ -45,6 +54,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) QuicTransport final
   // mojom::QuicTransport implementation:
   void SendDatagram(base::span<const uint8_t> data,
                     base::OnceCallback<void(bool)> callback) override;
+  void CreateStream(mojo::ScopedDataPipeConsumerHandle readable,
+                    mojo::ScopedDataPipeProducerHandle writable,
+                    base::OnceCallback<void(bool, uint32_t)> callback) override;
+  void AcceptBidirectionalStream(
+      BidirectionalStreamAcceptanceCallback callback) override;
+  void AcceptUnidirectionalStream(
+      UnidirectionalStreamAcceptanceCallback callback) override;
 
   // net::QuicTransportClient::Visitor implementation:
   void OnConnected() override;
@@ -63,9 +79,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) QuicTransport final
   const std::unique_ptr<net::QuicTransportClient> transport_;
   NetworkContext* const context_;  // outlives |this|.
 
+  std::map<uint32_t, std::unique_ptr<Stream>> streams_;
+
   mojo::Receiver<mojom::QuicTransport> receiver_;
   mojo::Remote<mojom::QuicTransportHandshakeClient> handshake_client_;
   mojo::Remote<mojom::QuicTransportClient> client_;
+
+  base::queue<BidirectionalStreamAcceptanceCallback>
+      bidirectional_stream_acceptances_;
+  base::queue<UnidirectionalStreamAcceptanceCallback>
+      unidirectional_stream_acceptances_;
 
   bool torn_down_ = false;
 

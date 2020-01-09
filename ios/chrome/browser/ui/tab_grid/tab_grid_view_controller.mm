@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_top_toolbar.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
@@ -181,29 +182,17 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-  self.viewVisible = YES;
-  [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
-  [self configureViewControllerForCurrentSizeClassesAndPage];
-  // The toolbars should be hidden (alpha 0.0) before the tab appears, so that
-  // they can be animated in. They can't be set to 0.0 here, because if
-  // |animated| is YES, this method is being called inside the animation block.
-  if (animated && self.transitionCoordinator) {
-    [self animateToolbarsForAppearance];
-  } else {
-    [self showToolbars];
+  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
+    [self contentWillAppearAnimated:animated];
   }
-  [self broadcastIncognitoContentVisibility];
   [super viewWillAppear:animated];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
-  self.initialFrame = self.view.frame;
-  // Modify Remote Tabs Insets when page appears and during rotation.
-  [self setInsetForRemoteTabs];
-  // Let image sources know the initial appearance is done.
-  [self.regularTabsImageDataSource clearPreloadedSnapshots];
-  [self.incognitoTabsImageDataSource clearPreloadedSnapshots];
+  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
+    [self contentDidAppear];
+  }
 }
 
 - (void)viewDidLayoutSubviews {
@@ -213,16 +202,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-  self.undoCloseAllAvailable = NO;
-  [self.regularTabsDelegate discardSavedClosedItems];
-  // When the view disappears, the toolbar alpha should be set to 0; either as
-  // part of the animation, or directly with -hideToolbars.
-  if (animated && self.transitionCoordinator) {
-    [self animateToolbarsForDisappearance];
-  } else {
-    [self hideToolbars];
+  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
+    [self contentWillDisappearAnimated:animated];
   }
-  self.viewVisible = NO;
   [super viewWillDisappear:animated];
 }
 
@@ -379,6 +361,53 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     case TabGridPageRemoteTabs:
       // Nothing to do.
       break;
+  }
+}
+
+- (void)contentWillAppearAnimated:(BOOL)animated {
+  self.viewVisible = YES;
+  [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
+  [self configureViewControllerForCurrentSizeClassesAndPage];
+  // The toolbars should be hidden (alpha 0.0) before the tab appears, so that
+  // they can be animated in. They can't be set to 0.0 here, because if
+  // |animated| is YES, this method is being called inside the animation block.
+  if (animated && self.transitionCoordinator) {
+    [self animateToolbarsForAppearance];
+  } else {
+    [self showToolbars];
+  }
+  [self broadcastIncognitoContentVisibility];
+
+  if (base::FeatureList::IsEnabled(kContainedBVC)) {
+    [self.incognitoTabsViewController contentWillAppearAnimated:animated];
+    [self.regularTabsViewController contentWillAppearAnimated:animated];
+  }
+}
+
+- (void)contentDidAppear {
+  self.initialFrame = self.view.frame;
+  // Modify Remote Tabs Insets when page appears and during rotation.
+  [self setInsetForRemoteTabs];
+  // Let image sources know the initial appearance is done.
+  [self.regularTabsImageDataSource clearPreloadedSnapshots];
+  [self.incognitoTabsImageDataSource clearPreloadedSnapshots];
+}
+
+- (void)contentWillDisappearAnimated:(BOOL)animated {
+  self.undoCloseAllAvailable = NO;
+  [self.regularTabsDelegate discardSavedClosedItems];
+  // When the view disappears, the toolbar alpha should be set to 0; either as
+  // part of the animation, or directly with -hideToolbars.
+  if (animated && self.transitionCoordinator) {
+    [self animateToolbarsForDisappearance];
+  } else {
+    [self hideToolbars];
+  }
+  self.viewVisible = NO;
+
+  if (base::FeatureList::IsEnabled(kContainedBVC)) {
+    [self.incognitoTabsViewController contentWillDisappear];
+    [self.regularTabsViewController contentWillDisappear];
   }
 }
 

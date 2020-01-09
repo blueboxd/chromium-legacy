@@ -2,71 +2,62 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-'use strict';
-
-/**
- * Namespace for the Camera app.
- */
-var cca = cca || {};
-
-/**
- * Namespace for the background page.
- */
-cca.bg = {};
+import {
+  BackgroundOps,  // eslint-disable-line no-unused-vars
+  ForegroundOps,  // eslint-disable-line no-unused-vars
+} from './background_ops.js';
+import {Intent} from './intent.js';
+import {PerfEvent, PerfLogger} from './perf.js';
 
 /**
  * Fixed minimum width of the window inner-bounds in pixels.
  * @type {number}
- * @const
  */
-cca.bg.MIN_WIDTH = 768;
+const MIN_WIDTH = 768;
 
 /**
  * Initial apsect ratio of the window inner-bounds.
  * @type {number}
- * @const
  */
-cca.bg.INITIAL_ASPECT_RATIO = 1.7777777777;
+const INITIAL_ASPECT_RATIO = 1.7777777777;
 
 /**
  * Top bar color of the window.
  * @type {string}
- * @const
  */
-cca.bg.TOPBAR_COLOR = '#000000';
+const TOPBAR_COLOR = '#000000';
 
 /**
  * The id of the test app used in Tast.
  * @type {string}
- * @const
  */
-cca.bg.TEST_API_ID = 'behllobkkfkfnphdnhnkndlbkcpglgmj';
+const TEST_API_ID = 'behllobkkfkfnphdnhnkndlbkcpglgmj';
 
 /**
  * It's used in test to ensure that we won't connect to the main.html target
  * before the window is created, otherwise the window might disappear.
  * @type {?function(string): undefined}
  */
-cca.bg.onAppWindowCreatedForTesting = null;
+let onAppWindowCreatedForTesting = null;
 
 /**
  * It's used in test to catch the perf event before the creation of app window
  * for time measurement before launch.
- * @type {?cca.perf.PerfLogger}
+ * @type {?PerfLogger}
  */
-cca.bg.perfLoggerForTesting = null;
+let perfLoggerForTesting = null;
 
 /**
  * Background object for handling launch event.
- * @type {?cca.bg.Background}
+ * @type {?Background}
  */
-cca.bg.background = null;
+let background = null;
 
 /**
- * State of cca.bg.Window.
+ * State of CCAWindow.
  * @enum {string}
  */
-cca.bg.WindowState = {
+const WindowState = {
   UNINIT: 'uninitialized',
   LAUNCHING: 'launching',
   ACTIVE: 'active',
@@ -79,51 +70,51 @@ cca.bg.WindowState = {
 
 /**
  * Wrapper of AppWindow for tracking its state.
- * @implements {cca.bg.BackgroundOps}
+ * @implements {BackgroundOps}
  */
-cca.bg.Window = class {
+class CCAWindow {
   /**
-   * @param {!function(cca.bg.Window)} onActive Called when window become active
+   * @param {!function(CCAWindow)} onActive Called when window become active
    *     state.
-   * @param {!function(cca.bg.Window)} onSuspended Called when window become
+   * @param {!function(CCAWindow)} onSuspended Called when window become
    *     suspended state.
-   * @param {!function(cca.bg.Window)} onClosed Called when window become closed
+   * @param {!function(CCAWindow)} onClosed Called when window become closed
    *     state.
-   * @param {?cca.perf.PerfLogger} perfLogger The logger for perf events. If it
+   * @param {?PerfLogger} perfLogger The logger for perf events. If it
    *     is null, we will create a new one for the window.
-   * @param {cca.intent.Intent=} intent Intent to be handled by the app window.
+   * @param {Intent=} intent Intent to be handled by the app window.
    *     Set to null for app window not launching from intent.
    */
   constructor(onActive, onSuspended, onClosed, perfLogger, intent = null) {
     /**
-     * @type {!function(!cca.bg.Window)}
+     * @type {!function(!CCAWindow)}
      * @private
      */
     this.onActive_ = onActive;
 
     /**
-     * @type {!function(!cca.bg.Window)}
+     * @type {!function(!CCAWindow)}
      * @private
      */
     this.onSuspended_ = onSuspended;
 
     /**
-     * @type {!function(!cca.bg.Window)}
+     * @type {!function(!CCAWindow)}
      * @private
      */
     this.onClosed_ = onClosed;
 
     /**
-     * @type {?cca.intent.Intent}
+     * @type {?Intent}
      * @private
      */
     this.intent_ = intent;
 
     /**
-     * @type {!cca.perf.PerfLogger}
+     * @type {!PerfLogger}
      * @private
      */
-    this.perfLogger_ = perfLogger || new cca.perf.PerfLogger();
+    this.perfLogger_ = perfLogger || new PerfLogger();
 
     /**
      * @type {?chrome.app.window.AppWindow}
@@ -132,21 +123,21 @@ cca.bg.Window = class {
     this.appWindow_ = null;
 
     /**
-     * @type {?cca.bg.ForegroundOps}
+     * @type {?ForegroundOps}
      * @private
      */
     this.foregroundOps_ = null;
 
     /**
-     * @type {!cca.bg.WindowState}
+     * @type {!WindowState}
      * @private
      */
-    this.state_ = cca.bg.WindowState.UNINIT;
+    this.state_ = WindowState.UNINIT;
   }
 
   /**
    * Gets state of the window.
-   * @return {cca.bg.WindowState}
+   * @return {WindowState}
    */
   get state() {
     return this.state_;
@@ -156,12 +147,11 @@ cca.bg.Window = class {
    * Creates app window and launches app.
    */
   launch() {
-    this.state_ = cca.bg.WindowState.LAUNCHING;
+    this.state_ = WindowState.LAUNCHING;
 
     // The height will be later calculated to match video aspect ratio once the
     // stream is available.
-    var initialHeight =
-        Math.round(cca.bg.MIN_WIDTH / cca.bg.INITIAL_ASPECT_RATIO);
+    const initialHeight = Math.round(MIN_WIDTH / INITIAL_ASPECT_RATIO);
 
     const windowId =
         this.intent_ !== null ? `main-${this.intent_.intentId}` : 'main';
@@ -171,32 +161,31 @@ cca.bg.Window = class {
     chrome.app.window.create(
         windowUrl, {
           id: windowId,
-          frame: {color: cca.bg.TOPBAR_COLOR},
+          frame: {color: TOPBAR_COLOR},
           hidden: true,  // Will be shown from main.js once loaded.
           innerBounds: {
-            width: cca.bg.MIN_WIDTH,
+            width: MIN_WIDTH,
             height: initialHeight,
-            minWidth: cca.bg.MIN_WIDTH,
-            left: Math.round((window.screen.availWidth - cca.bg.MIN_WIDTH) / 2),
+            minWidth: MIN_WIDTH,
+            left: Math.round((window.screen.availWidth - MIN_WIDTH) / 2),
             top: Math.round((window.screen.availHeight - initialHeight) / 2),
           },
         },
         (appWindow) => {
-          this.perfLogger_.start(
-              cca.perf.PerfEvent.LAUNCHING_FROM_WINDOW_CREATION);
+          this.perfLogger_.start(PerfEvent.LAUNCHING_FROM_WINDOW_CREATION);
           this.appWindow_ = appWindow;
           this.appWindow_.onClosed.addListener(() => {
             chrome.storage.local.set({maximized: appWindow.isMaximized()});
             chrome.storage.local.set({fullscreen: appWindow.isFullscreen()});
-            this.state_ = cca.bg.WindowState.CLOSED;
+            this.state_ = WindowState.CLOSED;
             if (this.intent_ !== null && !this.intent_.done) {
               this.intent_.cancel();
             }
             this.onClosed_(this);
           });
           appWindow.contentWindow.backgroundOps = this;
-          if (cca.bg.onAppWindowCreatedForTesting !== null) {
-            cca.bg.onAppWindowCreatedForTesting(windowUrl);
+          if (onAppWindowCreatedForTesting !== null) {
+            onAppWindowCreatedForTesting(windowUrl);
           }
         });
   }
@@ -219,7 +208,7 @@ cca.bg.Window = class {
    * @override
    */
   notifyActivation() {
-    this.state_ = cca.bg.WindowState.ACTIVE;
+    this.state_ = WindowState.ACTIVE;
     // For intent only requiring open camera with specific mode without
     // returning the capture result, called onIntentHandled() right
     // after app successfully launched.
@@ -233,7 +222,7 @@ cca.bg.Window = class {
    * @override
    */
   notifySuspension() {
-    this.state_ = cca.bg.WindowState.SUSPENDED;
+    this.state_ = WindowState.SUSPENDED;
     this.onSuspended_(this);
   }
 
@@ -248,11 +237,11 @@ cca.bg.Window = class {
    * Suspends the app window.
    */
   suspend() {
-    if (this.state_ === cca.bg.WindowState.LAUNCHING) {
+    if (this.state_ === WindowState.LAUNCHING) {
       console.error('Call suspend() while window is still launching.');
       return;
     }
-    this.state_ = cca.bg.WindowState.SUSPENDING;
+    this.state_ = WindowState.SUSPENDING;
     this.foregroundOps_.suspend();
   }
 
@@ -260,7 +249,7 @@ cca.bg.Window = class {
    * Resumes the app window.
    */
   resume() {
-    this.state_ = cca.bg.WindowState.RESUMING;
+    this.state_ = WindowState.RESUMING;
     this.foregroundOps_.resume();
   }
 
@@ -268,35 +257,35 @@ cca.bg.Window = class {
    * Closes the app window.
    */
   close() {
-    this.state_ = cca.bg.WindowState.CLOSING;
+    this.state_ = WindowState.CLOSING;
     this.appWindow_.close();
   }
-};
+}
 
 /**
  * Launch event handler runs in background.
  */
-cca.bg.Background = class {
+class Background {
   /**
    */
   constructor() {
     /**
      * Launch window handles launch event triggered from app launcher.
-     * @type {?cca.bg.Window}
+     * @type {?CCAWindow}
      * @private
      */
     this.launcherWindow_ = null;
 
     /**
      * Intent window handles launch event triggered from ARC++ intent.
-     * @type {?cca.bg.Window}
+     * @type {?CCAWindow}
      * @private
      */
     this.intentWindow_ = null;
 
     /**
      * The pending intent arrived when foreground window is busy.
-     * @type {?cca.intent.Intent}
+     * @type {?Intent}
      */
     this.pendingIntent_ = null;
   }
@@ -330,7 +319,7 @@ cca.bg.Background = class {
 
   /**
    * Returns a Window object handling launch event triggered from app launcher.
-   * @return {!cca.bg.Window}
+   * @return {!CCAWindow}
    * @private
    */
   createLauncherWindow_() {
@@ -364,16 +353,16 @@ cca.bg.Background = class {
         this.processPendingIntent_();
       }
     };
-    const wnd = new cca.bg.Window(
-        onActive, onSuspended, onClosed, cca.bg.perfLoggerForTesting);
-    cca.bg.perfLoggerForTesting = null;
+    const wnd =
+        new CCAWindow(onActive, onSuspended, onClosed, perfLoggerForTesting);
+    perfLoggerForTesting = null;
     return wnd;
   }
 
   /**
    * Returns a Window object handling launch event triggered from ARC++ intent.
-   * @param {!cca.intent.Intent} intent Intent forwarding from ARC++.
-   * @return {!cca.bg.Window}
+   * @param {!Intent} intent Intent forwarding from ARC++.
+   * @return {!CCAWindow}
    * @private
    */
   createIntentWindow_(intent) {
@@ -381,7 +370,7 @@ cca.bg.Background = class {
       this.assert_(wnd === this.intentWindow_, 'Wrong active intent window.');
       this.assert_(
           !this.launcherWindow_ ||
-              this.launcherWindow_.state === cca.bg.WindowState.SUSPENDED,
+              this.launcherWindow_.state === WindowState.SUSPENDED,
           () => `Launch window is ${
               this.launcherWindow_.state} when intent window is active.`);
       if (this.pendingIntent_) {
@@ -397,7 +386,7 @@ cca.bg.Background = class {
       this.assert_(wnd === this.intentWindow_, 'Wrong closed intent window.');
       this.assert_(
           !this.launcherWindow_ ||
-              this.launcherWindow_.state === cca.bg.WindowState.SUSPENDED,
+              this.launcherWindow_.state === WindowState.SUSPENDED,
           () => `Launch window is ${
               this.launcherWindow_.state} when intent window is closed.`);
       this.intentWindow_ = null;
@@ -407,9 +396,9 @@ cca.bg.Background = class {
         this.launcherWindow_.resume();
       }
     };
-    const wnd = new cca.bg.Window(
-        onActive, onSuspended, onClosed, cca.bg.perfLoggerForTesting, intent);
-    cca.bg.perfLoggerForTesting = null;
+    const wnd = new CCAWindow(
+        onActive, onSuspended, onClosed, perfLoggerForTesting, intent);
+    perfLoggerForTesting = null;
     return wnd;
   }
 
@@ -430,7 +419,7 @@ cca.bg.Background = class {
   /**
    * Closes the existing pending intent and replaces it with a new incoming
    * intent.
-   * @param {!cca.intent.Intent} intent New incoming intent.
+   * @param {!Intent} intent New incoming intent.
    * @private
    */
   replacePendingIntent_(intent) {
@@ -442,16 +431,16 @@ cca.bg.Background = class {
 
   /**
    * Handles launch event triggered from ARC++ intent.
-   * @param {!cca.intent.Intent} intent Intent forwarding from ARC++.
+   * @param {!Intent} intent Intent forwarding from ARC++.
    */
   launchIntent(intent) {
     if (this.intentWindow_) {
       switch (this.intentWindow_.state) {
-        case cca.bg.WindowState.LAUNCHING:
-        case cca.bg.WindowState.CLOSING:
+        case WindowState.LAUNCHING:
+        case WindowState.CLOSING:
           this.replacePendingIntent_(intent);
           break;
-        case cca.bg.WindowState.ACTIVE:
+        case WindowState.ACTIVE:
           this.replacePendingIntent_(intent);
           this.intentWindow_.close();
           break;
@@ -463,13 +452,13 @@ cca.bg.Background = class {
       }
     } else if (this.launcherWindow_) {
       switch (this.launcherWindow_.state) {
-        case cca.bg.WindowState.LAUNCHING:
-        case cca.bg.WindowState.SUSPENDING:
-        case cca.bg.WindowState.RESUMING:
-        case cca.bg.WindowState.CLOSING:
+        case WindowState.LAUNCHING:
+        case WindowState.SUSPENDING:
+        case WindowState.RESUMING:
+        case WindowState.CLOSING:
           this.replacePendingIntent_(intent);
           break;
-        case cca.bg.WindowState.ACTIVE:
+        case WindowState.ACTIVE:
           this.assert_(
               !this.pendingIntent_,
               'Pending intent is not processed when launch window is active.');
@@ -487,7 +476,7 @@ cca.bg.Background = class {
       this.intentWindow_.launch();
     }
   }
-};
+}
 
 /**
  * Handles messages from the test extension used in Tast.
@@ -499,72 +488,70 @@ cca.bg.Background = class {
  * @return {boolean|undefined} True to indicate the response is sent
  *     asynchronously.
  */
-cca.bg.handleExternalMessageFromTest = function(message, sender, sendResponse) {
-  if (sender.id !== cca.bg.TEST_API_ID) {
+function handleExternalMessageFromTest(message, sender, sendResponse) {
+  if (sender.id !== TEST_API_ID) {
     console.warn(`Unknown sender id: ${sender.id}`);
     return;
   }
   switch (message.action) {
     case 'SET_WINDOW_CREATED_CALLBACK':
-      cca.bg.onAppWindowCreatedForTesting = sendResponse;
+      onAppWindowCreatedForTesting = sendResponse;
       return true;
     default:
       console.warn(`Unknown action: ${message.action}`);
   }
-};
+}
 
 /**
  * Handles connection from the test extension used in Tast.
  * @param {Port} port The port that used to do two-way communication.
  */
-cca.bg.handleExternalConnectionFromTest = function(port) {
-  if (port.sender.id !== cca.bg.TEST_API_ID) {
+function handleExternalConnectionFromTest(port) {
+  if (port.sender.id !== TEST_API_ID) {
     console.warn(`Unknown sender id: ${port.sender.id}`);
     return;
   }
   switch (port.name) {
     case 'SET_PERF_CONNECTION':
       port.onMessage.addListener((event) => {
-        if (cca.bg.perfLoggerForTesting === null) {
-          cca.bg.perfLoggerForTesting = new cca.perf.PerfLogger();
+        if (perfLoggerForTesting === null) {
+          perfLoggerForTesting = new PerfLogger();
 
-          cca.bg.perfLoggerForTesting.addListener((event, duration, extras) => {
+          perfLoggerForTesting.addListener((event, duration, extras) => {
             port.postMessage({event, duration, extras});
           });
         }
 
         const {name} = event;
-        if (name !== cca.perf.PerfEvent.LAUNCHING_FROM_LAUNCH_APP_COLD &&
-            name !== cca.perf.PerfEvent.LAUNCHING_FROM_LAUNCH_APP_WARM) {
+        if (name !== PerfEvent.LAUNCHING_FROM_LAUNCH_APP_COLD &&
+            name !== PerfEvent.LAUNCHING_FROM_LAUNCH_APP_WARM) {
           console.warn(`Unknown event name from test: ${name}`);
           return;
         }
-        cca.bg.perfLoggerForTesting.start(name);
+        perfLoggerForTesting.start(name);
       });
       return;
     default:
       console.warn(`Unknown port name: ${port.name}`);
   }
-};
+}
 
 chrome.app.runtime.onLaunched.addListener((launchData) => {
-  if (!cca.bg.background) {
-    cca.bg.background = new cca.bg.Background();
+  if (!background) {
+    background = new Background();
   }
   try {
     if (launchData.url) {
-      const intent = cca.intent.Intent.create(new URL(launchData.url));
-      cca.bg.background.launchIntent(intent);
+      const intent = Intent.create(new URL(launchData.url));
+      background.launchIntent(intent);
     } else {
-      cca.bg.background.launchApp();
+      background.launchApp();
     }
   } catch (e) {
     console.error(e.stack);
   }
 });
 
-chrome.runtime.onMessageExternal.addListener(
-    cca.bg.handleExternalMessageFromTest);
+chrome.runtime.onMessageExternal.addListener(handleExternalMessageFromTest);
 
-chrome.runtime.onConnectExternal.addListener(
-    cca.bg.handleExternalConnectionFromTest);
+chrome.runtime.onConnectExternal.addListener(handleExternalConnectionFromTest);

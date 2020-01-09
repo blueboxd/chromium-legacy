@@ -54,9 +54,7 @@ class BookmarkModelMerger {
   class RemoteTreeNode final {
    private:
     using UpdatesPerParentId =
-        std::unordered_map<base::StringPiece,
-                           syncer::UpdateResponseDataList,
-                           base::StringPieceHash>;
+        std::unordered_map<std::string, syncer::UpdateResponseDataList>;
 
    public:
     // Constructs a tree given |update| as root and recursively all descendants
@@ -65,9 +63,8 @@ class BookmarkModelMerger {
     // |*updates_per_parent_id| must represent valid updates. Updates
     // corresponding from descendant nodes are moved away from
     // |*updates_per_parent_id|.
-    static RemoteTreeNode BuildTree(
-        std::unique_ptr<syncer::UpdateResponseData> update,
-        UpdatesPerParentId* updates_per_parent_id);
+    static RemoteTreeNode BuildTree(syncer::UpdateResponseData update,
+                                    UpdatesPerParentId* updates_per_parent_id);
 
     ~RemoteTreeNode();
 
@@ -75,8 +72,8 @@ class BookmarkModelMerger {
     RemoteTreeNode(RemoteTreeNode&&);
     RemoteTreeNode& operator=(RemoteTreeNode&&);
 
-    const syncer::EntityData& entity() const { return *update_->entity; }
-    int64_t response_version() const { return update_->response_version; }
+    const syncer::EntityData& entity() const { return update_.entity; }
+    int64_t response_version() const { return update_.response_version; }
 
     // Direct children nodes, sorted by ascending unique position. These are
     // guaranteed to be valid updates (e.g. IsValidBookmarkSpecifics()).
@@ -94,7 +91,7 @@ class BookmarkModelMerger {
 
     RemoteTreeNode();
 
-    std::unique_ptr<syncer::UpdateResponseData> update_;
+    syncer::UpdateResponseData update_;
     std::vector<RemoteTreeNode> children_;
   };
 

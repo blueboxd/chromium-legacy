@@ -72,6 +72,11 @@ void FakeServiceWorkerContext::CheckHasServiceWorker(
     CheckHasServiceWorkerCallback callback) {
   NOTREACHED();
 }
+void FakeServiceWorkerContext::CheckOfflineCapability(
+    const GURL& url,
+    const ServiceWorkerContext::CheckOfflineCapabilityCallback callback) {
+  NOTREACHED();
+}
 void FakeServiceWorkerContext::ClearAllServiceWorkersForTest(
     base::OnceClosure) {
   NOTREACHED();

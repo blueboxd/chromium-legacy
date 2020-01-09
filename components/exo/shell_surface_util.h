@@ -43,6 +43,13 @@ void SetShellStartupId(aura::Window* window,
                        const base::Optional<std::string>& id);
 const std::string* GetShellStartupId(aura::Window* window);
 
+// Sets the client accessibility ID for the window. The accessibility ID
+// identifies the accessibility tree provided by client.
+void SetShellClientAccessibilityId(aura::Window* window,
+                                   const base::Optional<int32_t>& id);
+const base::Optional<int32_t> GetShellClientAccessibilityId(
+    aura::Window* window);
+
 // Sets the main surface for the window.
 void SetShellMainSurface(aura::Window* window, Surface* surface);
 

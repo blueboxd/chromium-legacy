@@ -25,14 +25,16 @@ SerialPortUnderlyingSink::SerialPortUnderlyingSink(
 
 ScriptPromise SerialPortUnderlyingSink::start(
     ScriptState* script_state,
-    WritableStreamDefaultController* controller) {
+    WritableStreamDefaultController* controller,
+    ExceptionState& exception_state) {
   return ScriptPromise::CastUndefined(script_state);
 }
 
 ScriptPromise SerialPortUnderlyingSink::write(
     ScriptState* script_state,
     ScriptValue chunk,
-    WritableStreamDefaultController* controller) {
+    WritableStreamDefaultController* controller,
+    ExceptionState& exception_state) {
   // There can only be one call to write() in progress at a time.
   DCHECK(buffer_source_.IsNull());
   DCHECK_EQ(0u, offset_);
@@ -42,18 +44,15 @@ ScriptPromise SerialPortUnderlyingSink::write(
     DOMException* exception = pending_exception_;
     pending_exception_ = nullptr;
     serial_port_->UnderlyingSinkClosed();
-    return ScriptPromise::RejectWithDOMException(script_state, exception);
+    exception_state.RethrowV8Exception(ToV8(exception, script_state));
+    return ScriptPromise();
   }
-
-  ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionState::kExecutionContext,
-                                 "SerialPortUnderlyingSink", "write");
 
   V8ArrayBufferOrArrayBufferView::ToImpl(
       script_state->GetIsolate(), chunk.V8Value(), buffer_source_,
       UnionTypeConversionMode::kNotNullable, exception_state);
   if (exception_state.HadException())
-    return ScriptPromise::Reject(script_state, exception_state);
+    return ScriptPromise();
 
   pending_write_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = pending_write_->Promise();
@@ -62,7 +61,8 @@ ScriptPromise SerialPortUnderlyingSink::write(
   return promise;
 }
 
-ScriptPromise SerialPortUnderlyingSink::close(ScriptState* script_state) {
+ScriptPromise SerialPortUnderlyingSink::close(ScriptState* script_state,
+                                              ExceptionState& exception_state) {
   // The specification guarantees that this will only be called after all
   // pending writes have been completed.
   DCHECK(!pending_write_);
@@ -74,7 +74,8 @@ ScriptPromise SerialPortUnderlyingSink::close(ScriptState* script_state) {
   if (pending_exception_) {
     DOMException* exception = pending_exception_;
     pending_exception_ = nullptr;
-    return ScriptPromise::RejectWithDOMException(script_state, exception);
+    exception_state.RethrowV8Exception(ToV8(exception, script_state));
+    return ScriptPromise();
   }
 
   // TODO(crbug.com/989656): close() should wait for data to be flushed before
@@ -83,12 +84,13 @@ ScriptPromise SerialPortUnderlyingSink::close(ScriptState* script_state) {
 }
 
 ScriptPromise SerialPortUnderlyingSink::abort(ScriptState* script_state,
-                                              ScriptValue reason) {
+                                              ScriptValue reason,
+                                              ExceptionState& exception_state) {
   // The specification guarantees that this will only be called after all
   // pending writes have been completed.
   // TODO(crbug.com/969653): abort() should trigger a purge of the serial write
   // buffers.
-  return close(script_state);
+  return close(script_state, exception_state);
 }
 
 void SerialPortUnderlyingSink::SignalErrorOnClose(DOMException* exception) {

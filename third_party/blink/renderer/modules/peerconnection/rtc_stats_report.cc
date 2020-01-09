@@ -27,7 +27,7 @@ v8::Local<v8::Value> RTCStatsToValue(ScriptState* script_state,
     std::unique_ptr<RTCStatsMember> member = stats->GetMember(i);
     if (!member->IsDefined())
       continue;
-    WebString name = member->GetName();
+    String name = member->GetName();
     switch (member->GetType()) {
       case webrtc::RTCStatsMemberInterface::kBool:
         builder.AddBoolean(name, member->ValueBool());

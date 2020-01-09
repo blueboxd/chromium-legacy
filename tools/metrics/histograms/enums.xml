@@ -21710,6 +21710,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1426" label="WEBCAMPRIVATE_SET_HOME"/>
   <int value="1427" label="INPUTMETHODPRIVATE_RESET"/>
   <int value="1428" label="PRINTING_GETPRINTERINFO"/>
+  <int value="1429" label="AUTOTESTPRIVATE_ISARCPACKAGELISTINITIALREFRESHED"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -36419,6 +36420,7 @@ from previous Chrome versions.
   <int value="-1872989945" label="enable-webview-based-signin"/>
   <int value="-1872867546" label="EnumerateAudioDevices:disabled"/>
   <int value="-1872205507" label="ShelfNewUi:enabled"/>
+  <int value="-1871552967" label="DesktopPWAsTabStrip:disabled"/>
   <int value="-1871185948" label="VrLaunchIntents:disabled"/>
   <int value="-1870961970" label="enable-filemanager-mtp"/>
   <int value="-1869845022" label="force-show-update-menu-item"/>
@@ -37795,6 +37797,7 @@ from previous Chrome versions.
   <int value="-141516902" label="UseModernMediaControls:enabled"/>
   <int value="-140168253" label="ProfileMenuRevamp:enabled"/>
   <int value="-138983372" label="DesktopPWAWindowing:disabled"/>
+  <int value="-138820512" label="DesktopPWAsTabStrip:enabled"/>
   <int value="-138773929" label="PassiveDocumentEventListeners:enabled"/>
   <int value="-138760381" label="AutofillManualFallbackAndroid:enabled"/>
   <int value="-137303226" label="enable-chromevox-developer-option"/>

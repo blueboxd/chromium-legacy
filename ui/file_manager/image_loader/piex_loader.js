@@ -16,13 +16,13 @@ console.log('[PiexLoader] wasm mode loaded');
  *   image: function(number, number):PiexWasmImageResult
  * }}
  */
-var PiexWasmModule;
+let PiexWasmModule;
 
 /**
  * |window| var Module defined in page <script src='piex/piex.js.wasm'>.
  * @type {PiexWasmModule}
  */
-var Module = window['Module'] || {};
+const PiexModule = window['Module'] || {};
 
 /**
  * Set true only if the wasm Module.onAbort() handler is called.
@@ -35,7 +35,7 @@ let wasmFailed = false;
  * the Module has failed and re-throws the error.
  * @throws {!Error|string}
  */
-Module.onAbort = (error) => {
+PiexModule.onAbort = (error) => {
   wasmFailed = true;
   throw error;
 };
@@ -49,7 +49,7 @@ Module.onAbort = (error) => {
  * broken Module state.
  */
 function wasmModuleFailed() {
-  if (wasmFailed || !Module.calledRun) {
+  if (wasmFailed || !PiexModule.calledRun) {
     console.error('[PiexLoader] wasmModuleFailed');
     setTimeout(chrome.runtime.reload, 0);
     return true;
@@ -178,7 +178,7 @@ function readFromFileSystem(url) {
  *  length:number
  * }}
  */
-var PiexWasmPreviewImageMetadata;
+let PiexWasmPreviewImageMetadata;
 
 /**
  * The piex wasm Module.image(<raw image source>,...) API returns |error|, or
@@ -196,7 +196,7 @@ var PiexWasmPreviewImageMetadata;
  *  details:?Object
  * }}
  */
-var PiexWasmImageResult;
+let PiexWasmImageResult;
 
 /**
  * Piex wasm raw image preview image extractor.
@@ -242,13 +242,13 @@ class ImageBuffer {
    * @throws {!Error}
    */
   process() {
-    this.memory = Module._malloc(this.length);
+    this.memory = PiexModule._malloc(this.length);
     if (!this.memory) {
       throw new Error('Image malloc failed: ' + this.length + ' bytes');
     }
 
-    Module.HEAP8.set(this.source, this.memory);
-    const result = Module.image(this.memory, this.length);
+    PiexModule.HEAP8.set(this.source, this.memory);
+    const result = PiexModule.image(this.memory, this.length);
     if (result.error) {
       throw new Error(result.error);
     }
@@ -310,7 +310,7 @@ class ImageBuffer {
       return null;
     }
 
-    let format = {};
+    const format = {};
     for (const [key, value] of Object.entries(details)) {
       if (typeof value === 'string') {
         format[key] = value.replace(/\0+$/, '').trim();
@@ -330,7 +330,7 @@ class ImageBuffer {
    * Release resources.
    */
   close() {
-    Module._free(this.memory);
+    PiexModule._free(this.memory);
   }
 }
 

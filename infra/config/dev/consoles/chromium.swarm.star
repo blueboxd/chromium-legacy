@@ -5,7 +5,6 @@ luci.console_view(
     entries = [
         luci.console_view_entry(builder = 'ci/Android N5 Swarm'),
         luci.console_view_entry(builder = 'ci/Android N5X Swarm'),
-        luci.console_view_entry(builder = 'ci/ChromeOS Swarm'),
         luci.console_view_entry(builder = 'ci/Linux Swarm'),
         luci.console_view_entry(builder = 'ci/Mac Swarm'),
         luci.console_view_entry(builder = 'ci/Windows Swarm'),

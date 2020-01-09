@@ -519,7 +519,7 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Goldmont) {
   EXPECT_NE(cmds.end(), found);
 }
 
-TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm) {
+TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm32) {
   CPUIdentity cpuid;
   cpuid.arch = "armv7l";
   cpuid.vendor = "";
@@ -536,12 +536,37 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm) {
                    [](const RandomSelector::WeightAndValue& cmd) -> bool {
                      return cmd.value == kPerfLBRCmd;
                    });
-  EXPECT_EQ(cmds.end(), found) << "ARM does not support this command";
+  EXPECT_EQ(cmds.end(), found) << "ARM32 does not support this command";
   found = std::find_if(cmds.begin(), cmds.end(),
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
                          return cmd.value == kPerfCacheMissesCmd;
                        });
-  EXPECT_EQ(cmds.end(), found) << "ARM does not support this command";
+  EXPECT_EQ(cmds.end(), found) << "ARM32 does not support this command";
+}
+
+TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_Arm64) {
+  CPUIdentity cpuid;
+  cpuid.arch = "aarch64";
+  cpuid.vendor = "";
+  cpuid.family = 0;
+  cpuid.model = 0;
+  cpuid.model_name = "";
+  std::vector<RandomSelector::WeightAndValue> cmds =
+      internal::GetDefaultCommandsForCpu(cpuid);
+  ASSERT_GE(cmds.size(), 2UL);
+  EXPECT_EQ(cmds[0].value, kPerfCyclesCmd);
+  EXPECT_EQ(cmds[1].value, kPerfFPCallgraphCmd);
+  auto found =
+      std::find_if(cmds.begin(), cmds.end(),
+                   [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                     return cmd.value == kPerfLBRCmd;
+                   });
+  EXPECT_EQ(cmds.end(), found) << "ARM64 does not support this command";
+  found = std::find_if(cmds.begin(), cmds.end(),
+                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
+                         return cmd.value == kPerfCacheMissesCmd;
+                       });
+  EXPECT_EQ(cmds.end(), found) << "ARM64 does not support this command";
 }
 
 TEST_F(PerfCollectorTest, DefaultCommandsBasedOnArch_x86_32) {

@@ -4,7 +4,7 @@
 
 #include "chrome/common/chrome_features.h"
 
-#include <vector>
+#include <array>
 
 #include "base/command_line.h"
 #include "base/no_destructor.h"
@@ -261,6 +261,10 @@ const base::Feature kDesktopPWAsCacheDuringDefaultInstall{
 // changes its manifest.
 const base::Feature kDesktopPWAsLocalUpdating{"DesktopPWAsLocalUpdating",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Adds a tab strip to PWA windows, used for UI experimentation.
+const base::Feature kDesktopPWAsTabStrip{"DesktopPWAsTabStrip",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables use of new Desktop PWAs browser controller (that uses the
 // universal web_app::AppRegistrar) by extensions-based bookmark apps. Note that
@@ -737,23 +741,12 @@ const base::Feature kHeavyAdPrivacyMitigations{
     "HeavyAdPrivacyMitigations", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
-const base::Feature kUseDisplayWideColorGamut{"UseDisplayWideColorGamut",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 bool UseDisplayWideColorGamut() {
   auto compute_use_display_wide_color_gamut = []() {
-    // Enabled this feature for devices listed in "enabled_models" field trial
-    // param. This is a comma separated list.
-    std::string enabled_models_list = base::GetFieldTrialParamValueByFeature(
-        kUseDisplayWideColorGamut, "enabled_models");
-    if (enabled_models_list.empty())
-      return false;
-
     const char* current_model =
         base::android::BuildInfo::GetInstance()->model();
-    std::vector<std::string> enabled_models =
-        base::SplitString(enabled_models_list, ",", base::KEEP_WHITESPACE,
-                          base::SPLIT_WANT_NONEMPTY);
+    const std::array<std::string, 2> enabled_models = {
+        std::string{"Pixel 4"}, std::string{"Pixel 4 XL"}};
     for (const std::string& model : enabled_models) {
       if (model == current_model)
         return true;

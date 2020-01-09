@@ -3890,6 +3890,9 @@ The site does NOT gain access to the camera. The camera images are only visible 
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_SWITCH" desc="Title for the switch toggling whether Autofill Assistant is enabled. [CHAR-LIMIT=32]">
         Assistant Triggered Checkout
       </message>
+      <message name="IDS_PREFS_AUTOFILL_ASSISTANT_SUMMARY" desc="Description for the Autofill Assistant toggle.">
+       To complete tasks on the web via Google Assistant, Chrome sends a site's URL, site content, and relevant personal information to Google
+      </message>
       <!-- Usage Stats strings -->
       <message name="IDS_USAGE_STATS_CONSENT_TITLE" desc="Title for activity authorizing Digital Wellbeing to access Chrome usage data">
         Show your Chrome activity in Digital Wellbeing?

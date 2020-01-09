@@ -46,12 +46,10 @@ const int kGpuTimeout = 10000;
 // between V1 and V2.
 #if defined(CYGPROFILE_INSTRUMENTATION)
 const int kNewGpuTimeout = 30000;
-#elif defined(OS_WIN) || defined(OS_ANDROID)
-const int kNewGpuTimeout = 15000;
 #elif defined(OS_MACOSX)
 const int kNewGpuTimeout = 17000;
 #else
-const int kNewGpuTimeout = 10000;
+const int kNewGpuTimeout = 15000;
 #endif
 
 // Histogram parameters for GPU.WatchdogThread.V1.ExtraThreadTime and
@@ -107,7 +105,8 @@ GpuWatchdogThreadImplV1::GpuWatchdogThreadImplV1()
 
 #if defined(USE_X11)
   tty_file_ = base::OpenFile(base::FilePath(kTtyFilePath), "r");
-  host_tty_ = GetActiveTTY();
+  UpdateActiveTTY();
+  host_tty_ = active_tty_;
 #endif
   base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer_);
 }
@@ -437,11 +436,13 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
 
 #if defined(USE_X11)
   // Don't crash if we're not on the TTY of our host X11 server.
-  int active_tty = GetActiveTTY();
-  if (host_tty_ != -1 && active_tty != -1 && host_tty_ != active_tty) {
-    GpuWatchdogTimeoutHistogram(
-        GpuWatchdogTimeoutEvent::kContinueOnNonHostServerTty);
-
+  UpdateActiveTTY();
+  if (host_tty_ != -1 && active_tty_ != -1 && host_tty_ != active_tty_) {
+    // Only record for the time there is a change on TTY
+    if (last_active_tty_ != active_tty_) {
+      GpuWatchdogTimeoutHistogram(
+          GpuWatchdogTimeoutEvent::kContinueOnNonHostServerTty);
+    }
     OnAcknowledge();
     return;
   }
@@ -609,16 +610,18 @@ base::ThreadTicks GpuWatchdogThreadImplV1::GetWatchedThreadTime() {
 #endif
 
 #if defined(USE_X11)
-int GpuWatchdogThreadImplV1::GetActiveTTY() const {
+void GpuWatchdogThreadImplV1::UpdateActiveTTY() {
+  last_active_tty_ = active_tty_;
+
+  active_tty_ = -1;
   char tty_string[8] = {0};
   if (tty_file_ && !fseek(tty_file_, 0, SEEK_SET) &&
       fread(tty_string, 1, 7, tty_file_)) {
     int tty_number;
-    size_t num_res = sscanf(tty_string, "tty%d\n", &tty_number);
-    if (num_res == 1)
-      return tty_number;
+    if (sscanf(tty_string, "tty%d\n", &tty_number) == 1) {
+      active_tty_ = tty_number;
+    }
   }
-  return -1;
 }
 #endif
 

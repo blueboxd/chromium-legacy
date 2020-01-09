@@ -21,9 +21,9 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/mojom/blob/blob.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_stream_handle.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-forward.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-forward.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_stream_handle.mojom-forward.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-forward.h"
 
 namespace network {

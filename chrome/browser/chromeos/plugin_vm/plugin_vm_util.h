@@ -60,7 +60,7 @@ bool IsPluginVmEnabled(Profile* profile);
 // Determines if the default Plugin VM is running and visible.
 bool IsPluginVmRunning(Profile* profile);
 
-void ShowPluginVmLauncherView(Profile* profile);
+void ShowPluginVmInstallerView(Profile* profile);
 
 // Checks if an window is for plugin vm.
 bool IsPluginVmWindow(const aura::Window* window);

@@ -59,8 +59,6 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
 
   void Reset();
 
-  void DispatchChangeEvent();
-
   HTMLFormElement* formOwner() const final;
 
   bool IsDisabledFormControl() const override;

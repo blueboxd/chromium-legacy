@@ -282,8 +282,13 @@ def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False):
           command, env, stdoutfile=output_paths.logs)
     else:
       with open(output_paths.logs, 'w') as handle:
-        return_code = test_env.run_command_output_to_handle(
-            command, handle, env=env)
+        try:
+          return_code = test_env.run_command_output_to_handle(
+              command, handle, env=env)
+        except OSError as e:
+          print('Command to run gtest perf test %s failed with an OSError: %s' %
+                e)
+          return_code = 1
     if not os.path.exists(output_paths.perf_results):
       # Get the correct json format from the stdout to write to the perf
       # results file if gtest does not generate one.
@@ -296,12 +301,17 @@ def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False):
   except Exception:
     traceback.print_exc()
     return_code = 1
-  if command_generator.executable_name in GTEST_CONVERSION_WHITELIST:
-    with path_util.SysPath(path_util.GetTracingDir()):
-      # pylint: disable=no-name-in-module
-      from tracing.value import gtest_json_converter
-      # pylint: enable=no-name-in-module
-    gtest_json_converter.ConvertGtestJsonFile(output_paths.perf_results)
+  if os.path.exists(output_paths.perf_results):
+    if command_generator.executable_name in GTEST_CONVERSION_WHITELIST:
+      with path_util.SysPath(path_util.GetTracingDir()):
+        # pylint: disable=no-name-in-module
+        from tracing.value import gtest_json_converter
+        # pylint: enable=no-name-in-module
+      gtest_json_converter.ConvertGtestJsonFile(output_paths.perf_results)
+  else:
+    print('ERROR: gtest perf test %s did not generate perf output' %
+          output_paths.name)
+    return_code = 1
   write_simple_test_results(return_code, output_paths.test_results,
                             output_paths.name)
   return return_code

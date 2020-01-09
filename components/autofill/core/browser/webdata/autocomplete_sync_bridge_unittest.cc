@@ -220,13 +220,13 @@ class AutocompleteSyncBridgeTest : public testing::Test {
   }
 
   std::string GetClientTag(const AutofillSpecifics& specifics) {
-    std::string tag = bridge()->GetClientTag(*SpecificsToEntity(specifics));
+    std::string tag = bridge()->GetClientTag(SpecificsToEntity(specifics));
     EXPECT_FALSE(tag.empty());
     return tag;
   }
 
   std::string GetStorageKey(const AutofillSpecifics& specifics) {
-    std::string key = bridge()->GetStorageKey(*SpecificsToEntity(specifics));
+    std::string key = bridge()->GetStorageKey(SpecificsToEntity(specifics));
     EXPECT_FALSE(key.empty());
     return key;
   }
@@ -241,19 +241,18 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     return changes;
   }
 
-  std::unique_ptr<EntityData> SpecificsToEntity(
-      const AutofillSpecifics& specifics) {
-    auto data = std::make_unique<EntityData>();
-    *data->specifics.mutable_autofill() = specifics;
-    data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
-        syncer::AUTOFILL, bridge()->GetClientTag(*data));
+  EntityData SpecificsToEntity(const AutofillSpecifics& specifics) {
+    EntityData data;
+    *data.specifics.mutable_autofill() = specifics;
+    data.client_tag_hash = syncer::ClientTagHash::FromUnhashed(
+        syncer::AUTOFILL, bridge()->GetClientTag(data));
     return data;
   }
 
-  std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
+  syncer::UpdateResponseData SpecificsToUpdateResponse(
       const AutofillSpecifics& specifics) {
-    auto data = std::make_unique<syncer::UpdateResponseData>();
-    data->entity = SpecificsToEntity(specifics);
+    syncer::UpdateResponseData data;
+    data.entity = SpecificsToEntity(specifics);
     return data;
   }
 

@@ -24,4 +24,10 @@ VaapiVideoDecoderDelegate::~VaapiVideoDecoderDelegate() {
   // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+void VaapiVideoDecoderDelegate::set_vaapi_wrapper(
+    scoped_refptr<VaapiWrapper> vaapi_wrapper) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  vaapi_wrapper_ = std::move(vaapi_wrapper);
+}
+
 }  // namespace media

@@ -151,8 +151,7 @@ void MockModelTypeWorker::UpdateFromServer(UpdateResponseDataList updates) {
   processor_->OnUpdateReceived(model_type_state_, std::move(updates));
 }
 
-std::unique_ptr<syncer::UpdateResponseData>
-MockModelTypeWorker::GenerateUpdateData(
+syncer::UpdateResponseData MockModelTypeWorker::GenerateUpdateData(
     const ClientTagHash& tag_hash,
     const sync_pb::EntitySpecifics& specifics,
     int64_t version_offset,
@@ -164,51 +163,50 @@ MockModelTypeWorker::GenerateUpdateData(
     SetServerVersion(tag_hash, version);
   }
 
-  auto data = std::make_unique<syncer::EntityData>();
-  data->id = GenerateId(tag_hash);
-  data->client_tag_hash = tag_hash;
-  data->specifics = specifics;
+  syncer::EntityData data;
+  data.id = GenerateId(tag_hash);
+  data.client_tag_hash = tag_hash;
+  data.specifics = specifics;
   // These elements should have no effect on behavior, but we set them anyway
   // so we can test they are properly copied around the system if we want to.
-  data->creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  data->modification_time =
-      data->creation_time + base::TimeDelta::FromSeconds(version);
-  data->name = data->specifics.has_encrypted()
-                   ? "encrypted"
-                   : data->specifics.preference().name();
+  data.creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
+  data.modification_time =
+      data.creation_time + base::TimeDelta::FromSeconds(version);
+  data.name = data.specifics.has_encrypted()
+                  ? "encrypted"
+                  : data.specifics.preference().name();
 
-  auto response_data = std::make_unique<syncer::UpdateResponseData>();
-  response_data->entity = std::move(data);
-  response_data->response_version = version;
-  response_data->encryption_key_name = ekn;
+  syncer::UpdateResponseData response_data;
+  response_data.entity = std::move(data);
+  response_data.response_version = version;
+  response_data.encryption_key_name = ekn;
 
   return response_data;
 }
 
-std::unique_ptr<syncer::UpdateResponseData>
-MockModelTypeWorker::GenerateUpdateData(
+syncer::UpdateResponseData MockModelTypeWorker::GenerateUpdateData(
     const ClientTagHash& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
   return GenerateUpdateData(tag_hash, specifics, 1,
                             model_type_state_.encryption_key_name());
 }
 
-std::unique_ptr<syncer::UpdateResponseData>
-MockModelTypeWorker::GenerateTypeRootUpdateData(const ModelType& model_type) {
-  auto data = std::make_unique<syncer::EntityData>();
-  data->id = syncer::ModelTypeToRootTag(model_type);
-  data->parent_id = "r";
-  data->server_defined_unique_tag = syncer::ModelTypeToRootTag(model_type);
-  syncer::AddDefaultFieldValue(model_type, &data->specifics);
+syncer::UpdateResponseData MockModelTypeWorker::GenerateTypeRootUpdateData(
+    const ModelType& model_type) {
+  syncer::EntityData data;
+  data.id = syncer::ModelTypeToRootTag(model_type);
+  data.parent_id = "r";
+  data.server_defined_unique_tag = syncer::ModelTypeToRootTag(model_type);
+  syncer::AddDefaultFieldValue(model_type, &data.specifics);
   // These elements should have no effect on behavior, but we set them anyway
   // so we can test they are properly copied around the system if we want to.
-  data->creation_time = base::Time::UnixEpoch();
-  data->modification_time = base::Time::UnixEpoch();
+  data.creation_time = base::Time::UnixEpoch();
+  data.modification_time = base::Time::UnixEpoch();
 
-  auto response_data = std::make_unique<syncer::UpdateResponseData>();
-  response_data->entity = std::move(data);
+  syncer::UpdateResponseData response_data;
+  response_data.entity = std::move(data);
   // Similar to what's done in the loopback_server.
-  response_data->response_version = 0;
+  response_data.response_version = 0;
   return response_data;
 }
 
@@ -217,20 +215,20 @@ void MockModelTypeWorker::TombstoneFromServer(const ClientTagHash& tag_hash) {
   int64_t version = old_version + 1;
   SetServerVersion(tag_hash, version);
 
-  auto data = std::make_unique<syncer::EntityData>();
-  data->id = GenerateId(tag_hash);
-  data->client_tag_hash = tag_hash;
+  syncer::EntityData data;
+  data.id = GenerateId(tag_hash);
+  data.client_tag_hash = tag_hash;
   // These elements should have no effect on behavior, but we set them anyway
   // so we can test they are properly copied around the system if we want to.
-  data->creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
-  data->modification_time =
-      data->creation_time + base::TimeDelta::FromSeconds(version);
-  data->name = "Name Non Unique";
+  data.creation_time = base::Time::UnixEpoch() + base::TimeDelta::FromDays(1);
+  data.modification_time =
+      data.creation_time + base::TimeDelta::FromSeconds(version);
+  data.name = "Name Non Unique";
 
-  auto response_data = std::make_unique<UpdateResponseData>();
-  response_data->entity = std::move(data);
-  response_data->response_version = version;
-  response_data->encryption_key_name = model_type_state_.encryption_key_name();
+  UpdateResponseData response_data;
+  response_data.entity = std::move(data);
+  response_data.response_version = version;
+  response_data.encryption_key_name = model_type_state_.encryption_key_name();
 
   UpdateResponseDataList list;
   list.push_back(std::move(response_data));

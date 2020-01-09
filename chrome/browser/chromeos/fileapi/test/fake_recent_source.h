@@ -29,6 +29,10 @@ class FakeRecentSource : public RecentSource {
   void GetRecentFiles(Params params) override;
 
  private:
+  // Returns true if the file matches the given file type.
+  bool MatchesFileType(const RecentFile& file,
+                       RecentSource::FileType file_type) const;
+
   std::vector<RecentFile> canned_files_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRecentSource);

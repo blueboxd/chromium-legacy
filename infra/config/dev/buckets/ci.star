@@ -61,10 +61,6 @@ ci_builder(
 )
 
 ci_builder(
-    name = 'ChromeOS Swarm',
-)
-
-ci_builder(
     name = 'Linux Swarm',
 )
 

@@ -10,6 +10,14 @@ function sleep(delay) {
   });
 }
 
+const scriptUrlParams = new URL(self.serviceWorker.scriptURL).searchParams;
+if (scriptUrlParams.has('pendingInstallEvent')) {
+  // Prevents this SW from being activated.
+  self.addEventListener('install', e => {
+    e.waitUntil(new Promise(resolve => {}));
+  });
+}
+
 self.addEventListener("fetch", event => {
   const param = new URL(event.request.url).searchParams;
 

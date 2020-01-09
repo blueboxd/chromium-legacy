@@ -53,6 +53,10 @@ class FakeServiceWorkerContext : public ServiceWorkerContext {
   void PerformStorageCleanup(base::OnceClosure callback) override;
   void CheckHasServiceWorker(const GURL& url,
                              CheckHasServiceWorkerCallback callback) override;
+  void CheckOfflineCapability(
+      const GURL& url,
+      const ServiceWorkerContext::CheckOfflineCapabilityCallback callback)
+      override;
   void ClearAllServiceWorkersForTest(base::OnceClosure) override;
   void StartWorkerForScope(
       const GURL& scope,

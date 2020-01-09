@@ -159,6 +159,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void PerformStorageCleanup(base::OnceClosure callback) override;
   void CheckHasServiceWorker(const GURL& url,
                              CheckHasServiceWorkerCallback callback) override;
+  void CheckOfflineCapability(const GURL& url,
+                              CheckOfflineCapabilityCallback callback) override;
+
   void ClearAllServiceWorkersForTest(base::OnceClosure callback) override;
   void StartWorkerForScope(const GURL& scope,
                            StartWorkerCallback info_callback,
@@ -388,6 +391,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void DidCheckHasServiceWorker(CheckHasServiceWorkerCallback callback,
                                 content::ServiceWorkerCapability status);
+  void DidCheckOfflineCapability(CheckOfflineCapabilityCallback callback,
+                                 content::OfflineCapability status);
 
   void DidFindRegistrationForUpdate(
       blink::ServiceWorkerStatusCode status,

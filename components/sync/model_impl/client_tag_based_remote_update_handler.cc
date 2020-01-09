@@ -74,8 +74,7 @@ ClientTagBasedRemoteUpdateHandler::ProcessIncrementalUpdate(
   // re-encryption phase at the end.
   std::unordered_set<std::string> already_updated;
 
-  for (std::unique_ptr<syncer::UpdateResponseData>& update : updates) {
-    DCHECK(update);
+  for (syncer::UpdateResponseData& update : updates) {
     std::string storage_key_to_clear;
     ProcessorEntity* entity = ProcessUpdate(std::move(update), &entity_changes,
                                             &storage_key_to_clear);
@@ -138,10 +137,10 @@ ClientTagBasedRemoteUpdateHandler::ProcessIncrementalUpdate(
 }
 
 ProcessorEntity* ClientTagBasedRemoteUpdateHandler::ProcessUpdate(
-    std::unique_ptr<UpdateResponseData> update,
+    UpdateResponseData update,
     EntityChangeList* entity_changes,
     std::string* storage_key_to_clear) {
-  const EntityData& data = *update->entity;
+  const EntityData& data = update.entity;
   const ClientTagHash& client_tag_hash = data.client_tag_hash;
 
   // Filter out updates without a client tag hash (including permanent nodes,
@@ -171,17 +170,17 @@ ProcessorEntity* ClientTagBasedRemoteUpdateHandler::ProcessUpdate(
   }
 
   if (entity) {
-    entity->RecordEntityUpdateLatency(update->response_version, type_);
+    entity->RecordEntityUpdateLatency(update.response_version, type_);
   }
 
-  if (entity && entity->UpdateIsReflection(update->response_version)) {
+  if (entity && entity->UpdateIsReflection(update.response_version)) {
     // Seen this update before; just ignore it.
     return nullptr;
   }
 
   // Cache update encryption key name in case |update| will be moved away into
   // ResolveConflict().
-  const std::string update_encryption_key_name = update->encryption_key_name;
+  const std::string update_encryption_key_name = update.encryption_key_name;
   ConflictResolution resolution_type = ConflictResolution::kTypeSize;
   if (entity && entity->IsUnsynced()) {
     // Handle conflict resolution.
@@ -202,13 +201,13 @@ ProcessorEntity* ClientTagBasedRemoteUpdateHandler::ProcessUpdate(
     } else if (!entity->MatchesData(data)) {
       change_type = EntityChange::ACTION_UPDATE;
     }
-    entity->RecordAcceptedUpdate(*update);
+    entity->RecordAcceptedUpdate(update);
     // Inform the bridge about the changes if needed.
     if (change_type) {
       switch (change_type.value()) {
         case EntityChange::ACTION_ADD:
           entity_changes->push_back(EntityChange::CreateAdd(
-              entity->storage_key(), std::move(update->entity)));
+              entity->storage_key(), std::move(update.entity)));
           break;
         case EntityChange::ACTION_DELETE:
           // The entity was deleted; inform the bridge. Note that the local data
@@ -220,7 +219,7 @@ ProcessorEntity* ClientTagBasedRemoteUpdateHandler::ProcessUpdate(
         case EntityChange::ACTION_UPDATE:
           // Specifics have changed, so update the bridge.
           entity_changes->push_back(EntityChange::CreateUpdate(
-              entity->storage_key(), std::move(update->entity)));
+              entity->storage_key(), std::move(update.entity)));
           break;
       }
     }
@@ -262,11 +261,11 @@ void ClientTagBasedRemoteUpdateHandler::RecommitAllForEncryption(
 }
 
 ConflictResolution ClientTagBasedRemoteUpdateHandler::ResolveConflict(
-    std::unique_ptr<UpdateResponseData> update,
+    UpdateResponseData update,
     ProcessorEntity* entity,
     EntityChangeList* changes,
     std::string* storage_key_to_clear) {
-  const EntityData& remote_data = *update->entity;
+  const EntityData& remote_data = update.entity;
 
   ConflictResolution resolution_type = ConflictResolution::kTypeSize;
 
@@ -296,27 +295,27 @@ ConflictResolution ClientTagBasedRemoteUpdateHandler::ResolveConflict(
   switch (resolution_type) {
     case ConflictResolution::kChangesMatch:
       // Record the update and squash the pending commit.
-      entity->RecordForcedUpdate(*update);
+      entity->RecordForcedUpdate(update);
       break;
     case ConflictResolution::kUseLocal:
     case ConflictResolution::kIgnoreRemoteEncryption:
       // Record that we received the update from the server but leave the
       // pending commit intact.
-      entity->RecordIgnoredUpdate(*update);
+      entity->RecordIgnoredUpdate(update);
       break;
     case ConflictResolution::kUseRemote:
     case ConflictResolution::kIgnoreLocalEncryption:
       // Update client data to match server.
-      if (update->entity->is_deleted()) {
+      if (update.entity.is_deleted()) {
         DCHECK(!entity->metadata().is_deleted());
         // Squash the pending commit.
-        entity->RecordForcedUpdate(*update);
+        entity->RecordForcedUpdate(update);
         changes->push_back(EntityChange::CreateDelete(entity->storage_key()));
       } else if (!entity->metadata().is_deleted()) {
         // Squash the pending commit.
-        entity->RecordForcedUpdate(*update);
+        entity->RecordForcedUpdate(update);
         changes->push_back(EntityChange::CreateUpdate(
-            entity->storage_key(), std::move(update->entity)));
+            entity->storage_key(), std::move(update.entity)));
       } else {
         // Remote undeletion. This could imply a new storage key for some
         // bridges, so we may need to wait until UpdateStorageKey() is called.
@@ -325,9 +324,9 @@ ConflictResolution ClientTagBasedRemoteUpdateHandler::ResolveConflict(
           entity->ClearStorageKey();
         }
         // Squash the pending commit.
-        entity->RecordForcedUpdate(*update);
+        entity->RecordForcedUpdate(update);
         changes->push_back(EntityChange::CreateAdd(entity->storage_key(),
-                                                   std::move(update->entity)));
+                                                   std::move(update.entity)));
       }
       break;
     case ConflictResolution::kUseNewDEPRECATED:

@@ -45,6 +45,16 @@ public class TrustedVaultClient {
          */
         @Nullable
         Intent createKeyRetrievalIntent();
+
+        /**
+         * Invoked when the result of fetchKeys() represents keys that cannot decrypt Nigori, which
+         * should only be possible if the provided keys are not up-to-date.
+         *
+         * @param gaiaId String representation of the Gaia ID.
+         * @return a promise which indicates completion and also represents whether the operation
+         * took any effect (false positives acceptable).
+         */
+        Promise<Boolean> markKeysAsStale(String gaiaId);
     }
 
     /**
@@ -59,6 +69,11 @@ public class TrustedVaultClient {
         @Override
         public Intent createKeyRetrievalIntent() {
             return null;
+        }
+
+        @Override
+        public Promise<Boolean> markKeysAsStale(String gaiaId) {
+            return Promise.fulfilled(false);
         }
     };
 
@@ -162,8 +177,35 @@ public class TrustedVaultClient {
                 });
     }
 
+    /**
+     * Forwards calls to Backend.markKeysAsStale() and upon completion invokes native method
+     * markKeysAsStaleCompleted().
+     */
+    @CalledByNative
+    private static void markKeysAsStale(long nativeTrustedVaultClientAndroid, String gaiaId) {
+        assert isNativeRegistered(nativeTrustedVaultClientAndroid);
+        get().mBackend.markKeysAsStale(gaiaId).then(
+                (result)
+                        -> {
+                    if (isNativeRegistered(nativeTrustedVaultClientAndroid)) {
+                        TrustedVaultClientJni.get().markKeysAsStaleCompleted(
+                                nativeTrustedVaultClientAndroid, result);
+                    }
+                },
+                (exception) -> {
+                    if (isNativeRegistered(nativeTrustedVaultClientAndroid)) {
+                        // There's no certainty about whether the operation made any difference so
+                        // let's return true indicating that it might have, since false positives
+                        // are allowed.
+                        TrustedVaultClientJni.get().markKeysAsStaleCompleted(
+                                nativeTrustedVaultClientAndroid, true);
+                    }
+                });
+    }
+
     @NativeMethods
     interface Natives {
         void fetchKeysCompleted(long nativeTrustedVaultClientAndroid, String gaiaId, byte[][] keys);
+        void markKeysAsStaleCompleted(long nativeTrustedVaultClientAndroid, boolean result);
     }
 }

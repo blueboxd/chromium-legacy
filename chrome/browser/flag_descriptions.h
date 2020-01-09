@@ -398,6 +398,9 @@ extern const char kEnableDesktopPWAsDescription[];
 extern const char kDesktopPWAsLocalUpdatingName[];
 extern const char kDesktopPWAsLocalUpdatingDescription[];
 
+extern const char kDesktopPWAsTabStripName[];
+extern const char kDesktopPWAsTabStripDescription[];
+
 extern const char kEnableSystemWebAppsName[];
 extern const char kEnableSystemWebAppsDescription[];
 

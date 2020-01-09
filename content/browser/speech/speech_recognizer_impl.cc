@@ -230,7 +230,8 @@ void SpeechRecognizerImpl::StartRecognition(const std::string& device_id) {
 
 void SpeechRecognizerImpl::AbortRecognition() {
   base::PostTask(FROM_HERE, {BrowserThread::IO},
-                 base::BindOnce(&SpeechRecognizerImpl::DispatchEvent, this,
+                 base::BindOnce(&SpeechRecognizerImpl::DispatchEvent,
+                                weak_ptr_factory_.GetWeakPtr(),
                                 FSMEventArgs(EVENT_ABORT)));
 }
 

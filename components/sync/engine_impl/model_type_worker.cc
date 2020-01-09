@@ -183,9 +183,9 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
       }
     }
 
-    auto response_data = std::make_unique<UpdateResponseData>();
+    UpdateResponseData response_data;
     switch (PopulateUpdateResponseData(cryptographer_.get(), type_,
-                                       *update_entity, response_data.get())) {
+                                       *update_entity, &response_data)) {
       case SUCCESS:
         pending_updates_.push_back(std::move(response_data));
         break;
@@ -212,7 +212,7 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     ModelType model_type,
     const sync_pb::SyncEntity& update_entity,
     UpdateResponseData* response_data) {
-  auto data = std::make_unique<syncer::EntityData>();
+  syncer::EntityData data;
 
   // Deleted entities must use the default instance of EntitySpecifics in
   // order for EntityData to correctly reflect that they are deleted.
@@ -233,8 +233,7 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     if (!cryptographer->CanDecrypt(specifics.password().encrypted())) {
       return DECRYPTION_PENDING;
     }
-    if (!DecryptPasswordSpecifics(*cryptographer, specifics,
-                                  &data->specifics)) {
+    if (!DecryptPasswordSpecifics(*cryptographer, specifics, &data.specifics)) {
       return FAILED_TO_DECRYPT;
     }
     response_data->encryption_key_name =
@@ -249,41 +248,41 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
       return DECRYPTION_PENDING;
     }
     // Encrypted and we know the key.
-    if (!DecryptSpecifics(*cryptographer, specifics, &data->specifics)) {
+    if (!DecryptSpecifics(*cryptographer, specifics, &data.specifics)) {
       return FAILED_TO_DECRYPT;
     }
     response_data->encryption_key_name = specifics.encrypted().key_name();
     specifics_were_encrypted = true;
   } else {
     // No encryption.
-    data->specifics = specifics;
+    data.specifics = specifics;
   }
 
   response_data->response_version = update_entity.version();
   // Prepare the message for the model thread.
-  data->id = update_entity.id_string();
-  data->client_tag_hash =
+  data.id = update_entity.id_string();
+  data.client_tag_hash =
       ClientTagHash::FromHashed(update_entity.client_defined_unique_tag());
-  data->creation_time = ProtoTimeToTime(update_entity.ctime());
-  data->modification_time = ProtoTimeToTime(update_entity.mtime());
-  data->name = update_entity.name();
-  data->is_folder = update_entity.folder();
-  data->parent_id = update_entity.parent_id_string();
-  data->server_defined_unique_tag = update_entity.server_defined_unique_tag();
+  data.creation_time = ProtoTimeToTime(update_entity.ctime());
+  data.modification_time = ProtoTimeToTime(update_entity.mtime());
+  data.name = update_entity.name();
+  data.is_folder = update_entity.folder();
+  data.parent_id = update_entity.parent_id_string();
+  data.server_defined_unique_tag = update_entity.server_defined_unique_tag();
 
   // Populate |originator_cache_guid| and |originator_client_item_id|. This is
   // currently relevant only for bookmarks.
-  data->originator_cache_guid = update_entity.originator_cache_guid();
-  data->originator_client_item_id = update_entity.originator_client_item_id();
+  data.originator_cache_guid = update_entity.originator_cache_guid();
+  data.originator_client_item_id = update_entity.originator_client_item_id();
 
   // Adapt the update for compatibility.
   if (model_type == BOOKMARKS) {
-    AdaptUniquePositionForBookmark(update_entity, data.get());
-    AdaptTitleForBookmark(update_entity, &data->specifics,
+    AdaptUniquePositionForBookmark(update_entity, &data);
+    AdaptTitleForBookmark(update_entity, &data.specifics,
                           specifics_were_encrypted);
-    AdaptGuidForBookmark(update_entity, &data->specifics);
+    AdaptGuidForBookmark(update_entity, &data.specifics);
   } else if (model_type == AUTOFILL_WALLET_DATA) {
-    AdaptClientTagForWalletData(data.get());
+    AdaptClientTagForWalletData(&data);
   }
 
   response_data->entity = std::move(data);
@@ -473,9 +472,9 @@ void ModelTypeWorker::DecryptStoredEntities() {
        it != entries_pending_decryption_.end();) {
     const sync_pb::SyncEntity& encrypted_update = it->second;
 
-    auto response_data = std::make_unique<UpdateResponseData>();
+    UpdateResponseData response_data;
     switch (PopulateUpdateResponseData(cryptographer_.get(), type_,
-                                       encrypted_update, response_data.get())) {
+                                       encrypted_update, &response_data)) {
       case SUCCESS:
         pending_updates_.push_back(std::move(response_data));
         it = entries_pending_decryption_.erase(it);
@@ -500,15 +499,14 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnServerId() {
   pending_updates_.reserve(candidates.size());
 
   std::map<std::string, size_t> id_to_index;
-  for (std::unique_ptr<UpdateResponseData>& candidate : candidates) {
-    DCHECK(candidate);
-    if (candidate->entity->id.empty()) {
+  for (UpdateResponseData& candidate : candidates) {
+    if (candidate.entity.id.empty()) {
       continue;
     }
     // Try to insert. If we already saw an item with the same server id,
     // this will fail but give us its iterator.
     auto it_and_success =
-        id_to_index.emplace(candidate->entity->id, pending_updates_.size());
+        id_to_index.emplace(candidate.entity.id, pending_updates_.size());
     if (it_and_success.second) {
       // New server id, append at the end. Note that we already inserted
       // the correct index (|pending_updates_.size()|) above.
@@ -527,17 +525,16 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnClientTagHash() {
   pending_updates_.reserve(candidates.size());
 
   std::map<ClientTagHash, size_t> tag_to_index;
-  for (std::unique_ptr<UpdateResponseData>& candidate : candidates) {
-    DCHECK(candidate);
+  for (UpdateResponseData& candidate : candidates) {
     // Items with empty client tag hash just get passed through.
-    if (candidate->entity->client_tag_hash.value().empty()) {
+    if (candidate.entity.client_tag_hash.value().empty()) {
       pending_updates_.push_back(std::move(candidate));
       continue;
     }
     // Try to insert. If we already saw an item with the same client tag hash,
     // this will fail but give us its iterator.
-    auto it_and_success = tag_to_index.emplace(
-        candidate->entity->client_tag_hash, pending_updates_.size());
+    auto it_and_success = tag_to_index.emplace(candidate.entity.client_tag_hash,
+                                               pending_updates_.size());
     if (it_and_success.second) {
       // New client tag hash, append at the end. Note that we already inserted
       // the correct index (|pending_updates_.size()|) above.
@@ -556,18 +553,17 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnOriginatorClientItemId() {
   pending_updates_.reserve(candidates.size());
 
   std::map<std::string, size_t> id_to_index;
-  for (std::unique_ptr<UpdateResponseData>& candidate : candidates) {
-    DCHECK(candidate);
+  for (UpdateResponseData& candidate : candidates) {
     // Items with empty item ID just get passed through (which is the case for
     // all datatypes except bookmarks).
-    if (candidate->entity->originator_client_item_id.empty()) {
+    if (candidate.entity.originator_client_item_id.empty()) {
       pending_updates_.push_back(std::move(candidate));
       continue;
     }
     // Try to insert. If we already saw an item with the same originator item
     // ID, this will fail but give us its iterator.
     auto it_and_success = id_to_index.emplace(
-        candidate->entity->originator_client_item_id, pending_updates_.size());
+        candidate.entity.originator_client_item_id, pending_updates_.size());
     if (it_and_success.second) {
       // New item ID, append at the end. Note that we already inserted the
       // correct index (|pending_updates_.size()|) above.

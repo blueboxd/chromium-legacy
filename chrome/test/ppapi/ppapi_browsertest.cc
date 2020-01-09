@@ -31,6 +31,7 @@
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
@@ -47,6 +48,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "net/ssl/ssl_info.h"
 #include "ppapi/shared_impl/test_utils.h"
@@ -57,6 +59,7 @@
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/tls_socket.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
+#include "services/network/test/test_dns_util.h"
 #include "services/network/test/test_network_context.h"
 
 #if defined(OS_MACOSX)
@@ -1270,13 +1273,55 @@ TEST_PPAPI_NACL_DISALLOWED_SOCKETS(TCPServerSocketPrivateDisallowed)
 TEST_PPAPI_NACL_DISALLOWED_SOCKETS(TCPSocketPrivateDisallowed)
 TEST_PPAPI_NACL_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
 
-// HostResolver and HostResolverPrivate tests.
-#define RUN_HOST_RESOLVER_SUBTESTS \
-  RunTestViaHTTP( \
-      LIST_TEST(HostResolver_Empty) \
-      LIST_TEST(HostResolver_Resolve) \
-      LIST_TEST(HostResolver_ResolveIPv4) \
-  )
+// Checks that a hostname used by the HostResolver tests ("host_resolver.test")
+// is present in the DNS cache with the NetworkIsolationKey associated with the
+// foreground WebContents - this is needed so as not to leak what hostnames were
+// looked up across tabs with different first party origins.
+void CheckTestHostNameUsedWithCorrectNetworkIsolationKey(Browser* browser) {
+  network::mojom::NetworkContext* network_context =
+      content::BrowserContext::GetDefaultStoragePartition(browser->profile())
+          ->GetNetworkContext();
+  const net::HostPortPair kHostPortPair(
+      net::HostPortPair("host_resolver.test", 80));
+
+  network::mojom::ResolveHostParametersPtr params =
+      network::mojom::ResolveHostParameters::New();
+  // Cache only lookup.
+  params->source = net::HostResolverSource::LOCAL_ONLY;
+  // Match the parameters used by the test.
+  params->include_canonical_name = true;
+  net::NetworkIsolationKey network_isolation_key =
+      browser->tab_strip_model()
+          ->GetActiveWebContents()
+          ->GetMainFrame()
+          ->GetNetworkIsolationKey();
+  network::DnsLookupResult result1 = network::BlockingDnsLookup(
+      network_context, kHostPortPair, std::move(params), network_isolation_key);
+  EXPECT_EQ(net::OK, result1.error);
+  ASSERT_TRUE(result1.resolved_addresses.has_value());
+  ASSERT_EQ(1u, result1.resolved_addresses->size());
+  EXPECT_EQ(browser->tab_strip_model()->GetActiveWebContents()->GetURL().host(),
+            result1.resolved_addresses.value()[0].ToStringWithoutPort());
+
+  // Check that the entry isn't present in the cache with the empty
+  // NetworkIsolationKey().
+  params = network::mojom::ResolveHostParameters::New();
+  // Cache only lookup.
+  params->source = net::HostResolverSource::LOCAL_ONLY;
+  // Match the parameters used by the test.
+  params->include_canonical_name = true;
+  network::DnsLookupResult result2 =
+      network::BlockingDnsLookup(network_context, kHostPortPair,
+                                 std::move(params), net::NetworkIsolationKey());
+  EXPECT_EQ(net::ERR_DNS_CACHE_MISS, result2.error);
+}
+
+// HostResolver and HostResolverPrivate tests. The PPAPI code used by these
+// tests is in ppapi/tests/test_host_resolver.cc.
+#define RUN_HOST_RESOLVER_SUBTESTS                                             \
+  RunTestViaHTTP(LIST_TEST(HostResolver_Empty) LIST_TEST(HostResolver_Resolve) \
+                     LIST_TEST(HostResolver_ResolveIPv4));                     \
+  CheckTestHostNameUsedWithCorrectNetworkIsolationKey(browser())
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, HostResolverCrash_Basic) {
   if (content::IsInProcessNetworkService())

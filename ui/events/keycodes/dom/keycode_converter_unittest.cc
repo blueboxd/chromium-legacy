@@ -21,7 +21,7 @@ using ui::KeycodeConverter;
 namespace {
 
 // Number of native codes expected to be mapped for each kind of native code.
-// These are in the same order as the columns in keycode_converter_data.inc
+// These are in the same order as the columns in dom_code_data.inc
 // as reflected in the USB_KEYMAP() macro below.
 const size_t expected_mapped_key_count[] = {
   212,  // evdev
@@ -43,7 +43,7 @@ struct KeycodeConverterData {
   { usb, code, #id, { evdev, xkb, win, mac } }
 #define USB_KEYMAP_DECLARATION \
   const KeycodeConverterData kKeycodeConverterData[] =
-#include "ui/events/keycodes/dom/keycode_converter_data.inc"
+#include "ui/events/keycodes/dom/dom_code_data.inc"
 #undef USB_KEYMAP
 #undef USB_KEYMAP_DECLARATION
 

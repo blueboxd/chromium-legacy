@@ -135,7 +135,7 @@ TEST_F(UssMigratorTest, Migrate) {
   const UpdateResponseData* update =
       std::move(processor()->GetNthUpdateResponse(0).at(0));
   ASSERT_TRUE(update);
-  const EntityData& entity = *update->entity;
+  const EntityData& entity = update->entity;
 
   EXPECT_FALSE(entity.id.empty());
   EXPECT_EQ(GenerateTagHash(kTag1), entity.client_tag_hash);
@@ -167,11 +167,11 @@ TEST_F(UssMigratorTest, MigrateMultiple) {
   std::vector<const UpdateResponseData*> updates =
       processor()->GetNthUpdateResponse(0);
   ASSERT_TRUE(updates.at(0));
-  EXPECT_EQ(kTag1, updates.at(0)->entity->specifics.preference().name());
+  EXPECT_EQ(kTag1, updates.at(0)->entity.specifics.preference().name());
   ASSERT_TRUE(updates.at(1));
-  EXPECT_EQ(kTag2, updates.at(1)->entity->specifics.preference().name());
+  EXPECT_EQ(kTag2, updates.at(1)->entity.specifics.preference().name());
   ASSERT_TRUE(updates.at(2));
-  EXPECT_EQ(kTag3, updates.at(2)->entity->specifics.preference().name());
+  EXPECT_EQ(kTag3, updates.at(2)->entity.specifics.preference().name());
 
   const sync_pb::ModelTypeState& state = processor()->GetNthUpdateState(0);
   EXPECT_EQ(kToken1, state.progress_marker().token());
@@ -201,11 +201,11 @@ TEST_F(UssMigratorTest, MigrateMultipleBatches) {
   std::vector<const UpdateResponseData*> updates =
       processor()->GetNthUpdateResponse(0);
   ASSERT_TRUE(updates.at(0));
-  EXPECT_EQ(kTag1, updates.at(0)->entity->specifics.preference().name());
+  EXPECT_EQ(kTag1, updates.at(0)->entity.specifics.preference().name());
   ASSERT_TRUE(updates.at(1));
-  EXPECT_EQ(kTag2, updates.at(1)->entity->specifics.preference().name());
+  EXPECT_EQ(kTag2, updates.at(1)->entity.specifics.preference().name());
   ASSERT_TRUE(updates.at(2));
-  EXPECT_EQ(kTag3, updates.at(2)->entity->specifics.preference().name());
+  EXPECT_EQ(kTag3, updates.at(2)->entity.specifics.preference().name());
 
   const sync_pb::ModelTypeState& state = processor()->GetNthUpdateState(0);
   EXPECT_EQ(kToken1, state.progress_marker().token());

@@ -781,7 +781,9 @@ NGPaintFragment* NGPaintFragment::FirstLineBox() const {
 }
 
 const NGPaintFragment* NGPaintFragment::Root() const {
-  DCHECK(PhysicalFragment().IsInline());
+  // Because of this function can be called during |LayoutObject::Destroy()|,
+  // we use |physical_fragment_| to avoid calling |IsAlive()|.
+  DCHECK(physical_fragment_->IsInline());
   const NGPaintFragment* root = this;
   for (const NGPaintFragment* fragment :
        NGPaintFragmentTraversal::InclusiveAncestorsOf(*this)) {

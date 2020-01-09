@@ -643,6 +643,18 @@ class AutotestPrivateWaitForAssistantQueryStatusFunction
   base::OneShotTimer timeout_timer_;
 };
 
+class AutotestPrivateIsArcPackageListInitialRefreshedFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateIsArcPackageListInitialRefreshedFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.isArcPackageListInitialRefreshed",
+                             AUTOTESTPRIVATE_ISARCPACKAGELISTINITIALREFRESHED)
+
+ private:
+  ~AutotestPrivateIsArcPackageListInitialRefreshedFunction() override;
+  ResponseAction Run() override;
+};
+
 // Set user pref value in the pref tree.
 class AutotestPrivateSetWhitelistedPrefFunction : public ExtensionFunction {
  public:

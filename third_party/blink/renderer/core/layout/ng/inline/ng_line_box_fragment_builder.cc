@@ -57,14 +57,27 @@ NGLineBoxFragmentBuilder::ChildList::LastInFlowChild() {
   return nullptr;
 }
 
+void NGLineBoxFragmentBuilder::ChildList::WillInsertChild(
+    unsigned insert_before) {
+  unsigned index = 0;
+  for (Child& child : children_) {
+    if (index >= insert_before)
+      break;
+    if (child.children_count && index + child.children_count > insert_before)
+      ++child.children_count;
+    ++index;
+  }
+}
+
 void NGLineBoxFragmentBuilder::ChildList::InsertChild(unsigned index) {
+  WillInsertChild(index);
   children_.insert(index, Child());
 }
 
 void NGLineBoxFragmentBuilder::ChildList::MoveInInlineDirection(
     LayoutUnit delta) {
   for (auto& child : children_)
-    child.offset.inline_offset += delta;
+    child.rect.offset.inline_offset += delta;
 }
 
 void NGLineBoxFragmentBuilder::ChildList::MoveInInlineDirection(
@@ -72,20 +85,20 @@ void NGLineBoxFragmentBuilder::ChildList::MoveInInlineDirection(
     unsigned start,
     unsigned end) {
   for (unsigned index = start; index < end; index++)
-    children_[index].offset.inline_offset += delta;
+    children_[index].rect.offset.inline_offset += delta;
 }
 
 void NGLineBoxFragmentBuilder::ChildList::MoveInBlockDirection(
     LayoutUnit delta) {
   for (auto& child : children_)
-    child.offset.block_offset += delta;
+    child.rect.offset.block_offset += delta;
 }
 
 void NGLineBoxFragmentBuilder::ChildList::MoveInBlockDirection(LayoutUnit delta,
                                                                unsigned start,
                                                                unsigned end) {
   for (unsigned index = start; index < end; index++)
-    children_[index].offset.block_offset += delta;
+    children_[index].rect.offset.block_offset += delta;
 }
 
 void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
@@ -94,15 +107,15 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
   for (auto& child : children) {
     if (child.layout_result) {
       DCHECK(!child.fragment);
-      AddChild(child.layout_result->PhysicalFragment(), child.offset);
+      AddChild(child.layout_result->PhysicalFragment(), child.Offset());
       child.layout_result.reset();
     } else if (child.fragment) {
-      AddChild(std::move(child.fragment), child.offset);
+      AddChild(std::move(child.fragment), child.Offset());
       DCHECK(!child.fragment);
     } else if (child.out_of_flow_positioned_box) {
       AddOutOfFlowInlineChildCandidate(
           NGBlockNode(ToLayoutBox(child.out_of_flow_positioned_box)),
-          child.offset, child.container_direction);
+          child.Offset(), child.container_direction);
       child.out_of_flow_positioned_box = nullptr;
     }
   }
@@ -119,17 +132,18 @@ void NGLineBoxFragmentBuilder::PropagateChildrenData(ChildList& children) {
         // fragment item list. Because they are not necessary for inline
         // traversals, and leading floating objects are still in the fragment
         // tree, this helps simplifying painting floats.
-        AddChild(fragment, child.offset);
+        AddChild(fragment, child.Offset());
         child.layout_result.reset();
         continue;
       }
-      PropagateChildData(child.layout_result->PhysicalFragment(), child.offset);
+      PropagateChildData(child.layout_result->PhysicalFragment(),
+                         child.Offset());
       continue;
     }
     if (child.out_of_flow_positioned_box) {
       AddOutOfFlowInlineChildCandidate(
           NGBlockNode(ToLayoutBox(child.out_of_flow_positioned_box)),
-          child.offset, child.container_direction);
+          child.Offset(), child.container_direction);
       child.out_of_flow_positioned_box = nullptr;
     }
   }

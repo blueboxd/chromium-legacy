@@ -39,9 +39,9 @@ const base::Feature kCommittedSBInterstitials{
     "SafeBrowsingCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContentComplianceEnabled{
-    "ContentComplianceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingContentComplianceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kMalwareScanEnabled{"MalwareScanEnabled",
+const base::Feature kMalwareScanEnabled{"SafeBrowsingMalwareScanEnabled",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPasswordProtectionForSavedPasswords{

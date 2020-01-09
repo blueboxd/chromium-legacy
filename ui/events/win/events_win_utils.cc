@@ -399,7 +399,7 @@ bool IsMouseEventFromTouch(UINT message) {
 
 // Conversion scan_code and LParam each other.
 // uint16_t scan_code:
-//     ui/events/keycodes/dom/keycode_converter_data.inc
+//     ui/events/keycodes/dom/dom_code_data.inc
 // 0 - 15bits: represetns the scan code.
 // 28 - 30 bits (0xE000): represents whether this is an extended key or not.
 //

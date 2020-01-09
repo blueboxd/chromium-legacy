@@ -105,7 +105,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   bool WithinOneMinFromForegrounded();
 
 #if defined(USE_X11)
-  int GetActiveTTY();
+  void UpdateActiveTTY();
 #endif
   // The watchdog continues when it's not on the TTY of our host X11 server.
   bool ContinueOnNonHostX11ServerTty();
@@ -162,6 +162,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
 #if defined(USE_X11)
   FILE* tty_file_ = nullptr;
   int host_tty_ = -1;
+  int active_tty_ = -1;
+  int last_active_tty_ = -1;
 #endif
 
   // The system has entered the power suspension mode.

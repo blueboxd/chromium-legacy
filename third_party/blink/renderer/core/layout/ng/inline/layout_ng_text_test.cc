@@ -153,6 +153,21 @@ TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteRTL2) {
             GetItemsAsString(*text.GetLayoutObject()));
 }
 
+// http://crbug.com/1039143
+TEST_F(LayoutNGTextTest, SetTextWithOffsetDeleteWithBidiControl) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  // In text content, we have bidi control codes:
+  // U+2066 U+2069 \n U+2066 abc U+2066
+  SetBodyInnerHTML(u"<pre><b id=target dir=ltr>\nabc</b></pre>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  text.deleteData(0, 1, ASSERT_NO_EXCEPTION);  // remove "\n"
+
+  EXPECT_EQ("LayoutText has NeedsCollectInlines",
+            GetItemsAsString(*text.GetLayoutObject()));
+}
+
 TEST_F(LayoutNGTextTest, SetTextWithOffsetInsert) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;

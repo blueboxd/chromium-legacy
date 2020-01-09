@@ -18,12 +18,11 @@ class EntityChange {
  public:
   enum ChangeType { ACTION_ADD, ACTION_UPDATE, ACTION_DELETE };
 
-  static std::unique_ptr<EntityChange> CreateAdd(
-      const std::string& storage_key,
-      std::unique_ptr<EntityData> data);
+  static std::unique_ptr<EntityChange> CreateAdd(const std::string& storage_key,
+                                                 EntityData data);
   static std::unique_ptr<EntityChange> CreateUpdate(
       const std::string& storage_key,
-      std::unique_ptr<EntityData> data);
+      EntityData data);
   static std::unique_ptr<EntityChange> CreateDelete(
       const std::string& storage_key);
 
@@ -31,16 +30,16 @@ class EntityChange {
 
   std::string storage_key() const { return storage_key_; }
   ChangeType type() const { return type_; }
-  const EntityData& data() const { return *data_; }
+  const EntityData& data() const { return data_; }
 
  private:
   EntityChange(const std::string& storage_key,
                ChangeType type,
-               std::unique_ptr<EntityData> data);
+               EntityData data);
 
   std::string storage_key_;
   ChangeType type_;
-  std::unique_ptr<EntityData> data_;
+  EntityData data_;
 
   DISALLOW_COPY_AND_ASSIGN(EntityChange);
 };

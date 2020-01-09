@@ -74,6 +74,13 @@ class PermissionDecisionAutoBlocker : public KeyedService {
   PermissionResult GetEmbargoResult(const GURL& request_origin,
                                     ContentSettingsType permission);
 
+  // Returns the most recent recorded time either an ignore or dismiss embargo
+  // was started. Records of embargo start times persist beyond the duration of
+  // the embargo, but are removed along with embargoes when RemoveEmbargoByUrl
+  // or RemoveCountsByUrl are used. Returns base::Time() if no record is found.
+  base::Time GetEmbargoStartTime(const GURL& request_origin,
+                                 ContentSettingsType permission);
+
   // Returns the current number of dismisses recorded for |permission| type at
   // |url|.
   int GetDismissCount(const GURL& url, ContentSettingsType permission);

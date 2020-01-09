@@ -359,8 +359,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         // been deprecated.
         return nullptr;
       }
-      return ImageBitmap::Create(pixels, width, height, is_premultiplied,
-                                 origin_clean, color_params);
+      return MakeGarbageCollected<ImageBitmap>(
+          pixels, width, height, is_premultiplied, origin_clean, color_params);
     }
     case kImageBitmapTransferTag: {
       uint32_t index = 0;

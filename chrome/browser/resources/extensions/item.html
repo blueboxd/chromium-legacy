@@ -299,13 +299,14 @@
           aria-label="$i18n{itemReload}" aria-describedby="a11yAssociation"
           on-click="onReloadTap_"></cr-icon-button>
     </template>
-    <template is="dom-if" if="[[data.disableReasons.corruptInstall]]">
+    <template is="dom-if"
+        if="[[showRepairButton_(data.disableReasons.corruptInstall)]]">
       <cr-button id="repair-button" class="action-button"
           aria-describedby="a11yAssociation" on-click="onRepairTap_">
         $i18n{itemRepair}
       </cr-button>
     </template>
-    <template is="dom-if" if="[[isTerminated_(data.state)]]">
+    <template is="dom-if" if="[[showReloadButton_(data.state)]]">
       <cr-button id="terminated-reload-button" on-click="onReloadTap_"
           aria-describedby="a11yAssociation" class="action-button">
         $i18n{itemReload}
@@ -317,9 +318,16 @@
             '$i18nPolymer{appEnabled}',
             '$i18nPolymer{extensionEnabled}')]]"
         aria-describedby="a11yAssociation"
-        checked="[[isEnabled_(data.state)]]" on-change="onEnableChange_"
+        checked="[[isEnabled_(data.state)]]"
+        on-change="onEnableToggleChange_"
         disabled="[[!isEnableToggleEnabled_(data.*)]]"
         hidden$="[[!showEnableToggle_(data.*)]]">
     </cr-toggle>
+    <cr-button id="enableButton"
+        on-click="onEnableButtonClick_"
+        aria-describedby="a11yAssociation"
+        hidden$="[[!showEnableButton_(data.*)]]">
+      $i18n{enableButton}
+    </cr-button>
   </div>
 </div>

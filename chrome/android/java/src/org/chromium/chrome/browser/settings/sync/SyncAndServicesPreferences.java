@@ -42,8 +42,10 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.settings.ChromeBasePreference;
@@ -111,6 +113,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private static final String PREF_USAGE_AND_CRASH_REPORTING = "usage_and_crash_reports";
     private static final String PREF_URL_KEYED_ANONYMIZED_DATA = "url_keyed_anonymized_data";
     private static final String PREF_CONTEXTUAL_SEARCH = "contextual_search";
+    @VisibleForTesting
+    public static final String PREF_AUTOFILL_ASSISTANT = "autofill_assistant";
 
     @IntDef({SyncError.NO_ERROR, SyncError.ANDROID_SYNC_DISABLED, SyncError.AUTH_ERROR,
             SyncError.PASSPHRASE_REQUIRED, SyncError.CLIENT_OUT_OF_DATE,
@@ -134,6 +138,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
             PrivacyPreferencesManager.getInstance();
     private final ManagedPreferenceDelegate mManagedPreferenceDelegate =
             createManagedPreferenceDelegate();
+    private final SharedPreferencesManager mSharedPreferencesManager =
+            SharedPreferencesManager.getInstance();
 
     private boolean mIsFromSigninScreen;
 
@@ -153,6 +159,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private ChromeSwitchPreference mSafeBrowsingReporting;
     private ChromeSwitchPreference mUsageAndCrashReporting;
     private ChromeSwitchPreference mUrlKeyedAnonymizedData;
+    private @Nullable ChromeSwitchPreference mAutofillAssistant;
     private @Nullable Preference mContextualSearch;
 
     private ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
@@ -245,6 +252,15 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
                 (ChromeSwitchPreference) findPreference(PREF_URL_KEYED_ANONYMIZED_DATA);
         mUrlKeyedAnonymizedData.setOnPreferenceChangeListener(this);
         mUrlKeyedAnonymizedData.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
+
+        mAutofillAssistant = (ChromeSwitchPreference) findPreference(PREF_AUTOFILL_ASSISTANT);
+        if (shouldShowAutofillAssistantPreference()) {
+            mAutofillAssistant.setOnPreferenceChangeListener(this);
+            mAutofillAssistant.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
+        } else {
+            removePreference(servicesCategory, mAutofillAssistant);
+            mAutofillAssistant = null;
+        }
 
         mContextualSearch = findPreference(PREF_CONTEXTUAL_SEARCH);
         if (!ContextualSearchFieldTrial.isEnabled()) {
@@ -383,6 +399,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         } else if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
             UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
                     (boolean) newValue);
+        } else if (PREF_AUTOFILL_ASSISTANT.equals(key)) {
+            setAutofillAssistantSwitchValue((boolean) newValue);
         }
         return true;
     }
@@ -610,6 +628,9 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
         mUrlKeyedAnonymizedData.setChecked(
                 UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled());
 
+        if (mAutofillAssistant != null) {
+            mAutofillAssistant.setChecked(isAutofillAssistantSwitchOn());
+        }
         if (mContextualSearch != null) {
             boolean isContextualSearchEnabled =
                     !ContextualSearchManager.isContextualSearchDisabled();
@@ -782,5 +803,25 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
             SyncAndServicesPreferences fragment = (SyncAndServicesPreferences) getTargetFragment();
             fragment.cancelSync();
         }
+    }
+
+    /**
+     *  This checks whether Autofill Assistant is enabled and was shown at least once (only then
+     *  will the AA switch be assigned a value).
+     */
+    private boolean shouldShowAutofillAssistantPreference() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
+                && mSharedPreferencesManager.contains(
+                        ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED);
+    }
+
+    public boolean isAutofillAssistantSwitchOn() {
+        return mSharedPreferencesManager.readBoolean(
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, false);
+    }
+
+    public void setAutofillAssistantSwitchValue(boolean newValue) {
+        mSharedPreferencesManager.writeBoolean(
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, newValue);
     }
 }

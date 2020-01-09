@@ -265,10 +265,7 @@ IntSize ImageResourceContent::IntrinsicSize(
     RespectImageOrientationEnum should_respect_image_orientation) const {
   if (!image_)
     return IntSize();
-  if (should_respect_image_orientation == kRespectImageOrientation &&
-      image_->IsBitmapImage())
-    return ToBitmapImage(image_.get())->SizeRespectingOrientation();
-  return image_->Size();
+  return image_->Size(should_respect_image_orientation);
 }
 
 void ImageResourceContent::NotifyObservers(

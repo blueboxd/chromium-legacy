@@ -208,7 +208,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
 #endif
 
 #if defined(USE_X11)
-  int GetActiveTTY() const;
+  void UpdateActiveTTY();
 #endif
 
   scoped_refptr<base::SingleThreadTaskRunner> watched_task_runner_;
@@ -268,6 +268,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
 #if defined(USE_X11)
   FILE* tty_file_;
   int host_tty_;
+  int active_tty_ = -1;
+  int last_active_tty_ = -1;
 #endif
 
   base::WeakPtrFactory<GpuWatchdogThreadImplV1> weak_factory_{this};

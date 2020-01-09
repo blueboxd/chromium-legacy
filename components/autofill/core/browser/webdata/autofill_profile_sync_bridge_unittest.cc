@@ -292,19 +292,18 @@ class AutofillProfileSyncBridgeTest : public testing::Test {
     return data;
   }
 
-  std::unique_ptr<EntityData> SpecificsToEntity(
-      const AutofillProfileSpecifics& specifics) {
-    auto data = std::make_unique<EntityData>();
-    *data->specifics.mutable_autofill_profile() = specifics;
-    data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
-        syncer::AUTOFILL_PROFILE, bridge()->GetClientTag(*data));
+  EntityData SpecificsToEntity(const AutofillProfileSpecifics& specifics) {
+    EntityData data;
+    *data.specifics.mutable_autofill_profile() = specifics;
+    data.client_tag_hash = syncer::ClientTagHash::FromUnhashed(
+        syncer::AUTOFILL_PROFILE, bridge()->GetClientTag(data));
     return data;
   }
 
-  std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
+  syncer::UpdateResponseData SpecificsToUpdateResponse(
       const AutofillProfileSpecifics& specifics) {
-    auto data = std::make_unique<syncer::UpdateResponseData>();
-    data->entity = SpecificsToEntity(specifics);
+    syncer::UpdateResponseData data;
+    data.entity = SpecificsToEntity(specifics);
     return data;
   }
 

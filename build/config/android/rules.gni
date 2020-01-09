@@ -34,10 +34,6 @@ if (use_cfi_diag || is_ubsan || is_ubsan_security || is_ubsan_vptr) {
   _sanitizer_runtimes = [ "$clang_base_path/lib/clang/$clang_version/lib/linux/libclang_rt.ubsan_standalone-$_sanitizer_arch-android.so" ]
 }
 
-if (is_hwasan && !hwasan_platform) {
-  _sanitizer_runtimes = [ "$clang_base_path/lib/clang/$clang_version/lib/linux/libclang_rt.hwasan-$_sanitizer_arch-android.so" ]
-}
-
 # Creates a dist directory for a native executable.
 #
 # Running a native executable on a device requires all the shared library

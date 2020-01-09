@@ -82,17 +82,17 @@ Scheduler.prototype.add = function(request) {
  * @param {string} requestId Unique ID of the request.
  */
 Scheduler.prototype.remove = function(requestId) {
-  var request = this.requests_[requestId];
+  const request = this.requests_[requestId];
   if (!request) {
     return;
   }
 
   // Remove from the internal queues with pending tasks.
-  var newIndex = this.pendingRequests_.indexOf(request);
+  const newIndex = this.pendingRequests_.indexOf(request);
   if (newIndex != -1) {
     this.newRequests_.splice(newIndex, 1);
   }
-  var pendingIndex = this.pendingRequests_.indexOf(request);
+  const pendingIndex = this.pendingRequests_.indexOf(request);
   if (pendingIndex != -1) {
     this.pendingRequests_.splice(pendingIndex, 1);
   }
@@ -137,7 +137,7 @@ Scheduler.prototype.continue_ = function() {
   // Run only up to MAXIMUM_IN_PARALLEL in the same time.
   while (this.pendingRequests_.length &&
          this.activeRequests_.length < Scheduler.MAXIMUM_IN_PARALLEL) {
-    var request = this.pendingRequests_.shift();
+    const request = this.pendingRequests_.shift();
     this.activeRequests_.push(request);
 
     // Try to load from cache. If doesn't exist, then download.
@@ -157,7 +157,7 @@ Scheduler.prototype.continue_ = function() {
  * @private
  */
 Scheduler.prototype.finish_ = function(request) {
-  var index = this.activeRequests_.indexOf(request);
+  const index = this.activeRequests_.indexOf(request);
   if (index < 0) {
     console.warn('Request not found.');
   }

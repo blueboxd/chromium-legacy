@@ -20,7 +20,7 @@ class Profile;
 
 namespace plugin_vm {
 
-class PluginVmImageManager;
+class PluginVmInstaller;
 
 class PluginVmImageDownloadClient : public download::Client {
  public:
@@ -32,7 +32,7 @@ class PluginVmImageDownloadClient : public download::Client {
   Profile* profile_ = nullptr;
   int64_t content_length_ = -1;
 
-  PluginVmImageManager* GetManager();
+  PluginVmInstaller* GetInstaller();
 
   // download::Client implementation.
   void OnServiceInitialized(

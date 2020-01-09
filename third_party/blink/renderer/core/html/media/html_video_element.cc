@@ -685,7 +685,7 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
   }
 
   return ImageBitmapSource::FulfillImageBitmap(
-      script_state, ImageBitmap::Create(
+      script_state, MakeGarbageCollected<ImageBitmap>(
                         this, crop_rect,
                         event_target.ToLocalDOMWindow()->document(), options));
 }

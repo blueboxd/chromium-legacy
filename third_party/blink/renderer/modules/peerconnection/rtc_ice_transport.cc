@@ -318,7 +318,7 @@ static cricket::IceParameters ConvertIceParameters(
 
 static WebVector<webrtc::PeerConnectionInterface::IceServer> ConvertIceServers(
     const HeapVector<Member<RTCIceServer>>& ice_servers) {
-  Vector<webrtc::PeerConnectionInterface::IceServer> converted_ice_servers;
+  WebVector<webrtc::PeerConnectionInterface::IceServer> converted_ice_servers;
   for (const RTCIceServer* ice_server : ice_servers) {
     converted_ice_servers.emplace_back(ConvertIceServer(ice_server));
   }

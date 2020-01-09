@@ -387,12 +387,10 @@ TEST(FormFieldDataTest, IsTextInputElement) {
     const char* form_control_type;
     bool expected;
   } test_data[] = {
-      {"text", true},      {"search", true},
-      {"tel", true},       {"url", true},
-      {"email", true},     {"password", true},
-      {"select", false},   {"", false},
-      {"checkbox", false}, {"random_string", false},
-      {"textarea", false},
+      {"text", true},      {"search", true},         {"tel", true},
+      {"url", true},       {"email", true},          {"password", true},
+      {"number", true},    {"select", false},        {"", false},
+      {"checkbox", false}, {"random_string", false}, {"textarea", false},
   };
 
   for (const auto& test_case : test_data) {

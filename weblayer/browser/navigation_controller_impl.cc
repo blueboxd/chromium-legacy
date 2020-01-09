@@ -36,6 +36,13 @@ void NavigationControllerImpl::SetNavigationControllerImpl(
   java_controller_.Reset(env, java_controller);
 }
 
+void NavigationControllerImpl::GoToIndex(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    int index) {
+  return GoToIndex(index);
+}
+
 void NavigationControllerImpl::Navigate(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
@@ -86,6 +93,10 @@ bool NavigationControllerImpl::CanGoBack() {
 
 bool NavigationControllerImpl::CanGoForward() {
   return web_contents()->GetController().CanGoForward();
+}
+
+void NavigationControllerImpl::GoToIndex(int index) {
+  web_contents()->GetController().GoToIndex(index);
 }
 
 void NavigationControllerImpl::Reload() {

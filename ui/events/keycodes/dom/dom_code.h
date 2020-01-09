@@ -9,7 +9,7 @@ namespace ui {
 
 #define USB_KEYMAP(usb, evdev, xkb, win, mac, code, id) id = usb
 #define USB_KEYMAP_DECLARATION enum class DomCode
-#include "ui/events/keycodes/dom/keycode_converter_data.inc"
+#include "ui/events/keycodes/dom/dom_code_data.inc"
 #undef USB_KEYMAP
 #undef USB_KEYMAP_DECLARATION
 

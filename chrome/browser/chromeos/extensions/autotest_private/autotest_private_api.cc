@@ -95,7 +95,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
-#include "chrome/browser/ui/views/plugin_vm/plugin_vm_launcher_view.h"
+#include "chrome/browser/ui/views/plugin_vm/plugin_vm_installer_view.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -1845,8 +1845,8 @@ AutotestPrivateInstallPluginVMFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   plugin_vm::SetFakePluginVmPolicy(profile, params->image_url,
                                    params->image_hash, params->license_key);
-  plugin_vm::ShowPluginVmLauncherView(profile);
-  PluginVmLauncherView::GetActiveViewForTesting()
+  plugin_vm::ShowPluginVmInstallerView(profile);
+  PluginVmInstallerView::GetActiveViewForTesting()
       ->SetFinishedCallbackForTesting(base::BindOnce(
           &AutotestPrivateInstallPluginVMFunction::OnInstallFinished, this));
 
@@ -1860,7 +1860,7 @@ void AutotestPrivateInstallPluginVMFunction::OnInstallFinished(bool success) {
   }
 
   // Dismiss the dialog and start launching the VM.
-  PluginVmLauncherView::GetActiveViewForTesting()->AcceptDialog();
+  PluginVmInstallerView::GetActiveViewForTesting()->AcceptDialog();
 
   Respond(NoArguments());
 }
@@ -2500,6 +2500,27 @@ void AutotestPrivateWaitForAssistantQueryStatusFunction::
 
 void AutotestPrivateWaitForAssistantQueryStatusFunction::Timeout() {
   Respond(Error("No query response received before time out."));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateIsArcPackageListInitialRefreshedFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateIsArcPackageListInitialRefreshedFunction::
+    AutotestPrivateIsArcPackageListInitialRefreshedFunction() = default;
+
+AutotestPrivateIsArcPackageListInitialRefreshedFunction::
+    ~AutotestPrivateIsArcPackageListInitialRefreshedFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateIsArcPackageListInitialRefreshedFunction::Run() {
+  DVLOG(1) << "AutotestPrivateIsArcPackageListInitialRefreshedFunction";
+
+  ArcAppListPrefs* const prefs =
+      ArcAppListPrefs::Get(Profile::FromBrowserContext(browser_context()));
+
+  return RespondNow(OneArgument(
+      std::make_unique<base::Value>(prefs->package_list_initial_refreshed())));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

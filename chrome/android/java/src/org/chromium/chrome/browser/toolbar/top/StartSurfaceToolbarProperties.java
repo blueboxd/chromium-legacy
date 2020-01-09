@@ -34,8 +34,11 @@ class StartSurfaceToolbarProperties {
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableBooleanPropertyKey MENU_IS_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
+    public static final PropertyModel.WritableBooleanPropertyKey NEW_TAB_BUTTON_IS_VISIBLE =
+            new PropertyModel.WritableBooleanPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {APP_MENU_BUTTON_HELPER,
-            NEW_TAB_CLICK_HANDLER, IS_VISIBLE, LOGO_IS_VISIBLE, IS_INCOGNITO,
-            INCOGNITO_STATE_PROVIDER, ACCESSIBILITY_ENABLED, MENU_IS_VISIBLE};
+    public static final PropertyKey[] ALL_KEYS =
+            new PropertyKey[] {APP_MENU_BUTTON_HELPER, NEW_TAB_CLICK_HANDLER, IS_VISIBLE,
+                    LOGO_IS_VISIBLE, IS_INCOGNITO, INCOGNITO_STATE_PROVIDER, ACCESSIBILITY_ENABLED,
+                    MENU_IS_VISIBLE, NEW_TAB_BUTTON_IS_VISIBLE};
 }

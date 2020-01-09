@@ -54,6 +54,13 @@ js_library("all_sites") {
   externs_list = [ "$externs_path/settings_private.js" ]
 }
 
+js_library("android_info_browser_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/chrome_send.js" ]
+}
+
 js_library("category_default_setting") {
   deps = [
     ":constants",
@@ -134,7 +141,7 @@ js_library("protocol_handlers") {
     ":site_settings_behavior",
 
     # Must be included on all platforms to satisfy closure compiler.
-    "../chromeos/os_apps_page:android_apps_browser_proxy",
+    ":android_info_browser_proxy",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
@@ -223,10 +230,10 @@ js_library("site_entry") {
 
 js_library("site_list") {
   deps = [
+    ":android_info_browser_proxy",
     ":constants",
     ":site_list_entry",
     ":site_settings_behavior",
-    "../multidevice_page:multidevice_browser_proxy",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",

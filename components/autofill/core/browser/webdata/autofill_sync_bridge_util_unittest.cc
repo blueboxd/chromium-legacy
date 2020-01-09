@@ -46,12 +46,11 @@ class TestAutofillTable : public AutofillTable {
   DISALLOW_COPY_AND_ASSIGN(TestAutofillTable);
 };
 
-std::unique_ptr<EntityData> SpecificsToEntity(
-    const sync_pb::AutofillWalletSpecifics& specifics,
-    const std::string& client_tag) {
-  auto data = std::make_unique<syncer::EntityData>();
-  *data->specifics.mutable_autofill_wallet() = specifics;
-  data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
+EntityData SpecificsToEntity(const sync_pb::AutofillWalletSpecifics& specifics,
+                             const std::string& client_tag) {
+  syncer::EntityData data;
+  *data.specifics.mutable_autofill_wallet() = specifics;
+  data.client_tag_hash = syncer::ClientTagHash::FromUnhashed(
       syncer::AUTOFILL_WALLET_DATA, client_tag);
   return data;
 }

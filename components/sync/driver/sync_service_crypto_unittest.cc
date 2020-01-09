@@ -68,6 +68,10 @@ class TestTrustedVaultClient : public TrustedVaultClient {
   // Exposes the total number of calls to FetchKeys().
   int fetch_count() const { return fetch_count_; }
 
+  // Returns whether MarkKeysAsStale() was called since the last call to
+  // FetchKeys().
+  bool keys_marked_as_stale() const { return keys_marked_as_stale_; }
+
   // Mimics the completion of the next (FIFO) FetchKeys() request.
   bool CompleteFetchKeysRequest() {
     if (pending_responses_.empty()) {
@@ -91,6 +95,7 @@ class TestTrustedVaultClient : public TrustedVaultClient {
       base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb)
       override {
     ++fetch_count_;
+    keys_marked_as_stale_ = false;
     pending_responses_.push_back(
         base::BindOnce(std::move(cb), gaia_id_to_keys_[gaia_id]));
   }
@@ -101,10 +106,17 @@ class TestTrustedVaultClient : public TrustedVaultClient {
     observer_list_.Notify();
   }
 
+  void MarkKeysAsStale(const std::string& gaia_id,
+                       base::OnceCallback<void(bool)> cb) override {
+    keys_marked_as_stale_ = true;
+    std::move(cb).Run(false);
+  }
+
  private:
   std::map<std::string, std::vector<std::vector<uint8_t>>> gaia_id_to_keys_;
   CallbackList observer_list_;
   int fetch_count_ = 0;
+  bool keys_marked_as_stale_ = false;
   std::list<base::OnceClosure> pending_responses_;
 };
 
@@ -209,6 +221,7 @@ TEST_F(SyncServiceCryptoTest,
   crypto_.OnTrustedVaultKeyAccepted();
   std::move(add_keys_cb).Run();
   EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+  EXPECT_FALSE(trusted_vault_client_.keys_marked_as_stale());
 }
 
 TEST_F(SyncServiceCryptoTest,
@@ -248,6 +261,34 @@ TEST_F(SyncServiceCryptoTest,
   crypto_.OnTrustedVaultKeyAccepted();
   std::move(add_keys_cb).Run();
   EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+  EXPECT_FALSE(trusted_vault_client_.keys_marked_as_stale());
+}
+
+TEST_F(SyncServiceCryptoTest,
+       ShouldReadNoTrustedVaultKeysFromClientAfterInitialization) {
+  const CoreAccountInfo kSyncingAccount =
+      MakeAccountInfoWithGaia("syncingaccount");
+
+  EXPECT_CALL(reconfigure_cb_, Run(_)).Times(0);
+  EXPECT_CALL(engine_, AddTrustedVaultDecryptionKeys(_, _)).Times(0);
+
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  // Mimic the engine determining that trusted vault keys are required.
+  crypto_.SetSyncEngine(kSyncingAccount, &engine_);
+  ASSERT_THAT(trusted_vault_client_.fetch_count(), Eq(0));
+
+  crypto_.OnTrustedVaultKeyRequired();
+
+  // While there is an ongoing fetch, there should be no user action required.
+  ASSERT_THAT(trusted_vault_client_.fetch_count(), Eq(1));
+  ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+
+  // Mimic completion of the fetch, which should lead to a reconfiguration.
+  EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
+  ASSERT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
+  EXPECT_TRUE(crypto_.IsTrustedVaultKeyRequired());
+  EXPECT_FALSE(trusted_vault_client_.keys_marked_as_stale());
 }
 
 TEST_F(SyncServiceCryptoTest, ShouldReadInvalidTrustedVaultKeysFromClient) {
@@ -284,6 +325,7 @@ TEST_F(SyncServiceCryptoTest, ShouldReadInvalidTrustedVaultKeysFromClient) {
   EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
   std::move(add_keys_cb).Run();
   EXPECT_TRUE(crypto_.IsTrustedVaultKeyRequired());
+  EXPECT_TRUE(trusted_vault_client_.keys_marked_as_stale());
 }
 
 // Similar to ShouldReadInvalidTrustedVaultKeysFromClient: the vault
@@ -318,6 +360,7 @@ TEST_F(SyncServiceCryptoTest, ShouldRefetchTrustedVaultKeysWhenChangeObserved) {
   ASSERT_THAT(trusted_vault_client_.fetch_count(), Eq(1));
   ASSERT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
   ASSERT_TRUE(crypto_.IsTrustedVaultKeyRequired());
+  ASSERT_TRUE(trusted_vault_client_.keys_marked_as_stale());
 
   // Mimic keys being added to the vault, which triggers a notification to
   // observers (namely |crypto_|), leading to a second fetch.
@@ -326,6 +369,7 @@ TEST_F(SyncServiceCryptoTest, ShouldRefetchTrustedVaultKeysWhenChangeObserved) {
   EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
   EXPECT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
   EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+  EXPECT_FALSE(trusted_vault_client_.keys_marked_as_stale());
 }
 
 // Same as above but the new keys become available during an ongoing FetchKeys()

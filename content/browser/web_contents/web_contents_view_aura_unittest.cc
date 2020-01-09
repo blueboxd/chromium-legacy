@@ -315,13 +315,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
 
 #if defined(OS_WIN)
 
-// Flaky crash on ASan: http://crbug.com/1020136
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_DragDropVirtualFiles DISABLED_DragDropVirtualFiles
-#else
-#define MAYBE_DragDropVirtualFiles DragDropVirtualFiles
-#endif
-TEST_F(WebContentsViewAuraTest, MAYBE_DragDropVirtualFiles) {
+TEST_F(WebContentsViewAuraTest, DragDropVirtualFiles) {
   WebContentsViewAura* view = GetView();
   auto data = std::make_unique<ui::OSExchangeData>();
 

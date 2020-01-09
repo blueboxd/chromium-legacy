@@ -98,7 +98,7 @@ CrostiniUpgraderUI::CrostiniUpgraderUI(content::WebUI* web_ui)
   source->AddResourcePath("images/success_illustration.png",
                           IDR_LINUX_ILLUSTRATION);
   source->AddResourcePath("images/error_illustration.png",
-                          IDR_PLUGIN_VM_LAUNCHER_ERROR);
+                          IDR_PLUGIN_VM_INSTALLER_ERROR);
   source->AddResourcePath("app.js", IDR_CROSTINI_UPGRADER_APP_JS);
   source->AddResourcePath("browser_proxy.js",
                           IDR_CROSTINI_UPGRADER_BROWSER_PROXY_JS);

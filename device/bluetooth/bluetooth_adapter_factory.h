@@ -15,7 +15,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/data_decoder/public/mojom/ble_scan_parser.mojom.h"
+#include "services/data_decoder/public/mojom/ble_scan_parser.mojom-forward.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace device {

@@ -83,6 +83,7 @@ class ImageDocumentTest : public testing::Test {
 
   void CreateDocumentWithoutLoadingImage(int view_width, int view_height);
   void CreateDocument(int view_width, int view_height);
+  DocumentParser* StartLoadingImage();
   void LoadImage();
 
   ImageDocument& GetDocument() const;
@@ -126,11 +127,16 @@ ImageDocument& ImageDocumentTest::GetDocument() const {
   return *image_document;
 }
 
-void ImageDocumentTest::LoadImage() {
+DocumentParser* ImageDocumentTest::StartLoadingImage() {
   DocumentParser* parser = GetDocument().ImplicitOpen(
       ParserSynchronizationPolicy::kForceSynchronousParsing);
   const Vector<unsigned char>& data = JpegImage();
   parser->AppendBytes(reinterpret_cast<const char*>(data.data()), data.size());
+  return parser;
+}
+
+void ImageDocumentTest::LoadImage() {
+  DocumentParser* parser = StartLoadingImage();
   parser->Finish();
 }
 
@@ -221,6 +227,13 @@ TEST_F(ImageDocumentTest, ImageCenteredWithoutForceZeroLayoutHeight) {
 TEST_F(ImageDocumentTest, DomInteractive) {
   CreateDocument(25, 30);
   EXPECT_FALSE(GetDocument().GetTiming().DomInteractive().is_null());
+}
+
+TEST_F(ImageDocumentTest, ImageSrcChangedBeforeFinish) {
+  CreateDocumentWithoutLoadingImage(80, 70);
+  DocumentParser* parser = StartLoadingImage();
+  GetDocument().ImageElement()->removeAttribute(html_names::kSrcAttr);
+  parser->Finish();
 }
 
 #if defined(OS_ANDROID)

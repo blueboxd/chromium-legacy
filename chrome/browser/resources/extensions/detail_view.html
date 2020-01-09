@@ -161,7 +161,7 @@
             icon-class="[[getIndicatorIcon_(data.controlledInfo.type)]]"
             icon-aria-label="[[data.controlledInfo.type]]">
         </cr-tooltip-icon>
-        <template is="dom-if" if="[[isTerminated_(data.state)]]">
+        <template is="dom-if" if="[[showReloadButton_(data.state)]]">
           <cr-button id="terminated-reload-button" class="action-button"
               on-click="onReloadTap_">
             $i18n{itemReload}
@@ -174,10 +174,15 @@
                 '$i18nPolymer{extensionEnabled}')]]"
             aria-describedby="name"
             checked="[[isEnabled_(data.state)]]"
-            on-change="onEnableChange_"
+            on-change="onEnableToggleChange_"
             disabled="[[!isEnableToggleEnabled_(data.*)]]"
-            hidden$="[[isTerminated_(data.state)]]">
+            hidden$="[[!showEnableToggle_(data.*)]]">
         </cr-toggle>
+        <cr-button id="enableButton"
+            on-click="onEnableButtonClick_"
+            hidden$="[[!showEnableButton_(data.*)]]">
+          $i18n{enableButton}
+        </cr-button>
       </div>
     </div>
     <div id="warnings" hidden$="[[!hasWarnings_(data.*)]]">
@@ -189,7 +194,7 @@
             [[item]]
           </template>
         </span>
-        <template is="dom-if" if="[[!isTerminated_(data.state)]]">
+        <template is="dom-if" if="[[!showReloadButton_(data.state)]]">
           <cr-button id="warnings-reload-button" class="action-button"
               on-click="onReloadTap_">
             $i18n{itemReload}
@@ -208,7 +213,7 @@
       </div>
       <div class="section continuation warning control-line"
           id="corrupted-warning"
-          hidden$="[[!data.disableReasons.corruptInstall]]">
+          hidden$="[[!showRepairButton_(data.disableReasons.corruptInstall)]]">
         <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
         <span>$i18n{itemCorruptInstall}</span>
         <cr-button id="repair-button" class="action-button"

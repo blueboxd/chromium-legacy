@@ -24,4 +24,6 @@ interface INavigationController {
   boolean canGoBack() = 8;
 
   boolean canGoForward() = 9;
+
+  void goToIndex(in int index) = 10;
 }

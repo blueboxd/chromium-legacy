@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ExecutionContext;
 class LocalFrame;
 class ScriptPromise;
@@ -42,7 +43,9 @@ class ScreenOrientation final : public EventTargetWithInlineData,
   void SetType(WebScreenOrientationType);
   void SetAngle(uint16_t);
 
-  ScriptPromise lock(ScriptState*, const AtomicString& orientation);
+  ScriptPromise lock(ScriptState*,
+                     const AtomicString& orientation,
+                     ExceptionState&);
   void unlock();
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)

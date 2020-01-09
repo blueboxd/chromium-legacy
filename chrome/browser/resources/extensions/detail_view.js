@@ -31,7 +31,7 @@ import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/po
 
 import {ItemDelegate} from './item.js';
 import {ItemBehavior} from './item_behavior.js';
-import {computeInspectableViewLabel, getItemSource, getItemSourceString, isControlled, isEnabled, userCanChangeEnablement} from './item_util.js';
+import {computeInspectableViewLabel, EnableControl, getEnableControl, getItemSource, getItemSourceString, isControlled, isEnabled, userCanChangeEnablement} from './item_util.js';
 import {navigation, Page} from './navigation_helper.js';
 
 Polymer({
@@ -153,16 +153,6 @@ Polymer({
   },
 
   /**
-   * Returns true if the extension is in the terminated state.
-   * @return {boolean}
-   * @private
-   */
-  isTerminated_: function() {
-    return this.data.state ===
-        chrome.developerPrivate.ExtensionState.TERMINATED;
-  },
-
-  /**
    * @return {boolean}
    * @private
    */
@@ -238,8 +228,13 @@ Polymer({
   },
 
   /** @private */
-  onEnableChange_: function() {
+  onEnableToggleChange_: function() {
     this.delegate.setItemEnabled(this.data.id, this.$.enableToggle.checked);
+  },
+
+  /** @private */
+  onEnableButtonClick_: function() {
+    this.delegate.setItemEnabled(this.data.id, true);
   },
 
   /**
@@ -381,5 +376,45 @@ Polymer({
   showHostPermissionsToggleList_: function() {
     return this.hasRuntimeHostPermissions_() &&
         !this.data.permissions.runtimeHostPermissions.hasAllHosts;
+  },
+
+  /**
+   * Returns true if the reload button should be shown.
+   * @return {boolean}
+   * @private
+   */
+  showReloadButton_: function() {
+    return getEnableControl(this.data) === EnableControl.RELOAD;
+  },
+
+  /**
+   * Returns true if the repair button should be shown.
+   * @return {boolean}
+   * @private
+   */
+  showRepairButton_: function() {
+    return getEnableControl(this.data) === EnableControl.REPAIR;
+  },
+
+  /**
+   * Returns true if the enable toggle should be shown.
+   * @return {boolean}
+   * @private
+   */
+  showEnableToggle_: function() {
+    const enableControl = getEnableControl(this.data);
+    // We still show the toggle even if we also show the repair button in the
+    // detail view, because the repair button appears just beneath it.
+    return enableControl === EnableControl.ENABLE_TOGGLE ||
+        enableControl === EnableControl.REPAIR;
+  },
+
+  /**
+   * Returns true if the enable button should be shown.
+   * @return {boolean}
+   * @private
+   */
+  showEnableButton_: function() {
+    return getEnableControl(this.data) === EnableControl.ENABLE_BUTTON;
   },
 });

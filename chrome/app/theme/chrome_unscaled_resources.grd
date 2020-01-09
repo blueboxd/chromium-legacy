@@ -125,8 +125,8 @@
         <!-- PluginVm icons -->
         <include name="IDR_LOGO_PLUGIN_VM_DEFAULT_32" file="plugin_vm/logo_plugin_vm_default_32.png" type="BINDATA" />
         <include name="IDR_LOGO_PLUGIN_VM_DEFAULT_192" file="plugin_vm/logo_plugin_vm_default_192.png" type="BINDATA" />
-        <include name="IDR_PLUGIN_VM_LAUNCHER" file="plugin_vm/plugin_vm_launcher.png" type="BINDATA" />
-        <include name="IDR_PLUGIN_VM_LAUNCHER_ERROR" file="plugin_vm/plugin_vm_launcher_error.png" type="BINDATA" />
+        <include name="IDR_PLUGIN_VM_INSTALLER" file="plugin_vm/plugin_vm_installer.png" type="BINDATA" />
+        <include name="IDR_PLUGIN_VM_INSTALLER_ERROR" file="plugin_vm/plugin_vm_installer_error.png" type="BINDATA" />
       </if>
     </includes>
   </release>

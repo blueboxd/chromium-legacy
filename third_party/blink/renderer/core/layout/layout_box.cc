@@ -2365,7 +2365,9 @@ void LayoutBox::SetFirstInlineFragmentItemIndex(wtf_size_t index) {
   CHECK(IsInLayoutNGInlineFormattingContext()) << *this;
   DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   DCHECK_NE(index, 0u);
-  first_fragment_item_index_ = index;
+  // TDOO(yosin): Once we update all |LayoutObject::FirstInlineFragment()|,
+  // we should enable below.
+  // first_fragment_item_index_ = index;
 }
 
 void LayoutBox::InLayoutNGInlineFormattingContextWillChange(bool new_value) {

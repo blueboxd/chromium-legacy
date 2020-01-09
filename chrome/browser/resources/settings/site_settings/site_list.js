@@ -310,9 +310,9 @@ Polymer({
         loadTimeData.valueExists('multideviceAllowedByPolicy') &&
         loadTimeData.getBoolean('multideviceAllowedByPolicy') &&
         !this.androidSmsInfo_) {
-      const multideviceSetupProxy =
-          settings.MultiDeviceBrowserProxyImpl.getInstance();
-      return multideviceSetupProxy.getAndroidSmsInfo().then((info) => {
+      const androidInfoBrowserProxy =
+          settings.AndroidInfoBrowserProxyImpl.getInstance();
+      return androidInfoBrowserProxy.getAndroidSmsInfo().then((info) => {
         this.androidSmsInfo_ = info;
       });
     }

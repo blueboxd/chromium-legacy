@@ -184,7 +184,7 @@ void OpenInternalApp(const std::string& app_id,
     if (plugin_vm::IsPluginVmEnabled(profile)) {
       plugin_vm::PluginVmManager::GetForProfile(profile)->LaunchPluginVm();
     } else {
-      plugin_vm::ShowPluginVmLauncherView(profile);
+      plugin_vm::ShowPluginVmInstallerView(profile);
     }
   } else if (app_id == ash::kReleaseNotesAppId) {
     base::RecordAction(

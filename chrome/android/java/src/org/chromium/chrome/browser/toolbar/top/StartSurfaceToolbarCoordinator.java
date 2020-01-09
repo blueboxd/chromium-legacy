@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewStub;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
@@ -101,6 +102,14 @@ class StartSurfaceToolbarCoordinator {
      */
     void onBottomToolbarVisibilityChanged(boolean isVisible) {
         mToolbarMediator.onBottomToolbarVisibilityChanged(isVisible);
+    }
+
+    /**
+     * @param overviewModeBehavior The {@link OverviewModeBehavior} to observe overview state
+     *         changes.
+     */
+    void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        mToolbarMediator.setOverviewModeBehavior(overviewModeBehavior);
     }
 
     void onNativeLibraryReady() {

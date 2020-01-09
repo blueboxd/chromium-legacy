@@ -263,6 +263,32 @@ class ServiceWorkerOfflineCapabilityCheckBrowserTest
     test_helper.CheckResult();
   }
 
+  void CheckOfflineCapabilityOnCoreThread(
+      const std::string& path,
+      ServiceWorkerContext::CheckOfflineCapabilityCallback callback) {
+    wrapper()->CheckOfflineCapability(embedded_test_server()->GetURL(path),
+                                      std::move(callback));
+  }
+
+  OfflineCapability CheckOfflineCapability(const std::string& path) {
+    base::RunLoop fetch_run_loop;
+    base::Optional<OfflineCapability> out_offline_capability;
+    RunOrPostTaskOnThread(
+        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+        base::BindOnce(&ServiceWorkerOfflineCapabilityCheckBrowserTest::
+                           CheckOfflineCapabilityOnCoreThread,
+                       base::Unretained(this), path,
+                       base::BindLambdaForTesting(
+                           [&out_offline_capability, &fetch_run_loop](
+                               OfflineCapability offline_capability) {
+                             out_offline_capability = offline_capability;
+                             fetch_run_loop.Quit();
+                           })));
+    fetch_run_loop.Run();
+    DCHECK(out_offline_capability.has_value());
+    return *out_offline_capability;
+  }
+
  protected:
   // Expected results which are used in the tests.
   const FetchEventTestHelper::ExpectedResult kNetworkCompleted =
@@ -580,6 +606,82 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
             normal,
         },
         kNetworkCompleted}});
+}
+
+// Sites without a service worker are identified as having no offline capability
+// support.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
+                       CheckOfflineCapabilityForNoServiceWorker) {
+  // We don't install ServiceWorker in this test.
+  EXPECT_EQ(OfflineCapability::kUnsupported,
+            CheckOfflineCapability("/service_worker/empty.html"));
+  EXPECT_EQ(OfflineCapability::kUnsupported,
+            CheckOfflineCapability("/service_worker/not_found.html"));
+}
+
+// Sites with a no-fetch-handler service worker are identified as having no
+// offline capability support.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
+                       CheckOfflineCapabilityForNoFetchHandler) {
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  // Install ServiceWorker which does not have any event handler.
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('empty.js')"));
+
+  EXPECT_EQ(OfflineCapability::kUnsupported,
+            CheckOfflineCapability("/service_worker/empty.html"));
+  EXPECT_EQ(OfflineCapability::kUnsupported,
+            CheckOfflineCapability("/service_worker/not_found.html"));
+}
+
+// Sites with a service worker are identified as supporting offline capability
+// only when it returns a valid response in the offline mode.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
+                       CheckOfflineCapability) {
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  EXPECT_EQ("DONE", EvalJs(shell(), "register('maybe_offline_support.js')"));
+
+  // At this point, a service worker's status is ACTIVATED because
+  // register() awaits navigator.serviceWorker.ready promise.
+
+  EXPECT_EQ(OfflineCapability::kUnsupported,
+            CheckOfflineCapability("/out_of_scope.html"));
+
+  EXPECT_EQ(OfflineCapability::kUnsupported,
+            CheckOfflineCapability("/out_of_scope.html?offline"));
+
+  EXPECT_EQ(OfflineCapability::kUnsupported,
+            CheckOfflineCapability("/service_worker/empty.html"));
+
+  EXPECT_EQ(OfflineCapability::kUnsupported,
+            CheckOfflineCapability("/service_worker/empty.html?fetch"));
+
+  EXPECT_EQ(OfflineCapability::kSupported,
+            CheckOfflineCapability("/service_worker/empty.html?offline"));
+
+  EXPECT_EQ(
+      OfflineCapability::kSupported,
+      CheckOfflineCapability("/service_worker/empty.html?fetch_or_offline"));
+}
+
+// Sites with a service worker which is not activated yet are identified as
+// having no offline capability support.
+IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
+                       CheckOfflineCapabilityForInstallingServiceWorker) {
+  EXPECT_TRUE(NavigateToURL(shell(),
+                            embedded_test_server()->GetURL(
+                                "/service_worker/create_service_worker.html")));
+  // Appends |pendingInstallEvent| URL param to prevent a service worker from
+  // being activated.
+  EXPECT_EQ("DONE",
+            EvalJs(shell(),
+                   "registerWithoutAwaitingReady('maybe_offline_support.js?"
+                   "pendingInstallEvent')"));
+  EXPECT_EQ(OfflineCapability::kUnsupported,
+            CheckOfflineCapability("/service_worker/empty.html?offline"));
 }
 
 }  // namespace content

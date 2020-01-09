@@ -4550,6 +4550,14 @@
           'isolated_scripts': 'devtools_webkit_isolated_scripts',
         },
       },
+      'devtools_frontend_linux_blink_rel': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'devtools_webkit_isolated_scripts',
+        },
+      },
     }
   },
   {

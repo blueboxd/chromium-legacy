@@ -148,22 +148,22 @@ void ScreenOrientation::SetAngle(uint16_t angle) {
 }
 
 ScriptPromise ScreenOrientation::lock(ScriptState* state,
-                                      const AtomicString& lock_string) {
+                                      const AtomicString& lock_string,
+                                      ExceptionState& exception_state) {
   Document* document = GetFrame() ? GetFrame()->GetDocument() : nullptr;
 
   if (!document || !Controller()) {
-    return ScriptPromise::RejectWithDOMException(
-        state, MakeGarbageCollected<DOMException>(
-                   DOMExceptionCode::kInvalidStateError,
-                   "The object is no longer associated to a document."));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The object is no longer associated to a document.");
+    return ScriptPromise();
   }
 
   if (document->IsSandboxed(WebSandboxFlags::kOrientationLock)) {
-    return ScriptPromise::RejectWithDOMException(
-        state, MakeGarbageCollected<DOMException>(
-                   DOMExceptionCode::kSecurityError,
-                   "The document is sandboxed and lacks the "
-                   "'allow-orientation-lock' flag."));
+    exception_state.ThrowSecurityError(
+        "The document is sandboxed and lacks the "
+        "'allow-orientation-lock' flag.");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(state);

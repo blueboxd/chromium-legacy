@@ -2369,7 +2369,7 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
                                    kSetLocalDescription
                              : PeerConnectionTracker::TransceiverUpdatedReason::
                                    kSetRemoteDescription;
-  blink::WebVector<uintptr_t> ids(transceiver_states.size());
+  Vector<uintptr_t> ids(SafeCast<wtf_size_t>(transceiver_states.size()));
   for (WTF::wtf_size_t i = 0; i < transceiver_states.size(); ++i) {
     // Figure out if this transceiver is new or if setting the state modified
     // the transceiver such that it should be logged by the

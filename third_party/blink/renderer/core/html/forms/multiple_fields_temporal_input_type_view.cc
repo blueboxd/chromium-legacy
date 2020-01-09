@@ -527,18 +527,16 @@ void MultipleFieldsTemporalInputTypeView::ReadonlyAttributeChanged() {
     edit->ReadOnlyStateChanged();
 }
 
-bool MultipleFieldsTemporalInputTypeView::RestoreFormControlState(
+void MultipleFieldsTemporalInputTypeView::RestoreFormControlState(
     const FormControlState& state) {
   DateTimeEditElement* edit = GetDateTimeEditElement();
   if (!edit)
-    return false;
-  String old_value = GetElement().value();
+    return;
   DateTimeFieldsState date_time_fields_state =
       DateTimeFieldsState::RestoreFormControlState(state);
   edit->SetValueAsDateTimeFieldsState(date_time_fields_state);
   GetElement().SetNonAttributeValue(input_type_->SanitizeValue(edit->Value()));
   UpdateClearButtonVisibility();
-  return !EqualIgnoringNullity(old_value, GetElement().value());
 }
 
 FormControlState MultipleFieldsTemporalInputTypeView::SaveFormControlState()

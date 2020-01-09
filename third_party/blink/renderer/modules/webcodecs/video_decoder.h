@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ScriptState;
 class ReadableStream;
 class VideoDecoderInitParameters;
@@ -22,8 +23,10 @@ class MODULES_EXPORT VideoDecoder final : public ScriptWrappable {
  public:
   static VideoDecoder* Create();
   VideoDecoder();
-  ScriptPromise Initialize(ScriptState*, const VideoDecoderInitParameters*);
-  ScriptPromise Flush(ScriptState*);
+  ScriptPromise Initialize(ScriptState*,
+                           const VideoDecoderInitParameters*,
+                           ExceptionState&);
+  ScriptPromise Flush(ScriptState*, ExceptionState&);
   void Close();
 
   // video_decoder.idl implementation.

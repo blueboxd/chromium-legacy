@@ -393,7 +393,7 @@ public final class ChildProcessLauncherHelperImpl {
                                 bindToCaller, bindAsExternalService, false /* useStrongBinding */);
             } else if (ChildProcessConnection.supportVariableConnections()) {
                 connectionAllocator = ChildConnectionAllocator.createVariableSize(context,
-                        LauncherThread.getHandler(), packageName,
+                        LauncherThread.getHandler(), freeSlotRunnable, packageName,
                         ChildProcessCreationParamsImpl.getSandboxedServicesName(), bindToCaller,
                         bindAsExternalService, false /* useStrongBinding */);
             } else {

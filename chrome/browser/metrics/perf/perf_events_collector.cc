@@ -246,8 +246,9 @@ std::vector<RandomSelector::WeightAndValue> GetDefaultCommandsForCpu(
     return GetDefaultCommands_x86_64(cpuid);
 
   std::vector<WeightAndValue> cmds;
-  if (cpuid.arch == "x86" ||     // 32-bit x86, or...
-      cpuid.arch == "armv7l") {  // ARM
+  if (cpuid.arch == "x86" ||      // 32-bit x86, or...
+      cpuid.arch == "armv7l" ||   // ARM32
+      cpuid.arch == "aarch64") {  // ARM64
     cmds.push_back(WeightAndValue(80.0, kPerfCyclesCmd));
     cmds.push_back(WeightAndValue(20.0, kPerfFPCallgraphCmd));
     return cmds;

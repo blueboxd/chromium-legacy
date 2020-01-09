@@ -16,12 +16,10 @@ namespace blink {
 
 FilteringNetworkManager::FilteringNetworkManager(
     rtc::NetworkManager* network_manager,
-    const GURL& requesting_origin,
     media::MediaPermission* media_permission,
     bool allow_mdns_obfuscation)
     : network_manager_(network_manager),
       media_permission_(media_permission),
-      requesting_origin_(requesting_origin),
       allow_mdns_obfuscation_(allow_mdns_obfuscation) {
   DETACH_FROM_THREAD(thread_checker_);
   set_enumeration_permission(ENUMERATION_BLOCKED);

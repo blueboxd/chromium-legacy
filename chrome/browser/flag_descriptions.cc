@@ -644,6 +644,11 @@ extern const char kDesktopPWAsLocalUpdatingDescription[] =
     "Enable installed PWAs to update their app manifest data when the site "
     "manifest data has changed.";
 
+extern const char kDesktopPWAsTabStripName[] = "Desktop PWA tab strips";
+extern const char kDesktopPWAsTabStripDescription[] =
+    "Experimental UI for exploring what PWA windows would look like with a tab "
+    "strip.";
+
 const char kEnableSystemWebAppsName[] = "System Web Apps";
 const char kEnableSystemWebAppsDescription[] =
     "Experimental system for using the Desktop PWA framework for running System"

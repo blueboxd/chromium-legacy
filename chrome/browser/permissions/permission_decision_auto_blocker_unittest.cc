@@ -433,6 +433,119 @@ TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoStatus) {
   EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
 }
 
+// Check that GetEmbargoStartTime returns the correct time for embargoes whether
+// they are nonexistent, expired or active.
+TEST_F(PermissionDecisionAutoBlockerUnitTest, CheckEmbargoStartTime) {
+  GURL url("https://www.google.com");
+
+  // The time recorded for embargoes will be stored as a double, which will
+  // cause aliasing to a limited set of base::Time values upon retrieval. We
+  // thus pick a base::Time for our test time that is part of this set via
+  // aliasing the current time by passing it through a double. This allows us
+  // to directly compare the test time and times retrieved from storage.
+  base::Time test_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(static_cast<double>(
+          base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds())));
+  clock()->SetNow(test_time);
+
+  // Check the default non embargod state.
+  base::Time embargo_start_time =
+      autoblocker()->GetEmbargoStartTime(url, ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(base::Time(), embargo_start_time);
+
+  // Ensure that dismissing less than the required number for an embargo
+  // does not record an embargo start time.
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, ContentSettingsType::GEOLOCATION, false));
+  embargo_start_time =
+      autoblocker()->GetEmbargoStartTime(url, ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(base::Time(), embargo_start_time);
+
+  // Place site under geolocation dismissal embargo.
+  EXPECT_FALSE(autoblocker()->RecordDismissAndEmbargo(
+      url, ContentSettingsType::GEOLOCATION, false));
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url, ContentSettingsType::GEOLOCATION, false));
+
+  // Confirm embargo is recorded as starting at the correct time.
+  embargo_start_time =
+      autoblocker()->GetEmbargoStartTime(url, ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(test_time, embargo_start_time);
+
+  // Ensure moving clock while within embargo period does not affect embargo
+  // start time.
+  clock()->Advance(base::TimeDelta::FromDays(5));
+  embargo_start_time =
+      autoblocker()->GetEmbargoStartTime(url, ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(test_time, embargo_start_time);
+
+  // Move clock beyond embaro (plus a small offset for potential precision
+  // errors) and confirm start time is unaffected but embargo is suspended.
+  clock()->Advance(base::TimeDelta::FromHours(3 * 24 + 1));
+  embargo_start_time =
+      autoblocker()->GetEmbargoStartTime(url, ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(test_time, embargo_start_time);
+  PermissionResult result =
+      autoblocker()->GetEmbargoResult(url, ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+
+  // Advance time, reinstate embargo and confirm that time is updated.
+  test_time += base::TimeDelta::FromDays(9);
+  test_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(static_cast<double>(
+          test_time.ToDeltaSinceWindowsEpoch().InMicroseconds())));
+  clock()->SetNow(test_time);
+
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url, ContentSettingsType::GEOLOCATION, false));
+  embargo_start_time =
+      autoblocker()->GetEmbargoStartTime(url, ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(test_time, embargo_start_time);
+
+  // Advance time to expire dismiss embargo and create new embargo for ignoring.
+  test_time += base::TimeDelta::FromDays(7);
+  test_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(static_cast<double>(
+          test_time.ToDeltaSinceWindowsEpoch().InMicroseconds())));
+  clock()->SetNow(test_time);
+
+  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
+      url, ContentSettingsType::GEOLOCATION, false));
+  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
+      url, ContentSettingsType::GEOLOCATION, false));
+  EXPECT_FALSE(autoblocker()->RecordIgnoreAndEmbargo(
+      url, ContentSettingsType::GEOLOCATION, false));
+  EXPECT_TRUE(autoblocker()->RecordIgnoreAndEmbargo(
+      url, ContentSettingsType::GEOLOCATION, false));
+
+  // Confirm the most recent embargo is updated to match new ignore embargo.
+  embargo_start_time =
+      autoblocker()->GetEmbargoStartTime(url, ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(test_time, embargo_start_time);
+
+  // Advance time, reinstate the dismiss embargo via a single action, and
+  // confirm that time is updated.
+  test_time += base::TimeDelta::FromDays(1);
+  test_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(static_cast<double>(
+          test_time.ToDeltaSinceWindowsEpoch().InMicroseconds())));
+  clock()->SetNow(test_time);
+
+  EXPECT_TRUE(autoblocker()->RecordDismissAndEmbargo(
+      url, ContentSettingsType::GEOLOCATION, false));
+  embargo_start_time =
+      autoblocker()->GetEmbargoStartTime(url, ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(test_time, embargo_start_time);
+
+  // Remove records of dismiss and ignore embargoes and confirm start time
+  // reverts to default.
+  autoblocker()->RemoveCountsByUrl(base::Bind(&FilterGoogle));
+  embargo_start_time =
+      autoblocker()->GetEmbargoStartTime(url, ContentSettingsType::GEOLOCATION);
+  EXPECT_EQ(base::Time(), embargo_start_time);
+}
+
 // Tests the alternating pattern of the block on multiple dismiss behaviour. On
 // N dismissals, the origin to be embargoed for the requested permission and
 // automatically blocked. Each time the embargo is lifted, the site gets another

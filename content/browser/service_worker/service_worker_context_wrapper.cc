@@ -638,6 +638,28 @@ void ServiceWorkerContextWrapper::CheckHasServiceWorker(
                      this, std::move(callback)));
 }
 
+void ServiceWorkerContextWrapper::CheckOfflineCapability(
+    const GURL& url,
+    CheckOfflineCapabilityCallback callback) {
+  if (!BrowserThread::CurrentlyOn(GetCoreThreadId())) {
+    base::PostTask(
+        FROM_HERE, {GetCoreThreadId()},
+        base::BindOnce(&ServiceWorkerContextWrapper::CheckOfflineCapability,
+                       this, url, std::move(callback)));
+    return;
+  }
+  if (!context_core_) {
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(std::move(callback), OfflineCapability::kUnsupported));
+    return;
+  }
+  context()->CheckOfflineCapability(
+      net::SimplifyUrlForRequest(url),
+      base::BindOnce(&ServiceWorkerContextWrapper::DidCheckOfflineCapability,
+                     this, std::move(callback)));
+}
+
 void ServiceWorkerContextWrapper::ClearAllServiceWorkersForTest(
     base::OnceClosure callback) {
   if (!BrowserThread::CurrentlyOn(GetCoreThreadId())) {
@@ -1647,6 +1669,14 @@ void ServiceWorkerContextWrapper::DidCheckHasServiceWorker(
     ServiceWorkerCapability capability) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
 
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(std::move(callback), capability));
+}
+
+void ServiceWorkerContextWrapper::DidCheckOfflineCapability(
+    CheckOfflineCapabilityCallback callback,
+    OfflineCapability capability) {
+  DCHECK_CURRENTLY_ON(GetCoreThreadId());
   base::PostTask(FROM_HERE, {BrowserThread::UI},
                  base::BindOnce(std::move(callback), capability));
 }

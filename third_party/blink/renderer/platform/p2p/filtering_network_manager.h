@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/rtc_base/network.h"
 #include "third_party/webrtc/rtc_base/third_party/sigslot/sigslot.h"
-#include "url/gurl.h"
 
 namespace media {
 class MediaPermission;
@@ -34,8 +33,6 @@ namespace blink {
 // rtc::NetworkManagerBase to have the same implementation of
 // GetAnyAddressNetworks(). We can't mark the whole class PLATFORM_EXPORT
 // as it requires all super classes to be PLATFORM_EXPORT as well.
-//
-// TODO(crbug.com/787254): Also, move it away from url/gurl.h.
 class FilteringNetworkManager : public rtc::NetworkManagerBase,
                                 public sigslot::has_slots<> {
  public:
@@ -43,7 +40,6 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
   // worker thread |task_runner|.
   PLATFORM_EXPORT FilteringNetworkManager(
       rtc::NetworkManager* network_manager,
-      const GURL& requesting_origin,
       media::MediaPermission* media_permission,
       bool allow_mdns_obfuscation);
 
@@ -115,8 +111,6 @@ class FilteringNetworkManager : public rtc::NetworkManagerBase,
   // helps to identify if the signal is delayed by permission check and increase
   // the setup time.
   base::TimeTicks start_updating_time_;
-
-  GURL requesting_origin_;
 
   // When the mDNS obfuscation is allowed, access to the mDNS responder provided
   // by the base network manager is provided to conceal IPs with mDNS hostnames.

@@ -48,6 +48,11 @@ class EmptyTrustedVaultClient : public TrustedVaultClient {
     // Never invoked by SyncServiceCrypto.
     NOTREACHED();
   }
+
+  void MarkKeysAsStale(const std::string& gaia_id,
+                       base::OnceCallback<void(bool)> cb) override {
+    std::move(cb).Run(false);
+  }
 };
 
 // A SyncEncryptionHandler::Observer implementation that simply posts all calls
@@ -578,11 +583,11 @@ void SyncServiceCrypto::FetchTrustedVaultKeys() {
 
   trusted_vault_client_->FetchKeys(
       state_.account_info.gaia,
-      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetched,
+      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetchedFromClient,
                      weak_factory_.GetWeakPtr()));
 }
 
-void SyncServiceCrypto::TrustedVaultKeysFetched(
+void SyncServiceCrypto::TrustedVaultKeysFetchedFromClient(
     const std::vector<std::vector<uint8_t>>& keys) {
   if (state_.required_user_action !=
           RequiredUserAction::kFetchingTrustedVaultKeys &&
@@ -592,6 +597,14 @@ void SyncServiceCrypto::TrustedVaultKeysFetched(
   }
 
   DCHECK(state_.engine);
+
+  if (keys.empty()) {
+    // Nothing to do if no keys have been fetched from the client (e.g. user
+    // action is required for fetching additional keys). Let's avoid unnecessary
+    // steps like marking keys as stale.
+    FetchTrustedVaultKeysCompletedButInsufficient();
+    return;
+  }
 
   state_.engine->AddTrustedVaultDecryptionKeys(
       keys, base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysAdded,
@@ -606,6 +619,35 @@ void SyncServiceCrypto::TrustedVaultKeysAdded() {
     return;
   }
 
+  // Reaching this codepath indicates OnTrustedVaultKeyAccepted() was not
+  // triggered, so the fetched trusted vault keys were insufficient. Let the
+  // trusted vault client know.
+  trusted_vault_client_->MarkKeysAsStale(
+      state_.account_info.gaia,
+      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysMarkedAsStale,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SyncServiceCrypto::TrustedVaultKeysMarkedAsStale(bool result) {
+  if (state_.required_user_action !=
+          RequiredUserAction::kFetchingTrustedVaultKeys &&
+      state_.required_user_action !=
+          RequiredUserAction::kTrustedVaultKeyRequiredButFetching) {
+    return;
+  }
+
+  // TODO(crbug.com/1012659): Based on |result|, start a second FetchKeys()
+  // pass.
+
+  FetchTrustedVaultKeysCompletedButInsufficient();
+}
+
+void SyncServiceCrypto::FetchTrustedVaultKeysCompletedButInsufficient() {
+  DCHECK(state_.required_user_action ==
+             RequiredUserAction::kFetchingTrustedVaultKeys ||
+         state_.required_user_action ==
+             RequiredUserAction::kTrustedVaultKeyRequiredButFetching);
+
   // If FetchKeys() was intended to be called during an already existing ongoing
   // FetchKeys(), it needs to be invoked now that it's possible.
   if (state_.deferred_trusted_vault_fetch_keys_pending) {
@@ -614,9 +656,11 @@ void SyncServiceCrypto::TrustedVaultKeysAdded() {
   }
 
   // Reaching this codepath indicates OnTrustedVaultKeyAccepted() was not
-  // triggered, so reconfigure without the encrypted types (excluded implicitly
-  // via the failed datatypes handler).
+  // triggered, so the fetched trusted vault keys were insufficient.
   state_.required_user_action = RequiredUserAction::kTrustedVaultKeyRequired;
+
+  // Reconfigure without the encrypted types (excluded implicitly via the failed
+  // datatypes handler).
   reconfigure_.Run(CONFIGURE_REASON_CRYPTO);
 }
 

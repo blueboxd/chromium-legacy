@@ -46,6 +46,9 @@ public final class ChromePreferenceKeys {
      */
     public static final String ACCESSIBILITY_TAB_SWITCHER = "accessibility_tab_switcher";
 
+    /** Whether Autofill Assistant is enabled */
+    public static final String AUTOFILL_ASSISTANT_ENABLED = "autofill_assistant_switch";
+
     public static final String BOOKMARKS_LAST_USED_URL = "enhanced_bookmark_last_used_url";
     public static final String BOOKMARKS_LAST_USED_PARENT =
             "enhanced_bookmark_last_used_parent_folder";
@@ -569,6 +572,7 @@ public final class ChromePreferenceKeys {
         // clang-format off
         return Arrays.asList(
                 ACCESSIBILITY_TAB_SWITCHER,
+                AUTOFILL_ASSISTANT_ENABLED,
                 BOOKMARKS_LAST_USED_URL,
                 BOOKMARKS_LAST_USED_PARENT,
                 CHROME_DEFAULT_BROWSER,

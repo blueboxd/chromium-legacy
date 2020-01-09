@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/bind.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
@@ -19,6 +18,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/platform/peerconnection/webrtc_video_track_source.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/video_track_source_proxy.h"
@@ -188,14 +188,15 @@ void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::OnVideoFrameOnIO(
     scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks estimated_capture_time) {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
-  render_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WebRtcVideoSourceAdapter::ResetRefreshTimerOnMainThread,
-                     this));
-  libjingle_worker_thread_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WebRtcVideoSourceAdapter::OnVideoFrameOnWorkerThread,
-                     this, std::move(frame)));
+  PostCrossThreadTask(
+      *render_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(
+          &WebRtcVideoSourceAdapter::ResetRefreshTimerOnMainThread,
+          WrapRefCounted(this)));
+  PostCrossThreadTask(
+      *libjingle_worker_thread_.get(), FROM_HERE,
+      CrossThreadBindOnce(&WebRtcVideoSourceAdapter::OnVideoFrameOnWorkerThread,
+                          WrapRefCounted(this), std::move(frame)));
 }
 
 void MediaStreamVideoWebRtcSink::WebRtcVideoSourceAdapter::

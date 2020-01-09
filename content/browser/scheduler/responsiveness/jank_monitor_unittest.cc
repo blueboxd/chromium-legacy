@@ -224,6 +224,78 @@ TEST_F(JankMonitorTest, JankUIThreadReentrant) {
   VALIDATE_TEST_OBSERVER_CALLS();
 }
 
+// Test that the jank monitor shouldn't report a jank if a nested runloop is
+// responsive.
+TEST_F(JankMonitorTest, ReentrantResponsive) {
+  auto enclosing_task = [&]() {
+    // Run 5 responsive tasks in the inner runloop.
+    for (int i  = 0; i < 5; i++) {
+      auto nested_responsive_task = [&]() {
+        task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(999));
+
+        // The callback shouldn't be called. |expected_jank_started_| and
+        // |expected_jank_stopped_| should be 0.
+        VALIDATE_TEST_OBSERVER_CALLS();
+      };
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindLambdaForTesting(nested_responsive_task));
+      // Spin a nested run loop to run |nested_responsive_task|.
+      base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+    }
+  };
+
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindLambdaForTesting(enclosing_task));
+  task_environment_.RunUntilIdle();
+  // |expected_jank_started_| and |expected_jank_stopped_| should be 0 even if
+  // the enclosing task runs much longer than the jank threshold.
+  VALIDATE_TEST_OBSERVER_CALLS();
+}
+
+// Test that the jank monitor reports only the janky task running in the nested
+// runloop. The enclosing task shouldn't be reported even if its total duration
+// is longer than the jank threshold.
+TEST_F(JankMonitorTest, JankNestedRunLoop) {
+  auto enclosing_task = [&]() {
+    // Run 1 responsive tasks in the inner runloop.
+    auto nested_responsive_task = [&]() {
+      task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(999));
+
+      // The callback shouldn't be called. |expected_jank_started_| should be 0.
+      VALIDATE_TEST_OBSERVER_CALLS();
+    };
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindLambdaForTesting(nested_responsive_task));
+    // Spin a nested run loop to run |nested_responsive_task|.
+    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+
+    // Then run 1 responsive tasks in the inner runloop.
+    auto nested_janky_task = [&]() {
+      task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1500));
+
+      // We should detect one jank.
+      expected_jank_started_++;
+      // The callback shouldn't be called. |expected_jank_started_| should be 0.
+      VALIDATE_TEST_OBSERVER_CALLS();
+    };
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindLambdaForTesting(nested_janky_task));
+    // Spin a nested run loop to run |nested_responsive_task|.
+    base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+
+    task_environment_.RunUntilIdle();
+    expected_jank_stopped_++;
+    // The callback shouldn't be called. |expected_jank_started_| should be 1.
+    VALIDATE_TEST_OBSERVER_CALLS();
+  };
+
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindLambdaForTesting(enclosing_task));
+  task_environment_.RunUntilIdle();
+  // |expected_jank_started_| and |expected_jank_stopped_| should still be 1.
+  VALIDATE_TEST_OBSERVER_CALLS();
+}
+
 // Test monitor with overlapping janks on both threads. Only the jank started
 // first should be reported.
 TEST_F(JankMonitorTest, JankUIAndIOThread) {

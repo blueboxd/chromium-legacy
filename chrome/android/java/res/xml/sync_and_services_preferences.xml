@@ -79,6 +79,11 @@
             android:title="@string/url_keyed_anonymized_data_title"
             android:summary="@string/url_keyed_anonymized_data_summary"
             android:persistent="false"/>
+        <org.chromium.chrome.browser.settings.ChromeSwitchPreference
+            android:key="autofill_assistant"
+            android:title="@string/prefs_autofill_assistant_title"
+            android:summary="@string/prefs_autofill_assistant_summary"
+            android:persistent="false"/>
         <org.chromium.chrome.browser.settings.ChromeBasePreference
             android:key="contextual_search"
             android:title="@string/contextual_search_title"

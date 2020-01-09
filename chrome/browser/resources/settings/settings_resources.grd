@@ -21,7 +21,7 @@
                  type="chrome_html"
                  preprocess="true" />
 
-      <if expr="not is_macosx and not is_chromeos">
+      <if expr="not is_macosx and not chromeos">
         <structure name="IDR_SETTINGS_CAPTIONS_SUBPAGE_HTML"
                    file="a11y_page/captions_subpage.html"
                    type="chrome_html" />
@@ -865,20 +865,20 @@
                  file="route.js"
                  type="chrome_html"
                  preprocess="true" />
-      <if expr="chromeos">
-        <structure name="IDR_SETTINGS_ROUTE_ORIGIN_BEHAVIOR_HTML"
-                   file="route_origin_behavior.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_ROUTE_ORIGIN_BEHAVIOR_JS"
-                   file="route_origin_behavior.js"
-                   type="chrome_html" />
-      </if>
       <structure name="IDR_SETTINGS_SITE_FAVICON_HTML"
                  file="site_favicon.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_FAVICON_JS"
                  file="site_favicon.js"
                  type="chrome_html" />
+      <if expr="chromeos">
+        <structure name="IDR_SETTINGS_ANDROID_INFO_BROWSER_PROXY_HTML"
+                   file="site_settings/android_info_browser_proxy.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_ANDROID_INFO_BROWSER_PROXY_JS"
+                   file="site_settings/android_info_browser_proxy.js"
+                   type="chrome_html" />
+      </if>
       <structure name="IDR_SETTINGS_SITE_DATA_HTML"
                  file="site_settings/site_data.html"
                  type="chrome_html" />
@@ -1056,26 +1056,6 @@
                  file="site_settings/zoom_levels.js"
                  type="chrome_html" />
       <if expr="chromeos">
-        <structure name="IDR_SETTINGS_ANDROID_APPS_BROWSER_PROXY_JS"
-                   file="chromeos/os_apps_page/android_apps_browser_proxy.js"
-                   type="chrome_html"
-                   preprocess="true" />
-        <structure name="IDR_SETTINGS_ANDROID_APPS_BROWSER_PROXY_HTML"
-                   file="chromeos/os_apps_page/android_apps_browser_proxy.html"
-                   type="chrome_html"
-                   preprocess="true" />
-        <structure name="IDR_SETTINGS_MULTIDEVICE_BROWSER_PROXY_HTML"
-                   file="multidevice_page/multidevice_browser_proxy.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_MULTIDEVICE_BROWSER_PROXY_JS"
-                   file="multidevice_page/multidevice_browser_proxy.js"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_MULTIDEVICE_CONSTANTS_HTML"
-                   file="multidevice_page/multidevice_constants.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_MULTIDEVICE_CONSTANTS_JS"
-                   file="multidevice_page/multidevice_constants.js"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_PARENTAL_CONTROLS_BROWSER_PROXY_HTML"
                    file="parental_controls_page/parental_controls_browser_proxy.html"
                    type="chrome_html" />

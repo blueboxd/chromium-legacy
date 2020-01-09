@@ -47,7 +47,7 @@ class PasswordInputType final : public BaseTextInputType {
   const AtomicString& FormControlType() const override;
   bool ShouldSaveAndRestoreFormControlState() const override;
   FormControlState SaveFormControlState() const override;
-  bool RestoreFormControlState(const FormControlState&) override;
+  void RestoreFormControlState(const FormControlState&) override;
   bool ShouldRespectListAttribute() override;
 
   bool NeedsContainer() const override;

@@ -34,7 +34,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/ppapi_test_utils.h"
 #include "media/base/media_switches.h"
+#include "net/base/features.h"
 #include "net/base/filename_util.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -132,9 +134,21 @@ InfoBarService* PPAPITestBase::InfoBarObserver::GetInfoBarService() {
 }
 
 PPAPITestBase::PPAPITestBase() {
+  // These are needed to test that the right NetworkIsolationKey is used.
+  scoped_feature_list_.InitWithFeatures(
+      // enabled_features
+      {net::features::kSplitHostCacheByNetworkIsolationKey,
+       net::features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
 }
 
 void PPAPITestBase::SetUp() {
+  base::FilePath document_root;
+  ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
+  embedded_test_server()->AddDefaultHandlers(document_root);
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   EnablePixelOutput();
   InProcessBrowserTest::SetUp();
 }
@@ -149,6 +163,14 @@ void PPAPITestBase::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void PPAPITestBase::SetUpOnMainThread() {
+  host_resolver()->AddRuleWithFlags(
+      "host_resolver.test", embedded_test_server()->host_port_pair().host(),
+      net::HOST_RESOLVER_CANONNAME);
+
+  SetUpPPAPIBroker();
+}
+
+void PPAPITestBase::SetUpPPAPIBroker() {
   // Always allow access to the PPAPI broker.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetDefaultContentSetting(ContentSettingsType::PPAPI_BROKER,
@@ -182,47 +204,32 @@ void PPAPITestBase::RunTest(const std::string& test_case) {
 void PPAPITestBase::RunTestViaHTTP(const std::string& test_case) {
   base::FilePath document_root;
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
-  net::EmbeddedTestServer http_server;
-  http_server.AddDefaultHandlers(document_root);
-  ASSERT_TRUE(http_server.Start());
-  RunTestURL(GetTestURL(http_server, test_case, std::string()));
+  RunTestURL(GetTestURL(*embedded_test_server(), test_case, std::string()));
 }
 
 void PPAPITestBase::RunTestWithSSLServer(const std::string& test_case) {
   base::FilePath http_document_root;
   ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&http_document_root));
-  net::EmbeddedTestServer http_server;
-  http_server.AddDefaultHandlers(http_document_root);
   net::EmbeddedTestServer ssl_server(net::EmbeddedTestServer::TYPE_HTTPS);
   ssl_server.AddDefaultHandlers(http_document_root);
-
-  ASSERT_TRUE(http_server.Start());
   ASSERT_TRUE(ssl_server.Start());
 
   uint16_t port = ssl_server.host_port_pair().port();
-  RunTestURL(GetTestURL(http_server,
-                        test_case,
+  RunTestURL(GetTestURL(*embedded_test_server(), test_case,
                         base::StringPrintf("ssl_server_port=%d", port)));
 }
 
 void PPAPITestBase::RunTestWithWebSocketServer(const std::string& test_case) {
-  base::FilePath http_document_root;
-  ASSERT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&http_document_root));
-  net::EmbeddedTestServer http_server;
-  http_server.AddDefaultHandlers(http_document_root);
   net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
                                    net::GetWebSocketTestDataDirectory());
-  ASSERT_TRUE(http_server.Start());
   ASSERT_TRUE(ws_server.Start());
 
   std::string host = ws_server.host_port_pair().HostForURL();
   uint16_t port = ws_server.host_port_pair().port();
-  RunTestURL(GetTestURL(http_server,
-                        test_case,
-                        base::StringPrintf(
-                            "websocket_host=%s&websocket_port=%d",
-                            host.c_str(),
-                            port)));
+  RunTestURL(
+      GetTestURL(*embedded_test_server(), test_case,
+                 base::StringPrintf("websocket_host=%s&websocket_port=%d",
+                                    host.c_str(), port)));
 }
 
 void PPAPITestBase::RunTestIfAudioOutputAvailable(
@@ -319,8 +326,7 @@ void PPAPINaClTest::SetUpCommandLine(base::CommandLine* command_line) {
 #endif
 }
 
-void PPAPINaClTest::SetUpOnMainThread() {
-}
+void PPAPINaClTest::SetUpPPAPIBroker() {}
 
 void PPAPINaClTest::RunTest(const std::string& test_case) {
 #if BUILDFLAG(ENABLE_NACL)
@@ -436,7 +442,7 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
                             test_case.c_str());
 }
 
-void PPAPIBrokerInfoBarTest::SetUpOnMainThread() {
+void PPAPIBrokerInfoBarTest::SetUpPPAPIBroker() {
   // The default content setting for the PPAPI broker is ASK. We purposefully
-  // don't call PPAPITestBase::SetUpOnMainThread() to keep it that way.
+  // don't call PPAPITestBase::SetUpPPAPIBroker() to keep it that way.
 }

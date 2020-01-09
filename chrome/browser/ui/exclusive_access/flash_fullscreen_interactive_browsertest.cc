@@ -94,16 +94,6 @@ class FlashFullscreenInteractiveBrowserTest : public OutOfProcessPPAPITest {
   }
 
   bool LaunchFlashFullscreenInSubframe() {
-    // Start the embedded test server and set it up to serve PPAPI test case
-    // URLs.
-    base::FilePath document_root;
-    EXPECT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
-    embedded_test_server()->AddDefaultHandlers(document_root);
-    if (!embedded_test_server()->Start()) {
-      ADD_FAILURE() << "Failed to launch embedded test server.";
-      return false;
-    }
-
     // Load a page with an <iframe> that points to the test case URL, which
     // runs the simulated fullscreen Flash plugin.  In OOPIF modes, the frame
     // will render in a separate process.  Block until the plugin has completed

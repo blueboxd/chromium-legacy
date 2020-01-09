@@ -547,7 +547,8 @@ void remote_surface_unblock_ime(wl_client* client, wl_resource* resource) {
 void remote_surface_set_accessibility_id(wl_client* client,
                                          wl_resource* resource,
                                          int32_t accessibility_id) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ClientControlledShellSurface>(resource)
+      ->SetClientAccessibilityId(accessibility_id);
 }
 
 void remote_surface_set_pip_original_window(wl_client* client,

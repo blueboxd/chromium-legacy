@@ -50,34 +50,34 @@ struct BookmarkInfo {
   std::string server_tag;
 };
 
-std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
+syncer::UpdateResponseData CreateUpdateResponseData(
     const BookmarkInfo& bookmark_info,
     const syncer::UniquePosition& unique_position,
     int response_version,
     const std::string& guid) {
-  auto data = std::make_unique<syncer::EntityData>();
-  data->id = bookmark_info.server_id;
-  data->parent_id = bookmark_info.parent_id;
-  data->server_defined_unique_tag = bookmark_info.server_tag;
-  data->unique_position = unique_position.ToProto();
+  syncer::EntityData data;
+  data.id = bookmark_info.server_id;
+  data.parent_id = bookmark_info.parent_id;
+  data.server_defined_unique_tag = bookmark_info.server_tag;
+  data.unique_position = unique_position.ToProto();
 
   sync_pb::BookmarkSpecifics* bookmark_specifics =
-      data->specifics.mutable_bookmark();
+      data.specifics.mutable_bookmark();
   bookmark_specifics->set_guid(guid);
   bookmark_specifics->set_title(bookmark_info.title);
   if (bookmark_info.url.empty()) {
-    data->is_folder = true;
+    data.is_folder = true;
   } else {
     bookmark_specifics->set_url(bookmark_info.url);
   }
 
-  auto response_data = std::make_unique<syncer::UpdateResponseData>();
-  response_data->entity = std::move(data);
-  response_data->response_version = response_version;
+  syncer::UpdateResponseData response_data;
+  response_data.entity = std::move(data);
+  response_data.response_version = response_version;
   return response_data;
 }
 
-std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
+syncer::UpdateResponseData CreateUpdateResponseData(
     const BookmarkInfo& bookmark_info,
     const syncer::UniquePosition& unique_position,
     int response_version) {
@@ -305,7 +305,7 @@ TEST_F(
       CreateUpdateResponseData({kNodeId, kTitle, kUrl, kBookmarkBarId,
                                 /*server_tag=*/std::string()},
                                kRandomPosition, /*response_version=*/1));
-  updates[0]->response_version++;
+  updates[0].response_version++;
 
   EXPECT_CALL(*schedule_save_closure(), Run());
   processor()->OnUpdateReceived(CreateDummyModelTypeState(),
@@ -499,14 +499,13 @@ TEST_F(BookmarkModelTypeProcessorTest,
 
   // Push an update that is encrypted with the new encryption key.
   const std::string kNodeId = "node_id";
-  std::unique_ptr<syncer::UpdateResponseData> response_data =
-      CreateUpdateResponseData(
-          {kNodeId, "title", "http://www.url.com", /*parent_id=*/kBookmarkBarId,
-           /*server_tag=*/std::string()},
-          syncer::UniquePosition::InitialPosition(
-              syncer::UniquePosition::RandomSuffix()),
-          /*response_version=*/0);
-  response_data->encryption_key_name = kEncryptionKeyName;
+  syncer::UpdateResponseData response_data = CreateUpdateResponseData(
+      {kNodeId, "title", "http://www.url.com", /*parent_id=*/kBookmarkBarId,
+       /*server_tag=*/std::string()},
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix()),
+      /*response_version=*/0);
+  response_data.encryption_key_name = kEncryptionKeyName;
 
   syncer::UpdateResponseDataList updates;
   updates.push_back(std::move(response_data));

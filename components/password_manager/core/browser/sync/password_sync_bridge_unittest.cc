@@ -259,12 +259,12 @@ class PasswordSyncBridgeTest : public testing::Test {
   }
 
   // Creates an EntityData around a copy of the given specifics.
-  std::unique_ptr<syncer::EntityData> SpecificsToEntity(
+  syncer::EntityData SpecificsToEntity(
       const sync_pb::PasswordSpecifics& specifics) {
-    auto data = std::make_unique<syncer::EntityData>();
-    *data->specifics.mutable_password() = specifics;
-    data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
-        syncer::PASSWORDS, bridge()->GetClientTag(*data));
+    syncer::EntityData data;
+    *data.specifics.mutable_password() = specifics;
+    data.client_tag_hash = syncer::ClientTagHash::FromUnhashed(
+        syncer::PASSWORDS, bridge()->GetClientTag(data));
     return data;
   }
 
@@ -436,7 +436,7 @@ TEST_F(PasswordSyncBridgeTest,
 
   EXPECT_CALL(mock_processor(),
               UntrackEntityForClientTagHash(
-                  SpecificsToEntity(specifics)->client_tag_hash));
+                  SpecificsToEntity(specifics).client_tag_hash));
 
   syncer::EntityChangeList entity_change_list;
   entity_change_list.push_back(syncer::EntityChange::CreateAdd(
@@ -732,7 +732,7 @@ TEST_F(PasswordSyncBridgeTest,
 
   EXPECT_CALL(mock_processor(),
               UntrackEntityForClientTagHash(
-                  SpecificsToEntity(specifics)->client_tag_hash));
+                  SpecificsToEntity(specifics).client_tag_hash));
 
   syncer::EntityChangeList entity_change_list;
   entity_change_list.push_back(syncer::EntityChange::CreateAdd(

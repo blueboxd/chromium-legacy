@@ -5,6 +5,7 @@ include_rules = [
   "+chrome/browser/ui/views/chrome_layout_provider.h",
 
   "+chrome/services/app_service/public",
+  "+chrome/services/keymaster/public",
   "+chrome/services/wilco_dtc_supportd/public",
   "+components/guest_os",
   "+cros",

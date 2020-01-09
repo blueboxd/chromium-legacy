@@ -234,19 +234,19 @@ void ExtensionSessionsTest::CreateSessionModels() {
     // sessions (anything older than 14 days), so we cannot use
     // MockModelTypeWorker's convenience functions, which internally use very
     // old timestamps.
-    auto header_entity_data = std::make_unique<syncer::EntityData>();
-    header_entity_data->client_tag_hash =
+    syncer::EntityData header_entity_data;
+    header_entity_data.client_tag_hash =
         TagHashFromSpecifics(header_entity.session());
-    header_entity_data->id =
-        "FakeId:" + header_entity_data->client_tag_hash.value();
-    header_entity_data->specifics = header_entity;
-    header_entity_data->creation_time =
+    header_entity_data.id =
+        "FakeId:" + header_entity_data.client_tag_hash.value();
+    header_entity_data.specifics = header_entity;
+    header_entity_data.creation_time =
         time_now - base::TimeDelta::FromSeconds(index);
-    header_entity_data->modification_time = header_entity_data->creation_time;
+    header_entity_data.modification_time = header_entity_data.creation_time;
 
-    auto header_update = std::make_unique<syncer::UpdateResponseData>();
-    header_update->entity = std::move(header_entity_data);
-    header_update->response_version = 1;
+    syncer::UpdateResponseData header_update;
+    header_update.entity = std::move(header_entity_data);
+    header_update.response_version = 1;
     syncer::UpdateResponseDataList updates;
     updates.push_back(std::move(header_update));
     worker.UpdateFromServer(std::move(updates));

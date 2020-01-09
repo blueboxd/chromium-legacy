@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
@@ -122,7 +123,7 @@ TEST(BlinkTransferableMessageStructTraitsTest,
 ImageBitmap* CreateBitmap() {
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(8, 4);
   surface->getCanvas()->clear(SK_ColorRED);
-  return ImageBitmap::Create(
+  return MakeGarbageCollected<ImageBitmap>(
       UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot()));
 }
 
@@ -178,8 +179,8 @@ TEST(BlinkTransferableMessageStructTraitsTest,
   ASSERT_EQ(out.message->GetImageBitmapContentsArray().size(), 1U);
   scoped_refptr<blink::StaticBitmapImage> deserialized_bitmap_contents =
       out.message->GetImageBitmapContentsArray()[0];
-  ImageBitmap* deserialized_bitmap =
-      ImageBitmap::Create(std::move(deserialized_bitmap_contents));
+  auto* deserialized_bitmap = MakeGarbageCollected<ImageBitmap>(
+      std::move(deserialized_bitmap_contents));
   ASSERT_EQ(deserialized_bitmap->height(), original_bitmap_height);
   ASSERT_EQ(deserialized_bitmap->width(), original_bitmap_width);
   // When using WrapAsMessage, the deserialized bitmap should own

@@ -137,9 +137,8 @@ std::vector<const UpdateResponseData*>
 MockModelTypeProcessor::GetNthUpdateResponse(size_t n) const {
   DCHECK_LT(n, GetNumUpdateResponses());
   std::vector<const UpdateResponseData*> nth_update_responses;
-  for (const std::unique_ptr<UpdateResponseData>& response :
-       received_update_responses_[n]) {
-    nth_update_responses.push_back(response.get());
+  for (const UpdateResponseData& response : received_update_responses_[n]) {
+    nth_update_responses.push_back(&response);
   }
   return nth_update_responses;
 }
@@ -236,12 +235,12 @@ void MockModelTypeProcessor::OnUpdateReceivedImpl(
     UpdateResponseDataList response_list) {
   type_states_received_on_update_.push_back(type_state);
   for (auto it = response_list.begin(); it != response_list.end(); ++it) {
-    const ClientTagHash& client_tag_hash = (*it)->entity->client_tag_hash;
+    const ClientTagHash& client_tag_hash = it->entity.client_tag_hash;
     // Server wins.  Set the model's base version.
-    SetBaseVersion(client_tag_hash, (*it)->response_version);
-    SetServerAssignedId(client_tag_hash, (*it)->entity->id);
+    SetBaseVersion(client_tag_hash, it->response_version);
+    SetServerAssignedId(client_tag_hash, it->entity.id);
 
-    update_response_items_.insert(std::make_pair(client_tag_hash, it->get()));
+    update_response_items_.insert(std::make_pair(client_tag_hash, &(*it)));
   }
   received_update_responses_.push_back(std::move(response_list));
 }

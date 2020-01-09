@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BOX_FRAGMENT_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LINE_BOX_FRAGMENT_BUILDER_H_
 
-#include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
@@ -77,12 +77,12 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
     scoped_refptr<const NGLayoutResult> layout_result;
     scoped_refptr<const NGPhysicalTextFragment> fragment;
+    const NGInlineItem* inline_item = nullptr;
     LayoutObject* out_of_flow_positioned_box = nullptr;
     LayoutObject* unpositioned_float = nullptr;
     // The offset of the border box, initially in this child coordinate system.
     // |ComputeInlinePositions()| converts it to the offset within the line box.
-    LogicalOffset offset;
-    LogicalSize size;
+    LogicalRect rect;
     // The offset of a positioned float wrt. the root BFC. This should only be
     // set for positioned floats.
     NGBfcOffset bfc_offset;
@@ -105,7 +105,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     // Create a placeholder. A placeholder does not have a fragment nor a bidi
     // level.
     Child(LayoutUnit block_offset, LayoutUnit block_size)
-        : offset(LayoutUnit(), block_offset), size(LayoutUnit(), block_size) {}
+        : rect(LayoutUnit(), block_offset, LayoutUnit(), block_size) {}
     // Crete a bidi control. A bidi control does not have a fragment, but has
     // bidi level and affects bidi reordering.
     Child(UBiDiLevel bidi_level) : bidi_level(bidi_level) {}
@@ -116,7 +116,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           unsigned children_count,
           UBiDiLevel bidi_level)
         : layout_result(std::move(layout_result)),
-          offset(offset),
+          rect(offset, LogicalSize()),
           inline_size(inline_size),
           children_count(children_count),
           bidi_level(bidi_level) {}
@@ -126,7 +126,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
         : fragment(std::move(fragment)),
-          offset(offset),
+          rect(offset, LogicalSize()),
           inline_size(inline_size),
           bidi_level(bidi_level) {}
     Child(scoped_refptr<const NGPhysicalTextFragment> fragment,
@@ -134,7 +134,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
           LayoutUnit inline_size,
           UBiDiLevel bidi_level)
         : fragment(std::move(fragment)),
-          offset({LayoutUnit(), block_offset}),
+          rect(LayoutUnit(), block_offset, LayoutUnit(), LayoutUnit()),
           inline_size(inline_size),
           bidi_level(bidi_level) {}
     // Create an out-of-flow positioned object.
@@ -184,6 +184,9 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
       }
       return false;
     }
+    const LogicalOffset& Offset() const { return rect.offset; }
+    LayoutUnit InlineOffset() const { return rect.offset.inline_offset; }
+    const LogicalSize& Size() const { return rect.size; }
     const NGPhysicalFragment* PhysicalFragment() const {
       if (layout_result)
         return &layout_result->PhysicalFragment();
@@ -246,6 +249,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
                      scoped_refptr<const NGLayoutResult> layout_result,
                      const LogicalOffset& offset,
                      unsigned children_count) {
+      WillInsertChild(index);
       children_.insert(index, Child{std::move(layout_result), offset,
                                     /* inline_size */ LayoutUnit(),
                                     children_count, /* bidi_level */ 0});
@@ -257,6 +261,8 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
     void MoveInBlockDirection(LayoutUnit, unsigned start, unsigned end);
 
    private:
+    void WillInsertChild(unsigned index);
+
     Vector<Child, 16> children_;
   };
 

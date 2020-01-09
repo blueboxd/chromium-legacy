@@ -107,7 +107,6 @@ group("closure_compile") {
   if (is_chromeos) {
     deps += [
       "chromeos:closure_compile",
-      "multidevice_page:closure_compile",
       "parental_controls_page:closure_compile",
     ]
   }
@@ -121,7 +120,6 @@ js_type_check("settings_resources") {
     ":open_window_proxy",
     ":page_visibility",
     ":route",
-    ":route_origin_behavior",
     ":search_settings",
   ]
 }
@@ -150,13 +148,6 @@ js_library("lifetime_browser_proxy") {
 
 js_library("open_window_proxy") {
   deps = [
-    "//ui/webui/resources/js:cr",
-  ]
-}
-
-js_library("route_origin_behavior") {
-  deps = [
-    ":route",
     "//ui/webui/resources/js:cr",
   ]
 }

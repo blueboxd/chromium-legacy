@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/dispatch_fetch_event_params.mojom.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "url/gurl.h"

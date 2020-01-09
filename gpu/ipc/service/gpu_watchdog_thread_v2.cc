@@ -48,7 +48,8 @@ GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(base::TimeDelta timeout,
 #if defined(USE_X11)
   tty_file_ = base::OpenFile(
       base::FilePath(FILE_PATH_LITERAL("/sys/class/tty/tty0/active")), "r");
-  host_tty_ = GetActiveTTY();
+  UpdateActiveTTY();
+  host_tty_ = active_tty_;
 #endif
 
   Arm();
@@ -405,6 +406,10 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   if (foregrounded_event_)
     num_of_timeout_after_foregrounded_++;
 
+#if defined(USE_X11)
+  UpdateActiveTTY();
+#endif
+
   // Collect all needed info for gpu hang detection.
   bool disarmed = arm_disarm_counter % 2 == 0;  // even number
   bool gpu_makes_progress = arm_disarm_counter != last_arm_disarm_counter_;
@@ -733,27 +738,33 @@ bool GpuWatchdogThreadImplV2::WithinOneMinFromForegrounded() {
 }
 
 #if defined(USE_X11)
-int GpuWatchdogThreadImplV2::GetActiveTTY() {
+void GpuWatchdogThreadImplV2::UpdateActiveTTY() {
+  last_active_tty_ = active_tty_;
+
+  active_tty_ = -1;
   char tty_string[8] = {0};
   if (tty_file_ && !fseek(tty_file_, 0, SEEK_SET) &&
       fread(tty_string, 1, 7, tty_file_)) {
     int tty_number;
-    if (sscanf(tty_string, "tty%d\n", &tty_number) == 1)
-      return tty_number;
+    if (sscanf(tty_string, "tty%d\n", &tty_number) == 1) {
+      active_tty_ = tty_number;
+    }
   }
-  return -1;
 }
 #endif
 
 bool GpuWatchdogThreadImplV2::ContinueOnNonHostX11ServerTty() {
 #if defined(USE_X11)
-  int active_tty = GetActiveTTY();
-  bool is_on_host_tty = host_tty_ == active_tty;
+  if (host_tty_ == -1 || active_tty_ == -1)
+    return false;
 
   // Don't crash if we're not on the TTY of our host X11 server.
-  if (host_tty_ != -1 && active_tty != -1 && !is_on_host_tty) {
-    GpuWatchdogTimeoutHistogram(
-        GpuWatchdogTimeoutEvent::kContinueOnNonHostServerTty);
+  if (active_tty_ != host_tty_) {
+    // Only record for the time there is a change on TTY
+    if (last_active_tty_ == active_tty_) {
+      GpuWatchdogTimeoutHistogram(
+          GpuWatchdogTimeoutEvent::kContinueOnNonHostServerTty);
+    }
     return true;
   }
 #endif

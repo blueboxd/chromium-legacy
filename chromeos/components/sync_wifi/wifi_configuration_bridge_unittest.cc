@@ -43,13 +43,13 @@ using testing::UnorderedElementsAre;
 const char kSsidMeow[] = "meow";
 const char kSsidWoof[] = "woof";
 
-std::unique_ptr<syncer::EntityData> GenerateWifiEntityData(
+syncer::EntityData GenerateWifiEntityData(
     const sync_pb::WifiConfigurationSpecificsData& data) {
-  auto entity_data = std::make_unique<syncer::EntityData>();
-  entity_data->specifics.mutable_wifi_configuration()
+  syncer::EntityData entity_data;
+  entity_data.specifics.mutable_wifi_configuration()
       ->mutable_client_only_encrypted_data()
       ->CopyFrom(data);
-  entity_data->name = data.hex_ssid();
+  entity_data.name = data.hex_ssid();
   return entity_data;
 }
 
@@ -113,13 +113,13 @@ class WifiConfigurationBridgeTest : public testing::Test {
       const std::vector<WifiConfigurationSpecificsData>& specifics_list) {
     syncer::EntityChangeList changes;
     for (const auto& data : specifics_list) {
-      auto entity_data = std::make_unique<syncer::EntityData>();
+      syncer::EntityData entity_data;
       sync_pb::WifiConfigurationSpecifics specifics;
 
       specifics.mutable_client_only_encrypted_data()->CopyFrom(data);
-      entity_data->specifics.mutable_wifi_configuration()->CopyFrom(specifics);
+      entity_data.specifics.mutable_wifi_configuration()->CopyFrom(specifics);
 
-      entity_data->name = data.hex_ssid();
+      entity_data.name = data.hex_ssid();
 
       changes.push_back(syncer::EntityChange::CreateAdd(
           data.hex_ssid(), std::move(entity_data)));

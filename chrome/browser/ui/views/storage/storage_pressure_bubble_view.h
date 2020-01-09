@@ -24,7 +24,6 @@ class StoragePressureBubbleView : public views::BubbleDialogDelegateView {
   base::string16 GetWindowTitle() const override;
   bool Accept() override;
   bool Close() override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
 
   // views::BubbleDialogDelegateView:
   void Init() override;

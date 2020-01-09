@@ -100,8 +100,12 @@ class NGInlineCursorTest : public NGLayoutTest,
 
   Vector<String> ToDebugStringListWithBidiLevel(const NGInlineCursor& start) {
     Vector<String> list;
-    for (NGInlineCursor cursor(start); cursor; cursor.MoveToNext())
+    for (NGInlineCursor cursor(start); cursor; cursor.MoveToNext()) {
+      // Inline boxes do not have bidi level.
+      if (cursor.IsInlineBox())
+        continue;
       list.push_back(ToDebugStringWithBidiLevel(cursor));
+    }
     return list;
   }
 
@@ -126,8 +130,8 @@ TEST_P(NGInlineCursorTest, BidiLevelInlineBoxLTR) {
       "<div id=root dir=ltr>"
       "abc<b id=def>def</b><bdo dir=rtl><b id=ghi>GHI</b></bdo>jkl</div>");
   Vector<String> list = ToDebugStringListWithBidiLevel(cursor);
-  EXPECT_THAT(list, ElementsAre("#linebox", "abc:0", "#def:0",
-                                "LayoutInline BDO", "#ghi:1", "jkl:0"));
+  EXPECT_THAT(list,
+              ElementsAre("#linebox", "abc:0", "#def:0", "#ghi:1", "jkl:0"));
 }
 
 TEST_P(NGInlineCursorTest, BidiLevelInlineBoxRTL) {
@@ -136,8 +140,8 @@ TEST_P(NGInlineCursorTest, BidiLevelInlineBoxRTL) {
       "<div id=root dir=rtl>"
       "abc<b id=def>def</b><bdo dir=rtl><b id=ghi>GHI</b></bdo>jkl</div>");
   Vector<String> list = ToDebugStringListWithBidiLevel(cursor);
-  EXPECT_THAT(list, ElementsAre("#linebox", "LayoutInline BDO", "#ghi:3",
-                                "jkl:2", "#def:1", "abc:2"));
+  EXPECT_THAT(list,
+              ElementsAre("#linebox", "#ghi:3", "jkl:2", "#def:1", "abc:2"));
 }
 
 TEST_P(NGInlineCursorTest, BidiLevelSimpleLTR) {
@@ -212,9 +216,14 @@ TEST_P(NGInlineCursorTest, CulledInlineWithAtomicInline) {
     list.push_back(ToDebugString(cursor));
     cursor.MoveToNextForSameLayoutObject();
   }
-  EXPECT_THAT(list, ElementsAre("abc", "ABC", "", "XYZ", "xyz"));
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    EXPECT_THAT(list, ElementsAre("#culled", "#culled"));
+  else
+    EXPECT_THAT(list, ElementsAre("abc", "ABC", "", "XYZ", "xyz"));
 }
 
+// We should not have float:right fragment, because it isn't in-flow in
+// an inline formatting context.
 // For https://crbug.com/1026022
 TEST_P(NGInlineCursorTest, CulledInlineWithFloat) {
   SetBodyInnerHTML(
@@ -228,23 +237,27 @@ TEST_P(NGInlineCursorTest, CulledInlineWithFloat) {
     list.push_back(ToDebugString(cursor));
     cursor.MoveToNextForSameLayoutObject();
   }
-  EXPECT_THAT(list, ElementsAre("abc", "xyz"))
-      << "We should not have float:right fragment, because it isn't in-flow in "
-         "an inline formatting context.";
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    EXPECT_THAT(list, ElementsAre("#culled"));
+  else
+    EXPECT_THAT(list, ElementsAre("abc", "xyz"));
 }
 
 TEST_P(NGInlineCursorTest, CulledInlineWithRoot) {
-  NGInlineCursor cursor =
-      SetupCursor("<div id=root><a><b>abc</b><br><i>xyz</i></a></div>");
-  const LayoutInline& layout_inline =
-      ToLayoutInline(*cursor.GetLayoutBlockFlow()->FirstChild());
-  cursor.MoveTo(layout_inline);
+  NGInlineCursor cursor = SetupCursor(R"HTML(
+    <div id="root"><a id="a"><b>abc</b><br><i>xyz</i></a></div>
+  )HTML");
+  const LayoutObject* layout_inline_a = GetLayoutObjectByElementId("a");
+  cursor.MoveTo(*layout_inline_a);
   Vector<String> list;
   while (cursor) {
     list.push_back(ToDebugString(cursor));
     cursor.MoveToNextForSameLayoutObject();
   }
-  EXPECT_THAT(list, ElementsAre("abc", "", "xyz"));
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    EXPECT_THAT(list, ElementsAre("#a", "#a"));
+  else
+    EXPECT_THAT(list, ElementsAre("abc", "", "xyz"));
 }
 
 TEST_P(NGInlineCursorTest, CulledInlineWithoutRoot) {
@@ -259,7 +272,10 @@ TEST_P(NGInlineCursorTest, CulledInlineWithoutRoot) {
     list.push_back(ToDebugString(cursor));
     cursor.MoveToNextForSameLayoutObject();
   }
-  EXPECT_THAT(list, ElementsAre("abc", "", "xyz"));
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+    EXPECT_THAT(list, ElementsAre("#a", "#a"));
+  else
+    EXPECT_THAT(list, ElementsAre("abc", "", "xyz"));
 }
 
 TEST_P(NGInlineCursorTest, FirstChild) {

@@ -1015,7 +1015,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmap) {
   // Make a 10x7 red ImageBitmap.
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 7);
   surface->getCanvas()->clear(SK_ColorRED);
-  ImageBitmap* image_bitmap = ImageBitmap::Create(
+  auto* image_bitmap = MakeGarbageCollected<ImageBitmap>(
       UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot()));
   ASSERT_TRUE(image_bitmap->BitmapImage());
 
@@ -1047,7 +1047,7 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
       SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear, SkNamedGamut::kDCIP3));
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
   surface->getCanvas()->clear(SK_ColorRED);
-  ImageBitmap* image_bitmap = ImageBitmap::Create(
+  auto* image_bitmap = MakeGarbageCollected<ImageBitmap>(
       UnacceleratedStaticBitmapImage::Create(surface->makeImageSnapshot()));
   ASSERT_TRUE(image_bitmap->BitmapImage());
 
@@ -1283,8 +1283,8 @@ TEST(V8ScriptValueSerializerTest, TransferImageBitmap) {
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 7);
   surface->getCanvas()->clear(SK_ColorRED);
   sk_sp<SkImage> image = surface->makeImageSnapshot();
-  ImageBitmap* image_bitmap =
-      ImageBitmap::Create(UnacceleratedStaticBitmapImage::Create(image));
+  auto* image_bitmap = MakeGarbageCollected<ImageBitmap>(
+      UnacceleratedStaticBitmapImage::Create(image));
   ASSERT_TRUE(image_bitmap->BitmapImage());
 
   v8::Local<v8::Value> wrapper = ToV8(image_bitmap, scope.GetScriptState());

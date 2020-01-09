@@ -67,6 +67,13 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
     }
 
     @Override
+    public void goToIndex(int index) {
+        StrictModeWorkaround.apply();
+        NavigationControllerImplJni.get().goToIndex(
+                mNativeNavigationController, NavigationControllerImpl.this, index);
+    }
+
+    @Override
     public void reload() {
         StrictModeWorkaround.apply();
         NavigationControllerImplJni.get().reload(
@@ -158,6 +165,8 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
         void goForward(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
         boolean canGoBack(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
         boolean canGoForward(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
+        void goToIndex(
+                long nativeNavigationControllerImpl, NavigationControllerImpl caller, int index);
         void reload(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
         void stop(long nativeNavigationControllerImpl, NavigationControllerImpl caller);
         int getNavigationListSize(

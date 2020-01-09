@@ -209,6 +209,10 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // //ash/display/screen_orientation_controller.h.
   void SetOrientationLock(ash::OrientationLockType orientation_lock);
 
+  // Set the accessibility ID provided by client for the surface. If
+  // |accessibility_id| is negative value, it will unset the ID.
+  void SetClientAccessibilityId(int32_t accessibility_id);
+
   // Overridden from SurfaceDelegate:
   bool IsInputEnabled(Surface* surface) const override;
   void OnSetFrame(SurfaceFrameType type) override;
@@ -356,6 +360,9 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   // Client controlled specific accelerator target.
   std::unique_ptr<ClientControlledAcceleratorTarget> accelerator_target_;
+
+  // Accessibility ID provided by client.
+  base::Optional<int32_t> client_accessibility_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurface);
 };

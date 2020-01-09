@@ -47,6 +47,9 @@ class NavigationControllerImpl : public NavigationController,
                     const base::android::JavaParamRef<jobject>& obj) {
     return CanGoForward();
   }
+  void GoToIndex(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& obj,
+                 int index);
   void Reload(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
     Reload();
   }
@@ -77,6 +80,7 @@ class NavigationControllerImpl : public NavigationController,
   void GoForward() override;
   bool CanGoBack() override;
   bool CanGoForward() override;
+  void GoToIndex(int index) override;
   void Reload() override;
   void Stop() override;
   int GetNavigationListSize() override;

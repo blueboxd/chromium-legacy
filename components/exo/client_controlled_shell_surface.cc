@@ -35,6 +35,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/aura_constants.h"
@@ -578,6 +579,19 @@ void ClientControlledShellSurface::SetOrientationLock(
       widget_->GetNativeWindow(), orientation_lock);
 }
 
+void ClientControlledShellSurface::SetClientAccessibilityId(
+    int32_t accessibility_id) {
+  if (accessibility_id >= 0)
+    client_accessibility_id_ = accessibility_id;
+  else
+    client_accessibility_id_.reset();
+
+  if (widget_ && widget_->GetNativeWindow()) {
+    SetShellClientAccessibilityId(widget_->GetNativeWindow(),
+                                  client_accessibility_id_);
+  }
+}
+
 void ClientControlledShellSurface::OnBoundsChangeEvent(
     ash::WindowStateType current_state,
     ash::WindowStateType requested_state,
@@ -938,6 +952,9 @@ void ClientControlledShellSurface::InitializeWindowState(
     accelerator_target_->RegisterAccelerator(
         ui::Accelerator(entry.keycode, entry.modifiers), entry.action);
   }
+
+  auto* window = widget_->GetNativeWindow();
+  SetShellClientAccessibilityId(window, client_accessibility_id_);
 }
 
 float ClientControlledShellSurface::GetScale() const {

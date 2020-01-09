@@ -67,9 +67,6 @@ class InstallManager {
       InstallableCheckResult result,
       base::Optional<AppId> app_id)>;
 
-  // Returns true if a web app can be installed for a given |web_contents|.
-  virtual bool CanInstallWebApp(content::WebContents* web_contents) = 0;
-
   // Checks a WebApp installability, retrieves manifest and icons and
   // than performs the actual installation.
   virtual void InstallWebAppFromManifest(

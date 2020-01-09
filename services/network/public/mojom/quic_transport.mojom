@@ -12,6 +12,23 @@ interface QuicTransport {
   // A datagram message is sent from the client. The response message represents
   // whether the peer has sent or discarded the datagram.
   SendDatagram(mojo_base.mojom.ReadOnlyBuffer data) => (bool result);
+
+  // Stream creation initiated by the client. |succeeded| represents whether
+  // the stream is created successfully, and |stream_id| is meaningful only
+  // when |succeeded| is true. |writable| is nullable, to support both
+  // unidirectional and bidirectional streams.
+  CreateStream(handle<data_pipe_consumer> readable,
+               handle<data_pipe_producer>? writable) =>
+      (bool succeeded, uint32 stream_id);
+
+  // Accept a bidirectional stream created by the server.
+  AcceptBidirectionalStream() => (uint32 stream_id,
+                  handle<data_pipe_consumer> readable,
+                  handle<data_pipe_producer> writable);
+
+  // Accept a unidirectional stream created by the server.
+  AcceptUnidirectionalStream() => (uint32 stream_id,
+                  handle<data_pipe_consumer> readable);
 };
 
 // A mojo interface for the client of QuicTransport.

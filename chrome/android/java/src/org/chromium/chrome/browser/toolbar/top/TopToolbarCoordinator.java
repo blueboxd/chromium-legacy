@@ -144,6 +144,7 @@ public class TopToolbarCoordinator implements Toolbar {
         } else if (mStartSurfaceToolbarCoordinator != null) {
             mStartSurfaceToolbarCoordinator.setOnNewTabClickHandler(newTabClickHandler);
             mStartSurfaceToolbarCoordinator.setTabModelSelector(tabModelSelector);
+            mStartSurfaceToolbarCoordinator.setOverviewModeBehavior(overviewModeBehavior);
             mStartSurfaceToolbarCoordinator.onNativeLibraryReady();
         }
 

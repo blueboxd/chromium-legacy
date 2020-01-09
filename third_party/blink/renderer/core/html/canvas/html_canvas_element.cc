@@ -1303,7 +1303,8 @@ ScriptPromise HTMLCanvasElement::CreateImageBitmap(
   DCHECK(event_target.ToLocalDOMWindow());
 
   return ImageBitmapSource::FulfillImageBitmap(
-      script_state, ImageBitmap::Create(this, crop_rect, options));
+      script_state,
+      MakeGarbageCollected<ImageBitmap>(this, crop_rect, options));
 }
 
 void HTMLCanvasElement::SetOffscreenCanvasResource(

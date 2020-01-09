@@ -570,7 +570,8 @@ ScriptPromise ImageData::CreateImageBitmap(ScriptState* script_state,
                           "The source data has been detached."));
   }
   return ImageBitmapSource::FulfillImageBitmap(
-      script_state, ImageBitmap::Create(this, crop_rect, options));
+      script_state,
+      MakeGarbageCollected<ImageBitmap>(this, crop_rect, options));
 }
 
 v8::Local<v8::Object> ImageData::AssociateWithWrapper(

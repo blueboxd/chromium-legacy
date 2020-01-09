@@ -326,13 +326,19 @@ bool Image::ApplyShader(PaintFlags& flags, const SkMatrix& local_matrix) {
   return true;
 }
 
+IntSize Image::Size(RespectImageOrientationEnum respect_image_orientation) {
+  if (respect_image_orientation == kRespectImageOrientation && IsBitmapImage())
+    return ToBitmapImage(this)->SizeRespectingOrientation();
+  return Size();
+}
+
 SkBitmap Image::AsSkBitmapForCurrentFrame(
-    RespectImageOrientationEnum should_respect_image_orientation) {
+    RespectImageOrientationEnum respect_image_orientation) {
   PaintImage paint_image = PaintImageForCurrentFrame();
   if (!paint_image)
     return {};
 
-  if (should_respect_image_orientation == kRespectImageOrientation &&
+  if (respect_image_orientation == kRespectImageOrientation &&
       IsBitmapImage()) {
     ImageOrientation orientation =
         ToBitmapImage(this)->CurrentFrameOrientation();

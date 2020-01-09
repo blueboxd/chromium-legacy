@@ -1681,14 +1681,6 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
   }
 }
 
-static bool ImageWasTransposed(const LayoutImage& layout_image,
-                               const Image& image) {
-  return LayoutObject::ShouldRespectImageOrientation(&layout_image) ==
-             kRespectImageOrientation &&
-         image.IsBitmapImage() &&
-         ToBitmapImage(image).CurrentFrameOrientation().UsesWidthAsHeight();
-}
-
 static AffineTransform RectToRect(const FloatRect& src_rect,
                                   const FloatRect& dst_rect) {
   float x_scale = dst_rect.Width() / src_rect.Width();
@@ -1717,9 +1709,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
       scoped_refptr<Image> image =
           layout_image.ImageResource()->GetImage(replaced_rect.Size());
       if (image && !image->IsNull()) {
-        IntRect src_rect = image->Rect();
-        if (ImageWasTransposed(layout_image, *image))
-          src_rect = src_rect.TransposedRect();
+        IntRect src_rect(
+            IntPoint(), image->Size(LayoutObject::ShouldRespectImageOrientation(
+                            &layout_image)));
         content_to_parent_space =
             RectToRect(FloatRect(src_rect), FloatRect(replaced_rect));
       }

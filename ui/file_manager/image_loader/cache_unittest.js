@@ -5,7 +5,7 @@
 'use strict';
 
 function testCreateCacheKey() {
-  let key = LoadImageRequest.cacheKey({url: 'http://example.com/image.jpg'});
+  const key = LoadImageRequest.cacheKey({url: 'http://example.com/image.jpg'});
   assertTrue(!!key);
 }
 

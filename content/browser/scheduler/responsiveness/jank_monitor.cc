@@ -290,14 +290,14 @@ JankMonitor::ThreadExecutionState::CheckJankiness() {
 
   base::AutoLock lock(lock_);
   if (LIKELY(task_execution_metadata_.empty() ||
-             (now - task_execution_metadata_.front().execution_start_time) <
+             (now - task_execution_metadata_.back().execution_start_time) <
                  jank_threshold)) {
     // Most tasks are unlikely to be janky.
     return base::nullopt;
   }
 
   // Mark that the target thread is janky and notify the monitor thread.
-  return task_execution_metadata_.front().identifier;
+  return task_execution_metadata_.back().identifier;
 }
 
 void JankMonitor::ThreadExecutionState::WillRunTaskOrEvent(

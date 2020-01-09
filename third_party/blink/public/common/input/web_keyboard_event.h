@@ -34,7 +34,7 @@ class BLINK_COMMON_EXPORT WebKeyboardEvent : public WebInputEvent {
   int native_key_code = 0;
 
   // The DOM code enum of the key pressed as passed by the embedder. DOM code
-  // enums are defined in ui/events/keycodes/dom/keycode_converter_data.inc.
+  // enums are defined in ui/events/keycodes/dom/dom_code_data.inc.
   int dom_code = 0;
 
   // The DOM key enum of the key pressed as passed by the embedder. DOM

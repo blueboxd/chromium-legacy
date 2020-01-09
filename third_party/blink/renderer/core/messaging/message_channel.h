@@ -40,6 +40,10 @@ class CORE_EXPORT MessageChannel final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static MessageChannel* Create(ExecutionContext* execution_context) {
+    return MakeGarbageCollected<MessageChannel>(execution_context);
+  }
+
   explicit MessageChannel(ExecutionContext*);
 
   MessagePort* port1() const { return port1_; }

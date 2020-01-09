@@ -118,6 +118,18 @@ int GetActionCount(const GURL& url,
   return value ? value->GetInt() : 0;
 }
 
+base::Time GetEmbargoStartTime(base::Value* permission_dict,
+                               const base::Feature& feature,
+                               const char* key) {
+  base::Value* found =
+      permission_dict->FindKeyOfType(key, base::Value::Type::DOUBLE);
+  if (found && base::FeatureList::IsEnabled(feature)) {
+    return base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(found->GetDouble()));
+  }
+  return base::Time();
+}
+
 bool IsUnderEmbargo(base::Value* permission_dict,
                     const base::Feature& feature,
                     const char* key,
@@ -290,6 +302,30 @@ PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
   return GetEmbargoResult(
       HostContentSettingsMapFactory::GetForProfile(profile_), request_origin,
       permission, clock_->Now());
+}
+
+base::Time PermissionDecisionAutoBlocker::GetEmbargoStartTime(
+    const GURL& request_origin,
+    ContentSettingsType permission) {
+  auto* settings_map = HostContentSettingsMapFactory::GetForProfile(profile_);
+  DCHECK(settings_map);
+  std::unique_ptr<base::DictionaryValue> dict =
+      GetOriginAutoBlockerData(settings_map, request_origin);
+  base::Value* permission_dict = GetOrCreatePermissionDict(
+      dict.get(), PermissionUtil::GetPermissionString(permission));
+
+  // A permission may have a record for both dismisal and ignore, return the
+  // most recent. A permission will only actually be under one embargo, but
+  // the record of embargo start will persist until explicitly deleted
+  base::Time dismissal_start_time = ::GetEmbargoStartTime(
+      permission_dict, features::kBlockPromptsIfDismissedOften,
+      kPermissionDismissalEmbargoKey);
+  base::Time ignore_start_time = ::GetEmbargoStartTime(
+      permission_dict, features::kBlockPromptsIfIgnoredOften,
+      kPermissionIgnoreEmbargoKey);
+
+  return dismissal_start_time > ignore_start_time ? dismissal_start_time
+                                                  : ignore_start_time;
 }
 
 int PermissionDecisionAutoBlocker::GetDismissCount(

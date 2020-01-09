@@ -404,21 +404,27 @@ void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
 
     tree_source = GetFromKey(KeyForInputMethod());
   } else {
-    if (event_data->task_id == kNoTaskId)
-      return;
-
     aura::Window* active_window = GetActiveWindow();
     if (!active_window)
       return;
 
-    int32_t task_id = arc::GetWindowTaskId(active_window);
-    if (task_id != event_data->task_id)
-      return;
+    auto task_id = arc::GetWindowTaskId(active_window);
+    if (event_data->task_id != kNoTaskId) {
+      // Event data has task ID. Check task ID.
+      if (task_id != event_data->task_id)
+        return;
+    } else {
+      // Event data does not have task ID. Check window ID instead.
+      auto window_id = exo::GetShellClientAccessibilityId(active_window);
+      if (window_id != event_data->window_id)
+        return;
+    }
 
-    tree_source = GetFromKey(KeyForTaskId(task_id));
+    auto key = KeyForTaskId(task_id);
+    tree_source = GetFromKey(key);
 
     if (!tree_source) {
-      tree_source = CreateFromKey(KeyForTaskId(event_data->task_id));
+      tree_source = CreateFromKey(key);
 
       ui::AXTreeData tree_data;
       tree_source->GetTreeData(&tree_data);

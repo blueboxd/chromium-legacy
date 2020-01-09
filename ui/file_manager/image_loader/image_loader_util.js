@@ -95,7 +95,7 @@ ImageLoaderUtil.resizeAndCrop = function(source, target, request) {
   target.height = copyParameters.canvas.height;
 
   // Apply.
-  let targetContext =
+  const targetContext =
       /** @type {CanvasRenderingContext2D} */ (target.getContext('2d'));
   targetContext.save();
   request.orientation.cancelImageOrientation(
@@ -208,10 +208,10 @@ ImageLoaderUtil.convertColorSpace = function(target, colorSpace) {
   }
   if (colorSpace === ColorSpace.ADOBE_RGB) {
     const matrix = ImageLoaderUtil.MATRIX_FROM_ADOBE_TO_STANDARD;
-    let context =
+    const context =
         assertInstanceof(target.getContext('2d'), CanvasRenderingContext2D);
-    let imageData = context.getImageData(0, 0, target.width, target.height);
-    let data = imageData.data;
+    const imageData = context.getImageData(0, 0, target.width, target.height);
+    const data = imageData.data;
     for (let i = 0; i < data.length; i += 4) {
       // Scale to [0, 1].
       let adobeR = data[i] / 255;

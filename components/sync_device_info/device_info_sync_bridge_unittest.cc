@@ -253,10 +253,9 @@ ModelTypeState StateWithEncryption(const std::string& encryption_key_name) {
 }
 
 // Creates an EntityData around a copy of the given specifics.
-std::unique_ptr<EntityData> SpecificsToEntity(
-    const DeviceInfoSpecifics& specifics) {
-  auto data = std::make_unique<EntityData>();
-  *data->specifics.mutable_device_info() = specifics;
+EntityData SpecificsToEntity(const DeviceInfoSpecifics& specifics) {
+  EntityData data;
+  *data.specifics.mutable_device_info() = specifics;
   return data;
 }
 

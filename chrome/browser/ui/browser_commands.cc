@@ -109,7 +109,6 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
-#include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -1429,20 +1428,6 @@ bool CanViewSource(const Browser* browser) {
                                              ->GetController()
                                              .CanViewSource();
 }
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-void CreateBookmarkAppFromCurrentWebContents(Browser* browser,
-                                             bool force_shortcut_app) {
-  // TODO(alancutter): Legacy metric to remove in ~M80.
-  base::RecordAction(UserMetricsAction("CreateHostedApp"));
-  web_app::CreateWebAppFromCurrentWebContents(browser, force_shortcut_app,
-                                              base::DoNothing());
-}
-
-bool CanCreateBookmarkApp(const Browser* browser) {
-  return web_app::CanCreateWebApp(browser);
-}
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(TOOLKIT_VIEWS)
 base::Optional<int> GetKeyboardFocusedTabIndex(const Browser* browser) {

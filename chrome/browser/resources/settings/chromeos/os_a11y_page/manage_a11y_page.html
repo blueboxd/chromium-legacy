@@ -9,10 +9,10 @@
 <link rel="import" href="../../controls/settings_toggle_button.html">
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../route.html">
-<link rel="import" href="../../route_origin_behavior.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../device_page/device_page_browser_proxy.html">
 <link rel="import" href="../localized_link/localized_link.html">
+<link rel="import" href="../route_origin_behavior.html">
 
 <dom-module id="settings-manage-a11y-page">
   <template>
@@ -118,8 +118,8 @@
     </cr-link-row>
     <cr-link-row id="appearanceSubpageButton" class="hr"
         label="$i18n{appearanceSettingsTitle}" on-click="onAppearanceTap_"
-        sub-label="$i18n{appearanceSettingsDescription}"
-        external="[[isOSSettings_]]" embedded></cr-link-row>
+        sub-label="$i18n{appearanceSettingsDescription}" external
+        embedded></cr-link-row>
 
     <h2>$i18n{keyboardAndTextInputHeading}</h2>
     <settings-toggle-button class="first"

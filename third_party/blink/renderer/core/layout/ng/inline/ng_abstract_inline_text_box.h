@@ -9,34 +9,35 @@
 
 namespace blink {
 
+class NGFragmentItem;
+class NGInlineCursor;
 class NGPaintFragment;
-class NGPhysicalTextFragment;
 
 // The implementation of |AbstractInlineTextBox| for LayoutNG.
 // See also |LegacyAbstractInlineTextBox| for legacy layout.
 class CORE_EXPORT NGAbstractInlineTextBox final : public AbstractInlineTextBox {
  private:
   // Returns existing or newly created |NGAbstractInlineTextBox|.
-  // * |fragment| should be attached to |NGPhysicalTextFragment|.
+  // * |cursor| should be attached to |NGPhysicalTextFragment|.
   static scoped_refptr<AbstractInlineTextBox> GetOrCreate(
-      const NGPaintFragment& fragment);
-  static void WillDestroy(NGPaintFragment*);
+      const NGInlineCursor& cursor);
+  static void WillDestroy(const NGInlineCursor& cursor);
 
   friend class LayoutText;
-  friend class NGPaintFragment;
 
  public:
+  NGAbstractInlineTextBox(LineLayoutText line_layout_item,
+                          const NGPaintFragment& fragment);
+  NGAbstractInlineTextBox(LineLayoutText line_layout_item,
+                          const NGFragmentItem& fragment);
+
   ~NGAbstractInlineTextBox() final;
 
  private:
-  NGAbstractInlineTextBox(LineLayoutText line_layout_item,
-                          const NGPaintFragment& fragment);
-
-  const NGPhysicalTextFragment& PhysicalTextFragment() const;
-  bool NeedsLayout() const;
+  NGInlineCursor GetCursor() const;
+  NGInlineCursor GetCursorOnLine() const;
+  String GetTextContent() const;
   bool NeedsTrailingSpace() const;
-  // Returns next fragment associated to |LayoutText|.
-  const NGPaintFragment* NextTextFragmentForSameLayoutObject() const;
 
   // Implementations of AbstractInlineTextBox member functions.
   void Detach() final;
@@ -53,12 +54,10 @@ class CORE_EXPORT NGAbstractInlineTextBox final : public AbstractInlineTextBox {
   scoped_refptr<AbstractInlineTextBox> PreviousOnLine() const final;
   bool IsLineBreak() const final;
 
-  const NGPaintFragment* fragment_;
-
-  using FragmentToNGAbstractInlineTextBoxHashMap =
-      HashMap<const NGPaintFragment*, scoped_refptr<AbstractInlineTextBox>>;
-  static FragmentToNGAbstractInlineTextBoxHashMap*
-      g_abstract_inline_text_box_map_;
+  union {
+    const NGPaintFragment* fragment_;
+    const NGFragmentItem* fragment_item_;
+  };
 };
 
 }  // namespace blink

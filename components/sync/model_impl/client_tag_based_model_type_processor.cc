@@ -765,14 +765,13 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
   model_type_state_ = model_type_state;
   metadata_changes->UpdateModelTypeState(model_type_state_);
 
-  for (const std::unique_ptr<syncer::UpdateResponseData>& update : updates) {
-    DCHECK(update);
-    const ClientTagHash& client_tag_hash = update->entity->client_tag_hash;
+  for (syncer::UpdateResponseData& update : updates) {
+    const ClientTagHash& client_tag_hash = update.entity.client_tag_hash;
     if (client_tag_hash.value().empty()) {
       // Ignore updates missing a client tag hash (e.g. permanent nodes).
       continue;
     }
-    if (update->entity->is_deleted()) {
+    if (update.entity.is_deleted()) {
       DLOG(WARNING) << "Ignoring tombstone found during initial update: "
                     << "client_tag_hash = " << client_tag_hash << " for "
                     << ModelTypeToString(type_);
@@ -780,7 +779,7 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
     }
     if (bridge_->SupportsGetClientTag() &&
         client_tag_hash != ClientTagHash::FromUnhashed(
-                               type_, bridge_->GetClientTag(*update->entity))) {
+                               type_, bridge_->GetClientTag(update.entity))) {
       DLOG(WARNING) << "Received unexpected client tag hash: "
                     << client_tag_hash << " for " << ModelTypeToString(type_);
       continue;
@@ -795,11 +794,11 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
                   << " for " << ModelTypeToString(type_);
     }
 #endif  // DCHECK_IS_ON()
-    ProcessorEntity* entity = CreateEntity(*update->entity);
-    entity->RecordAcceptedUpdate(*update);
+    ProcessorEntity* entity = CreateEntity(update.entity);
+    entity->RecordAcceptedUpdate(update);
     const std::string& storage_key = entity->storage_key();
     entity_data.push_back(
-        EntityChange::CreateAdd(storage_key, std::move(update->entity)));
+        EntityChange::CreateAdd(storage_key, std::move(update.entity)));
     if (!storage_key.empty())
       metadata_changes->UpdateMetadata(storage_key, entity->metadata());
   }

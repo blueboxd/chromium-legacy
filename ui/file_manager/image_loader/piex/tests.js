@@ -47,7 +47,7 @@ const puppeteer = require('puppeteer');
     headless: !program.debug
   });
 
-  let page = await browser.newPage();
+  const page = await browser.newPage();
 
   await page.setViewport({
     width: 1200, height: 800

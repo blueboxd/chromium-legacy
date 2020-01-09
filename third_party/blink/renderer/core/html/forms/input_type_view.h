@@ -128,9 +128,7 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual void EnsurePrimaryContent() {}
   virtual bool HasFallbackContent() const { return false; }
   virtual FormControlState SaveFormControlState() const;
-  // Should return |true| if the value is changed and the callsite needs to
-  // dispatch 'input' and 'change' events.
-  virtual bool RestoreFormControlState(const FormControlState&);
+  virtual void RestoreFormControlState(const FormControlState&);
 
   // Validation functions
   virtual bool HasBadInput() const;

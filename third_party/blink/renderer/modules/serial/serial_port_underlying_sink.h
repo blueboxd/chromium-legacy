@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ScriptPromiseResolver;
 class SerialPort;
 
@@ -20,12 +21,17 @@ class SerialPortUnderlyingSink final : public UnderlyingSinkBase {
   SerialPortUnderlyingSink(SerialPort*, mojo::ScopedDataPipeProducerHandle);
 
   // UnderlyingSinkBase
-  ScriptPromise start(ScriptState*, WritableStreamDefaultController*) override;
+  ScriptPromise start(ScriptState*,
+                      WritableStreamDefaultController*,
+                      ExceptionState&) override;
   ScriptPromise write(ScriptState*,
                       ScriptValue chunk,
-                      WritableStreamDefaultController*) override;
-  ScriptPromise close(ScriptState*) override;
-  ScriptPromise abort(ScriptState*, ScriptValue reason) override;
+                      WritableStreamDefaultController*,
+                      ExceptionState&) override;
+  ScriptPromise close(ScriptState*, ExceptionState&) override;
+  ScriptPromise abort(ScriptState*,
+                      ScriptValue reason,
+                      ExceptionState&) override;
 
   // After |data_pipe_| has closed calls to write() will return a Promise
   // rejected with this DOMException.

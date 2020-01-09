@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.settings.autofill_assistant.AutofillAssistantSettings;
 import org.chromium.chrome.browser.settings.datareduction.DataReductionPreferenceFragment;
 import org.chromium.chrome.browser.settings.developer.DeveloperSettings;
 import org.chromium.chrome.browser.settings.sync.SignInPreference;
@@ -58,7 +57,6 @@ public class MainPreferences extends PreferenceFragmentCompat
     public static final String PREF_LANGUAGES = "languages";
     public static final String PREF_DOWNLOADS = "downloads";
     public static final String PREF_DEVELOPER = "developer";
-    public static final String PREF_AUTOFILL_ASSISTANT = "autofill_assistant";
 
     public static final String AUTOFILL_GUID = "guid";
     // Needs to be in sync with kSettingsOrigin[] in
@@ -169,14 +167,6 @@ public class MainPreferences extends PreferenceFragmentCompat
         // This checks whether the flag for Downloads Preferences is enabled.
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)) {
             getPreferenceScreen().removePreference(findPreference(PREF_DOWNLOADS));
-        }
-
-        // This checks whether Autofill Assistant is enabled and was shown at least once (only then
-        // will the AA switch be assigned a value).
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
-                || !ContextUtils.getAppSharedPreferences().contains(
-                        AutofillAssistantSettings.PREF_AUTOFILL_ASSISTANT_SWITCH)) {
-            getPreferenceScreen().removePreference(findPreference(PREF_AUTOFILL_ASSISTANT));
         }
     }
 

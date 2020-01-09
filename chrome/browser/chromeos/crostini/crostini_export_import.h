@@ -117,7 +117,7 @@ class CrostiniExportImport : public KeyedService,
   // Whether an export or import is currently in progress.
   bool GetExportImportOperationStatus() const;
 
-  CrostiniExportImportNotificationController*
+  base::WeakPtr<CrostiniExportImportNotificationController>
   GetNotificationControllerForTesting(ContainerId container_id);
 
  private:

@@ -30,18 +30,16 @@ NativeFileSystemUnderlyingSink::NativeFileSystemUnderlyingSink(
 
 ScriptPromise NativeFileSystemUnderlyingSink::start(
     ScriptState* script_state,
-    WritableStreamDefaultController* controller) {
+    WritableStreamDefaultController* controller,
+    ExceptionState& exception_state) {
   return ScriptPromise::CastUndefined(script_state);
 }
 
 ScriptPromise NativeFileSystemUnderlyingSink::write(
     ScriptState* script_state,
     ScriptValue chunk,
-    WritableStreamDefaultController* controller) {
-  ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionState::kExecutionContext,
-                                 "NativeFileSystemUnderlyingSink", "write");
-
+    WritableStreamDefaultController* controller,
+    ExceptionState& exception_state) {
   v8::Local<v8::Value> value = chunk.V8Value();
 
   ArrayBufferOrArrayBufferViewOrBlobOrUSVStringOrWriteParams input;
@@ -49,7 +47,7 @@ ScriptPromise NativeFileSystemUnderlyingSink::write(
       script_state->GetIsolate(), value, input,
       UnionTypeConversionMode::kNotNullable, exception_state);
   if (exception_state.HadException())
-    return ScriptPromise::Reject(script_state, exception_state);
+    return ScriptPromise();
 
   if (input.IsNull()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -57,25 +55,28 @@ ScriptPromise NativeFileSystemUnderlyingSink::write(
     return ScriptPromise();
   }
 
-  if (input.IsWriteParams())
-    return HandleParams(script_state, std::move(*input.GetAsWriteParams()));
+  if (input.IsWriteParams()) {
+    return HandleParams(script_state, std::move(*input.GetAsWriteParams()),
+                        exception_state);
+  }
 
   ArrayBufferOrArrayBufferViewOrBlobOrUSVString write_data;
   V8ArrayBufferOrArrayBufferViewOrBlobOrUSVString::ToImpl(
       script_state->GetIsolate(), value, write_data,
       UnionTypeConversionMode::kNotNullable, exception_state);
   if (exception_state.HadException())
-    return ScriptPromise::Reject(script_state, exception_state);
-  return WriteData(script_state, offset_, std::move(write_data));
+    return ScriptPromise();
+  return WriteData(script_state, offset_, std::move(write_data),
+                   exception_state);
 }
 
-ScriptPromise NativeFileSystemUnderlyingSink::close(ScriptState* script_state) {
+ScriptPromise NativeFileSystemUnderlyingSink::close(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   if (!writer_remote_ || pending_operation_) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowDOMException::CreateOrEmpty(script_state->GetIsolate(),
-                                           DOMExceptionCode::kInvalidStateError,
-                                           "Object reached an invalid state"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Object reached an invalid state");
+    return ScriptPromise();
   }
   pending_operation_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -86,8 +87,10 @@ ScriptPromise NativeFileSystemUnderlyingSink::close(ScriptState* script_state) {
   return result;
 }
 
-ScriptPromise NativeFileSystemUnderlyingSink::abort(ScriptState* script_state,
-                                                    ScriptValue reason) {
+ScriptPromise NativeFileSystemUnderlyingSink::abort(
+    ScriptState* script_state,
+    ScriptValue reason,
+    ExceptionState& exception_state) {
   // The specification guarantees that this will only be called after all
   // pending writes have been aborted. Terminating the remote connection
   // will ensure that the writes are not closed successfully.
@@ -98,52 +101,49 @@ ScriptPromise NativeFileSystemUnderlyingSink::abort(ScriptState* script_state,
 
 ScriptPromise NativeFileSystemUnderlyingSink::HandleParams(
     ScriptState* script_state,
-    const WriteParams& params) {
+    const WriteParams& params,
+    ExceptionState& exception_state) {
   if (params.type() == "truncate") {
     if (!params.hasSize()) {
-      return ScriptPromise::Reject(
-          script_state,
-          V8ThrowDOMException::CreateOrEmpty(
-              script_state->GetIsolate(), DOMExceptionCode::kSyntaxError,
-              "Invalid params passed. truncate requires a size argument"));
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kSyntaxError,
+          "Invalid params passed. truncate requires a size argument");
+      return ScriptPromise();
     }
-    return Truncate(script_state, params.size());
+    return Truncate(script_state, params.size(), exception_state);
   }
 
   if (params.type() == "seek") {
     if (!params.hasPosition()) {
-      return ScriptPromise::Reject(
-          script_state,
-          V8ThrowDOMException::CreateOrEmpty(
-              script_state->GetIsolate(), DOMExceptionCode::kSyntaxError,
-              "Invalid params passed. seek requires a position argument"));
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kSyntaxError,
+          "Invalid params passed. seek requires a position argument");
+      return ScriptPromise();
     }
-    return Seek(script_state, params.position());
+    return Seek(script_state, params.position(), exception_state);
   }
 
   if (params.type() == "write") {
     uint64_t position = params.hasPosition() ? params.position() : offset_;
     if (!params.hasData()) {
-      return ScriptPromise::Reject(
-          script_state,
-          V8ThrowDOMException::CreateOrEmpty(
-              script_state->GetIsolate(), DOMExceptionCode::kSyntaxError,
-              "Invalid params passed. write requires a data argument"));
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kSyntaxError,
+          "Invalid params passed. write requires a data argument");
+      return ScriptPromise();
     }
-    return WriteData(script_state, position, params.data());
+    return WriteData(script_state, position, params.data(), exception_state);
   }
 
-  return ScriptPromise::Reject(
-      script_state,
-      V8ThrowDOMException::CreateOrEmpty(script_state->GetIsolate(),
-                                         DOMExceptionCode::kInvalidStateError,
-                                         "Object reached an invalid state"));
+  exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                    "Object reached an invalid state");
+  return ScriptPromise();
 }
 
 ScriptPromise NativeFileSystemUnderlyingSink::WriteData(
     ScriptState* script_state,
     uint64_t position,
-    const ArrayBufferOrArrayBufferViewOrBlobOrUSVString& data) {
+    const ArrayBufferOrArrayBufferViewOrBlobOrUSVString& data,
+    ExceptionState& exception_state) {
   DCHECK(!data.IsNull());
 
   auto blob_data = std::make_unique<BlobData>();
@@ -170,19 +170,18 @@ ScriptPromise NativeFileSystemUnderlyingSink::WriteData(
         BlobDataHandle::Create(std::move(blob_data), size));
   }
 
-  return WriteBlob(script_state, position, blob);
+  return WriteBlob(script_state, position, blob, exception_state);
 }
 
 ScriptPromise NativeFileSystemUnderlyingSink::WriteBlob(
     ScriptState* script_state,
     uint64_t position,
-    Blob* blob) {
+    Blob* blob,
+    ExceptionState& exception_state) {
   if (!writer_remote_ || pending_operation_) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowDOMException::CreateOrEmpty(script_state->GetIsolate(),
-                                           DOMExceptionCode::kInvalidStateError,
-                                           "Object reached an invalid state"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Object reached an invalid state");
+    return ScriptPromise();
   }
   pending_operation_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -196,13 +195,12 @@ ScriptPromise NativeFileSystemUnderlyingSink::WriteBlob(
 
 ScriptPromise NativeFileSystemUnderlyingSink::Truncate(
     ScriptState* script_state,
-    uint64_t size) {
+    uint64_t size,
+    ExceptionState& exception_state) {
   if (!writer_remote_ || pending_operation_) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowDOMException::CreateOrEmpty(script_state->GetIsolate(),
-                                           DOMExceptionCode::kInvalidStateError,
-                                           "Object reached an invalid state"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Object reached an invalid state");
+    return ScriptPromise();
   }
   pending_operation_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -213,14 +211,14 @@ ScriptPromise NativeFileSystemUnderlyingSink::Truncate(
   return result;
 }
 
-ScriptPromise NativeFileSystemUnderlyingSink::Seek(ScriptState* script_state,
-                                                   uint64_t offset) {
+ScriptPromise NativeFileSystemUnderlyingSink::Seek(
+    ScriptState* script_state,
+    uint64_t offset,
+    ExceptionState& exception_state) {
   if (!writer_remote_ || pending_operation_) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowDOMException::CreateOrEmpty(script_state->GetIsolate(),
-                                           DOMExceptionCode::kInvalidStateError,
-                                           "Object reached an invalid state"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Object reached an invalid state");
+    return ScriptPromise();
   }
   offset_ = offset;
   return ScriptPromise::CastUndefined(script_state);

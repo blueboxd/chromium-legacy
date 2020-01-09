@@ -19,20 +19,19 @@ VideoDecoder* VideoDecoder::Create() {
 
 VideoDecoder::VideoDecoder() = default;
 
-ScriptPromise VideoDecoder::Initialize(
-    ScriptState* script_state,
-    const VideoDecoderInitParameters* params) {
-  return ScriptPromise::RejectWithDOMException(
-      script_state,
-      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                         "Not implemented yet."));
+ScriptPromise VideoDecoder::Initialize(ScriptState* script_state,
+                                       const VideoDecoderInitParameters* params,
+                                       ExceptionState& exception_state) {
+  exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                    "Not implemented yet.");
+  return ScriptPromise();
 }
 
-ScriptPromise VideoDecoder::Flush(ScriptState* script_state) {
-  return ScriptPromise::RejectWithDOMException(
-      script_state,
-      MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                         "Not implemented yet."));
+ScriptPromise VideoDecoder::Flush(ScriptState* script_state,
+                                  ExceptionState& exception_state) {
+  exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                    "Not implemented yet.");
+  return ScriptPromise();
 }
 
 void VideoDecoder::Close() {}

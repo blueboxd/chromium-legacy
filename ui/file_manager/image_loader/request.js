@@ -273,13 +273,13 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
   }.bind(this);
 
   // Download data urls directly since they are not supported by XmlHttpRequest.
-  var dataUrlMatches = this.request_.url.match(/^data:([^,;]*)[,;]/);
+  const dataUrlMatches = this.request_.url.match(/^data:([^,;]*)[,;]/);
   if (dataUrlMatches) {
     this.image_.src = this.request_.url;
     this.contentType_ = dataUrlMatches[1];
     return;
   }
-  var drivefsUrlMatches = this.request_.url.match(/^drivefs:(.*)/);
+  const drivefsUrlMatches = this.request_.url.match(/^drivefs:(.*)/);
   if (drivefsUrlMatches) {
     window.webkitResolveLocalFileSystemURL(
         drivefsUrlMatches[1],
@@ -300,21 +300,24 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
     return;
   }
 
-  var fileType = FileType.getTypeForName(this.request_.url);
+  const fileType = FileType.getTypeForName(this.request_.url);
 
   // Load RAW images by using Piex loader instead of XHR.
   if (fileType.type === 'raw') {
-    this.piexLoader_.load(this.request_.url).then(function(data) {
-      var blob = new Blob([data.thumbnail], {type: 'image/jpeg'});
-      var url = URL.createObjectURL(blob);
-      this.image_.src = url;
-      this.request_.orientation = data.orientation;
-      this.request_.colorSpace = data.colorSpace;
-      this.ifd_ = data.ifd;
-    }.bind(this), function() {
-      // The error has already been logged in PiexLoader.
-      onFailure();
-    });
+    this.piexLoader_.load(this.request_.url)
+        .then(
+            function(data) {
+              const blob = new Blob([data.thumbnail], {type: 'image/jpeg'});
+              const url = URL.createObjectURL(blob);
+              this.image_.src = url;
+              this.request_.orientation = data.orientation;
+              this.request_.colorSpace = data.colorSpace;
+              this.ifd_ = data.ifd;
+            }.bind(this),
+            function() {
+              // The error has already been logged in PiexLoader.
+              onFailure();
+            });
     return;
   }
 
@@ -330,7 +333,7 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
   }
 
   // Fetch the image via XHR and parse it.
-  var parseImage = function(contentType, blob) {
+  const parseImage = function(contentType, blob) {
     if (contentType) {
       this.contentType_ = contentType;
     }
@@ -396,8 +399,8 @@ ImageRequest.prototype.load = function(url, onSuccess, onFailure) {
   this.aborted_ = false;
 
   // Do not call any callbacks when aborting.
-  var onMaybeSuccess = /** @type {function(string, Blob)} */ (
-      function(contentType, response) {
+  const onMaybeSuccess =
+      /** @type {function(string, Blob)} */ (function(contentType, response) {
         // When content type is not available, try to estimate it from url.
         if (!contentType) {
           contentType =
@@ -409,7 +412,7 @@ ImageRequest.prototype.load = function(url, onSuccess, onFailure) {
         }
       }.bind(this));
 
-  var onMaybeFailure = /** @type {function(number=)} */ (function(opt_code) {
+  const onMaybeFailure = /** @type {function(number=)} */ (function(opt_code) {
     if (!this.aborted_) {
       onFailure();
     }
@@ -417,7 +420,7 @@ ImageRequest.prototype.load = function(url, onSuccess, onFailure) {
 
   // The query parameter is workaround for crbug.com/379678, which forces the
   // browser to obtain the latest contents of the image.
-  var noCacheUrl = url + '?nocache=' + Date.now();
+  const noCacheUrl = url + '?nocache=' + Date.now();
   this.xhr_ = ImageRequest.load_(noCacheUrl, onMaybeSuccess, onMaybeFailure);
 };
 
@@ -427,7 +430,7 @@ ImageRequest.prototype.load = function(url, onSuccess, onFailure) {
  * @return {string} Extracted extension, e.g. png.
  */
 ImageRequest.prototype.extractExtension_ = function(url) {
-  var result = (/\.([a-zA-Z]+)$/i).exec(url);
+  const result = (/\.([a-zA-Z]+)$/i).exec(url);
   return result ? result[1] : '';
 };
 
@@ -443,7 +446,7 @@ ImageRequest.prototype.extractExtension_ = function(url) {
  * @private
  */
 ImageRequest.load_ = function(url, onSuccess, onFailure) {
-  let xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
   xhr.responseType = 'blob';
 
   xhr.onreadystatechange = function() {
@@ -454,8 +457,8 @@ ImageRequest.load_ = function(url, onSuccess, onFailure) {
       onFailure(xhr.status);
       return;
     }
-    let response = /** @type {Blob} */ (xhr.response);
-    let contentType = xhr.getResponseHeader('Content-Type') || response.type;
+    const response = /** @type {Blob} */ (xhr.response);
+    const contentType = xhr.getResponseHeader('Content-Type') || response.type;
     onSuccess(contentType, response);
   }.bind(this);
 

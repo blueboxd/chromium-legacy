@@ -122,6 +122,11 @@ using content::RenderThread;
 
 namespace extensions {
 
+// Constant to define the default profile id for the renderer to 0.
+// Since each renderer is associated with a single context, we don't need
+// separate ids for the profile.
+const int kRendererProfileId = 0;
+
 namespace {
 
 static const char kOnSuspendEvent[] = "runtime.onSuspend";
@@ -960,7 +965,8 @@ void Dispatcher::OnLoaded(
     const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions) {
   for (const auto& param : loaded_extensions) {
     std::string error;
-    scoped_refptr<const Extension> extension = param.ConvertToExtension(&error);
+    scoped_refptr<const Extension> extension =
+        param.ConvertToExtension(kRendererProfileId, &error);
     if (!extension.get()) {
       NOTREACHED() << error;
       // Note: in tests |param.id| has been observed to be empty (see comment
@@ -989,7 +995,8 @@ void Dispatcher::OnLoaded(
           extension, *param.worker_activation_sequence);
     }
     if (param.uses_default_policy_blocked_allowed_hosts) {
-      extension->permissions_data()->SetUsesDefaultHostRestrictions();
+      extension->permissions_data()->SetUsesDefaultHostRestrictions(
+          kRendererProfileId);
     } else {
       extension->permissions_data()->SetPolicyHostRestrictions(
           param.policy_blocked_hosts, param.policy_allowed_hosts);
@@ -1173,7 +1180,8 @@ void Dispatcher::OnUnloaded(const std::string& id) {
 void Dispatcher::OnUpdateDefaultPolicyHostRestrictions(
     const ExtensionMsg_UpdateDefaultPolicyHostRestrictions_Params& params) {
   PermissionsData::SetDefaultPolicyHostRestrictions(
-      params.default_policy_blocked_hosts, params.default_policy_allowed_hosts);
+      kRendererProfileId, params.default_policy_blocked_hosts,
+      params.default_policy_allowed_hosts);
   // Update blink host permission allowlist exceptions for all loaded
   // extensions.
   for (const std::string& extension_id :
@@ -1195,7 +1203,8 @@ void Dispatcher::OnUpdatePermissions(
     return;
 
   if (params.uses_default_policy_host_restrictions) {
-    extension->permissions_data()->SetUsesDefaultHostRestrictions();
+    extension->permissions_data()->SetUsesDefaultHostRestrictions(
+        kRendererProfileId);
   } else {
     extension->permissions_data()->SetPolicyHostRestrictions(
         params.policy_blocked_hosts, params.policy_allowed_hosts);

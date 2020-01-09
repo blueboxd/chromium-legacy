@@ -300,6 +300,9 @@ NativeFileSystemUsageBubbleView::NativeFileSystemUsageBubbleView(
       readable_paths_model_({}, usage_.readable_directories) {
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_DONE));
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS));
 }
 
 NativeFileSystemUsageBubbleView::~NativeFileSystemUsageBubbleView() = default;
@@ -315,14 +318,6 @@ base::string16 NativeFileSystemUsageBubbleView::GetAccessibleWindowTitle()
       ->toolbar_button_provider()
       ->GetPageActionIconView(PageActionIconType::kNativeFileSystemAccess)
       ->GetTextForTooltipAndAccessibleName();
-}
-
-base::string16 NativeFileSystemUsageBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  int message_id = IDS_DONE;
-  if (button == ui::DIALOG_BUTTON_CANCEL)
-    message_id = IDS_NATIVE_FILE_SYSTEM_USAGE_REMOVE_ACCESS;
-  return l10n_util::GetStringUTF16(message_id);
 }
 
 bool NativeFileSystemUsageBubbleView::ShouldShowCloseButton() const {

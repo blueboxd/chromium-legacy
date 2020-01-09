@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
@@ -909,67 +910,6 @@ ImageBitmap::~ImageBitmap() {
       -memory_usage_);
 }
 
-ImageBitmap* ImageBitmap::Create(ImageElementBase* image,
-                                 base::Optional<IntRect> crop_rect,
-                                 Document* document,
-                                 const ImageBitmapOptions* options) {
-  return MakeGarbageCollected<ImageBitmap>(image, crop_rect, document, options);
-}
-
-ImageBitmap* ImageBitmap::Create(HTMLVideoElement* video,
-                                 base::Optional<IntRect> crop_rect,
-                                 Document* document,
-                                 const ImageBitmapOptions* options) {
-  return MakeGarbageCollected<ImageBitmap>(video, crop_rect, document, options);
-}
-
-ImageBitmap* ImageBitmap::Create(HTMLCanvasElement* canvas,
-                                 base::Optional<IntRect> crop_rect,
-                                 const ImageBitmapOptions* options) {
-  return MakeGarbageCollected<ImageBitmap>(canvas, crop_rect, options);
-}
-
-ImageBitmap* ImageBitmap::Create(OffscreenCanvas* offscreen_canvas,
-                                 base::Optional<IntRect> crop_rect,
-                                 const ImageBitmapOptions* options) {
-  return MakeGarbageCollected<ImageBitmap>(offscreen_canvas, crop_rect,
-                                           options);
-}
-
-ImageBitmap* ImageBitmap::Create(ImageData* data,
-                                 base::Optional<IntRect> crop_rect,
-                                 const ImageBitmapOptions* options) {
-  return MakeGarbageCollected<ImageBitmap>(data, crop_rect, options);
-}
-
-ImageBitmap* ImageBitmap::Create(ImageBitmap* bitmap,
-                                 base::Optional<IntRect> crop_rect,
-                                 const ImageBitmapOptions* options) {
-  return MakeGarbageCollected<ImageBitmap>(bitmap, crop_rect, options);
-}
-
-ImageBitmap* ImageBitmap::Create(scoped_refptr<StaticBitmapImage> image,
-                                 base::Optional<IntRect> crop_rect,
-                                 const ImageBitmapOptions* options) {
-  return MakeGarbageCollected<ImageBitmap>(std::move(image), crop_rect,
-                                           options);
-}
-
-ImageBitmap* ImageBitmap::Create(scoped_refptr<StaticBitmapImage> image) {
-  return MakeGarbageCollected<ImageBitmap>(std::move(image));
-}
-
-ImageBitmap* ImageBitmap::Create(const void* pixel_data,
-                                 uint32_t width,
-                                 uint32_t height,
-                                 bool is_image_bitmap_premultiplied,
-                                 bool is_image_bitmap_origin_clean,
-                                 const CanvasColorParams& color_params) {
-  return MakeGarbageCollected<ImageBitmap>(
-      pixel_data, width, height, is_image_bitmap_premultiplied,
-      is_image_bitmap_origin_clean, color_params);
-}
-
 void ImageBitmap::ResolvePromiseOnOriginalThread(
     ScriptPromiseResolver* resolver,
     bool origin_clean,
@@ -1091,7 +1031,7 @@ void ImageBitmap::close() {
 
 // static
 ImageBitmap* ImageBitmap::Take(ScriptPromiseResolver*, sk_sp<SkImage> image) {
-  return ImageBitmap::Create(
+  return MakeGarbageCollected<ImageBitmap>(
       UnacceleratedStaticBitmapImage::Create(std::move(image)));
 }
 
@@ -1150,7 +1090,8 @@ ScriptPromise ImageBitmap::CreateImageBitmap(
     base::Optional<IntRect> crop_rect,
     const ImageBitmapOptions* options) {
   return ImageBitmapSource::FulfillImageBitmap(
-      script_state, Create(this, crop_rect, options));
+      script_state,
+      MakeGarbageCollected<ImageBitmap>(this, crop_rect, options));
 }
 
 scoped_refptr<Image> ImageBitmap::GetSourceImageForCanvas(

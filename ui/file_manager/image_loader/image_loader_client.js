@@ -189,7 +189,7 @@ ImageLoaderClient.CACHE_MEMORY_LIMIT = 20 * 1024 * 1024;  // 20 MB.
  * @return {?number} Remote task id or null if loaded from cache.
  */
 ImageLoaderClient.loadToImage = function(request, image, onSuccess, onError) {
-  var callback = function(result) {
+  const callback = function(result) {
     if (result.status == LoadImageResponseStatus.ERROR) {
       onError();
       return;

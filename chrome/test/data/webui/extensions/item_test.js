@@ -85,7 +85,8 @@ extension_item_tests.TestNames = {
   FailedReloadFiresLoadError: 'failed reload fires load error',
   Warnings: 'warnings',
   SourceIndicator: 'source indicator',
-  EnableToggle: 'toggle is disabled when necessary',
+  EnableToggleAndButton:
+      'Enable toggle and button are disabled/hidden when necessary',
   RemoveButton: 'remove button hidden when necessary',
   HtmlInName: 'html in extension name',
 };
@@ -149,6 +150,8 @@ suite(extension_item_tests.suiteName, function() {
             'data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
         flush();
         testVisible(item, '#dev-reload-button', false);
+        testVisible(item, '#enableToggle', false);
+        testVisible(item, '#enableButton', false);
       });
 
   /** Tests that the delegate methods are correctly called. */
@@ -159,6 +162,8 @@ suite(extension_item_tests.suiteName, function() {
         item.$['remove-button'], 'deleteItem', [item.data.id]);
     mockDelegate.testClickingCalls(
         item.$['enableToggle'], 'setItemEnabled', [item.data.id, false]);
+    mockDelegate.testClickingCalls(
+        item.$['enableButton'], 'setItemEnabled', [item.data.id, true]);
     mockDelegate.testClickingCalls(
         item.$$('#inspect-views a[is="action-link"]'), 'inspectItemView',
         [item.data.id, item.data.views[0]]);
@@ -184,6 +189,8 @@ suite(extension_item_tests.suiteName, function() {
     flush();
     mockDelegate.testClickingCalls(
         item.$$('#repair-button'), 'repairItem', [item.data.id]);
+    testVisible(item, '#enableToggle', false);
+    testVisible(item, '#enableButton', false);
 
     item.set('data.state', chrome.developerPrivate.ExtensionState.TERMINATED);
     flush();
@@ -320,35 +327,42 @@ suite(extension_item_tests.suiteName, function() {
     expectFalse(isVisible(item, '#source-indicator'));
   });
 
-  test(assert(extension_item_tests.TestNames.EnableToggle), function() {
-    expectFalse(item.$['enableToggle'].disabled);
+  test(
+      assert(extension_item_tests.TestNames.EnableToggleAndButton), function() {
+        expectFalse(item.$['enableToggle'].disabled);
+        expectFalse(item.$['enableButton'].disabled);
 
-    // Test case where user does not have permission.
-    item.set('data.userMayModify', false);
-    flush();
-    expectTrue(item.$['enableToggle'].disabled);
+        // Test case where user does not have permission.
+        item.set('data.userMayModify', false);
+        flush();
+        expectTrue(item.$['enableToggle'].disabled);
+        expectFalse(item.$['enableButton'].disabled);
 
-    // Test case of a blacklisted extension.
-    item.set('data.userMayModify', true);
-    item.set('data.state', 'BLACKLISTED');
-    flush();
-    expectTrue(item.$['enableToggle'].disabled);
+        // Test case of a blacklisted extension.
+        item.set('data.userMayModify', true);
+        item.set('data.state', 'BLACKLISTED');
+        flush();
+        expectTrue(item.$['enableToggle'].disabled);
 
-    // This section tests that the enable toggle is visible but disabled
-    // when disableReasons.blockedByPolicy is true. This test prevents a
-    // regression to crbug/1003014.
-    item.set('data.disableReasons.blockedByPolicy', true);
-    flush();
-    testVisible(item, '#enableToggle', true);
-    expectTrue(item.$['enableToggle'].disabled);
-    item.set('data.disableReasons.blockedByPolicy', false);
-    flush();
+        // This section tests that the enable toggle is visible but disabled
+        // when disableReasons.blockedByPolicy is true. This test prevents a
+        // regression to crbug/1003014.
+        item.set('data.disableReasons.blockedByPolicy', true);
+        flush();
+        testVisible(item, '#enableToggle', true);
+        expectTrue(item.$['enableToggle'].disabled);
+        testVisible(item, '#enableButton', false);
+        item.set('data.disableReasons.blockedByPolicy', false);
+        flush();
 
-    item.set('data.disableReasons.custodianApprovalRequired', true);
-    flush();
-    testVisible(item, '#enableToggle', true);
-    expectTrue(item.$$('#enableToggle').disabled);
-  });
+        item.set('data.disableReasons.custodianApprovalRequired', true);
+        flush();
+        testVisible(item, '#enableToggle', false);
+        testVisible(item, '#enableButton', true);
+        expectFalse(item.$$('#enableButton').disabled);
+        item.set('data.disableReasons.custodianApprovalRequired', false);
+        flush();
+      });
 
   test(assert(extension_item_tests.TestNames.RemoveButton), function() {
     expectFalse(item.$['remove-button'].hidden);

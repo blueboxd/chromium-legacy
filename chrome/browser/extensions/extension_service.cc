@@ -954,20 +954,13 @@ void ExtensionService::CheckManagementPolicy() {
 
   ExtensionManagement* management =
       ExtensionManagementFactory::GetForBrowserContext(profile());
+
   PermissionsUpdater(profile()).SetDefaultPolicyHostRestrictions(
       management->GetDefaultPolicyBlockedHosts(),
       management->GetDefaultPolicyAllowedHosts());
+
   for (const auto& extension : registry_->enabled_extensions()) {
-    bool uses_default =
-        management->UsesDefaultPolicyHostRestrictions(extension.get());
-    if (uses_default) {
-      PermissionsUpdater(profile()).SetUsesDefaultHostRestrictions(
-          extension.get());
-    } else {
-      PermissionsUpdater(profile()).SetPolicyHostRestrictions(
-          extension.get(), management->GetPolicyBlockedHosts(extension.get()),
-          management->GetPolicyAllowedHosts(extension.get()));
-    }
+    SetPolicySettingsForExtension(extension.get());
   }
 
   // Loop through the disabled extension list, find extensions to re-enable
@@ -1641,6 +1634,19 @@ void ExtensionService::FinishInstallation(
   // was not available.
   if (SharedModuleInfo::IsSharedModule(extension))
     MaybeFinishDelayedInstallations();
+}
+
+void ExtensionService::SetPolicySettingsForExtension(
+    const Extension* extension) {
+  ExtensionManagement* management =
+      ExtensionManagementFactory::GetForBrowserContext(profile());
+  if (management->UsesDefaultPolicyHostRestrictions(extension)) {
+    PermissionsUpdater(profile()).SetUsesDefaultHostRestrictions(extension);
+  } else {
+    PermissionsUpdater(profile()).SetPolicyHostRestrictions(
+        extension, management->GetPolicyBlockedHosts(extension),
+        management->GetPolicyAllowedHosts(extension));
+  }
 }
 
 const Extension* ExtensionService::GetPendingExtensionUpdate(

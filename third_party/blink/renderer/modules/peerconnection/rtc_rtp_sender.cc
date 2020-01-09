@@ -394,7 +394,7 @@ RTCRtpSendParameters* RTCRtpSender::getParameters() {
     // TODO(orphis): Forward missing fields from the WebRTC library:
     // codecPayloadType, dtx, ptime, maxFramerate, scaleResolutionDownBy.
     RTCRtpEncodingParameters* encoding = RTCRtpEncodingParameters::Create();
-    encoding->setRid(WebString::FromUTF8(webrtc_encoding.rid));
+    encoding->setRid(String::FromUTF8(webrtc_encoding.rid));
     encoding->setActive(webrtc_encoding.active);
     if (webrtc_encoding.max_bitrate_bps) {
       encoding->setMaxBitrate(webrtc_encoding.max_bitrate_bps.value());

@@ -273,6 +273,13 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const GURL& url,
       const ServiceWorkerContext::CheckHasServiceWorkerCallback callback);
 
+  // Returns OfflineCapability of the service worker matching |url|.
+  // See ServiceWorkerContext::CheckOfflineCapability for more
+  // details.
+  void CheckOfflineCapability(
+      const GURL& url,
+      const ServiceWorkerContext::CheckOfflineCapabilityCallback callback);
+
   void UpdateVersionFailureCount(int64_t version_id,
                                  blink::ServiceWorkerStatusCode status);
   // Returns the count of consecutive start worker failures for the given

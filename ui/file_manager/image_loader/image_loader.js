@@ -38,8 +38,8 @@ function ImageLoader() {
                 {volumeId: event.volumeMetadata.volumeId}, function() {});
           }
         });
-    var initPromises = volumeMetadataList.map(function(volumeMetadata) {
-      var requestPromise = new Promise(function(callback) {
+    const initPromises = volumeMetadataList.map(function(volumeMetadata) {
+      const requestPromise = new Promise(function(callback) {
         chrome.fileSystem.requestFileSystem(
             {volumeId: volumeMetadata.volumeId},
             /** @type {function(FileSystem=)} */(callback));
@@ -87,11 +87,11 @@ ImageLoader.prototype.onIncomingRequest_ = function(
     return;
   }
 
-  var request = /** @type {!LoadImageRequest} */ (request_data);
+  const request = /** @type {!LoadImageRequest} */ (request_data);
 
   // Sending a response may fail if the receiver already went offline.
   // This is not an error, but a normal and quite common situation.
-  let failSafeSendResponse = function(response) {
+  const failSafeSendResponse = function(response) {
     try {
       sendResponse(response);
     } catch (e) {
@@ -124,14 +124,14 @@ ImageLoader.prototype.onIncomingRequest_ = function(
  * @private
  */
 ImageLoader.prototype.onMessage_ = function(senderId, request, callback) {
-  var requestId = senderId + ':' + request.taskId;
+  const requestId = senderId + ':' + request.taskId;
   if (request.cancel) {
     // Cancel a task.
     this.scheduler_.remove(requestId);
     return false;  // No callback calls.
   } else {
     // Create a request task and add it to the scheduler (queue).
-    var requestTask = new ImageRequest(
+    const requestTask = new ImageRequest(
         requestId, this.cache_, this.piexLoader_, request, callback);
     this.scheduler_.add(requestTask);
     return true;  // Request will call the callback.

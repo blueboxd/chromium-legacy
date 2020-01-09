@@ -124,6 +124,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
     decoder_ = nullptr;
     vaapi_wrapper_ = nullptr;
+    decoder_delegate_ = nullptr;
     SetState(State::kUninitialized);
   }
 
@@ -236,16 +237,6 @@ void VaapiVideoDecoder::HandleDecodeTask() {
       }
       break;
     case AcceleratedVideoDecoder::kConfigChange:
-      if (profile_ != decoder_->GetProfile()) {
-        DVLOGF(3) << "Profile is changed: " << profile_ << " -> "
-                  << decoder_->GetProfile();
-      }
-      if (pic_size_ == decoder_->GetPicSize()) {
-        // Profile only is changed.
-        // TODO(crbug.com/1022246): Handle profile change.
-        SetState(State::kError);
-        break;
-      }
       // A new set of output buffers is requested. We either didn't have any
       // output buffers yet or encountered a resolution change.
       // After the pipeline flushes all frames, OnPipelineFlushed() will be
@@ -401,7 +392,6 @@ void VaapiVideoDecoder::OnPipelineFlushed() {
   const gfx::Rect visible_rect = decoder_->GetVisibleRect();
   gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
   pic_size_ = decoder_->GetPicSize();
-  profile_ = decoder_->GetProfile();
   const base::Optional<VideoPixelFormat> format =
       GfxBufferFormatToVideoPixelFormat(GetBufferFormat());
   CHECK(format);
@@ -413,7 +403,22 @@ void VaapiVideoDecoder::OnPipelineFlushed() {
 
   // All pending decode operations will be completed before triggering a
   // resolution change, so we can safely destroy the context here.
-  vaapi_wrapper_->DestroyContext();
+  if (profile_ != decoder_->GetProfile()) {
+    // When a profile is changed, we need to re-initialize VaapiWrapper.
+    profile_ = decoder_->GetProfile();
+    auto new_vaapi_wrapper = VaapiWrapper::CreateForVideoCodec(
+        VaapiWrapper::kDecode, profile_, base::DoNothing());
+    if (!new_vaapi_wrapper.get()) {
+      DLOG(WARNING) << "Failed creating VaapiWrapper";
+      SetState(State::kError);
+      return;
+    }
+    decoder_delegate_->set_vaapi_wrapper(new_vaapi_wrapper.get());
+    vaapi_wrapper_ = std::move(new_vaapi_wrapper);
+  } else {
+    vaapi_wrapper_->DestroyContext();
+  }
+
   vaapi_wrapper_->CreateContext(pic_size_);
 
   // If we reset during resolution change, then there is no decode tasks. In
@@ -526,16 +531,25 @@ bool VaapiVideoDecoder::CreateAcceleratedVideoDecoder() {
   pic_size_ = gfx::Size();
 
   if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
-    decoder_.reset(new H264Decoder(
-        std::make_unique<H264VaapiVideoDecoderDelegate>(this, vaapi_wrapper_),
-        profile_, color_space_));
+    auto accelerator =
+        std::make_unique<H264VaapiVideoDecoderDelegate>(this, vaapi_wrapper_);
+    decoder_delegate_ = accelerator.get();
+
+    decoder_.reset(
+        new H264Decoder(std::move(accelerator), profile_, color_space_));
   } else if (profile_ >= VP8PROFILE_MIN && profile_ <= VP8PROFILE_MAX) {
-    decoder_.reset(new VP8Decoder(
-        std::make_unique<VP8VaapiVideoDecoderDelegate>(this, vaapi_wrapper_)));
+    auto accelerator =
+        std::make_unique<VP8VaapiVideoDecoderDelegate>(this, vaapi_wrapper_);
+    decoder_delegate_ = accelerator.get();
+
+    decoder_.reset(new VP8Decoder(std::move(accelerator)));
   } else if (profile_ >= VP9PROFILE_MIN && profile_ <= VP9PROFILE_MAX) {
-    decoder_.reset(new VP9Decoder(
-        std::make_unique<VP9VaapiVideoDecoderDelegate>(this, vaapi_wrapper_),
-        profile_, color_space_));
+    auto accelerator =
+        std::make_unique<VP9VaapiVideoDecoderDelegate>(this, vaapi_wrapper_);
+    decoder_delegate_ = accelerator.get();
+
+    decoder_.reset(
+        new VP9Decoder(std::move(accelerator), profile_, color_space_));
   } else {
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile_);
     return false;

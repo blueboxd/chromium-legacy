@@ -110,8 +110,11 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
 
   // Called at various stages of asynchronously fetching and processing trusted
   // vault encryption keys.
-  void TrustedVaultKeysFetched(const std::vector<std::vector<uint8_t>>& keys);
+  void TrustedVaultKeysFetchedFromClient(
+      const std::vector<std::vector<uint8_t>>& keys);
   void TrustedVaultKeysAdded();
+  void TrustedVaultKeysMarkedAsStale(bool result);
+  void FetchTrustedVaultKeysCompletedButInsufficient();
 
   // Calls SyncServiceBase::NotifyObservers(). Never null.
   const base::RepeatingClosure notify_observers_;

@@ -42,7 +42,7 @@ struct ImportProgressOptionalArguments {
 
 class CrostiniExportImportTest : public testing::Test {
  public:
-  CrostiniExportImportNotificationController* GetController() {
+  base::WeakPtr<CrostiniExportImportNotificationController> GetController() {
     return crostini_export_import_->GetNotificationControllerForTesting(
         container_id_);
   }
@@ -163,31 +163,46 @@ TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
   task_environment_.RunUntilIdle();
-  CrostiniExportImportNotificationController* controller = GetController();
+  base::WeakPtr<CrostiniExportImportNotificationController> controller =
+      GetController();
   ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 0);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 0);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // 20% PACK = 10% overall.
   SendExportProgress(vm_tools::cicerone::
                          ExportLxdContainerProgressSignal_Status_EXPORTING_PACK,
                      {.progress_percent = 20});
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 10);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 10);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // 20% DOWNLOAD = 60% overall.
   SendExportProgress(
       vm_tools::cicerone::
           ExportLxdContainerProgressSignal_Status_EXPORTING_DOWNLOAD,
       {.progress_percent = 20});
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 60);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 60);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // Close notification and update progress. Should not update notification.
   controller->Close(false);
@@ -195,17 +210,29 @@ TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
       vm_tools::cicerone::
           ExportLxdContainerProgressSignal_Status_EXPORTING_DOWNLOAD,
       {.progress_percent = 40});
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 60);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 60);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // Done.
   SendExportProgress(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
+  ASSERT_EQ(GetController(), nullptr);
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::DONE);
-  EXPECT_FALSE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_FALSE(notification->pinned());
+  }
+
   // CrostiniExportImport should've created the exported file.
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(base::PathExists(tarball_));
@@ -216,12 +243,17 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
   task_environment_.RunUntilIdle();
-  CrostiniExportImportNotificationController* controller = GetController();
+  base::WeakPtr<CrostiniExportImportNotificationController> controller =
+      GetController();
   ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 0);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 0);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // STREAMING 10% bytes done + 30% files done = 20% overall.
   SendExportProgress(
@@ -231,10 +263,15 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
        .total_bytes = 100,
        .files_streamed = 30,
        .bytes_streamed = 10});
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 20);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 20);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // STREAMING 66% bytes done + 55% files done then floored = 60% overall.
   SendExportProgress(
@@ -244,10 +281,15 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
        .total_bytes = 100,
        .files_streamed = 55,
        .bytes_streamed = 66});
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 60);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 60);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // Close notification and update progress. Should not update notification.
   controller->Close(false);
@@ -258,17 +300,29 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
        .total_bytes = 100,
        .files_streamed = 90,
        .bytes_streamed = 85});
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 60);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 60);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // Done.
   SendExportProgress(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
+  ASSERT_EQ(GetController(), nullptr);
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::DONE);
-  EXPECT_FALSE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_FALSE(notification->pinned());
+  }
+
   // CrostiniExportImport should've created the exported file.
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(base::PathExists(tarball_));
@@ -279,14 +333,31 @@ TEST_F(CrostiniExportImportTest, TestExportFail) {
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
   task_environment_.RunUntilIdle();
-  CrostiniExportImportNotificationController* controller = GetController();
+  base::WeakPtr<CrostiniExportImportNotificationController> controller =
+      GetController();
+  ASSERT_NE(controller, nullptr);
+  EXPECT_EQ(controller->status(),
+            CrostiniExportImportStatusTracker::Status::RUNNING);
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 0);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // Failed.
   SendExportProgress(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_FAILED);
+  ASSERT_EQ(GetController(), nullptr);
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::FAILED_UNKNOWN_REASON);
-  EXPECT_FALSE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_FALSE(notification->pinned());
+  }
+
   // CrostiniExportImport should cleanup the file if an export fails.
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(base::PathExists(tarball_));
@@ -297,20 +368,30 @@ TEST_F(CrostiniExportImportTest, TestExportCancelled) {
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
   task_environment_.RunUntilIdle();
-  CrostiniExportImportNotificationController* controller = GetController();
+  base::WeakPtr<CrostiniExportImportNotificationController> controller =
+      GetController();
   ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 0);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 0);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // CANCELLING:
   crostini_export_import_->CancelOperation(ExportImportType::EXPORT,
                                            container_id_);
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::CANCELLING);
-  EXPECT_EQ(controller->get_notification()->progress(), -1);
-  EXPECT_FALSE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), -1);
+    EXPECT_FALSE(notification->pinned());
+  }
   EXPECT_TRUE(base::PathExists(tarball_));
 
   // STREAMING: should not be displayed as cancel is in progress
@@ -321,16 +402,30 @@ TEST_F(CrostiniExportImportTest, TestExportCancelled) {
        .total_bytes = 100,
        .files_streamed = 50,
        .bytes_streamed = 50});
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::CANCELLING);
-  EXPECT_EQ(controller->get_notification()->progress(), -1);
-  EXPECT_FALSE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), -1);
+    EXPECT_FALSE(notification->pinned());
+  }
   EXPECT_TRUE(base::PathExists(tarball_));
 
   // CANCELLED:
   SendExportProgress(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_CANCELLED);
-  EXPECT_FALSE(GetController());
+  ASSERT_EQ(GetController(), nullptr);
+  ASSERT_NE(controller, nullptr);
+  EXPECT_EQ(controller->status(),
+            CrostiniExportImportStatusTracker::Status::CANCELLED);
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_FALSE(notification->pinned());
+  }
+
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(base::PathExists(tarball_));
 }
@@ -340,26 +435,45 @@ TEST_F(CrostiniExportImportTest, TestExportDoneBeforeCancelled) {
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
   task_environment_.RunUntilIdle();
-  CrostiniExportImportNotificationController* controller = GetController();
+  base::WeakPtr<CrostiniExportImportNotificationController> controller =
+      GetController();
   ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 0);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 0);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // CANCELLING:
   crostini_export_import_->CancelOperation(ExportImportType::EXPORT,
                                            container_id_);
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::CANCELLING);
-  EXPECT_EQ(controller->get_notification()->progress(), -1);
-  EXPECT_FALSE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), -1);
+    EXPECT_FALSE(notification->pinned());
+  }
   EXPECT_TRUE(base::PathExists(tarball_));
 
   // DONE: Completed before cancel processed, file should be deleted.
   SendExportProgress(
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
-  EXPECT_FALSE(GetController());
+  ASSERT_EQ(GetController(), nullptr);
+  ASSERT_NE(controller, nullptr);
+  EXPECT_EQ(controller->status(),
+            CrostiniExportImportStatusTracker::Status::CANCELLED);
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_FALSE(notification->pinned());
+  }
+
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(base::PathExists(tarball_));
 }
@@ -369,32 +483,47 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::IMPORT));
   task_environment_.RunUntilIdle();
-  CrostiniExportImportNotificationController* controller = GetController();
+  base::WeakPtr<CrostiniExportImportNotificationController> controller =
+      GetController();
   ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 0);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 0);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // 20% UPLOAD = 10% overall.
   SendImportProgress(
       vm_tools::cicerone::
           ImportLxdContainerProgressSignal_Status_IMPORTING_UPLOAD,
       {.progress_percent = 20});
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 10);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 10);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // 20% UNPACK = 60% overall.
   SendImportProgress(
       vm_tools::cicerone::
           ImportLxdContainerProgressSignal_Status_IMPORTING_UNPACK,
       {.progress_percent = 20});
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 60);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 60);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // Close notification and update progress. Should not update notification.
   controller->Close(false);
@@ -402,17 +531,28 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
       vm_tools::cicerone::
           ImportLxdContainerProgressSignal_Status_IMPORTING_UNPACK,
       {.progress_percent = 40});
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 60);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 60);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // Done.
   SendImportProgress(
       vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_DONE);
+  ASSERT_EQ(GetController(), nullptr);
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::DONE);
-  EXPECT_FALSE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_FALSE(notification->pinned());
+  }
 }
 
 TEST_F(CrostiniExportImportTest, TestImportFail) {
@@ -420,16 +560,32 @@ TEST_F(CrostiniExportImportTest, TestImportFail) {
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::IMPORT));
   task_environment_.RunUntilIdle();
-  CrostiniExportImportNotificationController* controller = GetController();
+  base::WeakPtr<CrostiniExportImportNotificationController> controller =
+      GetController();
+  ASSERT_NE(controller, nullptr);
+  EXPECT_EQ(controller->status(),
+            CrostiniExportImportStatusTracker::Status::RUNNING);
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 0);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // Failed.
   SendImportProgress(
       vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_FAILED);
+  ASSERT_EQ(GetController(), nullptr);
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::FAILED_UNKNOWN_REASON);
-  EXPECT_FALSE(controller->get_notification()->pinned());
-  std::string msg("Restoring couldn't be completed due to an error");
-  EXPECT_EQ(controller->get_notification()->message(), base::UTF8ToUTF16(msg));
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_FALSE(notification->pinned());
+    std::string msg("Restoring couldn't be completed due to an error");
+    EXPECT_EQ(notification->message(), base::UTF8ToUTF16(msg));
+  }
 }
 
 TEST_F(CrostiniExportImportTest, TestImportCancelled) {
@@ -437,35 +593,58 @@ TEST_F(CrostiniExportImportTest, TestImportCancelled) {
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::IMPORT));
   task_environment_.RunUntilIdle();
-  CrostiniExportImportNotificationController* controller = GetController();
+  base::WeakPtr<CrostiniExportImportNotificationController> controller =
+      GetController();
   ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 0);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 0);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // CANCELLING:
   crostini_export_import_->CancelOperation(ExportImportType::IMPORT,
                                            container_id_);
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::CANCELLING);
-  EXPECT_EQ(controller->get_notification()->progress(), -1);
-  EXPECT_FALSE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), -1);
+    EXPECT_FALSE(notification->pinned());
+  }
 
   // STREAMING: should not be displayed as cancel is in progress
   SendImportProgress(
       vm_tools::cicerone::
           ImportLxdContainerProgressSignal_Status_IMPORTING_UPLOAD,
       {.progress_percent = 50});
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::CANCELLING);
-  EXPECT_EQ(controller->get_notification()->progress(), -1);
-  EXPECT_FALSE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), -1);
+    EXPECT_FALSE(notification->pinned());
+  }
 
   // CANCELLED:
   SendImportProgress(
       vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_CANCELLED);
-  EXPECT_FALSE(GetController());
+  ASSERT_EQ(GetController(), nullptr);
+  ASSERT_NE(controller, nullptr);
+  EXPECT_EQ(controller->status(),
+            CrostiniExportImportStatusTracker::Status::CANCELLED);
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_FALSE(notification->pinned());
+  }
 }
 
 TEST_F(CrostiniExportImportTest, TestImportDoneBeforeCancelled) {
@@ -473,27 +652,43 @@ TEST_F(CrostiniExportImportTest, TestImportDoneBeforeCancelled) {
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::IMPORT));
   task_environment_.RunUntilIdle();
-  CrostiniExportImportNotificationController* controller = GetController();
+  base::WeakPtr<CrostiniExportImportNotificationController> controller =
+      GetController();
   ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::RUNNING);
-  EXPECT_EQ(controller->get_notification()->progress(), 0);
-  EXPECT_TRUE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 0);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // CANCELLING:
   crostini_export_import_->CancelOperation(ExportImportType::IMPORT,
                                            container_id_);
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::CANCELLING);
-  EXPECT_EQ(controller->get_notification()->progress(), -1);
-  EXPECT_FALSE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), -1);
+    EXPECT_FALSE(notification->pinned());
+  }
 
   // DONE: Cancel couldn't be processed in time, done is displayed instead.
   SendImportProgress(
       vm_tools::cicerone::ImportLxdContainerProgressSignal_Status_DONE);
+  ASSERT_EQ(GetController(), nullptr);
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(controller->status(),
             CrostiniExportImportStatusTracker::Status::DONE);
-  EXPECT_FALSE(controller->get_notification()->pinned());
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_FALSE(notification->pinned());
+  }
 }
 
 TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
@@ -501,22 +696,38 @@ TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::IMPORT));
   task_environment_.RunUntilIdle();
-  CrostiniExportImportNotificationController* controller = GetController();
+  base::WeakPtr<CrostiniExportImportNotificationController> controller =
+      GetController();
+  ASSERT_NE(controller, nullptr);
+  EXPECT_EQ(controller->status(),
+            CrostiniExportImportStatusTracker::Status::RUNNING);
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 0);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // Failed Architecture.
   SendImportProgress(
       vm_tools::cicerone::
           ImportLxdContainerProgressSignal_Status_FAILED_ARCHITECTURE);
+  ASSERT_EQ(GetController(), nullptr);
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(
       controller->status(),
       CrostiniExportImportStatusTracker::Status::FAILED_ARCHITECTURE_MISMATCH);
-  EXPECT_FALSE(controller->get_notification()->pinned());
-  std::string msg(
-      "Cannot import container architecture type arch_con with this device "
-      "which is arch_dev. You can try restoring this container into a "
-      "different device, or you can access the files inside this container "
-      "image by opening in Files app.");
-  EXPECT_EQ(controller->get_notification()->message(), base::UTF8ToUTF16(msg));
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_FALSE(notification->pinned());
+    std::string msg(
+        "Cannot import container architecture type arch_con with this device "
+        "which is arch_dev. You can try restoring this container into a "
+        "different device, or you can access the files inside this container "
+        "image by opening in Files app.");
+    EXPECT_EQ(notification->message(), base::UTF8ToUTF16(msg));
+  }
 }
 
 TEST_F(CrostiniExportImportTest, TestImportFailSpace) {
@@ -524,7 +735,17 @@ TEST_F(CrostiniExportImportTest, TestImportFailSpace) {
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::IMPORT));
   task_environment_.RunUntilIdle();
-  CrostiniExportImportNotificationController* controller = GetController();
+  base::WeakPtr<CrostiniExportImportNotificationController> controller =
+      GetController();
+  ASSERT_NE(controller, nullptr);
+  EXPECT_EQ(controller->status(),
+            CrostiniExportImportStatusTracker::Status::RUNNING);
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_EQ(notification->progress(), 0);
+    EXPECT_TRUE(notification->pinned());
+  }
 
   // Failed Space.
   SendImportProgress(
@@ -533,14 +754,20 @@ TEST_F(CrostiniExportImportTest, TestImportFailSpace) {
           .available_space = 20ul * 1'024 * 1'024 * 1'024,    // 20Gb
           .min_required_space = 35ul * 1'024 * 1'024 * 1'024  // 35Gb
       });
+  ASSERT_EQ(GetController(), nullptr);
+  ASSERT_NE(controller, nullptr);
   EXPECT_EQ(
       controller->status(),
       CrostiniExportImportStatusTracker::Status::FAILED_INSUFFICIENT_SPACE);
-  EXPECT_FALSE(controller->get_notification()->pinned());
-  std::string msg =
-      "Cannot restore due to lack of storage space. Free up 15.0 GB from the "
-      "device and try again.";
-  EXPECT_EQ(controller->get_notification()->message(), base::UTF8ToUTF16(msg));
+  {
+    message_center::Notification* notification = controller->get_notification();
+    ASSERT_NE(notification, nullptr);
+    EXPECT_FALSE(notification->pinned());
+    std::string msg =
+        "Cannot restore due to lack of storage space. Free up 15.0 GB from the "
+        "device and try again.";
+    EXPECT_EQ(notification->message(), base::UTF8ToUTF16(msg));
+  }
 }
 
 }  // namespace crostini

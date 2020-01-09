@@ -96,10 +96,10 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
   // Assign a temp server id for the entity. Will be overriden by the actual
   // server id upon receiving commit response.
   DCHECK(base::IsValidGUID(node->guid()));
-
-  // Local bookmark creations should have used a random GUID so it's safe to
-  // use it as originator client item ID, without the risk for collision.
-  const std::string sync_id = node->guid();
+  const std::string sync_id =
+      base::FeatureList::IsEnabled(switches::kMergeBookmarksUsingGUIDs)
+          ? node->guid()
+          : base::GenerateGUID();
   const int64_t server_version = syncer::kUncommittedVersion;
   const base::Time creation_time = base::Time::Now();
   const sync_pb::UniquePosition unique_position =

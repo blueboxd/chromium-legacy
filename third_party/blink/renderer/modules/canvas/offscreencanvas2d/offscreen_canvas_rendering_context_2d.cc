@@ -268,7 +268,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
   Host()->DiscardResourceProvider();
   RestoreMatrixClipStack(recorder_->getRecordingCanvas());
 
-  return ImageBitmap::Create(std::move(image));
+  return MakeGarbageCollected<ImageBitmap>(std::move(image));
 }
 
 scoped_refptr<StaticBitmapImage> OffscreenCanvasRenderingContext2D::GetImage(

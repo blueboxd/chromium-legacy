@@ -171,7 +171,7 @@ class FilteringNetworkManagerTest : public testing::Test,
     SetNewNetworkForBaseNetworkManager();
     if (multiple_routes_requested) {
       network_manager_ = std::make_unique<FilteringNetworkManager>(
-          base_network_manager_.get(), GURL(), media_permission_.get(),
+          base_network_manager_.get(), media_permission_.get(),
           allow_mdns_obfuscation_);
       network_manager_->Initialize();
     } else {

@@ -16,7 +16,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipViewHolder;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.settings.autofill_assistant.AutofillAssistantSettings;
+import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -142,7 +142,7 @@ class AssistantHeaderViewBinder
             int itemId = item.getItemId();
             if (itemId == R.id.settings) {
                 SettingsLauncher.launchSettingsPage(
-                        view.mHeader.getContext(), AutofillAssistantSettings.class);
+                        view.mHeader.getContext(), SyncAndServicesPreferences.class);
                 return true;
             } else if (itemId == R.id.send_feedback) {
                 if (feedbackCallback != null) {

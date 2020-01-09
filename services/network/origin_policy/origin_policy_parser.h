@@ -42,8 +42,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyParser {
   bool ParseContentSecurityPolicies(const base::Value&);
   bool ParseContentSecurityPolicy(const base::Value&);
 
-  // The following method is implemented according to the newer spec:
+  // The following methods are implemented according to the newer spec:
   void ParseFeatures(const base::Value&);
+  void ParseIsolation(const base::Value&);
 
   OriginPolicyContentsPtr policy_contents_;
 

@@ -253,7 +253,7 @@ function populateTestExceptions() {
               settings.ContentSettingsTypes.NOTIFICATIONS, [
                 // android sms setting.
                 test_util.createRawSiteException(
-                    multidevice.TEST_ANDROID_SMS_ORIGIN),
+                    android_info.TEST_ANDROID_SMS_ORIGIN),
                 // Non android sms setting that should be handled as usual.
                 test_util.createRawSiteException('http://bar.com')
               ])]);
@@ -280,10 +280,10 @@ suite('SiteList', function() {
   let browserProxy = null;
 
   /**
-   * Mock MultiDeviceBrowserProxy to use during test.
-   * @type {TestMultideviceBrowserProxy}
+   * Mock AndroidInfoBrowserProxy to use during test.
+   * @type {TestAndroidInfoBrowserProxy}
    */
-  let multiDeviceBrowserProxy = null;
+  let androidInfoBrowserProxy = null;
 
   suiteSetup(function() {
     CrSettingsPrefs.setInitialized();
@@ -305,8 +305,8 @@ suite('SiteList', function() {
     document.body.appendChild(testElement);
 
     if (cr.isChromeOS) {
-      multiDeviceBrowserProxy = new multidevice.TestMultideviceBrowserProxy();
-      settings.MultiDeviceBrowserProxyImpl.instance_ = multiDeviceBrowserProxy;
+      androidInfoBrowserProxy = new android_info.TestAndroidInfoBrowserProxy();
+      settings.AndroidInfoBrowserProxyImpl.instance_ = androidInfoBrowserProxy;
     }
   });
 
@@ -412,7 +412,7 @@ suite('SiteList', function() {
           settings.ContentSettingsTypes.NOTIFICATIONS,
           settings.ContentSetting.ALLOW, prefsAndroidSms);
       assertEquals(
-          0, multiDeviceBrowserProxy.getCallCount('getAndroidSmsInfo'));
+          0, androidInfoBrowserProxy.getCallCount('getAndroidSmsInfo'));
 
       loadTimeData.overrideValues({multideviceAllowedByPolicy: true});
       setUpCategory(
@@ -420,9 +420,9 @@ suite('SiteList', function() {
           settings.ContentSetting.ALLOW, prefsAndroidSms);
       // Assert 2 calls since the observer observes 2 properties.
       assertEquals(
-          2, multiDeviceBrowserProxy.getCallCount('getAndroidSmsInfo'));
+          2, androidInfoBrowserProxy.getCallCount('getAndroidSmsInfo'));
 
-      return multiDeviceBrowserProxy.whenCalled('getAndroidSmsInfo')
+      return androidInfoBrowserProxy.whenCalled('getAndroidSmsInfo')
           .then(() => browserProxy.whenCalled('getExceptionList'))
           .then((contentType) => {
             assertEquals(
@@ -440,8 +440,6 @@ suite('SiteList', function() {
             assertEquals(undefined, testElement.sites[1].showAndroidSmsNote);
 
             browserProxy.resetResolver('getExceptionList');
-            multiDeviceBrowserProxy.setFeatureEnabledState(
-                settings.MultiDeviceFeature.MESSAGES, false);
             return browserProxy.whenCalled('getExceptionList');
           })
           .then((contentType) => {

@@ -84,8 +84,6 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
     remover_ = std::make_unique<FakeBrowsingDataRemover>();
     manager_ = [[ClearBrowsingDataManager alloc]
                       initWithBrowserState:browser_state_.get()
-                                  listType:ClearBrowsingDataListType::
-                                               kListTypeTableView
                        browsingDataRemover:remover_.get()
         browsingDataCounterWrapperProducer:
             [[FakeBrowsingDataCounterWrapperProducer alloc] init]];

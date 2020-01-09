@@ -87,7 +87,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
                                      : truncated_fragment->Size().height;
     DCHECK_LE(new_inline_size, ellpisized_child->inline_size);
     if (UNLIKELY(IsRtl(line_direction_))) {
-      ellpisized_child->offset.inline_offset +=
+      ellpisized_child->rect.offset.inline_offset +=
           ellpisized_child->inline_size - new_inline_size;
     }
     ellpisized_child->inline_size = new_inline_size;
@@ -109,9 +109,8 @@ LayoutUnit NGLineTruncator::TruncateLine(
   // line box.
   LayoutUnit ellipsis_inline_offset =
       IsLtr(line_direction_)
-          ? ellpisized_child->offset.inline_offset +
-                ellpisized_child->inline_size
-          : ellpisized_child->offset.inline_offset - ellipsis_width;
+          ? ellpisized_child->InlineOffset() + ellpisized_child->inline_size
+          : ellpisized_child->InlineOffset() - ellipsis_width;
   FontBaseline baseline_type = line_style_->GetFontBaseline();
   NGLineHeightMetrics ellipsis_metrics(font_data->GetFontMetrics(),
                                        baseline_type);
@@ -147,7 +146,7 @@ void NGLineTruncator::HideChild(NGLineBoxFragmentBuilder::Child* child) {
       // paddings, because clipping is at the content box but ellipsizing is at
       // the padding box. Just move to the max because we don't know paddings,
       // and max should do what we need.
-      child->offset.inline_offset = LayoutUnit::NearlyMax();
+      child->rect.offset.inline_offset = LayoutUnit::NearlyMax();
       return;
     }
 
@@ -182,8 +181,8 @@ bool NGLineTruncator::EllipsizeChild(
   // Can't place ellipsis if this child is completely outside of the box.
   LayoutUnit child_inline_offset =
       IsLtr(line_direction_)
-          ? child->offset.inline_offset
-          : line_width - (child->offset.inline_offset + child->inline_size);
+          ? child->InlineOffset()
+          : line_width - (child->InlineOffset() + child->inline_size);
   LayoutUnit space_for_child = available_width_ - child_inline_offset;
   if (space_for_child <= 0) {
     // This child is outside of the content box, but we still need to hide it.

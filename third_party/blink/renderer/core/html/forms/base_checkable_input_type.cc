@@ -55,11 +55,9 @@ FormControlState BaseCheckableInputType::SaveFormControlState() const {
   return FormControlState(GetElement().checked() ? "on" : "off");
 }
 
-bool BaseCheckableInputType::RestoreFormControlState(
+void BaseCheckableInputType::RestoreFormControlState(
     const FormControlState& state) {
-  bool old_checked = GetElement().checked();
   GetElement().setChecked(state[0] == "on");
-  return old_checked != GetElement().checked();
 }
 
 void BaseCheckableInputType::AppendToFormData(FormData& form_data) const {

@@ -9,9 +9,6 @@
 
 class Profile;
 class PrefRegistrySimple;
-class PrefChangeRegistrar;
-class PrefService;
-class Profile;
 
 namespace chromeos {
 namespace app_time {
@@ -33,8 +30,6 @@ class AppTimeController {
   AppTimeController& operator=(const AppTimeController&) = delete;
   ~AppTimeController();
 
-  bool IsExtensionWhitelisted(const std::string& extension_id) const;
-
   const WebTimeLimitEnforcer* web_time_enforcer() const {
     return web_time_enforcer_.get();
   }
@@ -42,16 +37,9 @@ class AppTimeController {
   WebTimeLimitEnforcer* web_time_enforcer() { return web_time_enforcer_.get(); }
 
  private:
-  void RegisterProfilePrefObservers(PrefService* pref_service);
-  void TimeLimitsPolicyUpdated(const std::string& pref_name);
-  void TimeLimitsWhitelistPolicyUpdated(const std::string& pref_name);
-
   std::unique_ptr<AppServiceWrapper> app_service_wrapper_;
   std::unique_ptr<AppActivityRegistry> app_registry_;
   std::unique_ptr<WebTimeLimitEnforcer> web_time_enforcer_;
-
-  // Used to observe when policy preferences change.
-  std::unique_ptr<PrefChangeRegistrar> pref_registrar_;
 };
 
 }  // namespace app_time

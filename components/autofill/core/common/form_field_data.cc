@@ -232,7 +232,8 @@ bool FormFieldData::IdentityComparator::operator()(
 bool FormFieldData::IsTextInputElement() const {
   return form_control_type == "text" || form_control_type == "password" ||
          form_control_type == "search" || form_control_type == "tel" ||
-         form_control_type == "url" || form_control_type == "email";
+         form_control_type == "url" || form_control_type == "email" ||
+         form_control_type == "number";
 }
 
 bool FormFieldData::IsPasswordInputElement() const {

@@ -7,7 +7,9 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -26,9 +28,14 @@ namespace {
 const base::TimeDelta kUpdateOcclusionDelay =
     base::TimeDelta::FromMilliseconds(16);
 
+// This global variable can be accessed only on main thread.
 NativeWindowOcclusionTrackerWin* g_tracker = nullptr;
 
 }  // namespace
+
+NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator*
+    NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::instance_ =
+        nullptr;
 
 NativeWindowOcclusionTrackerWin*
 NativeWindowOcclusionTrackerWin::GetOrCreateInstance() {
@@ -36,6 +43,11 @@ NativeWindowOcclusionTrackerWin::GetOrCreateInstance() {
     g_tracker = new NativeWindowOcclusionTrackerWin();
 
   return g_tracker;
+}
+
+void NativeWindowOcclusionTrackerWin::DeleteInstanceForTesting() {
+  delete g_tracker;
+  g_tracker = nullptr;
 }
 
 void NativeWindowOcclusionTrackerWin::Enable(Window* window) {
@@ -56,7 +68,8 @@ void NativeWindowOcclusionTrackerWin::Enable(Window* window) {
       FROM_HERE,
       base::BindOnce(
           &WindowOcclusionCalculator::EnableOcclusionTrackingForWindow,
-          base::Unretained(occlusion_calculator_.get()), root_window_hwnd));
+          base::Unretained(WindowOcclusionCalculator::GetInstance()),
+          root_window_hwnd));
 }
 
 void NativeWindowOcclusionTrackerWin::Disable(Window* window) {
@@ -70,7 +83,8 @@ void NativeWindowOcclusionTrackerWin::Disable(Window* window) {
       FROM_HERE,
       base::BindOnce(
           &WindowOcclusionCalculator::DisableOcclusionTrackingForWindow,
-          base::Unretained(occlusion_calculator_.get()), root_window_hwnd));
+          base::Unretained(WindowOcclusionCalculator::GetInstance()),
+          root_window_hwnd));
 }
 
 void NativeWindowOcclusionTrackerWin::OnWindowVisibilityChanged(Window* window,
@@ -83,16 +97,12 @@ void NativeWindowOcclusionTrackerWin::OnWindowVisibilityChanged(Window* window,
   update_occlusion_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WindowOcclusionCalculator::HandleVisibilityChanged,
-                     base::Unretained(occlusion_calculator_.get()), visible));
+                     base::Unretained(WindowOcclusionCalculator::GetInstance()),
+                     visible));
 }
 
 void NativeWindowOcclusionTrackerWin::OnWindowDestroying(Window* window) {
   Disable(window);
-}
-
-NativeWindowOcclusionTrackerWin**
-NativeWindowOcclusionTrackerWin::GetInstanceForTesting() {
-  return &g_tracker;
 }
 
 NativeWindowOcclusionTrackerWin::NativeWindowOcclusionTrackerWin()
@@ -111,15 +121,24 @@ NativeWindowOcclusionTrackerWin::NativeWindowOcclusionTrackerWin()
       session_change_observer_(
           base::BindRepeating(&NativeWindowOcclusionTrackerWin::OnSessionChange,
                               base::Unretained(this))) {
-  occlusion_calculator_ = std::make_unique<WindowOcclusionCalculator>(
-      update_occlusion_task_runner_, base::SequencedTaskRunnerHandle::Get());
+  WindowOcclusionCalculator::CreateInstance(
+      update_occlusion_task_runner_, base::SequencedTaskRunnerHandle::Get(),
+      base::BindRepeating(
+          &NativeWindowOcclusionTrackerWin::UpdateOcclusionState,
+          weak_factory_.GetWeakPtr()));
 }
 
 NativeWindowOcclusionTrackerWin::~NativeWindowOcclusionTrackerWin() {
-  // This shouldn't be reached in production code, because if it is,
-  // |occlusion_calculator_| will be deleted on the ui thread, which is
-  // problematic if there tasks scheduled on the background thread.
-  // Tests are allowed to delete the instance after running all pending tasks.
+  // |occlusion_calculator_| must be deleted on its sequence because it needs
+  // to unregister event hooks on COMSTA thread.
+  // This code is intended to be used in tests and shouldn't be reached in
+  // production code because it blocks the main thread.
+  base::WaitableEvent done_event;
+  update_occlusion_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WindowOcclusionCalculator::DeleteInstanceForTesting,
+                     &done_event));
+  done_event.Wait();
 }
 
 // static
@@ -246,8 +265,11 @@ void NativeWindowOcclusionTrackerWin::OnSessionChange(
 NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     WindowOcclusionCalculator(
         scoped_refptr<base::SequencedTaskRunner> task_runner,
-        scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner)
-    : task_runner_(task_runner), ui_thread_task_runner_(ui_thread_task_runner) {
+        scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner,
+        UpdateOcclusionStateCallback update_occlusion_state_callback)
+    : task_runner_(task_runner),
+      ui_thread_task_runner_(ui_thread_task_runner),
+      update_occlusion_state_callback_(update_occlusion_state_callback) {
   if (base::win::GetVersion() >= base::win::Version::WIN10) {
     ::CoCreateInstance(__uuidof(VirtualDesktopManager), nullptr, CLSCTX_ALL,
                        IID_PPV_ARGS(&virtual_desktop_manager_));
@@ -257,7 +279,25 @@ NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
 
 NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     ~WindowOcclusionCalculator() {
-  DCHECK(global_event_hooks_.empty());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  UnregisterEventHooks();
+}
+
+void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::CreateInstance(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner,
+    UpdateOcclusionStateCallback update_occlusion_state_callback) {
+  DCHECK(!instance_);
+  instance_ = new WindowOcclusionCalculator(task_runner, ui_thread_task_runner,
+                                            update_occlusion_state_callback);
+}
+
+void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
+    DeleteInstanceForTesting(base::WaitableEvent* done_event) {
+  DCHECK(instance_);
+  delete instance_;
+  instance_ = nullptr;
+  done_event->Signal();
 }
 
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
@@ -312,24 +352,28 @@ NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::EventHookCallback(
     LONG idChild,
     DWORD dwEventThread,
     DWORD dwmsEventTime) {
-  g_tracker->occlusion_calculator_->ProcessEventHookCallback(event, hwnd,
-                                                             idObject, idChild);
+  if (instance_)
+    instance_->ProcessEventHookCallback(event, hwnd, idObject, idChild);
 }
 
 // static
 BOOL CALLBACK NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     ComputeNativeWindowOcclusionStatusCallback(HWND hwnd, LPARAM lParam) {
-  return g_tracker->occlusion_calculator_
-      ->ProcessComputeNativeWindowOcclusionStatusCallback(
-          hwnd, reinterpret_cast<base::flat_set<DWORD>*>(lParam));
+  if (instance_) {
+    return instance_->ProcessComputeNativeWindowOcclusionStatusCallback(
+        hwnd, reinterpret_cast<base::flat_set<DWORD>*>(lParam));
+  }
+  return FALSE;
 }
 
 // static
 BOOL CALLBACK NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
     UpdateVisibleWindowProcessIdsCallback(HWND hwnd, LPARAM lParam) {
-  g_tracker->occlusion_calculator_
-      ->ProcessUpdateVisibleWindowProcessIdsCallback(hwnd);
-  return TRUE;
+  if (instance_) {
+    instance_->ProcessUpdateVisibleWindowProcessIdsCallback(hwnd);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
@@ -416,10 +460,8 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
   // Post a task to the browser ui thread to update the window occlusion state
   // on the root windows.
   ui_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&NativeWindowOcclusionTrackerWin::UpdateOcclusionState,
-                     base::Unretained(g_tracker),
-                     root_window_hwnds_occlusion_state_));
+      FROM_HERE, base::BindOnce(update_occlusion_state_callback_,
+                                root_window_hwnds_occlusion_state_));
 }
 
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
@@ -598,7 +640,7 @@ void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::
       FROM_HERE,
       base::BindOnce(
           &WindowOcclusionCalculator::ScheduleOcclusionCalculationIfNeeded,
-          base::Unretained(this)));
+          weak_factory_.GetWeakPtr()));
 }
 
 void NativeWindowOcclusionTrackerWin::WindowOcclusionCalculator::

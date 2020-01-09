@@ -87,6 +87,7 @@ RecentModel::~RecentModel() {
 void RecentModel::GetRecentFiles(
     storage::FileSystemContext* file_system_context,
     const GURL& origin,
+    FileType file_type,
     GetRecentFilesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -122,7 +123,7 @@ void RecentModel::GetRecentFiles(
 
   for (const auto& source : sources_) {
     source->GetRecentFiles(RecentSource::Params(
-        file_system_context, origin, max_files_, cutoff_time,
+        file_system_context, origin, max_files_, cutoff_time, file_type,
         base::BindOnce(&RecentModel::OnGetRecentFiles,
                        weak_ptr_factory_.GetWeakPtr(), max_files_,
                        cutoff_time)));

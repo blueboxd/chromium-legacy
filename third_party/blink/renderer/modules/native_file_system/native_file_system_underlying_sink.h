@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ScriptPromiseResolver;
 class WriteParams;
 
@@ -27,25 +28,34 @@ class NativeFileSystemUnderlyingSink final : public UnderlyingSinkBase,
       mojo::PendingRemote<mojom::blink::NativeFileSystemFileWriter>);
 
   // UnderlyingSinkBase
-  ScriptPromise start(ScriptState*, WritableStreamDefaultController*) override;
+  ScriptPromise start(ScriptState*,
+                      WritableStreamDefaultController*,
+                      ExceptionState&) override;
   ScriptPromise write(ScriptState*,
                       ScriptValue chunk,
-                      WritableStreamDefaultController*) override;
-  ScriptPromise close(ScriptState*) override;
-  ScriptPromise abort(ScriptState*, ScriptValue reason) override;
+                      WritableStreamDefaultController*,
+                      ExceptionState&) override;
+  ScriptPromise close(ScriptState*, ExceptionState&) override;
+  ScriptPromise abort(ScriptState*,
+                      ScriptValue reason,
+                      ExceptionState&) override;
 
   void Trace(Visitor*) override;
   void ContextDestroyed(ExecutionContext*) override;
 
  private:
-  ScriptPromise HandleParams(ScriptState*, const WriteParams&);
+  ScriptPromise HandleParams(ScriptState*, const WriteParams&, ExceptionState&);
   ScriptPromise WriteData(
       ScriptState*,
       uint64_t position,
-      const ArrayBufferOrArrayBufferViewOrBlobOrUSVString& data);
-  ScriptPromise WriteBlob(ScriptState*, uint64_t position, Blob*);
-  ScriptPromise Truncate(ScriptState*, uint64_t size);
-  ScriptPromise Seek(ScriptState*, uint64_t offset);
+      const ArrayBufferOrArrayBufferViewOrBlobOrUSVString& data,
+      ExceptionState&);
+  ScriptPromise WriteBlob(ScriptState*,
+                          uint64_t position,
+                          Blob*,
+                          ExceptionState&);
+  ScriptPromise Truncate(ScriptState*, uint64_t size, ExceptionState&);
+  ScriptPromise Seek(ScriptState*, uint64_t offset, ExceptionState&);
   void WriteComplete(mojom::blink::NativeFileSystemErrorPtr result,
                      uint64_t bytes_written);
   void TruncateComplete(uint64_t to_size,

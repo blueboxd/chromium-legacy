@@ -56,6 +56,15 @@ public abstract class ChildConnectionAllocator {
     // Delay between the call to freeConnection and the connection actually beeing freed.
     private static final long FREE_CONNECTION_DELAY_MILLIS = 1;
 
+    // Max number of connections allocated for variable allocator.
+    private static final int MAX_VARIABLE_ALLOCATED = 100;
+
+    // Runnable which will be called when allocator wants to allocate a new connection, but does
+    // not have any more free slots. May be null.
+    private final Runnable mFreeSlotCallback;
+
+    private final Queue<Runnable> mPendingAllocations = new ArrayDeque<>();
+
     // The handler of the thread on which all interations should happen.
     private final Handler mLauncherHandler;
 
@@ -112,11 +121,13 @@ public abstract class ChildConnectionAllocator {
     }
 
     public static ChildConnectionAllocator createVariableSize(Context context,
-            Handler launcherHandler, String packageName, String serviceClassName,
-            boolean bindToCaller, boolean bindAsExternalService, boolean useStrongBinding) {
+            Handler launcherHandler, Runnable freeSlotCallback, String packageName,
+            String serviceClassName, boolean bindToCaller, boolean bindAsExternalService,
+            boolean useStrongBinding) {
         checkServiceExists(context, packageName, serviceClassName);
-        return new VariableSizeAllocatorImpl(launcherHandler, packageName, serviceClassName,
-                bindToCaller, bindAsExternalService, useStrongBinding);
+        return new VariableSizeAllocatorImpl(launcherHandler, freeSlotCallback, packageName,
+                serviceClassName, bindToCaller, bindAsExternalService, useStrongBinding,
+                MAX_VARIABLE_ALLOCATED);
     }
 
     /**
@@ -134,17 +145,20 @@ public abstract class ChildConnectionAllocator {
 
     @VisibleForTesting
     public static VariableSizeAllocatorImpl createVariableSizeForTesting(Handler launcherHandler,
-            String packageName, String serviceClassName, boolean bindToCaller,
-            boolean bindAsExternalService, boolean useStrongBinding) {
-        return new VariableSizeAllocatorImpl(launcherHandler, packageName, serviceClassName + "0",
-                bindToCaller, bindAsExternalService, useStrongBinding);
+            String packageName, Runnable freeSlotCallback, String serviceClassName,
+            boolean bindToCaller, boolean bindAsExternalService, boolean useStrongBinding,
+            int maxAllocated) {
+        return new VariableSizeAllocatorImpl(launcherHandler, freeSlotCallback, packageName,
+                serviceClassName + "0", bindToCaller, bindAsExternalService, useStrongBinding,
+                maxAllocated);
     }
 
-    private ChildConnectionAllocator(Handler launcherHandler, String packageName,
-            String serviceClassName, boolean bindToCaller, boolean bindAsExternalService,
-            boolean useStrongBinding) {
+    private ChildConnectionAllocator(Handler launcherHandler, Runnable freeSlotCallback,
+            String packageName, String serviceClassName, boolean bindToCaller,
+            boolean bindAsExternalService, boolean useStrongBinding) {
         mLauncherHandler = launcherHandler;
         assert isRunningOnLauncherThread();
+        mFreeSlotCallback = freeSlotCallback;
         mPackageName = packageName;
         mServiceClassName = serviceClassName;
         mBindToCaller = bindToCaller;
@@ -232,15 +246,19 @@ public abstract class ChildConnectionAllocator {
     private void free(ChildProcessConnection connection) {
         assert isRunningOnLauncherThread();
         doFree(connection);
+
+        if (mPendingAllocations.isEmpty()) return;
+        mPendingAllocations.remove().run();
+        if (!mPendingAllocations.isEmpty() && mFreeSlotCallback != null) {
+            mFreeSlotCallback.run();
+        }
     }
 
-    // Can only be called once all slots are full, ie when allocate returns null. Note
-    // this should not be called in if created with createVariableSize.
-    // The callback will be called when a slot becomes free, and should synchronous call
-    // allocate to take the slot.
-    public void queueAllocation(Runnable runnable) {
+    public final void queueAllocation(Runnable runnable) {
         assert isRunningOnLauncherThread();
-        doQueueAllocation(runnable);
+        boolean wasEmpty = mPendingAllocations.isEmpty();
+        mPendingAllocations.add(runnable);
+        if (wasEmpty && mFreeSlotCallback != null) mFreeSlotCallback.run();
     }
 
     /** May return -1 if size is not fixed. */
@@ -264,30 +282,22 @@ public abstract class ChildConnectionAllocator {
 
     /* package */ abstract ChildProcessConnection doAllocate(Context context, Bundle serviceBundle);
     /* package */ abstract void doFree(ChildProcessConnection connection);
-    /* package */ abstract void doQueueAllocation(Runnable runnable);
 
     /** Implementation class accessed directly by tests. */
     @VisibleForTesting
     public static class FixedSizeAllocatorImpl extends ChildConnectionAllocator {
-        // Runnable which will be called when allocator wants to allocate a new connection, but does
-        // not have any more free slots. May be null.
-        private final Runnable mFreeSlotCallback;
-
         // Connections to services. Indices of the array correspond to the service numbers.
         private final ChildProcessConnection[] mChildProcessConnections;
 
         // The list of free (not bound) service indices.
         private final ArrayList<Integer> mFreeConnectionIndices;
 
-        private final Queue<Runnable> mPendingAllocations = new ArrayDeque<>();
-
         private FixedSizeAllocatorImpl(Handler launcherHandler, Runnable freeSlotCallback,
                 String packageName, String serviceClassName, boolean bindToCaller,
                 boolean bindAsExternalService, boolean useStrongBinding, int numChildServices) {
-            super(launcherHandler, packageName, serviceClassName, bindToCaller,
+            super(launcherHandler, freeSlotCallback, packageName, serviceClassName, bindToCaller,
                     bindAsExternalService, useStrongBinding);
 
-            mFreeSlotCallback = freeSlotCallback;
             mChildProcessConnections = new ChildProcessConnection[numChildServices];
 
             mFreeConnectionIndices = new ArrayList<Integer>(numChildServices);
@@ -330,21 +340,11 @@ public abstract class ChildConnectionAllocator {
                 Log.d(TAG, "Allocator freed a connection, name: %s, slot: %d", mServiceClassName,
                         slot);
             }
-
-            if (mPendingAllocations.isEmpty()) return;
-            mPendingAllocations.remove().run();
-            assert mFreeConnectionIndices.isEmpty();
-            if (!mPendingAllocations.isEmpty() && mFreeSlotCallback != null) {
-                mFreeSlotCallback.run();
-            }
         }
 
-        @Override
-        /* package */ void doQueueAllocation(Runnable runnable) {
-            assert mFreeConnectionIndices.isEmpty();
-            boolean wasEmpty = mPendingAllocations.isEmpty();
-            mPendingAllocations.add(runnable);
-            if (wasEmpty && mFreeSlotCallback != null) mFreeSlotCallback.run();
+        @VisibleForTesting
+        public boolean isFreeConnectionAvailable() {
+            return !mFreeConnectionIndices.isEmpty();
         }
 
         @Override
@@ -362,11 +362,6 @@ public abstract class ChildConnectionAllocator {
             return mChildProcessConnections[slotNumber];
         }
 
-        @VisibleForTesting
-        public boolean isFreeConnectionAvailable() {
-            return !mFreeConnectionIndices.isEmpty();
-        }
-
         @Override
         public boolean anyConnectionAllocated() {
             return mFreeConnectionIndices.size() < mChildProcessConnections.length;
@@ -375,6 +370,7 @@ public abstract class ChildConnectionAllocator {
 
     @VisibleForTesting
     /* package */ static class VariableSizeAllocatorImpl extends ChildConnectionAllocator {
+        private final int mMaxAllocated;
         private final ArraySet<ChildProcessConnection> mAllocatedConnections = new ArraySet<>();
         private int mNextInstance;
 
@@ -394,15 +390,22 @@ public abstract class ChildConnectionAllocator {
             return "0";
         }
 
-        private VariableSizeAllocatorImpl(Handler launcherHandler, String packageName,
-                String serviceClassName, boolean bindToCaller, boolean bindAsExternalService,
-                boolean useStrongBinding) {
-            super(launcherHandler, packageName, serviceClassName + getServiceSuffix(), bindToCaller,
-                    bindAsExternalService, useStrongBinding);
+        private VariableSizeAllocatorImpl(Handler launcherHandler, Runnable freeSlotCallback,
+                String packageName, String serviceClassName, boolean bindToCaller,
+                boolean bindAsExternalService, boolean useStrongBinding, int maxAllocated) {
+            super(launcherHandler, freeSlotCallback, packageName,
+                    serviceClassName + getServiceSuffix(), bindToCaller, bindAsExternalService,
+                    useStrongBinding);
+            assert maxAllocated > 0;
+            mMaxAllocated = maxAllocated;
         }
 
         @Override
         /* package */ ChildProcessConnection doAllocate(Context context, Bundle serviceBundle) {
+            if (mAllocatedConnections.size() >= mMaxAllocated) {
+                Log.d(TAG, "Ran out of UIDs to allocate.");
+                return null;
+            }
             ComponentName serviceName = new ComponentName(mPackageName, mServiceClassName);
             String instanceName = Integer.toString(mNextInstance);
             mNextInstance++;
@@ -417,11 +420,6 @@ public abstract class ChildConnectionAllocator {
         @Override
         /* package */ void doFree(ChildProcessConnection connection) {
             mAllocatedConnections.remove(connection);
-        }
-
-        @Override
-        /* package */ void doQueueAllocation(Runnable runnable) {
-            assert false;
         }
 
         @Override

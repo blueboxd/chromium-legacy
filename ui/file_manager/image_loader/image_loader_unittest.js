@@ -20,15 +20,15 @@ function calculateCopyParametersFromOptions(source, options) {
  * - Target: max size is 100x100
  */
 function testNormalImage() {
-  var source = new Image();
+  const source = new Image();
   source.width = 200;
   source.height = 50;
-  var options = {
+  const options = {
     maxWidth: 100,
     maxHeight: 100,
     orientation: ImageOrientation.fromClockwiseRotation(0)
   };
-  var result = calculateCopyParametersFromOptions(source, options);
+  const result = calculateCopyParametersFromOptions(source, options);
   assertEquals(0, result.source.x);
   assertEquals(0, result.source.y);
   assertEquals(200, result.source.width);
@@ -47,15 +47,15 @@ function testNormalImage() {
  * - Target: max size is 100x100
  */
 function testRotatedImage() {
-  var source = new Image();
+  const source = new Image();
   source.width = 50;
   source.height = 200;
-  var options = {
+  const options = {
     maxWidth: 100,
     maxHeight: 100,
     orientation: ImageOrientation.fromClockwiseRotation(1)
   };
-  var result = calculateCopyParametersFromOptions(source, options);
+  const result = calculateCopyParametersFromOptions(source, options);
   assertEquals(0, result.source.x);
   assertEquals(0, result.source.y);
   assertEquals(50, result.source.width);
@@ -74,16 +74,16 @@ function testRotatedImage() {
  * - Target: 50x50 cropped image.
  */
 function testCroppedImage() {
-  var source = new Image();
+  const source = new Image();
   source.width = 800;
   source.height = 100;
-  var options = {
+  const options = {
     width: 50,
     height: 50,
     crop: true,
     orientation: ImageOrientation.fromClockwiseRotation(0)
   };
-  var result = calculateCopyParametersFromOptions(source, options);
+  const result = calculateCopyParametersFromOptions(source, options);
   assertEquals(350, result.source.x);
   assertEquals(0, result.source.y);
   assertEquals(100, result.source.width);
@@ -102,16 +102,16 @@ function testCroppedImage() {
  * - Target: 50x50 cropped image.
  */
 function testCroppedImageWithResize() {
-  var source = new Image();
+  const source = new Image();
   source.width = 200;
   source.height = 25;
-  var options = {
+  const options = {
     width: 50,
     height: 50,
     crop: true,
     orientation: ImageOrientation.fromClockwiseRotation(0)
   };
-  var result = calculateCopyParametersFromOptions(source, options);
+  const result = calculateCopyParametersFromOptions(source, options);
   assertEquals(87, result.source.x);
   assertEquals(0, result.source.y);
   assertEquals(25, result.source.width);
@@ -130,16 +130,16 @@ function testCroppedImageWithResize() {
  * - Target: 50x50 cropped image.
  */
 function testCroppedTinyImage() {
-  var source = new Image();
+  const source = new Image();
   source.width = 20;
   source.height = 10;
-  var options = {
+  const options = {
     width: 50,
     height: 50,
     crop: true,
     orientation: ImageOrientation.fromClockwiseRotation(0)
   };
-  var result = calculateCopyParametersFromOptions(source, options);
+  const result = calculateCopyParametersFromOptions(source, options);
   assertEquals(5, result.source.x);
   assertEquals(0, result.source.y);
   assertEquals(10, result.source.width);
@@ -158,16 +158,16 @@ function testCroppedTinyImage() {
  * - Target: 50x50 cropped image
  */
 function testCroppedRotatedImage() {
-  var source = new Image();
+  const source = new Image();
   source.width = 100;
   source.height = 400;
-  var options = {
+  const options = {
     width: 50,
     height: 50,
     crop: true,
     orientation: ImageOrientation.fromClockwiseRotation(1)
   };
-  var result = calculateCopyParametersFromOptions(source, options);
+  const result = calculateCopyParametersFromOptions(source, options);
   assertEquals(0, result.source.x);
   assertEquals(150, result.source.y);
   assertEquals(100, result.source.width);

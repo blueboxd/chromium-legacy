@@ -77,6 +77,7 @@ class RecentDiskSourceTest : public testing::Test {
 
     source_->GetRecentFiles(RecentSource::Params(
         file_system_context_.get(), origin_, max_files, cutoff_time,
+        RecentSource::FileType::kAll,
         base::BindOnce(
             [](base::RunLoop* run_loop, std::vector<RecentFile>* out_files,
                std::vector<RecentFile> files) {

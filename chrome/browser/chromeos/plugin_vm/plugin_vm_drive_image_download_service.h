@@ -15,7 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_installer.h"
 #include "crypto/secure_hash.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"
@@ -38,12 +38,11 @@ class PluginVmDriveImageDownloadService {
  public:
   using OnDownloadStartedCallback = base::OnceCallback<void()>;
   using OnDownloadFailedCallback =
-      base::OnceCallback<void(PluginVmImageManager::FailureReason)>;
+      base::OnceCallback<void(PluginVmInstaller::FailureReason)>;
   using OnFileDeletedCallback = base::OnceCallback<void(bool)>;
 
-  PluginVmDriveImageDownloadService(
-      PluginVmImageManager* plugin_vm_image_manager,
-      Profile* profile);
+  PluginVmDriveImageDownloadService(PluginVmInstaller* plugin_vm_installer,
+                                    Profile* profile);
   PluginVmDriveImageDownloadService(const PluginVmDriveImageDownloadService&) =
       delete;
   PluginVmDriveImageDownloadService& operator=(
@@ -73,7 +72,7 @@ class PluginVmDriveImageDownloadService {
                           std::unique_ptr<std::string> content);
   void ProgressCallback(int64_t progress, int64_t total);
 
-  PluginVmImageManager* plugin_vm_image_manager_;
+  PluginVmInstaller* plugin_vm_installer_;
   std::unique_ptr<drive::DriveServiceInterface> drive_service_;
   std::unique_ptr<crypto::SecureHash> secure_hash_service_;
   std::string file_id_;

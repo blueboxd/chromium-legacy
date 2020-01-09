@@ -420,7 +420,7 @@ void PluginVmManager::LaunchFailed(PluginVmLaunchResult result) {
   if (result == PluginVmLaunchResult::kVmMissing) {
     profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmImageExists,
                                      false);
-    plugin_vm::ShowPluginVmLauncherView(profile_);
+    plugin_vm::ShowPluginVmInstallerView(profile_);
   }
 
   RecordPluginVmLaunchResultHistogram(result);

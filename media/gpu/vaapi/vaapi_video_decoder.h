@@ -33,6 +33,7 @@
 namespace media {
 
 class AcceleratedVideoDecoder;
+class VaapiVideoDecoderDelegate;
 class DmabufVideoFramePool;
 class VaapiWrapper;
 class VideoFrame;
@@ -170,6 +171,9 @@ class VaapiVideoDecoder : public DecoderInterface,
   // Platform and codec specific video decoder.
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
+  // TODO(crbug.com/1022246): Instead of having the raw pointer here, getting
+  // the pointer from AcceleratedVideoDecoder.
+  VaapiVideoDecoderDelegate* decoder_delegate_ = nullptr;
 
   SEQUENCE_CHECKER(decoder_sequence_checker_);
 

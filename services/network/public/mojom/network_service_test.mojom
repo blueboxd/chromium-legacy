@@ -22,6 +22,8 @@ struct Rule {
   ResolverType resolver_type;
   string host_pattern;
   string replacement;
+  int32 host_resolver_flags;
+  string canonical_name;
 };
 
 // Testing interface to the network service.

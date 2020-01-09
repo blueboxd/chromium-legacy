@@ -225,9 +225,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #endif
 
 #if defined(OS_CHROMEOS)
-  // TODO(950007): Remove this when SplitSettings is the default and there are
-  // no Chrome OS settings in the browser settings page.
-  InitOSWebUIHandlers(profile, web_ui, html_source);
+  InitBrowserSettingsWebUIHandlers(profile, web_ui, html_source);
 #else
   AddSettingsPageUIHandler(std::make_unique<DefaultBrowserHandler>());
   AddSettingsPageUIHandler(std::make_unique<ManageProfileHandler>(profile));
@@ -326,6 +324,57 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 SettingsUI::~SettingsUI() = default;
 
 #if defined(OS_CHROMEOS)
+// static
+void SettingsUI::InitBrowserSettingsWebUIHandlers(
+    Profile* profile,
+    content::WebUI* web_ui,
+    content::WebUIDataSource* html_source) {
+  // TODO(jamescook): Sort out how account management is split between Chrome OS
+  // and browser settings.
+  if (chromeos::IsAccountManagerAvailable(profile)) {
+    chromeos::AccountManagerFactory* factory =
+        g_browser_process->platform_part()->GetAccountManagerFactory();
+    chromeos::AccountManager* account_manager =
+        factory->GetAccountManager(profile->GetPath().value());
+    DCHECK(account_manager);
+
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::AccountManagerUIHandler>(
+            account_manager, IdentityManagerFactory::GetForProfile(profile)));
+  }
+
+  if (!profile->IsGuestSession()) {
+    chromeos::android_sms::AndroidSmsService* android_sms_service =
+        chromeos::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(
+            profile);
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::settings::MultideviceHandler>(
+            profile->GetPrefs(),
+            chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
+                GetForProfile(profile),
+            android_sms_service
+                ? android_sms_service->android_sms_pairing_state_tracker()
+                : nullptr,
+            android_sms_service ? android_sms_service->android_sms_app_manager()
+                                : nullptr));
+    if (chromeos::settings::ShouldShowParentalControls(profile)) {
+      web_ui->AddMessageHandler(
+          std::make_unique<chromeos::settings::ParentalControlsHandler>(
+              profile));
+    }
+  }
+
+  web_ui->AddMessageHandler(
+      std::make_unique<chromeos::settings::AndroidAppsHandler>(profile));
+
+  html_source->AddBoolean(
+      "userCannotManuallyEnterPassword",
+      !chromeos::password_visibility::AccountHasUserFacingPassword(
+          chromeos::ProfileHelper::Get()
+              ->GetUserByProfile(profile)
+              ->GetAccountId()));
+}
+
 // static
 void SettingsUI::InitOSWebUIHandlers(Profile* profile,
                                      content::WebUI* web_ui,
@@ -434,12 +483,6 @@ void SettingsUI::InitOSWebUIHandlers(Profile* profile,
   html_source->AddBoolean(
       "quickUnlockDisabledByPolicy",
       chromeos::quick_unlock::IsPinDisabledByPolicy(profile->GetPrefs()));
-  html_source->AddBoolean(
-      "userCannotManuallyEnterPassword",
-      !chromeos::password_visibility::AccountHasUserFacingPassword(
-          chromeos::ProfileHelper::Get()
-              ->GetUserByProfile(profile)
-              ->GetAccountId()));
   const bool fingerprint_unlock_enabled =
       chromeos::quick_unlock::IsFingerprintEnabled(profile);
   html_source->AddBoolean("fingerprintUnlockEnabled",

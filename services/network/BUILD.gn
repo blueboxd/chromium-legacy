@@ -426,6 +426,8 @@ jumbo_source_set("test_support") {
     "test/test_cookie_manager.h",
     "test/test_data_pipe_getter.cc",
     "test/test_data_pipe_getter.h",
+    "test/test_dns_util.cc",
+    "test/test_dns_util.h",
     "test/test_network_connection_tracker.cc",
     "test/test_network_connection_tracker.h",
     "test/test_network_context.h",

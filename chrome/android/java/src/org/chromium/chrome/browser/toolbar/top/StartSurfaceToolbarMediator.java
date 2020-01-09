@@ -11,10 +11,15 @@ import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarPropert
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.LOGO_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.MENU_IS_VISIBLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_CLICK_HANDLER;
 
 import android.view.View;
 
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -32,6 +37,8 @@ class StartSurfaceToolbarMediator {
     private TabModelSelector mTabModelSelector;
     private TemplateUrlServiceObserver mTemplateUrlObserver;
     private TabModelSelectorObserver mTabModelSelectorObserver;
+    private OverviewModeBehavior mOverviewModeBehavior;
+    private OverviewModeObserver mOverviewModeObserver;
 
     StartSurfaceToolbarMediator(PropertyModel model) {
         mPropertyModel = model;
@@ -60,6 +67,9 @@ class StartSurfaceToolbarMediator {
         }
         if (mTabModelSelectorObserver != null) {
             mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+        }
+        if (mOverviewModeObserver != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
         }
     }
 
@@ -104,5 +114,24 @@ class StartSurfaceToolbarMediator {
 
     void onBottomToolbarVisibilityChanged(boolean isVisible) {
         mPropertyModel.set(MENU_IS_VISIBLE, !isVisible);
+    }
+
+    void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        assert mOverviewModeBehavior == null;
+
+        mOverviewModeBehavior = overviewModeBehavior;
+        if (mOverviewModeObserver == null) {
+            mOverviewModeObserver = new EmptyOverviewModeObserver() {
+                @Override
+                public void onOverviewModeStateChanged(
+                        @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
+                    boolean isShownTabswitcherState =
+                            overviewModeState == OverviewModeState.SHOWN_TABSWITCHER;
+                    mPropertyModel.set(LOGO_IS_VISIBLE, !isShownTabswitcherState);
+                    mPropertyModel.set(NEW_TAB_BUTTON_IS_VISIBLE, isShownTabswitcherState);
+                }
+            };
+        }
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 }

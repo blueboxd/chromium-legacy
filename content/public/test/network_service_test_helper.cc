@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_host_resolver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "net/base/ip_address.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
 #include "net/dns/mock_host_resolver.h"
@@ -115,15 +116,21 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
         case network::mojom::ResolverType::kResolverTypeFailTimeout:
           host_resolver->AddSimulatedTimeoutFailure(rule->host_pattern);
           break;
-        case network::mojom::ResolverType::kResolverTypeIPLiteral:
-          host_resolver->AddIPLiteralRule(rule->host_pattern, rule->replacement,
-                                          std::string());
+        case network::mojom::ResolverType::kResolverTypeIPLiteral: {
+          net::IPAddress ip_address;
+          DCHECK(ip_address.AssignFromIPLiteral(rule->replacement));
+          host_resolver->AddRuleWithFlags(rule->host_pattern, rule->replacement,
+                                          rule->host_resolver_flags,
+                                          rule->canonical_name);
           break;
+        }
         case network::mojom::ResolverType::kResolverTypeDirectLookup:
           host_resolver->AllowDirectLookup(rule->host_pattern);
           break;
         default:
-          host_resolver->AddRule(rule->host_pattern, rule->replacement);
+          host_resolver->AddRuleWithFlags(rule->host_pattern, rule->replacement,
+                                          rule->host_resolver_flags,
+                                          rule->canonical_name);
           break;
       }
     }

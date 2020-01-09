@@ -118,6 +118,10 @@ struct CORE_EXPORT NGLineBoxStrut {
   LayoutUnit InlineSum() const { return inline_start + inline_end; }
   LayoutUnit BlockSum() const { return line_over + line_under; }
 
+  bool IsEmpty() const {
+    return !inline_start && !inline_end && !line_over && !line_under;
+  }
+
   bool operator==(const NGLineBoxStrut& other) const {
     return inline_start == other.inline_start &&
            inline_end == other.inline_end && line_over == other.line_over &&

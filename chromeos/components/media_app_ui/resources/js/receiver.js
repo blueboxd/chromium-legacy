@@ -50,4 +50,12 @@ function receiveMessage(/** Event */ e) {
   }
 }
 
+// Attempting to execute chooseFileSystemEntries is guaranteed to result in a
+// SecurityError due to the fact that we are running in a unprivileged iframe.
+// Note, we can not do window.chooseFileSystemEntries due to the fact that
+// closure does not yet know that 'chooseFileSystemEntries' is on the window.
+// TODO(crbug/1040328): Remove this when we have a polyfill that allows us to
+// talk to the privileged frame.
+window['chooseFileSystemEntries'] = null;
+
 window.addEventListener('message', receiveMessage, false);

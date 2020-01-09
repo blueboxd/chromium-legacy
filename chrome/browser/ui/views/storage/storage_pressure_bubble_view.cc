@@ -59,6 +59,10 @@ StoragePressureBubbleView::StoragePressureBubbleView(
         platform_util::GetViewForWindow(browser->window()->GetNativeWindow()));
   }
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+  DialogDelegate::set_button_label(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(
+          IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_BUTTON_LABEL));
 }
 
 base::string16 StoragePressureBubbleView::GetWindowTitle() const {
@@ -78,14 +82,6 @@ bool StoragePressureBubbleView::Accept() {
 
 bool StoragePressureBubbleView::Close() {
   return true;
-}
-
-base::string16 StoragePressureBubbleView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(
-        IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_BUTTON_LABEL);
-  return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
 void StoragePressureBubbleView::Init() {

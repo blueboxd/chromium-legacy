@@ -1061,7 +1061,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
       // (but not all). Care must be taken however for scenarios like custom
       // passphrase being set.
       sync_prefs_.ClearDirectoryConsistencyPreferences();
-      startup_controller_->TryStart(IsSetupInProgress());
+      startup_controller_->TryStart(/*force_immediate=*/true);
       break;
     case UNKNOWN_ACTION:
       NOTREACHED();
@@ -1299,7 +1299,7 @@ void ProfileSyncService::SyncAllowedByPlatformChanged(bool allowed) {
     // TODO(crbug.com/856179): Evaluate whether we can get away without a full
     // restart (i.e. just reconfigure plus whatever cleanup is necessary). See
     // also similar comment in OnSyncRequestedPrefChange().
-    startup_controller_->TryStart(/*force_immediate=*/false);
+    startup_controller_->TryStart(/*force_immediate=*/true);
   }
 }
 
@@ -1538,7 +1538,7 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
   } else {
     // Sync is no longer disabled by policy. Try starting it up if appropriate.
     DCHECK(!engine_);
-    startup_controller_->TryStart(IsSetupInProgress());
+    startup_controller_->TryStart(/*force_immediate=*/true);
   }
 }
 
@@ -1575,6 +1575,11 @@ void ProfileSyncService::OnSyncRequestedPrefChange(bool is_sync_requested) {
     // restart (i.e. just reconfigure plus whatever cleanup is necessary).
     // Especially in the CLEAR_DATA case, StopImpl does a lot of cleanup that
     // might still be required.
+    // TODO(crbug.com/1035874): There's no real need to delay the startup here,
+    // i.e. it should be fine to set force_immediate to true. However currently
+    // some tests depend on the startup *not* happening immediately (because
+    // they want to check that Sync (the feature) got disabled, which is hard to
+    // do if the engine starts up again immediately).
     startup_controller_->TryStart(/*force_immediate=*/false);
   }
 }

@@ -119,9 +119,7 @@ FloatSize StyleFetchedImage::ImageSize(
                                 default_object_size);
   }
 
-  FloatSize size(respect_orientation && image->IsBitmapImage()
-                     ? ToBitmapImage(image)->SizeRespectingOrientation()
-                     : image->Size());
+  FloatSize size(image->Size(respect_orientation));
   return ApplyZoom(size, multiplier);
 }
 

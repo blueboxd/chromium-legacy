@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
 
+#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 
@@ -275,15 +276,15 @@ bool HTMLFormControlElementWithState::ShouldSaveAndRestoreFormControlState()
   return isConnected() && ShouldAutocomplete();
 }
 
-void HTMLFormControlElementWithState::QueueInputAndChangeEvents() {
-  auto task_runner = GetDocument().GetTaskRunner(TaskType::kUserInteraction);
-  task_runner->PostTask(
-      FROM_HERE, WTF::Bind(&HTMLFormControlElementWithState::DispatchInputEvent,
-                           WrapWeakPersistent(this)));
-  task_runner->PostTask(
-      FROM_HERE,
-      WTF::Bind(&HTMLFormControlElementWithState::DispatchChangeEvent,
-                WrapWeakPersistent(this)));
+void HTMLFormControlElementWithState::DispatchInputEvent() {
+  // Legacy 'input' event for forms set value and checked.
+  Event* event = Event::CreateBubble(event_type_names::kInput);
+  event->SetComposed(true);
+  DispatchScopedEvent(*event);
+}
+
+void HTMLFormControlElementWithState::DispatchChangeEvent() {
+  DispatchScopedEvent(*Event::CreateBubble(event_type_names::kChange));
 }
 
 void HTMLFormControlElementWithState::FinishParsingChildren() {

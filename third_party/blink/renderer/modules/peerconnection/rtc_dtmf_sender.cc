@@ -142,7 +142,7 @@ void RTCDTMFSender::PlayoutTask() {
     DispatchEvent(*event.Release());
     return;
   }
-  WebString this_tone = tone_buffer_.Substring(0, 1);
+  String this_tone = tone_buffer_.Substring(0, 1);
   tone_buffer_ = tone_buffer_.Substring(1, tone_buffer_.length() - 1);
   // InsertDTMF handles both tones and ",", and calls DidPlayTone after
   // the specified delay.

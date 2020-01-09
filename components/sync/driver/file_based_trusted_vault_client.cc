@@ -148,6 +148,13 @@ void FileBasedTrustedVaultClient::StoreKeys(
   observer_list_.Notify();
 }
 
+void FileBasedTrustedVaultClient::MarkKeysAsStale(
+    const std::string& gaia_id,
+    base::OnceCallback<void(bool)> cb) {
+  // Not really supported and not useful for this particular implementation.
+  std::move(cb).Run(false);
+}
+
 void FileBasedTrustedVaultClient::WaitForFlushForTesting(
     base::OnceClosure cb) const {
   backend_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),

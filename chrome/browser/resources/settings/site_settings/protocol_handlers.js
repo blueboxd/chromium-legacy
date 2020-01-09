@@ -92,7 +92,7 @@ Polymer({
   attached: function() {
     cr.addWebUIListener(
         'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
-    settings.AndroidAppsBrowserProxyImpl.getInstance().requestAndroidAppsInfo();
+    settings.AndroidInfoBrowserProxyImpl.getInstance().requestAndroidAppsInfo();
   },
   // </if>
 

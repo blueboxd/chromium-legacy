@@ -132,12 +132,12 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
     if (updates.empty()) {
       error = bridge_->MergeSyncData(base::nullopt);
     } else {
-      DCHECK(!updates[0]->entity->is_deleted());
+      DCHECK(!updates[0].entity.is_deleted());
       entity_ = ProcessorEntity::CreateNew(
           kNigoriStorageKey, ClientTagHash::FromHashed(kRawNigoriClientTagHash),
-          updates[0]->entity->id, updates[0]->entity->creation_time);
-      entity_->RecordAcceptedUpdate(*updates[0]);
-      error = bridge_->MergeSyncData(std::move(*updates[0]->entity));
+          updates[0].entity.id, updates[0].entity.creation_time);
+      entity_->RecordAcceptedUpdate(updates[0]);
+      error = bridge_->MergeSyncData(std::move(updates[0].entity));
     }
     if (error) {
       ReportError(*error);
@@ -153,9 +153,9 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
   DCHECK(entity_);
   // We assume the bridge will issue errors in case of deletions. Therefore, we
   // are adding the following DCHECK to simplify the code.
-  DCHECK(!updates[0]->entity->is_deleted());
+  DCHECK(!updates[0].entity.is_deleted());
 
-  if (entity_->UpdateIsReflection(updates[0]->response_version)) {
+  if (entity_->UpdateIsReflection(updates[0].response_version)) {
     // Seen this update before; just ignore it.
     bridge_->ApplySyncChanges(/*data=*/base::nullopt);
     return;
@@ -164,18 +164,18 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
   if (entity_->IsUnsynced()) {
     // Remote update always win in case of conflict, because bridge takes care
     // of reapplying pending local changes after processing the remote update.
-    entity_->RecordForcedUpdate(*updates[0]);
-    error = bridge_->ApplySyncChanges(std::move(*updates[0]->entity));
+    entity_->RecordForcedUpdate(updates[0]);
+    error = bridge_->ApplySyncChanges(std::move(updates[0].entity));
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
                               ConflictResolution::kUseRemote,
                               ConflictResolution::kTypeSize);
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                               ConflictResolver::NIGORI_MERGE,
                               ConflictResolver::CONFLICT_RESOLUTION_SIZE);
-  } else if (!entity_->MatchesData(*updates[0]->entity)) {
+  } else if (!entity_->MatchesData(updates[0].entity)) {
     // Inform the bridge of the new or updated data.
-    entity_->RecordAcceptedUpdate(*updates[0]);
-    error = bridge_->ApplySyncChanges(std::move(*updates[0]->entity));
+    entity_->RecordAcceptedUpdate(updates[0]);
+    error = bridge_->ApplySyncChanges(std::move(updates[0].entity));
   }
 
   if (error) {

@@ -12,6 +12,17 @@ async function register(worker_url, scope) {
   }
 }
 
+async function registerWithoutAwaitingReady(worker_url, scope) {
+  try {
+    const init = scope ? {scope} : {};
+    await navigator.serviceWorker.register(worker_url, init);
+    // Don't await for navigator.serviceWorker.ready.
+    return 'DONE';
+  } catch (error) {
+    return `${error}`;
+  }
+}
+
 async function update(scope) {
   try {
     const registration =

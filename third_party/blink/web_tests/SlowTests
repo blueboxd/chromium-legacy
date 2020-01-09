@@ -198,6 +198,7 @@ crbug.com/614910 virtual/gpu-rasterization/images/yuv-decode-eligible/color-prof
 crbug.com/623798 paint/images/animated-gif-last-frame-crash.html [ Slow ]
 
 crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Slow ]
+crbug.com/606649 virtual/web-components-v0-disabled/fast/dom/gc-dom-tree-lifetime.html [ Slow ]
 
 # Slow on Win Debug in part due to incremental linking.
 crbug.com/647192 [ Win Debug ] fast/css3-text/css3-word-break/word-break-all-ascii.html [ Slow ]

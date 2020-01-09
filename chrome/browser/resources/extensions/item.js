@@ -26,7 +26,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ItemBehavior} from './item_behavior.js';
-import {computeInspectableViewLabel, getItemSource, getItemSourceString, isControlled, isEnabled, SourceType, userCanChangeEnablement} from './item_util.js';
+import {computeInspectableViewLabel, EnableControl, getEnableControl, getItemSource, getItemSourceString, isControlled, isEnabled, SourceType, userCanChangeEnablement} from './item_util.js';
 import {navigation, Page} from './navigation_helper.js';
 
 /** @interface */
@@ -205,8 +205,13 @@ Polymer({
   },
 
   /** @private */
-  onEnableChange_: function() {
+  onEnableToggleChange_: function() {
     this.delegate.setItemEnabled(this.data.id, this.$.enableToggle.checked);
+  },
+
+  /** @private */
+  onEnableButtonClick_: function() {
+    this.delegate.setItemEnabled(this.data.id, true);
   },
 
   /** @private */
@@ -295,22 +300,40 @@ Polymer({
   },
 
   /**
+   * Returns true if the reload button should be shown.
+   * @return {boolean}
+   * @private
+   */
+  showReloadButton_: function() {
+    return getEnableControl(this.data) === EnableControl.RELOAD;
+  },
+
+  /**
+   * Returns true if the repair button should be shown.
+   * @return {boolean}
+   * @private
+   */
+  showRepairButton_: function() {
+    return getEnableControl(this.data) === EnableControl.REPAIR;
+  },
+
+
+  /**
    * Returns true if the enable toggle should be shown.
    * @return {boolean}
    * @private
    */
   showEnableToggle_: function() {
-    return !this.isTerminated_() && !this.data.disableReasons.corruptInstall;
+    return getEnableControl(this.data) === EnableControl.ENABLE_TOGGLE;
   },
 
   /**
-   * Returns true if the extension is in the terminated state.
+   * Returns true if the enable button should be shown.
    * @return {boolean}
    * @private
    */
-  isTerminated_: function() {
-    return this.data.state ===
-        chrome.developerPrivate.ExtensionState.TERMINATED;
+  showEnableButton_: function() {
+    return getEnableControl(this.data) === EnableControl.ENABLE_BUTTON;
   },
 
   /**

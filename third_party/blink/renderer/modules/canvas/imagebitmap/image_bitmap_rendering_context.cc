@@ -52,7 +52,7 @@ ImageBitmap* ImageBitmapRenderingContext::TransferToImageBitmap(ScriptState*) {
     return nullptr;
 
   image->Transfer();
-  return ImageBitmap::Create(std::move(image));
+  return MakeGarbageCollected<ImageBitmap>(std::move(image));
 }
 
 CanvasRenderingContext* ImageBitmapRenderingContext::Factory::Create(

@@ -127,12 +127,13 @@ class PermissionsData {
   // which URLs extensions can interact with. A default policy can be set with
   // SetDefaultPolicyHostRestrictions. A policy specific to this extension
   // can be set with SetPolicyHostRestrictions.
-  void SetUsesDefaultHostRestrictions() const;
+  void SetUsesDefaultHostRestrictions(int context_id) const;
 
-  // Applies restrictions from enterprise policy limiting which URLs all
-  // extensions can interact with. This restriction can be overridden on a
-  // per-extension basis with SetPolicyHostRestrictions.
+  // Applies profile dependent restrictions from enterprise policy limiting
+  // which URLs all extensions can interact with. This restriction can
+  // be overridden on a per-extension basis with SetPolicyHostRestrictions.
   static void SetDefaultPolicyHostRestrictions(
+      int context_id,
       const URLPatternSet& default_policy_blocked_hosts,
       const URLPatternSet& default_policy_allowed_hosts);
 
@@ -252,14 +253,14 @@ class PermissionsData {
   // This should only be used for 1. Serialization when initializing renderers
   // or 2. Called from utility methods above. For all other uses, call utility
   // methods instead (e.g. CanAccessPage()).
-  static URLPatternSet default_policy_blocked_hosts();
+  static URLPatternSet GetDefaultPolicyBlockedHosts(int context_id);
 
   // Returns list of hosts this extension may interact with regardless of
   // what is defined by policy_blocked_hosts().
   // This should only be used for 1. Serialization when initializing renderers
   // or 2. Called from utility methods above. For all other uses, call utility
   // methods instead (e.g. CanAccessPage()).
-  static URLPatternSet default_policy_allowed_hosts();
+  static URLPatternSet GetDefaultPolicyAllowedHosts(int context_id);
 
   // Returns list of hosts this extension may not interact with by policy.
   // This should only be used for 1. Serialization when initializing renderers
@@ -343,9 +344,11 @@ class PermissionsData {
   // policy_allowed_hosts() accessor.
   mutable URLPatternSet policy_allowed_hosts_unsafe_;
 
-  // If the ExtensionSettings policy is not being used, or no per-extension
-  // exception to the default policy was declared for this extension.
-  mutable bool uses_default_policy_host_restrictions_ = true;
+  // An identifier for the context associated with the PermissionsData.
+  // It required in order to properly map the context to the right default
+  // policy hosts.
+  // The context_id is empty if the default policy hosts are not used.
+  mutable base::Optional<int> context_id_;
 
   mutable TabPermissionsMap tab_specific_permissions_;
 

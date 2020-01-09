@@ -853,8 +853,6 @@ class CORE_EXPORT Node : public EventTarget {
                               SimulatedClickCreationScope =
                                   SimulatedClickCreationScope::kFromUserAgent);
 
-  void DispatchInputEvent();
-
   // Perform the default action for an event.
   virtual void DefaultEventHandler(Event&);
   void UpdateHadKeyboardEvent(const Event&);

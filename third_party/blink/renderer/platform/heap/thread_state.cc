@@ -1082,21 +1082,6 @@ void ThreadState::FreePersistentNode(PersistentRegion* persistent_region,
     DCHECK(!static_persistents_.Contains(persistent_node));
 }
 
-void ThreadState::RegisterPreFinalizer(void* object,
-                                       PreFinalizerCallback callback) {
-#if DCHECK_IS_ON()
-  DCHECK(CheckThread());
-#endif
-  DCHECK(!SweepForbidden());
-
-  HeapObjectHeader* header = HeapObjectHeader::FromInnerAddress(object);
-  DCHECK(ordered_pre_finalizers_.end() ==
-         std::find(ordered_pre_finalizers_.begin(),
-                   ordered_pre_finalizers_.end(),
-                   PreFinalizer{header, object, callback}));
-  ordered_pre_finalizers_.push_back(PreFinalizer{header, object, callback});
-}
-
 void ThreadState::InvokePreFinalizers() {
   DCHECK(CheckThread());
   DCHECK(!SweepForbidden());
@@ -1104,22 +1089,23 @@ void ThreadState::InvokePreFinalizers() {
   ThreadHeapStatsCollector::Scope stats_scope(
       Heap().stats_collector(), ThreadHeapStatsCollector::kInvokePreFinalizers);
   SweepForbiddenScope sweep_forbidden(this);
-  // Pre finalizers are forbidden from allocating objects.
+  // Pre finalizers are forbidden from allocating objects
   NoAllocationScope no_allocation_scope(this);
 
   // Call the prefinalizers in the opposite order to their registration.
+  //
+  // LinkedHashSet does not support modification during iteration, so
+  // copy items first.
+  //
+  // The prefinalizer callback wrapper returns |true| when its associated
+  // object is unreachable garbage and the prefinalizer callback has run.
+  // The registered prefinalizer entry must then be removed and deleted.
   Deque<PreFinalizer> remaining_ordered_pre_finalizers;
   for (auto rit = ordered_pre_finalizers_.rbegin();
        rit != ordered_pre_finalizers_.rend(); ++rit) {
     const PreFinalizer& pre_finalizer = *rit;
-    // Check if pre-finalizer should be executed.
-    if (pre_finalizer.header->IsMarked()) {
-      // Re-queue for checking in next garbage collection.
+    if (!(pre_finalizer.second)(pre_finalizer.first))
       remaining_ordered_pre_finalizers.push_front(pre_finalizer);
-    } else {
-      // Execute pre-finalizer.
-      pre_finalizer.callback(pre_finalizer.object);
-    }
   }
 
   ordered_pre_finalizers_ = std::move(remaining_ordered_pre_finalizers);

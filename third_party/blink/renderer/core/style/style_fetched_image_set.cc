@@ -103,10 +103,7 @@ FloatSize StyleFetchedImageSet::ImageSize(
     return ImageSizeForSVGImage(ToSVGImage(image), multiplier,
                                 default_object_size);
   }
-  FloatSize natural_size(respect_orientation == kRespectImageOrientation &&
-                                 image->IsBitmapImage()
-                             ? ToBitmapImage(image)->SizeRespectingOrientation()
-                             : image->Size());
+  FloatSize natural_size(image->Size(respect_orientation));
   FloatSize scaled_image_size(ApplyZoom(natural_size, multiplier));
   scaled_image_size.Scale(1 / image_scale_factor_);
   return scaled_image_size;

@@ -13,8 +13,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -23,12 +25,15 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/win/session_change_observer.h"
 
-namespace aura {
-
-// Required to declare a friend class.
-namespace test {
-class AuraTestHelper;
+namespace base {
+class WaitableEvent;
 }
+
+namespace gfx {
+class Rect;
+}
+
+namespace aura {
 
 // This class keeps track of whether any HWNDs are occluding any app windows.
 // It notifies the host of any app window whose occlusion state changes. Most
@@ -36,6 +41,8 @@ class AuraTestHelper;
 class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
  public:
   static NativeWindowOcclusionTrackerWin* GetOrCreateInstance();
+
+  static void DeleteInstanceForTesting();
 
   // Enables notifying the host of |window| via SetNativeWindowOcclusionState()
   // when the occlusion state has been computed.
@@ -53,20 +60,27 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
 
  private:
   friend class NativeWindowOcclusionTrackerTest;
-  friend class test::AuraTestHelper;
-
-  // Returns a pointer to global instance.
-  static NativeWindowOcclusionTrackerWin** GetInstanceForTesting();
 
   // This class computes the occlusion state of the tracked windows.
   // It runs on a separate thread, and notifies the main thread of
   // the occlusion state of the tracked windows.
-  class AURA_EXPORT WindowOcclusionCalculator {
+  class WindowOcclusionCalculator {
    public:
-    WindowOcclusionCalculator(
+    using UpdateOcclusionStateCallback = base::RepeatingCallback<void(
+        const base::flat_map<HWND, Window::OcclusionState>&)>;
+
+    // Creates WindowOcclusionCalculator instance. Must be called on UI thread.
+    static void CreateInstance(
         scoped_refptr<base::SequencedTaskRunner> task_runner,
-        scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner);
-    ~WindowOcclusionCalculator();
+        scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner,
+        UpdateOcclusionStateCallback update_occlusion_state_callback);
+
+    // Returns existing WindowOcclusionCalculator instance.
+    static WindowOcclusionCalculator* GetInstance() { return instance_; }
+
+    // Deletes |instance_| and signals |done_event|. Must be called on COMSTA
+    // thread.
+    static void DeleteInstanceForTesting(base::WaitableEvent* done_event);
 
     void EnableOcclusionTrackingForWindow(HWND hwnd);
     void DisableOcclusionTrackingForWindow(HWND hwnd);
@@ -75,8 +89,11 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
     void HandleVisibilityChanged(bool visible);
 
    private:
-    friend class NativeWindowOcclusionTrackerTest;
-    friend class test::AuraTestHelper;
+    WindowOcclusionCalculator(
+        scoped_refptr<base::SequencedTaskRunner> task_runner,
+        scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner,
+        UpdateOcclusionStateCallback update_occlusion_state_callback);
+    ~WindowOcclusionCalculator();
 
     // Registers event hooks, if not registered.
     void MaybeRegisterEventHooks();
@@ -164,12 +181,17 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
     // if we we can't tell for sure.
     base::Optional<bool> IsWindowOnCurrentVirtualDesktop(HWND hwnd);
 
+    static WindowOcclusionCalculator* instance_;
+
     // Task runner for our thread.
     scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
     // Task runner for the thread that created |this|.  UpdateOcclusionState
     // task is posted to this task runner.
     const scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner_;
+
+    // Callback used to update occlusion state on UI thread.
+    UpdateOcclusionStateCallback update_occlusion_state_callback_;
 
     // Map of root app window hwnds and their occlusion state. This contains
     // both visible and hidden windows.
@@ -214,6 +236,8 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
 
     SEQUENCE_CHECKER(sequence_checker_);
 
+    base::WeakPtrFactory<WindowOcclusionCalculator> weak_factory_{this};
+
     DISALLOW_COPY_AND_ASSIGN(WindowOcclusionCalculator);
   };
 
@@ -246,13 +270,13 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin : public WindowObserver {
   // This is set by UpdateOcclusionState. It is currently only used by tests.
   int num_visible_root_windows_ = 0;
 
-  std::unique_ptr<WindowOcclusionCalculator> occlusion_calculator_;
-
   // Manages observation of Windows Session Change messages.
   ui::SessionChangeObserver session_change_observer_;
 
   // If the screen is locked, windows are considered occluded.
   bool screen_locked_ = false;
+
+  base::WeakPtrFactory<NativeWindowOcclusionTrackerWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NativeWindowOcclusionTrackerWin);
 };

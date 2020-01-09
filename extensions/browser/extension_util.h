@@ -72,6 +72,10 @@ bool CanWithholdPermissionsFromExtension(const Extension& extension);
 bool CanWithholdPermissionsFromExtension(const std::string& extension_id,
                                          const Manifest::Type type,
                                          const Manifest::Location location);
+
+// Returns a unique int id for each context.
+int GetBrowserContextId(content::BrowserContext* context);
+
 }  // namespace util
 }  // namespace extensions
 

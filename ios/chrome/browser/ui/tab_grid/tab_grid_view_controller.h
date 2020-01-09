@@ -60,6 +60,11 @@
 // transitions are triggered.
 - (void)prepareForAppearance;
 
+// Notifies the ViewController that its content is being displayed or hidden.
+- (void)contentWillAppearAnimated:(BOOL)animated;
+- (void)contentDidAppear;
+- (void)contentWillDisappearAnimated:(BOOL)animated;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_VIEW_CONTROLLER_H_

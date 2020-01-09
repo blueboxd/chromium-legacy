@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarPropert
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.LOGO_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.MENU_IS_VISIBLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_CLICK_HANDLER;
 
 import android.view.View;
@@ -38,6 +39,8 @@ class StartSurfaceToolbarViewBinder {
             view.onAccessibilityStatusChanged(model.get(ACCESSIBILITY_ENABLED));
         } else if (propertyKey == MENU_IS_VISIBLE) {
             view.setMenuButtonVisibility(model.get(MENU_IS_VISIBLE));
+        } else if (propertyKey == NEW_TAB_BUTTON_IS_VISIBLE) {
+            view.setNewTabButtonVisibility(model.get(NEW_TAB_BUTTON_IS_VISIBLE));
         }
     }
 }

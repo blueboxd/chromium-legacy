@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_PHYSICAL_TEXT_FRAGMENT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
@@ -70,18 +71,19 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   bool IsSymbolMarker() const { return TextType() == kSymbolMarker; }
 
-  unsigned TextLength() const { return end_offset_ - start_offset_; }
-  StringView Text() const {
-    return StringView(text_, start_offset_, TextLength());
-  }
   const String& TextContent() const { return text_; }
 
   // ShapeResult may be nullptr if |IsFlowControl()|.
   const ShapeResultView* TextShapeResult() const { return shape_result_.get(); }
 
   // Start/end offset to the text of the block container.
-  unsigned StartOffset() const { return start_offset_; }
-  unsigned EndOffset() const { return end_offset_; }
+  const NGTextOffset& TextOffset() const { return text_offset_; }
+  unsigned StartOffset() const { return text_offset_.start; }
+  unsigned EndOffset() const { return text_offset_.end; }
+  unsigned TextLength() const { return text_offset_.Length(); }
+  StringView Text() const {
+    return StringView(text_, text_offset_.start, TextLength());
+  }
 
   WritingMode GetWritingMode() const { return Style().GetWritingMode(); }
   bool IsHorizontal() const {
@@ -141,8 +143,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   const String text_;
 
   // Start and end offset of the parent block text.
-  const unsigned start_offset_;
-  const unsigned end_offset_;
+  const NGTextOffset text_offset_;
   const scoped_refptr<const ShapeResultView> shape_result_;
 
   // Fragments are immutable but allow certain expensive data, specifically ink

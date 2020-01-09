@@ -13,7 +13,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
-#include "device/bluetooth/public/mojom/device.mojom.h"
+#include "device/bluetooth/public/mojom/device.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 

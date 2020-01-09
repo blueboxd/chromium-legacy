@@ -464,6 +464,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewUsb"),
         TestCase("openQuickViewRemovablePartitions"),
         TestCase("openQuickViewMtp"),
+        TestCase("openQuickViewTabIndexImage"),
         TestCase("pressEnterOnInfoBoxToOpenClose"),
         TestCase("closeQuickView"),
         TestCase("cantOpenQuickViewWithMultipleFiles"),

@@ -461,9 +461,8 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
 
   std::unique_ptr<rtc::NetworkManager> network_manager;
   if (port_config.enable_multiple_routes) {
-    network_manager = std::make_unique<blink::FilteringNetworkManager>(
-        network_manager_.get(), requesting_origin, media_permission,
-        allow_mdns_obfuscation);
+    network_manager = std::make_unique<FilteringNetworkManager>(
+        network_manager_.get(), media_permission, allow_mdns_obfuscation);
   } else {
     network_manager =
         std::make_unique<blink::EmptyNetworkManager>(network_manager_.get());

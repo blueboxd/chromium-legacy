@@ -616,14 +616,15 @@ bool CrostiniExportImport::GetExportImportOperationStatus() const {
   return status_trackers_.find(id) != status_trackers_.end();
 }
 
-CrostiniExportImportNotificationController*
+base::WeakPtr<CrostiniExportImportNotificationController>
 CrostiniExportImport::GetNotificationControllerForTesting(
     ContainerId container_id) {
   auto it = status_trackers_.find(container_id);
   if (it == status_trackers_.end()) {
     return nullptr;
   }
-  return static_cast<CrostiniExportImportNotificationController*>(it->second);
+  return static_cast<CrostiniExportImportNotificationController*>(it->second)
+      ->GetWeakPtr();
 }
 
 }  // namespace crostini

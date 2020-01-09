@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -70,9 +69,9 @@ bool ErrorCodeIndicatesFailure(google_apis::DriveApiErrorCode error_code) {
 
 // Converts a DriveApiErrorCode to the closest equivalent FailureReason.
 // Do not call with 2xx and 3xx error codes.
-plugin_vm::PluginVmImageManager::FailureReason ConvertToFailureReason(
+plugin_vm::PluginVmInstaller::FailureReason ConvertToFailureReason(
     google_apis::DriveApiErrorCode error_code) {
-  using FailureReason = plugin_vm::PluginVmImageManager::FailureReason;
+  using FailureReason = plugin_vm::PluginVmInstaller::FailureReason;
 
   switch (error_code) {
     case google_apis::HTTP_BAD_REQUEST:
@@ -115,9 +114,9 @@ PluginVmDriveImageDownloadService::~PluginVmDriveImageDownloadService() =
     default;
 
 PluginVmDriveImageDownloadService::PluginVmDriveImageDownloadService(
-    PluginVmImageManager* plugin_vm_image_manager,
+    PluginVmInstaller* plugin_vm_installer,
     Profile* profile)
-    : plugin_vm_image_manager_(plugin_vm_image_manager),
+    : plugin_vm_installer_(plugin_vm_installer),
       secure_hash_service_(
           crypto::SecureHash::Create(crypto::SecureHash::SHA256)) {
   signin::IdentityManager* identity_manager =
@@ -175,10 +174,10 @@ void PluginVmDriveImageDownloadService::DispatchDownloadFile() {
             &PluginVmDriveImageDownloadService::ProgressCallback,
             weak_ptr_factory_.GetWeakPtr()));
 
-    plugin_vm_image_manager_->OnDownloadStarted();
+    plugin_vm_installer_->OnDownloadStarted();
   } else {
-    plugin_vm_image_manager_->OnDownloadFailed(
-        PluginVmImageManager::FailureReason::DOWNLOAD_FAILED_UNKNOWN);
+    plugin_vm_installer_->OnDownloadFailed(
+        PluginVmInstaller::FailureReason::DOWNLOAD_FAILED_UNKNOWN);
   }
 }
 
@@ -217,13 +216,12 @@ void PluginVmDriveImageDownloadService::DownloadActionCallback(
   if (ErrorCodeIndicatesFailure(error_code)) {
     LOG(ERROR) << "PluginVM image download from Drive failed with error code: "
                << (int)error_code;
-    plugin_vm_image_manager_->OnDownloadFailed(
-        ConvertToFailureReason(error_code));
+    plugin_vm_installer_->OnDownloadFailed(ConvertToFailureReason(error_code));
     return;
   }
 
   // We only need .path, .hash256, and .bytes_downloaded as the other fields are
-  // not used by PluginVmImageManager::OnDownloadCompleted.
+  // not used by PluginVmInstaller::OnDownloadCompleted.
   download::CompletionInfo completion_info;
   completion_info.path = download_file_path_;
   completion_info.bytes_downloaded = total_bytes_downloaded_;
@@ -231,7 +229,7 @@ void PluginVmDriveImageDownloadService::DownloadActionCallback(
   secure_hash_service_->Finish(sha256_hash.data(), sha256_hash.size());
   completion_info.hash256 =
       base::HexEncode(sha256_hash.data(), sha256_hash.size());
-  plugin_vm_image_manager_->OnDownloadCompleted(completion_info);
+  plugin_vm_installer_->OnDownloadCompleted(completion_info);
 }
 
 void PluginVmDriveImageDownloadService::GetContentCallback(
@@ -239,8 +237,7 @@ void PluginVmDriveImageDownloadService::GetContentCallback(
     std::unique_ptr<std::string> content) {
   if (ErrorCodeIndicatesFailure(error_code)) {
     LOG(ERROR) << "Download failed with error code: " << (int)error_code;
-    plugin_vm_image_manager_->OnDownloadFailed(
-        ConvertToFailureReason(error_code));
+    plugin_vm_installer_->OnDownloadFailed(ConvertToFailureReason(error_code));
     return;
   }
   secure_hash_service_->Update(content->c_str(), content->length());
@@ -249,7 +246,7 @@ void PluginVmDriveImageDownloadService::GetContentCallback(
 
 void PluginVmDriveImageDownloadService::ProgressCallback(int64_t progress,
                                                          int64_t total) {
-  plugin_vm_image_manager_->OnDownloadProgressUpdated(progress, total);
+  plugin_vm_installer_->OnDownloadProgressUpdated(progress, total);
 }
 
 }  // namespace plugin_vm

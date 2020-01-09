@@ -1022,6 +1022,7 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
   model->GetRecentFiles(
       file_system_context.get(),
       Extension::GetBaseURLFromExtensionId(extension_id()),
+      chromeos::RecentModel::FileType::kAll,
       base::BindOnce(
           &FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles,
           this, params->restriction));

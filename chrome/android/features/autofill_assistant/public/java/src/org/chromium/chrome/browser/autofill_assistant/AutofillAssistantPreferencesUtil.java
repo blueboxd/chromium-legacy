@@ -7,9 +7,10 @@ package org.chromium.chrome.browser.autofill_assistant;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.settings.autofill_assistant.AutofillAssistantSettings;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 
 /** Autofill Assistant related preferences util class. */
+@SuppressWarnings("UseSharedPreferencesManagerFromChromeCheck")
 class AutofillAssistantPreferencesUtil {
     // Avoid instatiation by accident.
     private AutofillAssistantPreferencesUtil() {}
@@ -26,7 +27,7 @@ class AutofillAssistantPreferencesUtil {
     /** Checks whether the Autofill Assistant switch preference in settings is on. */
     static boolean isAutofillAssistantSwitchOn() {
         return ContextUtils.getAppSharedPreferences().getBoolean(
-                AutofillAssistantSettings.PREF_AUTOFILL_ASSISTANT_SWITCH, true);
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, true);
     }
 
     /** Checks whether the Autofill Assistant onboarding has been accepted. */
@@ -53,7 +54,7 @@ class AutofillAssistantPreferencesUtil {
     static void setInitialPreferences(boolean accept) {
         ContextUtils.getAppSharedPreferences()
                 .edit()
-                .putBoolean(AutofillAssistantSettings.PREF_AUTOFILL_ASSISTANT_SWITCH, accept)
+                .putBoolean(ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, accept)
                 .apply();
         ContextUtils.getAppSharedPreferences()
                 .edit()

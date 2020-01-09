@@ -26,13 +26,16 @@ import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.NavigationState;
+import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Example test that just starts the weblayer shell.
@@ -47,6 +50,7 @@ public class NavigationTest {
     private static final String URL1 = "data:text,foo";
     private static final String URL2 = "data:text,bar";
     private static final String URL3 = "data:text,baz";
+    private static final String URL4 = "data:text,bat";
 
     private static class Callback extends NavigationCallback {
         public static class NavigationCallbackHelper extends CallbackHelper {
@@ -275,6 +279,23 @@ public class NavigationTest {
 
     @Test
     @SmallTest
+    public void testGoToIndex() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        setNavigationCallback(activity);
+
+        mActivityTestRule.navigateAndWait(URL2);
+        mActivityTestRule.navigateAndWait(URL3);
+        mActivityTestRule.navigateAndWait(URL4);
+
+        // Navigate back to the 2nd url.
+        assertEquals(URL2, goToIndexAndReturnUrl(activity.getTab(), 1));
+
+        // Navigate forwards to the 4th url.
+        assertEquals(URL4, goToIndexAndReturnUrl(activity.getTab(), 3));
+    }
+
+    @Test
+    @SmallTest
     public void testSameDocument() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
         setNavigationCallback(activity);
@@ -395,5 +416,32 @@ public class NavigationTest {
         int currentCallCount = mCallback.onCompletedCallback.getCallCount();
         runOnUiThreadBlocking(navigateRunnable);
         mCallback.onCompletedCallback.assertCalledWith(currentCallCount, expectedUrl);
+    }
+
+    private String goToIndexAndReturnUrl(Tab tab, int index) throws Exception {
+        NavigationController navigationController =
+                runOnUiThreadBlocking(() -> tab.getNavigationController());
+
+        final CountDownLatch navigationComplete = new CountDownLatch(1);
+        final AtomicReference<String> navigationUrl = new AtomicReference<String>();
+        NavigationCallback navigationCallback = new NavigationCallback() {
+            @Override
+            public void onNavigationCompleted(Navigation navigation) {
+                navigationComplete.countDown();
+                navigationUrl.set(navigation.getUri().toString());
+            }
+        };
+
+        runOnUiThreadBlocking(() -> {
+            navigationController.registerNavigationCallback(navigationCallback);
+            navigationController.goToIndex(index);
+        });
+
+        navigationComplete.await();
+
+        runOnUiThreadBlocking(
+                () -> { navigationController.unregisterNavigationCallback(navigationCallback); });
+
+        return navigationUrl.get();
     }
 }

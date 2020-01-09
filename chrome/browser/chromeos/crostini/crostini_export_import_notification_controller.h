@@ -49,6 +49,9 @@ class CrostiniExportImportNotificationController
   message_center::Notification* get_notification() {
     return notification_.get();
   }
+  base::WeakPtr<CrostiniExportImportNotificationController> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
   // message_center::NotificationObserver:
   void Close(bool by_user) override;

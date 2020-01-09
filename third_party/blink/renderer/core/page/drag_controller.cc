@@ -1073,25 +1073,17 @@ static std::unique_ptr<DragImage> DragImageForImage(
       interpolation_quality = kInterpolationNone;
   }
 
-  RespectImageOrientationEnum should_respect_image_orientation =
+  RespectImageOrientationEnum respect_image_orientation =
       LayoutObject::ShouldRespectImageOrientation(element->GetLayoutObject());
-  ImageOrientation orientation;
 
-  if (should_respect_image_orientation == kRespectImageOrientation &&
-      image->IsBitmapImage())
-    orientation = ToBitmapImage(image)->CurrentFrameOrientation();
-
-  IntSize image_size = orientation.UsesWidthAsHeight()
-                           ? image->Size().TransposedSize()
-                           : image->Size();
-
+  IntSize image_size = image->Size(respect_image_orientation);
   FloatSize image_scale =
       DragImage::ClampedImageScale(image_size, image_element_size_in_pixels,
                                    MaxDragImageSize(device_scale_factor));
 
   if (image_size.Area() <= kMaxOriginalImageArea &&
       (drag_image = DragImage::Create(
-           image, should_respect_image_orientation, device_scale_factor,
+           image, respect_image_orientation, device_scale_factor,
            interpolation_quality, kDragImageAlpha, image_scale))) {
     IntSize original_size = image_element_size_in_pixels;
     origin = image_element_location;

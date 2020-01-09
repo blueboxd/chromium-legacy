@@ -103,6 +103,11 @@ extern const char kCollectionsCardPresentationStyleDescription[];
 extern const char kConfirmInfobarMessagesUIName[];
 extern const char kConfirmInfobarMessagesUIDescription[];
 
+// Title and description for the flag that makes the Browser being contained by
+// the TabGrid instead of being presented.
+extern const char kContainedBVCName[];
+extern const char kContainedBVCDescription[];
+
 // Title and description for the flag that enables Messages UI on
 // Crash Restore Infobars.
 extern const char kCrashRestoreInfobarMessagesUIName[];
@@ -226,10 +231,6 @@ extern const char kMarkHttpAsDescription[];
 // mobile mode by default.
 extern const char kMobileGoogleSRPName[];
 extern const char kMobileGoogleSRPDescription[];
-
-// Title and description for the flag to enable new Clear Browsing Data UI.
-extern const char kNewClearBrowsingDataUIName[];
-extern const char kNewClearBrowsingDataUIDescription[];
 
 // Title and description for the flag to display new omnibox popup.
 extern const char kNewOmniboxPopupLayoutName[];

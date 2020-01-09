@@ -35,6 +35,7 @@
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
 #include "components/exo/pointer.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
@@ -1846,6 +1847,28 @@ TEST_F(ClientControlledShellSurfaceTest, SetOrientationLock) {
   EXPECT_FALSE(controller->rotation_locked());
 
   EnableTabletMode(false);
+}
+
+TEST_F(ClientControlledShellSurfaceTest, SetClientAccessibilityId) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  EXPECT_FALSE(shell_surface->GetWidget());
+  shell_surface->SetClientAccessibilityId(0);
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  EXPECT_EQ(0, *GetShellClientAccessibilityId(window));
+  shell_surface->SetClientAccessibilityId(1);
+  EXPECT_EQ(1, *GetShellClientAccessibilityId(window));
+
+  shell_surface->SetClientAccessibilityId(-1);
+  EXPECT_FALSE(GetShellClientAccessibilityId(window));
 }
 
 // Tests adjust bounds locally should also request remote client bounds update.

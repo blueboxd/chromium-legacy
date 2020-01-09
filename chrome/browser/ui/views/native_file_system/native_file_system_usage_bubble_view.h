@@ -61,7 +61,6 @@ class NativeFileSystemUsageBubbleView : public LocationBarBubbleDelegateView {
 
   // LocationBarBubbleDelegateView:
   base::string16 GetAccessibleWindowTitle() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool ShouldShowCloseButton() const override;
   void Init() override;
   bool Cancel() override;

@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_BOX_STATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_BOX_STATE_H_
 
-#include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -67,6 +67,7 @@ struct NGInlineBoxState {
 
   Vector<NGPendingPositions> pending_descendants;
   bool include_used_fonts = false;
+  bool has_box_placeholder = false;
   bool needs_box_fragment = false;
 
   // True if this box has a metrics, including pending ones. Pending metrics
@@ -87,9 +88,6 @@ struct NGInlineBoxState {
 
   // 'text-top' offset for 'vertical-align'.
   LayoutUnit TextTop(FontBaseline baseline_type) const;
-
-  // Create a box fragment for this box.
-  void SetNeedsBoxFragment();
 
   // Returns if the text style can be added without open-tag.
   // Text with different font or vertical-align needs to be wrapped with an
@@ -217,14 +215,16 @@ class CORE_EXPORT NGInlineLayoutStateStack {
             unsigned end,
             const NGInlineItem* item,
             LogicalSize size)
-        : fragment_start(start), fragment_end(end), item(item), size(size) {}
+        : fragment_start(start),
+          fragment_end(end),
+          item(item),
+          rect(LogicalOffset(), size) {}
 
     BoxData(const BoxData& other, unsigned start, unsigned end)
         : fragment_start(start),
           fragment_end(end),
           item(other.item),
-          size(other.size),
-          offset(other.offset) {}
+          rect(other.rect) {}
 
     void SetFragmentRange(unsigned start_index, unsigned end_index) {
       fragment_start = start_index;
@@ -236,7 +236,7 @@ class CORE_EXPORT NGInlineLayoutStateStack {
     unsigned fragment_end;
 
     const NGInlineItem* item;
-    LogicalSize size;
+    LogicalRect rect;
 
     bool has_line_left_edge = false;
     bool has_line_right_edge = false;
@@ -247,7 +247,6 @@ class CORE_EXPORT NGInlineLayoutStateStack {
     LayoutUnit margin_border_padding_line_left;
     LayoutUnit margin_border_padding_line_right;
 
-    LogicalOffset offset;
     unsigned parent_box_data_index = 0;
     unsigned fragmented_box_data_index = 0;
 

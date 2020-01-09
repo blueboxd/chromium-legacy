@@ -42,6 +42,7 @@ class RecentModel : public KeyedService {
  public:
   using GetRecentFilesCallback =
       base::OnceCallback<void(const std::vector<RecentFile>& files)>;
+  using FileType = RecentSource::FileType;
 
   ~RecentModel() override;
 
@@ -57,6 +58,7 @@ class RecentModel : public KeyedService {
   // Results might be internally cached for better performance.
   void GetRecentFiles(storage::FileSystemContext* file_system_context,
                       const GURL& origin,
+                      FileType file_type,
                       GetRecentFilesCallback callback);
 
   // KeyedService overrides:

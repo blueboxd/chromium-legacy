@@ -400,10 +400,9 @@ class TypedURLSyncBridgeTest : public testing::Test {
     return bridge()->GetStorageKeyInternal(url);
   }
 
-  std::unique_ptr<EntityData> SpecificsToEntity(
-      const TypedUrlSpecifics& specifics) {
-    auto data = std::make_unique<EntityData>();
-    *data->specifics.mutable_typed_url() = specifics;
+  EntityData SpecificsToEntity(const TypedUrlSpecifics& specifics) {
+    EntityData data;
+    *data.specifics.mutable_typed_url() = specifics;
     return data;
   }
 

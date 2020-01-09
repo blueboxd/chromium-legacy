@@ -130,6 +130,11 @@ const char kConfirmInfobarMessagesUIName[] = "Confirm Infobars Messages UI";
 const char kConfirmInfobarMessagesUIDescription[] =
     "When enabled Confirm Infobars use the new Messages UI.";
 
+const char kContainedBVCName[] = "Contained Browser ViewController";
+const char kContainedBVCDescription[] =
+    "When enabled, the BrowserViewController is contained by the TabGrid "
+    "instead of being presented";
+
 const char kCrashRestoreInfobarMessagesUIName[] =
     "Crash Restore Infobars Messages UI";
 const char kCrashRestoreInfobarMessagesUIDescription[] =
@@ -260,10 +265,6 @@ const char kMobileGoogleSRPName[] = "Mobile version of Google SRP by default";
 const char kMobileGoogleSRPDescription[] =
     "Request the Mobile version of Google SRP by default when the desktop mode "
     "is requested by default.";
-
-const char kNewClearBrowsingDataUIName[] = "Clear Browsing Data UI";
-const char kNewClearBrowsingDataUIDescription[] =
-    "Enable new Clear Browsing Data UI.";
 
 const char kNewOmniboxPopupLayoutName[] = "New omnibox popup";
 const char kNewOmniboxPopupLayoutDescription[] =

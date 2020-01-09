@@ -127,25 +127,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-  self.updatesCollectionView = YES;
-  self.defaultLayout.animatesItemUpdates = YES;
-  [self.collectionView reloadData];
-  // Selection is invalid if there are no items.
-  if (self.items.count == 0) {
-    [self animateEmptyStateIn];
-    return;
-  }
-  [self.collectionView selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                                    animated:animated
-                              scrollPosition:UICollectionViewScrollPositionTop];
-  // Update the delegate, in case it wasn't set when |items| was populated.
-  [self.delegate gridViewController:self didChangeItemCount:self.items.count];
-  [self removeEmptyStateAnimated:NO];
-  self.lastInsertedItemID = nil;
+  [self contentWillAppearAnimated:animated];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
-  self.updatesCollectionView = NO;
+  [self contentWillDisappear];
   [super viewWillDisappear:animated];
 }
 
@@ -245,6 +231,28 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // Stop animating the collection view to prevent the insertion animation from
   // interfering with the tab presentation animation.
   self.defaultLayout.animatesItemUpdates = NO;
+}
+
+- (void)contentWillAppearAnimated:(BOOL)animated {
+  self.updatesCollectionView = YES;
+  self.defaultLayout.animatesItemUpdates = YES;
+  [self.collectionView reloadData];
+  // Selection is invalid if there are no items.
+  if (self.items.count == 0) {
+    [self animateEmptyStateIn];
+    return;
+  }
+  [self.collectionView selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                                    animated:animated
+                              scrollPosition:UICollectionViewScrollPositionTop];
+  // Update the delegate, in case it wasn't set when |items| was populated.
+  [self.delegate gridViewController:self didChangeItemCount:self.items.count];
+  [self removeEmptyStateAnimated:NO];
+  self.lastInsertedItemID = nil;
+}
+
+- (void)contentWillDisappear {
+  self.updatesCollectionView = NO;
 }
 
 #pragma mark - UICollectionViewDataSource

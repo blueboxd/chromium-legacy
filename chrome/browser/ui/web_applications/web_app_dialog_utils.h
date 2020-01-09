@@ -10,6 +10,7 @@
 
 enum class WebappInstallSource;
 class Browser;
+class Profile;
 
 namespace content {
 class WebContents;
@@ -22,17 +23,22 @@ enum class InstallResultCode;
 // TODO(loyso): Rework these functions (API). Move all of them into
 // WebAppDialogManager.
 
-// Returns true if a WebApp installation is allowed for the current page.
+// Returns whether a WebApp installation is allowed for the current page.
 bool CanCreateWebApp(const Browser* browser);
+
+// Returns whether the current profile is allowed to pop out a web app into a
+// separate window. Does not check whether any particular page can pop out.
+bool CanPopOutWebApp(Profile* profile);
 
 using WebAppInstalledCallback =
     base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
 
-// Initiates install of a WebApp for the current page.
-void CreateWebAppFromCurrentWebContents(
-    Browser* browser,
-    bool force_shortcut_app,
-    WebAppInstalledCallback installed_callback);
+// Initiates user install of a WebApp for the current page.
+// If |force_shortcut_app| is true, the current page will be installed even if
+// the site does not meet installability requirements (see
+// |AppBannerManager::PerformInstallableCheck|).
+void CreateWebAppFromCurrentWebContents(Browser* browser,
+                                        bool force_shortcut_app);
 
 // Starts install of a WebApp for a given |web_contents|, initiated from
 // a promotional banner or omnibox install icon.

@@ -58,9 +58,6 @@
 @property(nonatomic, strong)
     ChromeActivityOverlayCoordinator* chromeActivityOverlayCoordinator;
 
-// Reference to clear browsing data button for positioning popover confirmation
-// dialog.
-@property(nonatomic, strong) UIButton* clearBrowsingDataButton;
 @property(nonatomic, readonly, strong)
     UIBarButtonItem* clearBrowsingDataBarButton;
 
@@ -78,7 +75,6 @@
 @synthesize actionSheetCoordinator = _actionSheetCoordinator;
 @synthesize alertCoordinator = _alertCoordinator;
 @synthesize browserState = _browserState;
-@synthesize clearBrowsingDataButton = _clearBrowsingDataButton;
 @synthesize clearBrowsingDataBarButton = _clearBrowsingDataBarButton;
 @synthesize dataManager = _dataManager;
 @synthesize dispatcher = _dispatcher;
@@ -92,9 +88,8 @@
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
     _browserState = browserState;
-    _dataManager = [[ClearBrowsingDataManager alloc]
-        initWithBrowserState:browserState
-                    listType:ClearBrowsingDataListType::kListTypeTableView];
+    _dataManager =
+        [[ClearBrowsingDataManager alloc] initWithBrowserState:browserState];
     _dataManager.consumer = self;
   }
   return self;
@@ -226,18 +221,6 @@
           UIEdgeInsetsMake(0, tableViewTextLinkCell.bounds.size.width, 0, 0);
       break;
     }
-    case ItemTypeClearBrowsingDataButton: {
-      TableViewTextButtonCell* tableViewTextButtonCell =
-          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cellToReturn);
-      tableViewTextButtonCell.selectionStyle =
-          UITableViewCellSelectionStyleNone;
-      [tableViewTextButtonCell.button
-                 addTarget:self
-                    action:@selector(showClearBrowsingDataAlertController:)
-          forControlEvents:UIControlEventTouchUpInside];
-      self.clearBrowsingDataButton = tableViewTextButtonCell.button;
-      break;
-    }
     case ItemTypeDataTypeBrowsingHistory:
     case ItemTypeDataTypeCookiesSiteData:
     case ItemTypeDataTypeCache:
@@ -299,30 +282,6 @@
       break;
   }
   [self updateToolbarButtons];
-}
-
-- (void)tableView:(UITableView*)tableView
-    legacyDidSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  DCHECK(item);
-  switch (item.type) {
-    case ItemTypeDataTypeBrowsingHistory:
-    case ItemTypeDataTypeCookiesSiteData:
-    case ItemTypeDataTypeCache:
-    case ItemTypeDataTypeSavedPasswords:
-    case ItemTypeDataTypeAutofill: {
-      TableViewClearBrowsingDataItem* clearBrowsingDataItem =
-          base::mac::ObjCCastStrict<TableViewClearBrowsingDataItem>(item);
-      clearBrowsingDataItem.checked = !clearBrowsingDataItem.checked;
-      self.browserState->GetPrefs()->SetBoolean(clearBrowsingDataItem.prefName,
-                                                clearBrowsingDataItem.checked);
-      [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
-      break;
-    }
-    default:
-      break;
-  }
 }
 
 #pragma mark - TableViewTextLinkCellDelegate

@@ -141,8 +141,8 @@ js_library("power") {
 
 js_library("storage") {
   deps = [
+    "..:route_origin_behavior",
     "../..:route",
-    "../..:route_origin_behavior",
     "../localized_link:localized_link",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:load_time_data",

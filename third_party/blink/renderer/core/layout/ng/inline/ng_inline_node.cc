@@ -528,6 +528,11 @@ class NGInlineNodeDataEditor final {
     if (layout_text_.StyleRef().TextSecurity() != ETextSecurity::kNone)
       return nullptr;
 
+    // It is hard to figure differences of bidi control codes before/after
+    // editing. See http://crbug.com/1039143
+    if (layout_text_.HasBidiControlInlineItems())
+      return nullptr;
+
     // Note: We should compute offset mapping before calling
     // |LayoutBlockFlow::TakeNGInlineNodeData()|
     const NGOffsetMapping* const offset_mapping =

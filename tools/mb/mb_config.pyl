@@ -535,7 +535,6 @@
     'chromium.swarm': {
       'Android N5 Swarm': 'android_release_bot_minimal_symbols',
       'Android N5X Swarm': 'android_release_bot_minimal_symbols_arm64',
-      'ChromeOS Swarm': 'cros_chrome_sdk',
       'Linux Swarm': 'release_bot_minimal_symbols',
       'Mac Swarm': 'release_bot_mac_strip_minimal_symbols',
       'Windows Swarm': 'release_bot_minimal_symbols',

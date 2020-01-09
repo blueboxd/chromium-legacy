@@ -163,6 +163,15 @@ bool NGInlineCursor::HasSoftWrapToNextLine() const {
   return !break_token.IsFinished() && !break_token.IsForcedBreak();
 }
 
+bool NGInlineCursor::IsInlineBox() const {
+  if (current_paint_fragment_)
+    return current_paint_fragment_->PhysicalFragment().IsInlineBox();
+  if (current_item_)
+    return current_item_->IsInlineBox();
+  NOTREACHED();
+  return false;
+}
+
 bool NGInlineCursor::IsAtomicInline() const {
   if (current_paint_fragment_)
     return current_paint_fragment_->PhysicalFragment().IsAtomicInline();
@@ -526,10 +535,10 @@ NGTextOffset NGInlineCursor::CurrentTextOffset() const {
   if (current_paint_fragment_) {
     const auto& text_fragment =
         To<NGPhysicalTextFragment>(current_paint_fragment_->PhysicalFragment());
-    return {text_fragment.StartOffset(), text_fragment.EndOffset()};
+    return text_fragment.TextOffset();
   }
   if (current_item_)
-    return {current_item_->StartOffset(), current_item_->EndOffset()};
+    return current_item_->TextOffset();
   NOTREACHED();
   return {};
 }
@@ -713,6 +722,17 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
   MoveToFirst();
   while (IsNotNull() && !IsPartOfCulledInlineBox(*layout_inline_))
     MoveToNext();
+}
+
+void NGInlineCursor::MoveTo(const NGFragmentItem& fragment_item) {
+  DCHECK(!root_paint_fragment_ && !current_paint_fragment_);
+  MoveTo(*fragment_item.GetLayoutObject());
+  while (IsNotNull()) {
+    if (CurrentItem() == &fragment_item)
+      return;
+    MoveToNext();
+  }
+  NOTREACHED();
 }
 
 void NGInlineCursor::MoveTo(const NGInlineCursor& cursor) {

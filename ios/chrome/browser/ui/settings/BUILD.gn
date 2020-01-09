@@ -8,8 +8,6 @@ source_set("settings_root") {
     "bar_button_activity_indicator.h",
     "bar_button_activity_indicator.mm",
     "settings_navigation_controller.h",
-    "settings_root_collection_view_controller.h",
-    "settings_root_collection_view_controller.mm",
     "settings_root_table_view_controller.h",
     "settings_root_table_view_controller.mm",
     "settings_root_view_controlling.h",
@@ -19,9 +17,6 @@ source_set("settings_root") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/collection_view",
-    "//ios/chrome/browser/ui/collection_view/cells",
-    "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/settings/cells",
@@ -33,7 +28,6 @@ source_set("settings_root") {
     "//ios/chrome/common/ui_util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/user_feedback",
-    "//ios/third_party/material_components_ios",
     "//ui/base",
   ]
 }
@@ -66,8 +60,6 @@ source_set("settings") {
     "handoff_table_view_controller.mm",
     "import_data_table_view_controller.h",
     "import_data_table_view_controller.mm",
-    "material_cell_catalog_view_controller.h",
-    "material_cell_catalog_view_controller.mm",
     "privacy_table_view_controller.h",
     "privacy_table_view_controller.mm",
     "search_engine_table_view_controller.h",
@@ -154,7 +146,6 @@ source_set("settings") {
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication/cells",
     "//ios/chrome/browser/ui/autofill/cells",
-    "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/content_suggestions/cells",
@@ -196,13 +187,9 @@ source_set("settings") {
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/public/provider/chrome/browser/voice",
-    "//ios/third_party/material_components_ios",
     "//net",
     "//ui/base",
     "//url",
-  ]
-  public_deps = [
-    "//ios/chrome/browser/ui/collection_view/cells",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/authentication" ]
   libs = [
@@ -277,7 +264,6 @@ source_set("unit_tests") {
     "privacy_table_view_controller_unittest.mm",
     "search_engine_table_view_controller_unittest.mm",
     "settings_navigation_controller_unittest.mm",
-    "settings_root_collection_view_controller_unittest.mm",
     "settings_root_table_view_controller_unittest.mm",
     "translate_table_view_controller_unittest.mm",
     "voice_search_table_view_controller_unittest.mm",
@@ -322,9 +308,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui:feature_flags",
-    "//ios/chrome/browser/ui/collection_view",
-    "//ios/chrome/browser/ui/collection_view:test_support",
-    "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/table_view",
@@ -337,7 +320,6 @@ source_set("unit_tests") {
     "//ios/chrome/test/app:test_support",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/voice",
-    "//ios/third_party/material_components_ios",
     "//ios/web/public/test",
     "//net",
     "//net:test_support",

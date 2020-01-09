@@ -1708,6 +1708,27 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
                                  physical_offset, hit_test.action);
 }
 
+bool NGBoxFragmentPainter::HitTestChildBoxItem(
+    const HitTestContext& hit_test,
+    const NGFragmentItem& item,
+    const NGInlineBackwardCursor& cursor) {
+  DCHECK_EQ(&item, cursor.CurrentItem());
+
+  if (const NGPhysicalBoxFragment* child_fragment = item.BoxFragment()) {
+    const PhysicalOffset child_offset =
+        hit_test.inline_root_offset + item.Offset();
+    return HitTestChildBoxFragment(hit_test, *child_fragment, cursor,
+                                   child_offset);
+  }
+
+  DCHECK(item.GetLayoutObject()->IsLayoutInline());
+  DCHECK(!ToLayoutInline(item.GetLayoutObject())->ShouldCreateBoxFragment());
+  if (NGInlineCursor descendants = cursor.CursorForDescendants())
+    return HitTestItemsChildren(hit_test, descendants);
+
+  return false;
+}
+
 bool NGBoxFragmentPainter::HitTestChildren(
     const HitTestContext& hit_test,
     const PhysicalOffset& accumulated_offset) {
@@ -1813,20 +1834,13 @@ bool NGBoxFragmentPainter::HitTestItemsChildren(
                                  child_offset))
         return true;
     } else if (item->Type() == NGFragmentItem::kBox) {
-      if (const NGPhysicalBoxFragment* child_fragment = item->BoxFragment()) {
-        const PhysicalOffset child_offset =
-            hit_test.inline_root_offset + item->Offset();
-        if (HitTestChildBoxFragment(hit_test, *child_fragment, cursor,
-                                    child_offset))
-          return true;
-      }
+      if (HitTestChildBoxItem(hit_test, *item, cursor))
+        return true;
     } else {
       NOTREACHED();
     }
 
     cursor.MoveToPreviousSibling();
-
-    // TODO(kojii): Implement hit-testing culled inline box.
   }
 
   return false;

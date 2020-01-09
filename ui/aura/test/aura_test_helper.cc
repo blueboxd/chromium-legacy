@@ -34,8 +34,6 @@
 
 #if defined(OS_WIN)
 #include "base/sequenced_task_runner.h"
-#include "base/synchronization/waitable_event.h"
-#include "base/test/bind_test_util.h"
 #include "ui/aura/native_window_occlusion_tracker_win.h"
 #endif
 
@@ -168,7 +166,7 @@ void AuraTestHelper::TearDown() {
   // task runner. Since ThreadPool is destroyed together with TaskEnvironment,
   // NativeWindowOcclusionTrackerWin instance must be deleted as well and
   // recreated on demand in other test.
-  DeleteNativeWindowOcclusionTrackerWin();
+  NativeWindowOcclusionTrackerWin::DeleteInstanceForTesting();
 #endif
 }
 
@@ -186,33 +184,6 @@ client::CaptureClient* AuraTestHelper::capture_client() {
 Env* AuraTestHelper::GetEnv() {
   return env_ ? env_.get() : Env::HasInstance() ? Env::GetInstance() : nullptr;
 }
-
-#if defined(OS_WIN)
-void AuraTestHelper::DeleteNativeWindowOcclusionTrackerWin() {
-  NativeWindowOcclusionTrackerWin** global_ptr =
-      NativeWindowOcclusionTrackerWin::GetInstanceForTesting();
-  if (NativeWindowOcclusionTrackerWin* tracker = *global_ptr) {
-    // WindowOcclusionCalculator must be deleted on its sequence. Wait until
-    // it's deleted and then delete the tracker.
-    base::WaitableEvent waitable_event;
-    DCHECK(
-        !tracker->update_occlusion_task_runner_->RunsTasksInCurrentSequence());
-    tracker->update_occlusion_task_runner_->PostTask(
-        FROM_HERE, base::BindLambdaForTesting([tracker, &waitable_event]() {
-          if (tracker->occlusion_calculator_) {
-            tracker->occlusion_calculator_->root_window_hwnds_occlusion_state_
-                .clear();
-            tracker->occlusion_calculator_->UnregisterEventHooks();
-            tracker->occlusion_calculator_.reset();
-          }
-          waitable_event.Signal();
-        }));
-    waitable_event.Wait();
-    delete tracker;
-    *global_ptr = nullptr;
-  }
-}
-#endif  // defined(OS_WIN)
 
 }  // namespace test
 }  // namespace aura

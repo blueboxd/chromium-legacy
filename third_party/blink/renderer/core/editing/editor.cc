@@ -634,13 +634,13 @@ void Editor::Redo() {
 
 void Editor::SetBaseWritingDirection(WritingDirection direction) {
   Element* focused_element = GetFrame().GetDocument()->FocusedElement();
-  if (IsTextControl(focused_element)) {
+  if (auto* text_control = ToTextControlOrNull(focused_element)) {
     if (direction == WritingDirection::kNatural)
       return;
-    focused_element->setAttribute(
+    text_control->setAttribute(
         html_names::kDirAttr,
         direction == WritingDirection::kLeftToRight ? "ltr" : "rtl");
-    focused_element->DispatchInputEvent();
+    text_control->DispatchInputEvent();
     return;
   }
 

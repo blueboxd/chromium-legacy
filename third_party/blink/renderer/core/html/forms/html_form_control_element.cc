@@ -243,10 +243,6 @@ void HTMLFormControlElement::DidChangeForm() {
     formOwner()->InvalidateDefaultButtonStyle();
 }
 
-void HTMLFormControlElement::DispatchChangeEvent() {
-  DispatchScopedEvent(*Event::CreateBubble(event_type_names::kChange));
-}
-
 HTMLFormElement* HTMLFormControlElement::formOwner() const {
   return ListedElement::Form();
 }

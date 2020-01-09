@@ -179,8 +179,8 @@ void ProcessorEntity::RecordEntityUpdateLatency(int64_t update_version,
 
 void ProcessorEntity::RecordIgnoredUpdate(const UpdateResponseData& update) {
   DCHECK(metadata_.server_id().empty() ||
-         metadata_.server_id() == update.entity->id);
-  metadata_.set_server_id(update.entity->id);
+         metadata_.server_id() == update.entity.id);
+  metadata_.set_server_id(update.entity.id);
   metadata_.set_server_version(update.response_version);
   // Either these already matched, acked was just bumped to squash a pending
   // commit and this should follow, or the pending commit needs to be requeued.
@@ -196,10 +196,10 @@ void ProcessorEntity::RecordIgnoredUpdate(const UpdateResponseData& update) {
 void ProcessorEntity::RecordAcceptedUpdate(const UpdateResponseData& update) {
   DCHECK(!IsUnsynced());
   RecordIgnoredUpdate(update);
-  metadata_.set_is_deleted(update.entity->is_deleted());
+  metadata_.set_is_deleted(update.entity.is_deleted());
   metadata_.set_modification_time(
-      TimeToProtoTime(update.entity->modification_time));
-  UpdateSpecificsHash(update.entity->specifics);
+      TimeToProtoTime(update.entity.modification_time));
+  UpdateSpecificsHash(update.entity.specifics);
 }
 
 void ProcessorEntity::RecordForcedUpdate(const UpdateResponseData& update) {

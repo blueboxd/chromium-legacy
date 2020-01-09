@@ -199,8 +199,8 @@ TEST_F(ReadingListStoreTest, SyncMergeOneEntry) {
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
       entry.AsReadingListSpecifics();
 
-  auto data = std::make_unique<syncer::EntityData>();
-  *data->specifics.mutable_reading_list() = *specifics;
+  syncer::EntityData data;
+  *data.specifics.mutable_reading_list() = *specifics;
 
   remote_input.push_back(syncer::EntityChange::CreateAdd(
       "http://read.example.com/", std::move(data)));
@@ -223,8 +223,8 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneAdd) {
   entry.SetRead(true, AdvanceAndGetTime(&clock_));
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
       entry.AsReadingListSpecifics();
-  auto data = std::make_unique<syncer::EntityData>();
-  *data->specifics.mutable_reading_list() = *specifics;
+  syncer::EntityData data;
+  *data.specifics.mutable_reading_list() = *specifics;
 
   syncer::EntityChangeList add_changes;
 
@@ -248,8 +248,8 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneMerge) {
   new_entry.SetRead(true, AdvanceAndGetTime(&clock_));
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
       new_entry.AsReadingListSpecifics();
-  auto data = std::make_unique<syncer::EntityData>();
-  *data->specifics.mutable_reading_list() = *specifics;
+  syncer::EntityData data;
+  *data.specifics.mutable_reading_list() = *specifics;
 
   EXPECT_CALL(processor_, Put("http://unread.example.com/", _, _));
 
@@ -277,8 +277,8 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneIgnored) {
 
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
       old_entry.AsReadingListSpecifics();
-  auto data = std::make_unique<syncer::EntityData>();
-  *data->specifics.mutable_reading_list() = *specifics;
+  syncer::EntityData data;
+  *data.specifics.mutable_reading_list() = *specifics;
 
   EXPECT_CALL(processor_, Put("http://unread.example.com/", _, _));
 

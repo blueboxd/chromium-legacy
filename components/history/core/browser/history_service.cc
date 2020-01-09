@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The history system runs on a background sequence so that potentially slow
+// The history system runs on a background thread so that potentially slow
 // database operations don't delay the browser. This backend processing is
 // represented by HistoryBackend. The HistoryService's job is to dispatch to
 // that thread.
 //
-// Main thread                       backend_task_runner_
+// Main thread                       History thread
 // -----------                       --------------
 // HistoryService <----------------> HistoryBackend
 //                                   -> HistoryDatabase
@@ -71,7 +71,7 @@ const char* kHistoryThreadName = "Chrome_HistoryThread";
 
 // static
 const base::Feature HistoryService::kHistoryServiceUsesTaskScheduler{
-    "HistoryServiceUsesTaskScheduler", base::FEATURE_ENABLED_BY_DEFAULT};
+    "HistoryServiceUsesTaskScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Sends messages from the backend to us on the main thread. This must be a
 // separate class from the history service so that it can hold a reference to

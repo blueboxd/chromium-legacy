@@ -50,11 +50,12 @@ class CORE_EXPORT HTMLFormControlElementWithState
   // This is only used in tests, to fake the user's action
   void SetUserHasEditedTheFieldForTest() { user_has_edited_the_field_ = true; }
 
+  void DispatchInputEvent();
+  void DispatchChangeEvent();
+
  protected:
   bool user_has_edited_the_field_ = false;
   HTMLFormControlElementWithState(const QualifiedName& tag_name, Document&);
-
-  void QueueInputAndChangeEvents();
 
   void FinishParsingChildren() override;
   bool IsFormControlElementWithState() const final;

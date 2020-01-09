@@ -200,16 +200,22 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
-    decoder_.reset(new H264Decoder(
-        std::make_unique<H264VaapiVideoDecoderDelegate>(this, vaapi_wrapper_),
-        profile, config.container_color_space));
+    auto accelerator =
+        std::make_unique<H264VaapiVideoDecoderDelegate>(this, vaapi_wrapper_);
+    decoder_delegate_ = accelerator.get();
+    decoder_.reset(new H264Decoder(std::move(accelerator), profile,
+                                   config.container_color_space));
   } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
-    decoder_.reset(new VP8Decoder(
-        std::make_unique<VP8VaapiVideoDecoderDelegate>(this, vaapi_wrapper_)));
+    auto accelerator =
+        std::make_unique<VP8VaapiVideoDecoderDelegate>(this, vaapi_wrapper_);
+    decoder_delegate_ = accelerator.get();
+    decoder_.reset(new VP8Decoder(std::move(accelerator)));
   } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
-    decoder_.reset(new VP9Decoder(
-        std::make_unique<VP9VaapiVideoDecoderDelegate>(this, vaapi_wrapper_),
-        profile, config.container_color_space));
+    auto accelerator =
+        std::make_unique<VP9VaapiVideoDecoderDelegate>(this, vaapi_wrapper_);
+    decoder_delegate_ = accelerator.get();
+    decoder_.reset(new VP9Decoder(std::move(accelerator), profile,
+                                  config.container_color_space));
   } else {
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile);
     return false;
@@ -445,20 +451,14 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
 
     switch (res) {
       case AcceleratedVideoDecoder::kConfigChange: {
-        gfx::Size new_size = decoder_->GetPicSize();
-        if (profile_ != decoder_->GetProfile() &&
-            requested_pic_size_ == new_size) {
-          // Profile only is changed.
-          // TODO(crbug.com/1022246): Handle profile change.
-          continue;
-        }
         VLOGF(2) << "Decoder requesting a new set of surfaces";
         task_runner_->PostTask(
             FROM_HERE,
             base::BindOnce(
                 &VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange,
-                weak_this_, decoder_->GetRequiredNumOfPictures(), new_size,
-                decoder_->GetNumReferenceFrames(), decoder_->GetVisibleRect()));
+                weak_this_, decoder_->GetRequiredNumOfPictures(),
+                decoder_->GetPicSize(), decoder_->GetNumReferenceFrames(),
+                decoder_->GetVisibleRect()));
         // We'll get rescheduled once ProvidePictureBuffers() finishes.
         return;
       }
@@ -566,11 +566,25 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
 
   // All surfaces released, destroy them and dismiss all PictureBuffers.
   awaiting_va_surfaces_recycle_ = false;
-  if (buffer_allocation_mode_ != BufferAllocationMode::kNone) {
-    vaapi_wrapper_->DestroyContextAndSurfaces(std::vector<VASurfaceID>(
-        available_va_surfaces_.begin(), available_va_surfaces_.end()));
+
+  VideoCodecProfile new_profile = decoder_->GetProfile();
+  if (profile_ != new_profile) {
+    DCHECK(decoder_delegate_);
+    profile_ = new_profile;
+    auto new_vaapi_wrapper = VaapiWrapper::CreateForVideoCodec(
+        VaapiWrapper::kDecode, profile_, base::Bind(&ReportToUMA, VAAPI_ERROR));
+    RETURN_AND_NOTIFY_ON_FAILURE(new_vaapi_wrapper.get(),
+                                 "Failed creating VaapiWrapper",
+                                 INVALID_ARGUMENT, );
+    decoder_delegate_->set_vaapi_wrapper(new_vaapi_wrapper.get());
+    vaapi_wrapper_ = std::move(new_vaapi_wrapper);
   } else {
-    vaapi_wrapper_->DestroyContext();
+    if (buffer_allocation_mode_ != BufferAllocationMode::kNone) {
+      vaapi_wrapper_->DestroyContextAndSurfaces(std::vector<VASurfaceID>(
+          available_va_surfaces_.begin(), available_va_surfaces_.end()));
+    } else {
+      vaapi_wrapper_->DestroyContext();
+    }
   }
   available_va_surfaces_.clear();
 

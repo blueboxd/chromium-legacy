@@ -84,6 +84,15 @@ public final class NavigationController {
         }
     }
 
+    public void goToIndex(int index) {
+        ThreadCheck.ensureOnUiThread();
+        try {
+            mNavigationController.goToIndex(index);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     public void reload() {
         ThreadCheck.ensureOnUiThread();
         try {

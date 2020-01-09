@@ -32,15 +32,6 @@ WebAppInstallManager::WebAppInstallManager(Profile* profile)
 
 WebAppInstallManager::~WebAppInstallManager() = default;
 
-bool WebAppInstallManager::CanInstallWebApp(
-    content::WebContents* web_contents) {
-  Profile* web_contents_profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
-  return AreWebAppsUserInstallable(web_contents_profile) &&
-         IsValidWebAppUrl(web_contents->GetLastCommittedURL());
-}
-
 void WebAppInstallManager::LoadWebAppAndCheckInstallability(
     const GURL& web_app_url,
     WebappInstallSource install_source,

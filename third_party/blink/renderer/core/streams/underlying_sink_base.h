@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class ScriptValue;
 class ScriptState;
 
@@ -26,22 +27,29 @@ class CORE_EXPORT UnderlyingSinkBase : public ScriptWrappable {
   // |controller| and are called from IDL. Also we define virtual |start| and
   // |write| which take WritableStreamDefaultController.
   virtual ScriptPromise start(ScriptState*,
-                              WritableStreamDefaultController*) = 0;
+                              WritableStreamDefaultController*,
+                              ExceptionState&) = 0;
   virtual ScriptPromise write(ScriptState*,
                               ScriptValue chunk,
-                              WritableStreamDefaultController*) = 0;
-  virtual ScriptPromise close(ScriptState*) = 0;
-  virtual ScriptPromise abort(ScriptState*, ScriptValue reason) = 0;
+                              WritableStreamDefaultController*,
+                              ExceptionState&) = 0;
+  virtual ScriptPromise close(ScriptState*, ExceptionState&) = 0;
+  virtual ScriptPromise abort(ScriptState*,
+                              ScriptValue reason,
+                              ExceptionState&) = 0;
 
-  ScriptPromise start(ScriptState* script_state, ScriptValue controller) {
+  ScriptPromise start(ScriptState* script_state,
+                      ScriptValue controller,
+                      ExceptionState& exception_state) {
     controller_ = WritableStreamDefaultController::From(controller);
-    return start(script_state, controller_);
+    return start(script_state, controller_, exception_state);
   }
   ScriptPromise write(ScriptState* script_state,
                       ScriptValue chunk,
-                      ScriptValue controller) {
+                      ScriptValue controller,
+                      ExceptionState& exception_state) {
     DCHECK(controller_);
-    return write(script_state, chunk, controller_);
+    return write(script_state, chunk, controller_, exception_state);
   }
 
   void Trace(Visitor* visitor) override {

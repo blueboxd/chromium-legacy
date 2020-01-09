@@ -105,10 +105,14 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::HandleCloseTag(
     box->EnsureTextMetrics(*item.Style(), baseline_type_);
   box = box_states_->OnCloseTag(&line_box_, box, baseline_type_,
                                 item.HasEndEdge());
-  // Just clear |NeedsLayout| flags. Culled inline boxes do not need paint
-  // invalidations. If this object produces box fragments,
-  // |NGInlineBoxStateStack| takes care of invalidations.
-  item.GetLayoutObject()->ClearNeedsLayoutWithoutPaintInvalidation();
+  if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    // Just clear |NeedsLayout| flags. Culled inline boxes do not need paint
+    // invalidations. If this object produces box fragments,
+    // |NGInlineBoxStateStack| takes care of invalidations.
+    item.GetLayoutObject()->ClearNeedsLayoutWithoutPaintInvalidation();
+  } else {
+    item.GetLayoutObject()->ClearNeedsLayout();
+  }
   return box;
 }
 
@@ -547,7 +551,7 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
     if (box->StyleRef().IsOriginalDisplayInlineType()) {
       // An inline-level OOF element positions itself within the line, at the
       // position it would have been if it was in-flow.
-      static_offset.inline_offset = child.offset.inline_offset;
+      static_offset.inline_offset = child.rect.offset.inline_offset;
 
       // The static-position of inline-level OOF-positioned nodes depends on
       // previous floats (if any).
@@ -571,7 +575,7 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
       }
     }
 
-    child.offset = static_offset;
+    child.rect.offset = static_offset;
   }
 
   if (UNLIKELY(has_rtl_block_level_out_of_flow_objects)) {
@@ -584,7 +588,7 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
       }
       if (has_preceding_inline_level_content &&
           !box->StyleRef().IsOriginalDisplayInlineType()) {
-        child.offset.block_offset += line_height;
+        child.rect.offset.block_offset += line_height;
       }
     }
   }
@@ -645,8 +649,8 @@ void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
       block_offset = -fragment.BlockSize() - block_offset;
     }
 
-    child.offset = {child.bfc_offset.line_offset - bfc_line_offset,
-                    block_offset};
+    child.rect.offset = {child.bfc_offset.line_offset - bfc_line_offset,
+                         block_offset};
   }
 }
 

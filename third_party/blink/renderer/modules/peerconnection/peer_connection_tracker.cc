@@ -117,7 +117,7 @@ String SerializeAnswerOptions(blink::RTCAnswerOptionsPlatform* options) {
   return result.ToString();
 }
 
-String SerializeMediaStreamIds(const blink::WebVector<String>& stream_ids) {
+String SerializeMediaStreamIds(const Vector<String>& stream_ids) {
   if (!stream_ids.size())
     return "[]";
   StringBuilder result;

@@ -90,8 +90,8 @@ js_library("internet_known_networks_page") {
 js_library("internet_subpage") {
   deps = [
     ":internet_page_browser_proxy",
+    "..:route_origin_behavior",
     "../..:route",
-    "../..:route_origin_behavior",
     "../localized_link:localized_link",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",

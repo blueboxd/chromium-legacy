@@ -50,6 +50,18 @@ void TrustedVaultClientAndroid::FetchKeysCompleted(
   std::move(cb).Run(converted_keys);
 }
 
+void TrustedVaultClientAndroid::MarkKeysAsStaleCompleted(JNIEnv* env,
+                                                         jboolean result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(ongoing_mark_keys_as_stale_) << "No ongoing MarkKeysAsStale() request";
+
+  // Make a copy of the callback and reset |ongoing_mark_keys_as_stale_| before
+  // invoking the callback, in case it has side effects.
+  base::OnceCallback<void(bool)> cb = std::move(ongoing_mark_keys_as_stale_);
+
+  std::move(cb).Run(!!result);
+}
+
 std::unique_ptr<TrustedVaultClientAndroid::Subscription>
 TrustedVaultClientAndroid::AddKeysChangedObserver(
     const base::RepeatingClosure& cb) {
@@ -62,6 +74,8 @@ void TrustedVaultClientAndroid::FetchKeys(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!ongoing_fetch_keys_)
       << "Only one FetchKeys() request is allowed at any time";
+  DCHECK(!ongoing_mark_keys_as_stale_)
+      << "FetchKeys() not allowed while ongoing MarkKeysAsStale()";
 
   // Store for later completion when Java invokes FetchKeysCompleted().
   ongoing_fetch_keys_ =
@@ -82,4 +96,26 @@ void TrustedVaultClientAndroid::StoreKeys(
     const std::vector<std::vector<uint8_t>>& keys) {
   // Not supported on Android, where keys are fetched outside the browser.
   NOTREACHED();
+}
+
+void TrustedVaultClientAndroid::MarkKeysAsStale(
+    const std::string& gaia_id,
+    base::OnceCallback<void(bool)> cb) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(cb);
+  DCHECK(!ongoing_mark_keys_as_stale_)
+      << "Only one MarkKeysAsStale() request is allowed at any time";
+  DCHECK(!ongoing_fetch_keys_)
+      << "MarkKeysAsStale() not allowed while ongoing FetchKeys()";
+
+  // Store for later completion when Java invokes MarkKeysAsStaleCompleted().
+  ongoing_mark_keys_as_stale_ = std::move(cb);
+
+  JNIEnv* const env = base::android::AttachCurrentThread();
+  const base::android::ScopedJavaLocalRef<jstring> java_gaia_id =
+      base::android::ConvertUTF8ToJavaString(env, gaia_id);
+
+  // The Java implementation will eventually call MarkKeysAsStaleCompleted().
+  Java_TrustedVaultClient_markKeysAsStale(env, reinterpret_cast<intptr_t>(this),
+                                          java_gaia_id);
 }

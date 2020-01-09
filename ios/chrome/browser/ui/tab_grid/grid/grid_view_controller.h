@@ -60,6 +60,10 @@
 // Returns the layout of the grid for use in an animated transition.
 - (GridTransitionLayout*)transitionLayout;
 
+// Notifies the ViewController that its content is being displayed or hidden.
+- (void)contentWillAppearAnimated:(BOOL)animated;
+- (void)contentWillDisappear;
+
 // Notifies the grid that it is about to be dismissed.
 - (void)prepareForDismissal;
 

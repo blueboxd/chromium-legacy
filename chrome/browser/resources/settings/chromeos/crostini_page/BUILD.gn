@@ -70,8 +70,8 @@ js_library("crostini_shared_usb_devices") {
 js_library("crostini_subpage") {
   deps = [
     ":crostini_browser_proxy",
+    "..:route_origin_behavior",
     "../..:route",
-    "../..:route_origin_behavior",
     "../../prefs:prefs_behavior",
   ]
 }

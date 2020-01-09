@@ -70,28 +70,32 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
     Child& child = *child_iter;
     if (const NGPhysicalTextFragment* text = child.fragment.get()) {
       items_.push_back(std::make_unique<NGFragmentItem>(*text));
-      offsets_.push_back(child.offset);
+      offsets_.push_back(child.rect.offset);
       ++child_iter;
       continue;
     }
 
-    if (child.layout_result) {
+    if (child.layout_result || child.inline_item) {
       // Create an item if this box has no inline children.
-      const NGPhysicalBoxFragment& box =
-          To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
-      // Floats are in the fragment tree, not in the fragment item list.
-      DCHECK(!box.IsFloating());
+      std::unique_ptr<NGFragmentItem> item;
+      if (child.layout_result) {
+        const NGPhysicalBoxFragment& box =
+            To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
+        // Floats are in the fragment tree, not in the fragment item list.
+        DCHECK(!box.IsFloating());
+        item = std::make_unique<NGFragmentItem>(box, child.ResolvedDirection());
+      } else {
+        DCHECK(child.inline_item);
+        item = std::make_unique<NGFragmentItem>(
+            *child.inline_item,
+            ToPhysicalSize(child.rect.size,
+                           child.inline_item->Style()->GetWritingMode()));
+      }
 
       // Take the fast path when we know |child| does not have child items.
       if (child.children_count <= 1) {
-        // Compute |has_floating_descendants_for_paint_| to optimize tree
-        // traversal in paint.
-        if (!has_floating_descendants_for_paint_ && box.IsFloating())
-          has_floating_descendants_for_paint_ = true;
-
-        items_.push_back(std::make_unique<NGFragmentItem>(
-            box, 1, child.ResolvedDirection()));
-        offsets_.push_back(child.offset);
+        items_.push_back(std::move(item));
+        offsets_.push_back(child.rect.offset);
         ++child_iter;
         continue;
       }
@@ -102,7 +106,7 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
       // Add an empty item so that the start of the box can be set later.
       wtf_size_t box_start_index = items_.size();
       items_.Grow(box_start_index + 1);
-      offsets_.push_back(child.offset);
+      offsets_.push_back(child.rect.offset);
 
       // Add all children, including their desendants, skipping this item.
       CHECK_GE(child.children_count, 1u);  // 0 will loop infinitely.
@@ -116,8 +120,8 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
       wtf_size_t item_count = items_.size() - box_start_index;
 
       // Create an item for the start of the box.
-      items_[box_start_index] = std::make_unique<NGFragmentItem>(
-          box, item_count, child.ResolvedDirection());
+      item->SetDescendantsCount(item_count);
+      items_[box_start_index] = std::move(item);
       continue;
     }
 
@@ -135,7 +139,7 @@ void NGFragmentItemsBuilder::AddListMarker(
   // are not inline.
   const TextDirection resolved_direction = TextDirection::kLtr;
   items_.push_back(
-      std::make_unique<NGFragmentItem>(marker_fragment, 1, resolved_direction));
+      std::make_unique<NGFragmentItem>(marker_fragment, resolved_direction));
   offsets_.push_back(offset);
 }
 
@@ -217,9 +221,7 @@ void NGFragmentItemsBuilder::AssociateNextForSameLayoutObject() {
     DCHECK(layout_object->IsInLayoutNGInlineFormattingContext()) << item;
     auto insert_result = last_fragment_map.insert(layout_object, index);
     if (insert_result.is_new_entry) {
-      // TDOO(yosin): Once we update all |LayoutObject::FirstInlineFragment()|,
-      // we should enable below.
-      // layout_object->SetFirstInlineFragmentItemIndex(index);
+      layout_object->SetFirstInlineFragmentItemIndex(index);
       continue;
     }
     const wtf_size_t last_index = insert_result.stored_value->value;

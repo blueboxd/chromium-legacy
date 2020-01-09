@@ -210,6 +210,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                const NGPhysicalBoxFragment& fragment,
                                const NGInlineBackwardCursor& cursor,
                                const PhysicalOffset& physical_offset);
+  bool HitTestChildBoxItem(const HitTestContext& hit_test,
+                           const NGFragmentItem& item,
+                           const NGInlineBackwardCursor& cursor);
 
   // Hit tests the given text fragment.
   // @param physical_offset Physical offset of the text fragment in paint layer.

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_factory.mojom.h"
 
 namespace blink {

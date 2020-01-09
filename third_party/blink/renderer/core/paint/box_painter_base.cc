@@ -558,9 +558,7 @@ inline bool PaintFastBottomLayer(Node* node,
   const FloatSize intrinsic_tile_size =
       !has_intrinsic_size
           ? image_tile.Size()
-          : FloatSize(info.respect_image_orientation && image->IsBitmapImage()
-                          ? ToBitmapImage(image)->SizeRespectingOrientation()
-                          : image->Size());
+          : FloatSize(image->Size(info.respect_image_orientation));
   // Subset computation needs the same location as was used with
   // ComputePhaseForBackground above, but needs the unsnapped destination
   // size to correctly calculate sprite subsets in the presence of zoom. But if

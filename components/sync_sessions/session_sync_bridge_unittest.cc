@@ -78,22 +78,21 @@ MATCHER_P(EntityDataHasSpecifics, session_specifics_matcher, "") {
                                                    result_listener);
 }
 
-std::unique_ptr<syncer::EntityData> SpecificsToEntity(
-    const sync_pb::SessionSpecifics& specifics,
-    base::Time mtime = base::Time::Now()) {
-  auto data = std::make_unique<syncer::EntityData>();
-  data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
+syncer::EntityData SpecificsToEntity(const sync_pb::SessionSpecifics& specifics,
+                                     base::Time mtime = base::Time::Now()) {
+  syncer::EntityData data;
+  data.client_tag_hash = syncer::ClientTagHash::FromUnhashed(
       syncer::SESSIONS, SessionStore::GetClientTag(specifics));
-  *data->specifics.mutable_session() = specifics;
-  data->modification_time = mtime;
+  *data.specifics.mutable_session() = specifics;
+  data.modification_time = mtime;
   return data;
 }
 
-std::unique_ptr<syncer::UpdateResponseData> SpecificsToUpdateResponse(
+syncer::UpdateResponseData SpecificsToUpdateResponse(
     const sync_pb::SessionSpecifics& specifics,
     base::Time mtime = base::Time::Now()) {
-  auto data = std::make_unique<syncer::UpdateResponseData>();
-  data->entity = SpecificsToEntity(specifics, mtime);
+  syncer::UpdateResponseData data;
+  data.entity = SpecificsToEntity(specifics, mtime);
   return data;
 }
 
@@ -106,16 +105,15 @@ std::map<std::string, std::unique_ptr<EntityData>> BatchToEntityDataMap(
   return storage_key_to_data;
 }
 
-std::unique_ptr<syncer::UpdateResponseData> CreateTombstone(
-    const std::string& client_tag) {
-  auto tombstone = std::make_unique<syncer::EntityData>();
+syncer::UpdateResponseData CreateTombstone(const std::string& client_tag) {
+  syncer::EntityData tombstone;
 
-  tombstone->client_tag_hash =
+  tombstone.client_tag_hash =
       syncer::ClientTagHash::FromUnhashed(syncer::SESSIONS, client_tag);
 
-  auto data = std::make_unique<syncer::UpdateResponseData>();
-  data->entity = std::move(tombstone);
-  data->response_version = 2;
+  syncer::UpdateResponseData data;
+  data.entity = std::move(tombstone);
+  data.response_version = 2;
   return data;
 }
 

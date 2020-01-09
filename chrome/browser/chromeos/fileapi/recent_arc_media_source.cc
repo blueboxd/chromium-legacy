@@ -322,6 +322,7 @@ void RecentArcMediaSource::GetRecentFiles(Params params) {
     root->GetRecentFiles(
         Params(params_.value().file_system_context(), params_.value().origin(),
                params_.value().max_files(), params_.value().cutoff_time(),
+               params_.value().file_type(),
                base::BindOnce(&RecentArcMediaSource::OnGetRecentFilesForRoot,
                               weak_ptr_factory_.GetWeakPtr())));
   }

@@ -24,7 +24,7 @@ const int kAllDots = BRLAPI_DOT1 | BRLAPI_DOT2 | BRLAPI_DOT3 | BRLAPI_DOT4 |
 const brlapi_keyCode_t kMaxLatin1KeySym = 0xff;
 
 // Range of function keys that we support.
-// See ui/events/keycodes/dom/keycode_converter_data.inc for the list of all
+// See ui/events/keycodes/dom/dom_code_data.inc for the list of all
 // key codes.
 const brlapi_keyCode_t kMinFunctionKey = BRLAPI_KEY_SYM_FUNCTION;
 const brlapi_keyCode_t kMaxFunctionKey = BRLAPI_KEY_SYM_FUNCTION + 23;
@@ -42,7 +42,7 @@ void MapModifierFlags(brlapi_keyCode_t code, KeyEvent* event) {
 
 // Maps a brlapi keysym, which is similar to an X keysym into the
 // provided event.
-// See ui/events/keycodes/dom/keycode_converter_data.cc for the full
+// See ui/events/keycodes/dom/dom_code_data.cc for the full
 // list of key codes.
 void MapKeySym(brlapi_keyCode_t code, KeyEvent* event) {
   brlapi_keyCode_t key_sym = code & BRLAPI_KEY_CODE_MASK;

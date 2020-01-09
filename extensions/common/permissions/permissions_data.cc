@@ -33,6 +33,11 @@ struct DefaultPolicyRestrictions {
   URLPatternSet allowed_hosts;
 };
 
+// A map between a profile (referenced by a unique id) and the default policies
+// for that profile. Since different profile have different defaults, we need to
+// have separate entries.
+using DefaultPolicyRestrictionsMap = std::map<int, DefaultPolicyRestrictions>;
+
 // Lock to access the default policy restrictions. This should never be acquired
 // before PermissionsData instance level |runtime_lock_| to prevent deadlocks.
 base::Lock& GetDefaultPolicyRestrictionsLock() {
@@ -40,16 +45,16 @@ base::Lock& GetDefaultPolicyRestrictionsLock() {
   return *lock;
 }
 
-// Returns the default policy restrictions i.e. the URLs an extension can't
-// interact with. An extension can override these settings by declaring its own
-// list of blocked and allowed hosts using policy_blocked_hosts and
-// policy_allowed_hosts. Must be called with the default policy restriction lock
-// already acquired.
-DefaultPolicyRestrictions& GetDefaultPolicyRestrictions() {
-  static base::NoDestructor<DefaultPolicyRestrictions>
-      default_policy_restrictions;
+// Returns the DefaultPolicyRestrictions for the given context_id.
+// i.e. the URLs an extension can't interact with. An extension can override
+// these settings by declaring its own list of blocked and allowed hosts
+// using policy_blocked_hosts and policy_allowed_hosts.
+// Must be called with the default policy restriction lock already acquired.
+DefaultPolicyRestrictions& GetDefaultPolicyRestrictions(int context_id) {
+  static base::NoDestructor<DefaultPolicyRestrictionsMap>
+      default_policy_restrictions_map;
   GetDefaultPolicyRestrictionsLock().AssertAcquired();
-  return *default_policy_restrictions;
+  return (*default_policy_restrictions_map)[context_id];
 }
 
 class AutoLockOnValidThread {
@@ -153,32 +158,36 @@ bool PermissionsData::AllUrlsIncludesChromeUrls(
 
 bool PermissionsData::UsesDefaultPolicyHostRestrictions() const {
   DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());
-  return uses_default_policy_host_restrictions_;
+  // no locking necessary here as the value is only set once initially
+  // from the main thread and then will only be read.
+  return context_id_.has_value();
 }
 
-URLPatternSet PermissionsData::default_policy_blocked_hosts() {
+// static
+URLPatternSet PermissionsData::GetDefaultPolicyBlockedHosts(int context_id) {
   base::AutoLock lock(GetDefaultPolicyRestrictionsLock());
-  return GetDefaultPolicyRestrictions().blocked_hosts.Clone();
+  return GetDefaultPolicyRestrictions(context_id).blocked_hosts.Clone();
 }
 
-URLPatternSet PermissionsData::default_policy_allowed_hosts() {
+// static
+URLPatternSet PermissionsData::GetDefaultPolicyAllowedHosts(int context_id) {
   base::AutoLock lock(GetDefaultPolicyRestrictionsLock());
-  return GetDefaultPolicyRestrictions().allowed_hosts.Clone();
+  return GetDefaultPolicyRestrictions(context_id).allowed_hosts.Clone();
 }
 
 URLPatternSet PermissionsData::policy_blocked_hosts() const {
-  if (uses_default_policy_host_restrictions_)
-    return default_policy_blocked_hosts();
-
   base::AutoLock auto_lock(runtime_lock_);
+  if (context_id_.has_value())
+    return GetDefaultPolicyBlockedHosts(context_id_.value());
+
   return policy_blocked_hosts_unsafe_.Clone();
 }
 
 URLPatternSet PermissionsData::policy_allowed_hosts() const {
-  if (uses_default_policy_host_restrictions_)
-    return default_policy_allowed_hosts();
-
   base::AutoLock auto_lock(runtime_lock_);
+  if (context_id_.has_value())
+    return GetDefaultPolicyAllowedHosts(context_id_.value());
+
   return policy_allowed_hosts_unsafe_.Clone();
 }
 
@@ -201,22 +210,23 @@ void PermissionsData::SetPolicyHostRestrictions(
   AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
   policy_blocked_hosts_unsafe_ = policy_blocked_hosts.Clone();
   policy_allowed_hosts_unsafe_ = policy_allowed_hosts.Clone();
-  uses_default_policy_host_restrictions_ = false;
+  context_id_ = base::nullopt;
 }
 
-void PermissionsData::SetUsesDefaultHostRestrictions() const {
+void PermissionsData::SetUsesDefaultHostRestrictions(int context_id) const {
   AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
-  uses_default_policy_host_restrictions_ = true;
+  context_id_ = context_id;
 }
 
 // static
 void PermissionsData::SetDefaultPolicyHostRestrictions(
+    int context_id,
     const URLPatternSet& default_policy_blocked_hosts,
     const URLPatternSet& default_policy_allowed_hosts) {
   base::AutoLock lock(GetDefaultPolicyRestrictionsLock());
-  GetDefaultPolicyRestrictions().blocked_hosts =
+  GetDefaultPolicyRestrictions(context_id).blocked_hosts =
       default_policy_blocked_hosts.Clone();
-  GetDefaultPolicyRestrictions().allowed_hosts =
+  GetDefaultPolicyRestrictions(context_id).allowed_hosts =
       default_policy_allowed_hosts.Clone();
 }
 
@@ -502,13 +512,12 @@ const PermissionSet* PermissionsData::GetTabSpecificPermissions(
 bool PermissionsData::IsPolicyBlockedHostUnsafe(const GURL& url) const {
   // We don't use [default_]policy_[blocked|allowed]_hosts() to avoid copying
   // URLPatternSet.
-  if (uses_default_policy_host_restrictions_) {
-    base::AutoLock lock(GetDefaultPolicyRestrictionsLock());
-    return GetDefaultPolicyRestrictions().blocked_hosts.MatchesURL(url) &&
-           !GetDefaultPolicyRestrictions().allowed_hosts.MatchesURL(url);
+  runtime_lock_.AssertAcquired();
+  if (context_id_.has_value()) {
+    return GetDefaultPolicyBlockedHosts(context_id_.value()).MatchesURL(url) &&
+           !GetDefaultPolicyAllowedHosts(context_id_.value()).MatchesURL(url);
   }
 
-  runtime_lock_.AssertAcquired();
   return policy_blocked_hosts_unsafe_.MatchesURL(url) &&
          !policy_allowed_hosts_unsafe_.MatchesURL(url);
 }

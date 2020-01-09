@@ -788,8 +788,9 @@ void BrowserTestBase::InitializeNetworkProcess() {
          rule.resolver_type !=
              net::RuleBasedHostResolverProc::Rule::kResolverTypeIPLiteral) ||
         rule.address_family != net::AddressFamily::ADDRESS_FAMILY_UNSPECIFIED ||
-        !!rule.latency_ms)
+        !!rule.latency_ms) {
       continue;
+    }
     network::mojom::RulePtr mojo_rule = network::mojom::Rule::New();
     if (rule.resolver_type ==
         net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem) {
@@ -803,6 +804,8 @@ void BrowserTestBase::InitializeNetworkProcess() {
     }
     mojo_rule->host_pattern = rule.host_pattern;
     mojo_rule->replacement = rule.replacement;
+    mojo_rule->host_resolver_flags = rule.host_resolver_flags;
+    mojo_rule->canonical_name = rule.canonical_name;
     mojo_rules.push_back(std::move(mojo_rule));
   }
 

@@ -42,7 +42,6 @@
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
-#import "ios/chrome/browser/ui/commands/settings_main_page_commands.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
@@ -55,7 +54,6 @@
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/material_cell_catalog_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/search_engine_table_view_controller.h"
@@ -142,7 +140,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAboutChrome,
   ItemTypeMemoryDebugging,
   ItemTypeViewSource,
-  ItemTypeCollectionCellCatalog,
   ItemTypeTableCellCatalog,
   ItemTypeArticlesForYou,
 };
@@ -163,7 +160,6 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     PrefObserverDelegate,
     SettingsControllerProtocol,
     SearchEngineObserving,
-    SettingsMainPageCommands,
     SigninPresenter,
     SigninPromoViewConsumer,
     SyncObserverModelBridge> {
@@ -238,7 +234,6 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 @end
 
 @implementation SettingsTableViewController
-@synthesize settingsMainPageDispatcher = _settingsMainPageDispatcher;
 @synthesize dispatcher = _dispatcher;
 @synthesize signinInteractionCoordinator = _signinInteractionCoordinator;
 
@@ -308,7 +303,6 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     _prefObserverBridge->ObserveChangesForPreference(
         autofill::prefs::kAutofillProfileEnabled, &_prefChangeRegistrar);
 
-    _settingsMainPageDispatcher = self;
     _dispatcher = dispatcher;
 
     // TODO(crbug.com/764578): -loadModel should not be called from
@@ -439,8 +433,6 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
 #if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
   [model addItem:[self viewSourceSwitchItem]
-      toSectionWithIdentifier:SectionIdentifierDebug];
-  [model addItem:[self collectionViewCatalogDetailItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
   [model addItem:[self tableViewCatalogDetailItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
@@ -651,13 +643,6 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                   withDefaultsKey:kDevViewSourceKey];
 }
 
-- (TableViewDetailIconItem*)collectionViewCatalogDetailItem {
-  return [self detailItemWithType:ItemTypeCollectionCellCatalog
-                             text:@"Collection Cell Catalog"
-                       detailText:nil
-                    iconImageName:kSettingsDebugImageName];
-}
-
 - (TableViewDetailIconItem*)tableViewCatalogDetailItem {
   return [self detailItemWithType:ItemTypeTableCellCatalog
                              text:@"TableView Cell Catalog"
@@ -848,9 +833,6 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     case ItemTypeViewSource:
       // Taps on these don't do anything. They have a switch as accessory view
       // and only the switch is tappable.
-      break;
-    case ItemTypeCollectionCellCatalog:
-      [self.settingsMainPageDispatcher showMaterialCellCatalog];
       break;
     case ItemTypeTableCellCatalog:
       [self.navigationController
@@ -1078,14 +1060,6 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   // reloaded.
   if (!_settingsHasBeenDismissed)
     [self reloadData];
-}
-
-#pragma mark Material Cell Catalog
-
-- (void)showMaterialCellCatalog {
-  [self.navigationController
-      pushViewController:[[MaterialCellCatalogViewController alloc] init]
-                animated:YES];
 }
 
 #pragma mark SettingsControllerProtocol

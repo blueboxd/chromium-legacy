@@ -439,6 +439,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
  private:
   ContentCaptureManager* GetContentCaptureManager();
+  void DetachAbstractInlineTextBoxesIfNeeded();
 
   // Used for LayoutNG with accessibility. True if inline fragments are
   // associated to |NGAbstractInlineTextBox|.

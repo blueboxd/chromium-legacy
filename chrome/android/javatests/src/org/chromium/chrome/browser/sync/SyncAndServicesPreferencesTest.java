@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
 import android.support.test.uiautomator.UiDevice;
 import android.support.v4.app.FragmentTransaction;
@@ -24,13 +25,18 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -254,6 +260,106 @@ public class SyncAndServicesPreferencesTest {
         SyncAndServicesPreferences fragment = startSyncAndServicesPreferences();
 
         Assert.assertNotNull("Sync error card should be shown", getSyncErrorCard(fragment));
+    }
+
+    /**
+     * Test: if the onboarding was never shown, the AA chrome preference should not exist.
+     *
+     * Note: presence of the {@link SyncAndServicesPreferences.PREF_AUTOFILL_ASSISTANT}
+     * shared preference indicates whether onboarding was shown or not.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    @EnableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
+    public void testAutofillAssistantNoPreferenceIfOnboardingNeverShown() {
+        final SyncAndServicesPreferences syncPrefs = startSyncAndServicesPreferences();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertNull(
+                    syncPrefs.findPreference(SyncAndServicesPreferences.PREF_AUTOFILL_ASSISTANT));
+        });
+    }
+
+    /**
+     * Test: if the onboarding was shown at least once, the AA chrome preference should also exist.
+     *
+     * Note: presence of the {@link SyncAndServicesPreferences.PREF_AUTOFILL_ASSISTANT}
+     * shared preference indicates whether onboarding was shown or not.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    @EnableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
+    public void testAutofillAssistantPreferenceShownIfOnboardingShown() {
+        setAutofillAssistantSwitchValue(true);
+        final SyncAndServicesPreferences syncPrefs = startSyncAndServicesPreferences();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertNotNull(
+                    syncPrefs.findPreference(SyncAndServicesPreferences.PREF_AUTOFILL_ASSISTANT));
+        });
+    }
+
+    /**
+     * Ensure that the "Autofill Assistant" setting is not shown when the feature is disabled.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    @DisableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
+    public void testAutofillAssistantNoPreferenceIfFeatureDisabled() {
+        setAutofillAssistantSwitchValue(true);
+        final SyncAndServicesPreferences syncPrefs = startSyncAndServicesPreferences();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertNull(
+                    syncPrefs.findPreference(SyncAndServicesPreferences.PREF_AUTOFILL_ASSISTANT));
+        });
+    }
+
+    /**
+     * Ensure that the "Autofill Assistant" on/off switch works.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    @EnableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
+    public void testAutofillAssistantSwitchOn() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> { setAutofillAssistantSwitchValue(true); });
+        final SyncAndServicesPreferences syncAndServicesPreferences =
+                startSyncAndServicesPreferences();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ChromeSwitchPreference autofillAssistantSwitch =
+                    (ChromeSwitchPreference) syncAndServicesPreferences.findPreference(
+                            SyncAndServicesPreferences.PREF_AUTOFILL_ASSISTANT);
+            Assert.assertTrue(autofillAssistantSwitch.isChecked());
+
+            autofillAssistantSwitch.performClick();
+            Assert.assertFalse(syncAndServicesPreferences.isAutofillAssistantSwitchOn());
+            autofillAssistantSwitch.performClick();
+            Assert.assertTrue(syncAndServicesPreferences.isAutofillAssistantSwitchOn());
+        });
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Sync"})
+    @EnableFeatures(ChromeFeatureList.AUTOFILL_ASSISTANT)
+    public void testAutofillAssistantSwitchOff() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> { setAutofillAssistantSwitchValue(false); });
+        final SyncAndServicesPreferences syncAndServicesPreferences =
+                startSyncAndServicesPreferences();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ChromeSwitchPreference autofillAssistantSwitch =
+                    (ChromeSwitchPreference) syncAndServicesPreferences.findPreference(
+                            SyncAndServicesPreferences.PREF_AUTOFILL_ASSISTANT);
+            Assert.assertFalse(autofillAssistantSwitch.isChecked());
+        });
+    }
+
+    private void setAutofillAssistantSwitchValue(boolean newValue) {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, newValue);
     }
 
     // TODO(crbug.com/1030725): SyncTestRule should support overriding ProfileSyncService.

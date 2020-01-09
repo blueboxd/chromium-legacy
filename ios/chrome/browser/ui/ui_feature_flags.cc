@@ -33,3 +33,6 @@ const base::Feature kVoiceOverUnstackedTabstrip{
 
 const base::Feature kForceUnstackedTabstrip{"ForceUnstackedTabstrip",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kContainedBVC{"ContainedBVC",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};

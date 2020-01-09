@@ -45,6 +45,13 @@ class SettingsUI
   ~SettingsUI() override;
 
 #if defined(OS_CHROMEOS)
+  // Initializes the WebUI message handlers for CrOS-specific settings that are
+  // still shown in the browser settings UI.
+  static void InitBrowserSettingsWebUIHandlers(
+      Profile* profile,
+      content::WebUI* web_ui,
+      content::WebUIDataSource* html_source);
+
   // Initializes the WebUI message handlers for OS-specific settings.
   static void InitOSWebUIHandlers(Profile* profile,
                                   content::WebUI* web_ui,

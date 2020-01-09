@@ -105,7 +105,10 @@ class CORE_EXPORT NGInlineCursor {
   // other than line.
   bool HasSoftWrapToNextLine() const;
 
-  // True if the current position is a atomic inline. It is error to call at
+  // True if the current position is an inline box. It is error to call at end.
+  bool IsInlineBox() const;
+
+  // True if the current position is an atomic inline. It is error to call at
   // end.
   bool IsAtomicInline() const;
 
@@ -172,11 +175,15 @@ class CORE_EXPORT NGInlineCursor {
   // text and atomic inline. It is also error to call |IsGeneratedTextType()|.
   UBiDiLevel CurrentBidiLevel() const;
 
+  // Returns break token for line box. It is error to call other than line box.
+  const NGInlineBreakToken& CurrentInlineBreakToken() const;
+
   // Returns text direction of current text or atomic inline. It is error to
   // call at other than text or atomic inline. Note: <span> doesn't have
   // reserved direction.
   TextDirection CurrentResolvedDirection() const;
   const ComputedStyle& CurrentStyle() const;
+  bool UsesFirstLineStyle() const;
 
   // InkOverflow of itself, including contents if they contribute to the ink
   // overflow of this object (e.g. when not clipped,) in the local coordinate.
@@ -223,6 +230,9 @@ class CORE_EXPORT NGInlineCursor {
   // Functions to move the current position.
   //
 
+  // Move the current position at |fragment_item|.
+  void MoveTo(const NGFragmentItem& fragment_item);
+
   // Move the current position at |cursor|. Unlinke copy constrcutr, this
   // function doesn't copy root. Note: The current position in |cursor|
   // should be part of |this| cursor.
@@ -252,6 +262,9 @@ class CORE_EXPORT NGInlineCursor {
   // at fragment without children, this cursor points nothing.
   // See also |TryToMoveToFirstChild()|.
   void MoveToLastChild();
+
+  // Move the current position to the last fragment on same layout object.
+  void MoveToLastForSameLayoutObject();
 
   // Move to last logical leaf of current line box. If current line box has
   // no children, curosr becomes null.
@@ -305,12 +318,8 @@ class CORE_EXPORT NGInlineCursor {
   // NextSkippingChildren, Previous, etc.
 
  private:
-  // Returns break token for line box. It is error to call other than line box.
-  const NGInlineBreakToken& CurrentInlineBreakToken() const;
-
   // Returns style variant of the current position.
   NGStyleVariant CurrentStyleVariant() const;
-  bool UsesFirstLineStyle() const;
 
   // True if current position is part of culled inline box |layout_inline|.
   bool IsPartOfCulledInlineBox(const LayoutInline& layout_inline) const;
@@ -325,9 +334,6 @@ class CORE_EXPORT NGInlineCursor {
 
   // Move the cursor position to the first fragment in tree.
   void MoveToFirst();
-
-  // Move the current position to the last fragment on same layout object.
-  void MoveToLastForSameLayoutObject();
 
   // Same as |MoveTo()| but not support culled inline.
   void InternalMoveTo(const LayoutObject& layout_object);

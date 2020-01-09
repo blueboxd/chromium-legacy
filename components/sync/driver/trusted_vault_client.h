@@ -41,6 +41,16 @@ class TrustedVaultClient {
       base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)>
           cb) = 0;
 
+  // Invoked when the result of FetchKeys() contains keys that cannot decrypt
+  // the pending cryptographer (Nigori) keys, which should only be possible if
+  // the provided keys are not up-to-date. |cb| is run upon completion and
+  // returns false if the call did not make any difference (e.g. the operation
+  // is unsupported) or true if some change may have occurred (which indicates a
+  // second FetchKeys() attempt is worth). Concurrent calls to MarkKeysAsStale()
+  // must not be issued since implementations may not support them.
+  virtual void MarkKeysAsStale(const std::string& gaia_id,
+                               base::OnceCallback<void(bool)> cb) = 0;
+
   // Allows implementations to store encryption keys fetched by other means such
   // as Web interactions. Implementations are free to completely ignore these
   // keys, so callers may not assume that later calls to FetchKeys() would

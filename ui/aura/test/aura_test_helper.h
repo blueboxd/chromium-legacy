@@ -70,11 +70,6 @@ class AuraTestHelper {
   Env* GetEnv();
 
  private:
-#if defined(OS_WIN)
-  // Deletes existing NativeWindowOcclusionTrackerWin instance.
-  void DeleteNativeWindowOcclusionTrackerWin();
-#endif  // defined(OS_WIN)
-
   bool setup_called_ = false;
   bool teardown_called_ = false;
   ui::ContextFactory* context_factory_to_restore_ = nullptr;

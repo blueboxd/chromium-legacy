@@ -50,9 +50,9 @@ jumbo_static_library("dom_keycode_converter") {
   ]
 
   sources = [
+    "keycodes/dom/dom_code_data.inc",
     "keycodes/dom/dom_key_data.inc",
     "keycodes/dom/keycode_converter.cc",
-    "keycodes/dom/keycode_converter_data.inc",
   ]
 
   deps = [

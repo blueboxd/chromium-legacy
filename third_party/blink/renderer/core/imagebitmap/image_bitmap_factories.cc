@@ -369,7 +369,8 @@ void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(
   scoped_refptr<StaticBitmapImage> image =
       UnacceleratedStaticBitmapImage::Create(std::move(frame));
   image->SetOriginClean(true);
-  ImageBitmap* image_bitmap = ImageBitmap::Create(image, crop_rect_, options_);
+  auto* image_bitmap =
+      MakeGarbageCollected<ImageBitmap>(image, crop_rect_, options_);
   if (image_bitmap && image_bitmap->BitmapImage()) {
     resolver_->Resolve(image_bitmap);
   } else {

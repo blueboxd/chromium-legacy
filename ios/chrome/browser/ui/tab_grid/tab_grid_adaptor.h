@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 
 @class TabGridViewController;

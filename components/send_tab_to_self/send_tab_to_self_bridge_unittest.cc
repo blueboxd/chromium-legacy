@@ -132,15 +132,13 @@ class SendTabToSelfBridgeTest : public testing::Test {
     ON_CALL(mock_processor_, IsTrackingMetadata()).WillByDefault(Return(false));
   }
 
-  std::unique_ptr<syncer::EntityData> MakeEntityData(
-      const SendTabToSelfEntry& entry) {
+  syncer::EntityData MakeEntityData(const SendTabToSelfEntry& entry) {
     SendTabToSelfLocal specifics = entry.AsLocalProto();
 
-    auto entity_data = std::make_unique<syncer::EntityData>();
+    syncer::EntityData entity_data;
 
-    *(entity_data->specifics.mutable_send_tab_to_self()) =
-        specifics.specifics();
-    entity_data->name = entry.GetURL().spec();
+    *entity_data.specifics.mutable_send_tab_to_self() = specifics.specifics();
+    entity_data.name = entry.GetURL().spec();
     return entity_data;
   }
 
@@ -151,10 +149,10 @@ class SendTabToSelfBridgeTest : public testing::Test {
       const std::vector<sync_pb::SendTabToSelfSpecifics>& specifics_list) {
     syncer::EntityChangeList changes;
     for (const auto& specifics : specifics_list) {
-      auto entity_data = std::make_unique<syncer::EntityData>();
+      syncer::EntityData entity_data;
 
-      *(entity_data->specifics.mutable_send_tab_to_self()) = specifics;
-      entity_data->name = specifics.url();
+      *entity_data.specifics.mutable_send_tab_to_self() = specifics;
+      entity_data.name = specifics.url();
 
       changes.push_back(syncer::EntityChange::CreateAdd(
           specifics.guid(), std::move(entity_data)));

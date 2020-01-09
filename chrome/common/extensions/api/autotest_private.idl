@@ -239,6 +239,8 @@ namespace autotestPrivate {
 
   callback IsArcProvisionedCallback = void (boolean arcProvisioned);
 
+  callback IsArcPackageListInitialRefreshedCallback = void (boolean refreshed);
+
   dictionary ArcAppDict {
     DOMString name;
     DOMString packageName;
@@ -661,6 +663,11 @@ namespace autotestPrivate {
     static void waitForAssistantQueryStatus(
         long timeout_s,
         AssistantQueryStatusCallback callback);
+
+    // Whether the local list of installed ARC packages has been refreshed for
+    // the first time after user login.
+    static void isArcPackageListInitialRefreshed(
+        IsArcPackageListInitialRefreshedCallback callback);
 
     // Set value for the specified user pref in the pref tree.
     static void setWhitelistedPref(DOMString pref_name, any value,

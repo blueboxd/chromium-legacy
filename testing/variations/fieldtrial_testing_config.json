@@ -567,24 +567,6 @@
             ]
         }
     ],
-    "AndroidWideColorGamut": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "UseDisplayWideColorGamut",
-                    "params": {
-                        "enabled_models": "Pixel 4,Pixel 4 XL"
-                    },
-                    "enable_features": [
-                        "UseDisplayWideColorGamut"
-                    ]
-                }
-            ]
-        }
-    ],
     "AppLauncherRefresh": [
         {
             "platforms": [

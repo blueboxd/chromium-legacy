@@ -224,8 +224,9 @@ ScriptPromise OffscreenCanvas::CreateImageBitmap(
   if (context_)
     context_->FinalizeFrame();
   return ImageBitmapSource::FulfillImageBitmap(
-      script_state,
-      IsPaintable() ? ImageBitmap::Create(this, crop_rect, options) : nullptr);
+      script_state, IsPaintable() ? MakeGarbageCollected<ImageBitmap>(
+                                        this, crop_rect, options)
+                                  : nullptr);
 }
 
 bool OffscreenCanvas::IsOpaque() const {

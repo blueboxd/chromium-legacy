@@ -3072,6 +3072,55 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, AppCacheRequests) {
             1);
 }
 
+// Regression test for http://crbug.com/996940. Requests that redirected to an
+// appcache handled URL could have request ID collisions.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, RedirectToAppCacheRequest) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  GURL main_url = embedded_test_server()->GetURL(
+      "/appcache/simple_page_with_manifest.html");
+
+  base::string16 expected_title = base::ASCIIToUTF16("AppCache updated");
+
+  // Load the main page first to make sure it is cached. After the first
+  // navigation, load the extension, then navigate again.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(R"({
+        "name": "Web Request Appcache Redirect Test",
+        "manifest_version": 2,
+        "version": "0.1",
+        "background": { "scripts": ["background.js"] },
+        "permissions": ["<all_urls>", "webRequest"]
+      })");
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), R"(
+        window.numErrors = 0;
+        chrome.webRequest.onErrorOccurred.addListener(function(details) {
+          window.numErrors++;
+        }, {urls: ['<all_urls>']});
+
+        chrome.test.sendMessage('ready');
+      )");
+
+  ExtensionTestMessageListener listener("ready", false);
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // This navigation should go through appcache.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/server-redirect?" + main_url.spec())));
+
+  EXPECT_EQ(
+      GetCountFromBackgroundPage(extension, profile(), "window.numErrors"), 0);
+}
+
 // Regression test for https://crbug.com/1019614.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, HSTSUpgradeAfterRedirect) {
   net::EmbeddedTestServer https_test_server(

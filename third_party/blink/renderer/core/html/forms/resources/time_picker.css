@@ -52,16 +52,17 @@ body {
 }
 
 .time-cell:hover {
-  background: #E5E5E5;
+  background-color: rgba(0, 117, 255, 0.3);
 }
 
 .time-cell.selected {
-  background-color: #CECECE;
+  background-color: #0075FF;
+  color: #FFFFFF;
   font-weight: bold;
 }
 
 .time-column:focus .time-cell.selected {
-  border-color: highlight;
+  border-color: #101010;
 }
 
 .submission-controls {
@@ -91,11 +92,11 @@ body {
 }
 
 .submission-button:hover {
-  background-color: #E5E5E5;
+  background-color: rgba(0, 117, 255, 0.3);
 }
 
 .submission-button:focus {
-  border-color: highlight;
+  border-color: #101010;
   outline: none;
 }
 

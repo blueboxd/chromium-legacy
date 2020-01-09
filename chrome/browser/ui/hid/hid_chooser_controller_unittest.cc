@@ -25,6 +25,8 @@ namespace {
 
 const char kDefaultTestUrl[] = "https://www.google.com/";
 
+const char* const kTestPhysicalDeviceIds[] = {"1", "2", "3"};
+
 const uint16_t kYubicoVendorId = 0x1050;
 const uint16_t kYubicoGnubbyProductId = 0x0200;
 
@@ -88,6 +90,7 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
   }
 
   device::mojom::HidDeviceInfoPtr CreateAndAddFakeHidDevice(
+      const std::string& physical_device_id,
       uint32_t vendor_id,
       uint16_t product_id,
       const std::string& product_string,
@@ -95,8 +98,9 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
       uint16_t usage_page = device::mojom::kPageGenericDesktop,
       uint16_t usage = device::mojom::kGenericDesktopGamePad) {
     return hid_manager_.CreateAndAddDeviceWithTopLevelUsage(
-        vendor_id, product_id, product_string, serial_number,
-        device::mojom::HidBusType::kHIDBusTypeUSB, usage_page, usage);
+        physical_device_id, vendor_id, product_id, product_string,
+        serial_number, device::mojom::HidBusType::kHIDBusTypeUSB, usage_page,
+        usage);
   }
 
   blink::mojom::DeviceIdFilterPtr CreateVendorFilter(uint16_t vendor_id) {
@@ -144,8 +148,8 @@ TEST_F(HidChooserControllerTest, AddBlockedFidoDevice) {
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
-  CreateAndAddFakeHidDevice(kYubicoVendorId, kYubicoGnubbyProductId, "gnubby",
-                            "001");
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], kYubicoVendorId,
+                            kYubicoGnubbyProductId, "gnubby", "001");
   run_loop.Run();
   EXPECT_EQ(0u, hid_chooser_controller->NumOptions());
 }
@@ -158,9 +162,10 @@ TEST_F(HidChooserControllerTest, AddUnknownFidoDevice) {
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
-  CreateAndAddFakeHidDevice(1, 1, "fido", "001", device::mojom::kPageFido,
-                            kFidoU2fHidUsage);
-  CreateAndAddFakeHidDevice(2, 2, "fido", "002", device::mojom::kPageFido, 0);
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "fido", "001",
+                            device::mojom::kPageFido, kFidoU2fHidUsage);
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[1], 2, 2, "fido", "002",
+                            device::mojom::kPageFido, 0);
   run_loop.Run();
   EXPECT_EQ(0u, hid_chooser_controller->NumOptions());
 }
@@ -170,7 +175,7 @@ TEST_F(HidChooserControllerTest, AddNamedDevice) {
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
-  CreateAndAddFakeHidDevice(1, 1, "a", "001");
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "a", "001");
   run_loop.Run();
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
   EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
@@ -182,7 +187,7 @@ TEST_F(HidChooserControllerTest, AddUnnamedDevice) {
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
-  CreateAndAddFakeHidDevice(1, 1, "", "001");
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "", "001");
   run_loop.Run();
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
   EXPECT_EQ(
@@ -199,9 +204,9 @@ TEST_F(HidChooserControllerTest, DeviceIdFilterVendorOnly) {
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
-  CreateAndAddFakeHidDevice(1, 1, "a", "001");
-  CreateAndAddFakeHidDevice(1, 2, "b", "002");
-  CreateAndAddFakeHidDevice(2, 2, "c", "003");
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "a", "001");
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[1], 1, 2, "b", "002");
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[2], 2, 2, "c", "003");
   run_loop.Run();
 
   EXPECT_EQ(2u, hid_chooser_controller->NumOptions());
@@ -224,9 +229,9 @@ TEST_F(HidChooserControllerTest, DeviceIdFilterVendorAndProduct) {
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
-  CreateAndAddFakeHidDevice(1, 1, "a", "001");
-  CreateAndAddFakeHidDevice(1, 2, "b", "002");
-  CreateAndAddFakeHidDevice(2, 2, "c", "003");
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "a", "001");
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[1], 1, 2, "b", "002");
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[2], 2, 2, "c", "003");
   run_loop.Run();
 
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
@@ -243,11 +248,11 @@ TEST_F(HidChooserControllerTest, UsageFilterUsagePageOnly) {
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
-  CreateAndAddFakeHidDevice(1, 1, "a", "001",
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "a", "001",
                             device::mojom::kPageGenericDesktop,
                             device::mojom::kGenericDesktopGamePad);
-  CreateAndAddFakeHidDevice(2, 2, "b", "002", device::mojom::kPageSimulation,
-                            5);
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[1], 2, 2, "b", "002",
+                            device::mojom::kPageSimulation, 5);
   run_loop.Run();
 
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
@@ -266,14 +271,14 @@ TEST_F(HidChooserControllerTest, UsageFilterUsageAndPage) {
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
-  CreateAndAddFakeHidDevice(1, 1, "a", "001",
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "a", "001",
                             device::mojom::kPageGenericDesktop,
                             device::mojom::kGenericDesktopGamePad);
-  CreateAndAddFakeHidDevice(2, 2, "b", "002",
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[1], 2, 2, "b", "002",
                             device::mojom::kPageGenericDesktop,
                             device::mojom::kGenericDesktopKeyboard);
-  CreateAndAddFakeHidDevice(3, 3, "c", "003", device::mojom::kPageSimulation,
-                            5);
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[2], 3, 3, "c", "003",
+                            device::mojom::kPageSimulation, 5);
   run_loop.Run();
 
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
@@ -292,14 +297,14 @@ TEST_F(HidChooserControllerTest, DeviceIdAndUsageFilterIntersection) {
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
-  CreateAndAddFakeHidDevice(1, 1, "a", "001",
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "a", "001",
                             device::mojom::kPageGenericDesktop,
                             device::mojom::kGenericDesktopGamePad);
-  CreateAndAddFakeHidDevice(2, 2, "b", "002",
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[1], 2, 2, "b", "002",
                             device::mojom::kPageGenericDesktop,
                             device::mojom::kGenericDesktopGamePad);
-  CreateAndAddFakeHidDevice(1, 1, "c", "003", device::mojom::kPageSimulation,
-                            5);
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[2], 1, 1, "c", "003",
+                            device::mojom::kPageSimulation, 5);
   run_loop.Run();
 
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
@@ -320,14 +325,14 @@ TEST_F(HidChooserControllerTest, DeviceIdAndUsageFilterUnion) {
   base::RunLoop run_loop;
   fake_hid_chooser_view_.set_options_initialized_quit_closure(
       run_loop.QuitClosure());
-  CreateAndAddFakeHidDevice(1, 1, "a", "001",
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "a", "001",
                             device::mojom::kPageGenericDesktop,
                             device::mojom::kGenericDesktopGamePad);
-  CreateAndAddFakeHidDevice(2, 2, "b", "002",
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[1], 2, 2, "b", "002",
                             device::mojom::kPageGenericDesktop,
                             device::mojom::kGenericDesktopGamePad);
-  CreateAndAddFakeHidDevice(1, 1, "c", "003", device::mojom::kPageSimulation,
-                            5);
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[2], 1, 1, "c", "003",
+                            device::mojom::kPageSimulation, 5);
   run_loop.Run();
 
   EXPECT_EQ(3u, hid_chooser_controller->NumOptions());

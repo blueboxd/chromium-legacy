@@ -27,6 +27,7 @@
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/src/utils/SkMultiPictureDocument.h"
+#include "ui/accessibility/ax_tree_update.h"
 
 #if defined(OS_WIN)
 #include "content/public/child/dwrite_font_proxy_init_win.h"
@@ -336,7 +337,8 @@ mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
   }
 
   SkDynamicMemoryWStream wstream;
-  sk_sp<SkDocument> doc = MakePdfDocument(creator_, &wstream);
+  sk_sp<SkDocument> doc =
+      MakePdfDocument(creator_, ui::AXTreeUpdate(), &wstream);
 
   for (const auto& page : pages) {
     SkCanvas* canvas = doc->beginPage(page.fSize.width(), page.fSize.height());
@@ -447,7 +449,7 @@ PdfCompositorImpl::FrameInfo::FrameInfo() = default;
 PdfCompositorImpl::FrameInfo::~FrameInfo() = default;
 
 PdfCompositorImpl::DocumentInfo::DocumentInfo(const std::string& creator)
-    : doc(MakePdfDocument(creator, &compositor_stream)) {}
+    : doc(MakePdfDocument(creator, ui::AXTreeUpdate(), &compositor_stream)) {}
 
 PdfCompositorImpl::DocumentInfo::~DocumentInfo() = default;
 

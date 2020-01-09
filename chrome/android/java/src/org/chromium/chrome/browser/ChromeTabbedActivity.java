@@ -677,7 +677,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                 // newtab button on the toolbar.
                 getCurrentTabCreator().launchNTP();
                 mLocaleManager.showSearchEnginePromoIfNeeded(ChromeTabbedActivity.this, null);
-                RecordUserAction.record("MobileToolbarStackViewNewTab");
+                if (getTabModelSelector().isIncognitoSelected()) {
+                    RecordUserAction.record("MobileToolbarStackViewNewIncognitoTab");
+                } else {
+                    RecordUserAction.record("MobileToolbarStackViewNewTab");
+                }
                 if (getToolbarManager().isBottomToolbarVisible()) {
                     RecordUserAction.record("MobileBottomToolbarNewTabButton");
                 } else {
@@ -996,9 +1000,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     }
 
     private boolean shouldShowTabSwitcherOnStart() {
+        if (!isMainIntentFromLauncher(getIntent())) return false;
+
         long lastBackgroundedTimeMillis = mInactivityTracker.getLastBackgroundedTimeMs();
-        return ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis)
-                && isMainIntentFromLauncher(getIntent());
+        return (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
+                       && getTabModelSelector().getTotalTabCount() <= 0)
+                || ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis);
     }
 
     private boolean isMainIntentFromLauncher(Intent intent) {

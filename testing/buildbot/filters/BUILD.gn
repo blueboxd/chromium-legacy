@@ -132,6 +132,12 @@ source_set("linux_trusty_rel_browser_tests_filters") {
   ]
 }
 
+source_set("media_unittests_filters") {
+  data = [
+    "//testing/buildbot/filters/android.emulator.media_unittests.filter",
+  ]
+}
+
 source_set("ozone_unittests_filters") {
   data = [
     "//testing/buildbot/filters/chromeos.ozone_unittests.filter",
@@ -151,6 +157,7 @@ source_set("gl_tests_filters") {
   testonly = true
 
   data = [
+    "//testing/buildbot/filters/android.emulator.gl_tests.filter",
     "//testing/buildbot/filters/android.pie_arm64_rel.gl_tests.filter",
   ]
 }

@@ -232,9 +232,14 @@ function onChooseDesktopMediaPort(port) {
     if (method == 'chooseDesktopMedia') {
       const sources = message['sources'];
       let cancelId = null;
-      if (port.sender.tab) {
+      const tab = port.sender.tab;
+      if (tab) {
+        // Per crbug.com/425344, in order to allow an <iframe> on a different
+        // domain, to get desktop media, we need to set the tab.url to match
+        // the <iframe>, even though it doesn't really load the new url.
+        tab.url = port.sender.url;
         cancelId = chrome.desktopCapture.chooseDesktopMedia(
-            sources, port.sender.tab, sendResponse);
+            sources, tab, sendResponse);
       } else {
         const requestInfo = {};
         requestInfo['guestProcessId'] = port.sender.guestProcessId || 0;
@@ -246,7 +251,7 @@ function onChooseDesktopMediaPort(port) {
       port.onDisconnect.addListener(function() {
         // This method has no effect if called after the user has selected a
         // desktop media source, so it does not need to be conditional.
-        if (port.sender.tab) {
+        if (tab) {
           chrome.desktopCapture.cancelChooseDesktopMedia(cancelId);
         } else {
           chrome.webrtcDesktopCapturePrivate.cancelChooseDesktopMedia(cancelId);

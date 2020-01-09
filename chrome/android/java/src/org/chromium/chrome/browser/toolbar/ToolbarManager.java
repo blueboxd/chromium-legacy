@@ -250,7 +250,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
     private int mCurrentOrientation;
 
-    /** Runnable for the home button when Start Surface home page is enabled. */
+    /**
+     * Runnable for the home and search accelerator button when Start Surface home page is enabled.
+     */
     private Supplier<Boolean> mShowStartSurfaceSupplier;
 
     /**
@@ -801,6 +803,11 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         final OnClickListener searchAcceleratorListener = v -> {
             recordBottomToolbarUseForIPH();
             ACCELERATOR_BUTTON_TAP_ACTION.record();
+
+            // Only switch to HomePage when overview is showing.
+            if (mOverviewModeBehavior.overviewVisible()) {
+                mShowStartSurfaceSupplier.get();
+            }
             setUrlBarFocus(true, LocationBar.OmniboxFocusReason.ACCELERATOR_TAP);
         };
 

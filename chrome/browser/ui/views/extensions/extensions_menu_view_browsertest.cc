@@ -288,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
   ShowUi("");
   VerifyUi();
 
-  ExtensionsContainer* const extensions_container =
+  ExtensionsToolbarContainer* const extensions_container =
       BrowserView::GetBrowserViewForBrowser(browser())
           ->toolbar()
           ->extensions_container();
@@ -307,6 +307,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
             visible_icons[0]->view_controller());
 
   extensions_container->HideActivePopup();
+
+  // Wait for animations to finish.
+  base::RunLoop loop;
+  extensions_container->animating_layout_manager()->PostOrQueueAction(
+      loop.QuitClosure());
+  loop.Run();
 
   // After dismissing the popup there should no longer be a popped-out action
   // and the icon should no longer be visible in the extensions container.

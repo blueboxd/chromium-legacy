@@ -4,8 +4,6 @@
 
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 
-#include "base/metrics/histogram_macros.h"
-#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
@@ -57,12 +55,7 @@ void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id,
   hit_test_debug_ = false;
   hit_test_debug_ask_regions_ = 0;
 
-  base::ElapsedTimer aggregate_timer;
   AppendRoot(display_surface_id);
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("Event.VizHitTest.AggregateTimeUs",
-                                          aggregate_timer.Elapsed(),
-                                          base::TimeDelta::FromMicroseconds(1),
-                                          base::TimeDelta::FromSeconds(10), 50);
   SendHitTestData();
 
   if (hit_test_debug_ && render_passes) {
@@ -192,7 +185,6 @@ void HitTestAggregator::AppendRoot(const SurfaceId& surface_id) {
 
   DCHECK_GE(region_index, 1u);
   int32_t child_count = region_index - 1;
-  UMA_HISTOGRAM_COUNTS_1000("Event.VizHitTest.HitTestRegions", region_index);
   SetRegionAt(0, surface_id.frame_sink_id(), hit_test_region_list->flags,
               hit_test_region_list->async_hit_test_reasons,
               hit_test_region_list->bounds, hit_test_region_list->transform,

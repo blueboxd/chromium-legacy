@@ -9,8 +9,7 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-driver-flag=--enable-blink-features=LayoutNGFragmentItem",
-          "--fuzzy-diff"
+          "--additional-driver-flag=--enable-blink-features=LayoutNGFragmentItem"
         ],
         "isolate_name": "blink_web_tests",
         "merge": {
@@ -42,8 +41,7 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-driver-flag=--enable-blink-features=LayoutNGFragmentPaint",
-          "--fuzzy-diff"
+          "--additional-driver-flag=--enable-blink-features=LayoutNGFragmentPaint"
         ],
         "isolate_name": "blink_web_tests",
         "merge": {

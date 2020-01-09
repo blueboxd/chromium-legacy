@@ -349,13 +349,11 @@
 <translation id="5854790677617711513">مرّ عليها أكثر من 30 يومًا</translation>
 <translation id="5857090052475505287">مجلد جديد</translation>
 <translation id="5857770089550859117">عبارة المرور مطلوبة لبدء المزامنة.</translation>
-<translation id="5860033963881614850">غير مفعّل</translation>
 <translation id="5869029295770560994">حسنًا</translation>
 <translation id="5871497086027727873">تم نقل عنصر واحد</translation>
 <translation id="5897956970858271241">الانتقال إلى الرابط المنسوخ</translation>
 <translation id="5911030830365207728">‏الترجمة من Google</translation>
 <translation id="5913600720976431809">خيارات ترجمة الصفحة</translation>
-<translation id="5916664084637901428">مفعّل</translation>
 <translation id="5938160824633642847">جهازك ممتلئ تقريبًا. يمكنك إخلاء بعض المساحة وإعادة المحاولة.</translation>
 <translation id="5948291296578561264">يسمح لك ذلك بحفظ الصور في مكتبة صورك.</translation>
 <translation id="5955891643922670672">عرض النسخة بلا إنترنت</translation>
@@ -484,7 +482,7 @@
 <translation id="7464701184726199289">يمحو هذا الخيار البيانات المتزامنة من كافة الأجهزة. لن يتم حذف إعدادات موقع الويب المحفوظة وقد تعكس عادات التصفح. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">اسم الشركة</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
-<translation id="750493650310597496">لم يتم تحديد أي إشارات</translation>
+<translation id="750493650310597496">لم يتم اختيار أي إشارات</translation>
 <translation id="7514365320538308">تنزيل</translation>
 <translation id="7537586195939242955">‏عذرًا، لا يمكن أن تكون بطاقتك مثبتة على Passbook في الوقت الحالي.</translation>
 <translation id="7554791636758816595">علامة تبويب جديدة</translation>

@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
+#include "third_party/skia/include/docs/SkPDFDocument.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
 namespace cc {
@@ -1395,9 +1396,11 @@ void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
                                      const PaintFlags* flags,
                                      SkCanvas* canvas,
                                      const PlaybackParams& params) {
+  SkPDF::SetNodeId(canvas, op->node_id);
   flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
     c->drawTextBlob(op->blob.get(), op->x, op->y, p);
   });
+  SkPDF::SetNodeId(canvas, 0);
 }
 
 void RestoreOp::Raster(const RestoreOp* op,

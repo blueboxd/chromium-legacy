@@ -22,7 +22,8 @@
         {
             "app": "ios_chrome_ui_eg2tests_module",
             "host": "ios_chrome_eg2tests",
-            "shards": 2
+            "shards": 2,
+            "shard size": 20
         },
         {
             "app": "ios_chrome_web_eg2tests_module",

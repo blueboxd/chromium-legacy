@@ -8,6 +8,7 @@
 #include <set>
 
 #include "ios/chrome/browser/overlays/public/overlay_request_callback_installer.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 class OverlayResponseSupport;
 
@@ -24,6 +25,21 @@ class FakeOverlayRequestCallbackReceiver {
   virtual void DispatchCallback(OverlayRequest* request,
                                 const OverlayResponseSupport* response_support,
                                 OverlayResponse* response) = 0;
+};
+
+// Mock version of the fake callback receiver receiver.
+class MockOverlayRequestCallbackReceiver
+    : public FakeOverlayRequestCallbackReceiver {
+ public:
+  MockOverlayRequestCallbackReceiver();
+  ~MockOverlayRequestCallbackReceiver();
+
+  MOCK_METHOD2(CompletionCallback,
+               void(OverlayRequest* request, OverlayResponse* response));
+  MOCK_METHOD3(DispatchCallback,
+               void(OverlayRequest* request,
+                    const OverlayResponseSupport* response_support,
+                    OverlayResponse* response));
 };
 
 // OverlayRequestCallbackInstaller subclass used for testing.  Sets up callbacks

@@ -430,72 +430,6 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   browser_->tab_strip_model()->AddObserver(this);
   immersive_mode_controller_ = chrome::CreateImmersiveModeController();
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
-
-  // Top container holds tab strip region and toolbar and lives at the front of
-  // the view hierarchy.
-  top_container_ = AddChildView(std::make_unique<TopContainerView>(this));
-  tab_strip_region_view_ =
-      top_container_->AddChildView(std::make_unique<TabStripRegionView>());
-
-  // TabStrip takes ownership of the controller.
-  auto tabstrip_controller = std::make_unique<BrowserTabStripController>(
-      browser_->tab_strip_model(), this);
-  BrowserTabStripController* tabstrip_controller_ptr =
-      tabstrip_controller.get();
-  tabstrip_ = tab_strip_region_view_->AddChildView(std::make_unique<TabStrip>(
-      std::move(tabstrip_controller)));  // Takes ownership.
-  tabstrip_controller_ptr->InitFromModel(tabstrip_);
-
-  // Create WebViews early so |webui_tab_strip_| can observe their size.
-  auto devtools_web_view =
-      std::make_unique<views::WebView>(browser_->profile());
-  devtools_web_view->SetID(VIEW_ID_DEV_TOOLS_DOCKED);
-  devtools_web_view->SetVisible(false);
-
-  auto contents_web_view =
-      std::make_unique<ContentsWebView>(browser_->profile());
-  contents_web_view->SetID(VIEW_ID_TAB_CONTAINER);
-  contents_web_view->SetEmbedFullscreenWidgetMode(true);
-
-  auto contents_container = std::make_unique<views::View>();
-  devtools_web_view_ =
-      contents_container->AddChildView(std::move(devtools_web_view));
-  contents_web_view_ =
-      contents_container->AddChildView(std::move(contents_web_view));
-  contents_container->SetLayoutManager(std::make_unique<ContentsLayoutManager>(
-      devtools_web_view_, contents_web_view_));
-
-  toolbar_ = top_container_->AddChildView(
-      std::make_unique<ToolbarView>(browser_.get(), this));
-
-  contents_separator_ =
-      top_container_->AddChildView(std::make_unique<ContentsSeparator>());
-
-  web_contents_close_handler_ =
-      std::make_unique<WebContentsCloseHandler>(contents_web_view_);
-
-  contents_container_ = AddChildView(std::move(contents_container));
-  set_contents_view(contents_container_);
-
-  // InfoBarContainer needs to be added as a child here for drop-shadow, but
-  // needs to come after toolbar in focus order (see EnsureFocusOrder()).
-  infobar_container_ =
-      AddChildView(std::make_unique<InfoBarContainerView>(this));
-
-  InitStatusBubble();
-
-  // Create do-nothing view for the sake of controlling the z-order of the find
-  // bar widget.
-  find_bar_host_view_ = AddChildView(std::make_unique<View>());
-
-#if defined(OS_WIN)
-  // Create a custom JumpList and add it to an observer of TabRestoreService
-  // so we can update the custom JumpList when a tab is added or removed.
-  if (JumpList::Enabled())
-    load_complete_listener_ = std::make_unique<LoadCompleteListener>(this);
-#endif
-
-  MaybeInitializeWebUITabStrip();
 }
 
 BrowserView::~BrowserView() {
@@ -2545,78 +2479,19 @@ void BrowserView::OnGestureEvent(ui::GestureEvent* event) {
 
 void BrowserView::ViewHierarchyChanged(
     const views::ViewHierarchyChangedDetails& details) {
-  // Override here in order to suppress the call to
-  // views::ClientView::ViewHierarchyChanged();
-}
+  if (details.child != this)
+    return;
 
-void BrowserView::AddedToWidget() {
-  views::ClientView::AddedToWidget();
+  // On removal, this class may not have a widget anymore, so go to the parent.
+  auto* widget = details.is_add ? GetWidget() : details.parent->GetWidget();
+  if (!widget)
+    return;
 
-#if defined(OS_CHROMEOS)
-  // TopControlsSlideController must be initialized here in AddedToWidget()
-  // rather than Init() as it depends on the browser frame being ready.
-  if (IsBrowserTypeNormal()) {
-    DCHECK(frame_);
-    top_controls_slide_controller_ =
-        std::make_unique<TopControlsSlideControllerChromeOS>(this);
+  bool init = !initialized_ && details.is_add;
+  if (init) {
+    InitViews();
+    initialized_ = true;
   }
-#endif
-
-  GetWidget()->AddObserver(this);
-
-  // Stow a pointer to this object onto the window handle so that we can get at
-  // it later when all we have is a native view.
-  GetWidget()->SetNativeWindowProperty(kBrowserViewKey, this);
-
-  // Stow a pointer to the browser's profile onto the window handle so that we
-  // can get it later when all we have is a native view.
-  GetWidget()->SetNativeWindowProperty(Profile::kProfileKey,
-                                       browser_->profile());
-
-#if defined(USE_AURA)
-  // Stow a pointer to the browser's profile onto the window handle so
-  // that windows will be styled with the appropriate NativeTheme.
-  SetThemeProfileForWindow(GetNativeWindow(), browser_->profile());
-#endif
-
-  toolbar_->Init();
-
-  LoadAccelerators();
-
-  // |immersive_mode_controller_| may depend on the presence of a Widget, so it
-  // is initialized here.
-  immersive_mode_controller_->Init(this);
-  immersive_mode_controller_->AddObserver(this);
-
-  // See https://crbug.com/993502.
-  views::View* web_footer_experiment = nullptr;
-  if (base::FeatureList::IsEnabled(features::kWebFooterExperiment)) {
-    web_footer_experiment = AddChildView(
-        std::make_unique<WebFooterExperimentView>(browser_->profile()));
-  }
-
-  // TODO(https://crbug.com/1036519): Remove BrowserViewLayout dependence on
-  // Widget and move to the constructor.
-  auto browser_view_layout = std::make_unique<BrowserViewLayout>(
-      std::make_unique<BrowserViewLayoutDelegateImpl>(this),
-      GetWidget()->GetNativeView(), this, top_container_,
-      tab_strip_region_view_, tabstrip_, toolbar_, infobar_container_,
-      contents_container_, immersive_mode_controller_.get(),
-      web_footer_experiment, contents_separator_);
-  SetLayoutManager(std::move(browser_view_layout));
-
-  EnsureFocusOrder();
-
-  // This browser view may already have a custom button provider set (e.g the
-  // hosted app frame).
-  if (!toolbar_button_provider_)
-    SetToolbarButtonProvider(toolbar_);
-
-  frame_->OnBrowserViewInitViewsComplete();
-  frame_->GetFrameView()->UpdateMinimumSize();
-  using_native_frame_ = frame_->ShouldUseNativeFrame();
-
-  initialized_ = true;
 }
 
 void BrowserView::PaintChildren(const views::PaintInfo& paint_info) {
@@ -2693,6 +2568,131 @@ bool BrowserView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 void BrowserView::InfoBarContainerStateChanged(bool is_animating) {
   ToolbarSizeChanged(is_animating);
+}
+
+void BrowserView::InitViews() {
+  // TopControlsSlideController must be initialized here in InitViews() rather
+  // than Init() as it depends on the browser frame being ready.
+#if defined(OS_CHROMEOS)
+  if (IsBrowserTypeNormal()) {
+    DCHECK(frame_);
+    top_controls_slide_controller_ =
+        std::make_unique<TopControlsSlideControllerChromeOS>(this);
+  }
+#endif
+
+  GetWidget()->AddObserver(this);
+
+  // Stow a pointer to this object onto the window handle so that we can get at
+  // it later when all we have is a native view.
+  GetWidget()->SetNativeWindowProperty(kBrowserViewKey, this);
+
+  // Stow a pointer to the browser's profile onto the window handle so that we
+  // can get it later when all we have is a native view.
+  GetWidget()->SetNativeWindowProperty(Profile::kProfileKey,
+                                       browser_->profile());
+
+#if defined(USE_AURA)
+  // Stow a pointer to the browser's profile onto the window handle so
+  // that windows will be styled with the appropriate NativeTheme.
+  SetThemeProfileForWindow(GetNativeWindow(), browser_->profile());
+#endif
+
+  LoadAccelerators();
+
+  // Top container holds tab strip region and toolbar and lives at the front of
+  // the view hierarchy.
+  top_container_ = new TopContainerView(this);
+  AddChildView(top_container_);
+  tab_strip_region_view_ = new TabStripRegionView();
+  top_container_->AddChildView(tab_strip_region_view_);
+
+  // TabStrip takes ownership of the controller.
+  BrowserTabStripController* tabstrip_controller =
+      new BrowserTabStripController(browser_->tab_strip_model(), this);
+  tabstrip_ =
+      new TabStrip(std::unique_ptr<TabStripController>(tabstrip_controller));
+  tab_strip_region_view_->AddChildView(tabstrip_);  // Takes ownership.
+  tabstrip_controller->InitFromModel(tabstrip_);
+
+  // Create WebViews early so |webui_tab_strip_| can observe their size.
+  devtools_web_view_ = new views::WebView(browser_->profile());
+  devtools_web_view_->SetID(VIEW_ID_DEV_TOOLS_DOCKED);
+  devtools_web_view_->SetVisible(false);
+
+  contents_web_view_ = new ContentsWebView(browser_->profile());
+  contents_web_view_->SetID(VIEW_ID_TAB_CONTAINER);
+  contents_web_view_->SetEmbedFullscreenWidgetMode(true);
+
+  contents_container_ = new views::View();
+  contents_container_->AddChildView(devtools_web_view_);
+  contents_container_->AddChildView(contents_web_view_);
+  contents_container_->SetLayoutManager(std::make_unique<ContentsLayoutManager>(
+      devtools_web_view_, contents_web_view_));
+
+  toolbar_ = top_container_->AddChildView(
+      std::make_unique<ToolbarView>(browser_.get(), this));
+  toolbar_->Init();
+
+  contents_separator_ =
+      top_container_->AddChildView(std::make_unique<ContentsSeparator>());
+
+  // This browser view may already have a custom button provider set (e.g the
+  // hosted app frame).
+  if (!toolbar_button_provider_)
+    SetToolbarButtonProvider(toolbar_);
+
+  web_contents_close_handler_.reset(
+      new WebContentsCloseHandler(contents_web_view_));
+
+  AddChildView(contents_container_);
+  set_contents_view(contents_container_);
+
+  // InfoBarContainer needs to be added as a child here for drop-shadow, but
+  // needs to come after toolbar in focus order (see EnsureFocusOrder()).
+  infobar_container_ = new InfoBarContainerView(this);
+  AddChildView(infobar_container_);
+
+  InitStatusBubble();
+
+  // Create do-nothing view for the sake of controlling the z-order of the find
+  // bar widget.
+  find_bar_host_view_ = new View();
+  AddChildView(find_bar_host_view_);
+
+  immersive_mode_controller_->Init(this);
+  immersive_mode_controller_->AddObserver(this);
+
+  // See https://crbug.com/993502.
+  views::View* web_footer_experiment = nullptr;
+  if (base::FeatureList::IsEnabled(features::kWebFooterExperiment)) {
+    web_footer_experiment = AddChildView(
+        std::make_unique<WebFooterExperimentView>(browser_->profile()));
+  }
+
+  auto browser_view_layout = std::make_unique<BrowserViewLayout>(
+      std::make_unique<BrowserViewLayoutDelegateImpl>(this),
+      GetWidget()->GetNativeView(), this, top_container_,
+      tab_strip_region_view_, tabstrip_, toolbar_, infobar_container_,
+      contents_container_, immersive_mode_controller_.get(),
+      web_footer_experiment, contents_separator_);
+  SetLayoutManager(std::move(browser_view_layout));
+
+  EnsureFocusOrder();
+
+#if defined(OS_WIN)
+  // Create a custom JumpList and add it to an observer of TabRestoreService
+  // so we can update the custom JumpList when a tab is added or removed.
+  if (JumpList::Enabled()) {
+    load_complete_listener_ = std::make_unique<LoadCompleteListener>(this);
+  }
+#endif
+
+  frame_->OnBrowserViewInitViewsComplete();
+  frame_->GetFrameView()->UpdateMinimumSize();
+  using_native_frame_ = frame_->ShouldUseNativeFrame();
+
+  MaybeInitializeWebUITabStrip();
 }
 
 void BrowserView::MaybeInitializeWebUITabStrip() {

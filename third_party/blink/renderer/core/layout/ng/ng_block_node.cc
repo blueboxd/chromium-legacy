@@ -1386,4 +1386,8 @@ void NGBlockNode::StoreMargins(const NGConstraintSpace& constraint_space,
   box_->SetMargin(physical_margins);
 }
 
+void NGBlockNode::StoreMargins(const NGPhysicalBoxStrut& physical_margins) {
+  box_->SetMargin(physical_margins);
+}
+
 }  // namespace blink

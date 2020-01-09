@@ -48,6 +48,7 @@ class OverlayPresenterImpl : public BrowserObserver,
   };
 
   // OverlayPresenter:
+  OverlayModality GetModality() const override;
   void SetPresentationContext(
       OverlayPresentationContext* presentation_context) override;
   void AddObserver(OverlayPresenterObserver* observer) override;

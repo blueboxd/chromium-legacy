@@ -718,8 +718,14 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
     // resolve the block-size of the descendant, except when in quirks mode.
     // Flexboxes follow strict behavior even in quirks mode, though.
     if (!GetDocument().InQuirksMode() ||
-        cb->IsFlexibleBoxIncludingDeprecatedAndNG())
+        cb->IsFlexibleBoxIncludingDeprecatedAndNG()) {
+      if (this_box &&
+          this_box->HasOverrideContainingBlockContentLogicalHeight()) {
+        return this_box->OverrideContainingBlockContentLogicalHeight() ==
+               LayoutUnit(-1);
+      }
       return !cb->HasDefiniteLogicalHeight();
+    }
   }
 
   return false;

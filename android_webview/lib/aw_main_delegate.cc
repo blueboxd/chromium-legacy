@@ -186,9 +186,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
       cl->AppendSwitch(switches::kWebViewEnableSharedImage);
       features.EnableIfNotSet(::features::kUseSkiaRenderer);
     } else {
-      // Disable OOP-D if viz for WebView not enabled.
-      features.DisableIfNotSet(::features::kVizDisplayCompositor);
-
       // Viz for WebView is required to support embedding CompositorFrameSinks
       // which is needed for UseSurfaceLayerForVideo feature.
       // https://crbug.com/853832

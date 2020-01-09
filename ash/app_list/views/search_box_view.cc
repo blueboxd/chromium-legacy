@@ -80,6 +80,12 @@ float GetAssistantButtonOpacityForState(AppListState state) {
   return 1.f;
 }
 
+bool IsTrimmedQueryEmpty(const base::string16& query) {
+  base::string16 trimmed_query;
+  base::TrimWhitespace(query, base::TrimPositions::TRIM_ALL, &trimmed_query);
+  return trimmed_query.empty();
+}
+
 }  // namespace
 
 SearchBoxView::SearchBoxView(search_box::SearchBoxViewDelegate* delegate,
@@ -100,6 +106,7 @@ void SearchBoxView::Init(bool is_tablet_mode) {
   if (app_list_features::IsZeroStateSuggestionsEnabled())
     set_show_close_button_when_active(true);
   SearchBoxViewBase::Init();
+  current_query_ = search_box()->GetText();
 }
 
 void SearchBoxView::ResetForShow() {
@@ -115,6 +122,7 @@ void SearchBoxView::ResetForShow() {
 
 void SearchBoxView::ClearSearch() {
   search_box::SearchBoxViewBase::ClearSearch();
+  current_query_.clear();
   app_list_view_->SetStateFromSearchBoxView(
       true, false /*triggered_by_contents_change*/);
 }
@@ -494,6 +502,12 @@ void SearchBoxView::ClearAutocompleteText() {
 
 void SearchBoxView::ContentsChanged(views::Textfield* sender,
                                     const base::string16& new_contents) {
+  if (IsTrimmedQueryEmpty(current_query_) && !IsSearchBoxTrimmedQueryEmpty()) {
+    // User enters a new search query. Record the action.
+    base::RecordAction(base::UserMetricsAction("AppList_SearchQueryStarted"));
+  }
+  current_query_ = new_contents;
+
   // Update autocomplete text highlight range to track user typed text.
   if (ShouldProcessAutocomplete())
     ResetHighlightRange();

@@ -239,7 +239,6 @@ void SetupSandboxParameters(service_manager::SandboxType sandbox_type,
       SetupPPAPISandboxParameters(client);
 #endif
       break;
-    case service_manager::SandboxType::kProfiling:
     case service_manager::SandboxType::kUtility:
       SetupUtilitySandboxParameters(client, command_line);
       break;

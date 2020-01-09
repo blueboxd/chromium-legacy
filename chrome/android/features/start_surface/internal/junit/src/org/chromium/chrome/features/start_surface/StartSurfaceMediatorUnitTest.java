@@ -501,7 +501,7 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
         assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(false));
 
-        mediator.finishedHiding();
+        mediator.startedHiding();
         assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.NOT_SHOWN));
         assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(false));
     }
@@ -562,7 +562,7 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_INCOGNITO), equalTo(true));
 
         mediator.hideOverview(false);
-        mediator.finishedHiding();
+        mediator.startedHiding();
         assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.NOT_SHOWN));
         assertThat(mPropertyModel.get(IS_SECONDARY_SURFACE_VISIBLE), equalTo(false));
     }

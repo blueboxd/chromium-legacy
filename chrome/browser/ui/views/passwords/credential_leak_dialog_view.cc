@@ -138,7 +138,9 @@ bool CredentialLeakDialogView::Close() {
 }
 
 int CredentialLeakDialogView::GetDialogButtons() const {
-  return controller_->ShouldShowCancelButton()
+  // |controller_| can be nullptr when the framework calls this method after a
+  // button click.
+  return controller_ && controller_->ShouldShowCancelButton()
              ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
              : ui::DIALOG_BUTTON_OK;
 }
@@ -153,7 +155,9 @@ void CredentialLeakDialogView::OnThemeChanged() {
 }
 
 base::string16 CredentialLeakDialogView::GetWindowTitle() const {
-  return controller_->GetTitle();
+  // |controller_| can be nullptr when the framework calls this method after a
+  // button click.
+  return controller_ ? controller_->GetTitle() : base::string16();
 }
 
 void CredentialLeakDialogView::InitWindow() {

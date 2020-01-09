@@ -41,7 +41,7 @@ body {
 }
 
 .calendar-navigation-button:hover {
-  background-color: #E5E5E5;
+  background-color: rgba(0, 117, 255, 0.3);
 }
 
 .calendar-navigation-button:disabled {
@@ -92,7 +92,7 @@ body {
   border: 1px solid transparent !important;
   border-radius: 2px;
   color: #767676;
-  padding: 1px;
+  padding: 1px !important;
   text-align: center;
 }
 
@@ -103,28 +103,21 @@ body {
 .day-cell.highlighted,
 .month-button.highlighted,
 .week-number-cell.highlighted {
-  background-color: #E5E5E5;
+  background-color: rgba(0, 117, 255, 0.3);
 }
 
 .day-cell.selected,
 .month-button.selected,
 .week-number-cell.selected {
-  background-color: #CECECE;
+  background-color: #0075FF;
+  color: #FFFFFF;
   font-weight: bold;
 }
 
 .day-cell.highlighted.today,
 .day-cell.today,
 .month-button.today {
-  background-color: #6E6E6E;
-  border: 0;
-  color: #FFFFFF;
-  font-weight: bold;
-}
-
-.day-cell.selected.today,
-.month-button.selected.today {
-  border: 2px solid #CECECE !important;
+  border-color: #767676 !important;
 }
 
 .day-cell.disabled,
@@ -148,7 +141,7 @@ body {
 }
 
 .today-button-refresh:hover {
-  background-color: #E5E5E5;
+  background-color: rgba(0, 117, 255, 0.3);
 }
 
 .today-button-refresh:disabled {
@@ -272,14 +265,7 @@ body {
   .day-cell.highlighted.today,
   .day-cell.today,
   .month-button.today {
-    background-color: Highlight;
-    border: 2px solid Window !important;
-    color: Window;
-  }
-
-  .day-cell.selected.today,
-  .month-button.selected.today {
-    border: 1px solid Window !important;
+    border-color: WindowText !important;
   }
 
   .day-cell.disabled,

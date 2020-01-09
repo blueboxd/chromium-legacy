@@ -6,21 +6,19 @@
 #define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_COMMON_INFOBARS_INFOBAR_OVERLAY_REQUEST_CONFIG_H_
 
 #import "ios/chrome/browser/infobars/infobar_type.h"
-#include "ios/chrome/browser/overlays/public/overlay_user_data.h"
+#include "ios/chrome/browser/overlays/public/overlay_request_config.h"
 
-namespace infobars {
-class InfoBar;
-}
+class InfoBarIOS;
 
 // OverlayUserData used to hold a pointer to an InfoBar.  Used as auxiliary
 // data for OverlayRequests for InfoBars.
 class InfobarOverlayRequestConfig
-    : public OverlayUserData<InfobarOverlayRequestConfig> {
+    : public OverlayRequestConfig<InfobarOverlayRequestConfig> {
  public:
   ~InfobarOverlayRequestConfig() override;
 
   // The InfoBar that triggered this OverlayRequest.
-  infobars::InfoBar* infobar() const { return infobar_; }
+  InfoBarIOS* infobar() const { return infobar_; }
   // |infobar_|'s type.
   InfobarType infobar_type() const { return infobar_type_; }
   // Whether |infobar_| has a badge.
@@ -28,9 +26,9 @@ class InfobarOverlayRequestConfig
 
  private:
   OVERLAY_USER_DATA_SETUP(InfobarOverlayRequestConfig);
-  explicit InfobarOverlayRequestConfig(infobars::InfoBar* infobar);
+  explicit InfobarOverlayRequestConfig(InfoBarIOS* infobar);
 
-  infobars::InfoBar* infobar_ = nullptr;
+  InfoBarIOS* infobar_ = nullptr;
   InfobarType infobar_type_;
   bool has_badge_ = false;
 };

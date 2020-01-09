@@ -15,7 +15,6 @@
 #include "components/exo/surface_tree_host.h"
 #include "components/exo/wm_helper.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/base/cursor/cursor.h"
@@ -48,7 +47,6 @@ class SurfaceTreeHost;
 class Pointer : public SurfaceTreeHost,
                 public SurfaceObserver,
                 public ui::EventHandler,
-                public aura::client::CaptureClientObserver,
                 public aura::client::CursorClientObserver,
                 public aura::client::FocusChangeObserver {
  public:
@@ -81,10 +79,6 @@ class Pointer : public SurfaceTreeHost,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // Overridden from aura::client::CaptureClientObserver:
-  void OnCaptureChanged(aura::Window* lost_capture,
-                        aura::Window* gained_capture) override;
 
   // Overridden from aura::client::CursorClientObserver:
   void OnCursorSizeChanged(ui::CursorSize cursor_size) override;
@@ -161,8 +155,9 @@ class Pointer : public SurfaceTreeHost,
   // Moves the cursor to center of the active display.
   void MoveCursorToCenterOfActiveDisplay();
 
-  // Process the delta for relative pointer motion.
-  void HandleRelativePointerMotion(base::TimeTicks time_stamp,
+  // Process the delta for relative pointer motion. Returns true if relative
+  // motion was sent to the delegate, false otherwise.
+  bool HandleRelativePointerMotion(base::TimeTicks time_stamp,
                                    gfx::PointF location_in_target);
 
   // The delegate instance that all events are dispatched to.
@@ -192,7 +187,7 @@ class Pointer : public SurfaceTreeHost,
   // location of a generated move that was sent which should not be forwarded.
   base::Optional<gfx::Point> location_synthetic_move_;
 
-  // The window with input capture. Pointer capture is enabled if and only if
+  // The window with pointer capture. Pointer capture is enabled if and only if
   // this is not null.
   aura::Window* capture_window_ = nullptr;
 

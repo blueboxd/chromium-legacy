@@ -23,6 +23,9 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 /**
  * Android implementation of the authenticator.mojom interface.
  */
@@ -41,8 +44,12 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
             .Callback2<Integer, MakeCredentialAuthenticatorResponse> mMakeCredentialCallback;
     private org.chromium.mojo.bindings.Callbacks
             .Callback2<Integer, GetAssertionAuthenticatorResponse> mGetAssertionCallback;
-    private org.chromium.mojo.bindings.Callbacks
-            .Callback1<Boolean> mIsUserVerifyingPlatformAuthenticatorAvailableCallback;
+    // A queue is used to store pending IsUserVerifyingPlatformAuthenticatorAvailable request
+    // callbacks when there are multiple requests pending on the result from GMSCore. Noted that
+    // the callbacks may not be invoked in the same order as the pending requests, which in this
+    // situation does not matter because all pending requests will return the same value.
+    private Queue<org.chromium.mojo.bindings.Callbacks.Callback1<Boolean>>
+            mIsUserVerifyingPlatformAuthenticatorAvailableCallbackQueue = new LinkedList<>();
 
     /**
      * Builds the Authenticator service implementation.
@@ -111,7 +118,7 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
 
         if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
                 >= GMSCORE_MIN_VERSION_ISUVPAA) {
-            mIsUserVerifyingPlatformAuthenticatorAvailableCallback = callback;
+            mIsUserVerifyingPlatformAuthenticatorAvailableCallbackQueue.add(callback);
             Fido2ApiHandler.getInstance().isUserVerifyingPlatformAuthenticatorAvailable(
                     mRenderFrameHost, this);
         } else if (PackageUtils.getPackageVersion(context, GMSCORE_PACKAGE_NAME)
@@ -151,9 +158,8 @@ public class AuthenticatorImpl extends HandlerResponseCallback implements Authen
 
     @Override
     public void onIsUserVerifyingPlatformAuthenticatorAvailableResponse(boolean isUVPAA) {
-        assert mIsUserVerifyingPlatformAuthenticatorAvailableCallback != null;
-        mIsUserVerifyingPlatformAuthenticatorAvailableCallback.call(isUVPAA);
-        mIsUserVerifyingPlatformAuthenticatorAvailableCallback = null;
+        assert !mIsUserVerifyingPlatformAuthenticatorAvailableCallbackQueue.isEmpty();
+        mIsUserVerifyingPlatformAuthenticatorAvailableCallbackQueue.poll().call(isUVPAA);
     }
 
     @Override

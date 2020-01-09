@@ -10,10 +10,10 @@
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_push_fifo.h"
-#include "third_party/blink/public/platform/web_audio_destination_consumer.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/mediastream/webaudio_destination_consumer.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ class PLATFORM_EXPORT WebAudioMediaStreamSource final
   // concurrently across threads, but these methods could be called on any
   // thread.
   void SetFormat(size_t number_of_channels, float sample_rate) override;
-  void ConsumeAudio(const WebVector<const float*>& audio_data,
+  void ConsumeAudio(const Vector<const float*>& audio_data,
                     size_t number_of_frames) override;
 
   // Called by AudioPushFifo zero or more times during the call to

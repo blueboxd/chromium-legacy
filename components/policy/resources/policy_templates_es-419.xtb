@@ -250,13 +250,6 @@
           Esta política proporciona un valor de resguardo para las políticas <ph name="IDLE_ACTION_AC_POLICY_NAME" /> y <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> más específicas. Si se configura esta política, se utilizará su valor cuando no se establece la política más específica correspondiente.
 
           Si no se configura, no se verá afectado el comportamiento de las políticas más específicas.</translation>
-<translation id="1383493480903114193">Esta política fuerza la ejecución del código de red en el proceso de navegación.
-
-      Está inhabilitada de forma predeterminada, pero, si se habilita, deja a los usuarios desprotegidos frente a problemas de seguridad una vez que el proceso de red se encuentre en la zona de pruebas.
-
-      Esta política permite que las empresas migren a software de terceros sin necesidad de modificar las API de red. Se recomiendan los servidores Proxy antes que los LSP y la aplicación de parches de API Win32.
-
-      Si no se establece esta política, es posible que el código de red se agote en el proceso del navegador en función de las pruebas de campo del experimento NetworkService.</translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Informa el estado de la actualización del SO</translation>
 <translation id="1393485621820363363">Impresoras empresariales habilitadas asociadas a dispositivos</translation>
@@ -4161,21 +4154,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se establece esta política, el código de acceso superior podrá verificarse en el dispositivo del usuario menor de edad.
       Si no se establece, no es posible verificar el código en esos dispositivos.</translation>
 <translation id="7625444193696794922">Especifica el canal de publicaciones al que debe conectarse este dispositivo.</translation>
-<translation id="7625498350540361483">
-      Si se establece la política como verdadera, <ph name="PRODUCT_NAME" /> podrá recopilar registros de acontecimientos de WebRTC de los servicios de Google (p. ej., Google Meet) y subir esos registros a Google.
-
-      Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá recopilar ni subir esos registros.
-
-      Si no se establece, hasta la versión M76 inclusive, <ph name="PRODUCT_NAME" /> no podrá recopilar ni subir esos registros.
-
-      En cambio, a partir de la versión M77, <ph name="PRODUCT_NAME" /> podrá recopilarlos y subirlos de forma predeterminada si se considera que el perfil del navegador está administrado, es decir, si el perfil recibe políticas de nube o de la máquina y no se trata de un perfil de incógnito, de acceso, efímero o de un niño.
-
-      Estos registros contienen información de diagnóstico que resulta útil para depurar problemas con llamadas de video o audio en Chrome, como el momento en que se enviaron y recibieron paquetes RTP (y el tamaño de estos), comentarios sobre la congestión en la red y metadatos sobre el tiempo y la calidad de los cuadros de video y audio. Estos registros no tienen contenido de audio ni video de la llamada.
-
-      Esta recopilación de datos por parte de Chrome solo se puede activar a través de los servicios web de Google, como Google Hangouts o Google Meet.
-
-      Con el fin de simplificar la depuración, Google puede asociar estos registros, por medio de un ID de sesión, con otros registros recopilados por el servicio de Google en sí.
-      </translation>
 <translation id="7632724434767231364">Nombre de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Si se establece la configuración regional de la aplicación en <ph name="PRODUCT_NAME" />, los usuarios no podrán cambiarla. Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> usará aquella que se especificó. Si la configuración regional no es compatible, se usará "en-US" en su lugar. Si esta opción se inhabilita o no se configura, <ph name="PRODUCT_NAME" /> usará la configuración regional preferida que haya especificado el usuario (si está configurada), la configuración regional del sistema o la configuración regional alternativa "en-US".</translation>
 <translation id="7643883929273267746">Restringir las cuentas visibles en <ph name="PRODUCT_NAME" /></translation>

@@ -76,7 +76,7 @@
       'Android WebView P Blink-CORS FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'Android WebView P FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'android-marshmallow-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_resource_whitelisting',
-      'android-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86',
+      'android-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_webview_google',
       'android-bfcache-debug': 'android_debug_static_bot',
     },
 
@@ -678,7 +678,7 @@
       'android-pie-arm64-coverage-rel': 'android_release_trybot_arm64_webview_google_native_coverage',
       'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google',
       'android-webview-pie-arm64-fyi-rel': 'android_release_trybot_arm64_webview_google',
-      'android-pie-x86-fyi-rel': 'android_release_trybot_x86',
+      'android-pie-x86-fyi-rel': 'android_release_trybot_x86_webview_google',
       'android-webview-marshmallow-arm64-dbg': 'android_release_trybot_arm64_webview_google',
       'android-webview-nougat-arm64-dbg': 'android_release_trybot_arm64_webview_google',
       'android-webview-oreo-arm64-dbg': 'android_release_trybot_arm64_webview_google',
@@ -1170,14 +1170,14 @@
       'strip_debug_info', 'android_fastbuild',
     ],
 
-    'android_release_bot_minimal_symbols_x86': [
-      'android', 'release_bot', 'minimal_symbols', 'x86',
-      'strip_debug_info',
-    ],
-
     'android_release_bot_minimal_symbols_x86_resource_whitelisting': [
       'android', 'release_bot', 'minimal_symbols', 'x86',
       'resource_whitelisting',
+    ],
+
+    'android_release_bot_minimal_symbols_x86_webview_google': [
+      'android', 'release_bot', 'minimal_symbols', 'x86',
+      'strip_debug_info', 'webview_google',
     ],
 
     'android_release_trybot': [
@@ -1204,12 +1204,12 @@
       'android_no_proguard',
     ],
 
-    'android_release_trybot_x86': [
-      'android', 'release_trybot', 'strip_debug_info', 'x86',
-    ],
-
     'android_release_trybot_x86_resource_whitelisting': [
       'android', 'release_trybot', 'x86', 'resource_whitelisting',
+    ],
+
+    'android_release_trybot_x86_webview_google': [
+      'android', 'release_trybot', 'strip_debug_info', 'x86', 'webview_google',
     ],
 
     'android_webview_google_debug_static_bot': [

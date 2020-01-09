@@ -48,7 +48,6 @@ extern const char kGSuiteNonSyncPasswordWarningDialogHistogram[];
 extern const char kPasswordOnFocusRequestOutcomeHistogram[];
 extern const char kPasswordOnFocusVerdictHistogram[];
 extern const char kNonSyncPasswordEntryRequestOutcomeHistogram[];
-extern const char kProtectedPasswordEntryRequestOutcomeHistogram[];
 extern const char kNonSyncPasswordEntryVerdictHistogram[];
 extern const char kSyncPasswordChromeSettingsHistogram[];
 extern const char kSyncPasswordEntryRequestOutcomeHistogram[];

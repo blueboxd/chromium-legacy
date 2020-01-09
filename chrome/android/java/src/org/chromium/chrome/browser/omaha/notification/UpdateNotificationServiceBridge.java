@@ -34,6 +34,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 public class UpdateNotificationServiceBridge implements UpdateNotificationController, Destroyable {
     private static final String PREF_UPDATE_NOTIFICATION_THROTTLE_INTERVAL_KEY =
             "pref_update_notification_throttle_interval_key";
+    private static final String PREF_UPDATE_NOTIFICATION_USER_DISMISS_COUNT_KEY =
+            "pref_update_notification_user_dismiss_count_key";
 
     private final Callback<UpdateStatusProvider.UpdateStatus> mObserver = status -> {
         mUpdateStatus = status;
@@ -120,6 +122,29 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
         SharedPreferences preferences = OmahaBase.getSharedPreferences();
         SharedPreferences.Editor editor = preferences.edit();
         editor.putLong(PREF_UPDATE_NOTIFICATION_THROTTLE_INTERVAL_KEY, interval);
+        editor.apply();
+    }
+
+    /**
+     * Gets the number of users consecutive dimiss action on update notification from {@link
+     * SharedPreferences}.
+     */
+    @CalledByNative
+    public static int getUserDismissCount() {
+        SharedPreferences preferences = OmahaBase.getSharedPreferences();
+        return preferences.getInt(PREF_UPDATE_NOTIFICATION_USER_DISMISS_COUNT_KEY, 0);
+    }
+
+    /**
+     * Updates the number to record users consecutive dimiss action on update notification in {@link
+     * SharedPreferences}.
+     * @param count A number of users consecutive dimiss action.
+     */
+    @CalledByNative
+    private static void updateUserDismissCount(int count) {
+        SharedPreferences preferences = OmahaBase.getSharedPreferences();
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt(PREF_UPDATE_NOTIFICATION_USER_DISMISS_COUNT_KEY, count);
         editor.apply();
     }
 }

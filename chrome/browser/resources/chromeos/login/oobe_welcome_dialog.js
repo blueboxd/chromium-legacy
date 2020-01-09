@@ -328,7 +328,7 @@
      * This is stored ID of currently focused element to restore id on returns
      * to this dialog from Language / Timezone Selection dialogs.
      */
-    focusedElement_: 'languageSelectionButton',
+    focusedElement_: 'welcomeNextButton',
 
     onLanguageClicked_: function() {
       this.focusedElement_ = 'languageSelectionButton';

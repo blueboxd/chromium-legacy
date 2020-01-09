@@ -47,6 +47,11 @@ class MessagePumpLibeventTest : public testing::Test {
   }
 
   void TearDown() override {
+    // Some tests watch |pipefds_| from the |io_thread_|. The |io_thread_| must
+    // thus be joined to ensure those watches are complete before closing the
+    // pipe.
+    io_thread_.Stop();
+
     if (IGNORE_EINTR(close(pipefds_[0])) < 0)
       PLOG(ERROR) << "close";
     if (IGNORE_EINTR(close(pipefds_[1])) < 0)

@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -29,7 +30,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
-#include "components/grit/components_resources.h"
+#include "components/grit/dev_ui_components_resources.h"
 #include "components/net_log/net_export_file_writer.h"
 #include "components/net_log/net_export_ui_constants.h"
 #include "content/public/browser/browser_thread.h"

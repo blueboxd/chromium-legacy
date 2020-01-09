@@ -32,7 +32,7 @@ class RTCRtpTransceiver;
 webrtc::RtpEncodingParameters ToRtpEncodingParameters(
     const RTCRtpEncodingParameters*);
 RTCRtpHeaderExtensionParameters* ToRtpHeaderExtensionParameters(
-    const webrtc::RtpHeaderExtensionParameters& headers);
+    const webrtc::RtpExtension& headers);
 RTCRtpCodecParameters* ToRtpCodecParameters(
     const webrtc::RtpCodecParameters& codecs);
 

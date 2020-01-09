@@ -11,7 +11,6 @@
 #include "cc/layers/surface_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/swap_promise.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/surface_id.h"
@@ -82,7 +81,6 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
       frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
   DCHECK(view_);
   DCHECK(client_);
-  DCHECK(features::IsVizDisplayCompositorEnabled());
 
   constexpr bool is_transparent = false;
   content_layer_ = CreateSurfaceLayer(

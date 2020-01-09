@@ -10,7 +10,12 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/settings/ManagedPreferencesUtils.java",
     "android/java/src/org/chromium/chrome/browser/settings/SearchUtils.java",
     "android/java/src/org/chromium/chrome/browser/settings/SettingsUtils.java",
+    "android/widget/java/src/org/chromium/chrome/browser/settings/ButtonPreference.java",
+    "android/widget/java/src/org/chromium/chrome/browser/settings/ChromeBaseCheckBoxPreference.java",
+    "android/widget/java/src/org/chromium/chrome/browser/settings/ChromeBasePreference.java",
     "android/widget/java/src/org/chromium/chrome/browser/settings/ChromeImageViewPreference.java",
+    "android/widget/java/src/org/chromium/chrome/browser/settings/ChromeSwitchPreference.java",
+    "android/widget/java/src/org/chromium/chrome/browser/settings/TextMessagePreference.java",
   ]
   deps = [
     ":java_resources",

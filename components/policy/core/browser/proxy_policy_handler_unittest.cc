@@ -212,8 +212,8 @@ TEST_F(ProxyPolicyHandlerTest, PacScriptProxyModeInvalid) {
   EXPECT_FALSE(store_->GetValue(proxy_config::prefs::kProxy, &value));
 }
 
-// Regression test for http://crbug.com/78016, CPanel returns empty strings
-// for unset properties.
+// Regression test for http://crbug.com/78016, device management server returns
+// empty strings for unset properties.
 TEST_F(ProxyPolicyHandlerTest, PacScriptProxyModeBug78016) {
   PolicyMap policy;
   policy.Set(key::kProxyServer, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,

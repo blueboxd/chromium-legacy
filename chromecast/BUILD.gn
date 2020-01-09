@@ -583,7 +583,6 @@ buildflag_header("chromecast_buildflags") {
     "DISABLE_SECURE_FLAC_OPUS_DECODING=$disable_secure_flac_and_opus_decoding",
     "ENABLE_ASSISTANT=$enable_assistant",
     "ENABLE_CAST_FRAGMENT=$enable_cast_fragment",
-    "ENABLE_CAST_WAYLAND_SERVER=$enable_cast_wayland_server",
     "ENABLE_CHROMECAST_EXTENSIONS=$enable_chromecast_extensions",
     "ENABLE_EXTERNAL_MOJO_SERVICES=$enable_external_mojo_services",
     "ENABLE_PLAYREADY=$enable_playready",

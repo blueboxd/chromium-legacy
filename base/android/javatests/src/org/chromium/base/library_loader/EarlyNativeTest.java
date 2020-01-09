@@ -7,11 +7,15 @@ package org.chromium.base.library_loader;
 import android.content.pm.ApplicationInfo;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.BuildConfig;
+import org.chromium.base.JniException;
+import org.chromium.base.NativeLibraryLoadedStatus;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
@@ -21,7 +25,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Tests for {@link LibraryLoader#ensureMainDexInitialized}.
+ * Tests for early JNI initialization.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 @JNINamespace("base")
@@ -34,6 +38,11 @@ public class EarlyNativeTest {
     public void setUp() {
         mLoadMainDexStarted = new CallbackHelper();
         mEnsureMainDexInitializedFinished = new CallbackHelper();
+    }
+
+    @After
+    public void tearDown() {
+        NativeLibraryLoadedStatus.setProvider(null);
     }
 
     private class TestLibraryLoader extends LibraryLoader {
@@ -78,6 +87,7 @@ public class EarlyNativeTest {
     private void doTestFullInitializationDoesntBlockMainDexInitialization(final boolean initialize)
             throws Exception {
         final TestLibraryLoader loader = new TestLibraryLoader();
+        loader.enableJniChecks();
         loader.setLibraryProcessType(LibraryProcessType.PROCESS_BROWSER);
         final Thread t1 = new Thread(() -> {
             if (initialize) {
@@ -109,5 +119,43 @@ public class EarlyNativeTest {
     @SmallTest
     public void testLoadDoesntBlockMainDexInitialization() throws Exception {
         doTestFullInitializationDoesntBlockMainDexInitialization(false);
+    }
+
+    @Test
+    @SmallTest
+    public void testNativeMethodsReadyAfterLibraryInitialized() {
+        LibraryLoader.getInstance().enableJniChecks();
+
+        Assert.assertFalse(
+                NativeLibraryLoadedStatus.getProviderForTesting().areMainDexNativeMethodsReady());
+        Assert.assertFalse(
+                NativeLibraryLoadedStatus.getProviderForTesting().areNativeMethodsReady());
+
+        LibraryLoader.getInstance().ensureMainDexInitialized();
+        Assert.assertTrue(
+                NativeLibraryLoadedStatus.getProviderForTesting().areMainDexNativeMethodsReady());
+        Assert.assertFalse(
+                NativeLibraryLoadedStatus.getProviderForTesting().areNativeMethodsReady());
+
+        LibraryLoader.getInstance().ensureInitialized();
+        Assert.assertTrue(
+                NativeLibraryLoadedStatus.getProviderForTesting().areMainDexNativeMethodsReady());
+        Assert.assertTrue(
+                NativeLibraryLoadedStatus.getProviderForTesting().areNativeMethodsReady());
+    }
+
+    @Test
+    @SmallTest
+    public void testNativeMethodsNotReadyThrows() {
+        LibraryLoader.getInstance().enableJniChecks();
+
+        try {
+            // Test is a no-op if dcheck isn't on.
+            if (BuildConfig.DCHECK_IS_ON) {
+                EarlyNativeTestJni.get().isCommandLineInitialized();
+                Assert.fail("Using JNI before the library is loaded should throw an exception.");
+            }
+        } catch (JniException e) {
+        }
     }
 }

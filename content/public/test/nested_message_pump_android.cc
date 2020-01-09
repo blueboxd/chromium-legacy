@@ -6,20 +6,11 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "content/public/test/android/test_support_content_jni_headers/NestedSystemMessageHandler_jni.h"
-
-namespace {
-
-base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject>>::
-    DestructorAtExit g_message_handler_obj = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 
 namespace content {
 
@@ -94,8 +85,7 @@ void NestedMessagePumpAndroid::Run(Delegate* delegate) {
     // No native tasks to process right now. Process tasks from the Java
     // System message handler. This will return when the java message queue
     // is idle.
-    bool ret = Java_NestedSystemMessageHandler_runNestedLoopTillIdle(
-        env, g_message_handler_obj.Get());
+    bool ret = Java_NestedSystemMessageHandler_runNestedLoopTillIdle(env);
     CHECK(ret) << "Error running java message loop, tests will likely fail.";
 
     if (state_->delayed_work_time.is_null()) {
@@ -118,13 +108,7 @@ void NestedMessagePumpAndroid::Run(Delegate* delegate) {
   state_ = previous_state;
 }
 
-void NestedMessagePumpAndroid::Attach(
-    base::MessagePump::Delegate* delegate) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  DCHECK(env);
-  g_message_handler_obj.Get().Reset(
-      Java_NestedSystemMessageHandler_create(env));
-}
+void NestedMessagePumpAndroid::Attach(base::MessagePump::Delegate* delegate) {}
 
 void NestedMessagePumpAndroid::Quit() {
   if (state_) {

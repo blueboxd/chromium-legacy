@@ -866,6 +866,7 @@ grit("generate_mojo_resources") {
 }
 
 grit("generate_components_resources") {
+  # Note that dev_ui_components_resources.grd is Chrome-only, so excluded.
   source = "../components/resources/components_resources.grd"
 
   # The .grd contains references to generated files.

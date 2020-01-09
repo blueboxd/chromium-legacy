@@ -139,15 +139,21 @@ MetricsStateManager::MetricsStateManager(
       entropy_source_returned_(ENTROPY_SOURCE_NONE),
       metrics_ids_were_reset_(false) {
   ResetMetricsIDsIfNecessary();
+
+  bool is_first_run = false;
+  int64_t install_date = local_state_->GetInt64(prefs::kInstallDate);
+
+  // Set the install date if this is our first run.
+  if (install_date == 0) {
+    local_state_->SetInt64(prefs::kInstallDate, base::Time::Now().ToTimeT());
+    is_first_run = true;
+  }
+
   if (enabled_state_provider_->IsConsentGiven())
     ForceClientIdCreation();
 
-  // Set the install date if this is our first run.
-  int64_t install_date = local_state_->GetInt64(prefs::kInstallDate);
-  if (install_date == 0) {
-    local_state_->SetInt64(prefs::kInstallDate, base::Time::Now().ToTimeT());
-
 #if !defined(OS_WIN)
+  if (is_first_run) {
     // If this is a first run (no install date) and there's no client id, then
     // generate a provisional client id now. This id will be used for field
     // trial randomization on first run and will be promoted to become the
@@ -166,8 +172,8 @@ MetricsStateManager::MetricsStateManager(
     // for this logic changes, the tests should be updated as well.
     if (client_id_.empty())
       provisional_client_id_ = base::GenerateGUID();
-#endif  // !defined(OS_WIN)
   }
+#endif  // !defined(OS_WIN)
 
   DCHECK(!instance_exists_);
   instance_exists_ = true;

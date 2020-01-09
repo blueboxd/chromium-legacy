@@ -237,13 +237,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
           Kebijakan ini memberikan nilai fallback untuk <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> dan kebijakan <ph name="IDLE_ACTION_AC_POLICY_NAME" /> yang lebih spesifik. Jika kebijakan ini ditetapkan, nilainya akan digunakan jika masing-masing kebijakan yang lebih spesifik tidak ditetapkan.
 
           Jika kebijakan ini tidak ditetapkan, perilaku kebijakan yang lebih spesifik tetap tidak terpengaruh.</translation>
-<translation id="1383493480903114193">Kebijakan ini memaksa kode jaringan untuk dijalankan dalam proses browser.
-
-      Kebijakan ini dinonaktifkan secara default, dan jika diaktifkan, pengguna akan rentan terhadap masalah keamanan setelah proses jaringan masuk dalam sandbox.
-
-      Kebijakan ini dimaksudkan untuk memberi perusahaan kesempatan melakukan migrasi ke software pihak ke-3 yang tidak bergantung pada penarikan networking API. Sebaiknya gunakan server proxy daripada patch API Win32 dan LSP.
-
-      Jika kebijakan ini tidak disetel, kode jaringan mungkin dijalankan di luar proses browser yang bergantung pada uji coba kolom eksperimen NetworkService.</translation>
 <translation id="1384459581748403878">Referensi: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Melaporkan status update OS</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
@@ -4150,21 +4143,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
       Jika kebijakan ini disetel, Kode Akses Orang Tua dapat diverifikasi di perangkat pengguna anak.
       Jika kebijakan ini tidak disetel, Kode Akses Orang Tua tidak dapat diverifikasi di perangkat pengguna anak.</translation>
 <translation id="7625444193696794922">Menentukan saluran rilis yang harus dikunci oleh perangkat ini.</translation>
-<translation id="7625498350540361483">
-      Jika kebijakan ditetapkan ke true, <ph name="PRODUCT_NAME" /> diizinkan untuk mengumpulkan log aktivitas WebRTC dari layanan Google (mis. Google Meet), dan mengupload log tersebut ke Google.
-
-      Jika kebijakan ditetapkan ke false, <ph name="PRODUCT_NAME" /> tidak dapat mengumpulkan atau mengupload log tersebut.
-
-      Jika kebijakan tidak ditetapkan, hingga dan termasuk M76, <ph name="PRODUCT_NAME" /> tidak dapat mengumpulkan atau mengupload log tersebut.
-
-      Jika kebijakan tidak ditetapkan, mulai M77, <ph name="PRODUCT_NAME" /> dapat mengumpulkan atau mengupload log tersebut secara default dengan syarat profil browser dianggap telah dikelola. Hal ini berarti, profil akan menerima kebijakan level cloud atau mesin, dan bukan merupakan profil turunan, profil singkat, profil login, atau profil samaran.
-
-      Log ini berisi informasi diagnostik yang berguna saat melakukan proses debug masalah pada panggilan audio atau video di Chrome, seperti waktu dan ukuran paket RTP yang dikirim dan diterima, masukan tentang kemacetan pada jaringan, dan metadata tentang waktu dan kualitas frame audio dan video. Log ini tidak berisi konten audio atau video dari panggilan.
-
-      Pengumpulan data yang dilakukan Chrome ini hanya dapat dipicu oleh layanan web Google, seperti Google Hangouts atau Google Meet.
-
-      Google dapat mengaitkan log ini dengan log lain, yang dikumpulkan oleh layanan Google sendiri, menggunakan ID sesi. Hal ini dimaksudkan untuk mempermudah proses debug.
-      </translation>
 <translation id="7632724434767231364">Nama pustaka GSSAPI</translation>
 <translation id="7635471475589566552">Mengonfigurasi lokal aplikasi di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah lokal tersebut. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan menggunakan lokal yang ditentukan. Jika lokal terkonfigurasi tidak didukung, 'en-US' akan digunakan. Jika setelan ini dinonaktifkan atau tidak disetel, <ph name="PRODUCT_NAME" /> akan menggunakan lokal terpilih yang ditentukan pengguna (jika dikonfigurasi), lokal sistem, atau lokal pengganti 'en-US'.</translation>
 <translation id="7643883929273267746">Batasi akun yang terlihat di <ph name="PRODUCT_NAME" /></translation>

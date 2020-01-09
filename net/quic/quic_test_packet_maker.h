@@ -60,11 +60,14 @@ class QuicTestPacketMaker {
   std::unique_ptr<quic::QuicReceivedPacket> MakeConnectivityProbingPacket(
       uint64_t num,
       bool include_version);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakePingPacket(
       uint64_t num,
       bool include_version);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeDummyCHLOPacket(
       uint64_t packet_num);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndPingPacket(
       uint64_t num,
       bool include_version,
@@ -122,6 +125,7 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked,
       bool send_feedback);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndRstPacket(
       uint64_t num,
       bool include_version,
@@ -132,6 +136,7 @@ class QuicTestPacketMaker {
       uint64_t least_unacked,
       bool send_feedback,
       bool include_stop_sending_if_v99);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeRstAckAndConnectionClosePacket(
       uint64_t num,
       bool include_version,
@@ -142,6 +147,7 @@ class QuicTestPacketMaker {
       uint64_t least_unacked,
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeRstAndConnectionClosePacket(
       uint64_t num,
       bool include_version,
@@ -149,6 +155,7 @@ class QuicTestPacketMaker {
       quic::QuicRstStreamErrorCode error_code,
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeDataRstAndConnectionClosePacket(
       uint64_t num,
       bool include_version,
@@ -158,6 +165,7 @@ class QuicTestPacketMaker {
       quic::QuicRstStreamErrorCode error_code,
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details);
+
   std::unique_ptr<quic::QuicReceivedPacket>
   MakeDataRstAckAndConnectionClosePacket(
       uint64_t num,
@@ -171,6 +179,7 @@ class QuicTestPacketMaker {
       uint64_t least_unacked,
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndConnectionClosePacket(
       uint64_t num,
       bool include_version,
@@ -180,21 +189,25 @@ class QuicTestPacketMaker {
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details,
       uint64_t frame_type);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeConnectionClosePacket(
       uint64_t num,
       bool include_version,
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeGoAwayPacket(
       uint64_t num,
       quic::QuicErrorCode error_code,
       std::string reason_phrase);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckPacket(
       uint64_t packet_number,
       uint64_t largest_received,
       uint64_t smallest_received,
       uint64_t least_unacked,
       bool send_feedback);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckPacket(
       uint64_t packet_number,
       uint64_t first_received,
@@ -202,12 +215,14 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked,
       bool send_feedback);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeDataPacket(
       uint64_t packet_number,
       quic::QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
       quiche::QuicheStringPiece data);
+
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndDataPacket(
       uint64_t packet_number,
       bool include_version,
@@ -335,6 +350,9 @@ class QuicTestPacketMaker {
                                  size_t* encoded_data_length);
 
  private:
+  // Initialize header of next packet to build.
+  void InitializeHeader(uint64_t packet_number, bool should_include_version);
+
   // Add frames to current packet.
   void AddQuicPaddingFrame();
   void AddQuicPingFrame();
@@ -374,16 +392,14 @@ class QuicTestPacketMaker {
                           quic::QuicStreamOffset offset,
                           quic::QuicPacketLength data_length);
 
-  // Build frame using |header_|, |frames_|, and |data_producer_|,
+  // Build packet using |header_|, |frames_|, and |data_producer_|,
   // and clear |frames_| and |data_producer_| afterwards.
   std::unique_ptr<quic::QuicReceivedPacket> BuildPacket();
 
-  // Build frame using |header_|, |frames|, and |data_producer|.
+  // Build packet using |header_|, |frames|, and |data_producer|.
   std::unique_ptr<quic::QuicReceivedPacket> BuildPacketImpl(
       const quic::QuicFrames& frames,
       quic::QuicStreamFrameDataProducer* data_producer);
-
-  void InitializeHeader(uint64_t packet_number, bool should_include_version);
 
   spdy::SpdySerializedFrame MakeSpdyHeadersFrame(
       quic::QuicStreamId stream_id,
@@ -393,11 +409,6 @@ class QuicTestPacketMaker {
       quic::QuicStreamId parent_stream_id);
 
   bool ShouldIncludeVersion(bool include_version) const;
-
-  // This mirrors quic_framer.cc::{anonymous namespace}::GenerateErrorString()
-  // behavior.
-  std::string MaybePrependErrorCode(const std::string& quic_error_details,
-                                    quic::QuicErrorCode quic_error_code) const;
 
   quic::QuicPacketNumberLength GetPacketNumberLength() const;
 

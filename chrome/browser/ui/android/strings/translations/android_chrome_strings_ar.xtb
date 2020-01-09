@@ -93,7 +93,6 @@
 <translation id="1672586136351118594">عدم العرض مرة أخرى</translation>
 <translation id="1692118695553449118">المزامنة ممكنة</translation>
 <translation id="169515064810179024">حظر مواقع الويب من الوصول إلى مستشعرات الحركة</translation>
-<translation id="1711267867945983636">‏للمتابعة، فعِّل ميزة NFC على هاتفك</translation>
 <translation id="1717218214683051432">مستشعرات الحركة</translation>
 <translation id="1718835860248848330">آخر ساعة</translation>
 <translation id="1736419249208073774">استكشاف</translation>
@@ -822,7 +821,7 @@
 <translation id="7180611975245234373">إعادة التحميل</translation>
 <translation id="7189372733857464326">‏انتظار انتهاء تحديث خدمات Google Play</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
-<translation id="723171743924126238">تحديد الصور</translation>
+<translation id="723171743924126238">اختيار الصور</translation>
 <translation id="7233236755231902816">‏للاطّلاع على الويب بلغتك، يمكنك الحصول على أحدث إصدار من Chrome.</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7248069434667874558">‏يُرجى التأكّد من تفعيل مزامنة <ph name="TARGET_DEVICE_NAME" /> في Chrome.</translation>
@@ -908,7 +907,7 @@
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7810647596859435254">فتح باستخدام...</translation>
 <translation id="7821588508402923572">سيظهر توفير البيانات هنا</translation>
-<translation id="7846076177841592234">إلغاء التحديد</translation>
+<translation id="7846076177841592234">إلغاء الاختيار</translation>
 <translation id="784934925303690534">النطاق الزمني</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
 <translation id="7875915731392087153">إنشاء بريد إلكتروني</translation>

@@ -130,8 +130,9 @@ void NetworkQualityObserverImpl::OnRTTOrThroughputEstimatesComputed(
 
   bool network_quality_meaningfully_changed =
       http_rtt_changed || transport_rtt_changed || kbps_changed;
-  UMA_HISTOGRAM_BOOLEAN("NQE.ContentObserver.NetworkQualityMeaningfullyChanged",
-                        network_quality_meaningfully_changed);
+  LOCAL_HISTOGRAM_BOOLEAN(
+      "NQE.ContentObserver.NetworkQualityMeaningfullyChanged",
+      network_quality_meaningfully_changed);
 
   if (!network_quality_meaningfully_changed) {
     // Return since none of the metrics changed meaningfully. This reduces

@@ -2092,6 +2092,10 @@ are declared in tools/grit/grit_rule.gni.
             Always open in Adobe Reader
           </message>
         </if>
+        <message name="IDS_DOWNLOAD_MENU_DEEP_SCAN"
+          desc="Download context menu: send file for deep scanning">
+          Scan file
+        </message>
       </if>
 
       <!-- Touch Bar-->

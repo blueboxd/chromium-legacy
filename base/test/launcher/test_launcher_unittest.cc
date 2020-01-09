@@ -65,11 +65,10 @@ class MockTestLauncher : public TestLauncher {
 
   void CreateAndStartThreadPool(int parallel_jobs) override {}
 
-  MOCK_METHOD4(LaunchChildGTestProcess,
+  MOCK_METHOD3(LaunchChildGTestProcess,
                void(scoped_refptr<TaskRunner> task_runner,
                     const std::vector<std::string>& test_names,
-                    const FilePath& task_temp_dir,
-                    const FilePath& child_temp_dir));
+                    const FilePath& temp_dir));
 };
 
 // Simple TestLauncherDelegate mock to test TestLauncher flow.
@@ -186,7 +185,7 @@ TEST_F(TestLauncherTest, OrphanePreTest) {
 TEST_F(TestLauncherTest, EmptyTestSetPasses) {
   SetUpExpectCalls();
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _, _)).Times(0);
+  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _)).Times(0);
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -202,7 +201,7 @@ TEST_F(TestLauncherTest, FilterDisabledTestByDefault) {
                                  _,
                                  testing::ElementsAreArray(tests_names.cbegin(),
                                                            tests_names.cend()),
-                                 _, _))
+                                 _))
       .WillOnce(::testing::DoAll(OnTestResult(&test_launcher, "Test.firstTest",
                                               TestResult::TEST_SUCCESS),
                                  OnTestResult(&test_launcher, "Test.secondTest",
@@ -221,7 +220,7 @@ TEST_F(TestLauncherTest, ReorderPreTests) {
                                  _,
                                  testing::ElementsAreArray(tests_names.cbegin(),
                                                            tests_names.cend()),
-                                 _, _))
+                                 _))
       .Times(1);
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
@@ -238,7 +237,7 @@ TEST_F(TestLauncherTest, UsingCommandLineFilter) {
                                  _,
                                  testing::ElementsAreArray(tests_names.cbegin(),
                                                            tests_names.cend()),
-                                 _, _))
+                                 _))
       .WillOnce(OnTestResult(&test_launcher, "Test.firstTest",
                              TestResult::TEST_SUCCESS));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
@@ -256,7 +255,7 @@ TEST_F(TestLauncherTest, FilterIncludePreTest) {
                                  _,
                                  testing::ElementsAreArray(tests_names.cbegin(),
                                                            tests_names.cend()),
-                                 _, _))
+                                 _))
       .Times(1);
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
@@ -267,7 +266,7 @@ TEST_F(TestLauncherTest, RunningMultipleIterations) {
   SetUpExpectCalls();
   command_line->AppendSwitchASCII("gtest_repeat", "2");
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _, _))
+  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _))
       .Times(2)
       .WillRepeatedly(OnTestResult(&test_launcher, "Test.firstTest",
                                    TestResult::TEST_SUCCESS));
@@ -285,7 +284,7 @@ TEST_F(TestLauncherTest, SuccessOnRetryTests) {
                                  _,
                                  testing::ElementsAreArray(tests_names.cbegin(),
                                                            tests_names.cend()),
-                                 _, _))
+                                 _))
       .WillOnce(OnTestResult(&test_launcher, "Test.firstTest",
                              TestResult::TEST_FAILURE))
       .WillOnce(OnTestResult(&test_launcher, "Test.firstTest",
@@ -305,7 +304,7 @@ TEST_F(TestLauncherTest, FailOnRetryTests) {
                                  _,
                                  testing::ElementsAreArray(tests_names.cbegin(),
                                                            tests_names.cend()),
-                                 _, _))
+                                 _))
       .Times(3)
       .WillRepeatedly(OnTestResult(&test_launcher, "Test.firstTest",
                                    TestResult::TEST_FAILURE));
@@ -322,7 +321,7 @@ TEST_F(TestLauncherTest, RetryPreTests) {
       GenerateTestResult("Test.PRE_firstTest", TestResult::TEST_FAILURE),
       GenerateTestResult("Test.firstTest", TestResult::TEST_SUCCESS)};
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _, _))
+  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _))
       .WillOnce(::testing::DoAll(
           OnTestResult(&test_launcher, "Test.PRE_PRE_firstTest",
                        TestResult::TEST_SUCCESS),
@@ -335,7 +334,7 @@ TEST_F(TestLauncherTest, RetryPreTests) {
                                  _,
                                  testing::ElementsAreArray(tests_names.cbegin(),
                                                            tests_names.cend()),
-                                 _, _))
+                                 _))
       .WillOnce(OnTestResult(&test_launcher, "Test.PRE_PRE_firstTest",
                              TestResult::TEST_SUCCESS));
   tests_names = {"Test.PRE_firstTest"};
@@ -343,7 +342,7 @@ TEST_F(TestLauncherTest, RetryPreTests) {
                                  _,
                                  testing::ElementsAreArray(tests_names.cbegin(),
                                                            tests_names.cend()),
-                                 _, _))
+                                 _))
       .WillOnce(OnTestResult(&test_launcher, "Test.PRE_firstTest",
                              TestResult::TEST_SUCCESS));
   tests_names = {"Test.firstTest"};
@@ -351,7 +350,7 @@ TEST_F(TestLauncherTest, RetryPreTests) {
                                  _,
                                  testing::ElementsAreArray(tests_names.cbegin(),
                                                            tests_names.cend()),
-                                 _, _))
+                                 _))
       .WillOnce(OnTestResult(&test_launcher, "Test.firstTest",
                              TestResult::TEST_SUCCESS));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
@@ -373,7 +372,7 @@ TEST_F(TestLauncherTest, RunDisabledTests) {
                                  _,
                                  testing::ElementsAreArray(tests_names.cbegin(),
                                                            tests_names.cend()),
-                                 _, _))
+                                 _))
       .WillOnce(::testing::DoAll(
           OnTestResult(&test_launcher, "Test.firstTest",
                        TestResult::TEST_SUCCESS),
@@ -395,7 +394,7 @@ TEST_F(TestLauncherTest, DisablePreTests) {
                                  _,
                                  testing::ElementsAreArray(tests_names.cbegin(),
                                                            tests_names.cend()),
-                                 _, _))
+                                 _))
       .Times(1);
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
@@ -413,7 +412,7 @@ TEST_F(TestLauncherTest, RedirectStdio) {
   SetUpExpectCalls();
   command_line->AppendSwitchASCII("test-launcher-print-test-stdio", "always");
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _, _))
+  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _))
       .WillOnce(OnTestResult(&test_launcher, "Test.firstTest",
                              TestResult::TEST_SUCCESS));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
@@ -525,7 +524,7 @@ TEST_F(TestLauncherTest, JsonSummary) {
                          TimeDelta::FromMilliseconds(50), "output_second");
 
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _, _))
+  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _))
       .Times(2)
       .WillRepeatedly(
           ::testing::DoAll(OnTestResult(&test_launcher, first_result),
@@ -581,7 +580,7 @@ TEST_F(TestLauncherTest, JsonSummaryWithDisabledTests) {
                          TimeDelta::FromMilliseconds(50), "output_second");
 
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _, _))
+  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _))
       .WillOnce(OnTestResult(&test_launcher, test_result));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 

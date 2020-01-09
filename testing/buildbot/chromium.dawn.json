@@ -202,8 +202,7 @@
           "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
           "--isolated-script-test-filter=wpt_internal/webgpu/*",
           "--no-xvfb",
-          "--additional-driver-flag=--disable-gpu-sandbox",
-          "--fuzzy-diff"
+          "--additional-driver-flag=--disable-gpu-sandbox"
         ],
         "isolate_name": "blink_web_tests",
         "merge": {
@@ -426,8 +425,7 @@
           "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
           "--isolated-script-test-filter=wpt_internal/webgpu/*",
           "--no-xvfb",
-          "--additional-driver-flag=--disable-gpu-sandbox",
-          "--fuzzy-diff"
+          "--additional-driver-flag=--disable-gpu-sandbox"
         ],
         "isolate_name": "blink_web_tests",
         "merge": {

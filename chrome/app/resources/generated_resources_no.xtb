@@ -240,7 +240,7 @@
 <translation id="1329584516321524826">Nettopp oppdatert</translation>
 <translation id="1330145147221172764">Slå på skjermtastaturet</translation>
 <translation id="1331977651797684645">Dette var meg.</translation>
-<translation id="1333489022424033687">Noen funksjoner på <ph name="ORIGIN" /> fungerer kanskje ikke før du sletter data som andre enheter har lagret på enheten</translation>
+<translation id="1333489022424033687">Noen funksjoner på <ph name="ORIGIN" /> fungerer kanskje ikke før du sletter data som andre nettsteder har lagret på enheten</translation>
 <translation id="133535873114485416">Foretrukket inndatametode</translation>
 <translation id="1335929031622236846">Registrer enheten din</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> vil åpne denne appen.</translation>
@@ -4094,7 +4094,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6892812721183419409">Åpne linken som <ph name="USER" /></translation>
 <translation id="6895032998810961280">Rapportér detaljer til Google om skadelige programmer, systeminnstillinger og prosesser som ble funnet på datamaskinen din i denne opprydningen.</translation>
 <translation id="6896758677409633944">Kopiér</translation>
-<translation id="6897363604023044284">Velg nettsteder som skal slettes</translation>
+<translation id="6897363604023044284">Velg nettsteder å slette data fra</translation>
 <translation id="6898440773573063262">Nå kan kioskapper konfigureres til å starte automatisk på denne enheten.</translation>
 <translation id="6898699227549475383">Organisasjon (O)</translation>
 <translation id="6900284862687837908">Bakgrunnsapp: <ph name="BACKGROUND_APP_URL" /></translation>
@@ -5073,7 +5073,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8251578425305135684">Miniatyrbilde fjernet.</translation>
 <translation id="8252569384384439529">Laster opp …</translation>
 <translation id="8253198102038551905">Klikk på «+» for å gå til nettverksegenskaper</translation>
-<translation id="825483282309623688">Du må være koblet til Internett for å kunne gjenopprette dataene dine.</translation>
 <translation id="8254954272268479918">Slå av Linux (beta)</translation>
 <translation id="8255451560461371599">Ingen bakgrunn</translation>
 <translation id="8256319818471787266">Fido</translation>

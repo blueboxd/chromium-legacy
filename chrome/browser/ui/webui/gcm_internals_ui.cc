@@ -20,7 +20,7 @@
 #include "components/gcm_driver/gcm_internals_constants.h"
 #include "components/gcm_driver/gcm_internals_helper.h"
 #include "components/gcm_driver/gcm_profile_service.h"
-#include "components/grit/components_resources.h"
+#include "components/grit/dev_ui_components_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"

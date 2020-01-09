@@ -156,7 +156,7 @@ bool Launch(content::BrowserContext* context,
 
   arc::mojom::IntentHelperInstance* intent_helper_instance =
       GET_INTENT_HELPER_INSTANCE(SendBroadcast);
-  if (intent_helper_instance) {
+  if (intent_helper_instance && IsMouseOrTouchEventFromFlags(event_flags)) {
     base::DictionaryValue extras;
     extras.SetBoolean("inTouchMode", IsMouseOrTouchEventFromFlags(event_flags));
     std::string extras_string;

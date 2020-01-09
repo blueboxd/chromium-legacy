@@ -278,7 +278,8 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
     RespectImageOrientationEnum respect_image_orientation,
     bool include_left,
     bool include_right,
-    bool is_inline)
+    bool is_inline,
+    bool is_painting_scrolling_background)
     : image(layer.GetImage()),
       color(bg_color),
       respect_image_orientation(respect_image_orientation),
@@ -318,7 +319,7 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
   // BorderFillBox radius clipping is taken care of by
   // BackgroundBleedClip{Only,Layer}
   is_rounded_fill =
-      has_rounded_border &&
+      has_rounded_border && !is_painting_scrolling_background &&
       !(is_border_fill && BleedAvoidanceIsClipping(bleed_avoidance));
 
   should_paint_image = image && image->CanRender();
@@ -784,7 +785,9 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
   if (rect.IsEmpty())
     return;
 
-  const FillLayerInfo info = GetFillLayerInfo(color, bg_layer, bleed_avoidance);
+  const FillLayerInfo info =
+      GetFillLayerInfo(color, bg_layer, bleed_avoidance,
+                       IsPaintingScrollingBackground(paint_info));
   // If we're not actually going to paint anything, abort early.
   if (!info.should_paint_image && !info.should_paint_color)
     return;

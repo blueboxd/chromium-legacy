@@ -11,6 +11,13 @@
         padding-right: 4px;
       }
 
+      @media (prefers-color-scheme: dark) {
+        table td,
+        table th {
+          border-color: var(--cr-separator-color);
+        }
+      }
+
       table th {
         background: rgb(224, 236, 255);
         padding-bottom: 4px;
@@ -27,6 +34,13 @@
         align-items: center;
         display: flex;
         justify-content: flex-start;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        table td {
+          background-color: var(--google-grey-900);
+          color: var(--cr-secondary-text-color);
+        }
       }
 
       table td.title-cell {
@@ -85,6 +99,12 @@
 
       table tr:hover {
         background: rgb(255, 255, 187);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        table tr:hover td {
+          background: var(--google-grey-800);
+        }
       }
 
       th div.header-cell-container::after {

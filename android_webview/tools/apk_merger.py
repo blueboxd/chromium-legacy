@@ -48,12 +48,12 @@ BUILD_ANDROID_DIR = os.path.join(SRC_DIR, 'build', 'android')
 BUILD_ANDROID_GYP_DIR = os.path.join(BUILD_ANDROID_DIR, 'gyp')
 sys.path.append(BUILD_ANDROID_GYP_DIR)
 
-import finalize_apk # pylint: disable=import-error,wrong-import-position
-from util import build_utils # pylint: disable=import-error,wrong-import-position
+import finalize_apk  # pylint: disable=wrong-import-position
+from util import build_utils  # pylint: disable=wrong-import-position
 
 sys.path.append(BUILD_ANDROID_DIR)
 
-from pylib import constants  # pylint: disable=import-error,wrong-import-position
+from pylib import constants  # pylint: disable=wrong-import-position
 
 DEFAULT_ZIPALIGN_PATH = os.path.join(
     SRC_DIR, 'third_party', 'android_sdk', 'public', 'build-tools',
@@ -254,9 +254,11 @@ def main():
 
     apksigner_jar = os.path.join(
         os.path.dirname(args.zipalign_path), 'lib', 'apksigner.jar')
-    finalize_apk.FinalizeApk(apksigner_jar, args.zipalign_path,
-                             tmp_apk, new_apk, args.keystore_path,
-                             args.key_password, args.key_name)
+    # TODO(https://crbug.com/1040240): remove the pylint suppression and pass
+    # the right value
+    finalize_apk.FinalizeApk(  # pylint: disable=no-value-for-parameter
+        apksigner_jar, args.zipalign_path, tmp_apk, new_apk, args.keystore_path,
+        args.key_password, args.key_name)
   finally:
     shutil.rmtree(tmp_dir)
   return 0

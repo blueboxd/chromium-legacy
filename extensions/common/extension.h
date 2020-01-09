@@ -52,9 +52,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DISABLED = 0,
     ENABLED = 1,
 
+    // DEPRECATED. External uninstallation bits are now stored directly in
+    // the ExtensionPrefs. See https://crbug.com/795026.
     // An external extension that the user uninstalled. We should not reinstall
     // such extensions on startup.
-    EXTERNAL_EXTENSION_UNINSTALLED = 2,
+    DEPRECATED_EXTERNAL_EXTENSION_UNINSTALLED = 2,
 
     // DEPRECATED: Special state for component extensions.
     // ENABLED_COMPONENT_DEPRECATED = 3,

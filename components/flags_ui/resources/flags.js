@@ -328,6 +328,11 @@ function experimentChangesUiUpdates(node, index) {
  * @suppress {missingProperties}
  */
 function handleEnableExperimentalFeature(node, enable) {
+  /* This function is an onchange handler, which can be invoked during page
+   * restore - see https://crbug.com/1038638. */
+  if (!node.internal_name) {
+    return;
+  }
   chrome.send('enableExperimentalFeature', [String(node.internal_name),
                                             String(enable)]);
   experimentChangesUiUpdates(node, enable ? 1 : 0);
@@ -335,6 +340,11 @@ function handleEnableExperimentalFeature(node, enable) {
 
 /** @suppress {missingProperties} */
 function handleSetOriginListFlag(node, value) {
+  /* This function is an onchange handler, which can be invoked during page
+   * restore - see https://crbug.com/1038638. */
+  if (!node.internal_name) {
+    return;
+  }
   chrome.send('setOriginListFlag', [String(node.internal_name), String(value)]);
   showRestartToast(true);
 }
@@ -347,6 +357,11 @@ function handleSetOriginListFlag(node, value) {
  * @suppress {missingProperties}
  */
 function handleSelectExperimentalFeatureChoice(node, index) {
+  /* This function is an onchange handler, which can be invoked during page
+   * restore - see https://crbug.com/1038638. */
+  if (!node.internal_name) {
+    return;
+  }
   chrome.send('enableExperimentalFeature',
               [String(node.internal_name) + '@' + index, 'true']);
   experimentChangesUiUpdates(node, index);

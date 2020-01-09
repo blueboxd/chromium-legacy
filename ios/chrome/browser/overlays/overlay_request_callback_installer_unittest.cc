@@ -18,20 +18,6 @@ DEFINE_TEST_OVERLAY_REQUEST_CONFIG(SupportedConfig);
 DEFINE_TEST_OVERLAY_REQUEST_CONFIG(UnsupportedConfig);
 DEFINE_TEST_OVERLAY_RESPONSE_INFO(DispatchInfo);
 DEFINE_TEST_OVERLAY_RESPONSE_INFO(CompletionInfo);
-
-// Mock callback receiver.
-class MockCallbackReceiver : public FakeOverlayRequestCallbackReceiver {
- public:
-  MockCallbackReceiver() = default;
-  ~MockCallbackReceiver() = default;
-
-  MOCK_METHOD2(CompletionCallback,
-               void(OverlayRequest* request, OverlayResponse* response));
-  MOCK_METHOD3(DispatchCallback,
-               void(OverlayRequest* request,
-                    const OverlayResponseSupport* response_support,
-                    OverlayResponse* response));
-};
 }  // namespace
 
 // Test fixture for OverlayRequestCallbackInstaller.
@@ -60,7 +46,7 @@ class OverlayRequestCallbackInstallerTest : public PlatformTest {
   }
 
  protected:
-  testing::StrictMock<MockCallbackReceiver> mock_receiver_;
+  testing::StrictMock<MockOverlayRequestCallbackReceiver> mock_receiver_;
   FakeOverlayRequestCallbackInstaller installer_;
 };
 

@@ -35,6 +35,7 @@ source_set("web") {
     "//components/error_page/common",
     "//components/image_fetcher/ios",
     "//components/resources:components_resources_grit",
+    "//components/resources:dev_ui_components_resources_grit",
     "//components/search_engines",
     "//components/strings",
     "//ios/chrome/app/strings:ios_strings_grit",

@@ -285,13 +285,9 @@ class NavigationPredictorPreconnectClientBrowserTestWithSearch
 };
 
 // TODO(https://crbug.com/1039813): Test fails consistently on MacOS 10.13
-#if defined(OS_MACOSX)
-#define MAYBE_PreconnectSearchWithFeature DISABLED_PreconnectSearchWithFeature
-#else
-#define MAYBE_PreconnectSearchWithFeature PreconnectSearchWithFeature
-#endif
+// TODO(https://crbug.com/1040153): Test fails consistently on Win 7 as well.
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPreconnectClientBrowserTestWithSearch,
-                       MAYBE_PreconnectSearchWithFeature) {
+                       DISABLED_PreconnectSearchWithFeature) {
   static const char kShortName[] = "test";
   static const char kSearchURL[] =
       "/anchors_different_area.html?q={searchTerms}";

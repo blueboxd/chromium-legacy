@@ -2265,7 +2265,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="413121957363593859">Composants</translation>
 <translation id="4131410914670010031">Noir et blanc</translation>
 <translation id="4136203100490971508">L'éclairage nocturne sera désactivé automatiquement au lever du soleil</translation>
-<translation id="41365691917097717">Si vous continuez, le débogage ADB pourra créer et tester des applications Android. Notez que cette action autorise l'installation d'applications Android non validées par Google et ne pourra être désactivée qu'en rétablissant la configuration d'usine.</translation>
+<translation id="41365691917097717">Si vous continuez, le débogage ADB pourra créer et tester des applications Android. Notez que vous autoriserez ainsi l'installation d'applications Android non validées par Google et que le débogage ADB ne pourra être désactivé qu'en rétablissant la configuration d'usine.</translation>
 <translation id="4138267921960073861">Afficher les noms d'utilisateurs et leur photo sur la page de connexion</translation>
 <translation id="413915106327509564"><ph name="WINDOW_TITLE" /> - Appareil HID associé</translation>
 <translation id="4142052906269098341">Déverrouillez votre <ph name="DEVICE_TYPE" /> à l'aide de votre téléphone. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
@@ -5090,7 +5090,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8251578425305135684">Miniature supprimée</translation>
 <translation id="8252569384384439529">Importation…</translation>
 <translation id="8253198102038551905">Cliquez sur "+" pour accéder aux propriétés réseau.</translation>
-<translation id="825483282309623688">Pour restaurer vos données, vous devez disposer d'une connexion Internet.</translation>
 <translation id="8254954272268479918">Arrêter Linux (bêta)</translation>
 <translation id="8255451560461371599">Sans arrière-plan</translation>
 <translation id="8256319818471787266">Médor</translation>
@@ -5770,7 +5769,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="930268624053534560">Horodatage détaillé</translation>
 <translation id="932327136139879170">Accueil</translation>
 <translation id="932508678520956232">Impossible de lancer l'impression.</translation>
-<translation id="93343527085570547">Accédez à la <ph name="BEGIN_LINK1" />page d'aide relative aux demandes légales<ph name="END_LINK1" /> pour demander des modifications de contenu pour des raisons juridiques. Certaines informations système et relatives au compte peuvent être envoyées à Google. Nous utilisons les données que vous nous fournissez pour résoudre les problèmes techniques et pour améliorer nos services, conformément à nos <ph name="BEGIN_LINK2" />Règles de confidentialité<ph name="END_LINK2" /> et nos <ph name="BEGIN_LINK3" />Conditions d'utilisation<ph name="END_LINK3" />.</translation>
+<translation id="93343527085570547">Accédez à la <ph name="BEGIN_LINK1" />page d'aide concernant les demandes légales<ph name="END_LINK1" /> pour demander des modifications de contenu pour des raisons juridiques. Certaines informations système et relatives au compte peuvent être envoyées à Google. Nous utilisons les données que vous nous fournissez pour résoudre les problèmes techniques et pour améliorer nos services, conformément à nos <ph name="BEGIN_LINK2" />Règles de confidentialité<ph name="END_LINK2" /> et nos <ph name="BEGIN_LINK3" />Conditions d'utilisation<ph name="END_LINK3" />.</translation>
 <translation id="93393615658292258">Mot de passe uniquement</translation>
 <translation id="934503638756687833">Au besoin, les éléments non indiqués ici seront également supprimés. Pour en savoir plus sur la &lt;a href="<ph name="URL" />"&gt;protection contre les logiciels malveillants&lt;/a&gt;, consultez le livre blanc sur les règles de confidentialité de Chrome.</translation>
 <translation id="935490618240037774">Vos favoris, votre historique, vos mots de passe et d'autres paramètres seront synchronisés avec votre compte Google, afin que vous puissiez les utiliser sur tous vos appareils.</translation>

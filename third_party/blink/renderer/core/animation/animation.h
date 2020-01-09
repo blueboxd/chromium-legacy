@@ -247,14 +247,8 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
                           RegisteredEventListener&) override;
 
  private:
-  // TODO(crbug.com/960944): Deprecate. This version of the play state is not to
-  // spec due to the inclusion of a 'pending' state. Whether or not an animation
-  // is pending is separate from the actual play state.
-  AnimationPlayState PlayStateInternal() const;
-
   base::Optional<double> CurrentTimeInternal() const;
   void SetCurrentTimeInternal(double new_current_time);
-  void SetCurrentTimeInternal(double new_current_time, TimingUpdateReason);
 
   void ClearOutdated();
   void ForceServiceOnNextFrame();
@@ -268,20 +262,8 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   double EffectivePlaybackRate() const;
   void ApplyPendingPlaybackRate();
 
-  // https://drafts.csswg.org/web-animations/#play-states
-  // Per spec the viable states are: idle, running, paused and finished.
-  // Our implementation has an additional state called 'pending' which serves a
-  // similar purpose to micro-tasks in the spec. This additional state is for
-  // internal flow control only and should not be reported via
-  // animation.playState.
-  // TODO(crbug.com/958433): Deprecate this method in favor of the
-  // spec-compliant GetPlayState().
-  AnimationPlayState CalculateExtendedPlayState() const;
-
   base::Optional<double> CalculateStartTime(double current_time) const;
   base::Optional<double> CalculateCurrentTime() const;
-
-  void UpdateCurrentTimingState(TimingUpdateReason);
 
   void BeginUpdatingState();
   void EndUpdatingState();
@@ -335,11 +317,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   String id_;
 
-  // Extended play state with additional pending state for managing timing of
-  // micro-tasks.
-  // TODO(crbug.com/958433): Phase out this version of the play state. Should
-  // just need the reported play state.
-  AnimationPlayState internal_play_state_;
   // Extended play state reported to dev tools. This play state has an
   // additional pending state that is not part of the spec by expected by dev
   // tools.
@@ -364,8 +341,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   Member<Document> document_;
   Member<AnimationTimeline> timeline_;
 
-  // Reflects all pausing, including via pauseForTesting().
-  bool paused_;
+  // Testing flags.
   bool is_paused_for_testing_;
   bool is_composited_animation_disabled_for_testing_;
 
@@ -417,21 +393,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
     kDoNotSetCompositorPending,
   };
 
-  class PlayStateUpdateScope {
-    STACK_ALLOCATED();
-
-   public:
-    PlayStateUpdateScope(Animation&,
-                         TimingUpdateReason,
-                         CompositorPendingChange = kSetCompositorPending);
-    ~PlayStateUpdateScope();
-
-   private:
-    Member<Animation> animation_;
-    AnimationPlayState initial_play_state_;
-    CompositorPendingChange compositor_pending_change_;
-  };
-
   // CompositorAnimation objects need to eagerly sever their connection to their
   // Animation delegate; use a separate 'holder' on-heap object to accomplish
   // that.
@@ -467,9 +428,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   int compositor_group_;
 
   Member<CompositorAnimationHolder> compositor_animation_;
-
-  bool current_time_pending_;
-  bool state_is_being_updated_;
 
   bool effect_suppressed_;
 

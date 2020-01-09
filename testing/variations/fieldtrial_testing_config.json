@@ -792,6 +792,22 @@
             ]
         }
     ],
+    "AutofillCreditCardAuthentication": [
+        {
+            "platforms": [
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillCreditCardAuthentication"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillDynamicForms": [
         {
             "platforms": [
@@ -2015,6 +2031,24 @@
                     "name": "WithoutFtpSupport",
                     "disable_features": [
                         "FtpProtocol"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DesktopTabGroups": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabGroups"
                     ]
                 }
             ]
@@ -3687,6 +3721,32 @@
             ]
         }
     ],
+    "NTPZeroPrefixSuggestions": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "ZeroSuggestVariant:15:*": "RemoteNoUrl,Local",
+                        "ZeroSuggestVariant:1:*": "RemoteNoUrl,Local",
+                        "ZeroSuggestVariant:7:*": "RemoteNoUrl,Local"
+                    },
+                    "enable_features": [
+                        "NtpRealbox",
+                        "NtpRealboxMatchOmniboxTheme",
+                        "OmniboxOnFocusSuggestions",
+                        "OmniboxSuggestionTransparencyOptions"
+                    ]
+                }
+            ]
+        }
+    ],
     "NativeGellerizationRollout": [
         {
             "platforms": [
@@ -4090,22 +4150,6 @@
                 {
                     "name": "iOSExperiments",
                     "enable_features": []
-                }
-            ]
-        }
-    ],
-    "OmniboxGroupSuggestionsBySearchVsUrlAndroid": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OmniboxGroupSuggestionsBySearchVsUrl",
-                        "OmniboxPreserveDefaultMatchScore"
-                    ]
                 }
             ]
         }
@@ -5103,7 +5147,8 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "connection_options": "NSTP"
+                        "connection_options": "NSTP",
+                        "enable_quic": "true"
                     },
                     "enable_features": [
                         "QuicDoesNotUseFeatures"
@@ -5959,9 +6004,8 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_All",
+                    "name": "Enabled_Ui_Ps3",
                     "enable_features": [
-                        "OffMainThreadServiceWorkerStartup",
                         "ServiceWorkerOnUI",
                         "ServiceWorkerPrefersUnusedProcess"
                     ]

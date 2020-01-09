@@ -454,10 +454,6 @@ class ExtensionPrefs : public KeyedService {
   std::unique_ptr<ExtensionsInfo> GetInstalledExtensionsInfo(
       bool include_component_extensions = false) const;
 
-  // Same as above, but only includes external extensions the user has
-  // explicitly uninstalled.
-  std::unique_ptr<ExtensionsInfo> GetUninstalledExtensionsInfo() const;
-
   // Returns the ExtensionInfo from the prefs for the given extension. If the
   // extension is not present, NULL is returned.
   std::unique_ptr<ExtensionInfo> GetInstalledExtensionInfo(
@@ -619,6 +615,12 @@ class ExtensionPrefs : public KeyedService {
   // it yet, removing the old key in the process.
   // TODO(tjudkins): Remove this and the obsolete key in M83.
   void MigrateToNewWithholdingPref();
+
+  // Migrates to the new way of recording explicit user uninstalls of external
+  // extensions (by using a list of IDs rather than a bit set in each extension
+  // dictionary).
+  // TODO(devlin): Remove this once clients are migrated over, around M84.
+  void MigrateToNewExternalUninstallPref();
 
   // When called before the ExtensionService is created, alerts that are
   // normally suppressed in first run will still trigger.
@@ -788,6 +790,9 @@ class ExtensionPrefs : public KeyedService {
   // Returns true if the prefs have any permission withholding setting stored
   // for a given extension.
   bool HasWithholdingPermissionsSetting(const ExtensionId& extension_id) const;
+
+  // Clears the bit indicating that an external extension was uninstalled.
+  void ClearExternalUninstallBit(const ExtensionId& extension_id);
 
   content::BrowserContext* browser_context_;
 

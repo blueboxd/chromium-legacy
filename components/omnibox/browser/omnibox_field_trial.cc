@@ -640,11 +640,6 @@ size_t OmniboxFieldTrial::GetMaxURLMatches() {
       OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, kDefaultMaxURLMatches);
 }
 
-bool OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled() {
-  return base::FeatureList::IsEnabled(
-      omnibox::kOmniboxPreserveDefaultMatchScore);
-}
-
 bool OmniboxFieldTrial::IsReverseAnswersEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxReverseAnswers);
 }
@@ -684,11 +679,6 @@ bool OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled() {
 
 bool OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kExperimentalKeywordMode);
-}
-
-bool OmniboxFieldTrial::IsGroupSuggestionsBySearchVsUrlFeatureEnabled() {
-  return base::FeatureList::IsEnabled(
-      omnibox::kOmniboxGroupSuggestionsBySearchVsUrl);
 }
 
 bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {

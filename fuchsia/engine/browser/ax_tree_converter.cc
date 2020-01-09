@@ -15,66 +15,109 @@
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/gfx/geometry/rect_f.h"
 
+using fuchsia::accessibility::semantics::MAX_LABEL_SIZE;
+
 namespace {
 
 fuchsia::accessibility::semantics::Role ConvertRole(ax::mojom::Role role) {
-  if (role == ax::mojom::Role::kUnknown)
-    return fuchsia::accessibility::semantics::Role::UNKNOWN;
+  if (role == ax::mojom::Role::kButton)
+    return fuchsia::accessibility::semantics::Role::BUTTON;
+  if (role == ax::mojom::Role::kHeader)
+    return fuchsia::accessibility::semantics::Role::HEADER;
+  if (role == ax::mojom::Role::kImage)
+    return fuchsia::accessibility::semantics::Role::IMAGE;
+  if (role == ax::mojom::Role::kTextField)
+    return fuchsia::accessibility::semantics::Role::TEXT_FIELD;
 
-  // TODO(crbug.com/973095): Currently Fuchsia only has one Role option. Add
-  // more and update tests as they become supported.
   return fuchsia::accessibility::semantics::Role::UNKNOWN;
 }
 
-fuchsia::accessibility::semantics::Attributes SetAttributes(std::string name) {
+fuchsia::accessibility::semantics::Attributes ConvertAttributes(
+    const ui::AXNodeData& node) {
   fuchsia::accessibility::semantics::Attributes attributes;
-  attributes.set_label(name);
+  if (node.HasStringAttribute(ax::mojom::StringAttribute::kName)) {
+    const std::string& name =
+        node.GetStringAttribute(ax::mojom::StringAttribute::kName);
+    attributes.set_label(name.substr(0, MAX_LABEL_SIZE));
+  }
+
+  if (node.HasStringAttribute(ax::mojom::StringAttribute::kDescription)) {
+    const std::string& description =
+        node.GetStringAttribute(ax::mojom::StringAttribute::kDescription);
+    attributes.set_secondary_label(description.substr(0, MAX_LABEL_SIZE));
+  }
+
   return attributes;
 }
 
-std::vector<fuchsia::accessibility::semantics::Action> ConvertActions(
-    uint32_t actions) {
-  std::vector<fuchsia::accessibility::semantics::Action> fuchsia_actions;
-  ax::mojom::Action action_enum = static_cast<ax::mojom::Action>(actions);
+// This function handles conversions for all data that is part of a Semantic
+// Node's state. The corresponding data in an AXNodeData is stored in various
+// attributes.
+fuchsia::accessibility::semantics::States ConvertStates(
+    const ui::AXNodeData& node) {
+  fuchsia::accessibility::semantics::States states;
 
-  switch (action_enum) {
-    case ax::mojom::Action::kDoDefault:
-      fuchsia_actions.push_back(
-          fuchsia::accessibility::semantics::Action::DEFAULT);
-      break;
-    case ax::mojom::Action::kNone:
-    case ax::mojom::Action::kAnnotatePageImages:
-    case ax::mojom::Action::kBlur:
-    case ax::mojom::Action::kClearAccessibilityFocus:
-    case ax::mojom::Action::kCustomAction:
-    case ax::mojom::Action::kDecrement:
-    case ax::mojom::Action::kFocus:
-    case ax::mojom::Action::kGetImageData:
-    case ax::mojom::Action::kGetTextLocation:
-    case ax::mojom::Action::kHideTooltip:
-    case ax::mojom::Action::kHitTest:
-    case ax::mojom::Action::kIncrement:
-    case ax::mojom::Action::kInternalInvalidateTree:
-    case ax::mojom::Action::kLoadInlineTextBoxes:
-    case ax::mojom::Action::kReplaceSelectedText:
-    case ax::mojom::Action::kScrollBackward:
-    case ax::mojom::Action::kScrollDown:
-    case ax::mojom::Action::kScrollForward:
-    case ax::mojom::Action::kScrollLeft:
-    case ax::mojom::Action::kScrollRight:
-    case ax::mojom::Action::kScrollUp:
-    case ax::mojom::Action::kScrollToMakeVisible:
-    case ax::mojom::Action::kScrollToPoint:
-    case ax::mojom::Action::kSetAccessibilityFocus:
-    case ax::mojom::Action::kSetScrollOffset:
-    case ax::mojom::Action::kSetSelection:
-    case ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint:
-    case ax::mojom::Action::kSetValue:
-    case ax::mojom::Action::kShowContextMenu:
-    case ax::mojom::Action::kSignalEndOfTest:
-    case ax::mojom::Action::kShowTooltip:
-      DVLOG(2) << "Action: " << action_enum;
-      break;
+  // Converts checked state of a node.
+  if (node.HasIntAttribute(ax::mojom::IntAttribute::kCheckedState)) {
+    ax::mojom::CheckedState ax_state = node.GetCheckedState();
+    switch (ax_state) {
+      case ax::mojom::CheckedState::kNone:
+        states.set_checked_state(
+            fuchsia::accessibility::semantics::CheckedState::NONE);
+        break;
+      case ax::mojom::CheckedState::kTrue:
+        states.set_checked_state(
+            fuchsia::accessibility::semantics::CheckedState::CHECKED);
+        break;
+      case ax::mojom::CheckedState::kFalse:
+        states.set_checked_state(
+            fuchsia::accessibility::semantics::CheckedState::UNCHECKED);
+        break;
+      case ax::mojom::CheckedState::kMixed:
+        states.set_checked_state(
+            fuchsia::accessibility::semantics::CheckedState::MIXED);
+        break;
+    }
+  }
+
+  // Indicates whether a node has been selected.
+  if (node.HasBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+    states.set_selected(
+        node.GetBoolAttribute(ax::mojom::BoolAttribute::kSelected));
+  }
+
+  // Indicates if the node is hidden.
+  states.set_hidden(node.HasState(ax::mojom::State::kInvisible));
+
+  // The user entered value of the node, if applicable.
+  if (node.HasStringAttribute(ax::mojom::StringAttribute::kValue)) {
+    const std::string& value =
+        node.GetStringAttribute(ax::mojom::StringAttribute::kValue);
+    states.set_value(value.substr(0, MAX_LABEL_SIZE));
+  }
+
+  return states;
+}
+
+std::vector<fuchsia::accessibility::semantics::Action> ConvertActions(
+    const ui::AXNodeData& node) {
+  std::vector<fuchsia::accessibility::semantics::Action> fuchsia_actions;
+
+  if (node.HasAction(ax::mojom::Action::kDoDefault)) {
+    fuchsia_actions.push_back(
+        fuchsia::accessibility::semantics::Action::DEFAULT);
+  }
+  if (node.HasAction(ax::mojom::Action::kFocus)) {
+    fuchsia_actions.push_back(
+        fuchsia::accessibility::semantics::Action::SET_FOCUS);
+  }
+  if (node.HasAction(ax::mojom::Action::kSetValue)) {
+    fuchsia_actions.push_back(
+        fuchsia::accessibility::semantics::Action::SET_VALUE);
+  }
+  if (node.HasAction(ax::mojom::Action::kScrollToMakeVisible)) {
+    fuchsia_actions.push_back(
+        fuchsia::accessibility::semantics::Action::SHOW_ON_SCREEN);
   }
 
   return fuchsia_actions;
@@ -116,12 +159,9 @@ fuchsia::accessibility::semantics::Node AXNodeDataToSemanticNode(
   fuchsia::accessibility::semantics::Node fuchsia_node;
   fuchsia_node.set_node_id(bit_cast<uint32_t>(node.id));
   fuchsia_node.set_role(ConvertRole(node.role));
-  // TODO(fxb/18796): Handle node state conversions once available.
-  if (node.HasStringAttribute(ax::mojom::StringAttribute::kName)) {
-    fuchsia_node.set_attributes(SetAttributes(
-        node.GetStringAttribute(ax::mojom::StringAttribute::kName)));
-  }
-  fuchsia_node.set_actions(ConvertActions(node.actions));
+  fuchsia_node.set_states(ConvertStates(node));
+  fuchsia_node.set_attributes(ConvertAttributes(node));
+  fuchsia_node.set_actions(ConvertActions(node));
   fuchsia_node.set_child_ids(ConvertChildIds(node.child_ids));
   fuchsia_node.set_location(ConvertBoundingBox(node.relative_bounds.bounds));
   if (node.relative_bounds.transform) {

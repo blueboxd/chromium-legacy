@@ -120,30 +120,29 @@ fyi_windows_builder(
 def gpu_builder(*, name, **kwargs):
   return builder(
       name = name,
+      goma_backend = goma.backend.RBE_PROD,
       mastername = 'chromium.gpu',
       **kwargs
   )
 
 gpu_builder(
     name = 'Android Release (Nexus 5X)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_builder(
     name = 'GPU Linux Builder',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_builder(
     name = 'GPU Mac Builder',
     cores = None,
-    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
 )
 
 gpu_builder(
     name = 'GPU Win x64 Builder',
     builderless = True,
+    goma_enable_ats = True,
     os = os.WINDOWS_ANY,
 )
 
@@ -257,6 +256,8 @@ mac_ios_builder(
 def win_builder(*, name, os=os.WINDOWS_DEFAULT, **kwargs):
   return builder(
       name = name,
+      goma_backend = goma.backend.RBE_PROD,
+      goma_enable_ats = True,
       mastername = 'chromium.win',
       os = os,
       **kwargs

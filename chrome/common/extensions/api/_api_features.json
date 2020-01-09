@@ -107,9 +107,6 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -631,9 +628,6 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -687,8 +681,6 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://multidevice-setup/*",
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
       "chrome://os-settings/*",
       "chrome://settings/*",
       "chrome://oobe/*"
@@ -724,8 +716,6 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
       "chrome://os-settings/*",
       "chrome://settings/*"
     ]
@@ -792,10 +782,7 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
-      "chrome://settings/*"
+      "chrome://os-settings/*"
     ]
   }],
   "virtualKeyboardPrivate": {

@@ -75,13 +75,13 @@ class DevicePermissionsManagerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     device4_ = fake_hid_manager_.CreateAndAddDevice(
-        0, 0, "Test HID Device", "abcde", HidBusType::kHIDBusTypeUSB);
-    device5_ = fake_hid_manager_.CreateAndAddDevice(0, 0, "Test HID Device", "",
-                                                    HidBusType::kHIDBusTypeUSB);
+        "4", 0, 0, "Test HID Device", "abcde", HidBusType::kHIDBusTypeUSB);
+    device5_ = fake_hid_manager_.CreateAndAddDevice(
+        "5", 0, 0, "Test HID Device", "", HidBusType::kHIDBusTypeUSB);
     device6_ = fake_hid_manager_.CreateAndAddDevice(
-        0, 0, "Test HID Device", "67890", HidBusType::kHIDBusTypeUSB);
-    device7_ = fake_hid_manager_.CreateAndAddDevice(0, 0, "Test HID Device", "",
-                                                    HidBusType::kHIDBusTypeUSB);
+        "6", 0, 0, "Test HID Device", "67890", HidBusType::kHIDBusTypeUSB);
+    device7_ = fake_hid_manager_.CreateAndAddDevice(
+        "7", 0, 0, "Test HID Device", "", HidBusType::kHIDBusTypeUSB);
   }
 
   void TearDown() override { env_.reset(nullptr); }

@@ -22,6 +22,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/search_engines/template_url_service.h"
@@ -37,6 +38,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "media/media_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,6 +52,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/search_test_utils.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
 
 using content::BrowsingDataFilterBuilder;
@@ -488,3 +494,87 @@ TEST(ChromeContentBrowserClientTest, UserAgentMetadata) {
   EXPECT_EQ(metadata.architecture, content::BuildCpuInfo());
   EXPECT_EQ(metadata.model, content::BuildModelInfo());
 }
+
+class CaptivePortalCheckProcessHost : public content::MockRenderProcessHost {
+ public:
+  explicit CaptivePortalCheckProcessHost(
+      content::BrowserContext* browser_context)
+      : MockRenderProcessHost(browser_context) {}
+
+  void CreateURLLoaderFactory(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
+      network::mojom::URLLoaderFactoryParamsPtr params) override {
+    *invoked_url_factory_ = true;
+    DCHECK_EQ(expected_disable_secure_dns_, params->disable_secure_dns);
+  }
+
+  void SetupForTracking(bool* invoked_url_factory,
+                        bool expected_disable_secure_dns) {
+    invoked_url_factory_ = invoked_url_factory;
+    expected_disable_secure_dns_ = expected_disable_secure_dns;
+  }
+
+ private:
+  bool* invoked_url_factory_ = nullptr;
+  bool expected_disable_secure_dns_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptivePortalCheckProcessHost);
+};
+
+class CaptivePortalCheckRenderProcessHostFactory
+    : public content::RenderProcessHostFactory {
+ public:
+  CaptivePortalCheckRenderProcessHostFactory() = default;
+
+  content::RenderProcessHost* CreateRenderProcessHost(
+      content::BrowserContext* browser_context,
+      content::SiteInstance* site_instance) override {
+    rph_ = new CaptivePortalCheckProcessHost(browser_context);
+    return rph_;
+  }
+
+  void SetupForTracking(bool* invoked_url_factory,
+                        bool expected_disable_secure_dns) {
+    rph_->SetupForTracking(invoked_url_factory, expected_disable_secure_dns);
+  }
+
+ private:
+  CaptivePortalCheckProcessHost* rph_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptivePortalCheckRenderProcessHostFactory);
+};
+
+class ChromeContentBrowserClientCaptivePortalBrowserTest
+    : public ChromeRenderViewHostTestHarness {
+ public:
+ protected:
+  void SetUp() override {
+    SetRenderProcessHostFactory(&cp_rph_factory_);
+    ChromeRenderViewHostTestHarness::SetUp();
+  }
+
+  CaptivePortalCheckRenderProcessHostFactory cp_rph_factory_;
+};
+
+TEST_F(ChromeContentBrowserClientCaptivePortalBrowserTest,
+       NotCaptivePortalWindow) {
+  bool invoked_url_factory = false;
+  cp_rph_factory_.SetupForTracking(&invoked_url_factory,
+                                   false /* expected_disable_secure_dns */);
+  NavigateAndCommit(GURL("https://www.google.com"), ui::PAGE_TRANSITION_LINK);
+  EXPECT_TRUE(invoked_url_factory);
+}
+
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+TEST_F(ChromeContentBrowserClientCaptivePortalBrowserTest,
+       CaptivePortalWindow) {
+  bool invoked_url_factory = false;
+  cp_rph_factory_.SetupForTracking(&invoked_url_factory,
+                                   true /* expected_disable_secure_dns */);
+  CaptivePortalTabHelper::CreateForWebContents(web_contents());
+  CaptivePortalTabHelper::FromWebContents(web_contents())
+      ->set_is_captive_portal_window();
+  NavigateAndCommit(GURL("https://www.google.com"), ui::PAGE_TRANSITION_LINK);
+  EXPECT_TRUE(invoked_url_factory);
+}
+#endif

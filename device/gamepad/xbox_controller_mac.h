@@ -18,7 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "device/gamepad/abstract_haptic_gamepad.h"
-#include "device/gamepad/public/mojom/gamepad.mojom.h"
+#include "device/gamepad/public/mojom/gamepad.mojom-forward.h"
 
 struct IOUSBDeviceStruct320;
 struct IOUSBInterfaceStruct300;

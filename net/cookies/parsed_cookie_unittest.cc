@@ -18,28 +18,14 @@ TEST(ParsedCookieTest, TestBasic) {
   EXPECT_EQ("b", pc.Value());
 }
 
-// De facto standard behavior, per https://crbug.com/601786.
 TEST(ParsedCookieTest, TestEmpty) {
-  const struct {
-    const char* cookie;
-    const char* expected_path;
-    bool expect_secure;
-  } kTestCookieLines[]{{"", "", false},     {"     ", "", false},
-                       {"=;", "", false},   {"=; path=/; secure;", "/", true},
-                       {"= ;", "", false},  {"= ; path=/; secure;", "/", true},
-                       {" =;", "", false},  {" =; path=/; secure;", "/", true},
-                       {" = ;", "", false}, {" = ; path=/; secure;", "/", true},
-                       {" ;", "", false},   {" ; path=/; secure;", "/", true},
-                       {";", "", false},    {"; path=/; secure;", "/", true},
-                       {"\t;", "", false},  {"\t; path=/; secure;", "/", true}};
+  const char* kTestCookieLines[]{"",    "     ", "=",     "=;",  " =;",
+                                 "= ;", " = ;",  ";",     " ;",  " ; ",
+                                 "\t",  "\t;",   "\t=\t", "\t=", "=\t"};
 
-  for (const auto& test : kTestCookieLines) {
-    ParsedCookie pc(test.cookie);
-    EXPECT_TRUE(pc.IsValid());
-    EXPECT_EQ("", pc.Name());
-    EXPECT_EQ("", pc.Value());
-    EXPECT_EQ(test.expected_path, pc.Path());
-    EXPECT_EQ(test.expect_secure, pc.IsSecure());
+  for (const char* test : kTestCookieLines) {
+    ParsedCookie pc(test);
+    EXPECT_FALSE(pc.IsValid());
   }
 }
 
@@ -284,13 +270,13 @@ TEST(ParsedCookieTest, SerializeCookieLine) {
 }
 
 TEST(ParsedCookieTest, SetNameAndValue) {
-  ParsedCookie empty((std::string()));
-  EXPECT_TRUE(empty.IsValid());
-  EXPECT_TRUE(empty.SetDomain("foobar.com"));
-  EXPECT_TRUE(empty.SetName("name"));
-  EXPECT_TRUE(empty.SetValue("value"));
-  EXPECT_EQ("name=value; domain=foobar.com", empty.ToCookieLine());
-  EXPECT_TRUE(empty.IsValid());
+  ParsedCookie cookie("a=b");
+  EXPECT_TRUE(cookie.IsValid());
+  EXPECT_TRUE(cookie.SetDomain("foobar.com"));
+  EXPECT_TRUE(cookie.SetName("name"));
+  EXPECT_TRUE(cookie.SetValue("value"));
+  EXPECT_EQ("name=value; domain=foobar.com", cookie.ToCookieLine());
+  EXPECT_TRUE(cookie.IsValid());
 
   // We don't test
   //   ParsedCookie invalid("@foo=bar");

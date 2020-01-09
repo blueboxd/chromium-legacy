@@ -239,13 +239,6 @@
           Bu politika daha özel <ph name="IDLE_ACTION_AC_POLICY_NAME" /> ve <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> politikaları için yedek değer sağlar. Bu politika ayarlanırsa ilgili daha özel politika ayarlanmadığında bunun değeri kullanılır.
 
           Bu politika ayarlanmadığında, daha özel politikaların çalışma biçimi aynı kalır.</translation>
-<translation id="1383493480903114193">Bu politika, ağ iletişimi kodunu tarayıcı işleminde çalışmaya zorlar.
-
-      Bu politika varsayılan olarak devre dışıdır ve etkinleştirilmesi halinde, ağ iletişimi işlemi korumalı alan içine alındıktan sonra kullanıcıları güvenlik sorunlarına karşı savunmasız hale getirir.
-
-      Bu politikanın amacı, işletmelere ağ iletişimi API'lerinin tutulmasına bel bağlamayan üçüncü taraf yazılımlarına geçme fırsatı vermektir. LSP'lerden ve Win32 API yamalarından ziyade proxy sunucuları önerilir.
-
-      Bu politika ayarlanmazsa, NetworkService deneyinin saha denemelerine bağlı olarak ağ iletişimi kodunun tarayıcı işlemi kalmayabilir.</translation>
 <translation id="1384459581748403878">Referans: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">OS güncelleme durumunu bildirir</translation>
 <translation id="1393485621820363363">Etkinleştirilmiş kurumsal cihaz yazıcıları</translation>
@@ -4248,21 +4241,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu politika ayarlandığında, Ebeveyn Erişim Kodu çocuk kullanıcının cihazında doğrulanabilir.
       Bu politika ayarlanmadığında, Ebeveyn Erişim Kodu çocuk kullanıcının cihazında doğrulanamaz.</translation>
 <translation id="7625444193696794922">Bu cihazın kilitlenmesi gereken yayın kanalını belirtir.</translation>
-<translation id="7625498350540361483">
-      Politika true (doğru) değerine ayarlanırsa <ph name="PRODUCT_NAME" /> ürününün Google hizmetlerinden (ör. Google Meet) WebRTC olay günlüklerini toplamasına ve bu günlükleri Google’a yüklemesine izin verilir.
-
-      Politika false (yanlış) değerine ayarlanırsa <ph name="PRODUCT_NAME" /> bu tür günlükleri toplayamaz ve yükleyemez.
-
-      Bu politika ayarlanmadan bırakılırsa M76 ve önceki sürümlerde <ph name="PRODUCT_NAME" /> bu tür günlükleri toplayamaz ve yükleyemez.
-
-      Bu politika ayarlanmadan bırakılırsa M77 ve sonraki sürümlerde tarayıcı profilinin yönetildiği kabul edilirse (ör. profil bulut veya makine düzeyinde politikalar alıyorsa ve bir alt, geçici, giriş gerektiren veya gizli profil değilse) <ph name="PRODUCT_NAME" /> varsayılan olarak bu tür günlükleri toplayabilir ve yükleyebilir.
-
-      Bu günlükler, Chrome'daki sesli veya görüntülü çağrılarla ilgili, gönderilen ve alınan RTP paketlerinin saati ve boyutu, ağdaki tıkanmayla ilgili geri bildirim ve ses ile video karelerinin zamanı ve kalitesiyle ilgili meta veriler gibi sorunların ayıklanmasında yararlı olacak teşhis bilgilerini içerir. Bu günlükler çağrıya ait ses veya video içeriği barındırmaz.
-
-      Chrome'un gerçekleştirdiği bu veri toplama işlemi yalnızca Google Hangouts veya Google Meet gibi Google'ın bir web hizmeti tarafından tetiklenebilir.
-
-      Google bu günlükleri bir oturum kimliği aracılığıyla, Google hizmetinin kendisi tarafından toplanan diğer günlüklerle ilişkilendirebilir. Buradaki amaç hata ayıklamayı kolaylaştırmaktır.
-      </translation>
 <translation id="7632724434767231364">GSSAPI kitaplığı adı</translation>
 <translation id="7635471475589566552"><ph name="PRODUCT_NAME" /> içindeki uygulama yerel ayarını yapılandırır ve kullanıcıların yerel ayarı değiştirmelerini önler.
 

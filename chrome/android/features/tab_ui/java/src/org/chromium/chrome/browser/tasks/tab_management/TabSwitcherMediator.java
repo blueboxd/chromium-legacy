@@ -613,7 +613,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     static boolean isShowingTabsInMRUOrder() {
         String feature = ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
-        return feature.equals("twopanes") || feature.equals("single");
+        return feature.equals("twopanes");
     }
 
     /**

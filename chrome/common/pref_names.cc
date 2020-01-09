@@ -959,6 +959,11 @@ const char kParentAccessCodeConfig[] = "child_user.parent_access_code.config";
 // user. Controlled by PerAppTimeLimits policy.
 const char kPerAppTimeLimitsPolicy[] = "child_user.per_app_time_limits.policy";
 
+// Dictionary pref containing the whitelisted urls, schemes and applications
+// that would not be blocked by per app time limits.
+const char kPerAppTimeLimitsWhitelistPolicy[] =
+    "child_user.per_app_time_limits.whitelist";
+
 // List of preconfigured network file shares.
 const char kNetworkFileSharesPreconfiguredShares[] =
     "network_file_shares.preconfigured_shares";

@@ -393,6 +393,13 @@ public final class ChromePreferenceKeys {
      */
     public static final String OFFLINE_INDICATOR_V2_ENABLED = "offline_indicator_v2_enabled";
 
+    public static final String PRIVACY_METRICS_REPORTING = "metrics_reporting";
+    public static final String PRIVACY_METRICS_IN_SAMPLE = "in_metrics_sample";
+    public static final String PRIVACY_NETWORK_PREDICTIONS = "network_predictions";
+    public static final String PRIVACY_BANDWIDTH_OLD = "prefetch_bandwidth";
+    public static final String PRIVACY_BANDWIDTH_NO_CELLULAR_OLD = "prefetch_bandwidth_no_cellular";
+    public static final String PRIVACY_ALLOW_PRERENDER_OLD = "allow_prefetch";
+
     /**
      * Whether the promotion for data reduction has been skipped on first invocation.
      * Default value is false.
@@ -643,6 +650,12 @@ public final class ChromePreferenceKeys {
                 HOMEPAGE_USE_DEFAULT_URI,
                 LATEST_UNSUPPORTED_VERSION,
                 OFFLINE_INDICATOR_V2_ENABLED,
+                PRIVACY_ALLOW_PRERENDER_OLD,
+                PRIVACY_BANDWIDTH_NO_CELLULAR_OLD,
+                PRIVACY_BANDWIDTH_OLD,
+                PRIVACY_METRICS_IN_SAMPLE,
+                PRIVACY_METRICS_REPORTING,
+                PRIVACY_NETWORK_PREDICTIONS,
                 PROMOS_SKIPPED_ON_FIRST_START,
                 REACHED_CODE_PROFILER_GROUP,
                 SIGNIN_AND_SYNC_PROMO_SHOW_COUNT,

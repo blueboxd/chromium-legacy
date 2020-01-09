@@ -270,6 +270,7 @@ bool OfflineItemModel::IsCommandEnabled(
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::DEEP_SCAN:
       return DownloadUIModel::IsCommandEnabled(download_commands, command);
   }
   NOTREACHED();
@@ -296,6 +297,7 @@ bool OfflineItemModel::IsCommandChecked(
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::ANNOTATE:
+    case DownloadCommands::DEEP_SCAN:
       return false;
   }
   return false;
@@ -319,6 +321,7 @@ void OfflineItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::RESUME:
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::ANNOTATE:
+    case DownloadCommands::DEEP_SCAN:
       DownloadUIModel::ExecuteCommand(download_commands, command);
       break;
   }

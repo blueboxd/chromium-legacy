@@ -150,8 +150,11 @@ void ThirdPartyMetricsObserver::OnTimingUpdate(
   // Filter out first-party frames.
   content::RenderFrameHost* top_frame =
       GetDelegate().GetWebContents()->GetMainFrame();
-  if (!top_frame || top_frame->GetLastCommittedOrigin().IsSameOriginWith(
-                        subframe_rfh->GetLastCommittedOrigin())) {
+  if (!top_frame ||
+      net::registry_controlled_domains::SameDomainOrHost(
+          top_frame->GetLastCommittedOrigin(),
+          subframe_rfh->GetLastCommittedOrigin(),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
     return;
   }
 

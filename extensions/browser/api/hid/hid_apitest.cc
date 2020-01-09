@@ -29,6 +29,7 @@ using device::FakeHidManager;
 using device::HidReportDescriptor;
 
 const char* const kTestDeviceGuids[] = {"A", "B", "C", "D", "E"};
+const char* const kTestPhysicalDeviceIds[] = {"1", "2", "3", "4", "5"};
 
 // These report descriptors define two devices with 8-byte input, output and
 // feature reports. The first implements usage page 0xFF00 and has a single
@@ -121,12 +122,16 @@ class HidApiTest : public ShellApiTest {
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
 
-    AddDevice(kTestDeviceGuids[0], 0x18D1, 0x58F0, false, "A");
-    AddDevice(kTestDeviceGuids[1], 0x18D1, 0x58F0, true, "B");
-    AddDevice(kTestDeviceGuids[2], 0x18D1, 0x58F1, false, "C");
+    AddDevice(kTestDeviceGuids[0], kTestPhysicalDeviceIds[0], 0x18D1, 0x58F0,
+              false, "A");
+    AddDevice(kTestDeviceGuids[1], kTestPhysicalDeviceIds[1], 0x18D1, 0x58F0,
+              true, "B");
+    AddDevice(kTestDeviceGuids[2], kTestPhysicalDeviceIds[2], 0x18D1, 0x58F1,
+              false, "C");
   }
 
   void AddDevice(const std::string& device_guid,
+                 const std::string& physical_device_id,
                  int vendor_id,
                  int product_id,
                  bool report_id,
@@ -153,10 +158,11 @@ class HidApiTest : public ShellApiTest {
         &max_output_report_size, &max_feature_report_size);
 
     auto device = device::mojom::HidDeviceInfo::New(
-        device_guid, vendor_id, product_id, "Test Device", serial_number,
-        device::mojom::HidBusType::kHIDBusTypeUSB, report_descriptor,
-        std::move(collections), has_report_id, max_input_report_size,
-        max_output_report_size, max_feature_report_size, "");
+        device_guid, physical_device_id, vendor_id, product_id, "Test Device",
+        serial_number, device::mojom::HidBusType::kHIDBusTypeUSB,
+        report_descriptor, std::move(collections), has_report_id,
+        max_input_report_size, max_output_report_size, max_feature_report_size,
+        "");
 
     fake_hid_manager_->AddDevice(std::move(device));
   }
@@ -181,8 +187,10 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceAdded) {
 
   // Add a blocked device first so that the test will fail if a notification is
   // received.
-  AddDevice(kTestDeviceGuids[3], 0x18D1, 0x58F1, false, "A");
-  AddDevice(kTestDeviceGuids[4], 0x18D1, 0x58F0, false, "A");
+  AddDevice(kTestDeviceGuids[3], kTestPhysicalDeviceIds[3], 0x18D1, 0x58F1,
+            false, "A");
+  AddDevice(kTestDeviceGuids[4], kTestPhysicalDeviceIds[4], 0x18D1, 0x58F0,
+            false, "A");
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
   EXPECT_EQ("success", result_listener.message());
 }
@@ -216,7 +224,8 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, GetUserSelectedDevices) {
   ASSERT_TRUE(remove_listener.WaitUntilSatisfied());
 
   ExtensionTestMessageListener add_listener("added", false);
-  AddDevice(kTestDeviceGuids[0], 0x18D1, 0x58F0, true, "A");
+  AddDevice(kTestDeviceGuids[0], kTestPhysicalDeviceIds[0], 0x18D1, 0x58F0,
+            true, "A");
   ASSERT_TRUE(add_listener.WaitUntilSatisfied());
 }
 

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.installedapp;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
@@ -49,7 +48,7 @@ public class InstalledAppProviderFactory implements InterfaceFactory<InstalledAp
 
     @Override
     public InstalledAppProvider createImpl() {
-        return new InstalledAppProviderImpl(mFrameUrlDelegate, ContextUtils.getApplicationContext(),
-                InstantAppsHandler.getInstance());
+        return new InstalledAppProviderImpl(
+                mFrameUrlDelegate, new PackageManagerDelegate(), InstantAppsHandler.getInstance());
     }
 }

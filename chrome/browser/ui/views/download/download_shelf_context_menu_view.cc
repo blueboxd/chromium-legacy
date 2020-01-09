@@ -61,7 +61,6 @@ void DownloadShelfContextMenuView::ExecuteCommand(int command_id,
                                                   int event_flags) {
   DownloadCommands::Command command =
       static_cast<DownloadCommands::Command>(command_id);
-  DCHECK_NE(command, DownloadCommands::DISCARD);
 
   if (command == DownloadCommands::KEEP) {
     download_item_view_->MaybeSubmitDownloadToFeedbackService(

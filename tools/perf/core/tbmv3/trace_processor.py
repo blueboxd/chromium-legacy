@@ -16,6 +16,12 @@ TP_BINARY_NAME = 'trace_processor_shell'
 EXPORT_JSON_QUERY_TEMPLATE = 'select export_json(%s)\n'
 METRICS_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__),
                                              'metrics'))
+_TP_NOT_SUPPLIED_ERROR_MSG = """
+Proto trace format selected but trace processor executable is not supplied.
+Either pass --legacy-json-trace-format flag to force using the json format,
+or build the trace_processor_shell target and supply the path to the binary
+via the --trace-processor-path flag.
+"""
 
 MetricFiles = namedtuple('MetricFiles', ('sql', 'proto', 'config'))
 
@@ -27,8 +33,7 @@ def _SqlString(s):
 
 def _CheckTraceProcessor(trace_processor_path):
   if trace_processor_path is None:
-    raise RuntimeError('Trace processor executable is not supplied. '
-                       'Please use the --trace-processor-path flag.')
+    raise RuntimeError(_TP_NOT_SUPPLIED_ERROR_MSG)
   if not os.path.isfile(trace_processor_path):
     raise RuntimeError("Can't find trace processor executable at %s" %
                        trace_processor_path)

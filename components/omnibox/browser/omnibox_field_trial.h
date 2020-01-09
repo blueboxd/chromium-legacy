@@ -377,9 +377,6 @@ size_t GetMaxURLMatches();
 // ---------------------------------------------------------
 // For UI experiments.
 
-// Returns whether preserve default match score is enabled.
-bool IsPreserveDefaultMatchScoreEnabled();
-
 // Returns true if the reverse answers flag is enabled.
 bool IsReverseAnswersEnabled();
 
@@ -409,10 +406,6 @@ bool IsHideSteadyStateUrlTrivialSubdomainsEnabled();
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
-
-// Returns whether the group suggestions by type feature is enabled,
-// which "bunches" search suggestions (except for the default match).
-bool IsGroupSuggestionsBySearchVsUrlFeatureEnabled();
 
 // Returns whether the feature to limit the number of shown URL matches
 // is enabled.

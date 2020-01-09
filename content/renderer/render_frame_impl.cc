@@ -1421,7 +1421,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   render_view->render_widget_ = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
       params->visual_properties.display_mode,
-      /*is_undead=*/false, params->never_visible);
+      /*is_undead=*/false, render_view->widgets_never_visible());
 
   RenderWidget* render_widget = render_view->GetWidget();
   render_widget->set_delegate(render_view);
@@ -1600,16 +1600,10 @@ void RenderFrameImpl::CreateFrame(
       // time a local main frame was created.
       //
       // This block of code mimics RenderFrameImpl::CreateMainFrame().
-      //
-      // Note that |never_visible| is not provided by the browser in this path
-      // which means that a |never_visible| local main frame navigation to the
-      // origin of an OOP child frame could result in losing the |never_visible|
-      // state. We need |never_visible| to be a property of the RenderView so
-      // that future frames can see it.
       render_view->render_widget_ = RenderWidget::CreateForFrame(
           widget_params->routing_id, compositor_deps,
           widget_params->visual_properties.display_mode,
-          /*is_undead=*/false, /*never_visible=*/false);
+          /*is_undead=*/false, render_view->widgets_never_visible());
 
       render_widget = render_view->GetWidget();
       render_widget->set_delegate(render_view);
@@ -1650,9 +1644,8 @@ void RenderFrameImpl::CreateFrame(
     // space/context.
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params->routing_id, compositor_deps,
-        // TODO(danakj): Use widget_params->visual_properties.screen_info here?
-        blink::mojom::DisplayMode::kUndefined,
-        /*is_undead=*/false, /*never_visible=*/false);
+        widget_params->visual_properties.display_mode,
+        /*is_undead=*/false, render_view->widgets_never_visible());
 
     // Non-owning pointer that is self-referencing and destroyed by calling
     // Close(). We use the new RenderWidget as the client for this

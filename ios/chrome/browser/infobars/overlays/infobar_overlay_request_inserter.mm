@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 
 #include "base/logging.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_cancel_handler.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory.h"
 #import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
@@ -47,7 +48,7 @@ void InfobarOverlayRequestInserter::InsertOverlayRequest(
   std::unique_ptr<OverlayRequest> request =
       request_factory_->CreateInfobarRequest(infobar, type);
   DCHECK(request.get());
-  DCHECK_EQ(infobar,
+  DCHECK_EQ(static_cast<InfoBarIOS*>(infobar),
             request->GetConfig<InfobarOverlayRequestConfig>()->infobar());
   OverlayRequestQueue* queue = queues_.at(type);
   std::unique_ptr<OverlayRequestCancelHandler> cancel_handler =

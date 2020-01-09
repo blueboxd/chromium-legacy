@@ -312,6 +312,7 @@ extern const char kNetworkFileSharesPreconfiguredShares[];
 extern const char kMostRecentlyUsedNetworkFileShareURL[];
 extern const char kParentAccessCodeConfig[];
 extern const char kPerAppTimeLimitsPolicy[];
+extern const char kPerAppTimeLimitsWhitelistPolicy[];
 extern const char kDeviceWallpaperImageFilePath[];
 extern const char kKerberosRememberPasswordEnabled[];
 extern const char kKerberosAddAccountsAllowed[];

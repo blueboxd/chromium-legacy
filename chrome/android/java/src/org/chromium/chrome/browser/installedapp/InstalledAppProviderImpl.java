@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.installedapp;
 
-import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -58,7 +57,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     private static final String TAG = "InstalledAppProvider";
 
     private final FrameUrlDelegate mFrameUrlDelegate;
-    private final Context mContext;
+    private final PackageManagerDelegate mPackageManagerDelegate;
     private final InstantAppsHandler mInstantAppsHandler;
 
     /**
@@ -78,11 +77,11 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
         public boolean isIncognito();
     }
 
-    public InstalledAppProviderImpl(FrameUrlDelegate frameUrlDelegate, Context context,
-            InstantAppsHandler instantAppsHandler) {
+    public InstalledAppProviderImpl(FrameUrlDelegate frameUrlDelegate,
+            PackageManagerDelegate packageManagerDelegate, InstantAppsHandler instantAppsHandler) {
         assert instantAppsHandler != null;
         mFrameUrlDelegate = frameUrlDelegate;
-        mContext = context;
+        mPackageManagerDelegate = packageManagerDelegate;
         mInstantAppsHandler = instantAppsHandler;
     }
 
@@ -136,7 +135,6 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
 
         ArrayList<RelatedApplication> installedApps = new ArrayList<RelatedApplication>();
         int delayMillis = 0;
-        PackageManager pm = mContext.getPackageManager();
         for (int i = 0; i < Math.min(relatedApps.length, MAX_ALLOWED_RELATED_APPS); i++) {
             RelatedApplication app = relatedApps[i];
             // If the package is of type "play", it is installed, and the origin is associated with
@@ -156,7 +154,8 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
                 }
 
                 delayMillis += calculateDelayForPackageMs(app.id);
-                if (isAppInstalledAndAssociatedWithOrigin(app.id, frameUrl, pm)) {
+                if (isAppInstalledAndAssociatedWithOrigin(
+                            app.id, frameUrl, mPackageManagerDelegate)) {
                     installedApps.add(app);
                 }
             }
@@ -185,7 +184,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     private void setVersionInfo(RelatedApplication installedApp) {
         assert installedApp.id != null;
         try {
-            PackageInfo info = mContext.getPackageManager().getPackageInfo(installedApp.id, 0);
+            PackageInfo info = mPackageManagerDelegate.getPackageInfo(installedApp.id, 0);
             installedApp.version = info.versionName;
         } catch (NameNotFoundException e) {
         }
@@ -224,7 +223,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      *                origin of this URL. Can be null.
      */
     public static boolean isAppInstalledAndAssociatedWithOrigin(
-            String packageName, URI frameUrl, PackageManager pm) {
+            String packageName, URI frameUrl, PackageManagerDelegate pm) {
         // TODO(yusufo): Move this to a better/shared location before crbug.com/749876 is closed.
 
         ThreadUtils.assertOnBackgroundThread();
@@ -273,7 +272,7 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      * @return The list of asset statements, parsed from JSON.
      * @throws NameNotFoundException if the application is not installed.
      */
-    private static JSONArray getAssetStatements(String packageName, PackageManager pm)
+    private static JSONArray getAssetStatements(String packageName, PackageManagerDelegate pm)
             throws NameNotFoundException {
         // Get the <meta-data> from this app's manifest.
         // Throws NameNotFoundException if the application is not installed.

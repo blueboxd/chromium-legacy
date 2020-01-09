@@ -19,9 +19,19 @@ class OverlayRequestImpl : public OverlayRequest,
 
   // OverlayRequest:
   OverlayCallbackManager* GetCallbackManager() override;
+  web::WebState* GetQueueWebState() override;
   base::SupportsUserData* data() override;
 
  private:
+  friend class OverlayRequestQueueImpl;
+
+  // Setter for the return value for GetQueueWebState().  Called by the
+  // OverlayRequestQueueImpl when the request is added.
+  void set_queue_web_state(web::WebState* queue_web_state) {
+    queue_web_state_ = queue_web_state;
+  }
+
+  web::WebState* queue_web_state_ = nullptr;
   OverlayCallbackManagerImpl callback_manager_;
 };
 

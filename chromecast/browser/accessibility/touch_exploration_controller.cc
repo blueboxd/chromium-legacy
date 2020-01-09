@@ -197,7 +197,7 @@ ui::EventDispatchDetails TouchExplorationController::RewriteEvent(
                            gesture_start_height_) != NO_EDGE) {
     SET_STATE(ONE_FINGER_PASSTHROUGH);
     initial_press_ = std::make_unique<ui::TouchEvent>(touch_event);
-    last_unused_finger_event_.reset(new ui::TouchEvent(touch_event));
+    passthrough_offset_ = gfx::Vector2dF(0, 0);
     return SendEvent(continuation, &event);
   }
 
@@ -214,6 +214,12 @@ ui::EventDispatchDetails TouchExplorationController::RewriteEvent(
       if (DVLOG_on_) {
         DVLOG(1) << "Reset to no fingers in Rewrite event because the touch  "
                     "release or cancel was on the edge of the screen.";
+      }
+      if (side_gesture_pass_through_) {
+        // Don't discard event when side gesture pass through is enabled. It
+        // interferes with gesture detector logic further down the processing
+        // stack.
+        return SendEvent(continuation, &event);
       }
       return DiscardEvent(continuation);
     }

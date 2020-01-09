@@ -171,6 +171,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   base::ScopedClosureRunner GetCacheBackBufferCb();
 
   bool IsRootFrameMissing() const;
+  bool HasPendingSurfaces(const BeginFrameArgs& args) const;
 
  private:
   // PresentationGroupTiming stores rendering pipeline stage timings associated

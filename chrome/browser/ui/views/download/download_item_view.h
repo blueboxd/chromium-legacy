@@ -427,6 +427,9 @@ class DownloadItemView : public views::View,
   // Icon for the download.
   gfx::ImageSkia icon_;
 
+  // Button used to consent to deep scanning.
+  views::MdTextButton* scan_button_ = nullptr;
+
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.
   base::WeakPtrFactory<DownloadItemView> weak_ptr_factory_{this};

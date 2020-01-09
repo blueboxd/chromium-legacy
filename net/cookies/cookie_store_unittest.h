@@ -779,31 +779,31 @@ TYPED_TEST_P(CookieStoreTest, EmptyKeyTest) {
   EXPECT_TRUE(this->SetCookie(cs, url1, "foo"));
   EXPECT_EQ("foo", this->GetCookies(cs, url1));
 
-  // Regression tests for https://crbug.com/601786
+  // Cookies with neither name nor value (e.g. `Set-Cookie: =`) are ignored.
   GURL url2("http://foo2.bar.com");
   EXPECT_TRUE(this->SetCookie(cs, url2, "foo"));
-  EXPECT_TRUE(this->SetCookie(cs, url2, "\t"));
-  EXPECT_EQ("", this->GetCookies(cs, url2));
+  EXPECT_FALSE(this->SetCookie(cs, url2, "\t"));
+  EXPECT_EQ("foo", this->GetCookies(cs, url2));
 
   GURL url3("http://foo3.bar.com");
   EXPECT_TRUE(this->SetCookie(cs, url3, "foo"));
-  EXPECT_TRUE(this->SetCookie(cs, url3, "="));
-  EXPECT_EQ("", this->GetCookies(cs, url3));
+  EXPECT_FALSE(this->SetCookie(cs, url3, "="));
+  EXPECT_EQ("foo", this->GetCookies(cs, url3));
 
   GURL url4("http://foo4.bar.com");
   EXPECT_TRUE(this->SetCookie(cs, url4, "foo"));
-  EXPECT_TRUE(this->SetCookie(cs, url4, ""));
-  EXPECT_EQ("", this->GetCookies(cs, url4));
+  EXPECT_FALSE(this->SetCookie(cs, url4, ""));
+  EXPECT_EQ("foo", this->GetCookies(cs, url4));
 
   GURL url5("http://foo5.bar.com");
   EXPECT_TRUE(this->SetCookie(cs, url5, "foo"));
-  EXPECT_TRUE(this->SetCookie(cs, url5, "; bar"));
-  EXPECT_EQ("", this->GetCookies(cs, url5));
+  EXPECT_FALSE(this->SetCookie(cs, url5, "; bar"));
+  EXPECT_EQ("foo", this->GetCookies(cs, url5));
 
   GURL url6("http://foo6.bar.com");
   EXPECT_TRUE(this->SetCookie(cs, url6, "foo"));
-  EXPECT_TRUE(this->SetCookie(cs, url6, " "));
-  EXPECT_EQ("", this->GetCookies(cs, url6));
+  EXPECT_FALSE(this->SetCookie(cs, url6, " "));
+  EXPECT_EQ("foo", this->GetCookies(cs, url6));
 #endif
 }
 

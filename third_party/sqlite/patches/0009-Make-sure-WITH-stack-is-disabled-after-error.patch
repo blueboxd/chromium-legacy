@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 3 Dec 2019 13:56:38 -0800
-Subject: [PATCH 09/17] Make sure WITH stack is disabled after error
+Subject: [PATCH 09/22] Make sure WITH stack is disabled after error
 
 Backports https://sqlite.org/src/info/de6e6d6846d6a41c
 

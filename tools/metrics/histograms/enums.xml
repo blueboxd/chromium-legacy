@@ -3262,7 +3262,7 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="AsyncHitTestReasons">
-  <int value="0" label="Not async hit test"/>
+  <int value="0" label="Synchronous hit test"/>
   <int value="1" label="Iframe has overlapped region"/>
   <int value="2" label="Iframe is irregularly clipped"/>
   <int value="3" label="Iframe is not active"/>
@@ -4411,6 +4411,8 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="Not migrated"/>
   <int value="1" label="Migrated from canonical email"/>
   <int value="2" label="Migrated from non canonical email"/>
+  <int value="3"
+      label="Not migrated (Unexpected primary account id with email format)."/>
 </enum>
 
 <enum name="AutofillPredictionSource">
@@ -19105,6 +19107,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="655" label="PrimaryMouseButtonSwitch"/>
   <int value="656" label="ReportDeviceCpuInfo"/>
   <int value="657" label="DeviceLoginScreenPrimaryMouseButtonSwitch"/>
+  <int value="658" label="PerAppTimeLimitsWhitelist"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -66851,6 +66854,7 @@ Full version information for the fingerprint enum values:
   <int value="-1382906531" label="chrome://managed-user-passphrase/"/>
   <int value="-1379571130" label="chrome://newtab/"/>
   <int value="-1378421581" label="chrome://media-router/"/>
+  <int value="-1331415629" label="chrome://os-settings/"/>
   <int value="-1313432739" label="chrome://plugins/"/>
   <int value="-1239015343" label="chrome://kill/"/>
   <int value="-1224398205" label="chrome://prefs-internals/"/>
@@ -66951,6 +66955,7 @@ Full version information for the fingerprint enum values:
   <int value="1281801197" label="chrome://terms/"/>
   <int value="1286620182" label="chrome://reset-password/"/>
   <int value="1306215264" label="chrome://activationmessage/"/>
+  <int value="1326111536" label="chrome://new-tab-page/"/>
   <int value="1340926535" label="chrome://network/"/>
   <int value="1354146226" label="chrome://tab-modal-confirm-dialog/"/>
   <int value="1371905827" label="chrome://flags/"/>
@@ -66964,6 +66969,7 @@ Full version information for the fingerprint enum values:
   <int value="1466599095" label="chrome://oobe/"/>
   <int value="1467342679" label="chrome://memory-internals/"/>
   <int value="1476643520" label="chrome://internet-detail-dialog/"/>
+  <int value="1506419762" label="devtools://devtools/"/>
   <int value="1540230808" label="chrome://power/"/>
   <int value="1554928128" label="chrome://sync-confirmation/?consent-bump"/>
   <int value="1568301017" label="chrome://media-internals/"/>
@@ -68471,6 +68477,24 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WinGetLastError">
+  <int value="-2146893818" label="NTE_BAD_SIGNATURE"/>
+  <int value="-2146893815" label="NTE_BAD_FLAGS"/>
+  <int value="-2146893813" label="NTE_BAD_KEY_STATE">
+    The user password has changed since the private keys were encrypted.
+  </int>
+  <int value="-2146893810" label="NTE_NO_MEMORY"/>
+  <int value="-2146893809" label="NTE_EXISTS"/>
+  <int value="-2146893804" label="NTE_BAD_PROV_TYPE"/>
+  <int value="-2146893802" label="NTE_BAD_KEYSET"/>
+  <int value="-2146893801" label="NTE_PROV_TYPE_NOT_DEF"/>
+  <int value="-2146893800" label="NTE_PROV_TYPE_ENTRY_BAD"/>
+  <int value="-2146893799" label="NTE_KEYSET_NOT_DEF"/>
+  <int value="-2146893798" label="NTE_KEYSET_ENTRY_BAD"/>
+  <int value="-2146893797" label="NTE_PROV_TYPE_NO_MATCH"/>
+  <int value="-2146893796" label="NTE_SIGNATURE_FILE_BAD"/>
+  <int value="-2146893795" label="NTE_PROVIDER_DLL_FAIL"/>
+  <int value="-2146893794" label="NTE_PROV_DLL_NOT_FOUND"/>
+  <int value="-2146893793" label="NTE_BAD_KEYSET_PARAM"/>
   <int value="0" label="SUCCESS"/>
   <int value="1" label="INVALID_FUNCTION"/>
   <int value="2" label="FILE_NOT_FOUND"/>

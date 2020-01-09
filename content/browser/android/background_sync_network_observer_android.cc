@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/trace_event/trace_event.h"
 #include "content/public/android/content_jni_headers/BackgroundSyncNetworkObserver_jni.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/service_worker_context.h"
@@ -29,6 +30,8 @@ BackgroundSyncNetworkObserverAndroid::Observer::Create(
 }
 
 void BackgroundSyncNetworkObserverAndroid::Observer::Init() {
+  TRACE_EVENT0("startup",
+               "BackgroundSyncNetworkObserverAndroid::Observer::Init");
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Attach a Java BackgroundSyncNetworkObserver object. Its lifetime will be
   // scoped to the lifetime of this object.

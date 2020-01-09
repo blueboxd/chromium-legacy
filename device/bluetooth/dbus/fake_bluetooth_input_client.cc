@@ -75,8 +75,8 @@ void FakeBluetoothInputClient::AddInputDevice(
     return;
 
   std::unique_ptr<Properties> properties = std::make_unique<Properties>(
-      base::Bind(&FakeBluetoothInputClient::OnPropertyChanged,
-                 base::Unretained(this), object_path));
+      base::BindRepeating(&FakeBluetoothInputClient::OnPropertyChanged,
+                          base::Unretained(this), object_path));
 
   // The LegacyAutopair and DisplayPinCode devices represent a typical mouse
   // and keyboard respectively, so mark them as ReconnectMode "any". The

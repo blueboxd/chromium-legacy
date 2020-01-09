@@ -243,7 +243,7 @@
 <translation id="1329584516321524826">剛才更新</translation>
 <translation id="1330145147221172764">啟用螢幕小鍵盤</translation>
 <translation id="1331977651797684645">這是我。</translation>
-<translation id="1333489022424033687">在你清除裝置上其他網站所儲存的資料之前，部分 <ph name="ORIGIN" /> 上的功能可能無法正常運作</translation>
+<translation id="1333489022424033687">在你清除裝置上其他網站所儲存的資料之前，<ph name="ORIGIN" /> 上的部分功能可能無法正常運作</translation>
 <translation id="133535873114485416">偏好的輸入來源</translation>
 <translation id="1335929031622236846">註冊你的裝置</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> 想要開啟這個應用程式。</translation>
@@ -5086,7 +5086,6 @@
 <translation id="8251578425305135684">已移除縮圖。</translation>
 <translation id="8252569384384439529">上傳中...</translation>
 <translation id="8253198102038551905">按一下 [+] 即可查看網路屬性</translation>
-<translation id="825483282309623688">您必須連上網際網路，才能還原資料。</translation>
 <translation id="8254954272268479918">關閉 Linux (Beta 版)</translation>
 <translation id="8255451560461371599">無背景圖片</translation>
 <translation id="8256319818471787266">小黃</translation>

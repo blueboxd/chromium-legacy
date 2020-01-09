@@ -78,14 +78,13 @@ void NavigationPredictorPreconnectClient::OnVisibilityChanged(
     content::Visibility visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Check for same state.
   if (current_visibility_ == visibility)
     return;
 
-  // Check if the visibility changed from VISIBLE to HIDDEN. Since navigation
-  // predictor is currently restricted to Android, it is okay to disregard the
-  // occluded state.
-  if (current_visibility_ != content::Visibility::HIDDEN ||
-      visibility != content::Visibility::VISIBLE) {
+  // Check if the visibility is now visible, if not, cancel future preconnects.
+  // If visible, we can begin preconnecting.
+  if (visibility != content::Visibility::VISIBLE) {
     current_visibility_ = visibility;
 
     // Stop any future preconnects while hidden.
@@ -140,6 +139,9 @@ void NavigationPredictorPreconnectClient::MaybePreconnectNow() {
       Profile::FromBrowserContext(browser_context_));
   GURL preconnect_url_serialized(preconnect_origin.Serialize());
   DCHECK(preconnect_url_serialized.is_valid());
+
+  if (!loading_predictor)
+    return;
 
   loading_predictor->PrepareForPageLoad(
       preconnect_url_serialized, predictors::HintOrigin::NAVIGATION_PREDICTOR,

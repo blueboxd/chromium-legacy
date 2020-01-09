@@ -71,6 +71,21 @@ class MF_INITIALIZER_EXPORT MediaBufferScopedPointer {
   DISALLOW_COPY_AND_ASSIGN(MediaBufferScopedPointer);
 };
 
+// Wrap around the usage of device handle from |device_manager|.
+class MF_INITIALIZER_EXPORT DXGIDeviceScopedHandle {
+ public:
+  explicit DXGIDeviceScopedHandle(IMFDXGIDeviceManager* device_manager);
+
+  ~DXGIDeviceScopedHandle();
+
+  HRESULT LockDevice(REFIID riid, void** device_out);
+
+ private:
+  Microsoft::WRL::ComPtr<IMFDXGIDeviceManager> device_manager_;
+
+  HANDLE device_handle_ = INVALID_HANDLE_VALUE;
+};
+
 }  // namespace mf
 
 }  // namespace media

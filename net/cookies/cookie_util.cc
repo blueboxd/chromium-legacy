@@ -104,10 +104,10 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContext(
     const base::Optional<url::Origin>& initiator) {
   if (site_for_cookies.IsFirstParty(url)) {
     CookieOptions::SameSiteCookieContext same_site_type;
+    // Create a SiteForCookies object from the initiator so that we can reuse
+    // IsFirstParty().
     if (!initiator ||
-        registry_controlled_domains::SameDomainOrHost(
-            url, initiator.value(),
-            registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+        SiteForCookies::FromOrigin(initiator.value()).IsFirstParty(url)) {
       same_site_type = CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
     } else {
       same_site_type = CookieOptions::SameSiteCookieContext::SAME_SITE_LAX;

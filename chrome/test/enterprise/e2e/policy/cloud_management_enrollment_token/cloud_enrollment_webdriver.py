@@ -11,10 +11,6 @@ import test_util
 
 def main(argv):
   options = webdriver.ChromeOptions()
-  # Add option for enrolling to the dev DMServer
-  options.add_argument(
-      "device-management-url=https://crosman-qa.sandbox.google.com/devicemanagement/data/api"
-  )
   os.environ["CHROME_LOG_FILE"] = r"c:\temp\chrome_log.txt"
   driver = test_util.create_chrome_webdriver(chrome_options=options)
 

@@ -27,7 +27,7 @@ class HidFilterTest : public testing::Test {
  public:
   void SetUp() override {
     device_info_ = new HidDeviceInfo(
-        kTestDeviceId, 0x046d, 0xc31c, "Test Keyboard", "123ABC",
+        kTestDeviceId, "1", 0x046d, 0xc31c, "Test Keyboard", "123ABC",
         mojom::HidBusType::kHIDBusTypeUSB,
         std::vector<uint8_t>(kKeyboard, kKeyboard + kKeyboardSize));
   }

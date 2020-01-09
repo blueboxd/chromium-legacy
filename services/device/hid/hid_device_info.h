@@ -27,6 +27,7 @@ typedef std::string HidPlatformDeviceId;
 class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
  public:
   HidDeviceInfo(const HidPlatformDeviceId& platform_device_id,
+                const std::string& physical_device_id,
                 uint16_t vendor_id,
                 uint16_t product_id,
                 const std::string& product_name,
@@ -36,6 +37,7 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
                 std::string device_node = "");
 
   HidDeviceInfo(const HidPlatformDeviceId& platform_device_id,
+                const std::string& physical_device_id,
                 uint16_t vendor_id,
                 uint16_t product_id,
                 const std::string& product_name,
@@ -52,6 +54,9 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
   const std::string& device_guid() const { return device_->guid; }
   const HidPlatformDeviceId& platform_device_id() const {
     return platform_device_id_;
+  }
+  const std::string& physical_device_id() const {
+    return device_->physical_device_id;
   }
   uint16_t vendor_id() const { return device_->vendor_id; }
   uint16_t product_id() const { return device_->product_id; }

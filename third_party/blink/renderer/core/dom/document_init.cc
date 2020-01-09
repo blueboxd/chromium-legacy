@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/dom/document_init.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
@@ -285,8 +286,13 @@ DocumentInit& DocumentInit::WithContentSecurityPolicyFromContextDoc() {
 ContentSecurityPolicy* DocumentInit::GetContentSecurityPolicy() const {
   DCHECK(
       !(content_security_policy_ && content_security_policy_from_context_doc_));
-  if (context_document_ && content_security_policy_from_context_doc_)
-    return context_document_->GetContentSecurityPolicy();
+  if (context_document_ && content_security_policy_from_context_doc_) {
+    // Return a copy of the context documents' CSP. The return value will be
+    // modified, so this must be a copy.
+    ContentSecurityPolicy* csp = MakeGarbageCollected<ContentSecurityPolicy>();
+    csp->CopyStateFrom(context_document_->GetContentSecurityPolicy());
+    return csp;
+  }
   return content_security_policy_;
 }
 

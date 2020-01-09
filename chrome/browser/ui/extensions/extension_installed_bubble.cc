@@ -20,6 +20,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/extensions/extension_installed_waiter.h"
+#include "chrome/browser/ui/extensions/extension_removal_watcher.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
@@ -33,124 +35,6 @@
 using extensions::Extension;
 
 namespace {
-
-// How long to wait for browser action animations to complete before retrying.
-const int kAnimationWaitMs = 50;
-// How often we retry when waiting for browser action animation to end.
-const int kAnimationWaitRetries = 10;
-
-// Class responsible for showing the bubble after it's installed. Owns itself.
-class ExtensionInstalledBubbleObserver
-    : public BrowserListObserver,
-      public extensions::ExtensionRegistryObserver {
- public:
-  explicit ExtensionInstalledBubbleObserver(
-      scoped_refptr<const extensions::Extension> extension,
-      Browser* browser,
-      const SkBitmap& icon)
-      : extension_(extension),
-        browser_(browser),
-        icon_(icon),
-        animation_wait_retries_(0) {
-    // |extension| has been initialized but not loaded at this point. We need to
-    // wait on showing the Bubble until the EXTENSION_LOADED gets fired.
-    extension_registry_observer_.Add(
-        extensions::ExtensionRegistry::Get(browser->profile()));
-    BrowserList::AddObserver(this);
-  }
-
-  void Run() { OnExtensionLoaded(nullptr, extension_.get()); }
-
- private:
-  ~ExtensionInstalledBubbleObserver() override {
-    BrowserList::RemoveObserver(this);
-  }
-
-  // BrowserListObserver:
-  void OnBrowserClosing(Browser* browser) override {
-    if (browser_ == browser) {
-      // Browser is closing before the bubble was shown.
-      // TODO(hcarmona): Look into logging this with the BubbleManager.
-      delete this;
-    }
-  }
-
-  // extensions::ExtensionRegistryObserver:
-  void OnExtensionLoaded(content::BrowserContext* browser_context,
-                         const extensions::Extension* extension) override {
-    if (extension == extension_.get()) {
-      // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
-      // Only then can we be sure that a BrowserAction or PageAction has had
-      // views created which we can inspect for the purpose of previewing of
-      // pointing to them.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&ExtensionInstalledBubbleObserver::Initialize,
-                         weak_factory_.GetWeakPtr()));
-    }
-  }
-
-  void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionReason reason) override {
-    if (extension == extension_.get()) {
-      // Extension is going away.
-      delete this;
-    }
-  }
-
-  void Initialize() {
-    bubble_ =
-        std::make_unique<ExtensionInstalledBubble>(extension_, browser_, icon_);
-    Show();
-  }
-
-  // Called internally via PostTask to show the bubble.
-  void Show() {
-    DCHECK(bubble_);
-    // TODO(hcarmona): Investigate having the BubbleManager query the bubble
-    // for |ShouldShow|. This is important because the BubbleManager may decide
-    // to delay showing the bubble.
-    if (bubble_->ShouldShow()) {
-      // Must be 2 lines because the manager will take ownership of bubble.
-      BubbleManager* manager = browser_->GetBubbleManager();
-      manager->ShowBubble(std::move(bubble_));
-      delete this;
-      return;
-    }
-    if (animation_wait_retries_++ < kAnimationWaitRetries) {
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE,
-          base::BindOnce(&ExtensionInstalledBubbleObserver::Show,
-                         weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kAnimationWaitMs));
-    } else {
-      // Retries are over; won't try again.
-      // TODO(hcarmona): Look into logging this with the BubbleManager.
-      delete this;
-    }
-  }
-
-  scoped_refptr<const extensions::Extension> extension_;
-  Browser* const browser_;
-  SkBitmap icon_;
-
-  // The bubble that will be shown when the extension has finished installing.
-  std::unique_ptr<ExtensionInstalledBubble> bubble_;
-
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      extension_registry_observer_{this};
-
-  // The number of times to retry showing the bubble if |browser_'s| toolbar
-  // is animating.
-  int animation_wait_retries_;
-
-  base::WeakPtrFactory<ExtensionInstalledBubbleObserver> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleObserver);
-};
 
 // Returns the keybinding for an extension command, or a null if none exists.
 std::unique_ptr<extensions::Command> GetCommand(
@@ -246,6 +130,83 @@ ExtensionInstalledBubble::AnchorPosition GetAnchorPositionForType(
   return ExtensionInstalledBubble::ANCHOR_APP_MENU;
 }
 
+// This helper class wraps the state needed to construct an
+// ExtensionInstalledBubble. It is illegal to construct ExtensionInstalledBubble
+// before the extension is installed, so we can't construct it directly to pass
+// into the waiter; this class defers constructing it until it is actually
+// needed.
+class ExtensionUiWaiter {
+ public:
+  static void WaitForUi(scoped_refptr<const extensions::Extension> extension,
+                        Browser* browser,
+                        const SkBitmap& icon) {
+    (new ExtensionUiWaiter(extension, browser, icon))->Wait();
+  }
+
+  ExtensionUiWaiter(const ExtensionUiWaiter& other) = delete;
+  ExtensionUiWaiter& operator=(const ExtensionUiWaiter& other) = delete;
+
+ private:
+  // This class manages its own lifetime.
+  ExtensionUiWaiter(scoped_refptr<const extensions::Extension> extension,
+                    Browser* browser,
+                    const SkBitmap& icon)
+      : extension_(extension), browser_(browser), icon_(icon) {
+    removal_watcher_ = std::make_unique<ExtensionRemovalWatcher>(
+        browser, extension,
+        base::Bind(&ExtensionUiWaiter::OnExtensionRemoved,
+                   weak_factory_.GetWeakPtr()));
+  }
+  virtual ~ExtensionUiWaiter() = default;
+
+  void Wait() {
+    DCHECK(extensions::ExtensionRegistry::Get(browser_->profile())
+               ->enabled_extensions()
+               .GetByID(extension_->id()));
+
+    constexpr int kMaxRetries = 10;
+    constexpr auto kRetryDelay = base::TimeDelta::FromMilliseconds(50);
+    if (!bubble_) {
+      bubble_ = std::make_unique<ExtensionInstalledBubble>(extension_, browser_,
+                                                           std::move(icon_));
+    }
+
+    if (bubble_->ShouldShow()) {
+      Show();
+      return;
+    }
+
+    if (retries_++ >= kMaxRetries) {
+      StopWaiting();
+      return;
+    }
+
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ExtensionUiWaiter::Wait, weak_factory_.GetWeakPtr()),
+        kRetryDelay);
+  }
+
+  void StopWaiting() { delete this; }
+
+  void Show() {
+    BubbleManager* manager = browser_->GetBubbleManager();
+    manager->ShowBubble(std::move(bubble_));
+    delete this;
+  }
+
+  void OnExtensionRemoved() { delete this; }
+
+  const scoped_refptr<const extensions::Extension> extension_;
+  Browser* browser_;
+  SkBitmap icon_;
+  std::unique_ptr<ExtensionInstalledBubble> bubble_;
+  std::unique_ptr<ExtensionRemovalWatcher> removal_watcher_;
+  int retries_ = 0;
+
+  base::WeakPtrFactory<ExtensionUiWaiter> weak_factory_{this};
+};
+
 }  // namespace
 
 // static
@@ -253,15 +214,12 @@ void ExtensionInstalledBubble::ShowBubble(
     scoped_refptr<const extensions::Extension> extension,
     Browser* browser,
     const SkBitmap& icon) {
-  // The ExtensionInstalledBubbleObserver will delete itself when the
-  // ExtensionInstalledBubble is shown or when it can't be shown anymore.
-  auto* observer =
-      new ExtensionInstalledBubbleObserver(extension, browser, icon);
-  extensions::ExtensionRegistry* reg =
-      extensions::ExtensionRegistry::Get(browser->profile());
-  if (reg->enabled_extensions().GetByID(extension->id())) {
-    observer->Run();
-  }
+  // Wait for the extension to become installed, then wait for its UI to become
+  // ready. ExtensionUiWaiter will handle creating and displaying the actual
+  // bubble once the UI is ready.
+  ExtensionInstalledWaiter::WaitForInstall(
+      extension, browser,
+      base::BindOnce(&ExtensionUiWaiter::WaitForUi, extension, browser, icon));
 }
 
 ExtensionInstalledBubble::ExtensionInstalledBubble(

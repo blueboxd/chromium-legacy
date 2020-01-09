@@ -144,6 +144,7 @@ public class ChromeApplication extends Application {
                 ProductConfig.COMPRESSED_LOCALES, ProductConfig.UNCOMPRESSED_LOCALES);
         LibraryLoader.getInstance().setLinkerImplementation(
                 ProductConfig.USE_CHROMIUM_LINKER, ProductConfig.USE_MODERN_LINKER);
+        LibraryLoader.getInstance().enableJniChecks();
 
         if (isBrowserProcess) {
             TraceEvent.end("ChromeApplication.attachBaseContext");

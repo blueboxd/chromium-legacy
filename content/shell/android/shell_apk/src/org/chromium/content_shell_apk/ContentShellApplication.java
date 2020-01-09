@@ -31,6 +31,7 @@ public class ContentShellApplication extends Application {
         boolean isBrowserProcess = !ContextUtils.getProcessName().contains(":");
         ContextUtils.initApplicationContext(this);
         ResourceBundle.setNoAvailableLocalePaks();
+        LibraryLoader.getInstance().enableJniChecks();
         LibraryLoader.getInstance().setLibraryProcessType(isBrowserProcess
                         ? LibraryProcessType.PROCESS_BROWSER
                         : LibraryProcessType.PROCESS_CHILD);

@@ -140,6 +140,15 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   blink::WebView* webview();
   const blink::WebView* webview() const;
 
+  // When true, a hint to all RenderWidgets that they will never be
+  // user-visible. This is separate from page visibility, as background pages
+  // can be marked visible in blink even though they are not user-visible.
+  // Page visibility controls blink behaviour for javascript, timers, and
+  // such to inform blink it is in the foreground or background. Whereas this
+  // bit refers to user-visibility and whether the tab needs to produce pixels
+  // to put on the screen at some point or not.
+  bool widgets_never_visible() const { return widgets_never_visible_; }
+
   // Returns the RenderWidget owned by this RenderView. Can be nullptr if the
   // RenderView does not own a RenderWidget [e.g. for remote main frame in
   // future].
@@ -548,6 +557,15 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // window.open or via <a target=...>) should be renderer-wide (i.e. going
   // beyond the usual opener-relationship-based BrowsingInstance boundaries).
   const bool renderer_wide_named_frame_lookup_;
+
+  // A value provided by the browser to state that all RenderWidgets in this
+  // RenderView's frame tree will never be user-visible. This is separate from
+  // Page visibility, as non-user-visible pages can still be marked visible for
+  // blink. Page visibility controls blink behaviour for javascript, timers, and
+  // such to inform blink it is in the foreground or background. Whereas this
+  // bit refers to user-visibility and whether the tab needs to produce pixels
+  // to put on the screen at some point or not.
+  const bool widgets_never_visible_;
 
   // Dependency injection for RenderWidget and compositing to inject behaviour
   // and not depend on RenderThreadImpl in tests.

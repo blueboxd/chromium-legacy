@@ -10,7 +10,12 @@
     visibility: hidden;
   }
 
-  :host([selected]) #ring {
+  #checkMark {
+    visibility: hidden;
+  }
+
+  :host([selected]) #ring,
+  :host([selected]) #checkMark {
     visibility: visible;
   }
 
@@ -28,6 +33,14 @@
   #rightColor {
     stop-color: var(--ntp-theme-icon-frame-color);
   }
+
+  #checkMark circle {
+    fill: var(--google-blue-refresh-500);
+  }
+
+  #checkMark path {
+    fill: white;
+  }
 </style>
 <svg xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -38,7 +51,13 @@
       <stop id="rightColor" offset="100%"></stop>
     </linearGradient>
   </defs>
-  <!-- TODO(crbug.com/1032327): Add check mark when selected. -->
   <circle id="ring" cx="36" cy="36" r="36"></circle>
   <circle id="circle" cx="36" cy="36" r="32"></circle>
+  <g id="checkMark" transform="translate(48.5, 3.5)">
+    <circle cx="10" cy="10" r="10"></circle>
+    <path d="m 2.9885708,9.99721 5.0109458,4.98792 0.00275,-0.003
+        0.024151,0.0227 8.9741604,-9.01557 -1.431323,-1.42476 -7.5742214,7.6092
+        -3.6031671,-3.58665 z">
+    </path>
+  </g>
 </svg>

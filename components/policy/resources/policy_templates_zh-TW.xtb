@@ -241,13 +241,6 @@
           這項政策會針對內容更具體的 <ph name="IDLE_ACTION_AC_POLICY_NAME" /> 和 <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> 政策提供備用值。如果設定這項政策，但未設定內容更具體的相關政策，系統就會使用這項政策的值。
 
           如果不設定這項政策，內容更具體的政策行為將不會受到影響。</translation>
-<translation id="1383493480903114193">這項政策會強制網路程式碼在瀏覽器程序中執行。
-
-      這項政策預設為停用；如果你啟用政策，當網路程序受到沙箱保護時，使用者就可能會遇到安全性問題。
-
-      設置這項政策是為了讓企業能轉換到不需掛接網路 API 的第三方軟體。建議你在 LSP 和 Win32 API 修補程式使用 Proxy 伺服器。
-
-      如果不設定這項政策，網路程式碼可能會在瀏覽器程序外執行 (取決於 NetworkService 實驗的實測結果)。</translation>
 <translation id="1384459581748403878">參考頁面：<ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">回報作業系統的更新狀態</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
@@ -4115,21 +4108,6 @@
 這項政策應用於逐步輪換存取碼設定。新設定一律會加到 |future_config| 中，同時
       現有值會移到 |current_config| 中。|current_config| 先前的值則會移到 |old_configs|，並在輪換結束後移除。這項政策只適用於兒童使用者。如果設定這項政策，系統將可在兒童使用者裝置上驗證家長存取碼。如果不設定這項政策，系統將無法在兒童使用者裝置上驗證家長存取碼。</translation>
 <translation id="7625444193696794922">指定裝置的固定發布頻道。</translation>
-<translation id="7625498350540361483">
-      如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 可以從 Google 服務 (例如 Google Meet) 收集 WebRTC 事件記錄，並將這些記錄上傳至 Google。
-
-      如果將這項政策設為 False，則 <ph name="PRODUCT_NAME" /> 不會收集及上傳這些記錄。
-
-      如果未設定這項政策，則 M76 以下版本 (包含 M76 版) 的 <ph name="PRODUCT_NAME" /> 不會收集及上傳這些記錄。
-
-      自 M77 版起，如果未設定這項政策，當瀏覽器設定檔處於受管理狀態 (亦即，當設定檔能接收雲端或電腦層級的政策)，且不屬於子項設定檔、暫時設定檔、登入設定檔或無痕模式設定檔時，<ph name="PRODUCT_NAME" /> 預設會收集或上傳這類記錄。
-
-      這些記錄包含的診斷資訊有助於偵錯 Chrome 中的語音或視訊通話問題，例如收發 RTP 封包的時間和大小、回報網路壅塞情形，以及有關語音與視訊畫格的時間和品質等中繼資料。這些記錄中不會包含通話的語音和視訊內容。
-
-      這項由 Chrome 執行的資料收集作業只會由 Google 的網路服務觸發，例如 Google Hangouts 或 Google Meet。
-
-      Google 可能會依照工作階段 ID 將這些記錄與 Google 服務本身收集的其他記錄建立關聯，目的是簡化偵錯作業。
-      </translation>
 <translation id="7632724434767231364">GSSAPI 資料庫名稱</translation>
 <translation id="7635471475589566552">設定「<ph name="PRODUCT_NAME" />」的應用程式語言代碼，並且禁止使用者變更語言代碼。如果你啟用這項設定，「<ph name="PRODUCT_NAME" />」就會使用指定的語言代碼。如果設定的語言代碼不受支援，就會改用「en-US」。如果停用或尚未調整這項設定，「<ph name="PRODUCT_NAME" />」就會使用使用者指定的偏好語言代碼 (如果已設定)、系統語言代碼或備用語言代碼「en-US」。</translation>
 <translation id="7643883929273267746">限制在 <ph name="PRODUCT_NAME" /> 中顯示的帳戶</translation>

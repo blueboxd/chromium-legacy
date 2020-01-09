@@ -367,6 +367,18 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
   }
 }
 
+TEST_F(MetricsStateManagerTest,
+       ForceClientIdCreation_ConsentIntitially_NoInstallDate) {
+  // Confirm that the initial ForceClientIdCreation call creates the install
+  // date and then backs it up via MockStoreClientInfoBackup.
+  EXPECT_FALSE(stored_client_info_backup_);
+  EnableMetricsReporting();
+  std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
+
+  ASSERT_TRUE(stored_client_info_backup_);
+  EXPECT_NE(0, stored_client_info_backup_->installation_date);
+}
+
 #if !defined(OS_WIN)
 TEST_F(MetricsStateManagerTest, ProvisionalClientId_PromotedToClientId) {
   std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());

@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Mon, 16 Dec 2019 13:48:39 -0800
-Subject: [PATCH 14/17] Avoid temp trigger crash
+Subject: [PATCH 14/22] Avoid temp trigger crash
 
 Backports https://sqlite.org/src/info/c4cb9708d48ead10
 

@@ -1043,6 +1043,10 @@ bool PrintRenderFrameHelper::Delegate::IsScriptedPrintEnabled() {
   return true;
 }
 
+bool PrintRenderFrameHelper::Delegate::ShouldGenerateTaggedPDF() {
+  return false;
+}
+
 PrintRenderFrameHelper::PrintRenderFrameHelper(
     content::RenderFrame* render_frame,
     std::unique_ptr<Delegate> delegate)
@@ -1259,6 +1263,10 @@ void PrintRenderFrameHelper::PrintPreview(base::Value settings) {
 
 void PrintRenderFrameHelper::OnPrintPreviewDialogClosed() {
   ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
+  // TODO(jschettler): Remove these CHECKs when finished investigating
+  // https://crbug.com/1019847.
+  CHECK(!render_frame_gone_);
+  CHECK(print_preview_context_.source_frame());
   print_preview_context_.source_frame()->DispatchAfterPrintEvent();
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -1864,6 +1872,18 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   MetafileSkia metafile(print_params.printed_doc_type,
                         print_params.document_cookie);
   CHECK(metafile.Init());
+
+  // If tagged PDF exporting is enabled, we also need to capture an
+  // accessibility tree and store it in the metafile. AXTreeSnapshotter
+  // should stay alive through the end of this function, because text
+  // drawing commands are only annotated with a DOMNodeId if accessibility
+  // is enabled.
+  std::unique_ptr<content::AXTreeSnapshotter> snapshotter;
+  if (delegate_->ShouldGenerateTaggedPDF()) {
+    snapshotter = render_frame()->CreateAXTreeSnapshotter();
+    snapshotter->Snapshot(ui::kAXModeComplete, 0,
+                          &metafile.accessibility_tree());
+  }
 
   PrintHostMsg_DidPrintDocument_Params page_params;
   gfx::Size* page_size_in_dpi;
@@ -2549,7 +2569,9 @@ void PrintRenderFrameHelper::PrintPreviewContext::set_error(
 
 blink::WebLocalFrame*
 PrintRenderFrameHelper::PrintPreviewContext::source_frame() {
-  DCHECK(state_ != UNINITIALIZED);
+  // TODO(jschettler): Change this back to DCHECK when finished investigating
+  // https://crbug.com/1019847.
+  CHECK(state_ != UNINITIALIZED);
   return source_frame_.GetFrame();
 }
 

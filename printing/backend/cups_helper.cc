@@ -50,6 +50,11 @@ constexpr char kBrotherDuplex[] = "BRDuplex";
 constexpr char kBrotherMonoColor[] = "BRMonoColor";
 constexpr char kBrotherPrintQuality[] = "BRPrintQuality";
 
+// HP printer specific options.
+constexpr char kHpColorMode[] = "HPColorMode";
+constexpr char kHpColorPrint[] = "ColorPrint";
+constexpr char kHpGrayscalePrint[] = "GrayscalePrint";
+
 // Samsung printer specific options.
 constexpr char kSamsungColorTrue[] = "True";
 constexpr char kSamsungColorFalse[] = "False";
@@ -318,7 +323,7 @@ bool GetHPColorSettings(ppd_file_t* ppd,
                         ColorModel* color_model_for_black,
                         ColorModel* color_model_for_color,
                         bool* color_is_default) {
-  // HP printers use "Color/Color Model" attribute in their PPDs.
+  // Some HP printers use "Color/Color Model" attribute in their PPDs.
   ppd_option_t* color_mode_option = ppdFindOption(ppd, kColor);
   if (!color_mode_option)
     return false;
@@ -335,6 +340,32 @@ bool GetHPColorSettings(ppd_file_t* ppd,
   }
   if (mode_choice) {
     *color_is_default = EqualsCaseInsensitiveASCII(mode_choice->choice, kColor);
+  }
+  return true;
+}
+
+bool GetHPColorModeSettings(ppd_file_t* ppd,
+                            ColorModel* color_model_for_black,
+                            ColorModel* color_model_for_color,
+                            bool* color_is_default) {
+  // Some HP printers use "HPColorMode/Mode" attribute in their PPDs.
+  ppd_option_t* color_mode_option = ppdFindOption(ppd, kHpColorMode);
+  if (!color_mode_option)
+    return false;
+
+  if (ppdFindChoice(color_mode_option, kHpColorPrint))
+    *color_model_for_color = HP_COLOR_COLOR;
+  if (ppdFindChoice(color_mode_option, kHpGrayscalePrint))
+    *color_model_for_black = HP_COLOR_BLACK;
+
+  ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kHpColorMode);
+  if (!mode_choice) {
+    mode_choice =
+        ppdFindChoice(color_mode_option, color_mode_option->defchoice);
+  }
+  if (mode_choice) {
+    *color_is_default =
+        EqualsCaseInsensitiveASCII(mode_choice->choice, kHpColorPrint);
   }
   return true;
 }
@@ -384,6 +415,7 @@ bool GetColorModelSettings(ppd_file_t* ppd,
          GetPrintOutModeColorSettings(ppd, cm_black, cm_color, is_color) ||
          GetColorModeSettings(ppd, cm_black, cm_color, is_color) ||
          GetHPColorSettings(ppd, cm_black, cm_color, is_color) ||
+         GetHPColorModeSettings(ppd, cm_black, cm_color, is_color) ||
          GetBrotherColorSettings(ppd, cm_black, cm_color, is_color) ||
          GetProcessColorModelSettings(ppd, cm_black, cm_color, is_color);
 }

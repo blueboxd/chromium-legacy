@@ -73,11 +73,11 @@ class BluetoothMediaTransportClientImpl
       dbus::ObjectProxy* object_proxy,
       const dbus::ObjectPath& object_path,
       const std::string& interface_name) override {
-    Properties* properties = new Properties(
+    return new Properties(
         object_proxy, interface_name,
-        base::Bind(&BluetoothMediaTransportClientImpl::OnPropertyChanged,
-                   weak_ptr_factory_.GetWeakPtr(), object_path));
-    return properties;
+        base::BindRepeating(
+            &BluetoothMediaTransportClientImpl::OnPropertyChanged,
+            weak_ptr_factory_.GetWeakPtr(), object_path));
   }
 
   void ObjectAdded(const dbus::ObjectPath& object_path,

@@ -251,13 +251,6 @@
           Cette règle fournit une valeur de secours pour les règles <ph name="IDLE_ACTION_AC_POLICY_NAME" /> et <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" />, qui sont plus spécifiques. Si cette règle est configurée, sa valeur est utilisée si la règle correspondante plus spécifique ne l'est pas.
 
           Si cette règle n'est pas configurée, le comportement des règles plus spécifiques n'est pas modifié.</translation>
-<translation id="1383493480903114193">Cette règle force le code réseau à s'exécuter dans le processus du navigateur.
-
-      Cette règle est désactivée par défaut. Si elle est activée, elle expose les utilisateurs à des problèmes de sécurité une fois le processus de mise en réseau envoyé dans le bac à sable.
-
-      Cette règle est destinée à donner aux entreprises la possibilité de migrer vers un logiciel tiers qui ne dépend pas de la connexion des API de mise en réseau. Il est recommandé d'utiliser des serveurs proxy plutôt que des LSP ou des correctifs de l'API Win32.
-
-      Si cette règle n'est pas définie, le code réseau peut ne pas suivre le processus du navigateur, en fonction des essais sur le terrain de l'expérience NetworkService.</translation>
 <translation id="1384459581748403878">Référence : <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Indiquer l'état de la mise à jour du système</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
@@ -4268,21 +4261,6 @@ On attend de cette règle qu'elle soit utilisée dans le cadre de la modificatio
       Lorsque cette règle est activée, le code d'accès parental peut être validé sur l'appareil d'un enfant.
       Lorsqu'elle est désactivée, il est impossible de valider ce code sur l'appareil d'un enfant.</translation>
 <translation id="7625444193696794922">Indique le canal de distribution sur lequel cet appareil devrait être verrouillé.</translation>
-<translation id="7625498350540361483">
-      Si la règle est définie sur "True", <ph name="PRODUCT_NAME" /> est autorisé à collecter auprès des services Google (Google Meet, par exemple) les journaux des événements WebRTC et à les importer sur Google.
-
-      Si la règle est définie sur "False", <ph name="PRODUCT_NAME" /> ne peut ni collecter ni importer ces journaux.
-
-      Si la règle n'est pas définie, jusqu'à M76 inclus, <ph name="PRODUCT_NAME" /> ne peut ni collecter ni importer ces journaux.
-
-      Si la règle n'est pas définie, à partir de M77, <ph name="PRODUCT_NAME" /> peut collecter ou importer ces journaux par défaut si le profil du navigateur est considéré comme géré, c'est-à-dire si le profil reçoit des règles au niveau du cloud ou de la machine, et n'est pas un profil d'enfant, un profil éphémère, un profil de connexion, ni un profil de navigation privée.
-
-      Ces journaux contiennent des informations de diagnostic utiles pour déboguer des problèmes liés aux appels audio ou vidéo dans Chrome, telles que l'horodatage et la taille des paquets RTP envoyés et reçus, des commentaires sur l'encombrement du réseau, ainsi que des métadonnées concernant l'horodatage et la qualité des trames vidéo et audio. Ces journaux n'incluent aucun contenu audio ni vidéo de l'appel.
-
-      Cette collecte de données par Chrome ne peut être déclenchée que par des services Web de Google, tels que Google Hangouts ou Google Meet.
-
-      Google peut associer ces journaux à d'autres journaux collectés par le service Google proprement dit à l'aide d'un ID de session dans le but de faciliter le débogage.
-      </translation>
 <translation id="7632724434767231364">Nom de la bibliothèque GSSAPI</translation>
 <translation id="7635471475589566552">Configure les paramètres régionaux de l'application dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ces paramètres. 
 

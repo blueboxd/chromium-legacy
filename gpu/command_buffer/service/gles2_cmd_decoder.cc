@@ -837,6 +837,25 @@ class GLES2DecoderImpl : public GLES2Decoder,
     kBindBufferRange
   };
 
+  // Helper class to ensure that GLES2DecoderImpl::Destroy() is always called
+  // unless we specifically call OnSuccess().
+  class DestroyOnFailure {
+   public:
+    DestroyOnFailure(GLES2DecoderImpl* decoder) : decoder_(decoder) {}
+    ~DestroyOnFailure() {
+      if (!success_)
+        decoder_->Destroy(has_context_);
+    }
+
+    void OnSuccess() { success_ = true; }
+    void LoseContext() { has_context_ = false; }
+
+   private:
+    GLES2DecoderImpl* decoder_ = nullptr;
+    bool success_ = false;
+    bool has_context_ = true;
+  };
+
   const char* GetCommandName(unsigned int command_id) const;
 
   // Initialize or re-initialize the shader translator.
@@ -3539,6 +3558,10 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   surfaceless_ = surface->IsSurfaceless() && !offscreen;
 
   set_initialized();
+  // At this point we are partially initialized and must Destroy() in any
+  // failure case.
+  DestroyOnFailure destroy_on_failure(this);
+
   gpu_state_tracer_ = GPUStateTracer::Create(&state_);
 
   if (group_->gpu_preferences().enable_gpu_debugging)
@@ -3581,7 +3604,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
       feature_info_->feature_flags().is_swiftshader_for_webgl) {
     // Must not destroy ContextGroup if it is not initialized.
     group_ = nullptr;
-    Destroy(true);
     LOG(ERROR) << "ContextResult::kFatalFailure: "
                   "fail_if_major_perf_caveat + swiftshader";
     return gpu::ContextResult::kFatalFailure;
@@ -3591,7 +3613,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   if (attrib_helper.context_type == CONTEXT_TYPE_WEBGL2_COMPUTE) {
     // Must not destroy ContextGroup if it is not initialized.
     group_ = nullptr;
-    Destroy(true);
     LOG(ERROR)
         << "ContextResult::kFatalFailure: "
            "webgl2-compute is not supported on validating command decoder.";
@@ -3603,7 +3624,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   if (result != gpu::ContextResult::kSuccess) {
     // Must not destroy ContextGroup if it is not initialized.
     group_ = nullptr;
-    Destroy(true);
     return result;
   }
   CHECK_GL_ERROR();
@@ -3630,7 +3650,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     }
 
     if (!supported) {
-      Destroy(true);
       LOG(ERROR) << "ContextResult::kFatalFailure: "
                     "native gmb format not supported";
       return gpu::ContextResult::kFatalFailure;
@@ -4007,7 +4026,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     // of the frame buffers is okay.
     if (!ResizeOffscreenFramebuffer(
             gfx::Size(state_.viewport_width, state_.viewport_height))) {
-      Destroy(true);
       LOG(ERROR) << "ContextResult::kFatalFailure: "
                     "Could not allocate offscreen buffer storage.";
       return gpu::ContextResult::kFatalFailure;
@@ -4023,7 +4041,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
       if (offscreen_saved_frame_buffer_->CheckStatus() !=
           GL_FRAMEBUFFER_COMPLETE) {
         bool was_lost = CheckResetStatus();
-        Destroy(true);
         LOG(ERROR) << (was_lost ? "ContextResult::kTransientFailure: "
                                 : "ContextResult::kFatalFailure: ")
                    << "Offscreen saved FBO was incomplete.";
@@ -4117,9 +4134,11 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     LOG(ERROR)
         << "  GLES2DecoderImpl: Context reset detected after initialization.";
     group_->LoseContexts(error::kUnknown);
+    destroy_on_failure.LoseContext();
     return gpu::ContextResult::kTransientFailure;
   }
 
+  destroy_on_failure.OnSuccess();
   return gpu::ContextResult::kSuccess;
 }
 
@@ -6501,11 +6520,7 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
     service_id = GetBackbufferServiceId();
   }
 
-  if (workarounds().do_extra_flush_around_bindframebuffer)
-    api()->glFlushFn();
   api()->glBindFramebufferEXTFn(target, service_id);
-  if (workarounds().do_extra_flush_around_bindframebuffer)
-    api()->glFlushFn();
   OnFboChanged();
 }
 

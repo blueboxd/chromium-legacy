@@ -154,13 +154,14 @@ class HidServiceLinux::BlockingTaskRunnerHelper : public UdevWatcher::Observer {
     if (!base::ReadFileToString(report_descriptor_path, &report_descriptor_str))
       return;
 
-    scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo(
-        platform_device_id, vendor_id, product_id, product_name, serial_number,
-        // TODO(reillyg): Detect Bluetooth. crbug.com/443335
-        mojom::HidBusType::kHIDBusTypeUSB,
-        std::vector<uint8_t>(report_descriptor_str.begin(),
-                             report_descriptor_str.end()),
-        device_node));
+    scoped_refptr<HidDeviceInfo> device_info(
+        new HidDeviceInfo(platform_device_id, /*physical_device_id=*/"",
+                          vendor_id, product_id, product_name, serial_number,
+                          // TODO(reillyg): Detect Bluetooth. crbug.com/443335
+                          mojom::HidBusType::kHIDBusTypeUSB,
+                          std::vector<uint8_t>(report_descriptor_str.begin(),
+                                               report_descriptor_str.end()),
+                          device_node));
 
     task_runner_->PostTask(
         FROM_HERE,

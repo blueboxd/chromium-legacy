@@ -30,7 +30,7 @@
 <translation id="2040706009561734834">Abrir y cerrar el Selector</translation>
 <translation id="2088054208777350526">Buscar combinaciones de teclas</translation>
 <translation id="2125211348069077981"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="E" /> o <ph name="F" /></translation>
-<translation id="2145908266289632567">Edición de textos</translation>
+<translation id="2145908266289632567">Edición de texto</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 a =</translation>
 <translation id="2181097965834437145">Mostrar u ocultar la barra de favoritos</translation>
 <translation id="2185166372312820725">Ir a la pestaña anterior</translation>
@@ -99,7 +99,7 @@
 <translation id="4240486403425279990">Modo de descripción general</translation>
 <translation id="4382340674111381977">Volver a la página anterior</translation>
 <translation id="4458670250301149821">Mueve el ícono de una app hacia dentro o fuera de una carpeta en la grilla de apps</translation>
-<translation id="4472417192667361414">Configuración del sistema y la pantalla</translation>
+<translation id="4472417192667361414">Ajustes de sistema y pantalla</translation>
 <translation id="449214506787633354"><ph name="CTRL" />, luego, <ph name="LEFT" /> o <ph name="RIGHT" /> o <ph name="UP" /> o <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Mostrar el asistente de combinaciones de teclas</translation>
 <translation id="4628718545549558538">Abrir el área de estado (donde aparece la imagen de tu cuenta)</translation>
@@ -132,11 +132,11 @@
 <translation id="6022924867608035986">Borrar el texto en el cuadro de búsqueda</translation>
 <translation id="6045998054441862242">Activar el modo de contraste alto</translation>
 <translation id="6052614013050385269">Hacer clic con el botón derecho en un vínculo</translation>
-<translation id="6129953537138746214">Google Space</translation>
+<translation id="6129953537138746214">Espacio</translation>
 <translation id="6143669479988153888">Acercar la página</translation>
 <translation id="6185696379715117369">Retroceder página</translation>
 <translation id="6228457605945141550">Disminuir el brillo</translation>
-<translation id="6276708887952587684">Ver la página de origen</translation>
+<translation id="6276708887952587684">Ver el código fuente de la página</translation>
 <translation id="6321940490215594447">Abrir la página Historial</translation>
 <translation id="6340769215862220182">Acercar la pantalla</translation>
 <translation id="6359811074279051077"><ph name="MODIFIER" /><ph name="SEPARATOR" /><ph name="KEY" /></translation>
@@ -211,7 +211,7 @@
 <translation id="9091855755813503076">Ir al comienzo de la línea</translation>
 <translation id="9106898733795143799">Página y navegador web</translation>
 <translation id="9162942292291287644">No se encontraron resultados de búsqueda para <ph name="QUERY" /></translation>
-<translation id="9179672198516322668">Combinaciones de teclas populares</translation>
+<translation id="9179672198516322668">Combinaciones populares</translation>
 <translation id="93603345341560814">Presiona <ph name="SHIFT" /> y haz clic en un vínculo</translation>
 <translation id="945383118875625837">Arrastrar el vínculo a la barra de favoritos</translation>
 <translation id="969054500339500113">Mover el foco a la barra de menú</translation>

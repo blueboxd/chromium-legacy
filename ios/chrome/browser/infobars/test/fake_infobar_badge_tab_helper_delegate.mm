@@ -27,15 +27,18 @@
 
 #pragma mark - InfobarBadgeTabHelperDelegate
 
-- (void)addInfobarBadge:(id<BadgeItem>)badgeItem {
+- (void)addInfobarBadge:(id<BadgeItem>)badgeItem
+            forWebState:(web::WebState*)webState {
   _badgeItems[badgeItem.badgeType] = badgeItem;
 }
 
-- (void)removeInfobarBadge:(id<BadgeItem>)badgeItem {
+- (void)removeInfobarBadge:(id<BadgeItem>)badgeItem
+               forWebState:(web::WebState*)webState {
   _badgeItems[badgeItem.badgeType] = nil;
 }
 
-- (void)updateInfobarBadge:(id<BadgeItem>)badgeItem {
+- (void)updateInfobarBadge:(id<BadgeItem>)badgeItem
+               forWebState:(web::WebState*)webState {
 }
 
 @end

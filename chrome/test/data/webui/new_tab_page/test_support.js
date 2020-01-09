@@ -8,6 +8,8 @@ import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
 import 'chrome://new-tab-page/skcolor.mojom-lite.js';
 import 'chrome://new-tab-page/new_tab_page.mojom-lite.js';
 
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 
 export class TestProxy {
@@ -134,7 +136,7 @@ class FakePageHandler {
  * @param {string} key
  */
 export function keydown(element, key) {
-  element.dispatchEvent(new KeyboardEvent('keydown', {key: key}));
+  keyDownOn(element, '', [], key);
 }
 
 /**
@@ -146,4 +148,12 @@ export function keydown(element, key) {
 export function assertStyle(element, name, expected) {
   const actual = window.getComputedStyle(element).getPropertyValue(name).trim();
   assertEquals(expected, actual);
+}
+
+/**
+ * Asserts that an element is focused.
+ * @param {!HTMLElement} element The element to test.
+ */
+export function assertFocus(element) {
+  assertEquals(element, getDeepActiveElement());
 }

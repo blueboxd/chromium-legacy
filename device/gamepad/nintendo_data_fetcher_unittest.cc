@@ -28,6 +28,8 @@ const uint64_t kTestDeviceId = 123;
 const char* kTestDeviceId = "123";
 #endif
 
+const char kPhysicalDeviceId[] = "1";
+
 void BindHidManager(mojom::DeviceService* service,
                     scoped_refptr<base::SequencedTaskRunner> task_runner,
                     mojo::PendingReceiver<mojom::HidManager> receiver) {
@@ -96,7 +98,7 @@ TEST_F(NintendoDataFetcherTest, UnsupportedDeviceIsIgnored) {
   auto collection = mojom::HidCollectionInfo::New();
   collection->usage = mojom::HidUsageAndPage::New(0, 0);
   scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo(
-      kTestDeviceId, 0x1234, 0xabcd, "Invalipad", "",
+      kTestDeviceId, kPhysicalDeviceId, 0x1234, 0xabcd, "Invalipad", "",
       mojom::HidBusType::kHIDBusTypeUSB, std::move(collection), 0, 0, 0));
 
   // Add the device to the mock HID service. The HID service should notify the
@@ -117,8 +119,8 @@ TEST_F(NintendoDataFetcherTest, AddAndRemoveSwitchPro) {
   auto collection = mojom::HidCollectionInfo::New();
   collection->usage = mojom::HidUsageAndPage::New(0, 0);
   scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo(
-      kTestDeviceId, 0x057e, 0x2009, "Switch Pro Controller", "",
-      mojom::HidBusType::kHIDBusTypeUSB, std::move(collection), 0, 63, 0));
+      kTestDeviceId, kPhysicalDeviceId, 0x057e, 0x2009, "Switch Pro Controller",
+      "", mojom::HidBusType::kHIDBusTypeUSB, std::move(collection), 0, 63, 0));
 
   // Add the device to the mock HID service. The HID service should notify the
   // data fetcher.

@@ -15,7 +15,10 @@
 #include "third_party/grpc/src/include/grpcpp/server.h"
 
 namespace chromecast {
+
+class CastWindowManager;
 class WebContentsProvider;
+
 // This is a service that provides a GRPC interface to create and control
 // webviews, as well as control cast apps. See the proto file for commands.
 class PlatformViewsAsyncService : public base::PlatformThread::Delegate {
@@ -24,7 +27,8 @@ class PlatformViewsAsyncService : public base::PlatformThread::Delegate {
       std::unique_ptr<webview::PlatformViewsService::AsyncService> service,
       std::unique_ptr<grpc::ServerCompletionQueue> cq,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      WebContentsProvider* web_contents_provider);
+      WebContentsProvider* web_contents_provider,
+      CastWindowManager* cast_window_manager = nullptr);
   ~PlatformViewsAsyncService() override;
 
  private:

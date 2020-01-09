@@ -73,7 +73,7 @@ const unsigned char kPngDataChunkType[4] = { 'I', 'D', 'A', 'T' };
 const char kPakFileExtension[] = ".pak";
 #endif
 
-ResourceBundle* g_shared_instance_ = NULL;
+ResourceBundle* g_shared_instance_ = nullptr;
 
 base::FilePath GetResourcesPakFilePath(const std::string& pak_name) {
   base::FilePath path;
@@ -266,7 +266,7 @@ std::string ResourceBundle::InitSharedInstanceWithLocale(
 void ResourceBundle::InitSharedInstanceWithPakFileRegion(
     base::File pak_file,
     const base::MemoryMappedFile::Region& region) {
-  InitSharedInstance(NULL);
+  InitSharedInstance(nullptr);
   auto data_pack = std::make_unique<DataPack>(SCALE_FACTOR_100P);
   if (!data_pack->LoadFromFileRegion(std::move(pak_file), region)) {
     LOG(WARNING) << "failed to load pak file";
@@ -279,7 +279,7 @@ void ResourceBundle::InitSharedInstanceWithPakFileRegion(
 
 // static
 void ResourceBundle::InitSharedInstanceWithPakPath(const base::FilePath& path) {
-  InitSharedInstance(NULL);
+  InitSharedInstance(nullptr);
   g_shared_instance_->LoadTestResources(path, path);
 
   g_shared_instance_->InitDefaultFontList();
@@ -288,18 +288,18 @@ void ResourceBundle::InitSharedInstanceWithPakPath(const base::FilePath& path) {
 // static
 void ResourceBundle::CleanupSharedInstance() {
   delete g_shared_instance_;
-  g_shared_instance_ = NULL;
+  g_shared_instance_ = nullptr;
 }
 
 // static
 bool ResourceBundle::HasSharedInstance() {
-  return g_shared_instance_ != NULL;
+  return g_shared_instance_ != nullptr;
 }
 
 // static
 ResourceBundle& ResourceBundle::GetSharedInstance() {
   // Must call InitSharedInstance before this function.
-  CHECK(g_shared_instance_ != NULL);
+  CHECK(g_shared_instance_ != nullptr);
   return *g_shared_instance_;
 }
 
@@ -579,24 +579,25 @@ base::RefCountedMemory* ResourceBundle::LoadDataResourceBytes(
 base::RefCountedMemory* ResourceBundle::LoadDataResourceBytesForScale(
     int resource_id,
     ScaleFactor scale_factor) const {
-  base::RefCountedMemory* bytes = nullptr;
-  if (delegate_)
-    bytes = delegate_->LoadDataResourceBytes(resource_id, scale_factor);
-
-  if (!bytes) {
-    base::StringPiece data =
-        GetRawDataResourceForScale(resource_id, scale_factor);
-    if (!data.empty()) {
-      if (HasGzipHeader(data) || HasBrotliHeader(data)) {
-        base::RefCountedString* bytes_string = new base::RefCountedString();
-        DecompressIfNeeded(data, &(bytes_string->data()));
-        bytes = bytes_string;
-      } else {
-        bytes = new base::RefCountedStaticMemory(data.data(), data.length());
-      }
-    }
+  if (delegate_) {
+    base::RefCountedMemory* bytes =
+        delegate_->LoadDataResourceBytes(resource_id, scale_factor);
+    if (bytes)
+      return bytes;
   }
-  return bytes;
+
+  base::StringPiece data =
+      GetRawDataResourceForScale(resource_id, scale_factor);
+  if (data.empty())
+    return nullptr;
+
+  if (HasGzipHeader(data) || HasBrotliHeader(data)) {
+    base::RefCountedString* bytes_string = new base::RefCountedString();
+    DecompressIfNeeded(data, &(bytes_string->data()));
+    return bytes_string;
+  }
+
+  return new base::RefCountedStaticMemory(data.data(), data.length());
 }
 
 base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
@@ -608,8 +609,9 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
     ScaleFactor scale_factor) const {
   base::StringPiece data;
   if (delegate_ &&
-      delegate_->GetRawDataResource(resource_id, scale_factor, &data))
+      delegate_->GetRawDataResource(resource_id, scale_factor, &data)) {
     return data;
+  }
 
   if (scale_factor != ui::SCALE_FACTOR_100P) {
     for (size_t i = 0; i < data_packs_.size(); i++) {
@@ -626,8 +628,9 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
          data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_300P ||
          data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_NONE) &&
         data_packs_[i]->GetStringPiece(static_cast<uint16_t>(resource_id),
-                                       &data))
+                                       &data)) {
       return data;
+    }
   }
 
   return base::StringPiece();
@@ -854,7 +857,7 @@ ResourceBundle::~ResourceBundle() {
 
 // static
 void ResourceBundle::InitSharedInstance(Delegate* delegate) {
-  DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
+  DCHECK(g_shared_instance_ == nullptr) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle(delegate);
   std::vector<ScaleFactor> supported_scale_factors;
 #if defined(OS_IOS)

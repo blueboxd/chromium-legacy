@@ -255,8 +255,8 @@ void HidServiceWin::AddDeviceBlocking(
   // The descriptor is unavailable on Windows because HID devices are exposed to
   // user-space as individual top-level collections.
   scoped_refptr<HidDeviceInfo> device_info(new HidDeviceInfo(
-      device_path, attrib.VendorID, attrib.ProductID, product_name,
-      serial_number,
+      device_path, /*physical_device_id=*/"", attrib.VendorID, attrib.ProductID,
+      product_name, serial_number,
       // TODO(reillyg): Detect Bluetooth. crbug.com/443335
       mojom::HidBusType::kHIDBusTypeUSB, std::move(collection_info),
       max_input_report_size, max_output_report_size, max_feature_report_size));

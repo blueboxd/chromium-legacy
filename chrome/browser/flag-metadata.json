@@ -1336,8 +1336,8 @@
   },
   {
     "name": "enable-experimental-kernel-vm-support",
-    "owners": [ "jflat", "zwisler" ],
-    "expiry_milestone": 82
+    "owners": [ "zwisler" ],
+    "expiry_milestone": 87
   },
   {
     "name": "enable-experimental-productivity-features",
@@ -2789,11 +2789,6 @@
     "name": "omnibox-experimental-suggest-scoring",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85
-  },
-  {
-    "name": "omnibox-group-suggestions-by-search-vs-url",
-    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 82
   },
   {
     "name": "omnibox-local-entity-suggestions",

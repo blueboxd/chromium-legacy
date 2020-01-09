@@ -7,7 +7,6 @@
 #include "base/containers/stack.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "base/timer/elapsed_timer.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -106,8 +105,6 @@ bool HitTestQuery::TransformLocationForTarget(
     const std::vector<FrameSinkId>& target_ancestors,
     const gfx::PointF& location_in_root,
     gfx::PointF* transformed_location) const {
-  base::ElapsedTimer transform_timer;
-
   if (hit_test_data_.empty())
     return false;
 
@@ -131,10 +128,6 @@ bool HitTestQuery::TransformLocationForTarget(
   // TODO(crbug.com/966944): Cache the matrix product such that the transform
   // can be done immediately.
   *transformed_location = location_in_root;
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("Event.VizHitTest.TransformTimeUs",
-                                          transform_timer.Elapsed(),
-                                          base::TimeDelta::FromMicroseconds(1),
-                                          base::TimeDelta::FromSeconds(10), 50);
   return TransformLocationForTargetRecursively(
       target_ancestors, target_ancestors.size() - 1, 0, transformed_location);
 }
@@ -166,7 +159,6 @@ Target HitTestQuery::FindTargetForLocationStartingFromImpl(
   if (hit_test_data_.empty())
     return Target();
 
-  base::ElapsedTimer target_timer;
   Target target;
   size_t start_index = 0;
   if (!FindIndexOfFrameSink(frame_sink_id, &start_index))
@@ -175,10 +167,6 @@ Target HitTestQuery::FindTargetForLocationStartingFromImpl(
   FindTargetInRegionForLocation(event_source, location, start_index,
                                 is_location_relative_to_parent, frame_sink_id,
                                 &target);
-  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("Event.VizHitTest.TargetTimeUs",
-                                          target_timer.Elapsed(),
-                                          base::TimeDelta::FromMicroseconds(1),
-                                          base::TimeDelta::FromSeconds(10), 50);
   return target;
 }
 

@@ -77,6 +77,10 @@ OverlayPresenterImpl::~OverlayPresenterImpl() {
 
 #pragma mark OverlayPresenter
 
+OverlayModality OverlayPresenterImpl::GetModality() const {
+  return modality_;
+}
+
 void OverlayPresenterImpl::SetPresentationContext(
     OverlayPresentationContext* presentation_context) {
   // When the presentation context is reset, the presenter will begin showing

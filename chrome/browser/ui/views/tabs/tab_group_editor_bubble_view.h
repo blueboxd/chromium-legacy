@@ -29,6 +29,11 @@ class TabGroupHeader;
 // A dialog for changing a tab group's visual parameters.
 class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
  public:
+  static constexpr int TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP = 13;
+  static constexpr int TAB_GROUP_HEADER_CXMENU_UNGROUP = 14;
+  static constexpr int TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP = 15;
+  static constexpr int TAB_GROUP_HEADER_CXMENU_FEEDBACK = 16;
+
   // Shows the editor for |group|. Returns an *unowned* pointer to the
   // bubble's widget.
   static views::Widget* Show(TabGroupHeader* anchor_view,

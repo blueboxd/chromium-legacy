@@ -1405,12 +1405,6 @@ const char kOmniboxExperimentalSuggestScoringDescription[] =
     "Enables an experimental scoring mode for suggestions when Google is the "
     "default search engine.";
 
-const char kOmniboxGroupSuggestionsBySearchVsUrlName[] =
-    "Omnibox Group Suggestions By Search vs URL";
-const char kOmniboxGroupSuggestionsBySearchVsUrlDescription[] =
-    "Group suggestions by major type, search then navigation, except for "
-    "the default match which must be first.";
-
 const char kOmniboxLocalEntitySuggestionsName[] =
     "Omnibox Local Entity Suggestions";
 const char kOmniboxLocalEntitySuggestionsDescription[] =

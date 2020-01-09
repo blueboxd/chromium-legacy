@@ -535,10 +535,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Maybe start/update/end the window drag when swiping up from the shelf.
   bool MaybeStartDragWindowFromShelf(const ui::LocatedEvent& event_in_screen,
-                                     base::Optional<float> scroll_y);
+                                     const gfx::Vector2dF& scroll);
   void MaybeUpdateWindowDrag(const ui::LocatedEvent& event_in_screen,
-                             float scroll_x,
-                             float scroll_y);
+                             const gfx::Vector2dF& scroll);
   base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
   MaybeEndWindowDrag(const ui::LocatedEvent& event_in_screen);
   // If overview session is active, goes to home screen if the gesture should

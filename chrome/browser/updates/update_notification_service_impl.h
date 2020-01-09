@@ -34,6 +34,8 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
 
   bool IsReadyToDisplay() const override;
 
+  void OnUserDismiss() override;
+
   // Called after querying the |ClientOverview| struct from scheduler system
   // completed.
   void OnClientOverviewQueried(UpdateNotificationInfo data,
@@ -45,6 +47,9 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
   // Return throttle interval from Android shared preference if exists,
   // otherwise return the default interval from config.
   base::TimeDelta GetThrottleInterval() const;
+
+  // Apply linear throttle logic.
+  void ApplyLinearThrottle();
 
   // Used to schedule notification to show in the future. Must outlive this
   // class.

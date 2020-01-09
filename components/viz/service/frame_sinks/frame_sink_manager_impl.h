@@ -225,6 +225,13 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   base::TimeDelta GetPreferredFrameIntervalForFrameSinkId(
       const FrameSinkId& id) const;
 
+  // This cancels pending output requests owned by the frame sinks associated
+  // with the specified BeginFrameSource.
+  // The requets callback will be fired as part of request destruction.
+  // This may be used in case we know a frame can't be produced any time soon,
+  // so there's no point for caller to wait for the copy of output.
+  void DiscardPendingCopyOfOutputRequests(const BeginFrameSource* source);
+
  private:
   friend class FrameSinkManagerTest;
 

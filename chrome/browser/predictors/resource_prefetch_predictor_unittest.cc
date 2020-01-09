@@ -310,6 +310,72 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
                 {{host_redirect_data.primary_key(), host_redirect_data}}));
 }
 
+// Single navigation that will be recorded. Will check for duplicate
+// resources and also for number of resources saved.
+TEST_F(ResourcePrefetchPredictorTest,
+       NavigationUrlNotInDB_LoadingPredictorDisregardAlwaysAccessesNetwork) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kLoadingPredictorDisregardAlwaysAccessesNetwork);
+
+  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  resources.push_back(CreateResourceLoadInfo("http://www.google.com"));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/style1.css", content::ResourceType::kStylesheet));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
+                                             content::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/script2.js",
+                                             content::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
+                                             content::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/image1.png",
+                                             content::ResourceType::kImage));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/image2.png",
+                                             content::ResourceType::kImage));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/style2.css", content::ResourceType::kStylesheet));
+  resources.push_back(
+      CreateResourceLoadInfo("http://static.google.com/style2-no-store.css",
+                             content::ResourceType::kStylesheet,
+                             /* always_access_network */ true));
+  resources.push_back(CreateResourceLoadInfoWithRedirects(
+      {"http://reader.google.com/style.css",
+       "http://dev.null.google.com/style.css"},
+      content::ResourceType::kStylesheet));
+  resources.back()->network_info->always_access_network = true;
+
+  auto page_summary = CreatePageRequestSummary(
+      "http://www.google.com", "http://www.google.com", resources);
+
+  StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(predictor_);
+  EXPECT_CALL(mock_observer, OnNavigationLearned(page_summary));
+
+  predictor_->RecordPageRequestSummary(
+      std::make_unique<PageRequestSummary>(page_summary));
+  profile_->BlockUntilHistoryProcessesPendingRequests();
+
+  OriginData origin_data = CreateOriginData("www.google.com");
+  InitializeOriginStat(origin_data.add_origins(), "http://www.google.com/", 1,
+                       0, 0, 1., false, true);
+  InitializeOriginStat(origin_data.add_origins(), "http://google.com/", 1, 0, 0,
+                       2., false, true);
+  InitializeOriginStat(origin_data.add_origins(), "http://static.google.com/",
+                       1, 0, 0, 3., true, true);
+  InitializeOriginStat(origin_data.add_origins(), "http://reader.google.com/",
+                       1, 0, 0, 4., false, true);
+  InitializeOriginStat(origin_data.add_origins(), "http://dev.null.google.com/",
+                       1, 0, 0, 5., true, true);
+  EXPECT_EQ(mock_tables_->origin_table_.data_,
+            OriginDataMap({{origin_data.host(), origin_data}}));
+
+  RedirectData host_redirect_data = CreateRedirectData("www.google.com");
+  InitializeRedirectStat(host_redirect_data.add_redirect_endpoints(),
+                         GURL("http://www.google.com"), 1, 0, 0);
+  EXPECT_EQ(mock_tables_->host_redirect_table_.data_,
+            RedirectDataMap(
+                {{host_redirect_data.primary_key(), host_redirect_data}}));
+}
+
 // Tests that navigation is recorded correctly for URL already present in
 // the database cache.
 TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {

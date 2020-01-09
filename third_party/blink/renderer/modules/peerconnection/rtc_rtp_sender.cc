@@ -294,7 +294,7 @@ webrtc::RtpEncodingParameters ToRtpEncodingParameters(
 }
 
 RTCRtpHeaderExtensionParameters* ToRtpHeaderExtensionParameters(
-    const webrtc::RtpHeaderExtensionParameters& webrtc_header) {
+    const webrtc::RtpExtension& webrtc_header) {
   RTCRtpHeaderExtensionParameters* header =
       RTCRtpHeaderExtensionParameters::Create();
   header->setUri(webrtc_header.uri.c_str());

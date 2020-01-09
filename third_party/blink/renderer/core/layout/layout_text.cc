@@ -29,6 +29,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -2471,8 +2472,13 @@ PhysicalRect LayoutText::DebugRect() const {
 
 DOMNodeId LayoutText::EnsureNodeId() {
   if (node_id_ == kInvalidDOMNodeId) {
-    if (auto* content_capture_manager = GetContentCaptureManager())
-      node_id_ = content_capture_manager->GetNodeId(*GetNode());
+    auto* content_capture_manager = GetContentCaptureManager();
+    if (content_capture_manager)
+      content_capture_manager->ScheduleTaskIfNeeded();
+
+    // If either content capture or accessibility are enabled, store a node ID.
+    if (content_capture_manager || GetDocument().ExistingAXObjectCache())
+      node_id_ = DOMNodeIds::IdForNode(GetNode());
   }
   return node_id_;
 }

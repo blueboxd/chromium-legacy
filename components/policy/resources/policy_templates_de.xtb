@@ -247,13 +247,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
           Sie bietet einen Ersatzwert für die spezifischeren Richtlinien "<ph name="IDLE_ACTION_AC_POLICY_NAME" />" und "<ph name="IDLE_ACTION_BATTERY_POLICY_NAME" />". Wenn die Richtlinie konfiguriert ist, wird ihr Wert verwendet, sofern die jeweilige spezifischere Richtlinie nicht festgelegt ist.
 
           Ist sie nicht konfiguriert, bleibt das Verhalten der spezifischeren Richtlinien unverändert.</translation>
-<translation id="1383493480903114193">Mit diese Richtlinie wird erzwungen, dass der Netzwerkcode im Browserprozess ausgeführt wird.
-
-      Sie ist standardmäßig deaktiviert. Ist die Richtlinie aktiviert, so ist der Nutzer nicht mehr vor den Sicherheitsproblemen geschützt, sobald der Netzwerkprozess in einer Sandbox ausgeführt wird.
-
-      Diese Richtlinie soll Unternehmen ermöglichen, zu Drittanbietersoftware zu migrieren, die nicht auf Hooking von Netzwerk-APIs angewiesen sind. Proxyserver werden anstelle von LSPs und Win32 API-Patching empfohlen.
-
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Netzwerkcode – je nach Abhängigkeit der Feldtests des NetworkService-Tests – außerhalb des Browserprozesses ausgeführt werden.</translation>
 <translation id="1384459581748403878">Referenz: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Update-Status des Betriebssystems melden</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
@@ -4156,21 +4149,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
       Wenn diese Richtlinie festgelegt ist, kann der Elternzugriffscode auf dem Gerät des Kindes überprüft werden.
       Ist die Richtlinie nicht festgelegt, kann der Elternzugriffscode auf dem Gerät des Kindes nicht überprüft werden.</translation>
 <translation id="7625444193696794922">Gibt den Release-Kanal an, an den dieses Gerät gebunden werden soll.</translation>
-<translation id="7625498350540361483">
-      Wenn diese Richtlinie auf "true" gesetzt ist, darf <ph name="PRODUCT_NAME" /> WebRTC-Ereignisprotokolle aus Google-Diensten, wie z. B. Hangouts Meet, speichern und die Protokolle bei Google hochladen.
-
-      Ist die Richtlinie auf "false" gesetzt, darf <ph name="PRODUCT_NAME" /> solche Protokolle weder speichern noch hochladen.
-
-      Ist diese Richtlinie nicht konfiguriert (bis einschließlich M76), darf <ph name="PRODUCT_NAME" /> solche Protokolle weder speichern noch hochladen.
-
-      Ist diese Richtlinie nicht konfiguriert (ab M77), darf <ph name="PRODUCT_NAME" /> solche Protokolle standardmäßig speichern oder hochladen, wenn das Browserprofil als verwaltet gilt, d. h. das Profil erhält Richtlinien aus der Cloud- oder Maschinenebene und ist kein untergeordnetes, flüchtiges, Anmelde- oder Inkognitoprofil.
-
-      Diese Protokolle enthalten Diagnoseinformationen, die für die Fehlerbehebung bei Audio- oder Videoanrufen in Chrome hilfreich sein können. Dazu zählen die Uhrzeit und die Größe gesendeter und empfangener RTP-Pakete, Feedback zur Auslastung des Netzwerks und Metadaten zur Länge und Qualität von Audio- und Videoframes. Die Protokolle enthalten keine Audio- oder Videoinhalte aus dem Anruf.
-
-      Das Erfassen dieser Daten kann nur von den Google-Webdiensten ausgelöst werden, etwa von Google Hangouts oder Hangouts Meet.
-
-      Google kann diese Protokolle anhand einer Sitzungs-ID mit anderen Protokollen verknüpfen, die vom Google-Dienst selbst erstellt wurden. Dies dient dazu, Fehler leichter zu beheben.
-      </translation>
 <translation id="7632724434767231364">Name der GSSAPI-Bibliothek</translation>
 <translation id="7635471475589566552">Konfiguriert das App-Gebietsschema in <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer das Gebietsschema ändern. Wenn Sie diese Einstellung aktivieren, verwendet <ph name="PRODUCT_NAME" /> das angegebene Gebietsschema. Wird das konfigurierte Gebietsschema nicht unterstützt, kommt stattdessen "en-US" zum Einsatz. Ist diese Einstellung deaktiviert oder nicht konfiguriert, verwendet <ph name="PRODUCT_NAME" /> das vom Nutzer angegebene bevorzugte Gebietsschema (sofern konfiguriert), das Gebietsschema des Systems oder das Ersatz-Gebietsschema "en-US".</translation>
 <translation id="7643883929273267746">Sichtbarkeit von Konten in <ph name="PRODUCT_NAME" /> einschränken</translation>

@@ -9,6 +9,7 @@
 #include "cc/paint/paint_recorder.h"
 #include "cc/paint/scoped_raster_flags.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
+#include "third_party/skia/include/docs/SkPDFDocument.h"
 
 namespace cc {
 SkiaPaintCanvas::ContextFlushes::ContextFlushes()
@@ -317,7 +318,9 @@ void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
                                    SkScalar y,
                                    NodeId node_id,
                                    const PaintFlags& flags) {
+  SkPDF::SetNodeId(canvas_, node_id);
   drawTextBlob(blob, x, y, flags);
+  SkPDF::SetNodeId(canvas_, 0);
 }
 
 void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {

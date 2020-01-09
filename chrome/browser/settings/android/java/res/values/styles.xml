@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<resources>
+    <!-- TODO(crbug.com/971791): The asymmetric start and end paddings here preserve the same
+         overall padding as the pre-support library custom preference layout. Following migration to
+         the support library preferences, we should investigate simplifying these styles.-->
+    <style name="PreferenceLayoutCompat">
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:minHeight">?android:attr/listPreferredItemHeight</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+    </style>
+
+    <style name="PreferenceDescriptionCompat">
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:paddingEnd">8dp</item>
+    </style>
+
+    <style name="PreferenceWidgetCompat">
+        <item name="android:minWidth">48dp</item>
+    </style>
+
+    <style name="PreferenceTitle">
+        <item name="android:ellipsize">end</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textAppearance">@style/TextAppearance.PreferenceMediumText</item>
+    </style>
+
+    <style name="PreferenceSummary">
+        <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>
+    </style>
+
+    <style name="TextAppearance.PreferenceMediumText">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+
+    <style name="PreferenceLayoutBase">
+        <item name="android:background">?android:attr/activatedBackgroundIndicator</item>
+        <item name="android:minHeight">?android:attr/listPreferredItemHeight</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+    </style>
+
+    <style name="PreferenceLayout" parent="PreferenceLayoutBase" />
+</resources>

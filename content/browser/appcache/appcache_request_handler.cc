@@ -439,7 +439,7 @@ void AppCacheRequestHandler::RunLoaderCallbackForMainResource(
               frame_tree_node->navigation_request()->GetNavigationId(),
               &factory_receiver, nullptr /* header_client */,
               nullptr /* bypass_redirect_checks */,
-              nullptr /* factory_override */);
+              nullptr /* disable_secure_dns */, nullptr /* factory_override */);
       if (use_proxy) {
         single_request_factory->Clone(std::move(factory_receiver));
         single_request_factory =

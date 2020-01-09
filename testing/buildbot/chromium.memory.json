@@ -14198,8 +14198,7 @@
           "../../third_party/blink/web_tests/ASANExpectations",
           "--time-out-ms",
           "48000",
-          "--enable-sanitizer",
-          "--fuzzy-diff"
+          "--enable-sanitizer"
         ],
         "isolate_name": "blink_web_tests",
         "merge": {
@@ -14232,8 +14231,7 @@
           "../../third_party/blink/web_tests/LeakExpectations",
           "--time-out-ms",
           "48000",
-          "--enable-leak-detection",
-          "--fuzzy-diff"
+          "--enable-leak-detection"
         ],
         "isolate_name": "blink_web_tests",
         "merge": {
@@ -14266,8 +14264,7 @@
           "../../third_party/blink/web_tests/MSANExpectations",
           "--time-out-ms",
           "66000",
-          "--enable-sanitizer",
-          "--fuzzy-diff"
+          "--enable-sanitizer"
         ],
         "isolate_name": "blink_web_tests",
         "merge": {

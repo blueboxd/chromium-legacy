@@ -23,18 +23,22 @@
 #include "chrome/browser/notifications/scheduler/display_agent_android.h"
 #include "chrome/browser/notifications/scheduler/notification_background_task_scheduler_android.h"
 #include "chrome/browser/updates/update_notification_client.h"
+#include "chrome/browser/updates/update_notification_service_factory.h"
 #endif  // defined(OS_ANDROID)
 
 namespace {
 std::unique_ptr<notifications::NotificationSchedulerClientRegistrar>
-RegisterClients() {
+RegisterClients(content::BrowserContext* context) {
   auto client_registrar =
       std::make_unique<notifications::NotificationSchedulerClientRegistrar>();
   // TODO(xingliu): Register clients here.
 #if defined(OS_ANDROID)
   // Register UpdateNotificationClient.
+  auto update_notification_service_callback = base::BindRepeating(
+      &UpdateNotificationServiceFactory::GetForBrowserContext, context);
   auto chrome_update_client =
-      std::make_unique<updates::UpdateNotificationClient>();
+      std::make_unique<updates::UpdateNotificationClient>(
+          std::move(update_notification_service_callback));
   client_registrar->RegisterClient(
       notifications::SchedulerClientType::kChromeUpdate,
       std::move(chrome_update_client));
@@ -72,7 +76,7 @@ KeyedService* NotificationScheduleServiceFactory::BuildServiceInstanceFor(
   auto* profile = Profile::FromBrowserContext(context);
   base::FilePath storage_dir =
       profile->GetPath().Append(chrome::kNotificationSchedulerStorageDirname);
-  auto client_registrar = RegisterClients();
+  auto client_registrar = RegisterClients(context);
 #if defined(OS_ANDROID)
   auto display_agent = std::make_unique<DisplayAgentAndroid>();
   auto background_task_scheduler =

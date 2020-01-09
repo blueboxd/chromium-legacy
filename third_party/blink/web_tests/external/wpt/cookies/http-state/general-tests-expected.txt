@@ -18,14 +18,14 @@ PASS 0016 - Keep non-alphabetic key order.
 PASS 0017 - Keep order if comma-separated.
 PASS 0018 - Ignore keys after semicolon.
 PASS 0019 - Ignore attributes after semicolon.
-FAIL 0020 - Ignore cookies without key and value. assert_equals: expected "a=b; c=d" but got "a=b; ; c=d"
+PASS 0020 - Ignore cookies without key and value.
 FAIL 0021 - Ignore cookie without key in all 'Set-Cookie'. assert_equals: expected "a=b; c=d" but got "a=b; x; c=d"
 PASS 0022 - Set cookie without value in all 'Set-Cookie'.
-PASS 0023 - Ignore cookies without '=' in all 'Set-Cookie'.
-PASS 0024 - Ignore malformed cookies in all 'Set-Cookie'.
-PASS 0025 - Ignore cookies with ';' in all 'Set-Cookie'.
-PASS 0026 - Ignore malformed cookies in all 'Set-Cookie' v2.
+FAIL 0023 - Ignore cookies without '=' in all 'Set-Cookie'. assert_equals: expected "" but got "foo"
+FAIL 0024 - Ignore malformed cookies in all 'Set-Cookie'. assert_equals: expected "" but got "foo"
+FAIL 0025 - Ignore cookies with ';' in all 'Set-Cookie'. assert_equals: expected "" but got "foo"
+FAIL 0026 - Ignore malformed cookies in all 'Set-Cookie' v2. assert_equals: expected "" but got "foo"
 FAIL 0027 - Ignore malformed cookies in all 'Set-Cookie' v3. assert_equals: expected "" but got "bar"
-FAIL 0028 - [INVALID EXPECTATION] Ignore malformed cookies in all 'Set-Cookie' v4. assert_equals: expected "Set-Cookie: foo\nSet-Cookie:" but got ""
+FAIL 0028 - Ignore malformed cookies in all 'Set-Cookie' v4. assert_equals: expected "" but got "foo"
 Harness: the test ran to completion.
 

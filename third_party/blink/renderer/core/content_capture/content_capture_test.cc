@@ -8,6 +8,7 @@
 #include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_content_holder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -192,7 +193,8 @@ class ContentCaptureTest : public PageTestBase {
     Element* div_element = GetElementById("d1");
     div_element->appendChild(element);
     UpdateAllLifecyclePhasesForTest();
-    created_node_id_ = GetContentCaptureManager()->GetNodeId(*node);
+    GetContentCaptureManager()->ScheduleTaskIfNeeded();
+    created_node_id_ = DOMNodeIds::IdForNode(node);
     Vector<DOMNodeId> captured_content{created_node_id_};
     content_capture_manager_->GetContentCaptureTask()
         ->SetCapturedContentForTesting(captured_content);
@@ -268,7 +270,8 @@ class ContentCaptureTest : public PageTestBase {
       CHECK(layout_object);
       CHECK(layout_object->IsText());
       nodes_.push_back(node);
-      node_ids_.push_back(GetContentCaptureManager()->GetNodeId(*node));
+      GetContentCaptureManager()->ScheduleTaskIfNeeded();
+      node_ids_.push_back(DOMNodeIds::IdForNode(node));
     }
   }
 

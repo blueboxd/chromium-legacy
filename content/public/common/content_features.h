@@ -151,6 +151,7 @@ CONTENT_EXPORT extern const base::Feature kWebXr;
 CONTENT_EXPORT extern const base::Feature kWebXrArModule;
 CONTENT_EXPORT extern const base::Feature kWebXrHitTest;
 CONTENT_EXPORT extern const base::Feature kWebXrIncubations;
+CONTENT_EXPORT extern const base::Feature kWebXrPermissionsApi;
 CONTENT_EXPORT extern const base::Feature kScriptStreamingOnPreload;
 CONTENT_EXPORT extern const base::Feature kTrustedDOMTypes;
 CONTENT_EXPORT extern const base::Feature kBrowserUseDisplayThreadPriority;

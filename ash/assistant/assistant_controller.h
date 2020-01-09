@@ -142,6 +142,10 @@ class ASH_EXPORT AssistantController
     return &assistant_setup_controller_;
   }
 
+  AssistantStateController* state_controller() {
+    return &assistant_state_controller_;
+  }
+
   AssistantSuggestionsController* suggestions_controller() {
     return &assistant_suggestions_controller_;
   }

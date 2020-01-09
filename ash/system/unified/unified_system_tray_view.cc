@@ -8,6 +8,8 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/default_color_constants.h"
@@ -229,9 +231,15 @@ class UnifiedSystemTrayView::FocusSearch : public views::FocusSearch {
 // static
 SkColor UnifiedSystemTrayView::GetBackgroundColor() {
   if (features::IsBackgroundBlurEnabled()) {
-    return AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparent74,
-        kUnifiedMenuBackgroundColorWithBlur);
+    AshColorProvider::BaseLayerType layer_type =
+        Shelf::ForWindow(Shell::GetPrimaryRootWindow())
+                    ->shelf_widget()
+                    ->GetBackgroundType() == ShelfBackgroundType::kHomeLauncher
+            ? AshColorProvider::BaseLayerType::kTransparent60
+            : AshColorProvider::BaseLayerType::kTransparent74;
+
+    return AshColorProvider::Get()->GetBaseLayerColor(
+        layer_type, AshColorProvider::AshColorMode::kDark);
   }
   return AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
       AshColorProvider::BaseLayerType::kTransparent90,

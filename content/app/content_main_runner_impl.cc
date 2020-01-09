@@ -491,11 +491,6 @@ int RunZygote(ContentMainDelegate* delegate) {
   InitializeFieldTrialAndFeatureList();
   delegate->PostFieldTrialInitialization();
 
-  service_manager::SandboxType sandbox_type =
-      service_manager::SandboxTypeFromCommandLine(command_line);
-  if (sandbox_type == service_manager::SandboxType::kProfiling)
-    sandbox::SetUseLocaltimeOverride(false);
-
   for (size_t i = 0; i < base::size(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name)
       return kMainFunctions[i].function(main_params);

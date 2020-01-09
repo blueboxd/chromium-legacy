@@ -2817,12 +2817,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxRichEntitySuggestionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxRichEntitySuggestions)},
 
-    {"omnibox-group-suggestions-by-search-vs-url",
-     flag_descriptions::kOmniboxGroupSuggestionsBySearchVsUrlName,
-     flag_descriptions::kOmniboxGroupSuggestionsBySearchVsUrlDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxGroupSuggestionsBySearchVsUrl)},
-
     {"omnibox-preserve-default-match-against-async-update",
      flag_descriptions::kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName,
      flag_descriptions::

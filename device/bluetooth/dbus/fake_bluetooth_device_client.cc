@@ -320,9 +320,9 @@ FakeBluetoothDeviceClient::FakeBluetoothDeviceClient()
       max_transmit_power_(kUnkownPower),
       delay_start_discovery_(false),
       should_leave_connections_pending_(false) {
-  std::unique_ptr<Properties> properties(new Properties(
-      base::Bind(&FakeBluetoothDeviceClient::OnPropertyChanged,
-                 base::Unretained(this), dbus::ObjectPath(kPairedDevicePath))));
+  std::unique_ptr<Properties> properties(new Properties(base::BindRepeating(
+      &FakeBluetoothDeviceClient::OnPropertyChanged, base::Unretained(this),
+      dbus::ObjectPath(kPairedDevicePath))));
   properties->address.ReplaceValue(kPairedDeviceAddress);
   properties->bluetooth_class.ReplaceValue(kPairedDeviceClass);
   properties->name.ReplaceValue(kPairedDeviceName);
@@ -714,9 +714,9 @@ void FakeBluetoothDeviceClient::CreateDevice(
   if (base::Contains(device_list_, device_path))
     return;
 
-  std::unique_ptr<Properties> properties(
-      new Properties(base::Bind(&FakeBluetoothDeviceClient::OnPropertyChanged,
-                                base::Unretained(this), device_path)));
+  std::unique_ptr<Properties> properties(new Properties(
+      base::BindRepeating(&FakeBluetoothDeviceClient::OnPropertyChanged,
+                          base::Unretained(this), device_path)));
   properties->adapter.ReplaceValue(adapter_path);
   properties->type.ReplaceValue(BluetoothDeviceClient::kTypeBredr);
   properties->type.set_valid(true);
@@ -849,9 +849,9 @@ void FakeBluetoothDeviceClient::CreateDeviceWithProperties(
   if (base::Contains(device_list_, device_path))
     return;
 
-  std::unique_ptr<Properties> properties(
-      new Properties(base::Bind(&FakeBluetoothDeviceClient::OnPropertyChanged,
-                                base::Unretained(this), device_path)));
+  std::unique_ptr<Properties> properties(new Properties(
+      base::BindRepeating(&FakeBluetoothDeviceClient::OnPropertyChanged,
+                          base::Unretained(this), device_path)));
   properties->adapter.ReplaceValue(adapter_path);
   properties->name.ReplaceValue(props.device_name);
   properties->name.set_valid(true);
@@ -1904,9 +1904,9 @@ void FakeBluetoothDeviceClient::CreateTestDevice(
     device_path = dbus::ObjectPath(adapter_path.value() + "/dev" + id);
   } while (base::Contains(device_list_, device_path));
 
-  std::unique_ptr<Properties> properties(
-      new Properties(base::Bind(&FakeBluetoothDeviceClient::OnPropertyChanged,
-                                base::Unretained(this), device_path)));
+  std::unique_ptr<Properties> properties(new Properties(
+      base::BindRepeating(&FakeBluetoothDeviceClient::OnPropertyChanged,
+                          base::Unretained(this), device_path)));
   properties->adapter.ReplaceValue(adapter_path);
 
   properties->address.ReplaceValue(device_address);

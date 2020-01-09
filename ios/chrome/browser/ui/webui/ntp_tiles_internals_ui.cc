@@ -5,8 +5,9 @@
 #include "ios/chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 
 #include <memory>
+#include <vector>
 
-#include "components/grit/components_resources.h"
+#include "components/grit/dev_ui_components_resources.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/webui/ntp_tiles_internals_message_handler.h"

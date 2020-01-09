@@ -245,13 +245,6 @@
           Esta política fornece um valor substituto para as políticas <ph name="IDLE_ACTION_AC_POLICY_NAME" /> e <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> mais específicas. Se esta política for definida, os valores serão usados quando uma política respectiva mais específica não for usada.
 
           Se esta política não for definida, o comportamento das políticas mais específicas não será afetado.</translation>
-<translation id="1383493480903114193">Esta política força o código de rede a ser executado no processo do navegador.
-
-      A política está desativada por padrão e, se ativada, deixa usuários vulneráveis aos problemas de segurança quando o processo de rede estiver no sandbox.
-
-      Esta política tem como objetivo oferecer às empresas a oportunidade de migrar para um software de terceiros que não dependa de hook das APIs de rede. Recomendamos o uso de servidores proxy em vez da aplicação de patches de API Win32 e LSPs.
-
-      Se esta política não for definida, o código de rede pode sair do processo do navegador, dependendo de testes de campo do experimento do NetworkService.</translation>
 <translation id="1384459581748403878">Referência: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Informar o status de atualização do SO</translation>
 <translation id="1393485621820363363">Impressoras empresariais ativadas</translation>
@@ -4144,21 +4137,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Quando esta política é definida, o código de acesso dos pais pode ser verificado no dispositivo da criança.
       Quando esta política não é definida, não é possível verificar o código de acesso dos pais no dispositivo da criança.</translation>
 <translation id="7625444193696794922">Especifica o canal de liberação ao qual este dispositivo deve ser vinculado.</translation>
-<translation id="7625498350540361483">
-      Se a política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> poderá coletar logs de eventos WebRTC em serviços do Google (por exemplo, no Google Meet) e fazer upload desses registros no Google.
-
-      Se a política for definida como falsa, o <ph name="PRODUCT_NAME" /> não poderá coletar esses registros nem fazer upload deles.
-
-      Se a política não for definida, até a versão M76, o <ph name="PRODUCT_NAME" /> não poderá coletar esses registros nem fazer upload deles.
-
-      Se a política não for definida, a partir da versão M77, o <ph name="PRODUCT_NAME" /> poderá coletar esses registros e fazer upload deles por padrão se o perfil do navegador for considerado gerenciado, isto é, se o perfil receber políticas em nível de nuvem ou de máquina e não for um perfil filho, temporário, de login ou de navegação anônima.
-
-      Esses registros contêm informações de diagnóstico que são úteis durante a depuração de problemas com chamadas de áudio ou videochamadas no Chrome, como o horário e o tamanho de pacotes RTP enviados e recebidos, feedback sobre congestionamento na rede e metadados sobre o tempo e a qualidade de frames de áudio e vídeo. Esses registros não apresentam o conteúdo das chamadas de áudio ou videochamadas.
-
-      Essa coleta de dados feita pelo Chrome só pode ser acionada por serviços da Web do Google, como o Google Hangouts ou o Google Meet.
-
-      Por meio de um código de sessão, o Google pode associar esses registros a outros coletados pelo próprio serviço do Google. Isso é feito para facilitar a depuração.
-      </translation>
 <translation id="7632724434767231364">Nome da biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Configura a localidade do aplicativo em <ph name="PRODUCT_NAME" /> e impede que os usuários a alterem. Se ativar esta configuração, <ph name="PRODUCT_NAME" /> utilizará a localidade especificada. Se a localidade configurada não for compatível, "pt-BR" será utilizada. Se esta configuração for desativada ou não for configurada, <ph name="PRODUCT_NAME" /> utilizará a localidade preferida especificada pelo usuário (se configurada), a localidade do sistema ou a localidade padrão "pt-BR".</translation>
 <translation id="7643883929273267746">Contas restritas que estão visíveis no <ph name="PRODUCT_NAME" /></translation>

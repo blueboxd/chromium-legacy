@@ -236,13 +236,6 @@
           此政策可为更具体的 <ph name="IDLE_ACTION_AC_POLICY_NAME" /> 和 <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" /> 政策提供后备值。如果设置了此政策，但未分别设置更具体的政策，系统就会使用此值。
 
           如果未设置此政策，更具体政策的行为不会受到影响。</translation>
-<translation id="1383493480903114193">此政策会强制网络代码在浏览器进程中运行。
-
-      此政策默认处于停用状态；若被启用，则会在网络进程被沙盒化后使用户面临安全问题的威胁。
-
-      此政策旨在使企业有机会迁移到不依靠与网络 API 挂钩来运行的第三方软件。我们建议通过 LSP 和 Win32 API 修补来使用代理服务器。
-
-      如果此政策未设置，网络代码可能会在浏览器进程之外运行，具体取决于 NetworkService 实验的现场试验。</translation>
 <translation id="1384459581748403878">参考页面：<ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">报告操作系统更新状态</translation>
 <translation id="1393485621820363363">已启用企业设备打印机</translation>
@@ -4088,21 +4081,6 @@
       如果设置了此政策，则可在未成年用户的设备上验证家长访问码。
       如果未设置此政策，则无法在未成年用户的设备上验证家长访问码。</translation>
 <translation id="7625444193696794922">指定该设备应锁定到的发布渠道。</translation>
-<translation id="7625498350540361483">
-      如果此政策设为 true，<ph name="PRODUCT_NAME" /> 便可以从 Google 服务（例如 Google Meet）收集 WebRTC 事件日志，并将这些日志上传到 Google。
-
-      如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将不会收集或上传此类日志。
-
-      如果此政策未设置（在 M76 及较早版本中），<ph name="PRODUCT_NAME" /> 将不会收集或上传此类日志。
-
-      如果此政策未设置（从 M77 开始），在默认情况下，<ph name="PRODUCT_NAME" /> 可以收集或上传此类日志，但需满足以下条件：浏览器个人资料被视为托管（即，该个人资料能接收云端或计算机级别政策），并且不是孩子个人资料、临时个人资料、登录个人资料和无痕个人资料中的任一种。
-
-      这些日志中包含一些诊断信息，例如 RTP 数据包的收发时间和大小、网络拥堵情况反馈，以及与语音帧和视频帧的时间和质量相关的元数据。在调试 Chrome 中的语音通话或视频通话问题时，这些信息非常有用。这些日志不包含通话期间的语音内容或视频内容。
-
-      这项由 Chrome 执行的数据收集操作只能由 Google 的网络服务（例如 Google Hangouts 或 Google Meet）触发。
-
-      Google 可能会利用会话 ID 将这些日志与 Google 服务自身收集的其他日志关联，以便更轻松地进行调试。
-      </translation>
 <translation id="7632724434767231364">GSSAPI 库名称</translation>
 <translation id="7635471475589566552">在 <ph name="PRODUCT_NAME" />中配置应用的语言区域，并禁止用户更改语言区域。如果您启用了此设置，<ph name="PRODUCT_NAME" />就会使用指定的语言区域。如果配置的语言区域不受支持，就会改用“en-US”。如果已停用或未配置此设置，<ph name="PRODUCT_NAME" />就会使用由用户指定的首选语言区域（如果已配置）、系统语言区域或备用语言区域“en-US”。</translation>
 <translation id="7643883929273267746">限制可在<ph name="PRODUCT_NAME" />中显示的帐号</translation>

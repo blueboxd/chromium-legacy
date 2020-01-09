@@ -116,8 +116,10 @@ void FlagsUIHandler::HandleEnableExperimentalFeatureMessage(
   std::string entry_internal_name;
   std::string enable_str;
   if (!args->GetString(0, &entry_internal_name) ||
-      !args->GetString(1, &enable_str))
+      !args->GetString(1, &enable_str) || entry_internal_name.empty()) {
+    NOTREACHED();
     return;
+  }
 
   about_flags::SetFeatureEntryEnabled(flags_storage_.get(), entry_internal_name,
                                       enable_str == "true");

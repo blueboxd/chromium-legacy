@@ -254,7 +254,6 @@ std::string SandboxMac::GetSandboxProfile(SandboxType sandbox_type) {
     case service_manager::SandboxType::kPpapi:
       profile += service_manager::kSeatbeltPolicyString_ppapi;
       break;
-    case service_manager::SandboxType::kProfiling:
     case service_manager::SandboxType::kUtility:
       profile += service_manager::kSeatbeltPolicyString_utility;
       break;

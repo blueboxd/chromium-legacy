@@ -27,7 +27,6 @@ TEST(WebRequestEventDetailsTest, WhitelistedCopyForPublicSession) {
   };
 
   orig->render_process_id_ = 1;
-  orig->render_frame_id_ = 2;
   orig->extra_info_spec_ = 3;
 
   orig->request_body_.reset(new base::DictionaryValue);
@@ -49,7 +48,6 @@ TEST(WebRequestEventDetailsTest, WhitelistedCopyForPublicSession) {
       orig->CreatePublicSessionCopy();
 
   EXPECT_EQ(orig->render_process_id_, copy->render_process_id_);
-  EXPECT_EQ(orig->render_frame_id_, copy->render_frame_id_);
   EXPECT_EQ(0, copy->extra_info_spec_);
 
   EXPECT_EQ(nullptr, copy->request_body_);

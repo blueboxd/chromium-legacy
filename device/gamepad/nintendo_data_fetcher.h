@@ -16,7 +16,7 @@
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/device/public/mojom/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom-forward.h"
 
 namespace device {
 // Nintendo controllers are not typical HID gamepads and cannot be easily

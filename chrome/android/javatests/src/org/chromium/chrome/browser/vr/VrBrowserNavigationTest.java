@@ -704,9 +704,8 @@ public class VrBrowserNavigationTest {
                 UserFriendlyElementName.SUGGESTION_BOX, true /* visible */,
                 () -> { NativeUiUtils.inputString("chrome://"); });
         // Click near the bottom of the suggestion box to get the last suggestion, which for
-        // "chrome://" should be a valid chrome:// URL. The suggestion that triggers a search can
-        // be in either the middle or top spot depending on whether the
-        // OmniboxGroupSuggestionsBySearchVsUrl feature is enabled or not.
+        // "chrome://" should be a valid chrome:// URL. The suggestion that triggers a search will
+        // be in the top spot because we group by searches vs. URLs.
         NativeUiUtils.clickElement(UserFriendlyElementName.SUGGESTION_BOX, new PointF(0.0f, -0.4f));
         ChromeTabUtils.waitForTabPageLoaded(
                 mTestRule.getActivity().getActivityTab(), (String) null);

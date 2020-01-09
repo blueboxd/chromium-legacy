@@ -131,9 +131,7 @@ class WebRequestEventDetails {
 
   int extra_info_spec_;
 
-  // Used to determine the tabId, frameId and parentFrameId.
   int render_process_id_;
-  int render_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestEventDetails);
 };

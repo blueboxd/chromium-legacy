@@ -318,6 +318,28 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingBrotherPrinters) {
   }
 }
 
+TEST(PrintBackendCupsHelperTest, TestPpdParsingHpPrinters) {
+  {
+    constexpr char kTestPpdData[] =
+        R"(*PPD-Adobe: "4.3"
+*ColorDevice: True
+*OpenUI *HPColorMode/Mode: PickOne
+*DefaultHPColorMode: ColorPrint
+*HPColorMode ColorPrint/Color: "
+  << /ProcessColorModel /DeviceCMYK >> setpagedevice"
+*HPColorMode GrayscalePrint/Grayscale: "
+  << /ProcessColorModel /DeviceGray >> setpagedevice"
+*CloseUI: *HPColorMode)";
+
+    PrinterSemanticCapsAndDefaults caps;
+    EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
+    EXPECT_TRUE(caps.color_changeable);
+    EXPECT_TRUE(caps.color_default);
+    EXPECT_EQ(HP_COLOR_COLOR, caps.color_model);
+    EXPECT_EQ(HP_COLOR_BLACK, caps.bw_model);
+  }
+}
+
 TEST(PrintBackendCupsHelperTest, TestPpdParsingSamsungPrinters) {
   {
     constexpr char kTestPpdData[] =

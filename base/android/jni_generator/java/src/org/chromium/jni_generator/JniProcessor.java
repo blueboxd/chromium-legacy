@@ -21,6 +21,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import org.chromium.base.JniStaticTestMocker;
+import org.chromium.base.NativeLibraryLoadedStatus;
 import org.chromium.base.annotations.CheckDiscard;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
@@ -67,8 +68,10 @@ public class JniProcessor extends AbstractProcessor {
     private static final Class<NativeMethods> JNI_STATIC_NATIVES_CLASS = NativeMethods.class;
     private static final Class<MainDex> MAIN_DEX_CLASS = MainDex.class;
     private static final Class<CheckDiscard> CHECK_DISCARD_CLASS = CheckDiscard.class;
-    private static final String CHECK_DISCARD_CRBUG = "crbug.com/993421";
+    private static final Class<NativeLibraryLoadedStatus> JNI_STATUS_CLASS =
+            NativeLibraryLoadedStatus.class;
 
+    private static final String CHECK_DISCARD_CRBUG = "crbug.com/993421";
     private static final String NATIVE_WRAPPER_CLASS_POSTFIX = "Jni";
 
     // The native class name and package name used in debug.
@@ -394,6 +397,7 @@ public class JniProcessor extends AbstractProcessor {
                     throw new UnsupportedOperationException($noMockExceptionString);
                 }
             }
+            NativeLibraryLoadedStatus.checkLoaded($isMainDex)
             return new {classname}Jni();
         }
          */
@@ -402,6 +406,7 @@ public class JniProcessor extends AbstractProcessor {
                                 + "The current configuration requires all native "
                                 + "implementations to have a mock instance.",
                         nativeInterfaceType);
+
         MethodSpec instanceGetter =
                 MethodSpec.methodBuilder("get")
                         .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
@@ -416,6 +421,8 @@ public class JniProcessor extends AbstractProcessor {
                                 noMockExceptionString)
                         .endControlFlow()
                         .endControlFlow()
+                        .addStatement("$T.$N($L)", ClassName.get(JNI_STATUS_CLASS), "checkLoaded",
+                                isMainDex)
                         .addStatement("return new $N()", name)
                         .build();
 

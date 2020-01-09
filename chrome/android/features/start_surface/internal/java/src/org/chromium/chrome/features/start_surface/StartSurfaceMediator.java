@@ -258,6 +258,9 @@ class StartSurfaceMediator
 
     @Override
     public void setOverviewState(@OverviewModeState int state) {
+        // TODO(crbug.com/1039691): Refactor into state and trigger to separate SHOWING and SHOWN
+        // states.
+
         if (mPropertyModel == null || state == mOverviewModeState) return;
 
         // Cache previous state.
@@ -269,15 +272,14 @@ class StartSurfaceMediator
         setOverviewStateInternal();
 
         // Immediately transition from SHOWING to SHOWN state if overview is visible but state not
-        // SHOWN.
+        // SHOWN. This is only necessary when the new state is a SHOWING state.
         if (mPropertyModel.get(IS_SHOWING_OVERVIEW)
-                && mOverviewModeState != OverviewModeState.NOT_SHOWN) {
-            // Compute SHOWN state.
+                && mOverviewModeState != OverviewModeState.NOT_SHOWN
+                && !isShownState(mOverviewModeState)) {
+            // Compute SHOWN state before updating previous state, because the previous state is
+            // still needed to compute the shown state.
             @OverviewModeState
             int shownState = computeOverviewStateShown();
-
-            // Nothing to do here.
-            if (shownState == mOverviewModeState) return;
 
             // Cache previous state
             mPreviousOverviewModeState = mOverviewModeState;
@@ -286,11 +288,25 @@ class StartSurfaceMediator
             setOverviewStateInternal();
         }
         notifyStateChange();
+
+        // Metrics collection
+        if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE) {
+            RecordUserAction.record("StartSurface.SinglePane.Home");
+        } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER) {
+            RecordUserAction.record("StartSurface.SinglePane.Tabswitcher");
+        } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TWO_PANES) {
+            RecordUserAction.record("StartSurface.TwoPanes");
+            String defaultOnUserActionString = mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
+                    ? "ExploreSurface"
+                    : "HomeSurface";
+            RecordUserAction.record("StartSurface.TwoPanes.DefaultOn" + defaultOnUserActionString);
+        } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY) {
+            RecordUserAction.record("StartSurface.TasksOnly");
+        }
     }
 
     private void setOverviewStateInternal() {
         if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE) {
-            RecordUserAction.record("StartSurface.SinglePane");
             setExploreSurfaceVisibility(!mIsIncognito);
             setTabCarouselVisibility(
                     mTabModelSelector.getModel(false).getCount() > 0 && !mIsIncognito);
@@ -311,12 +327,6 @@ class StartSurfaceMediator
             setSecondaryTasksSurfaceVisibility(true);
 
         } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TWO_PANES) {
-            RecordUserAction.record("StartSurface.TwoPanes");
-            String defaultOnUserActionString = mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
-                    ? "ExploreSurface"
-                    : "HomeSurface";
-            RecordUserAction.record("StartSurface.TwoPanes.DefaultOn" + defaultOnUserActionString);
-
             // Show Explore Surface if last visible pane explore.
             setExploreSurfaceVisibility(
                     ReturnToStartSurfaceUtil.shouldShowExploreSurface() && !mIsIncognito);
@@ -329,7 +339,6 @@ class StartSurfaceMediator
             mPropertyModel.set(IS_BOTTOM_BAR_VISIBLE, !mIsIncognito);
 
         } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY) {
-            RecordUserAction.record("StartSurface.TasksOnly");
             setMVTilesVisibility(!mIsIncognito);
             setExploreSurfaceVisibility(false);
             setFakeBoxVisibility(true);
@@ -368,6 +377,7 @@ class StartSurfaceMediator
     public void showOverview(boolean animate) {
         // TODO(crbug.com/982018): Animate the bottom bar together with the Tab Grid view.
         if (mPropertyModel != null) {
+            RecordUserAction.record("StartSurface.Shown");
 
             // update incognito
             mIsIncognito = mTabModelSelector.isIncognitoSelected();
@@ -464,6 +474,8 @@ class StartSurfaceMediator
             if (mFullScreenListener != null) {
                 mFullScreenManager.removeListener(mFullScreenListener);
             }
+            setOverviewState(OverviewModeState.NOT_SHOWN);
+            RecordUserAction.record("StartSurface.Hidden");
         }
         for (StartSurface.OverviewModeObserver observer : mObservers) {
             observer.startedHiding();
@@ -472,7 +484,6 @@ class StartSurfaceMediator
 
     @Override
     public void finishedHiding() {
-        setOverviewState(OverviewModeState.NOT_SHOWN);
         for (StartSurface.OverviewModeObserver observer : mObservers) {
             observer.finishedHiding();
         }
@@ -496,8 +507,8 @@ class StartSurfaceMediator
             assert mSecondaryTasksSurfacePropertyModel != null;
         }
 
-        setOverviewState(OverviewModeState.SHOWN_TABSWITCHER);
         RecordUserAction.record("StartSurface.SinglePane.MoreTabs");
+        setOverviewState(OverviewModeState.SHOWN_TABSWITCHER);
     }
 
     /** This interface builds the feed surface coordinator when showing if needed. */

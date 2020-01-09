@@ -250,13 +250,6 @@
           Dit beleid levert een reservewaarde voor de specifiekere beleidsregels <ph name="IDLE_ACTION_AC_POLICY_NAME" /> en <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" />. Als dit beleid is ingesteld, wordt de bijbehorende waarde gebruikt als het respectieve specifiekere beleid niet is ingesteld.
 
           Als dit beleid niet is ingesteld, heeft dit geen invloed op het gedrag van de specifiekere beleidsregels.</translation>
-<translation id="1383493480903114193">Met dit beleid wordt afgedwongen dat netwerkcode wordt uitgevoerd in het browserproces.
-
-      Dit beleid is standaard uitgeschakeld. Indien ingeschakeld, worden gebruikers blootgesteld aan beveiligingsproblemen wanneer het netwerkproces in een sandbox wordt uitgevoerd.
-
-      Dit beleid is bedoeld om bedrijven de kans te geven naar software van derden te migreren die niet afhankelijk is van hooking van de netwerk-API's. Proxyservers krijgen de voorkeur boven LSP's en Win32 API-patching.
-
-      Als dit beleid niet is ingesteld, kan de netwerkcode buiten het browserproces worden uitgevoerd, afhankelijk van praktijktests van het NetworkService-experiment.</translation>
 <translation id="1384459581748403878">Referentie: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">OS-updatestatus rapporten</translation>
 <translation id="1393485621820363363">Zakelijke apparaatprinters ingeschakeld</translation>
@@ -4240,21 +4233,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Wanneer dit beleid is ingesteld, kan de toegangscode voor ouders worden geverifieerd op het apparaat van de gebruiker met een kinderaccount.
       Wanneer dit beleid niet is ingesteld, kan de toegangscode voor ouders niet worden geverifieerd op het apparaat van de gebruiker met een kinderaccount.</translation>
 <translation id="7625444193696794922">Hiermee wordt het releasekanaal gespecificeerd waarmee dit apparaat moet worden vergrendeld.</translation>
-<translation id="7625498350540361483">
-      Als het beleid is ingesteld op True, mag <ph name="PRODUCT_NAME" /> WebRTC-gebeurtenislogboeken verzamelen van Google-services (zoals Google Meet) en deze logboeken uploaden naar Google.
-
-      Als het beleid is ingesteld op False, mag <ph name="PRODUCT_NAME" /> deze logboeken niet verzamelen of uploaden.
-
-      Als het beleid niet is ingesteld, geldt voor versies tot en met M76 dat <ph name="PRODUCT_NAME" /> deze logboeken niet mag verzamelen of uploaden.
-
-      Als het beleid niet is ingesteld, geldt vanaf versie M77 dat <ph name="PRODUCT_NAME" /> deze logboeken standaard mag verzamelen of uploaden, afhankelijk van of het browserprofiel als beheerd wordt beschouwd (dat wil zeggen, het profiel ontvangt beleidsregels op cloud- of machineniveau) en geen onderliggend, tijdelijk, inlog- of incognitoprofiel is.
-
-      Deze logboeken bevatten diagnostische informatie die handig is voor het oplossen van problemen met audio- of videogesprekken in Chrome. Deze informatie betreft bijvoorbeeld het tijdstip en de grootte van verzonden en ontvangen RTP-pakketten, feedback over overbelasting van het netwerk en metadata over de duur en kwaliteit van audio- en videoframes. Deze logboeken bevatten geen audio of video van het gesprek.
-
-      Chrome verzamelt deze gegevens alleen als Chrome wordt getriggerd door webservices van Google, zoals Google Hangouts of Google Meet.
-
-      Google mag deze logboeken aan de hand van de sessie-ID koppelen aan andere logboeken die door de Google-service zelf zijn verzameld. Het doel hiervan is dat fouten makkelijker kunnen worden opgespoord.
-      </translation>
 <translation id="7632724434767231364">Naam van GSSAPI-bibliotheek</translation>
 <translation id="7635471475589566552">Hiermee wordt de landinstelling voor de applicatie geconfigureerd in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers de landinstelling kunnen wijzigen.
 

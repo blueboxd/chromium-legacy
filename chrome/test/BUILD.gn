@@ -558,6 +558,7 @@ if (is_android) {
       "$root_gen_dir/chrome/android/chrome_apk_paks/locales/en-US.pak",
       "$root_gen_dir/chrome/android/chrome_apk_paks/resources.pak",
       "$root_gen_dir/components/components_resources.pak",
+      "$root_gen_dir/components/dev_ui_components_resources.pak",
       "$root_out_dir/browser_tests.pak",
       "//components/test/data/payments/",
       "//chrome/test/data/ssl/",
@@ -591,7 +592,10 @@ if (is_android) {
 
     # These are grit() rules so they are in $root_gen_dir.
     deps += [ "//components/resources" ]
-    sources += [ "$root_gen_dir/components/components_resources.pak" ]
+    sources += [
+      "$root_gen_dir/components/components_resources.pak",
+      "$root_gen_dir/components/dev_ui_components_resources.pak",
+    ]
 
     # These are repack() rules so they are in $root_out_dir.
     deps += [ "//chrome:browser_tests_pak" ]
@@ -2110,6 +2114,8 @@ if (!is_android) {
         "../browser/chromeos/child_accounts/parent_access_code/parent_access_test_utils.h",
         "../browser/chromeos/child_accounts/screen_time_controller_browsertest.cc",
         "../browser/chromeos/child_accounts/time_limit_test_utils.cc",
+        "../browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.cc",
+        "../browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.h",
         "../browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer_browsertest.cc",
         "../browser/chromeos/chrome_content_browser_client_chromeos_part_browsertest.cc",
         "../browser/chromeos/customization/customization_document_browsertest.cc",
@@ -3781,6 +3787,7 @@ test("unit_tests") {
       "../browser/autofill/credit_card_accessory_controller_impl_unittest.cc",
       "../browser/autofill/manual_filling_controller_impl_unittest.cc",
       "../browser/contextmenu/chrome_context_menu_populator_unittest.cc",
+      "../browser/installedapp/installed_app_provider_unittest.cc",
       "../browser/media/android/cdm/media_drm_origin_id_manager_unittest.cc",
       "../browser/metrics/chrome_android_metrics_provider_unittest.cc",
       "../browser/page_load_metrics/observers/android_page_load_metrics_observer_unittest.cc",
@@ -4019,6 +4026,7 @@ test("unit_tests") {
       "../browser/ui/cookie_controls/cookie_controls_controller_unittest.cc",
       "../browser/ui/exclusive_access/fullscreen_controller_state_unittest.cc",
       "../browser/ui/extensions/extension_action_view_controller_unittest.cc",
+      "../browser/ui/extensions/extension_installed_waiter_unittest.cc",
       "../browser/ui/extensions/extension_message_bubble_bridge_unittest.cc",
       "../browser/ui/global_error/global_error_service_unittest.cc",
       "../browser/ui/global_media_controls/cast_media_notification_item_unittest.cc",

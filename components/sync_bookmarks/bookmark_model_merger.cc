@@ -361,10 +361,6 @@ BookmarkModelMerger::FindGuidMatchesOrReassignLocal(
     bookmarks::BookmarkModel* bookmark_model) {
   DCHECK(bookmark_model);
 
-  if (!base::FeatureList::IsEnabled(switches::kMergeBookmarksUsingGUIDs)) {
-    return {};
-  }
-
   // Build a temporary lookup table for remote GUIDs.
   std::unordered_map<std::string, const RemoteTreeNode*>
       guid_to_remote_node_map;
@@ -402,9 +398,14 @@ BookmarkModelMerger::FindGuidMatchesOrReassignLocal(
 
     if (node->is_folder() != remote_entity.is_folder ||
         (node->is_url() &&
-         node->url() != remote_entity.specifics.bookmark().url())) {
+         node->url() != remote_entity.specifics.bookmark().url()) ||
+        !base::FeatureList::IsEnabled(switches::kMergeBookmarksUsingGUIDs)) {
       // If local node and its remote node match are conflicting in node type or
-      // URL, replace local GUID with a random GUID.
+      // URL, replace local GUID with a random GUID. The logic is applied
+      // unconditionally if kMergeBookmarksUsingGUIDs is disabled, since no
+      // GUID-based matches take place and GUIDs need to be reassigned to avoid
+      // collisions (they will be reassigned once again if there is a semantic
+      // match).
       // TODO(crbug.com/978430): Local GUIDs should also be reassigned if they
       // match a remote originator_client_item_id.
       ReplaceBookmarkNodeGUID(node, base::GenerateGUID(), bookmark_model);
@@ -607,10 +608,12 @@ void BookmarkModelMerger::ProcessLocalCreation(
   const bookmarks::BookmarkNode* node = parent->children()[index].get();
   DCHECK(!FindMatchingRemoteNodeByGUID(node));
   DCHECK(base::IsValidGUID(node->guid()));
-  const std::string sync_id =
-      base::FeatureList::IsEnabled(switches::kMergeBookmarksUsingGUIDs)
-          ? node->guid()
-          : base::GenerateGUID();
+
+  // The node's GUID cannot run into collisions because
+  // FindGuidMatchesOrReassignLocal() takes care of reassigning local GUIDs if
+  // they won't actually be merged with the remote bookmark with the same GUID
+  // (e.g. incompatible types).
+  const std::string sync_id = node->guid();
   const int64_t server_version = syncer::kUncommittedVersion;
   const base::Time creation_time = base::Time::Now();
   const std::string& suffix = syncer::GenerateSyncableBookmarkHash(

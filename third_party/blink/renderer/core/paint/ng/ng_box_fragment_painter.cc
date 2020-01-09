@@ -1320,7 +1320,7 @@ NGBoxFragmentPainter::MoveTo NGBoxFragmentPainter::PaintBoxItem(
 }
 
 bool NGBoxFragmentPainter::IsPaintingScrollingBackground(
-    const PaintInfo& paint_info) {
+    const PaintInfo& paint_info) const {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return paint_info.IsPaintingScrollingBackground();
 
@@ -1414,7 +1414,8 @@ LayoutRectOutsets NGBoxFragmentPainter::ComputePadding() const {
 BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
     const Color& color,
     const FillLayer& bg_layer,
-    BackgroundBleedAvoidance bleed_avoidance) const {
+    BackgroundBleedAvoidance bleed_avoidance,
+    bool is_painting_scrolling_background) const {
   const NGBorderEdges& border_edges = BorderEdges();
   const NGPhysicalBoxFragment& fragment = PhysicalFragment();
   return BoxPainterBase::FillLayerInfo(
@@ -1422,7 +1423,7 @@ BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
       fragment.HasOverflowClip(), color, bg_layer, bleed_avoidance,
       LayoutObject::ShouldRespectImageOrientation(fragment.GetLayoutObject()),
       border_edges.line_left, border_edges.line_right,
-      fragment.GetLayoutObject()->IsInline());
+      fragment.GetLayoutObject()->IsInline(), is_painting_scrolling_background);
 }
 
 bool NGBoxFragmentPainter::IsInSelfHitTestingPhase(HitTestAction action) const {

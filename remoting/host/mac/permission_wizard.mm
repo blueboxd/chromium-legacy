@@ -228,9 +228,12 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
   _instructionText.editable = NO;
   _instructionText.preferredMaxLayoutWidth = 400;
 
+  NSString* appPath = [[NSBundle mainBundle] bundlePath];
+  NSImage* iconImage = [[NSWorkspace sharedWorkspace] iconForFile:appPath];
+  [iconImage setSize:NSMakeSize(64, 64)];
   NSImageView* icon = [[[NSImageView alloc] init] autorelease];
   icon.translatesAutoresizingMaskIntoConstraints = NO;
-  icon.image = [[NSApplication sharedApplication] applicationIconImage];
+  icon.image = iconImage;
 
   _cancelButton = [[[NSButton alloc] init] autorelease];
   _cancelButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -285,7 +288,7 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
   iconAndTextStack.alignment = NSLayoutAttributeTop;
   [iconAndTextStack addView:icon inGravity:NSStackViewGravityLeading];
   [iconAndTextStack addView:_instructionText
-                  inGravity:NSStackViewGravityLeading];
+                  inGravity:NSStackViewGravityCenter];
 
   NSStackView* buttonsStack = [[[NSStackView alloc] init] autorelease];
   buttonsStack.translatesAutoresizingMaskIntoConstraints = NO;
@@ -297,10 +300,17 @@ void PermissionWizard::Impl::OnPermissionCheckResult(bool result) {
   [buttonsStack addView:_nextButton inGravity:NSStackViewGravityTrailing];
   [buttonsStack addView:_okButton inGravity:NSStackViewGravityTrailing];
 
+  // Prevent buttonsStack from expanding vertically. This fixes incorrect
+  // vertical placement of OK button in All Set page
+  // (http://crbug.com/1032157). The parent NSStackView was expanding this
+  // view instead of adding space between the gravity-areas.
+  [buttonsStack setHuggingPriority:NSLayoutPriorityDefaultHigh
+                    forOrientation:NSLayoutConstraintOrientationVertical];
+
   NSStackView* mainStack = [[[NSStackView alloc] init] autorelease];
   mainStack.translatesAutoresizingMaskIntoConstraints = NO;
   mainStack.orientation = NSUserInterfaceLayoutOrientationVertical;
-  mainStack.spacing = 20;
+  mainStack.spacing = 12;
   [mainStack addView:iconAndTextStack inGravity:NSStackViewGravityTop];
   [mainStack addView:buttonsStack inGravity:NSStackViewGravityBottom];
 

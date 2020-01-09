@@ -117,6 +117,7 @@ component("printing") {
     "//printing/common",
     "//skia",
     "//third_party/icu",
+    "//ui/accessibility",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",

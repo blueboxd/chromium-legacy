@@ -111,6 +111,8 @@ class InfobarBadgeTabHelper
   InfobarAcceptanceObserver infobar_accept_observer_;
   // The infobar manager observer.
   InfobarManagerObserver infobar_manager_observer_;
+  // The WebState this TabHelper is scoped to.
+  web::WebState* web_state_;
   // Map storing the badge models for each InfobarType.
   std::map<InfobarType, InfobarBadgeModel*> infobar_badge_models_;
 

@@ -4,6 +4,7 @@
 
 source_set("overlays") {
   public = [
+    "public/overlay_browser_agent_base.h",
     "public/overlay_callback_manager.h",
     "public/overlay_dismissal_callback.h",
     "public/overlay_dispatch_callback.h",
@@ -28,6 +29,7 @@ source_set("overlays") {
   sources = [
     "default_overlay_request_cancel_handler.h",
     "default_overlay_request_cancel_handler.mm",
+    "overlay_browser_agent_base.mm",
     "overlay_callback_manager_impl.cc",
     "overlay_callback_manager_impl.h",
     "overlay_dispatch_callback.cc",
@@ -63,6 +65,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "default_overlay_request_cancel_handler_unittest.mm",
+    "overlay_browser_agent_base_unittest.mm",
     "overlay_callback_manager_impl_unittest.cc",
     "overlay_dispatch_callback_unittest.cc",
     "overlay_presenter_impl_unittest.mm",

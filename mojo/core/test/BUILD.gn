@@ -91,12 +91,10 @@ static_library("test_support_impl") {
 
 if (is_mac) {
   proto_library("channel_mac_proto") {
+    proto_in_dir = "//"
     sources = [
       "data/channel_mac/channel_mac.proto",
     ]
-    deps = [
-      "//testing/libfuzzer/fuzzers/mach:proto",
-    ]
-    import_dirs = [ "//testing/libfuzzer/fuzzers/mach" ]
+    link_deps = [ "//testing/libfuzzer/fuzzers/mach:proto" ]
   }
 }

@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
@@ -222,8 +223,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest, ListenerRegistration) {
   }
 }
 
+// Flaky on Windows: crbug.com/
+#if defined(OS_WIN)
+#define MAYBE_ActivityLogInactiveWithoutSwitch \
+  DISABLED_ActivityLogInactiveWithoutSwitch
+#else
+#define MAYBE_ActivityLogInactiveWithoutSwitch ActivityLogInactiveWithoutSwitch
+#endif  // OS_WIN
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsUIBrowserTest,
-                       ActivityLogInactiveWithoutSwitch) {
+                       MAYBE_ActivityLogInactiveWithoutSwitch) {
   // Navigate to chrome://extensions which is a whitelisted URL for the
   // chrome.activityLogPrivate API.
   GURL extensions_url("chrome://extensions");

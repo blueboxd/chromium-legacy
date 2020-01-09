@@ -10,7 +10,7 @@
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_pad_state_provider.h"
 #include "device/gamepad/public/cpp/gamepad.h"
-#include "device/gamepad/public/mojom/gamepad.mojom.h"
+#include "device/gamepad/public/mojom/gamepad.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/hid.mojom.h"
 

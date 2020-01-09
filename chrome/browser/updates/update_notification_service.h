@@ -24,6 +24,9 @@ class UpdateNotificationService : public KeyedService {
   // Validate the notification is ready to show.
   virtual bool IsReadyToDisplay() const = 0;
 
+  // Called when the notification is dismissed by user.
+  virtual void OnUserDismiss() = 0;
+
   ~UpdateNotificationService() override = default;
 
  protected:

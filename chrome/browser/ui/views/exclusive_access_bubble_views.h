@@ -58,7 +58,12 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
   // itself.
   void HideImmediately();
 
+  // Returns true if the popup is being shown (and not fully shown).
+  bool IsShowing();
+
   views::View* GetView();
+
+  gfx::SlideAnimation* animation_for_test() { return animation_.get(); }
 
  private:
   // Starts or stops polling the mouse location based on |popup_| and

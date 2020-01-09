@@ -36,7 +36,6 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
     case SandboxType::kPpapi:
     case SandboxType::kCdm:
     case SandboxType::kPdfCompositor:
-    case SandboxType::kProfiling:
 #if defined(OS_FUCHSIA)
     case SandboxType::kWebContext:
 #endif
@@ -83,7 +82,6 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SandboxType::kNetwork:
     case SandboxType::kCdm:
     case SandboxType::kPdfCompositor:
-    case SandboxType::kProfiling:
     case SandboxType::kAudio:
 #if defined(OS_WIN)
     case SandboxType::kXrCompositing:
@@ -162,8 +160,6 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
       return switches::kCdmSandbox;
     case SandboxType::kPdfCompositor:
       return switches::kPdfCompositorSandbox;
-    case SandboxType::kProfiling:
-      return switches::kProfilingSandbox;
     case SandboxType::kUtility:
       return switches::kUtilitySandbox;
     case SandboxType::kAudio:
@@ -212,8 +208,6 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
     return SandboxType::kCdm;
   if (sandbox_string == switches::kPdfCompositorSandbox)
     return SandboxType::kPdfCompositor;
-  if (sandbox_string == switches::kProfilingSandbox)
-    return SandboxType::kProfiling;
 #if defined(OS_WIN)
   if (sandbox_string == switches::kXrCompositingSandbox)
     return SandboxType::kXrCompositing;

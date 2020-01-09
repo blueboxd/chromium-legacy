@@ -511,18 +511,16 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_EQ(kUrl, observer.last_navigation_url());
   EXPECT_TRUE(observer.last_navigation_succeeded());
 
-  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
-      new ConsoleObserverDelegate(
-          shell()->web_contents(),
-          "Not allowed to load local resource: view-source:about:blank"));
-  shell()->web_contents()->SetDelegate(console_delegate.get());
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern(
+      "Not allowed to load local resource: view-source:about:blank");
 
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       shell()->web_contents(),
       "window.domAutomationController.send(clickViewSourceLink());", &success));
   EXPECT_TRUE(success);
-  console_delegate->Wait();
+  console_observer.Wait();
   // Original page shouldn't navigate away.
   EXPECT_EQ(kUrl, shell()->web_contents()->GetURL());
   EXPECT_FALSE(shell()
@@ -541,11 +539,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   EXPECT_EQ(kUrl, observer.last_navigation_url());
   EXPECT_TRUE(observer.last_navigation_succeeded());
 
-  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
-      new ConsoleObserverDelegate(
-          shell()->web_contents(),
-          "Not allowed to load local resource: googlechrome://"));
-  shell()->web_contents()->SetDelegate(console_delegate.get());
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern(
+      "Not allowed to load local resource: googlechrome://");
 
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
@@ -553,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
       "window.domAutomationController.send(clickGoogleChromeLink());",
       &success));
   EXPECT_TRUE(success);
-  console_delegate->Wait();
+  console_observer.Wait();
   // Original page shouldn't navigate away.
   EXPECT_EQ(kUrl, shell()->web_contents()->GetURL());
 }
@@ -1511,14 +1507,12 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, IPCFlood_GoToEntryAtOffset) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
-  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
-      new ConsoleObserverDelegate(
-          shell()->web_contents(),
-          "Throttling navigation to prevent the browser from hanging. See "
-          "https://crbug.com/882238. Command line switch "
-          "--disable-ipc-flooding-protection can be used to bypass the "
-          "protection"));
-  shell()->web_contents()->SetDelegate(console_delegate.get());
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern(
+      "Throttling navigation to prevent the browser from hanging. See "
+      "https://crbug.com/882238. Command line switch "
+      "--disable-ipc-flooding-protection can be used to bypass the "
+      "protection");
 
   EXPECT_TRUE(ExecuteScript(shell(), R"(
     for(let i = 0; i<1000; ++i) {
@@ -1527,7 +1521,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, IPCFlood_GoToEntryAtOffset) {
     }
   )"));
 
-  console_delegate->Wait();
+  console_observer.Wait();
 }
 
 // Ensure the renderer process doesn't send too many IPC to the browser process
@@ -1540,14 +1534,12 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, IPCFlood_Navigation) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
-  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
-      new ConsoleObserverDelegate(
-          shell()->web_contents(),
-          "Throttling navigation to prevent the browser from hanging. See "
-          "https://crbug.com/882238. Command line switch "
-          "--disable-ipc-flooding-protection can be used to bypass the "
-          "protection"));
-  shell()->web_contents()->SetDelegate(console_delegate.get());
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern(
+      "Throttling navigation to prevent the browser from hanging. See "
+      "https://crbug.com/882238. Command line switch "
+      "--disable-ipc-flooding-protection can be used to bypass the "
+      "protection");
 
   EXPECT_TRUE(ExecuteScript(shell(), R"(
     for(let i = 0; i<1000; ++i) {
@@ -1556,7 +1548,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, IPCFlood_Navigation) {
     }
   )"));
 
-  console_delegate->Wait();
+  console_observer.Wait();
 }
 
 // TODO(http://crbug.com/632514): This test currently expects opener downloads
@@ -2435,46 +2427,48 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
   GURL url_a = embedded_test_server()->GetURL("a.com", "/main_document");
   GURL url_b = embedded_test_server()->GetURL("a.com", "/title1.html");
 
-  auto console_delegate_1 = std::make_unique<ConsoleObserverDelegate>(
-      shell()->web_contents(), "Refused to execute inline script *");
-  shell()->web_contents()->SetDelegate(console_delegate_1.get());
+  {
+    WebContentsConsoleObserver console_observer(shell()->web_contents());
+    console_observer.SetPattern("Refused to execute inline script *");
 
-  // 1) Load main document with CSP: script-src 'none'
-  // 2) Open an about:srcdoc iframe. It inherits the CSP from its parent.
-  shell()->LoadURL(url_a);
-  main_document_response.WaitForRequest();
-  main_document_response.Send(
-      "HTTP/1.1 200 OK\n"
-      "content-type: text/html; charset=UTF-8\n"
-      "Content-Security-Policy: script-src 'none'\n"
-      "\n"
-      "<iframe name='theiframe' srcdoc='"
-      "  <script>"
-      "    console.error(\"CSP failure\");"
-      "  </script>"
-      "'>"
-      "</iframe>");
-  main_document_response.Done();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+    // 1) Load main document with CSP: script-src 'none'
+    // 2) Open an about:srcdoc iframe. It inherits the CSP from its parent.
+    shell()->LoadURL(url_a);
+    main_document_response.WaitForRequest();
+    main_document_response.Send(
+        "HTTP/1.1 200 OK\n"
+        "content-type: text/html; charset=UTF-8\n"
+        "Content-Security-Policy: script-src 'none'\n"
+        "\n"
+        "<iframe name='theiframe' srcdoc='"
+        "  <script>"
+        "    console.error(\"CSP failure\");"
+        "  </script>"
+        "'>"
+        "</iframe>");
+    main_document_response.Done();
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  // Check Javascript was blocked the first time.
-  console_delegate_1->Wait();
+    // Check Javascript was blocked the first time.
+    console_observer.Wait();
+  }
 
   // 3) The iframe navigates elsewhere.
   shell()->LoadURLForFrame(url_b, "theiframe",
                            ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  auto console_delegate_2 = std::make_unique<ConsoleObserverDelegate>(
-      shell()->web_contents(), "Refused to execute inline script *");
-  shell()->web_contents()->SetDelegate(console_delegate_2.get());
+  {
+    WebContentsConsoleObserver console_observer(shell()->web_contents());
+    console_observer.SetPattern("Refused to execute inline script *");
 
-  // 4) The iframe navigates back to about:srcdoc.
-  shell()->web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+    // 4) The iframe navigates back to about:srcdoc.
+    shell()->web_contents()->GetController().GoBack();
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  // Check Javascript was blocked the second time.
-  console_delegate_2->Wait();
+    // Check Javascript was blocked the second time.
+    console_observer.Wait();
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
@@ -2487,46 +2481,48 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
   GURL url_a = embedded_test_server()->GetURL("a.com", "/main_document");
   GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
 
-  auto console_delegate_1 = std::make_unique<ConsoleObserverDelegate>(
-      shell()->web_contents(), "Refused to execute inline script *");
-  shell()->web_contents()->SetDelegate(console_delegate_1.get());
+  {
+    WebContentsConsoleObserver console_observer(shell()->web_contents());
+    console_observer.SetPattern("Refused to execute inline script *");
 
-  // 1) Load main document with CSP: script-src 'none'
-  // 2) Open an about:srcdoc iframe. It inherits the CSP from its parent.
-  shell()->LoadURL(url_a);
-  main_document_response.WaitForRequest();
-  main_document_response.Send(
-      "HTTP/1.1 200 OK\n"
-      "content-type: text/html; charset=UTF-8\n"
-      "Content-Security-Policy: script-src 'none'\n"
-      "\n"
-      "<iframe name='theiframe' srcdoc='"
-      "  <script>"
-      "    console.error(\"CSP failure\");"
-      "  </script>"
-      "'>"
-      "</iframe>");
-  main_document_response.Done();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+    // 1) Load main document with CSP: script-src 'none'
+    // 2) Open an about:srcdoc iframe. It inherits the CSP from its parent.
+    shell()->LoadURL(url_a);
+    main_document_response.WaitForRequest();
+    main_document_response.Send(
+        "HTTP/1.1 200 OK\n"
+        "content-type: text/html; charset=UTF-8\n"
+        "Content-Security-Policy: script-src 'none'\n"
+        "\n"
+        "<iframe name='theiframe' srcdoc='"
+        "  <script>"
+        "    console.error(\"CSP failure\");"
+        "  </script>"
+        "'>"
+        "</iframe>");
+    main_document_response.Done();
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  // Check Javascript was blocked the first time.
-  console_delegate_1->Wait();
+    // Check Javascript was blocked the first time.
+    console_observer.Wait();
+  }
 
   // 3) The iframe navigates elsewhere.
   shell()->LoadURLForFrame(url_b, "theiframe",
                            ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  auto console_delegate_2 = std::make_unique<ConsoleObserverDelegate>(
-      shell()->web_contents(), "Refused to execute inline script *");
-  shell()->web_contents()->SetDelegate(console_delegate_2.get());
+  {
+    WebContentsConsoleObserver console_observer(shell()->web_contents());
+    console_observer.SetPattern("Refused to execute inline script *");
 
-  // 4) The iframe navigates back to about:srcdoc.
-  shell()->web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+    // 4) The iframe navigates back to about:srcdoc.
+    shell()->web_contents()->GetController().GoBack();
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
-  // Check Javascript was blocked the second time.
-  console_delegate_2->Wait();
+    // Check Javascript was blocked the second time.
+    console_observer.Wait();
+  }
 }
 
 // Tests for cookies. Provides an HTTPS server.
@@ -2952,22 +2948,24 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest, CookiesInheritedDataUrl) {
             sub_document_1->GetSiteInstance());
 
   // 1. Writing a cookie inside a data-URL document is forbidden.
-  auto console_delegate_1 = std::make_unique<ConsoleObserverDelegate>(
-      shell()->web_contents(),
-      "*Failed to set the 'cookie' property on 'Document': Cookies are "
-      "disabled inside 'data:' URLs.*");
-  shell()->web_contents()->SetDelegate(console_delegate_1.get());
-  ExecuteScriptAsync(sub_document_1, "document.cookie = 'a=0';");
-  console_delegate_1->Wait();
+  {
+    WebContentsConsoleObserver console_observer(shell()->web_contents());
+    console_observer.SetPattern(
+        "*Failed to set the 'cookie' property on 'Document': Cookies are "
+        "disabled inside 'data:' URLs.*");
+    ExecuteScriptAsync(sub_document_1, "document.cookie = 'a=0';");
+    console_observer.Wait();
+  }
 
   // 2. Reading a cookie inside a data-URL document is forbidden.
-  auto console_delegate_2 = std::make_unique<ConsoleObserverDelegate>(
-      shell()->web_contents(),
-      "*Failed to read the 'cookie' property from 'Document': Cookies are "
-      "disabled inside 'data:' URLs.*");
-  shell()->web_contents()->SetDelegate(console_delegate_2.get());
-  ExecuteScriptAsync(sub_document_1, "document.cookie");
-  console_delegate_2->Wait();
+  {
+    WebContentsConsoleObserver console_observer(shell()->web_contents());
+    console_observer.SetPattern(
+        "*Failed to read the 'cookie' property from 'Document': Cookies are "
+        "disabled inside 'data:' URLs.*");
+    ExecuteScriptAsync(sub_document_1, "document.cookie");
+    console_observer.Wait();
+  }
 
   // 3. Set cookie in the main document. No cookies are sent when requested from
   // the data-URL.
@@ -2992,22 +2990,24 @@ IN_PROC_BROWSER_TEST_F(NavigationCookiesBrowserTest, CookiesInheritedDataUrl) {
             sub_document_2->GetSiteInstance());
 
   // 5. Writing a cookie inside a data-URL document is still forbidden.
-  auto console_delegate_3 = std::make_unique<ConsoleObserverDelegate>(
-      shell()->web_contents(),
-      "*Failed to set the 'cookie' property on 'Document': Cookies are "
-      "disabled inside 'data:' URLs.*");
-  shell()->web_contents()->SetDelegate(console_delegate_3.get());
-  ExecuteScriptAsync(sub_document_2, "document.cookie = 'c=0';");
-  console_delegate_3->Wait();
+  {
+    WebContentsConsoleObserver console_observer(shell()->web_contents());
+    console_observer.SetPattern(
+        "*Failed to set the 'cookie' property on 'Document': Cookies are "
+        "disabled inside 'data:' URLs.*");
+    ExecuteScriptAsync(sub_document_2, "document.cookie = 'c=0';");
+    console_observer.Wait();
+  }
 
   // 6. Reading a cookie inside a data-URL document is still forbidden.
-  auto console_delegate_4 = std::make_unique<ConsoleObserverDelegate>(
-      shell()->web_contents(),
-      "*Failed to read the 'cookie' property from 'Document': Cookies are "
-      "disabled inside 'data:' URLs.*");
-  shell()->web_contents()->SetDelegate(console_delegate_4.get());
-  ExecuteScriptAsync(sub_document_2, "document.cookie");
-  console_delegate_4->Wait();
+  {
+    WebContentsConsoleObserver console_observer(shell()->web_contents());
+    console_observer.SetPattern(
+        "*Failed to read the 'cookie' property from 'Document': Cookies are "
+        "disabled inside 'data:' URLs.*");
+    ExecuteScriptAsync(sub_document_2, "document.cookie");
+    console_observer.Wait();
+  }
 
   // 7. No cookies are sent when requested from the data-URL.
   GURL url_response_2 = https_server()->GetURL("a.com", "/response_2");

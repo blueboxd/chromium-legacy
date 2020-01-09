@@ -157,7 +157,6 @@ Animation::Animation(ExecutionContext* execution_context,
                      AnimationTimeline* timeline,
                      AnimationEffect* content)
     : ContextLifecycleObserver(execution_context),
-      internal_play_state_(kIdle),
       reported_play_state_(kIdle),
       playback_rate_(1),
       start_time_(),
@@ -165,7 +164,6 @@ Animation::Animation(ExecutionContext* execution_context,
       sequence_number_(NextSequenceNumber()),
       content_(content),
       timeline_(timeline),
-      paused_(false),
       is_paused_for_testing_(false),
       is_composited_animation_disabled_for_testing_(false),
       pending_pause_(false),
@@ -177,8 +175,6 @@ Animation::Animation(ExecutionContext* execution_context,
       compositor_state_(nullptr),
       compositor_pending_(false),
       compositor_group_(0),
-      current_time_pending_(false),
-      state_is_being_updated_(false),
       effect_suppressed_(false) {
   if (content_) {
     if (content_->GetAnimation()) {
@@ -259,17 +255,10 @@ void Animation::setCurrentTime(double new_current_time,
       ResolvePromiseMaybeAsync(ready_promise_.Get());
   }
 
-  // TODO(crbug.com/960944): Deprecate use of legacy flags.
-  if (PlayStateInternal() == kIdle)
-    paused_ = true;
-  current_time_pending_ = false;
-  internal_play_state_ = kUnset;
-
   // Update the finished state.
   UpdateFinishedState(UpdateType::kDiscontinuous, NotificationType::kAsync);
 
   SetCompositorPending(/*effect_changed=*/false);
-  internal_play_state_ = CalculateExtendedPlayState();
 
   // Notify of potential state change.
   NotifyProbe();
@@ -301,71 +290,6 @@ void Animation::SetCurrentTimeInternal(double new_current_time) {
 
   if (previous_start_time != start_time_ || previous_hold_time != hold_time_)
     SetOutdated();
-}
-
-// TODO(crbug.com/960944): Deprecate. This method is only called by methods that
-// are pending refactoring to align with the web-animation spec.
-void Animation::SetCurrentTimeInternal(double new_current_time,
-                                       TimingUpdateReason reason) {
-  DCHECK(std::isfinite(new_current_time));
-
-  bool outdated = false;
-  bool is_limited = Limited(new_current_time);
-  bool is_held = paused_ || !playback_rate_ || is_limited || !start_time_;
-  if (is_held) {
-    // We only need to update the animation if the seek changes the hold time.
-    if (!hold_time_ || hold_time_ != new_current_time)
-      outdated = true;
-    hold_time_ = new_current_time;
-    if (paused_ || !playback_rate_) {
-      start_time_ = base::nullopt;
-    } else if (is_limited && !start_time_ &&
-               reason == kTimingUpdateForAnimationFrame) {
-      start_time_ = CalculateStartTime(new_current_time);
-    }
-  } else {
-    hold_time_ = base::nullopt;
-    start_time_ = CalculateStartTime(new_current_time);
-    finished_ = false;
-    outdated = true;
-  }
-
-  previous_current_time_ = base::nullopt;
-
-  if (outdated) {
-    SetOutdated();
-  }
-}
-
-// Update timing to reflect updated animation clock due to tick
-void Animation::UpdateCurrentTimingState(TimingUpdateReason reason) {
-  bool idle = internal_play_state_ == kIdle;
-  bool has_active_timeline = timeline_ && timeline_->IsActive();
-  if (idle || !has_active_timeline || !playback_rate_)
-    return;
-
-  if (hold_time_) {
-    base::Optional<double> new_current_time = hold_time_;
-    if (internal_play_state_ == kFinished && start_time_ && timeline_) {
-      // Add hystersis due to floating point error accumulation
-      base::Optional<double> current_time = CalculateCurrentTime();
-      DCHECK(current_time);
-      if (!Limited(current_time.value() + 0.001 * playback_rate_)) {
-        // The current time became unlimited, eg. due to a backwards
-        // seek of the timeline.
-        new_current_time = current_time;
-      } else if (!Limited(hold_time_)) {
-        // The hold time became unlimited, eg. due to the effect
-        // becoming longer.
-        new_current_time =
-            clampTo<double>(current_time.value(), 0, EffectEnd());
-      }
-    }
-    DCHECK(new_current_time);
-    SetCurrentTimeInternal(new_current_time.value(), reason);
-  } else if (Limited(CalculateCurrentTime())) {
-    hold_time_ = playback_rate_ < 0 ? 0 : EffectEnd();
-  }
 }
 
 double Animation::startTime(bool& is_null) const {
@@ -504,15 +428,6 @@ void Animation::NotifyReady(double ready_time) {
     compositor_state_->start_time = start_time_;
   }
 
-  // Avoid marking this animation as outdated needlessly when a start time is
-  // notified.  TODO(crbug.com/960944): Remove the need for clearing the
-  // outdated flag once PlayStateUpdateScope and UpdateCurrentTimingState have
-  // been removed.
-  ClearOutdated();
-
-  // TODO(crbug.com/960944): deprecate use of these flags.
-  internal_play_state_ = CalculateExtendedPlayState();
-
   // Notify of change to play state.
   NotifyProbe();
 }
@@ -525,7 +440,6 @@ void Animation::CommitPendingPlay(double ready_time) {
   DCHECK(start_time_ || hold_time_);
   DCHECK(pending_play_);
   pending_play_ = false;
-  current_time_pending_ = false;
 
   // Update hold and start time.
   if (hold_time_) {
@@ -584,9 +498,6 @@ void Animation::CommitPendingPlay(double ready_time) {
 // Refer to step 7 'pending pause task' in
 // https://drafts.csswg.org/web-animations-1/#pausing-an-animation-section
 void Animation::CommitPendingPause(double ready_time) {
-  // TODO(crbug.com/960944): Deprecate.
-  internal_play_state_ = kUnset;
-
   DCHECK(pending_pause_);
   pending_pause_ = false;
 
@@ -709,11 +620,6 @@ void Animation::setStartTime(double start_time_ms,
     hold_time_ = previous_current_time;
   }
 
-  // TODO(crbug.com/960944): prune use of legacy flags.
-  paused_ = hold_time_.has_value();
-  current_time_pending_ = false;
-  internal_play_state_ = kUnset;
-
   // 7. If animation has a pending play task or a pending pause task, cancel
   //    that task and resolve animation’s current ready promise with animation.
   if (pending()) {
@@ -728,9 +634,6 @@ void Animation::setStartTime(double start_time_ms,
   //    with the did seek flag set to true (discontinuous), and the
   //    synchronously notify flag set to false (async).
   UpdateFinishedState(UpdateType::kDiscontinuous, NotificationType::kAsync);
-
-  // TODO(crbug.com/960944): prune use of legacy flags.
-  internal_play_state_ = CalculateExtendedPlayState();
 
   // Update user agent.
   base::Optional<double> new_current_time = CurrentTimeInternal();
@@ -784,9 +687,6 @@ void Animation::setEffect(AnimationEffect* new_effect) {
 
   SetCompositorPending(/*effect_change=*/true);
 
-  // TODO(crbug.com/960944): Deprecate use of these flags.
-  internal_play_state_ = CalculateExtendedPlayState();
-
   // Notify of a potential state change.
   NotifyProbe();
 }
@@ -807,25 +707,6 @@ const char* Animation::PlayStateString(AnimationPlayState play_state) {
       NOTREACHED();
       return "";
   }
-}
-
-// TODO(crbug.com/960944): Deprecate.
-Animation::AnimationPlayState Animation::PlayStateInternal() const {
-  DCHECK_NE(internal_play_state_, kUnset);
-  return internal_play_state_;
-}
-
-// TODO(crbug.com/960944): Deprecate.
-Animation::AnimationPlayState Animation::CalculateExtendedPlayState() const {
-  if (paused_ && !current_time_pending_)
-    return kPaused;
-  if (internal_play_state_ == kIdle)
-    return kIdle;
-  if (current_time_pending_ || (!start_time_ && playback_rate_ != 0))
-    return kPending;
-  if (Limited())
-    return kFinished;
-  return kRunning;
 }
 
 // https://drafts.csswg.org/web-animations/#play-states
@@ -865,11 +746,26 @@ bool Animation::pending() const {
 
 // https://drafts.csswg.org/web-animations-1/#reset-an-animations-pending-tasks.
 void Animation::ResetPendingTasks() {
-  ApplyPendingPlaybackRate();
-  pending_pause_ = false;
+  // 1. If animation does not have a pending play task or a pending pause task,
+  //    abort this procedure.
+  if (!pending())
+    return;
+
+  // 2. If animation has a pending play task, cancel that task.
+  // 3. If animation has a pending pause task, cancel that task.
   pending_play_ = false;
-  // TODO(crbug.com/960944): Fix handling of ready promise to align with the
-  // web-animtions spec.
+  pending_pause_ = false;
+
+  // 4. Apply any pending playback rate on animation.
+  ApplyPendingPlaybackRate();
+
+  // 5. Reject animation’s current ready promise with a DOMException named
+  //    "AbortError".
+  // 6. Let animation’s current ready promise be the result of creating a new
+  //    resolved Promise object with value animation in the relevant Realm of
+  //    animation.
+  if (ready_promise_)
+    RejectAndResetPromiseMaybeAsync(ready_promise_.Get());
 }
 
 // ----------------------------------------------
@@ -930,10 +826,6 @@ void Animation::pause(ExceptionState& exception_state) {
   pending_pause_ = true;
   pending_play_ = false;
 
-  // TODO(crbug.com/958433): Deprecate.
-  paused_ = true;
-  internal_play_state_ = kUnset;
-
   SetOutdated();
   SetCompositorPending(false);
 
@@ -941,9 +833,6 @@ void Animation::pause(ExceptionState& exception_state) {
   //    with the did seek flag set to false (continuous) , and thesynchronously
   //    notify flag set to false.
   UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
-
-  // TODO(crbug.com/958433): Deprecate.
-  internal_play_state_ = CalculateExtendedPlayState();
 
   NotifyProbe();
 }
@@ -1061,9 +950,6 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
   // 8. Schedule a task to run as soon as animation is ready.
   pending_play_ = true;
   finished_ = false;
-  // TODO(crbug.com/960944): Deprecate paused_ and internal_play_state_ flags.
-  paused_ = false;
-  internal_play_state_ = kUnset;
   SetOutdated();
   SetCompositorPending(/*effect_changed=*/false);
 
@@ -1072,9 +958,6 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
   //    set to false.
   // Boolean valued arguments replaced with enumerated values for clarity.
   UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
-
-  // TODO(crbug.com/960944): Deprecate.
-  internal_play_state_ = CalculateExtendedPlayState();
 
   // Notify change to pending play or finished state.
   NotifyProbe();
@@ -1111,19 +994,14 @@ void Animation::reverse(ExceptionState& exception_state) {
   if (pending_playback_rate_.value() == -0)
     pending_playback_rate_ = 0;
 
-  // TODO(crbug.com/960944): Deprecate use of this flag.
-  current_time_pending_ = true;
-
   // 4. Run the steps to play an animation for animation with the auto-rewind
   //    flag set to true.
   //    If the steps to play an animation throw an exception, set animation’s
   //    pending playback rate to original pending playback rate and propagate
   //    the exception.
   PlayInternal(AutoRewind::kEnabled, exception_state);
-  if (exception_state.HadException()) {
+  if (exception_state.HadException())
     pending_playback_rate_ = original_pending_playback_rate;
-    current_time_pending_ = false;
-  }
 }
 
 // ----------------------------------------------
@@ -1166,15 +1044,8 @@ void Animation::finish(ExceptionState& exception_state) {
       ResolvePromiseMaybeAsync(ready_promise_.Get());
   }
 
-  // TODO(crbug.com/960944): Cleanup use of legacy flags.
-  paused_ = false;
-  current_time_pending_ = false;
-  internal_play_state_ = kUnset;
-  ResetPendingTasks();
-
   SetOutdated();
   UpdateFinishedState(UpdateType::kDiscontinuous, NotificationType::kSync);
-  internal_play_state_ = CalculateExtendedPlayState();
 
   // Notify of change to finished state.
   NotifyProbe();
@@ -1285,9 +1156,6 @@ void Animation::CommitFinishNotification() {
 
   // 3. Create an AnimationPlaybackEvent, finishEvent.
   QueueFinishedEvent();
-
-  // TODO(crbug.com/960944) Deprecate following flags.
-  internal_play_state_ = kFinished;
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-playback-rate-of-an-animation
@@ -1365,8 +1233,6 @@ void Animation::updatePlaybackRate(double playback_rate,
     // Run the procedure to play an animation for animation with the
     // auto-rewind flag set to false.
     case kRunning:
-      // TODO(crbug.com/960944): Deprecate use of current_time_pending_ flag.
-      current_time_pending_ = true;
       PlayInternal(AutoRewind::kDisabled, exception_state);
       break;
 
@@ -1419,8 +1285,6 @@ bool Animation::HasPendingActivity() const {
 }
 
 void Animation::ContextDestroyed(ExecutionContext*) {
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
-
   finished_ = true;
   pending_finished_event_ = nullptr;
 }
@@ -1792,18 +1656,8 @@ base::Optional<AnimationTimeDelta> Animation::TimeToEffectChange() {
 }
 
 void Animation::cancel() {
-  // TODO(crbug.com/916117): Get rid of internal_play_state_.
-  internal_play_state_ = kUnset;
   AnimationPlayState initial_play_state = CalculateAnimationPlayState();
   if (initial_play_state != kIdle) {
-    if (pending()) {
-      // TODO(crbug.com/916117): Rejecting the ready promise should be performed
-      // inside reset pending tasks once aligned with the spec.
-      // TODO(crbug.com/1013351): Add test for rejection and reset of cancel
-      // promise. Requires further cleanup of PlayStateUpdateScope.
-      if (ready_promise_)
-        RejectAndResetPromiseMaybeAsync(ready_promise_.Get());
-    }
     ResetPendingTasks();
 
     if (finished_promise_) {
@@ -1833,12 +1687,6 @@ void Animation::cancel() {
   hold_time_ = base::nullopt;
   start_time_ = base::nullopt;
 
-  // TODO(crbug.com/958433): Phase out the use of these variables, which are not
-  // in the spec.
-  paused_ = false;
-  internal_play_state_ = kIdle;
-  current_time_pending_ = false;
-
   // Apply changes synchronously.
   SetCompositorPending(/*effect_changed=*/false);
   SetOutdated();
@@ -1848,17 +1696,6 @@ void Animation::cancel() {
 
   // Notify of change to canceled state.
   NotifyProbe();
-}
-
-void Animation::BeginUpdatingState() {
-  // Nested calls are not allowed!
-  DCHECK(!state_is_being_updated_);
-  state_is_being_updated_ = true;
-}
-
-void Animation::EndUpdatingState() {
-  DCHECK(state_is_being_updated_);
-  state_is_being_updated_ = false;
 }
 
 void Animation::CreateCompositorAnimation() {
@@ -1921,80 +1758,6 @@ void Animation::DetachCompositedLayers() {
 void Animation::NotifyAnimationStarted(double monotonic_time, int group) {
   document_->GetPendingAnimations().NotifyCompositorAnimationStarted(
       monotonic_time, group);
-}
-
-Animation::PlayStateUpdateScope::PlayStateUpdateScope(
-    Animation& animation,
-    TimingUpdateReason reason,
-    CompositorPendingChange compositor_pending_change)
-    : animation_(animation),
-      initial_play_state_(animation_->PlayStateInternal()),
-      compositor_pending_change_(compositor_pending_change) {
-  DCHECK_NE(initial_play_state_, kUnset);
-  animation_->BeginUpdatingState();
-  animation_->UpdateCurrentTimingState(reason);
-}
-
-Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
-  AnimationPlayState old_play_state = initial_play_state_;
-  AnimationPlayState new_play_state = animation_->CalculateExtendedPlayState();
-  animation_->internal_play_state_ = new_play_state;
-
-  // Ordering is important, the ready promise should resolve/reject before
-  // the finished promise.
-  if (animation_->ready_promise_ && new_play_state != old_play_state) {
-    // Transitioning to an idle state is handled in cancel().
-    DCHECK(new_play_state != kIdle);
-
-    if (old_play_state == kPending) {
-      animation_->ResetPendingTasks();
-      if (animation_->ready_promise_->GetState() == AnimationPromise::kPending)
-        animation_->ResolvePromiseMaybeAsync(animation_->ready_promise_.Get());
-    } else if (new_play_state == kPending) {
-      if (animation_->ready_promise_->GetState() != AnimationPromise::kPending)
-        animation_->ready_promise_->Reset();
-    }
-  }
-
-  if (animation_->finished_promise_ && new_play_state != old_play_state) {
-    // Transitioning to an idle state is handled in cancel().
-    DCHECK(new_play_state != kIdle);
-
-    if (new_play_state == kFinished) {
-      animation_->ResetPendingTasks();
-      animation_->ResolvePromiseMaybeAsync(animation_->finished_promise_.Get());
-    } else if (old_play_state == kFinished) {
-      animation_->finished_promise_->Reset();
-    }
-  }
-
-  if (old_play_state != new_play_state &&
-      (old_play_state == kIdle || new_play_state == kIdle)) {
-    animation_->SetOutdated();
-  }
-
-#if DCHECK_IS_ON()
-  // Verify that current time is up to date.
-  animation_->CurrentTimeInternal();
-#endif
-
-  switch (compositor_pending_change_) {
-    case kSetCompositorPending:
-      animation_->SetCompositorPending();
-      break;
-    case kSetCompositorPendingWithEffectChanged:
-      animation_->SetCompositorPending(true);
-      break;
-    case kDoNotSetCompositorPending:
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-  animation_->EndUpdatingState();
-
-  // Play state may have changed.
-  animation_->NotifyProbe();
 }
 
 void Animation::AddedEventListener(

@@ -6,6 +6,7 @@
 #define CHROMEOS_COMPONENTS_SYNC_WIFI_SYNCED_NETWORK_UPDATER_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/pending_network_configuration_tracker.h"
@@ -18,9 +19,11 @@ namespace chromeos {
 
 namespace sync_wifi {
 
+class TimerFactory;
+
 // Implementation of SyncedNetworkUpdater. This class takes add/update/delete
 // requests from the sync backend and applies them to the local network stack
-// using chromeos::NetworkConfigurationHandler.
+// using mojom::CrosNetworkConfig.
 class SyncedNetworkUpdaterImpl
     : public SyncedNetworkUpdater,
       public chromeos::network_config::mojom::CrosNetworkConfigObserver {
@@ -28,7 +31,8 @@ class SyncedNetworkUpdaterImpl
   // |cros_network_config| must outlive this class.
   SyncedNetworkUpdaterImpl(
       std::unique_ptr<PendingNetworkConfigurationTracker> tracker,
-      network_config::mojom::CrosNetworkConfig* cros_network_config);
+      network_config::mojom::CrosNetworkConfig* cros_network_config,
+      std::unique_ptr<TimerFactory> timer_factory);
   ~SyncedNetworkUpdaterImpl() override;
 
   void AddOrUpdateNetwork(
@@ -50,9 +54,21 @@ class SyncedNetworkUpdaterImpl
   void OnNetworkCertificatesChanged() override {}
 
  private:
+  void StartAddOrUpdateOperation(
+      const std::string& change_guid,
+      const NetworkIdentifier& id,
+      const sync_pb::WifiConfigurationSpecificsData& specifics);
+  void StartDeleteOperation(const std::string& change_guid,
+                            const NetworkIdentifier& id,
+                            std::string guid);
+  void StartTimer(const std::string& change_guid, const NetworkIdentifier& id);
+  void Retry(const PendingNetworkConfigurationUpdate& update);
+  void HandleShillResult(const std::string& change_guid,
+                         const NetworkIdentifier& id,
+                         bool is_success);
   void CleanupUpdate(const std::string& change_guid,
                      const NetworkIdentifier& id);
-  network_config::mojom::NetworkStatePropertiesPtr FindLocalNetwork(
+  network_config::mojom::NetworkStatePropertiesPtr FindMojoNetwork(
       const NetworkIdentifier& id);
 
   base::Optional<base::DictionaryValue> ConvertToDictionary(
@@ -80,6 +96,9 @@ class SyncedNetworkUpdaterImpl
   mojo::Receiver<chromeos::network_config::mojom::CrosNetworkConfigObserver>
       cros_network_config_observer_receiver_{this};
   std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks_;
+  std::unique_ptr<TimerFactory> timer_factory_;
+  base::flat_map<std::string, std::unique_ptr<base::OneShotTimer>>
+      change_guid_to_timer_map_;
 
   base::WeakPtrFactory<SyncedNetworkUpdaterImpl> weak_ptr_factory_{this};
 };

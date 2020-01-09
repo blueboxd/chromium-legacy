@@ -18,8 +18,8 @@ import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
  */
 @UsedByReflection("WebLayer")
 public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
-    private final int mClientMajorVersion;
-    private final String mClientVersion;
+    private static int sClientMajorVersion;
+    private static String sClientVersion;
 
     /**
      * This function is called by the client using reflection.
@@ -37,8 +37,8 @@ public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
     }
 
     private WebLayerFactoryImpl(String clientVersion, int clientMajorVersion) {
-        mClientMajorVersion = clientMajorVersion;
-        mClientVersion = clientVersion;
+        sClientMajorVersion = clientMajorVersion;
+        sClientVersion = clientVersion;
     }
 
     /**
@@ -48,7 +48,7 @@ public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
     @Override
     public boolean isClientSupported() {
         StrictModeWorkaround.apply();
-        return Math.abs(mClientMajorVersion - getImplementationMajorVersion()) <= 3;
+        return Math.abs(sClientMajorVersion - getImplementationMajorVersion()) <= 3;
     }
 
     /**
@@ -58,6 +58,14 @@ public final class WebLayerFactoryImpl extends IWebLayerFactory.Stub {
     public int getImplementationMajorVersion() {
         StrictModeWorkaround.apply();
         return VersionConstants.PRODUCT_MAJOR_VERSION;
+    }
+
+    static int getClientMajorVersion() {
+        if (sClientMajorVersion == 0) {
+            throw new IllegalStateException(
+                    "This should only be called once WebLayer is initialized");
+        }
+        return sClientMajorVersion;
     }
 
     /**

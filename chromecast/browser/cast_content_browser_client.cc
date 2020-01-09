@@ -126,9 +126,9 @@
 #include "chromecast/external_mojo/broker_service/broker_service.h"
 #endif
 
-#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+#if defined(OS_LINUX) && defined(USE_OZONE)
 #include "chromecast/browser/webview/webview_controller.h"
-#endif  // BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+#endif  // defined(OS_LINUX) && defined(USE_OZONE)
 
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
 #include "base/sequenced_task_runner.h"
@@ -811,12 +811,12 @@ CastContentBrowserClient::CreateThrottlesForNavigation(
             handle, general_audience_browsing_service_.get()));
   }
 
-#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+#if defined(OS_LINUX) && defined(USE_OZONE)
   auto webview_throttle = WebviewController::MaybeGetNavigationThrottle(handle);
   if (webview_throttle) {
     throttles.push_back(std::move(webview_throttle));
   }
-#endif  // BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+#endif  // defined(OS_LINUX) && defined(USE_OZONE)
 
   return throttles;
 }

@@ -7,6 +7,7 @@
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,6 +27,11 @@
 class LocalNTPVoiceSearchSmokeTest : public InProcessBrowserTest {
  public:
   LocalNTPVoiceSearchSmokeTest() {}
+
+  std::string searchbox_microphone() {
+    return ntp_features::IsRealboxEnabled() ? "realbox-microphone"
+                                            : "fakebox-microphone";
+  }
 
  private:
   void SetUpCommandLine(base::CommandLine* cmdline) override {
@@ -53,13 +59,15 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
             active_tab->GetController().GetVisibleEntry()->GetURL());
 
   // Make sure the microphone icon in the fakebox is present and visible.
-  bool fakebox_microphone_is_visible = false;
+  bool microphone_is_visible = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab,
-      "!!document.getElementById('fakebox-microphone') && "
-      "!document.getElementById('fakebox-microphone').hidden",
-      &fakebox_microphone_is_visible));
-  EXPECT_TRUE(fakebox_microphone_is_visible);
+      "!!document.getElementById('" + searchbox_microphone() +
+          "') && "
+          "!document.getElementById('" +
+          searchbox_microphone() + "').hidden",
+      &microphone_is_visible));
+  EXPECT_TRUE(microphone_is_visible);
 
   // We shouldn't have gotten any console error messages.
   EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
@@ -95,7 +103,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest, MicrophonePermission) {
 
   // Click on the microphone button, which will trigger a permission request.
   ASSERT_TRUE(content::ExecuteScript(
-      active_tab, "document.getElementById('fakebox-microphone').click();"));
+      active_tab,
+      "document.getElementById('" + searchbox_microphone() + "').click();"));
 
   // Make sure the request arrived.
   prompt_factory.WaitForPermissionBubble();

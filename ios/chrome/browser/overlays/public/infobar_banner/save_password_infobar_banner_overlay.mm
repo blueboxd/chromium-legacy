@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/infobars/core/infobar.h"
+#include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
 #import "ios/chrome/browser/passwords/ios_chrome_save_password_infobar_delegate.h"
 
@@ -43,5 +44,6 @@ SavePasswordInfobarBannerOverlayRequestConfig::
 
 void SavePasswordInfobarBannerOverlayRequestConfig::CreateAuxilliaryData(
     base::SupportsUserData* user_data) {
-  InfobarOverlayRequestConfig::CreateForUserData(user_data, infobar_);
+  InfobarOverlayRequestConfig::CreateForUserData(
+      user_data, static_cast<InfoBarIOS*>(infobar_));
 }

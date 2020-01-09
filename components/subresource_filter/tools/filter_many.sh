@@ -15,7 +15,8 @@
 #   easylist_indexed > sorted_list
 
 # The number of processes you want to run in parallel. 8 is reasonable for a
-# typical machine. 80 is good for a powerful workstation.
+# typical machine. 80 is good for a powerful workstation. If 0 is specified,
+# this script uses as many as possible.
 PROCESS_COUNT=$1
 
 # The path to the directory that contains gzip files of resource requests from
@@ -28,13 +29,22 @@ FILTER_TOOL=$3
 # The path to the indexed easylist file.
 EASYLIST=$4
 
+# Create temporary directory.
+TEMP_DIR=$(mktemp -d)
+
 # For each gzip file:
 ls $GZIP_PATH/*.gz |
 
-# Unzip the file and count the number of times each rule matches.
-# Do this in parallel.
+# In parallel, unzip the file and count the number of times each rule matches.
+# The results are saved to independent temporary files to ensure that writes
+# aren't interleaved mid-rule.
 xargs -t -I {} -P $PROCESS_COUNT \
-   sh -c "gunzip -c '{}' | $FILTER_TOOL --ruleset=$EASYLIST match_rules" |
+  sh -c "gunzip -c {} | \
+         $FILTER_TOOL --ruleset=$EASYLIST match_rules \
+         > \$(mktemp $TEMP_DIR/output.XXXXXXXXXX)"
+
+# Aggregate the results from those files.
+cat $TEMP_DIR/output.* |
 
 # Sort the results by filter rule.
 sort -k 2 |
@@ -45,3 +55,6 @@ awk 'NR>1 && rule!=$2 {print count,rule; count=0} {count+=$1} {rule=$2} \
 
 # Sort the output in descending order by match count.
 sort -n -r
+
+# Delete the temporary folder.
+rm -rf $TEMP_DIR

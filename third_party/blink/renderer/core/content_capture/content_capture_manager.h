@@ -24,11 +24,8 @@ class CORE_EXPORT ContentCaptureManager
   explicit ContentCaptureManager(LocalFrame& local_frame_root);
   virtual ~ContentCaptureManager();
 
-  // Creates and returns NodeHolder for the given |node|, and schedules
-  // ContentCaptureTask if it isn't already scheduled.
-  // Can't use const Node& for parameter, because |node| is passed to
-  // DOMNodeIds::IdForNode(Node*).
-  DOMNodeId GetNodeId(Node& node);
+  // Schedules ContentCaptureTask if it isn't already scheduled.
+  void ScheduleTaskIfNeeded();
 
   // Invokes when the |node_holder| asscociated LayoutText will be destroyed.
   void OnLayoutTextWillBeDestroyed(const Node& node);

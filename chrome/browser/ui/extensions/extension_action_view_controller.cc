@@ -404,7 +404,8 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
   popup_host_observer_.Add(popup_host_);
   extensions_container_->SetPopupOwner(this);
 
-  if (!extensions_container_->IsActionVisibleOnToolbar(this)) {
+  if (!extensions_container_->IsActionVisibleOnToolbar(this) ||
+      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
     extensions_container_->CloseOverflowMenuIfOpen();
     extensions_container_->PopOutAction(
         this, show_action == SHOW_POPUP_AND_INSPECT,

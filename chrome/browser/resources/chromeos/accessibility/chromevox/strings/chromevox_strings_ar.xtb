@@ -374,7 +374,7 @@
 <translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152">قص <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">النقر بإصبعين لإيقاف الكلام مؤقتًا</translation>
-<translation id="3568702578574425662">لم يتم تحديد مربع الاختيار <ph name="NAME" /></translation>
+<translation id="3568702578574425662">لم يتم وضع علامة في مربّع الاختيار <ph name="NAME" /></translation>
 <translation id="3589661172894441357">مسرد مصطلحات</translation>
 <translation id="3591784666823501596">أزرق ملكي</translation>
 <translation id="3594207934078151302">أخضر بحري متوسط</translation>
@@ -419,7 +419,7 @@
 <translation id="3914732343065571127">‏مرجع أوامر ChromeVox</translation>
 <translation id="3930383913623796990">أخضر ربيعي</translation>
 <translation id="3930498801443296724">اقتباس مستمد</translation>
-<translation id="3935615366277838204">حرف كبير<ph name="LETTER" /></translation>
+<translation id="3935615366277838204">حرف كبير <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">أرجواني فاتح</translation>
 <translation id="3941269780691800708">نطق النص أسفل الماوس.</translation>
 <translation id="394953087167197343">الإشارة إلى الأخطاء الإملائية:</translation>
@@ -552,7 +552,7 @@
 <translation id="4815668758102003883">فيروزي باهت</translation>
 <translation id="4826415162591436065">التنقل للأمام</translation>
 <translation id="4826604887384865800">الانتقال التالي</translation>
-<translation id="4827410568042294688">تم إلغاء التحديد</translation>
+<translation id="4827410568042294688">تم إلغاء الاختيار</translation>
 <translation id="4838490795649708173">النقر بأربعة أصابع</translation>
 <translation id="4839925464551908214">انتقِل إلى الصف السابق.</translation>
 <translation id="4841614409681890122">وردي غامق</translation>
@@ -613,7 +613,7 @@
 <translation id="5138912041966667164">أزرق متوسط مائل إلى الرمادي</translation>
 <translation id="5140016802771803559">أرجواني داكن</translation>
 <translation id="5158275234811857234">غلاف</translation>
-<translation id="517143700877085897">، تم إلغاء التحديد</translation>
+<translation id="517143700877085897">، تم إلغاء الاختيار</translation>
 <translation id="5183440668879371625">السطر السابق بطريقة برايل</translation>
 <translation id="5184944171021383281">ليس هناك حقل نموذج تالٍ.</translation>
 <translation id="5189244881767082992">خط</translation>
@@ -673,7 +673,7 @@
 <translation id="5586942249556966598">عدم فعل شيء</translation>
 <translation id="5597170376237141345">مربع الاختيار التالي</translation>
 <translation id="5597933780944041114">ليس هناك عنوان تالٍ.</translation>
-<translation id="5598905979683743333">تم إلغاء تحديد زر الاختيار <ph name="NAME" /></translation>
+<translation id="5598905979683743333">تم إلغاء اختيار زر الاختيار <ph name="NAME" /></translation>
 <translation id="5601172225407283979">تنفيذ إجراء تلقائي</translation>
 <translation id="5608798115546226984">إكمال تلقائي مضمن</translation>
 <translation id="561939826962581046">الوقت</translation>
@@ -936,7 +936,7 @@
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">علامة تبويب</translation>
 <translation id="7492049978501397201">مربع حوار تم الدخول إليه</translation>
-<translation id="7505149250476994901">نطق "حرف كبير" قبل كتابة الحرف</translation>
+<translation id="7505149250476994901">قُل "حرف كبير" قبل كتابة الحرف</translation>
 <translation id="7518543783849163354">‏لإيقاف ChromeVox مؤقتًا عن التحدث، اضغط على مفتاح Control.</translation>
 <translation id="7521682724501952239">‏يمكنك استخدام ChromeVox مع الشاشة التي تعمل باللمس.</translation>
 <translation id="7532613204005497612">حزيران (يونيو)</translation>
@@ -1152,7 +1152,7 @@
 <translation id="858006550102277544">تعليق</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">عنصر القائمة التالي</translation>
-<translation id="860150890330522909">تم تحديد مربع الاختيار <ph name="NAME" /></translation>
+<translation id="860150890330522909">تم وضع علامة في مربّع الاختيار <ph name="NAME" /></translation>
 <translation id="8603071050456974042">‏لوحة ChromeVox</translation>
 <translation id="8606621670302093223">التحكم في التاريخ</translation>
 <translation id="8613709718990529335">أصفر حاد</translation>

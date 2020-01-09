@@ -558,10 +558,10 @@ OverviewWindowDragController::CompleteNormalDrag(
       },
       overview_grid)};
 
-  // Attempt to move a window to a different desk.
   if (virtual_desks_bar_enabled_) {
     item_->SetOpacity(original_opacity_);
 
+    // Attempt to move a window to a different desk.
     if (overview_grid->MaybeDropItemOnDeskMiniView(rounded_screen_point,
                                                    item_)) {
       // Window was successfully moved to another desk, and |item_| was

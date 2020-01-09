@@ -35,6 +35,16 @@ class ExploreSurfaceActionHandler extends FeedActionHandler {
     }
 
     @Override
+    public boolean canOpenUrlInIncognitoMode() {
+        return false;
+    }
+
+    @Override
+    public boolean canOpenUrlInNewTab() {
+        return false;
+    }
+
+    @Override
     public void learnMore() {}
 
     @Override

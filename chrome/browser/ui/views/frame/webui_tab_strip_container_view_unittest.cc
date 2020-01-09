@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/base/ui_base_switches.h"
@@ -54,6 +55,17 @@ TEST_F(WebUITabStripContainerViewTest, TouchModeTransition) {
   EXPECT_TRUE(WebUITabStripContainerView::UseTouchableTabStrip());
   EXPECT_FALSE(browser_view()->IsTabStripVisible());
   ASSERT_NE(nullptr, browser_view()->webui_tab_strip());
+}
+
+TEST_F(WebUITabStripContainerViewTest, ButtonsPresentInToolbar) {
+  ASSERT_NE(nullptr,
+            browser_view()->webui_tab_strip()->new_tab_button_for_testing());
+  EXPECT_TRUE(browser_view()->toolbar()->Contains(
+      browser_view()->webui_tab_strip()->new_tab_button_for_testing()));
+  ASSERT_NE(nullptr,
+            browser_view()->webui_tab_strip()->tab_counter_for_testing());
+  EXPECT_TRUE(browser_view()->toolbar()->Contains(
+      browser_view()->webui_tab_strip()->tab_counter_for_testing()));
 }
 
 class WebUITabStripDevToolsTest : public WebUITabStripContainerViewTest {

@@ -179,6 +179,9 @@ void ExtensionsToolbarContainer::UndoPopOut() {
   ToolbarActionViewController* const popped_out_action = popped_out_action_;
   popped_out_action_ = nullptr;
   UpdateIconVisibility(popped_out_action->GetId());
+  GetViewForId(popped_out_action->GetId())
+      ->ClearProperty(views::kFlexBehaviorKey);
+  InvalidateLayout();
 }
 
 void ExtensionsToolbarContainer::SetPopupOwner(
@@ -210,8 +213,9 @@ void ExtensionsToolbarContainer::PopOutAction(
   // TODO(pbos): Highlight popout differently.
   DCHECK(!popped_out_action_);
   popped_out_action_ = action;
+  GetViewForId(action->GetId())
+      ->SetProperty(views::kFlexBehaviorKey, views::FlexSpecification());
   UpdateIconVisibility(popped_out_action_->GetId());
-  ReorderViews();
   static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
       ->PostOrQueueAction(closure);
 }
@@ -320,10 +324,6 @@ void ExtensionsToolbarContainer::ReorderViews() {
 
   if (drop_info_.get())
     ReorderChildView(icons_[drop_info_->action_id].get(), drop_info_->index);
-
-  // Popped out actions should be at the end.
-  if (popped_out_action_)
-    ReorderChildView(icons_[popped_out_action_->GetId()].get(), -1);
 
   // The extension button is always last.
   ReorderChildView(extensions_button_, -1);

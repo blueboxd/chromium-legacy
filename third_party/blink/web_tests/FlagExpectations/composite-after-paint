@@ -225,3 +225,16 @@ crbug.com/979369 svg/clip-path/deep-nested-clip-in-mask.svg [ Failure ]
 # These failures need to be triaged and are being added to unblock the CQ (see: https://crbug.com/966981).
 crbug.com/966981 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Timeout ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scroll-behavior/overscroll-behavior.html [ Failure ]
+
+# Failures that appeared while fuzzy-diff was on. TODO(jonross) triage these and
+# update baselines as needed, or file more direct bugs.
+crbug.com/1039401 compositing/culling/tile-occlusion-boundaries.html [ Failure ]
+crbug.com/1039401 compositing/lots-of-img-layers-with-opacity.html [ Failure ]
+crbug.com/1039401 external/wpt/web-animations/timing-model/animations/update-playback-rate-slow.html [ Failure ]
+crbug.com/1039401 external/wpt/web-animations/timing-model/animations/update-playback-rate-zero.html [ Failure ]
+crbug.com/1039401 fast/backgrounds/size/contain-and-cover-zoomed.html [ Failure ]
+crbug.com/1039401 http/tests/devtools/a11y-axe-core/layers/layers-a11y-test.js [ Crash ]
+crbug.com/1039401 paint/invalidation/forms/select-option-background-color.html [ Failure ]
+crbug.com/1039401 virtual/cascade/fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Failure ]
+crbug.com/1039401 virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure ]
+crbug.com/1039401 virtual/scroll_customization/fast/scrolling/scrollbar-mousedown-mouseup.html [ Failure Pass ]

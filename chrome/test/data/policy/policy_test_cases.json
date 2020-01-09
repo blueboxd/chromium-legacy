@@ -6106,6 +6106,33 @@
     ]
   },
 
+  "PerAppTimeLimitsWhitelist" : {
+    "os": ["chromeos"],
+    "test_policy": { "PerAppTimeLimitsWhitelist": {
+      "scheme_list": [
+        "chrome",
+        "files"
+      ],
+      "domain_list": [
+        "support.google.com",
+        "policies.google.com"
+      ],
+      "app_list": [
+       {
+        "app_id": "pjkljhegncpnkpknbcohdijeoejaedia",
+        "app_type": "EXTENSION"
+       },
+       {
+         "app_id": "iniodglblcgmngkgdipeiclkdjjpnlbn",
+         "app_type": "BUILT-IN"
+       }
+      ]
+    }
+    },
+    "can_be_recommended": false,
+    "pref_mappings": [{"pref": "child_user.per_app_time_limits.whitelist"}]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {},

@@ -247,8 +247,7 @@ void AutocompleteResult::SortAndCull(
                                                  matches_, comparing_object);
   matches_.resize(num_matches);
 
-  if (OmniboxFieldTrial::IsGroupSuggestionsBySearchVsUrlFeatureEnabled() &&
-      matches_.size() > 2) {
+  if (matches_.size() > 2) {
     // Skip over default match.
     auto next = std::next(matches_.begin());
     // If it has submatches, skip them too.
@@ -487,23 +486,20 @@ ACMatches::const_iterator AutocompleteResult::FindTopMatch(
 ACMatches::iterator AutocompleteResult::FindTopMatch(
     const AutocompleteInput& input,
     ACMatches* matches) {
-  // The matches may be sorted by type-demoted relevance. If we want to choose
-  // the highest-relevance, allowed-to-be-default match while ignoring type
-  // demotion, as we do when IsPreserveDefaultMatchScoreEnabled is true, we need
-  // to explicitly find the highest relevance match rather than just accepting
-  // the first allowed-to-be-default match in the list.
+  // The matches may be sorted by type-demoted relevance. We want to choose the
+  // highest-relevance, allowed-to-be-default match while ignoring type demotion
+  // in order to explicitly find the highest relevance match rather than just
+  // accepting the first allowed-to-be-default match in the list.
   // The goal of this behavior is to ensure that in situations where the user
   // expects to see a commonly visited URL as the default match, the URL is not
   // suppressed by type demotion.
-  // However, even if IsPreserveDefaultMatchScoreEnabled is true, we don't care
-  // about this URL behavior when the user is using the fakebox, which is
-  // intended to work more like a search-only box. Unless the user's input is a
-  // URL in which case we still want to ensure they can get a URL as the default
-  // match.
+  // However, we don't care about this URL behavior when the user is using the
+  // fakebox, which is intended to work more like a search-only box. Unless the
+  // user's input is a URL in which case we still want to ensure they can get a
+  // URL as the default match.
   if ((input.current_page_classification() !=
            OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS ||
-       input.type() == metrics::OmniboxInputType::URL) &&
-      OmniboxFieldTrial::IsPreserveDefaultMatchScoreEnabled()) {
+       input.type() == metrics::OmniboxInputType::URL)) {
     auto best = matches->end();
     for (auto it = matches->begin(); it != matches->end(); ++it) {
       if (it->allowed_to_be_default_match && !it->IsSubMatch() &&

@@ -32,8 +32,7 @@
       {
         "args": [
           "--num-retries=3",
-          "http/tests/devtools",
-          "--fuzzy-diff"
+          "http/tests/devtools"
         ],
         "isolate_name": "blink_web_tests",
         "merge": {

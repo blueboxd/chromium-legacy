@@ -237,13 +237,6 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
           Questo criterio consente di fornire un valore di riserva per i criteri più specifici <ph name="IDLE_ACTION_AC_POLICY_NAME" /> e <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" />. Se questo criterio viene impostato, il suo valore viene utilizzato se non viene impostato il rispettivo criterio più specifico.
 
           Se questo criterio non viene impostato, il comportamento dei criteri più specifici rimane invariato.</translation>
-<translation id="1383493480903114193">Questa norma forza l'esecuzione del codice di networking nel processo del browser.
-
-      Questa norma è disattivata per impostazione predefinita e, se attivata, rende gli utenti vulnerabili ai problemi di sicurezza dopo che il processo di networking viene limitato tramite sandbox.
-
-      Questa norma è pensata per offrire alle aziende la possibilità di migrare a software di terze parti che non dipendono dalla combinazione delle API di networking. I server proxy sono consigliati negli LSP e nelle patching API di Win32.
-
-      Se questa norma non è impostata, il codice di networking potrebbe essere eseguito al di fuori del processo di browser, a seconda delle prove sul campo dell'esperimento NetworkService.</translation>
 <translation id="1384459581748403878">Riferimento: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Indica lo stato di aggiornamento del sistema operativo</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
@@ -4132,21 +4125,6 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       Quando questa norma è impostata, il codice di accesso genitori può essere verificato sul dispositivo dell'utente bambino o ragazzo.
       Quando questa norma non è impostata, non è possibile verificare il codice di accesso genitori sul dispositivo dell'utente bambino o ragazzo.</translation>
 <translation id="7625444193696794922">Consente di specificare il canale di rilascio su cui deve essere bloccato questo dispositivo.</translation>
-<translation id="7625498350540361483">
-      Se il criterio è impostato su true, <ph name="PRODUCT_NAME" /> può raccogliere log eventi WebRTC dai servizi Google (ad es., Google Meet) e caricare i log su Google.
-
-      Se il criterio è impostato su false, <ph name="PRODUCT_NAME" /> non può raccogliere né caricare questi log.
-
-      Se il criterio non è impostato, fino alla versione M76 inclusa, <ph name="PRODUCT_NAME" /> non può raccogliere né caricare questi log.
-
-      Se il criterio non è impostato, a partire dalla versione M77, <ph name="PRODUCT_NAME" /> può raccogliere o caricare questi log per impostazione predefinita se il profilo del browser è considerato gestito, ovvero se il profilo riceve criteri a livello di cloud o macchina e se non si tratta di un profilo secondario, temporaneo, di accesso o in incognito.
-
-      Questi log contengono informazioni diagnostiche utili per il debug dei problemi relativi a chiamate vocali o videochiamate in Chrome, ad esempio data/ora e dimensioni dei pacchetti RTP inviati e ricevuti, feedback sulla congestione della rete, nonché metadati su tempo e qualità dei frame audio e video. Questi log non contengono l'audio o i video delle chiamate.
-
-      Questa raccolta di dati da parte di Chrome può essere attivata soltanto dai servizi web di Google, ad esempio Google Hangouts o Google Meet.
-
-      Google potrebbe associare questi log tramite un ID sessione ad altri log raccolti dal servizio Google stesso al fine di facilitare il debug.
-      </translation>
 <translation id="7632724434767231364">Nome della libreria GSSAPI</translation>
 <translation id="7635471475589566552">Consente di configurare in <ph name="PRODUCT_NAME" /> le impostazioni della lingua e di impedirne la modifica agli utenti. Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> utilizzerà le impostazioni della lingua specificate. Se la lingua configurata non è supportata, verrà utilizzata la lingua "en-US". Se questa impostazione viene disattivata o non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà la lingua preferita specificata dall'utente (se configurata), quella del sistema o la lingua di riserva "en-US".</translation>
 <translation id="7643883929273267746">Limita gli account visibili in <ph name="PRODUCT_NAME" /></translation>

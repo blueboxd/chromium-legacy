@@ -63,11 +63,12 @@ suite('NewTabPageThemeIconTest', () => {
         queryAll('#gradient > stop')[1], 'stop-color', 'rgb(255, 0, 0)');
   });
 
-  test('selecting icon shows ring', async () => {
+  test('selecting icon shows ring and check mark', async () => {
     // Act.
     themeIcon.setAttribute('selected', true);
 
     // Assert.
     assertStyle(query('#ring'), 'visibility', 'visible');
+    assertStyle(query('#checkMark'), 'visibility', 'visible');
   });
 });

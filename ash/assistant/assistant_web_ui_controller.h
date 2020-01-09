@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_web_view_delegate_impl.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -21,7 +22,8 @@ class AssistantWebContainerEventObserver;
 
 // The class to manage Assistant web container view.
 class ASH_EXPORT AssistantWebUiController : public views::WidgetObserver,
-                                            public AssistantControllerObserver {
+                                            public AssistantControllerObserver,
+                                            public AssistantStateObserver {
  public:
   explicit AssistantWebUiController(AssistantController* assistant_controller);
   ~AssistantWebUiController() override;
@@ -30,17 +32,22 @@ class ASH_EXPORT AssistantWebUiController : public views::WidgetObserver,
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // AssistantControllerObserver:
+  void OnAssistantControllerConstructed() override;
   void OnAssistantControllerDestroying() override;
   void OnDeepLinkReceived(
       assistant::util::DeepLinkType type,
       const std::map<std::string, std::string>& params) override;
+
+  // AssistantStateObserver:
+  void OnAssistantSettingsEnabled(bool enabled) override;
 
   void OnBackButtonPressed();
 
   AssistantWebContainerView* GetViewForTest();
 
  private:
-  void ShowUi();
+  void ShowUi(const GURL& url);
+  void CloseUi();
 
   // Constructs/resets |web_container_view_|.
   void CreateWebContainerView();

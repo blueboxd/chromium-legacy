@@ -17,6 +17,15 @@ namespace ash {
 // SystemTrayModel.
 class ASH_EXPORT UnifiedSystemTrayModel {
  public:
+  enum class StateOnOpen {
+    // The user has not made any changes to the quick settings state.
+    UNSET,
+    // Quick settings has been explicitly set to collapsed by the user.
+    COLLAPSED,
+    // Quick settings has been explicitly set to expanded by the user.
+    EXPANDED
+  };
+
   enum class NotificationTargetMode {
     // Notification list scrolls to the last notification.
     LAST_NOTIFICATION,
@@ -42,7 +51,12 @@ class ASH_EXPORT UnifiedSystemTrayModel {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Returns true if the tray should be expanded when initially opened.
   bool IsExpandedOnOpen() const;
+
+  // Returns true if the user explicity set the tray to its
+  // expanded state.
+  bool IsExplicitlyExpanded() const;
 
   // Returns empty if it's not manually expanded/collapsed. Otherwise, the value
   // is true if the notification is manually expanded, and false if it's
@@ -67,7 +81,7 @@ class ASH_EXPORT UnifiedSystemTrayModel {
   float display_brightness() const { return display_brightness_; }
   float keyboard_brightness() const { return keyboard_brightness_; }
 
-  void set_expanded_on_open(bool expanded_on_open) {
+  void set_expanded_on_open(StateOnOpen expanded_on_open) {
     expanded_on_open_ = expanded_on_open;
   }
 
@@ -101,7 +115,7 @@ class ASH_EXPORT UnifiedSystemTrayModel {
 
   // If UnifiedSystemTray bubble is expanded on its open. It's expanded by
   // default, and if a user collapses manually, it remembers previous state.
-  bool expanded_on_open_ = true;
+  StateOnOpen expanded_on_open_ = StateOnOpen::UNSET;
 
   // The last value of the display brightness slider. Between 0.0 and 1.0.
   float display_brightness_ = 1.f;

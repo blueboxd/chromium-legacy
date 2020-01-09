@@ -13,8 +13,6 @@
 #include "base/time/time.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "components/viz/client/frame_eviction_manager.h"
-#include "components/viz/common/features.h"
-#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -82,17 +80,13 @@ CompositorDependenciesAndroid::CompositorDependenciesAndroid()
     : frame_sink_id_allocator_(kDefaultClientId) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  bool enable_viz = features::IsVizDisplayCompositorEnabled();
-  if (!enable_viz) {
-    // The SharedBitmapManager can be null as software compositing is not
-    // supported or used on Android.
-    frame_sink_manager_impl_ = std::make_unique<viz::FrameSinkManagerImpl>(
-        /*shared_bitmap_manager=*/nullptr);
-    surface_utils::ConnectWithLocalFrameSinkManager(
-        &host_frame_sink_manager_, frame_sink_manager_impl_.get());
-  } else {
-    CreateVizFrameSinkManager();
-  }
+  // Set up a callback to automatically re-connect if we lose our connection.
+  // Unretained is safe due to base::NoDestructor.
+  host_frame_sink_manager_.SetConnectionLostCallback(base::BindRepeating(
+      &CompositorDependenciesAndroid::CreateVizFrameSinkManager,
+      base::Unretained(this)));
+
+  CreateVizFrameSinkManager();
 }
 
 CompositorDependenciesAndroid::~CompositorDependenciesAndroid() = default;
@@ -112,12 +106,6 @@ void CompositorDependenciesAndroid::CreateVizFrameSinkManager() {
   host_frame_sink_manager_.BindAndSetManager(
       std::move(frame_sink_manager_client_receiver),
       base::ThreadTaskRunnerHandle::Get(), std::move(frame_sink_manager));
-
-  // Set up a callback to automatically re-connect if we lose our
-  // connection.
-  host_frame_sink_manager_.SetConnectionLostCallback(base::BindRepeating([]() {
-    CompositorDependenciesAndroid::Get().CreateVizFrameSinkManager();
-  }));
 
   // Set up a pending request which will be run once we've successfully
   // connected to the GPU process.

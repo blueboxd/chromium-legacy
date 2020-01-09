@@ -18,6 +18,8 @@ extern const base::Feature kLoadingPredictorTableConfig;
 
 extern const base::Feature kLoadingPreconnectToRedirectTarget;
 
+extern const base::Feature kLoadingPredictorDisregardAlwaysAccessesNetwork;
+
 }  // namespace features
 
 #endif  // CHROME_BROWSER_PREDICTORS_PREDICTORS_FEATURES_H_

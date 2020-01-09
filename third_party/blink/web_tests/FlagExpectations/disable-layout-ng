@@ -454,3 +454,5 @@ virtual/controls-refresh/color-scheme/suggestion-picker/time-suggestion-picker-a
 
 # MathML depends on LayoutNG.
 crbug.com/6606 external/wpt/mathml/* [ Skip ]
+
+crbug.com/1034944 webexposed/global-interface-listing.html [ Skip ]

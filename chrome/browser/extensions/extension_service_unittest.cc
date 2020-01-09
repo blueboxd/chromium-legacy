@@ -1229,7 +1229,7 @@ TEST_F(ExtensionServiceTest, InstallingExternalExtensionWithFlags) {
   ASSERT_TRUE(extension->from_bookmark());
 }
 
-// Test the handling of Extension::EXTERNAL_EXTENSION_UNINSTALLED
+// Test the handling of uninstalling external extensions.
 TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   InitializeEmptyExtensionService();
 
@@ -1291,6 +1291,95 @@ TEST_F(ExtensionServiceTest, UninstallingExternalExtensions) {
   EXPECT_TRUE(service()->pending_extension_manager()->Remove(good_crx));
 
   ASSERT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));
+}
+
+// Tests that uninstalling an external extension, and then reinstalling the
+// extension as a user install (e.g. from the webstore) succeeds.
+TEST_F(ExtensionServiceTest, UninstallExternalExtensionAndReinstallAsUser) {
+  InitializeEmptyExtensionService();
+
+  base::FilePath path = data_dir().AppendASCII("good.crx");
+
+  std::string version_str = "1.0.0.0";
+  // Install an external extension.
+  std::unique_ptr<ExternalInstallInfoFile> info =
+      CreateExternalExtension(good_crx, version_str, path,
+                              Manifest::EXTERNAL_PREF, Extension::NO_FLAGS);
+  MockExternalProvider* provider =
+      AddMockExternalProvider(Manifest::EXTERNAL_PREF);
+  provider->UpdateOrAddExtension(std::move(info));
+  WaitForExternalExtensionInstalled();
+
+  ASSERT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
+
+  // Uninstall the extension.
+  UninstallExtension(good_crx);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  EXPECT_TRUE(prefs->IsExternalExtensionUninstalled(good_crx));
+
+  // Reinstall the extension as a user-space extension. This should succeed.
+  scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service()));
+  installer->set_allow_silent_install(true);
+  base::RunLoop run_loop;
+  installer->set_installer_callback(base::Bind(
+      [](base::Closure quit_closure,
+         const base::Optional<CrxInstallError>& result) {
+        ASSERT_FALSE(result) << result->message();
+        quit_closure.Run();
+      },
+      run_loop.QuitWhenIdleClosure()));
+  installer->InstallCrx(path);
+  run_loop.Run();
+
+  ASSERT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
+}
+
+// Tests uninstalling an external extension from a higher version, and then
+// installing a lower version as a user. This should succeed.
+// Regression test for https://crbug.com/795026.
+TEST_F(ExtensionServiceTest,
+       UninstallExternalExtensionAndReinstallAsUserWithLowerVersion) {
+  InitializeEmptyExtensionService();
+
+  base::FilePath path = data_dir().AppendASCII("good2.crx");
+
+  constexpr char kExternalVersion[] = "1.0.0.1";
+  // Install an external extension.
+  std::unique_ptr<ExternalInstallInfoFile> info =
+      CreateExternalExtension(good_crx, kExternalVersion, path,
+                              Manifest::EXTERNAL_PREF, Extension::NO_FLAGS);
+  MockExternalProvider* provider =
+      AddMockExternalProvider(Manifest::EXTERNAL_PREF);
+  provider->UpdateOrAddExtension(std::move(info));
+  WaitForExternalExtensionInstalled();
+
+  ASSERT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
+
+  // Uninstall the extension.
+  UninstallExtension(good_crx);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  EXPECT_TRUE(prefs->IsExternalExtensionUninstalled(good_crx));
+
+  // Reinstall the extension as a user-space extension with a lower version.
+  // This should succeed.
+  scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service()));
+  installer->set_allow_silent_install(true);
+  base::RunLoop run_loop;
+  installer->set_installer_callback(base::Bind(
+      [](base::Closure quit_closure,
+         const base::Optional<CrxInstallError>& result) {
+        ASSERT_FALSE(result) << result->message();
+        quit_closure.Run();
+      },
+      run_loop.QuitWhenIdleClosure()));
+  installer->InstallCrx(data_dir().AppendASCII("good.crx"));
+  run_loop.Run();
+
+  const Extension* extension =
+      registry()->enabled_extensions().GetByID(good_crx);
+  ASSERT_TRUE(extension);
+  constexpr char kLowerVersion[] = "1.0.0.0";
+  EXPECT_EQ(kLowerVersion, extension->version().GetString());
 }
 
 // Test that uninstalling an external extension does not crash when

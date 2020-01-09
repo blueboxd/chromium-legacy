@@ -419,7 +419,7 @@
 <translation id="3914732343065571127">Референца за команде за ChromeVox</translation>
 <translation id="3930383913623796990">Пролећнозелена</translation>
 <translation id="3930498801443296724">Кратки цитат</translation>
-<translation id="3935615366277838204">Велико слово <ph name="LETTER" /></translation>
+<translation id="3935615366277838204">Велико <ph name="LETTER" /></translation>
 <translation id="3936394396199829062">Светлољубичаста</translation>
 <translation id="3941269780691800708">Изговарај текст под мишем.</translation>
 <translation id="394953087167197343">Ознака за правописну грешку:</translation>
@@ -936,7 +936,7 @@
 <translation id="744163271241493234">лозинка</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">Ушли сте у дијалог</translation>
-<translation id="7505149250476994901">Изговорите „cap“ (велико слово) пре слова</translation>
+<translation id="7505149250476994901">Изговорите „велико“ пре слова</translation>
 <translation id="7518543783849163354">Да бисте привремено спречили ChromeVox да говори, притисните тастер Control.</translation>
 <translation id="7521682724501952239">ChromeVox можете да користите са додирним екраном.</translation>
 <translation id="7532613204005497612">јун</translation>

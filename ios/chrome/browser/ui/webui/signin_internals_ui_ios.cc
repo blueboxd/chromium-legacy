@@ -4,8 +4,11 @@
 
 #include "ios/chrome/browser/ui/webui/signin_internals_ui_ios.h"
 
+#include <string>
+#include <vector>
+
 #include "base/hash/hash.h"
-#include "components/grit/components_resources.h"
+#include "components/grit/dev_ui_components_resources.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

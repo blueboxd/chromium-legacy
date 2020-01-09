@@ -253,6 +253,8 @@ void InputType::SetValueAsDecimal(const Decimal& new_value,
 
 void InputType::ReadingChecked() const {}
 
+void InputType::WillUpdateCheckedness(bool) {}
+
 bool InputType::SupportsValidation() const {
   return true;
 }
@@ -389,6 +391,11 @@ String InputType::RangeUnderflowText(const Decimal&) const {
   return String();
 }
 
+String InputType::RangeInvalidText(const Decimal&, const Decimal&) const {
+  NOTREACHED();
+  return String();
+}
+
 String InputType::TypeMismatchText() const {
   return GetLocale().QueryString(IDS_FORM_VALIDATION_TYPE_MISMATCH);
 }
@@ -443,6 +450,12 @@ std::pair<String, String> InputType::ValidationMessage(
     return std::make_pair(g_empty_string, g_empty_string);
 
   StepRange step_range(CreateStepRange(kRejectAny));
+
+  if (step_range.Minimum() > step_range.Maximum()) {
+    return std::make_pair(
+        RangeInvalidText(step_range.Minimum(), step_range.Maximum()),
+        g_empty_string);
+  }
 
   if (numeric_value < step_range.Minimum())
     return std::make_pair(RangeUnderflowText(step_range.Minimum()),

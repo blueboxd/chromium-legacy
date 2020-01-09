@@ -31,6 +31,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_host_observer.h"
@@ -459,8 +460,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   extensions::ExtensionUpdater::CheckParams params2;
   params2.callback = base::BindOnce(&NotificationListener::OnFinished,
                                     base::Unretained(&notification_listener));
-  service->updater()->CheckNow(std::move(params2));
-  ASSERT_TRUE(WaitForExtensionInstallError());
+
+  {
+    content::WindowedNotificationObserver install_error_observer(
+        extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+        content::NotificationService::AllSources());
+    service->updater()->CheckNow(std::move(params2));
+    install_error_observer.Wait();
+  }
   ASSERT_TRUE(notification_listener.started());
   ASSERT_TRUE(notification_listener.finished());
   ASSERT_TRUE(base::Contains(notification_listener.updates(),

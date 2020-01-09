@@ -1871,6 +1871,7 @@ void ServiceWorkerContextWrapper::SetUpLoaderFactoryForUpdateCheckOnUI(
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerScript,
       url::Origin::Create(scope), /*navigation_id=*/base::nullopt,
       &pending_receiver, &header_client, &bypass_redirect_checks,
+      /*disable_secure_dns=*/nullptr,
       /*factory_override=*/nullptr);
   if (header_client) {
     NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(

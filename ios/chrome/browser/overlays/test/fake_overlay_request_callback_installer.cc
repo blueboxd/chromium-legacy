@@ -12,6 +12,16 @@
 #include "ios/chrome/browser/overlays/public/overlay_request_support.h"
 #include "ios/chrome/browser/overlays/public/overlay_response_support.h"
 
+#pragma mark - MockOverlayRequestCallbackReceiver
+
+MockOverlayRequestCallbackReceiver::MockOverlayRequestCallbackReceiver() =
+    default;
+
+MockOverlayRequestCallbackReceiver::~MockOverlayRequestCallbackReceiver() =
+    default;
+
+#pragma mark - FakeOverlayRequestCallbackInstaller
+
 FakeOverlayRequestCallbackInstaller::FakeOverlayRequestCallbackInstaller(
     FakeOverlayRequestCallbackReceiver* receiver)
     : receiver_(receiver), request_support_(OverlayRequestSupport::All()) {

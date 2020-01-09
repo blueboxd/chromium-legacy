@@ -163,7 +163,6 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
     case SandboxType::kPpapi:
       return std::make_unique<PpapiProcessPolicy>();
     case SandboxType::kUtility:
-    case SandboxType::kProfiling:
       return std::make_unique<UtilityProcessPolicy>();
     case SandboxType::kCdm:
       return std::make_unique<CdmProcessPolicy>();
@@ -220,7 +219,6 @@ void SandboxSeccompBPF::RunSandboxSanityChecks(
     case SandboxType::kIme:
 #endif  // defined(OS_CHROMEOS)
     case SandboxType::kAudio:
-    case SandboxType::kProfiling:
     case SandboxType::kNetwork:
     case SandboxType::kUtility:
     case SandboxType::kNoSandbox:

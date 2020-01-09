@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/overlays/default_overlay_request_cancel_handler.h"
+#include "ios/chrome/browser/overlays/overlay_request_impl.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/web/public/navigation/navigation_context.h"
 
@@ -105,10 +106,13 @@ void OverlayRequestQueueImpl::InsertRequest(
     std::unique_ptr<OverlayRequestCancelHandler> cancel_handler) {
   DCHECK_LE(index, size());
   DCHECK(request.get());
+  // Create the cancel handler if necessary.
   if (!cancel_handler) {
     cancel_handler = std::make_unique<DefaultOverlayRequestCancelHandler>(
         request.get(), this, web_state_);
   }
+  static_cast<OverlayRequestImpl*>(request.get())
+      ->set_queue_web_state(web_state_);
   request_storages_.emplace(request_storages_.begin() + index,
                             std::move(request), std::move(cancel_handler));
   for (auto& observer : observers_) {

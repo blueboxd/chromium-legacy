@@ -80,7 +80,7 @@
 <translation id="1847880352285315359">সেভ করা হয়েছে</translation>
 <translation id="1864756863218646478">ফাইলটি পাওয়া যায়নি৷</translation>
 <translation id="1921986354447415460">তুর্কি-এফ কীবোর্ড</translation>
-<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ফর্ম্যাট করা হয়েছে</translation>
+<translation id="1924372192547904021"><ph name="DRIVE_NAME" /> ফরম্যাট করা হয়েছে</translation>
 <translation id="1931134289871235022">স্লোভাক</translation>
 <translation id="1933345018156373194">স্থানান্তরিত করা যায়নি, অপ্রত্যাশিত সমস্যা হয়েছে: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">ফিনিশ</translation>
@@ -164,7 +164,7 @@
 <translation id="2942290791863759244">জার্মান NEO 2 কীবোর্ড</translation>
 <translation id="2943400156390503548">স্লাইড</translation>
 <translation id="2943503720238418293">অন্য একটি ছোট নাম ব্যবহার করুন</translation>
-<translation id="2949781154072577687"><ph name="DRIVE_NAME" /> ফর্ম্যাট করা হচ্ছে...</translation>
+<translation id="2949781154072577687"><ph name="DRIVE_NAME" /> ফরম্যাট করা হচ্ছে...</translation>
 <translation id="2951236788251446349">জেলিফিশ</translation>
 <translation id="2963783323012015985">তুর্কী কীবোর্ড</translation>
 <translation id="2966459079597787514">সুইডিশ কীবোর্ড</translation>
@@ -570,7 +570,7 @@
 <translation id="7649070708921625228">সহায়তা</translation>
 <translation id="7654209398114106148"><ph name="NUMBER_OF_ITEMS" />টি আইটেম স্থানান্তরিত করা হচ্ছে…</translation>
 <translation id="7658239707568436148">বাতিল</translation>
-<translation id="7695430100978772476"><ph name="DRIVE_NAME" /> ফর্ম্যাট করা যায়নি</translation>
+<translation id="7695430100978772476"><ph name="DRIVE_NAME" /> ফরম্যাট করা যায়নি</translation>
 <translation id="770015031906360009">গ্রীক</translation>
 <translation id="7706319470528945664">পর্তুগিজ কীবোর্ড</translation>
 <translation id="7711920809702896782">ইমেজর তথ্য</translation>

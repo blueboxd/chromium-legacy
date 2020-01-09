@@ -21,6 +21,7 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
@@ -56,6 +57,7 @@ using bookmarks_helper::CreateFavicon;
 using bookmarks_helper::DeleteFaviconMappings;
 using bookmarks_helper::ExpireFavicon;
 using bookmarks_helper::GetBookmarkBarNode;
+using bookmarks_helper::GetBookmarkModel;
 using bookmarks_helper::GetManagedNode;
 using bookmarks_helper::GetOtherNode;
 using bookmarks_helper::GetSyncedBookmarksNode;
@@ -2142,6 +2144,38 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(0));
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(1));
+}
+
+IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest, ReorderChildren) {
+  const GURL google_url("http://www.google.com");
+  const GURL yahoo_url("http://www.yahoo.com");
+
+  ASSERT_TRUE(SetupClients());
+
+  ASSERT_NE(nullptr, AddURL(/*profile=*/0, /*index=*/0, "Google", google_url));
+  ASSERT_NE(nullptr, AddURL(/*profile=*/0, /*index=*/1, "Yahoo", yahoo_url));
+
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
+
+  ASSERT_EQ(2U, GetBookmarkBarNode(0)->children().size());
+  ASSERT_EQ(2U, GetBookmarkBarNode(1)->children().size());
+  ASSERT_EQ(google_url, GetBookmarkBarNode(0)->children().front()->url());
+  ASSERT_EQ(google_url, GetBookmarkBarNode(1)->children().front()->url());
+  ASSERT_EQ(yahoo_url, GetBookmarkBarNode(0)->children().back()->url());
+  ASSERT_EQ(yahoo_url, GetBookmarkBarNode(1)->children().back()->url());
+
+  GetBookmarkModel(0)->ReorderChildren(
+      GetBookmarkBarNode(0), {GetBookmarkBarNode(0)->children().back().get(),
+                              GetBookmarkBarNode(0)->children().front().get()});
+  EXPECT_TRUE(BookmarksMatchChecker().Wait());
+
+  ASSERT_EQ(2U, GetBookmarkBarNode(0)->children().size());
+  ASSERT_EQ(2U, GetBookmarkBarNode(1)->children().size());
+  EXPECT_EQ(yahoo_url, GetBookmarkBarNode(0)->children().front()->url());
+  EXPECT_EQ(yahoo_url, GetBookmarkBarNode(1)->children().front()->url());
+  EXPECT_EQ(google_url, GetBookmarkBarNode(0)->children().back()->url());
+  EXPECT_EQ(google_url, GetBookmarkBarNode(1)->children().back()->url());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

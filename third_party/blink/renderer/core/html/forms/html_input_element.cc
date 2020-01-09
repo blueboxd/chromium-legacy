@@ -982,6 +982,7 @@ void HTMLInputElement::setChecked(bool now_checked,
   if (checked() == now_checked)
     return;
 
+  input_type_->WillUpdateCheckedness(now_checked);
   is_checked_ = now_checked;
 
   if (RadioButtonGroupScope* scope = GetRadioButtonGroupScope())

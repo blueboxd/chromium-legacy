@@ -281,18 +281,56 @@ struct HidCollectionInfo {
 // keyboard/mouse combo device would expose separate logical HID devices for
 // keyboard and mouse functionality.
 struct HidDeviceInfo {
+  // A random GUID assigned to the device during enumeration. The device GUID is
+  // stable as long as the application is running and the device remains
+  // connected to the system.
   string guid;
+
+  // A platform-specific string identifier for the physical device. When a
+  // single physical device exposes multiple logical devices, the logical
+  // devices will have the same value for |physical_device_id|.
+  string physical_device_id;
+
+  // The vendor ID value reported by the device. Vendor IDs are 16-bit values
+  // assigned by the USB-IF or Bluetooth SIG to manufacturers of USB and
+  // Bluetooth devices.
+  // TODO(mattreynolds): Indicate whether the vendor ID was assigned by USB-IF
+  // or Bluetooth SIG.
   uint16 vendor_id;
+
+  // The product ID reported by the device. Product IDs are 16-bit values
+  // assigned by the manufacturer to identify a particular device model.
   uint16 product_id;
+
+  // The product name string reported by the device, or an empty string if no
+  // product name is available.
   string product_name;
+
+  // The USB serial number string, or an empty string if the device is not a USB
+  // device or has no serial number.
   string serial_number;
+
+  // The bus used to connect this device to the system.
   HidBusType bus_type;
+
+  // An array of bytes representing the HID report descriptor reported by the
+  // device, or an empty array if the report descriptor could not be read.
   array<uint8> report_descriptor;
+
+  // A structured representation of the information contained in the HID report
+  // descriptor.
   array<HidCollectionInfo> collections;
+
+  // True if the device uses report IDs.
   bool has_report_id;
+
+  // The maximum size in bytes of input, output, and feature reports supported
+  // by the device.
   uint64 max_input_report_size;
   uint64 max_output_report_size;
   uint64 max_feature_report_size;
+
+  // A platform-specific string identifier for the logical device.
   string device_node;
 };
 

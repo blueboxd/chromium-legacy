@@ -12,6 +12,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace android_webview {
@@ -22,6 +23,7 @@ const char kProxyBypassListSwitch[] = "proxy-bypass-list";
 }  // namespace
 
 AwProxyConfigMonitor::AwProxyConfigMonitor() {
+  TRACE_EVENT0("startup", "AwProxyConfigMonitor");
   proxy_config_service_android_ =
       std::make_unique<net::ProxyConfigServiceAndroid>(
           base::ThreadTaskRunnerHandle::Get(),

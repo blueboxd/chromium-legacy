@@ -33,6 +33,12 @@ class StructGeneratorTest(unittest.TestCase):
                        'field': 'bar_bar',
                        'contents': {'type': 'int'}}))
 
+  def testGenerateClassField(self):
+    self.assertEquals('const base::Optional<bool> bar',
+        GenerateField({'type': 'class',
+                       'field': 'bar',
+                       'ctype': 'base::Optional<bool>'}))
+
   def testGenerateStruct(self):
     schema = [
       {'type': 'int', 'field': 'foo_bar'},

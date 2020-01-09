@@ -244,8 +244,8 @@
       },
       'linux-trusty-rel': {
        'args': [
-	  '--test-launcher-filter-file=../../testing/buildbot/filters/linux_trusty_rel.browser_tests.filter',
-	  ]
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux_trusty_rel.browser_tests.filter',
+        ],
       },
       'mac-code-coverage': {
         # A subset of tests seem to cause WindowServer deaths on VMs.
@@ -698,9 +698,19 @@
         },
         'use_xvfb': False,
       },
+      'android-marshmallow-x86-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.gl_tests.filter',
+        ],
+      },
       'android-pie-arm64-rel': {
-	'args': [
+        'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.gl_tests.filter', # https://crbug.com/1034007
+        ],
+      },
+      'android-pie-x86-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.gl_tests.filter',
         ],
       },
     },
@@ -895,9 +905,19 @@
   },
   'media_unittests': {
     'modifications': {
+      'android-marshmallow-x86-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.media_unittests.filter',
+        ],
+      },
       'android-pie-arm64-rel': {
         'args': [
           '--gtest_filter=-AAudio/AudioOutputTest.Play200HzTone/0', # https://crbug.com/1034009
+        ],
+      },
+      'android-pie-x86-fyi-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.media_unittests.filter',
         ],
       },
     },
@@ -912,6 +932,45 @@
     },
   },
   'monochrome_apk_checker': {
+    'modifications': {
+      'ToTAndroid': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': None,
+              'device_playstore_version': None,
+              'device_type': None,
+              'os': 'Ubuntu-16.04',
+            },
+          ],
+        },
+      },
+      'android-arm64-proguard-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': None,
+              'device_playstore_version': None,
+              'device_type': None,
+              'os': 'Ubuntu-16.04',
+            },
+          ],
+        },
+      },
+      'android-pie-arm64-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': None,
+              'device_os_flavor': None,
+              'device_playstore_version': None,
+              'device_type': None,
+              'os': 'Ubuntu-16.04',
+            },
+          ],
+        },
+      },
+    },
     'remove_from': [
       # Don't run on trybots, which don't use proguard.
       # https://crbug.com/1029936.
@@ -1221,13 +1280,11 @@
       'Linux Tests': {
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
-          "--fuzzy-diff",
         ],
       },
       'linux-code-coverage': {
         'args': [
           '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
-          '--fuzzy-diff',
         ],
         'swarming': {
           'shards': 20,
@@ -1681,6 +1738,12 @@
       'android-pie-x86-fyi-rel',
       'VR Linux',
       'android-code-coverage-native', # crbug/1018431
+      # These tests fail on Win7, and given that We don't support VR there,
+      # these tests are unnecessary there.
+      # chromium.win
+      'Win 7 Tests x64 (1)',
+      'Win7 Tests (1)',
+      'Win7 Tests (dbg)(1)',
     ],
   },
   'wayland_client_perftests': {
@@ -1779,12 +1842,6 @@
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
-      # devtools-frontend
-      'DevTools Linux': {
-        'args': [
-          '--fuzzy-diff',
-        ],
-      },
       'Fuchsia x64': {
         'args': [
           '--platform=fuchsia',
@@ -1796,13 +1853,11 @@
       'Linux Tests': {
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
-          "--fuzzy-diff",
         ],
       },
       'Linux Tests (dbg)(1)': {
         'args': [
           '--debug',
-          '--fuzzy-diff',
         ],
         'swarming': {
           'shards': 20,
@@ -1854,21 +1909,14 @@
           '--debug',
         ],
       },
-      'V8 Blink Linux': {
-        'args': [
-          '--fuzzy-diff',
-        ],
-      },
       'V8 Blink Linux Debug': {
         'args': [
           '--debug',
-          '--fuzzy-diff',
         ],
       },
       'V8 Blink Linux Future': {
         'args': [
           '--additional-driver-flag=--js-flags=--future',
-          '--fuzzy-diff',
         ],
       },
       'WebKit Linux ASAN': {
@@ -1878,7 +1926,6 @@
           '--time-out-ms',
           '48000',
           '--enable-sanitizer',
-          '--fuzzy-diff',
         ],
         'swarming': {
           'shards': 20,
@@ -1891,7 +1938,6 @@
           '--time-out-ms',
           '48000',
           '--enable-leak-detection',
-          '--fuzzy-diff',
         ],
         'swarming': {
           'shards': 10,
@@ -1904,7 +1950,6 @@
           '--time-out-ms',
           '66000',
           '--enable-sanitizer',
-          '--fuzzy-diff',
         ],
         'swarming': {
           'expiration': 36000,
@@ -1916,13 +1961,11 @@
       'WebKit Linux composite_after_paint Dummy Builder': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=CompositeAfterPaint',
-          '--fuzzy-diff',
         ],
       },
       'WebKit Linux layout_ng_disabled Builder': {
         'args': [
           '--additional-driver-flag=--disable-blink-features=LayoutNG',
-          '--fuzzy-diff',
         ],
       },
       'Win10 Tests x64': {
@@ -1979,7 +2022,6 @@
       'devtools_frontend_linux_blink_light_rel': {
         'args': [
           'http/tests/devtools',
-          '--fuzzy-diff',
         ],
         'swarming': {
           'shards': 4,
@@ -1998,38 +2040,28 @@
           '--debug',
           '--additional-driver-flag=--enable-features=BackForwardCache',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=BackForwardCache',
-          '--fuzzy-diff',
         ],
       },
       'linux-blink-animation-use-time-delta': {
         'args': [
           '--debug',
-          '--fuzzy-diff',
         ],
       },
       'linux-blink-cors-rel': {
         'args': [
           '--additional-driver-flag=--disable-features=OutOfBlinkCors',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/disable-features=OutOfBlinkCors',
-          '--fuzzy-diff',
         ],
       },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'args': [
           '--release',
           '--additional-driver-flag=--enable-features=BlinkHeapConcurrentMarking',
-          '--fuzzy-diff',
-        ],
-      },
-      'linux-blink-rel-dummy': {
-        'args': [
-          '--fuzzy-diff',
         ],
       },
       'linux-code-coverage': {
         'args': [
           '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
-          '--fuzzy-diff',
         ],
         'swarming': {
           'shards': 20,
@@ -2038,18 +2070,11 @@
       'linux-layout-tests-fragment-item': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentItem',
-          '--fuzzy-diff',
         ],
       },
       'linux-layout-tests-fragment-paint': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentPaint',
-          '--fuzzy-diff',
-        ],
-      },
-      'linux-trusty-rel': {
-        'args': [
-          '--fuzzy-diff',
         ],
       },
       'mac10.10-blink-rel-dummy': {

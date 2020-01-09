@@ -87,8 +87,12 @@ void UnifiedSystemTrayModel::RemoveObserver(Observer* observer) {
 }
 
 bool UnifiedSystemTrayModel::IsExpandedOnOpen() const {
-  return expanded_on_open_ ||
+  return expanded_on_open_ != StateOnOpen::COLLAPSED ||
          Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
+}
+
+bool UnifiedSystemTrayModel::IsExplicitlyExpanded() const {
+  return expanded_on_open_ == StateOnOpen::EXPANDED;
 }
 
 base::Optional<bool> UnifiedSystemTrayModel::GetNotificationExpanded(

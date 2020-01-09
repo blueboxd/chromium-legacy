@@ -243,7 +243,7 @@
 <translation id="1329584516321524826">Most frissítve</translation>
 <translation id="1330145147221172764">Képernyő-billentyűzet engedélyezése</translation>
 <translation id="1331977651797684645">Én voltam.</translation>
-<translation id="1333489022424033687">Lehetséges, hogy néhány funkció nem működik a(z) <ph name="ORIGIN" /> címen, amíg nem törli a más webhelyek által az Ön eszközén tárolt adatokat.</translation>
+<translation id="1333489022424033687">Lehetséges, hogy néhány funkció nem működik a(z) <ph name="ORIGIN" /> helyen, amíg nem törli a más webhelyek által az Ön eszközén tárolt adatokat.</translation>
 <translation id="133535873114485416">Elsődleges bevitel</translation>
 <translation id="1335929031622236846">Az eszköz regisztrálása</translation>
 <translation id="1338802252451106843">A(z) <ph name="ORIGIN" /> meg akarja nyitni ezt az alkalmazást.</translation>
@@ -5090,7 +5090,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8251578425305135684">Indexkép eltávolítva.</translation>
 <translation id="8252569384384439529">Feltöltés…</translation>
 <translation id="8253198102038551905">Kattintson a „+” gombra a hálózati tulajdonságok lekéréséhez.</translation>
-<translation id="825483282309623688">Adatai visszaállításához internetkapcsolat szükséges.</translation>
 <translation id="8254954272268479918">Linux (béta) kikapcsolása</translation>
 <translation id="8255451560461371599">Nincs háttér</translation>
 <translation id="8256319818471787266">Bundi</translation>

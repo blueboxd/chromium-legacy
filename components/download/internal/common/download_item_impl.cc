@@ -970,7 +970,8 @@ bool DownloadItemImpl::IsDangerous() const {
           danger_type_ == DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE ||
           danger_type_ == DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED ||
           danger_type_ == DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK ||
-          danger_type_ == DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING);
+          danger_type_ == DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING ||
+          danger_type_ == DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING);
 }
 
 DownloadDangerType DownloadItemImpl::GetDangerType() const {

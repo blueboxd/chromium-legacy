@@ -19,7 +19,7 @@ class InputDeviceInfo final : public MediaDeviceInfo {
   InputDeviceInfo(const String& device_id,
                   const String& label,
                   const String& group_id,
-                  MediaDeviceType);
+                  mojom::blink::MediaDeviceType);
 
   void SetVideoInputCapabilities(mojom::blink::VideoInputDeviceCapabilitiesPtr);
   void SetAudioInputCapabilities(mojom::blink::AudioInputDeviceCapabilitiesPtr);

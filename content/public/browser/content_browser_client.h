@@ -1314,6 +1314,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |bypass_redirect_checks| will be set to true when the embedder will be
   // handling redirect security checks.
   //
+  // |disable_secure_dns| will be set to true when the URLLoaderFactory will be
+  // used exclusively within a window that requires secure DNS to be turned off,
+  // such as a window created for captive portal resolution.
+  //
   // |factory_override| gives the embedder a chance to replace the network
   // service's "internal" URLLoaderFactory. See more details in the
   // documentation for URLLoaderFactoryOverride in network_context.mojom.
@@ -1343,6 +1347,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
       bool* bypass_redirect_checks,
+      bool* disable_secure_dns,
       network::mojom::URLLoaderFactoryOverridePtr* factory_override);
 
   // Returns true when the embedder wants to intercept a websocket connection.

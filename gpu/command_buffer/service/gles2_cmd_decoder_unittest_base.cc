@@ -518,7 +518,8 @@ ContextResult GLES2DecoderTestBase::MaybeInitDecoderWithWorkarounds(
   gpu::ContextResult result = decoder_->Initialize(
       surface_, context_, false, DisallowedFeatures(), attribs);
   if (result != gpu::ContextResult::kSuccess) {
-    decoder_->Destroy(false /* have_context */);
+    // GLES2CmdDecoder::Destroy should be handled by Initialize in all failure
+    // cases.
     decoder_.reset();
     group_->Destroy(mock_decoder_.get(), false);
     return result;

@@ -398,10 +398,10 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
   // ==== Heart Rate Measurement Characteristic ====
   heart_rate_measurement_path_ =
       service_path.value() + "/" + kHeartRateMeasurementPathComponent;
-  heart_rate_measurement_properties_.reset(new Properties(
-      base::Bind(&FakeBluetoothGattCharacteristicClient::OnPropertyChanged,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 dbus::ObjectPath(heart_rate_measurement_path_))));
+  heart_rate_measurement_properties_.reset(new Properties(base::BindRepeating(
+      &FakeBluetoothGattCharacteristicClient::OnPropertyChanged,
+      weak_ptr_factory_.GetWeakPtr(),
+      dbus::ObjectPath(heart_rate_measurement_path_))));
   heart_rate_measurement_properties_->uuid.ReplaceValue(
       kHeartRateMeasurementUUID);
   heart_rate_measurement_properties_->service.ReplaceValue(service_path);
@@ -412,10 +412,10 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
   // ==== Body Sensor Location Characteristic ====
   body_sensor_location_path_ =
       service_path.value() + "/" + kBodySensorLocationPathComponent;
-  body_sensor_location_properties_.reset(new Properties(
-      base::Bind(&FakeBluetoothGattCharacteristicClient::OnPropertyChanged,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 dbus::ObjectPath(body_sensor_location_path_))));
+  body_sensor_location_properties_.reset(new Properties(base::BindRepeating(
+      &FakeBluetoothGattCharacteristicClient::OnPropertyChanged,
+      weak_ptr_factory_.GetWeakPtr(),
+      dbus::ObjectPath(body_sensor_location_path_))));
   body_sensor_location_properties_->uuid.ReplaceValue(kBodySensorLocationUUID);
   body_sensor_location_properties_->service.ReplaceValue(service_path);
   flags.clear();
@@ -425,10 +425,10 @@ void FakeBluetoothGattCharacteristicClient::ExposeHeartRateCharacteristics(
   // ==== Heart Rate Control Point Characteristic ====
   heart_rate_control_point_path_ =
       service_path.value() + "/" + kHeartRateControlPointPathComponent;
-  heart_rate_control_point_properties_.reset(new Properties(
-      base::Bind(&FakeBluetoothGattCharacteristicClient::OnPropertyChanged,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 dbus::ObjectPath(heart_rate_control_point_path_))));
+  heart_rate_control_point_properties_.reset(new Properties(base::BindRepeating(
+      &FakeBluetoothGattCharacteristicClient::OnPropertyChanged,
+      weak_ptr_factory_.GetWeakPtr(),
+      dbus::ObjectPath(heart_rate_control_point_path_))));
   heart_rate_control_point_properties_->uuid.ReplaceValue(
       kHeartRateControlPointUUID);
   heart_rate_control_point_properties_->service.ReplaceValue(service_path);

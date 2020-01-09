@@ -22,13 +22,13 @@ import sys
 
 sys.path.append(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir, 'build', 'android'))
-import devil_chromium  # pylint: disable=import-error
-from devil.android import apk_helper # pylint: disable=import-error
-from devil.android import device_errors # pylint: disable=import-error
-from devil.android.ndk import abis  # pylint: disable=import-error
-from devil.android.tools import script_common  # pylint: disable=import-error
-from devil.utils import logging_common  # pylint: disable=import-error
-from py_utils import tempfile_ext  # pylint: disable=import-error
+import devil_chromium
+from devil.android import apk_helper
+from devil.android import device_errors
+from devil.android.ndk import abis
+from devil.android.tools import script_common
+from devil.utils import logging_common
+from py_utils import tempfile_ext
 
 _SUPPORTED_ARCH_DICT = {
     abis.ARM: 'arm',

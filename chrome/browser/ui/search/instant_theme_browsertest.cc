@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -9,6 +10,7 @@
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/instant_service_observer.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -217,6 +219,10 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeAppliedToExistingTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeAppliedToNewTab) {
+  if (base::FeatureList::IsEnabled(ntp_features::kRealboxMatchOmniboxTheme)) {
+    return;
+  }
+
   // On the existing tab.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_EQ(0, browser()->tab_strip_model()->active_index());

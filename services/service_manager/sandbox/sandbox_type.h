@@ -61,9 +61,6 @@ enum class SandboxType {
   // The pdf compositor service process.
   kPdfCompositor,
 
-  // The profiling service process.
-  kProfiling,
-
   // The audio service process.
   kAudio,
 

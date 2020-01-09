@@ -169,6 +169,7 @@ class TestBrowserClientWithHeaderClient
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
       bool* bypass_redirect_checks,
+      bool* disable_secure_dns,
       network::mojom::URLLoaderFactoryOverridePtr* factory_override) override {
     if (header_client)
       receivers_.Add(this, header_client->InitWithNewPipeAndPassReceiver());

@@ -112,13 +112,6 @@ class PerfBenchmark(benchmark.Benchmark):
     browser_options.AppendExtraBrowserArgs(
         '--disable-gpu-process-for-dx12-vulkan-info-collection')
 
-    # TODO(crbug.com/881469): remove this once Webview supports
-    # VizDisplayCompositor.
-    if (browser_options.browser_type and
-        'android-webview' in browser_options.browser_type):
-      browser_options.AppendExtraBrowserArgs(
-          '--disable-features=VizDisplayCompositor')
-
     self.SetExtraBrowserOptions(browser_options)
 
   def GetExtraOutDirectories(self):

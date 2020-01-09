@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
@@ -308,7 +309,10 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
       return l10n_util::GetStringFUTF16(
           IDS_PROMPT_DOWNLOAD_SENSITIVE_CONTENT_BLOCKED, elided_filename);
     }
-    case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
+    case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING: {
+      return l10n_util::GetStringFUTF16(IDS_PROMPT_APP_DEEP_SCANNING,
+                                        elided_filename);
+    }
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
@@ -535,6 +539,7 @@ bool DownloadUIModel::IsCommandEnabled(
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::DEEP_SCAN:
       return true;
   }
   NOTREACHED();
@@ -561,6 +566,7 @@ bool DownloadUIModel::IsCommandChecked(
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::ANNOTATE:
+    case DownloadCommands::DEEP_SCAN:
       return false;
   }
   return false;
@@ -609,6 +615,8 @@ void DownloadUIModel::ExecuteCommand(DownloadCommands* download_commands,
             profile(), GetTargetFilePath());
       }
 #endif  // defined(OS_CHROMEOS)
+      break;
+    case DownloadCommands::DEEP_SCAN:
       break;
   }
 }

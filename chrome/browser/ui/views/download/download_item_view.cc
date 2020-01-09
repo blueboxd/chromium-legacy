@@ -220,7 +220,8 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
       accessible_alert_(accessible_alert),
       announce_accessible_alert_soon_(false),
       deep_scanning_label_(nullptr),
-      open_now_button_(nullptr) {
+      open_now_button_(nullptr),
+      scan_button_(nullptr) {
   views::InstallRectHighlightPathGenerator(this);
   model_->AddObserver(this);
 
@@ -494,6 +495,8 @@ void DownloadItemView::Layout() {
     }
     if (discard_button_)
       discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
+    if (scan_button_)
+      scan_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
   } else if (IsShowingDeepScanning()) {
     gfx::Point child_origin(
         kStartPadding + GetWarningIconSize() + kStartPadding,
@@ -711,6 +714,9 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
     return;
   }
 
+  if (sender == scan_button_)
+    return;
+
   DCHECK_EQ(discard_button_, sender);
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download", warning_duration);
   MaybeSubmitDownloadToFeedbackService(DownloadCommands::DISCARD);
@@ -910,6 +916,8 @@ void DownloadItemView::UpdateColorsFromTheme() {
     shelf_->ConfigureButtonForTheme(discard_button_);
   if (open_now_button_)
     shelf_->ConfigureButtonForTheme(open_now_button_);
+  if (scan_button_)
+    shelf_->ConfigureButtonForTheme(scan_button_);
 }
 
 void DownloadItemView::ShowContextMenuImpl(const gfx::Rect& rect,
@@ -993,6 +1001,8 @@ void DownloadItemView::ClearWarningDialog() {
   save_button_ = nullptr;
   delete discard_button_;
   discard_button_ = nullptr;
+  delete scan_button_;
+  scan_button_ = nullptr;
   delete dangerous_download_label_;
   dangerous_download_label_ = nullptr;
   dangerous_download_label_sized_ = false;
@@ -1035,6 +1045,13 @@ void DownloadItemView::ShowWarningDialog() {
     auto discard_button = views::MdTextButton::Create(
         this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
     discard_button_ = AddChildView(std::move(discard_button));
+  }
+
+  if (model_->GetDangerType() ==
+      download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
+    auto scan_button = views::MdTextButton::Create(
+        this, l10n_util::GetStringUTF16(IDS_SCAN_DOWNLOAD));
+    scan_button_ = AddChildView(std::move(scan_button));
   }
 
   base::string16 dangerous_label =
@@ -1080,10 +1097,17 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
 
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING:
-      return gfx::CreateVectorIcon(vector_icons::kErrorIcon, GetErrorIconSize(),
-                                   gfx::kGoogleGrey600);
+      return gfx::CreateVectorIcon(
+          vector_icons::kErrorIcon, GetErrorIconSize(),
+          GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_DefaultIconColor));
 
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
+      return gfx::CreateVectorIcon(
+          vector_icons::kHelpIcon, GetWarningIconSize(),
+          GetNativeTheme()->GetSystemColor(
+              ui::NativeTheme::kColorId_DefaultIconColor));
+
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -1105,6 +1129,7 @@ void DownloadItemView::ShowDeepScanningDialog() {
       model_->GetFileNameToReportUser(), font_list_, kTextWidth);
   base::string16 deep_scanning_text = l10n_util::GetStringFUTF16(
       IDS_PROMPT_DEEP_SCANNING_DOWNLOAD, elided_filename);
+
   auto deep_scanning_label = std::make_unique<views::StyledLabel>(
       deep_scanning_text, /*listener=*/nullptr);
   deep_scanning_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -1161,6 +1186,8 @@ gfx::Size DownloadItemView::GetButtonSize() const {
     size.SetToMax(discard_button_->GetPreferredSize());
   if (save_button_)
     size.SetToMax(save_button_->GetPreferredSize());
+  if (scan_button_)
+    size.SetToMax(scan_button_->GetPreferredSize());
   return size;
 }
 

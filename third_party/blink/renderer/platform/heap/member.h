@@ -113,21 +113,21 @@ class MemberBase {
   MemberBase(const MemberBase& other) : raw_(other) {
     SaveCreationThreadState();
     CheckPointer();
-    WriteBarrier();
+    // No write barrier for initializing stores.
   }
 
   template <typename U>
   MemberBase(const Persistent<U>& other) : raw_(other) {
     SaveCreationThreadState();
     CheckPointer();
-    WriteBarrier();
+    // No write barrier for initializing stores.
   }
 
   template <typename U>
   MemberBase(const MemberBase<U>& other) : raw_(other) {
     SaveCreationThreadState();
     CheckPointer();
-    WriteBarrier();
+    // No write barrier for initializing stores.
   }
 
   template <typename U>

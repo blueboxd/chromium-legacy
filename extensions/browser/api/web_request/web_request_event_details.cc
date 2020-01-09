@@ -23,7 +23,6 @@
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 #include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "ipc/ipc_message.h"
 #include "net/base/auth.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_request_headers.h"
@@ -51,8 +50,7 @@ void EraseHeadersIf(
 WebRequestEventDetails::WebRequestEventDetails(const WebRequestInfo& request,
                                                int extra_info_spec)
     : extra_info_spec_(extra_info_spec),
-      render_process_id_(content::ChildProcessHost::kInvalidUniqueID),
-      render_frame_id_(MSG_ROUTING_NONE) {
+      render_process_id_(content::ChildProcessHost::kInvalidUniqueID) {
   dict_.SetString(keys::kMethodKey, request.method);
   dict_.SetString(keys::kRequestIdKey, base::NumberToString(request.id));
   dict_.SetDouble(keys::kTimeStampKey, base::Time::Now().ToDoubleT() * 1000);
@@ -64,7 +62,6 @@ WebRequestEventDetails::WebRequestEventDetails(const WebRequestInfo& request,
   dict_.SetInteger(keys::kParentFrameIdKey, request.frame_data.parent_frame_id);
   initiator_ = request.initiator;
   render_process_id_ = request.render_process_id;
-  render_frame_id_ = request.frame_id;
 }
 
 WebRequestEventDetails::~WebRequestEventDetails() = default;
@@ -191,7 +188,6 @@ WebRequestEventDetails::CreatePublicSessionCopy() {
   std::unique_ptr<WebRequestEventDetails> copy(new WebRequestEventDetails);
   copy->initiator_ = initiator_;
   copy->render_process_id_ = render_process_id_;
-  copy->render_frame_id_ = render_frame_id_;
 
   static const char* const kSafeAttributes[] = {
     "method", "requestId", "timeStamp", "type", "tabId", "frameId",
@@ -214,6 +210,6 @@ WebRequestEventDetails::CreatePublicSessionCopy() {
 }
 
 WebRequestEventDetails::WebRequestEventDetails()
-    : extra_info_spec_(0), render_process_id_(0), render_frame_id_(0) {}
+    : extra_info_spec_(0), render_process_id_(0) {}
 
 }  // namespace extensions

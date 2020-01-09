@@ -84,7 +84,7 @@ void WebAudioMediaStreamSource::EnsureSourceIsStopped() {
 }
 
 void WebAudioMediaStreamSource::ConsumeAudio(
-    const WebVector<const float*>& audio_data,
+    const Vector<const float*>& audio_data,
     size_t number_of_frames) {
   // TODO(miu): Plumbing is needed to determine the actual capture timestamp
   // of the audio, instead of just snapshotting base::TimeTicks::Now(), for

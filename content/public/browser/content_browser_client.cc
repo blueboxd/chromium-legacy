@@ -744,6 +744,7 @@ bool ContentBrowserClient::WillCreateURLLoaderFactory(
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
     bool* bypass_redirect_checks,
+    bool* disable_secure_dns,
     network::mojom::URLLoaderFactoryOverridePtr* factory_override) {
   DCHECK(browser_context);
   return false;

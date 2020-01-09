@@ -25,7 +25,6 @@ extern const char kTestLauncherOutput[];
 extern const char kTestLauncherRetryLimit[];
 extern const char kIsolatedScriptTestLauncherRetryLimit[];
 extern const char kTestLauncherSummaryOutput[];
-extern const char kTestLauncherPrintTempLeaks[];
 extern const char kTestLauncherPrintTestStdio[];
 extern const char kTestLauncherPrintWritablePath[];
 extern const char kTestLauncherShardIndex[];

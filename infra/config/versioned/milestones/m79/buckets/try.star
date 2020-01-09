@@ -261,6 +261,8 @@ def win_builder(*, name, builderless=True, os=os.WINDOWS_DEFAULT, **kwargs):
   return try_builder(
       name = name,
       builderless = builderless,
+      goma_backend = goma.backend.RBE_PROD,
+      goma_enable_ats = True,
       mastername = 'tryserver.chromium.win',
       os = os,
       **kwargs

@@ -5323,7 +5323,7 @@ void RenderFrameHostImpl::CommitNavigation(
               main_world_origin_for_url_loader_factory,
               base::nullopt /* navigation_id */, &appcache_proxied_receiver,
               nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
-              nullptr /* factory_override */);
+              nullptr /* disable_secure_dns */, nullptr /* factory_override */);
       if (use_proxy) {
         appcache_remote->Clone(std::move(appcache_proxied_receiver));
         appcache_remote.reset();
@@ -5353,7 +5353,7 @@ void RenderFrameHostImpl::CommitNavigation(
           main_world_origin_for_url_loader_factory,
           base::nullopt /* navigation_id */, &factory_receiver,
           nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
-          nullptr /* factory_override */);
+          nullptr /* disable_secure_dns */, nullptr /* factory_override */);
       CreateWebUIURLLoaderBinding(this, scheme, std::move(factory_receiver));
       // If the renderer has webui bindings, then don't give it access to
       // network loader for security reasons.
@@ -5477,7 +5477,7 @@ void RenderFrameHostImpl::CommitNavigation(
           main_world_origin_for_url_loader_factory,
           base::nullopt /* navigation_id */, &factory_receiver,
           nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
-          nullptr /* factory_override */);
+          nullptr /* disable_secure_dns */, nullptr /* factory_override */);
       // Keep DevTools proxy last, i.e. closest to the network.
       devtools_instrumentation::WillCreateURLLoaderFactory(
           this, false /* is_navigation */, false /* is_download */,
@@ -6174,7 +6174,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
       ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource, origin,
       base::nullopt /* navigation_id */, &default_factory_receiver,
       &params->header_client, &bypass_redirect_checks,
-      &params->factory_override);
+      &params->disable_secure_dns, &params->factory_override);
 
   // Keep DevTools proxy last, i.e. closest to the network.
   devtools_instrumentation::WillCreateURLLoaderFactory(

@@ -1546,7 +1546,8 @@ win_builder(
 win_builder(
     name = 'win10_chromium_x64_coverage_rel_ng',
     os = os.WINDOWS_10,
-    use_clang_coverage = True
+    use_clang_coverage = True,
+    tryjob = tryjob(experiment_percentage = 3),
 )
 
 win_builder(

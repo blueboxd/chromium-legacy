@@ -50,7 +50,7 @@
 /* @(#) $Id$ */
 #include <assert.h>
 #include "deflate.h"
-#include "x86.h"
+#include "cpu_features.h"
 #include "contrib/optimizations/insert_string.h"
 
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
@@ -244,10 +244,8 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
     // for all wrapper formats (e.g. RAW, ZLIB, GZIP).
     // Feature detection is not triggered while using RAW mode (i.e. we never
     // call crc32() with a NULL buffer).
-#if defined(CRC32_ARMV8_CRC32)
-    arm_check_features();
-#elif defined(CRC32_SIMD_SSE42_PCLMUL)
-    x86_check_features();
+#if defined(CRC32_ARMV8_CRC32) || defined(CRC32_SIMD_SSE42_PCLMUL)
+    cpu_check_features();
 #endif
 
     if (version == Z_NULL || version[0] != my_version[0] ||
@@ -1519,11 +1517,12 @@ local void fill_window_c(deflate_state *s);
 
 local void fill_window(deflate_state *s)
 {
+#ifdef ADLER32_SIMD_SSSE3
     if (x86_cpu_enable_simd) {
         fill_window_sse(s);
         return;
     }
-
+#endif
     fill_window_c(s);
 }
 

@@ -26,6 +26,9 @@ class CancelCastingDialog : public views::DialogDelegateView {
     AddChildView(new views::MessageBoxView(views::MessageBoxView::InitParams(
         l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_MESSAGE))));
     SetLayoutManager(std::make_unique<views::FillLayout>());
+    DialogDelegate::set_button_label(
+        ui::DIALOG_BUTTON_OK,
+        l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_CONTINUE));
   }
   ~CancelCastingDialog() override = default;
 
@@ -35,14 +38,6 @@ class CancelCastingDialog : public views::DialogDelegateView {
 
   int GetDialogButtons() const override {
     return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  }
-
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
-    if (button == ui::DIALOG_BUTTON_OK)
-      return l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_CONTINUE);
-    if (button == ui::DIALOG_BUTTON_CANCEL)
-      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-    return base::string16();
   }
 
   bool Cancel() override {

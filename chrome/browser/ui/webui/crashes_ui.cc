@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -24,8 +26,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/crash/core/browser/crashes_ui_util.h"
-#include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/grit/dev_ui_components_resources.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"

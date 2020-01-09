@@ -116,11 +116,7 @@ void PrintUsage() {
           "    Sets the total number of shards to N.\n"
           "\n"
           "  --test-launcher-shard-index=N\n"
-          "    Sets the shard index to run to N (from 0 to TOTAL - 1).\n"
-          "\n"
-          "  --test-launcher-print-temp-leaks\n"
-          "    Prints information about leaked files and/or directories in\n"
-          "    child process's temporary directories (Windows and macOS).\n");
+          "    Sets the shard index to run to N (from 0 to TOTAL - 1).\n");
 }
 
 // Implementation of base::TestLauncherDelegate. This is also a test launcher,

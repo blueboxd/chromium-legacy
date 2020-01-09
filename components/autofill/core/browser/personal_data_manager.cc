@@ -77,7 +77,8 @@ enum class MigrateUserOptedInWalletSyncType {
   kNotMigrated = 0,
   kMigratedFromCanonicalEmail = 1,
   kMigratedFromNonCanonicalEmail = 2,
-  kMaxValue = kMigratedFromNonCanonicalEmail,
+  kNotMigratedUnexpectedPrimaryAccountIdWithEmail = 3,
+  kMaxValue = kNotMigratedUnexpectedPrimaryAccountIdWithEmail,
 };
 
 template <typename T>
@@ -2531,7 +2532,15 @@ void PersonalDataManager::MigrateUserOptedInWalletSyncTransportIfNeeded() {
 
   // When migration is started or done, the primary account is created from a
   // Gaia ID.
-  DCHECK(!primary_account_id.IsEmail());
+  if (primary_account_id.IsEmail()) {
+    DLOG(ERROR) << "Unexpected primary account id from an email ["
+                << primary_account_id << "].";
+    base::UmaHistogramEnumeration(
+        "Autofill.MigrateUserOptedInToWalletSync",
+        MigrateUserOptedInWalletSyncType::
+            kNotMigratedUnexpectedPrimaryAccountIdWithEmail);
+    return;
+  }
 
   CoreAccountId legacy_account_id_from_email =
       CoreAccountId::FromEmail(gaia::CanonicalizeEmail(primary_account.email));

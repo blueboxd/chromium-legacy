@@ -141,6 +141,16 @@ public final class WebLayer {
         return getWebLayerLoader(context).getMajorVersion();
     }
 
+    // Internal version of getSupportedMajorVersion(). This should only be used when you know
+    // WebLayer has been initialized. Generally that means calling this from any non-static method.
+    static int getSupportedMajorVersionInternal() {
+        if (sLoader == null) {
+            throw new IllegalStateException(
+                    "This should only be called once WebLayer is initialized");
+        }
+        return sLoader.getMajorVersion();
+    }
+
     /**
      * Returns the Chrome version of the WebLayer implementation. This will return a full version
      * string such as "79.0.3945.0", while {@link getSupportedMajorVersion} will only return the

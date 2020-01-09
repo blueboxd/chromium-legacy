@@ -15,6 +15,8 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
 using chromeos::CrasAudioHandler;
@@ -165,9 +167,7 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   init_params.anchor_rect = tray_->shelf()->GetSystemTrayAnchorRect();
   // Decrease bottom and right insets to compensate for the adjustment of
   // the respective edges in Shelf::GetSystemTrayAnchorRect().
-  init_params.insets = gfx::Insets(
-      kUnifiedMenuPadding, kUnifiedMenuPadding, kUnifiedMenuPadding - 1,
-      kUnifiedMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
+  init_params.insets = GetInsets();
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
   init_params.translucent = true;
@@ -218,6 +218,29 @@ void UnifiedSliderBubbleController::StartAutoCloseTimer() {
       FROM_HERE,
       base::TimeDelta::FromSeconds(kTrayPopupAutoCloseDelayInSeconds), this,
       &UnifiedSliderBubbleController::CloseBubble);
+}
+
+gfx::Insets UnifiedSliderBubbleController::GetInsets() {
+  // Decrease bottom and right insets to compensate for the adjustment of
+  // the respective edges in Shelf::GetSystemTrayAnchorRect().
+  gfx::Insets insets = gfx::Insets(
+      kUnifiedMenuPadding, kUnifiedMenuPadding, kUnifiedMenuPadding - 1,
+      kUnifiedMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
+
+  // The work area in tablet mode always uses the in-app shelf height, which
+  // ignores the height of the hotseat. We need to add additional height to the
+  // baseline to compensate.
+  bool in_tablet_mode = Shell::Get()->tablet_mode_controller() &&
+                        Shell::Get()->tablet_mode_controller()->InTabletMode();
+  bool is_bottom_alignment =
+      tray_->shelf()->alignment() == ShelfAlignment::kBottom;
+  if (chromeos::switches::ShouldShowShelfHotseat() && in_tablet_mode &&
+      !ShelfConfig::Get()->is_in_app() && is_bottom_alignment) {
+    insets.set_bottom(insets.bottom() +
+                      kPopupCollectionHotseatHeightCompensation);
+  }
+
+  return insets;
 }
 
 }  // namespace ash

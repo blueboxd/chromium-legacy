@@ -141,13 +141,17 @@ void ExclusiveAccessBubbleViews::RepositionIfVisible() {
 }
 
 void ExclusiveAccessBubbleViews::HideImmediately() {
-  if (!popup_->IsVisible())
+  if (!IsShowing() && !popup_->IsVisible())
     return;
 
   RunHideCallbackIfNeeded(ExclusiveAccessBubbleHideReason::kInterrupted);
 
   animation_->SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
   animation_->Hide();
+}
+
+bool ExclusiveAccessBubbleViews::IsShowing() {
+  return IsAnimating() && animation_->IsShowing();
 }
 
 views::View* ExclusiveAccessBubbleViews::GetView() {

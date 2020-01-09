@@ -10,6 +10,7 @@
 #define INLINE inline
 #endif
 
+#include "cpu_features.h"
 /* Optimized insert_string block */
 #if defined(CRC32_SIMD_SSE42_PCLMUL) || defined(CRC32_ARMV8_CRC32)
 #define TARGET_CPU_WITH_CRC
@@ -25,7 +26,6 @@
   #define _cpu_crc32_u32 _mm_crc32_u32
 
 #elif defined(CRC32_ARMV8_CRC32)
-  #include "arm_features.h"
   #if defined(__clang__)
     #undef TARGET_CPU_WITH_CRC
     #define __crc32cw __builtin_arm_crc32cw

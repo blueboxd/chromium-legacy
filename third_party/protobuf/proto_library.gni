@@ -473,8 +473,8 @@ template("proto_library") {
 #     args = [
 #       "--encode=foo.FooMessage",
 #       "-I",
-#       rebase_path("//component/core"),
-#       "foo.proto",
+#       rebase_path("//"),
+#       "component/core/foo.proto",
 #     ]
 #   }
 template("protoc_convert") {

@@ -404,15 +404,6 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     LayoutUnit flex_base_content_size =
         flex_base_border_box - main_axis_border_padding;
 
-    NGPhysicalBoxStrut physical_child_margins =
-        ComputePhysicalMargins(child_space, child_style);
-    // Set margin because FlexibleBoxAlgorithm reads it from legacy.
-    child.GetLayoutBox()->SetMargin(physical_child_margins);
-
-    LayoutUnit main_axis_margin = is_horizontal_flow_
-                                      ? physical_child_margins.HorizontalSum()
-                                      : physical_child_margins.VerticalSum();
-
     MinMaxSize min_max_sizes_in_main_axis_direction{LayoutUnit(),
                                                     LayoutUnit::Max()};
     MinMaxSize min_max_sizes_in_cross_axis_direction{LayoutUnit(),
@@ -522,11 +513,15 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     }
     // TODO(dgrogan): Should this include scrollbar?
     min_max_sizes_in_main_axis_direction -= main_axis_border_scrollbar_padding;
+
+    NGPhysicalBoxStrut physical_child_margins =
+        ComputePhysicalMargins(child_space, child_style);
     algorithm_
-        ->emplace_back(child.GetLayoutBox(), flex_base_content_size,
+        ->emplace_back(child.GetLayoutBox(), child.Style(),
+                       flex_base_content_size,
                        min_max_sizes_in_main_axis_direction,
                        min_max_sizes_in_cross_axis_direction,
-                       main_axis_border_padding, main_axis_margin)
+                       main_axis_border_padding, physical_child_margins)
         .ng_input_node = child;
   }
 }
@@ -767,6 +762,7 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
                                  : flex_item.desired_location;
       container_builder_.AddChild(flex_item.layout_result->PhysicalFragment(),
                                   {location.X(), location.Y()});
+      flex_item.ng_input_node.StoreMargins(flex_item.physical_margins);
     }
   }
 }

@@ -33,6 +33,10 @@ void BuildNotificationData(const updates::UpdateNotificationInfo& data,
 // Maximum number of update notification should be cached in scheduler.
 constexpr int kNumMaxNotificationsLimit = 1;
 
+// Maxmium number of consecutive dismiss actions from user that should be
+// considered as negative feedback.
+constexpr int kNumConsecutiveDismissCountCap = 2;
+
 UpdateNotificationServiceImpl::UpdateNotificationServiceImpl(
     notifications::NotificationScheduleService* schedule_service)
     : schedule_service_(schedule_service),
@@ -101,6 +105,23 @@ UpdateNotificationServiceImpl::BuildScheduleParams() {
   schedule_params.deliver_time_end =
       base::make_optional(std::move(actual_window.second));
   return schedule_params;
+}
+
+void UpdateNotificationServiceImpl::OnUserDismiss() {
+  int count = updates::GetUserDismissCount() + 1;
+  if (count >= kNumConsecutiveDismissCountCap) {
+    ApplyLinearThrottle();
+    count = 0;
+  }
+  updates::UpdateUserDismissCount(count);
+}
+
+void UpdateNotificationServiceImpl::ApplyLinearThrottle() {
+  auto scale = config_->throttle_interval_linear_co_scale;
+  auto offset =
+      base::TimeDelta::FromDays(config_->throttle_interval_linear_co_offset);
+  auto interval = GetThrottleInterval();
+  updates::UpdateThrottleInterval(scale * interval + offset);
 }
 
 }  // namespace updates

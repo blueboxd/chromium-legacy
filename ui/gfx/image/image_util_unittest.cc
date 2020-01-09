@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_unittest_util.h"
+#include "ui/gfx/image/resize_image_dimensions.h"
 
 TEST(ImageUtilTest, JPEGEncodeAndDecode) {
   gfx::Image original = gfx::test::CreateImage(100, 100);
@@ -132,4 +133,16 @@ TEST(ImageUtilTest, GetVisibleMargins) {
     EXPECT_EQ(9, left);
     EXPECT_EQ(8, right);
   }
+}
+
+TEST(ImageUtilTest, ResizedImageForSearchByImage) {
+  // Make sure the image large enough to let ResizedImageForSearchByImage to
+  // resize the image.
+  gfx::Image original_image =
+      gfx::test::CreateImage(gfx::kSearchByImageMaxImageHeight + 10,
+                             gfx::kSearchByImageMaxImageWidth + 10);
+
+  gfx::Image resized_image = gfx::ResizedImageForSearchByImage(original_image);
+  EXPECT_NE(original_image.Size(), resized_image.Size());
+  EXPECT_FALSE(resized_image.IsEmpty());
 }

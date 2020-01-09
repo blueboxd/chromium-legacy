@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_crx_util.h"
@@ -563,6 +564,7 @@ bool DownloadItemModel::IsCommandEnabled(
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::DEEP_SCAN:
       return DownloadUIModel::IsCommandEnabled(download_commands, command);
   }
   NOTREACHED();
@@ -596,6 +598,7 @@ bool DownloadItemModel::IsCommandChecked(
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::ANNOTATE:
+    case DownloadCommands::DEEP_SCAN:
       return false;
   }
   return false;
@@ -689,6 +692,8 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::ANNOTATE:
       DownloadUIModel::ExecuteCommand(download_commands, command);
+      break;
+    case DownloadCommands::DEEP_SCAN:
       break;
   }
 }

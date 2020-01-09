@@ -59,9 +59,30 @@ bool RadioInputType::ValueMissing(const String&) const {
   HTMLInputElement& input = GetElement();
   if (auto* scope = input.GetRadioButtonGroupScope())
     return scope->IsInRequiredGroup(&input) && !CheckedRadioButtonForGroup();
-  // TODO(crbug.com/883723): This function should work even if this radio
-  // button doesn't belong to any RadioButtonGroupScope.
-  return false;
+
+  // This element is not managed by a RadioButtonGroupScope. We need to traverse
+  // the tree from TreeRoot.
+  DCHECK(!input.isConnected());
+  DCHECK(!input.formOwner());
+  const AtomicString& name = input.GetName();
+  if (name.IsEmpty())
+    return false;
+  bool is_required = false;
+  bool is_checked = false;
+  Node& root = input.TreeRoot();
+  for (auto* another = Traversal<HTMLInputElement>::InclusiveFirstWithin(root);
+       another; another = Traversal<HTMLInputElement>::Next(*another, &root)) {
+    if (another->type() != input_type_names::kRadio ||
+        another->GetName() != name || another->formOwner())
+      continue;
+    if (another->checked())
+      is_checked = true;
+    if (another->FastHasAttribute(html_names::kRequiredAttr))
+      is_required = true;
+    if (is_checked && is_required)
+      return false;
+  }
+  return is_required && !is_checked;
 }
 
 String RadioInputType::ValueMissingText() const {
@@ -257,7 +278,36 @@ HTMLInputElement* RadioInputType::CheckedRadioButtonForGroup() const {
     return &input;
   if (auto* scope = input.GetRadioButtonGroupScope())
     return scope->CheckedButtonForGroup(input.GetName());
+
+  // This element is not managed by a RadioButtonGroupScope. We need to traverse
+  // the tree from TreeRoot.
+  DCHECK(!input.isConnected());
+  DCHECK(!input.formOwner());
+  const AtomicString& name = input.GetName();
+  if (name.IsEmpty())
+    return nullptr;
+  Node& root = input.TreeRoot();
+  for (auto* another = Traversal<HTMLInputElement>::InclusiveFirstWithin(root);
+       another; another = Traversal<HTMLInputElement>::Next(*another, &root)) {
+    if (another->type() != input_type_names::kRadio ||
+        another->GetName() != name || another->formOwner())
+      continue;
+    if (another->checked())
+      return another;
+  }
   return nullptr;
+}
+
+void RadioInputType::WillUpdateCheckedness(bool new_checked) {
+  if (!new_checked)
+    return;
+  if (GetElement().GetRadioButtonGroupScope()) {
+    // Buttons in RadioButtonGroupScope are handled in
+    // HTMLInputElement::setChecked().
+    return;
+  }
+  if (auto* input = CheckedRadioButtonForGroup())
+    input->setChecked(false);
 }
 
 }  // namespace blink

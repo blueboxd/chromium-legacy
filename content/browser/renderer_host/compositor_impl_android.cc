@@ -268,7 +268,6 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       needs_animate_(false),
       pending_frames_(0U),
       layer_tree_frame_sink_request_pending_(false) {
-  CHECK(features::IsVizDisplayCompositorEnabled());
   DCHECK(client);
 
   SetRootWindow(root_window);

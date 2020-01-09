@@ -13,9 +13,10 @@ import run_cts
 
 sys.path.append(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir, 'build', 'android'))
-import devil_chromium  # pylint: disable=import-error, unused-import
-from devil.android.ndk import abis  # pylint: disable=import-error
-from devil.android.sdk import version_codes  # pylint: disable=import-error
+import devil_chromium  # pylint: disable=unused-import
+from devil.android.ndk import abis
+from devil.android.sdk import version_codes
+
 
 class _RunCtsTest(unittest.TestCase):
   """Unittests for the run_cts module.

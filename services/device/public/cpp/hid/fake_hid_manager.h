@@ -56,12 +56,15 @@ class FakeHidManager : public mojom::HidManager {
       mojo::PendingRemote<mojom::HidConnectionWatcher> watcher,
       ConnectCallback callback) override;
 
-  mojom::HidDeviceInfoPtr CreateAndAddDevice(uint16_t vendor_id,
-                                             uint16_t product_id,
-                                             const std::string& product_name,
-                                             const std::string& serial_number,
-                                             mojom::HidBusType bus_type);
+  mojom::HidDeviceInfoPtr CreateAndAddDevice(
+      const std::string& physical_device_id,
+      uint16_t vendor_id,
+      uint16_t product_id,
+      const std::string& product_name,
+      const std::string& serial_number,
+      mojom::HidBusType bus_type);
   mojom::HidDeviceInfoPtr CreateAndAddDeviceWithTopLevelUsage(
+      const std::string& physical_device_id,
       uint16_t vendor_id,
       uint16_t product_id,
       const std::string& product_name,

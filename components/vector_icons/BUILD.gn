@@ -28,6 +28,7 @@ aggregate_vector_icons("components_vector_icons") {
     "folder_touch.icon",
     "forward_arrow.icon",
     "headset.icon",
+    "help.icon",
     "help_outline.icon",
     "info_outline.icon",
     "insert_drive_file_outline.icon",

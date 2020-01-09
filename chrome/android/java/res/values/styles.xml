@@ -212,26 +212,6 @@
         <item name="android:layout">@layout/preference_compat</item>
     </style>
 
-    <!-- TODO(crbug.com/971791): The asymmetric start and end paddings here preserve the same
-         overall padding as the pre-support library custom preference layout. Following migration to
-         the support library preferences, we should investigate simplifying these styles.-->
-    <style name="PreferenceLayoutCompat">
-        <item name="android:paddingStart">8dp</item>
-        <item name="android:paddingEnd">10dp</item>
-        <item name="android:minHeight">?android:attr/listPreferredItemHeight</item>
-        <item name="android:background">?android:attr/selectableItemBackground</item>
-    </style>
-
-    <style name="PreferenceDescriptionCompat">
-        <item name="android:paddingTop">6dp</item>
-        <item name="android:paddingBottom">6dp</item>
-        <item name="android:paddingEnd">8dp</item>
-    </style>
-
-    <style name="PreferenceWidgetCompat">
-        <item name="android:minWidth">48dp</item>
-    </style>
-
     <style name="SettingsFragmentList">
         <item name="android:paddingStart">@dimen/pref_list_padding_kitkat</item>
         <item name="android:paddingEnd">@dimen/pref_list_padding_kitkat</item>
@@ -255,18 +235,6 @@
     <style name="SettingsActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
       <item name="titleTextStyle">@style/TextAppearance.BlackHeadline</item>
     </style>
-    <style name="TextAppearance.PreferenceMediumText">
-        <item name="android:textSize">18sp</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
-    </style>
-    <style name="PreferenceTitle">
-        <item name="android:ellipsize">end</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:textAppearance">@style/TextAppearance.PreferenceMediumText</item>
-    </style>
-    <style name="PreferenceSummary">
-        <item name="android:textAppearance">@style/TextAppearance.BlackBody</item>
-    </style>
     <style name="PreferenceScreenLayout">
         <item name="android:paddingTop">16dp</item>
 
@@ -275,15 +243,6 @@
         <item name="android:paddingStart">@dimen/pref_autofill_content_spacing</item>
         <item name="android:paddingEnd">@dimen/pref_autofill_content_spacing</item>
     </style>
-    <style name="PreferenceLayoutBase">
-        <item name="android:background">?android:attr/activatedBackgroundIndicator</item>
-        <item name="android:minHeight">?android:attr/listPreferredItemHeight</item>
-        <item name="android:paddingTop">6dp</item>
-        <item name="android:paddingBottom">6dp</item>
-        <item name="android:paddingStart">8dp</item>
-        <item name="android:paddingEnd">8dp</item>
-    </style>
-    <style name="PreferenceLayout" parent="PreferenceLayoutBase" />
     <style name="PreferenceSpinnerItem">
         <item name="android:textAppearance">@style/TextAppearance.PreferenceMediumText</item>
     </style>

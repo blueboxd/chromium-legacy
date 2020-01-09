@@ -12,6 +12,7 @@
 #include "base/test/task_environment.h"
 #include "components/cbor/writer.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "services/data_decoder/public/cpp/test_support/web_bundle_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace data_decoder {
@@ -149,157 +150,6 @@ std::string AsString(const std::vector<uint8_t>& data) {
   return std::string(reinterpret_cast<const char*>(data.data()), data.size());
 }
 
-class BundleBuilder {
- public:
-  using Headers = std::vector<std::pair<std::string, std::string>>;
-  struct ResponseLocation {
-    // /components/cbor uses int64_t for integer types.
-    int64_t offset;
-    int64_t length;
-  };
-
-  BundleBuilder(const std::string& fallback_url,
-                const std::string& manifest_url)
-      : fallback_url_(fallback_url) {
-    writer_config_.allow_invalid_utf8_for_testing = true;
-    if (!manifest_url.empty()) {
-      AddSection("manifest",
-                 cbor::Value::InvalidUTF8StringValueForTesting(manifest_url));
-    }
-  }
-
-  void AddExchange(base::StringPiece url,
-                   const Headers& response_headers,
-                   base::StringPiece payload) {
-    AddIndexEntry(url, "", {AddResponse(response_headers, payload)});
-  }
-
-  ResponseLocation AddResponse(const Headers& headers,
-                               base::StringPiece payload) {
-    // We assume that the size of the CBOR header of the responses array is 1,
-    // which is true only if the responses array has no more than 23 elements.
-    EXPECT_LT(responses_.size(), 23u)
-        << "BundleBuilder cannot create bundles with more than 23 responses";
-
-    cbor::Value::ArrayValue response_array;
-    response_array.emplace_back(Encode(CreateHeaderMap(headers)));
-    response_array.emplace_back(CreateByteString(payload));
-    cbor::Value response(response_array);
-    int64_t response_length = EncodedLength(response);
-    ResponseLocation result = {current_responses_offset_, response_length};
-    current_responses_offset_ += response_length;
-    responses_.emplace_back(std::move(response));
-    return result;
-  }
-
-  void AddIndexEntry(base::StringPiece url,
-                     base::StringPiece variants_value,
-                     std::vector<ResponseLocation> response_locations) {
-    cbor::Value::ArrayValue index_value_array;
-    index_value_array.emplace_back(CreateByteString(variants_value));
-    for (const auto& location : response_locations) {
-      index_value_array.emplace_back(location.offset);
-      index_value_array.emplace_back(location.length);
-    }
-    index_.insert({cbor::Value::InvalidUTF8StringValueForTesting(url),
-                   cbor::Value(index_value_array)});
-  }
-
-  void AddSection(base::StringPiece name, cbor::Value section) {
-    section_lengths_.emplace_back(name);
-    section_lengths_.emplace_back(EncodedLength(section));
-    sections_.emplace_back(std::move(section));
-  }
-
-  void AddAuthority(cbor::Value::MapValue authority) {
-    authorities_.emplace_back(std::move(authority));
-  }
-
-  void AddVouchedSubset(cbor::Value::MapValue vouched_subset) {
-    vouched_subsets_.emplace_back(std::move(vouched_subset));
-  }
-
-  std::vector<uint8_t> CreateBundle() {
-    AddSection("index", cbor::Value(index_));
-    if (!authorities_.empty() || !vouched_subsets_.empty()) {
-      cbor::Value::ArrayValue signatures_section;
-      signatures_section.emplace_back(std::move(authorities_));
-      signatures_section.emplace_back(std::move(vouched_subsets_));
-      AddSection("signatures", cbor::Value(std::move(signatures_section)));
-    }
-    AddSection("responses", cbor::Value(responses_));
-    return Encode(CreateTopLevel());
-  }
-
-  // Creates a signed-subset structure with single subset-hashes entry,
-  // and returns it as a CBOR bytestring.
-  cbor::Value CreateEncodedSigned(base::StringPiece validity_url,
-                                  base::StringPiece auth_sha256,
-                                  int64_t date,
-                                  int64_t expires,
-                                  base::StringPiece url,
-                                  base::StringPiece header_sha256,
-                                  base::StringPiece payload_integrity_header) {
-    cbor::Value::ArrayValue subset_hash_value;
-    subset_hash_value.emplace_back(CreateByteString(""));  // variants-value
-    subset_hash_value.emplace_back(CreateByteString(header_sha256));
-    subset_hash_value.emplace_back(payload_integrity_header);
-
-    cbor::Value::MapValue subset_hashes;
-    subset_hashes.emplace(url, std::move(subset_hash_value));
-
-    cbor::Value::MapValue signed_subset;
-    signed_subset.emplace("validity-url", validity_url);
-    signed_subset.emplace("auth-sha256", CreateByteString(auth_sha256));
-    signed_subset.emplace("date", date);
-    signed_subset.emplace("expires", expires);
-    signed_subset.emplace("subset-hashes", std::move(subset_hashes));
-    return cbor::Value(Encode(cbor::Value(signed_subset)));
-  }
-
- private:
-  static cbor::Value CreateHeaderMap(const Headers& headers) {
-    cbor::Value::MapValue map;
-    for (const auto& pair : headers)
-      map.insert({CreateByteString(pair.first), CreateByteString(pair.second)});
-    return cbor::Value(std::move(map));
-  }
-
-  cbor::Value CreateTopLevel() {
-    cbor::Value::ArrayValue toplevel_array;
-    toplevel_array.emplace_back(
-        CreateByteString(u8"\U0001F310\U0001F4E6"));  // "🌐📦"
-    toplevel_array.emplace_back(
-        CreateByteString(base::StringPiece("b1\0\0", 4)));
-    toplevel_array.emplace_back(
-        cbor::Value::InvalidUTF8StringValueForTesting(fallback_url_));
-    toplevel_array.emplace_back(Encode(cbor::Value(section_lengths_)));
-    toplevel_array.emplace_back(sections_);
-    toplevel_array.emplace_back(CreateByteString(""));  // length (ignored)
-    return cbor::Value(toplevel_array);
-  }
-
-  std::vector<uint8_t> Encode(const cbor::Value& value) {
-    return *cbor::Writer::Write(value, writer_config_);
-  }
-
-  int64_t EncodedLength(const cbor::Value& value) {
-    return Encode(value).size();
-  }
-
-  cbor::Writer::Config writer_config_;
-  std::string fallback_url_;
-  cbor::Value::ArrayValue section_lengths_;
-  cbor::Value::ArrayValue sections_;
-  cbor::Value::MapValue index_;
-  cbor::Value::ArrayValue responses_;
-  cbor::Value::ArrayValue authorities_;
-  cbor::Value::ArrayValue vouched_subsets_;
-
-  // 1 for the CBOR header byte. See the comment at the top of AddResponse().
-  int64_t current_responses_offset_ = 1;
-};
-
 }  // namespace
 
 class WebBundleParserTest : public testing::Test {
@@ -308,7 +158,7 @@ class WebBundleParserTest : public testing::Test {
 };
 
 TEST_F(WebBundleParserTest, WrongMagic) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   std::vector<uint8_t> bundle = builder.CreateBundle();
   bundle[3] ^= 1;
   TestDataSource data_source(bundle);
@@ -320,7 +170,7 @@ TEST_F(WebBundleParserTest, WrongMagic) {
 }
 
 TEST_F(WebBundleParserTest, UnknownVersion) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   std::vector<uint8_t> bundle = builder.CreateBundle();
   // Modify the version string from "b1\0\0" to "q1\0\0".
   ASSERT_EQ(bundle[11], 'b');
@@ -334,7 +184,7 @@ TEST_F(WebBundleParserTest, UnknownVersion) {
 }
 
 TEST_F(WebBundleParserTest, FallbackURLIsNotUTF8) {
-  BundleBuilder builder("https://test.example.com/\xcc", kManifestUrl);
+  test::WebBundleBuilder builder("https://test.example.com/\xcc", kManifestUrl);
   std::vector<uint8_t> bundle = builder.CreateBundle();
   TestDataSource data_source(bundle);
 
@@ -345,7 +195,8 @@ TEST_F(WebBundleParserTest, FallbackURLIsNotUTF8) {
 }
 
 TEST_F(WebBundleParserTest, FallbackURLHasFragment) {
-  BundleBuilder builder("https://test.example.com/#fragment", kManifestUrl);
+  test::WebBundleBuilder builder("https://test.example.com/#fragment",
+                                 kManifestUrl);
   std::vector<uint8_t> bundle = builder.CreateBundle();
   TestDataSource data_source(bundle);
 
@@ -356,7 +207,7 @@ TEST_F(WebBundleParserTest, FallbackURLHasFragment) {
 }
 
 TEST_F(WebBundleParserTest, SectionLengthsTooLarge) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   std::string too_long_section_name(8192, 'x');
   builder.AddSection(too_long_section_name, cbor::Value(0));
   TestDataSource data_source(builder.CreateBundle());
@@ -365,7 +216,7 @@ TEST_F(WebBundleParserTest, SectionLengthsTooLarge) {
 }
 
 TEST_F(WebBundleParserTest, DuplicateSectionName) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddSection("foo", cbor::Value(0));
   builder.AddSection("foo", cbor::Value(0));
   TestDataSource data_source(builder.CreateBundle());
@@ -374,7 +225,7 @@ TEST_F(WebBundleParserTest, DuplicateSectionName) {
 }
 
 TEST_F(WebBundleParserTest, SingleEntry) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -394,7 +245,7 @@ TEST_F(WebBundleParserTest, SingleEntry) {
 }
 
 TEST_F(WebBundleParserTest, InvalidRequestURL) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("", {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
   TestDataSource data_source(builder.CreateBundle());
@@ -403,7 +254,7 @@ TEST_F(WebBundleParserTest, InvalidRequestURL) {
 }
 
 TEST_F(WebBundleParserTest, RequestURLIsNotUTF8) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/\xcc",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -413,7 +264,7 @@ TEST_F(WebBundleParserTest, RequestURLIsNotUTF8) {
 }
 
 TEST_F(WebBundleParserTest, RequestURLHasBadScheme) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("file:///tmp/foo",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -423,7 +274,7 @@ TEST_F(WebBundleParserTest, RequestURLHasBadScheme) {
 }
 
 TEST_F(WebBundleParserTest, RequestURLHasCredentials) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://user:passwd@test.example.com/",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -433,7 +284,7 @@ TEST_F(WebBundleParserTest, RequestURLHasCredentials) {
 }
 
 TEST_F(WebBundleParserTest, RequestURLHasFragment) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/#fragment",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -443,7 +294,7 @@ TEST_F(WebBundleParserTest, RequestURLHasFragment) {
 }
 
 TEST_F(WebBundleParserTest, NoStatusInResponseHeaders) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{"content-type", "text/plain"}},
                       "payload");  // ":status" is missing.
@@ -457,7 +308,7 @@ TEST_F(WebBundleParserTest, NoStatusInResponseHeaders) {
 }
 
 TEST_F(WebBundleParserTest, InvalidResponseStatus) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "0200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -471,7 +322,7 @@ TEST_F(WebBundleParserTest, InvalidResponseStatus) {
 }
 
 TEST_F(WebBundleParserTest, ExtraPseudoInResponseHeaders) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange(
       "https://test.example.com/",
       {{":status", "200"}, {":foo", ""}, {"content-type", "text/plain"}},
@@ -486,7 +337,7 @@ TEST_F(WebBundleParserTest, ExtraPseudoInResponseHeaders) {
 }
 
 TEST_F(WebBundleParserTest, UpperCaseCharacterInHeaderName) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"Content-Type", "text/plain"}},
                       "payload");
@@ -500,7 +351,7 @@ TEST_F(WebBundleParserTest, UpperCaseCharacterInHeaderName) {
 }
 
 TEST_F(WebBundleParserTest, InvalidHeaderValue) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"content-type", "\n"}}, "payload");
   TestDataSource data_source(builder.CreateBundle());
@@ -513,7 +364,7 @@ TEST_F(WebBundleParserTest, InvalidHeaderValue) {
 }
 
 TEST_F(WebBundleParserTest, NoContentTypeWithNonEmptyContent) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/", {{":status", "200"}},
                       "payload");
   TestDataSource data_source(builder.CreateBundle());
@@ -526,7 +377,7 @@ TEST_F(WebBundleParserTest, NoContentTypeWithNonEmptyContent) {
 }
 
 TEST_F(WebBundleParserTest, NoContentTypeWithEmptyContent) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/", {{":status", "301"}}, "");
   TestDataSource data_source(builder.CreateBundle());
 
@@ -538,7 +389,7 @@ TEST_F(WebBundleParserTest, NoContentTypeWithEmptyContent) {
 }
 
 TEST_F(WebBundleParserTest, Variants) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   auto location1 = builder.AddResponse(
       {{":status", "200"}, {"content-type", "text/html"}}, "payload1");
   auto location2 = builder.AddResponse(
@@ -567,7 +418,7 @@ TEST_F(WebBundleParserTest, Variants) {
 }
 
 TEST_F(WebBundleParserTest, EmptyIndexEntry) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddIndexEntry("https://test.example.com/", "", {});
   TestDataSource data_source(builder.CreateBundle());
 
@@ -575,7 +426,7 @@ TEST_F(WebBundleParserTest, EmptyIndexEntry) {
 }
 
 TEST_F(WebBundleParserTest, EmptyIndexEntryWithVariants) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddIndexEntry("https://test.example.com/",
                         "Accept;text/html;text/plain", {});
   TestDataSource data_source(builder.CreateBundle());
@@ -584,7 +435,7 @@ TEST_F(WebBundleParserTest, EmptyIndexEntryWithVariants) {
 }
 
 TEST_F(WebBundleParserTest, MultipleResponsesWithoutVariantsValue) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   auto location1 = builder.AddResponse(
       {{":status", "200"}, {"content-type", "text/html"}}, "payload1");
   auto location2 = builder.AddResponse(
@@ -597,7 +448,7 @@ TEST_F(WebBundleParserTest, MultipleResponsesWithoutVariantsValue) {
 }
 
 TEST_F(WebBundleParserTest, AllKnownSectionInCritical) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -614,7 +465,7 @@ TEST_F(WebBundleParserTest, AllKnownSectionInCritical) {
 }
 
 TEST_F(WebBundleParserTest, UnknownSectionInCritical) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -627,7 +478,7 @@ TEST_F(WebBundleParserTest, UnknownSectionInCritical) {
 }
 
 TEST_F(WebBundleParserTest, NoManifest) {
-  BundleBuilder builder(kFallbackUrl, std::string());
+  test::WebBundleBuilder builder(kFallbackUrl, std::string());
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -638,7 +489,7 @@ TEST_F(WebBundleParserTest, NoManifest) {
 }
 
 TEST_F(WebBundleParserTest, InvalidManifestURL) {
-  BundleBuilder builder(kFallbackUrl, "not-an-absolute-url");
+  test::WebBundleBuilder builder(kFallbackUrl, "not-an-absolute-url");
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -648,11 +499,12 @@ TEST_F(WebBundleParserTest, InvalidManifestURL) {
 }
 
 TEST_F(WebBundleParserTest, EmptySignaturesSection) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
-  // BundleBuilder omits signatures section if empty, so create it ourselves.
+  // test::WebBundleBuilder omits signatures section if empty, so create it
+  // ourselves.
   cbor::Value::ArrayValue signatures_section;
   signatures_section.emplace_back(cbor::Value::ArrayValue());  // authorities
   signatures_section.emplace_back(
@@ -667,7 +519,7 @@ TEST_F(WebBundleParserTest, EmptySignaturesSection) {
 }
 
 TEST_F(WebBundleParserTest, SignaturesSection) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");
@@ -726,7 +578,7 @@ TEST_F(WebBundleParserTest, SignaturesSection) {
 }
 
 TEST_F(WebBundleParserTest, MultipleSignatures) {
-  BundleBuilder builder(kFallbackUrl, kManifestUrl);
+  test::WebBundleBuilder builder(kFallbackUrl, kManifestUrl);
   builder.AddExchange("https://test.example.com/",
                       {{":status", "200"}, {"content-type", "text/plain"}},
                       "payload");

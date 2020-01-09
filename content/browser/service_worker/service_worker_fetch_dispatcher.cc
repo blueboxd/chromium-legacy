@@ -328,7 +328,7 @@ void CreateNetworkFactoryForNavigationPreloadOnUI(
       ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
       frame_tree_node->navigation_request()->GetNavigationId(), &receiver,
       &header_client, &bypass_redirect_checks_unused,
-      /*factory_override=*/nullptr);
+      /*disable_secure_dns=*/nullptr, /*factory_override=*/nullptr);
 
   // Make the network factory.
   NavigationURLLoaderImpl::CreateURLLoaderFactoryWithHeaderClient(

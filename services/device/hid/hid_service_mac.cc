@@ -79,7 +79,8 @@ scoped_refptr<HidDeviceInfo> CreateDeviceInfo(
   }
 
   return new HidDeviceInfo(
-      entry_id, GetIntProperty(service, CFSTR(kIOHIDVendorIDKey)),
+      entry_id, /*physical_device_id=*/"",
+      GetIntProperty(service, CFSTR(kIOHIDVendorIDKey)),
       GetIntProperty(service, CFSTR(kIOHIDProductIDKey)),
       GetStringProperty(service, CFSTR(kIOHIDProductKey)),
       GetStringProperty(service, CFSTR(kIOHIDSerialNumberKey)),

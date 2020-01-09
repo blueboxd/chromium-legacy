@@ -243,7 +243,7 @@
 <translation id="1329584516321524826">Oraintxe eguneratu da</translation>
 <translation id="1330145147221172764">Gaitu pantailako teklatua</translation>
 <translation id="1331977651797684645">Ni izan naiz.</translation>
-<translation id="1333489022424033687">Baliteke <ph name="ORIGIN" /> webguneko eginbide batzuek ez funtzionatzea beste webgune batzuek zure gailuan gorde dituzten datuek garbitu arte</translation>
+<translation id="1333489022424033687">Baliteke <ph name="ORIGIN" /> webguneko eginbide batzuek ez funtzionatzea beste webgune batzuek zure gailuan gorde dituzten datuak garbitu arte</translation>
 <translation id="133535873114485416">Sarrerako metodo hobetsia</translation>
 <translation id="1335929031622236846">Erregistratu gailua</translation>
 <translation id="1338802252451106843"><ph name="ORIGIN" /> webguneak aplikazio hau ireki nahi du.</translation>
@@ -5088,7 +5088,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8251578425305135684">Irudi txikia kendu egin da.</translation>
 <translation id="8252569384384439529">Kargatzen…</translation>
 <translation id="8253198102038551905">Sakatu "+" sarearen propietateak ikusteko</translation>
-<translation id="825483282309623688">Datuak leheneratzeko, Internetera konektatu beharko zara.</translation>
 <translation id="8254954272268479918">Itxi Linux (Beta)</translation>
 <translation id="8255451560461371599">Atzeko planorik gabe</translation>
 <translation id="8256319818471787266">Tximista</translation>

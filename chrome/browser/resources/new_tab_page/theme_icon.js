@@ -18,6 +18,17 @@ class ThemeIconElement extends PolymerElement {
   static get template() {
     return html`{__html_template__}`;
   }
+
+  static get properties() {
+    return {
+      /** @type {number} */
+      tabindex: {
+        type: Number,
+        reflectToAttribute: true,
+        value: 0,
+      },
+    };
+  }
 }
 
 customElements.define(ThemeIconElement.is, ThemeIconElement);

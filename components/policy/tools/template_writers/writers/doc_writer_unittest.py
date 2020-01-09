@@ -1613,7 +1613,7 @@ See <a href="http://policy-explanation.example.com">http://policy-explanation.ex
   def testGoogleCloudChromeOsPolicies(self):
     # Tests whether Chrome OS policies with management type 'google_cloud'
     # don't print example values etc. since they are managed through Google's
-    # CPanel/DPanel, not Active Directory GPO.
+    # Admin console, not Active Directory GPO.
     policy = {
         'name':
             'PolicyName',

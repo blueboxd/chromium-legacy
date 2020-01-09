@@ -29,6 +29,12 @@ FORWARD_DECLARE_TEST(AppCacheUpdateJobTest, AlreadyChecking);
 FORWARD_DECLARE_TEST(AppCacheUpdateJobTest, AlreadyDownloading);
 }  // namespace appcache_update_job_unittest
 
+namespace appcache_cache_helper_unittest {
+class AppCacheCacheHelperTest;
+FORWARD_DECLARE_TEST(AppCacheCacheHelperTest,
+                     IfModifiedSinceUpgradeParserVersion0);
+}  // namespace appcache_cache_helper_unittest
+
 FORWARD_DECLARE_TEST(AppCacheGroupTest, StartUpdate);
 FORWARD_DECLARE_TEST(AppCacheGroupTest, CancelUpdate);
 FORWARD_DECLARE_TEST(AppCacheGroupTest, QueueUpdate);
@@ -206,6 +212,9 @@ class CONTENT_EXPORT AppCacheGroup
   FRIEND_TEST_ALL_PREFIXES(
       content::appcache_update_job_unittest::AppCacheUpdateJobTest,
       AlreadyDownloading);
+  FRIEND_TEST_ALL_PREFIXES(
+      content::appcache_cache_helper_unittest::AppCacheCacheHelperTest,
+      IfModifiedSinceUpgradeParserVersion0);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheGroup);
 };

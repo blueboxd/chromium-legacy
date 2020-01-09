@@ -326,7 +326,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
         request_initiator,
         /*navigation_id=*/base::nullopt, &default_factory_receiver,
         &factory_params->header_client, &bypass_redirect_checks,
-        &factory_params->factory_override);
+        nullptr /* disable_secure_dns */, &factory_params->factory_override);
     factory_bundle_for_browser_info->set_bypass_redirect_checks(
         bypass_redirect_checks);
 

@@ -595,6 +595,11 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           base::ThreadTaskRunnerHandle::Get()));
 
       default_loader_used_ = false;
+      // If |url_loader_| already exists, this means we are following a redirect
+      // using an interceptor. In this case we should make sure to reset the
+      // loader, similar to what is done in Restart().
+      if (url_loader_)
+        url_loader_->ResetForFollowRedirect();
       url_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
           std::move(single_request_factory), std::move(throttles),
           frame_tree_node_id_, global_request_id_.request_id,
@@ -1314,7 +1319,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
         frame_tree_node->navigation_request()->GetNavigationId(),
         &factory_receiver, nullptr /* header_client */,
-        nullptr /* bypass_redirect_checks */, nullptr /* factory_override */);
+        nullptr /* bypass_redirect_checks */, nullptr /* disable_secure_dns */,
+        nullptr /* factory_override */);
     CreateWebUIURLLoaderBinding(frame_tree_node->current_frame_host(), scheme,
                                 std::move(factory_receiver));
   }
@@ -1348,7 +1354,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
         ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
         frame_tree_node->navigation_request()->GetNavigationId(),
         &factory_receiver, &header_client, &bypass_redirect_checks,
-        nullptr /* factory_override */);
+        nullptr /* disable_secure_dns */, nullptr /* factory_override */);
     if (devtools_instrumentation::WillCreateURLLoaderFactory(
             frame_tree_node->current_frame_host(), true /* is_navigation */,
             false /* is_download */, &factory_receiver)) {
@@ -1548,7 +1554,8 @@ void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryReceiver(
       ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
       frame_tree_node->navigation_request()->GetNavigationId(),
       &factory_receiver, nullptr /* header_client */,
-      nullptr /* bypass_redirect_checks */, nullptr /* factory_override */);
+      nullptr /* bypass_redirect_checks */, nullptr /* disable_secure_dns */,
+      nullptr /* factory_override */);
   it->second->Clone(std::move(factory_receiver));
 }
 

@@ -1072,17 +1072,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "vr_pixeltests",
-        "test_target": "//chrome/browser/vr:vr_pixeltests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "weblayer_browsertests",
         "test_target": "//weblayer/test:weblayer_browsertests"
       },
@@ -8496,17 +8485,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "vr_pixeltests",
-        "test_target": "//chrome/browser/vr:vr_pixeltests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "weblayer_browsertests",
         "test_target": "//weblayer/test:weblayer_browsertests"
       },
@@ -9815,17 +9793,6 @@
         },
         "test": "vr_common_unittests",
         "test_target": "//chrome/browser/vr:vr_common_unittests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "vr_pixeltests",
-        "test_target": "//chrome/browser/vr:vr_pixeltests"
       },
       {
         "merge": {

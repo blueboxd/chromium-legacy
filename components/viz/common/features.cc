@@ -16,12 +16,6 @@
 
 namespace features {
 
-// Enables running the display compositor as part of the viz service in the GPU
-// process. This is also referred to as out-of-process display compositor
-// (OOP-D).
-const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Use Skia's readback API instead of GLRendererCopier.
 const base::Feature kUseSkiaForGLReadback{"UseSkiaForGLReadback",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -49,16 +43,8 @@ const base::Feature kVizForWebView{"VizForWebView",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsVizDisplayCompositorEnabled() {
-  // VizDisplayCompositor is always enabled except for WebView. Since we can't
-  // differentiate between Android browser and WebView at compile time we still
-  // need to check the feature there.
-  // TODO(kylechar): Switch over any remaining places this is needed in WebView
-  // to check VizForWebView feature instead of VizDisplayCompositor.
-#if defined(OS_ANDROID)
-  return base::FeatureList::IsEnabled(kVizDisplayCompositor);
-#else
+  // TODO(crbug.com/936425): Delete function when it's no longer checked.
   return true;
-#endif
 }
 
 const base::Feature kUsePreferredIntervalForVideo{
@@ -92,12 +78,7 @@ bool IsRecordingSkPicture() {
 }
 
 bool IsUsingVizForWebView() {
-  if (base::FeatureList::IsEnabled(kVizForWebView)) {
-    DCHECK(IsVizDisplayCompositorEnabled())
-        << "Enabling VizForWebView requires VizDisplayCompositor";
-    return true;
-  }
-  return false;
+  return base::FeatureList::IsEnabled(kVizForWebView);
 }
 
 bool IsUsingPreferredIntervalForVideo() {

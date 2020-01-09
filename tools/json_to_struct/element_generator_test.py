@@ -67,6 +67,19 @@ class ElementGeneratorTest(unittest.TestCase):
     GenerateFieldContent('', {'type': 'enum'}, 'BLUE', lines, '  ', {})
     self.assertEquals(['  BLUE,'], lines)
 
+  def testGenerateClassFieldContent(self):
+    lines = []
+    GenerateFieldContent('', {'type': 'class', 'default': 'base::nullopt'},
+                         None, lines, '  ', {})
+    self.assertEquals(['  base::nullopt,'], lines)
+    lines = []
+    GenerateFieldContent('', {'type': 'class', 'default': 'base::nullopt'},
+                         'true', lines, '  ', {})
+    self.assertEquals(['  true,'], lines)
+    lines = []
+    GenerateFieldContent('', {'type': 'class'}, 'false', lines, '  ', {})
+    self.assertEquals(['  false,'], lines)
+
   def testGenerateArrayFieldContent(self):
     lines = ['STRUCT BEGINS'];
     GenerateFieldContent('test', {'type': 'array', 'contents': {'type': 'int'}},

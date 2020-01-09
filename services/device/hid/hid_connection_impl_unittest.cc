@@ -177,7 +177,7 @@ class HidConnectionImplTest : public DeviceServiceTestBase {
     hid_collection_info->usage = mojom::HidUsageAndPage::New(0, 0);
     hid_collection_info->report_ids.push_back(kTestReportId);
     return base::MakeRefCounted<HidDeviceInfo>(
-        kTestDeviceId, 0x1234, 0xabcd, "product name", "serial number",
+        kTestDeviceId, "1", 0x1234, 0xabcd, "product name", "serial number",
         mojom::HidBusType::kHIDBusTypeUSB, std::move(hid_collection_info),
         kMaxReportSizeBytes, kMaxReportSizeBytes, 0);
   }

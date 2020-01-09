@@ -134,6 +134,7 @@ void FakeHidManager::Connect(
 }
 
 mojom::HidDeviceInfoPtr FakeHidManager::CreateAndAddDevice(
+    const std::string& physical_device_id,
     uint16_t vendor_id,
     uint16_t product_id,
     const std::string& product_name,
@@ -141,6 +142,7 @@ mojom::HidDeviceInfoPtr FakeHidManager::CreateAndAddDevice(
     mojom::HidBusType bus_type) {
   mojom::HidDeviceInfoPtr device = mojom::HidDeviceInfo::New();
   device->guid = base::GenerateGUID();
+  device->physical_device_id = physical_device_id;
   device->vendor_id = vendor_id;
   device->product_id = product_id;
   device->product_name = product_name;
@@ -151,6 +153,7 @@ mojom::HidDeviceInfoPtr FakeHidManager::CreateAndAddDevice(
 }
 
 mojom::HidDeviceInfoPtr FakeHidManager::CreateAndAddDeviceWithTopLevelUsage(
+    const std::string& physical_device_id,
     uint16_t vendor_id,
     uint16_t product_id,
     const std::string& product_name,
@@ -160,6 +163,7 @@ mojom::HidDeviceInfoPtr FakeHidManager::CreateAndAddDeviceWithTopLevelUsage(
     uint16_t usage) {
   mojom::HidDeviceInfoPtr device = mojom::HidDeviceInfo::New();
   device->guid = base::GenerateGUID();
+  device->physical_device_id = physical_device_id;
   device->vendor_id = vendor_id;
   device->product_id = product_id;
   device->product_name = product_name;

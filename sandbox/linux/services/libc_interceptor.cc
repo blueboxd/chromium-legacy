@@ -37,7 +37,6 @@ namespace {
 // they fork. (This means that it'll be incorrect for global constructor
 // functions and before ZygoteMain is called - beware).
 bool g_am_zygote_or_renderer = false;
-bool g_use_localtime_override = true;
 int g_backchannel_fd = -1;
 
 base::LazyInstance<std::set<std::string>>::Leaky g_timezones =
@@ -222,7 +221,7 @@ __attribute__((__visibility__("default"))) struct tm* localtime_override(
 NO_SANITIZE("cfi-icall")
 __attribute__((__visibility__("default"))) struct tm* localtime_override(
     const time_t* timep) {
-  if (g_am_zygote_or_renderer && g_use_localtime_override) {
+  if (g_am_zygote_or_renderer) {
     static struct tm time_struct;
     static char timezone_string[64];
     ProxyLocaltimeCallToBrowser(*timep, &time_struct, timezone_string,
@@ -248,7 +247,7 @@ __attribute__((__visibility__("default"))) struct tm* localtime64_override(
 NO_SANITIZE("cfi-icall")
 __attribute__((__visibility__("default"))) struct tm* localtime64_override(
     const time_t* timep) {
-  if (g_am_zygote_or_renderer && g_use_localtime_override) {
+  if (g_am_zygote_or_renderer) {
     static struct tm time_struct;
     static char timezone_string[64];
     ProxyLocaltimeCallToBrowser(*timep, &time_struct, timezone_string,
@@ -275,7 +274,7 @@ NO_SANITIZE("cfi-icall")
 __attribute__((__visibility__("default"))) struct tm* localtime_r_override(
     const time_t* timep,
     struct tm* result) {
-  if (g_am_zygote_or_renderer && g_use_localtime_override) {
+  if (g_am_zygote_or_renderer) {
     ProxyLocaltimeCallToBrowser(*timep, result, nullptr, 0);
     return result;
   }
@@ -299,7 +298,7 @@ NO_SANITIZE("cfi-icall")
 __attribute__((__visibility__("default"))) struct tm* localtime64_r_override(
     const time_t* timep,
     struct tm* result) {
-  if (g_am_zygote_or_renderer && g_use_localtime_override) {
+  if (g_am_zygote_or_renderer) {
     ProxyLocaltimeCallToBrowser(*timep, result, nullptr, 0);
     return result;
   }
@@ -313,10 +312,6 @@ __attribute__((__visibility__("default"))) struct tm* localtime64_r_override(
     __msan_unpoison_string(res->tm_zone);
 #endif
   return res;
-}
-
-void SetUseLocaltimeOverride(bool enable) {
-  g_use_localtime_override = enable;
 }
 
 void SetAmZygoteOrRenderer(bool enable, int backchannel_fd) {

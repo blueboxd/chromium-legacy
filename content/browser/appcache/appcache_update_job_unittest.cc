@@ -97,7 +97,7 @@ const char kScopeManifestContents[] =
     "/ /fallback-newroot/foo\n";
 
 // There are a handful of http accessible resources that we need to conduct
-// these tests. Instead of running a seperate server to host these resources,
+// these tests. Instead of running a separate server to host these resources,
 // we mock them up.
 class MockHttpServer {
  public:
@@ -673,10 +673,10 @@ class AppCacheUpdateJobTest : public testing::Test,
         expect_non_null_update_time_(false),
         tested_manifest_(NONE),
         tested_manifest_path_override_(nullptr),
-        weak_partition_factory_(static_cast<StoragePartitionImpl*>(
-            BrowserContext::GetDefaultStoragePartition(&browser_context_))),
         interceptor_(base::BindRepeating(&InterceptRequest)),
-        process_id_(123) {}
+        process_id_(123),
+        weak_partition_factory_(static_cast<StoragePartitionImpl*>(
+            BrowserContext::GetDefaultStoragePartition(&browser_context_))) {}
 
   void SetUp() override {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(process_id_,
@@ -4577,9 +4577,9 @@ class AppCacheUpdateJobTest : public testing::Test,
   std::map<GURL, int64_t> expect_response_ids_;
 
   content::TestBrowserContext browser_context_;
-  base::WeakPtrFactory<StoragePartitionImpl> weak_partition_factory_;
   URLLoaderInterceptor interceptor_;
   const int process_id_;
+  base::WeakPtrFactory<StoragePartitionImpl> weak_partition_factory_;
 };
 
 TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {

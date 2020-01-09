@@ -14,7 +14,6 @@ import {hexColorToSkColor, skColorToRgb} from './utils.js';
 /**
  * Dialog that lets the user customize the NTP such as the background color or
  * image.
- * TODO(crbug.com/1032327): Add keyboard support.
  * TODO(crbug.com/1032328): Add support for selecting background image.
  * TODO(crbug.com/1032333): Add support for selecting shortcuts vs most visited.
  */
@@ -37,6 +36,13 @@ class CustomizeDialogElement extends PolymerElement {
 
       /** @private {!Array<!newTabPage.mojom.ChromeTheme>} */
       chromeThemes_: Array,
+
+      /** @private {number} */
+      numThemeColumns_: {
+        type: Number,
+        readOnly: true,
+        value: 6,
+      },
     };
   }
 
@@ -167,6 +173,46 @@ class CustomizeDialogElement extends PolymerElement {
    */
   skColorToRgb_(skColor) {
     return skColorToRgb(skColor);
+  }
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onThemesKeyDown_(e) {
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+      e.preventDefault();
+      const themeIcons =
+          Array.from(this.$.themesContainer.querySelectorAll('ntp-theme-icon'));
+      const currentIndex = themeIcons.indexOf(e.target);
+      const isRtl = window.getComputedStyle(this)['direction'] === 'rtl';
+      let delta = 0;
+      switch (e.key) {
+        case 'ArrowLeft':
+          delta = isRtl ? 1 : -1;
+          break;
+        case 'ArrowRight':
+          delta = isRtl ? -1 : 1;
+          break;
+        case 'ArrowUp':
+          delta = -this.numThemeColumns_;
+          break;
+        case 'ArrowDown':
+          delta = this.numThemeColumns_;
+          break;
+      }
+      const mod = function(m, n) {
+        return ((m % n) + n) % n;
+      };
+      const newIndex = mod(currentIndex + delta, themeIcons.length);
+      themeIcons[newIndex].focus();
+    }
+
+    if (['Enter', ' '].includes(e.key)) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.target.click();
+    }
   }
 }
 

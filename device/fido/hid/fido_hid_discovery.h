@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
-#include "services/device/public/mojom/hid.mojom.h"
+#include "services/device/public/mojom/hid.mojom-forward.h"
 
 namespace device {
 

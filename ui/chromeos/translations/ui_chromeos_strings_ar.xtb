@@ -80,7 +80,7 @@
 <translation id="1847880352285315359">تم الحفظ</translation>
 <translation id="1864756863218646478">تعذر العثور على الملف.</translation>
 <translation id="1921986354447415460">‏لوحة مفاتيح Turkish-F</translation>
-<translation id="1924372192547904021">تم تهيئة<ph name="DRIVE_NAME" /></translation>
+<translation id="1924372192547904021">تم ضبط <ph name="DRIVE_NAME" /></translation>
 <translation id="1931134289871235022">السلوفاكية</translation>
 <translation id="1933345018156373194">تعذَّر النقل، خطأ غير متوقِّع: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">الفنلندية</translation>
@@ -164,7 +164,7 @@
 <translation id="2942290791863759244">‏لوحة المفاتيح الألمانية Neo 2</translation>
 <translation id="2943400156390503548">الشرائح</translation>
 <translation id="2943503720238418293">استخدم اسم أقصر</translation>
-<translation id="2949781154072577687">جارٍ تهيئة<ph name="DRIVE_NAME" />...</translation>
+<translation id="2949781154072577687">جارٍ ضبط <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">قنديل البحر</translation>
 <translation id="2963783323012015985">لوحة المفاتيح التركية</translation>
 <translation id="2966459079597787514">لوحة المفاتيح السويدية</translation>
@@ -392,7 +392,7 @@
 <translation id="5464696796438641524">لوحة المفاتيح البولندية</translation>
 <translation id="5465122519792752163">‏لوحة مفاتيح اللغة النيبالية (InScript)</translation>
 <translation id="5469868506864199649">الإيطالية</translation>
-<translation id="5494920125229734069">تحديد الكل</translation>
+<translation id="5494920125229734069">اختيار الكل</translation>
 <translation id="5500122897333236901">الأيسلندية</translation>
 <translation id="5508696409934741614">نقاط</translation>
 <translation id="5522908512596376669">تم تغيير قائمة الملفات إلى عرض القائمة.</translation>
@@ -571,7 +571,7 @@
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7654209398114106148">جارٍ نقل <ph name="NUMBER_OF_ITEMS" /> من العناصر...</translation>
 <translation id="7658239707568436148">إلغاء</translation>
-<translation id="7695430100978772476">تعذّر تهيئة<ph name="DRIVE_NAME" /></translation>
+<translation id="7695430100978772476">تعذّر ضبط <ph name="DRIVE_NAME" /></translation>
 <translation id="770015031906360009">اليونانية</translation>
 <translation id="7706319470528945664">لوحة المفاتيح البرتغالية</translation>
 <translation id="7711920809702896782">معلومات الصورة</translation>
@@ -594,7 +594,7 @@
 <translation id="7825423931463735974">‏لوحة المفاتيح التاميلية (Tamil99)</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> تيرابايت</translation>
 <translation id="7839804798877833423">سيؤدي جلب هذه الملفات إلى استخدام حوالي <ph name="FILE_SIZE" /> من بيانات الجوال.</translation>
-<translation id="7846076177841592234">إلغاء التحديد</translation>
+<translation id="7846076177841592234">إلغاء الاختيار</translation>
 <translation id="7853966320808728790">‏BÉPO الفرنسية</translation>
 <translation id="7864662577698025113">إضافة خدمة جديدة</translation>
 <translation id="7873831373602885875">يتعذَّر الحفظ في <ph name="FOLDER_NAME" />. وسيتم حفظ جميع التعديلات في <ph name="DOWNLOADS_FOLDER" /> في مجلَّد "التنزيلات".</translation>
@@ -677,7 +677,7 @@
 <translation id="8722421161699219904">لوحة المفاتيح الأمريكية الدولية</translation>
 <translation id="872537912056138402">الكرواتية</translation>
 <translation id="874420130893181774">‏أسلوب إدخال Pinyin التقليدي</translation>
-<translation id="8775404590947523323">يتم حفظ التعديلات تلقائيًا.<ph name="BREAKS" />للاحتفاظ بنسخة من الصورة الأصلية، يجب إلغاء تحديد "استبدال الملف الأصلي"</translation>
+<translation id="8775404590947523323">يتم حفظ التعديلات تلقائيًا.<ph name="BREAKS" />للاحتفاظ بنسخة من الصورة الأصلية، يجب إلغاء اختيار "استبدال الملف الأصلي"</translation>
 <translation id="8803496343472038847">لوحة المفاتيح الصوتية الروسية</translation>
 <translation id="8808686172382650546">قط</translation>
 <translation id="8810671769985673465">تعذّر الضغط، العناصر الموجودة هي: "<ph name="FILE_NAME" />"</translation>

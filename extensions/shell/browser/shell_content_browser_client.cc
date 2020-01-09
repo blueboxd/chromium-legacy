@@ -313,6 +313,7 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
     bool* bypass_redirect_checks,
+    bool* disable_secure_dns,
     network::mojom::URLLoaderFactoryOverridePtr* factory_override) {
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(

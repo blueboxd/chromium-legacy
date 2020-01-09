@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,7 +16,7 @@
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "components/crash/core/browser/crashes_ui_util.h"
-#include "components/grit/components_resources.h"
+#include "components/grit/dev_ui_components_resources.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"

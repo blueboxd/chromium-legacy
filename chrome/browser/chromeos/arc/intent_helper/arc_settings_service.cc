@@ -40,7 +40,6 @@
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/intent_helper/font_size_util.h"
 #include "components/arc/mojom/backup_settings.mojom.h"
 #include "components/arc/mojom/pip.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -65,6 +64,8 @@ constexpr char kSetPageZoomAction[] =
     "org.chromium.arc.intent_helper.SET_PAGE_ZOOM";
 
 constexpr char kArcProxyBypassListDelimiter[] = ",";
+
+constexpr float kAndroidFontScaleNormal = 1;
 
 bool GetHttpProxyServer(const ProxyConfigDictionary* proxy_config_dict,
                         std::string* host,

@@ -72,22 +72,25 @@ ContentDistributionType BoxPackToContentDistribution(EBoxPack box_pack) {
 
 }  // namespace
 
-FlexItem::FlexItem(LayoutBox* box,
+FlexItem::FlexItem(const FlexLayoutAlgorithm* algorithm,
+                   LayoutBox* box,
+                   const ComputedStyle& style,
                    LayoutUnit flex_base_content_size,
                    MinMaxSize min_max_sizes,
                    base::Optional<MinMaxSize> min_max_cross_axis_sizes,
                    LayoutUnit main_axis_border_padding,
-                   LayoutUnit main_axis_margin)
-    : algorithm(nullptr),
+                   NGPhysicalBoxStrut physical_margins)
+    : algorithm(algorithm),
       line_number(0),
       box(box),
+      style(style),
       flex_base_content_size(flex_base_content_size),
       min_max_sizes(min_max_sizes),
       min_max_cross_sizes(min_max_cross_axis_sizes),
       hypothetical_main_content_size(
           min_max_sizes.ClampSizeToMinAndMax(flex_base_content_size)),
       main_axis_border_padding(main_axis_border_padding),
-      main_axis_margin(main_axis_margin),
+      physical_margins(physical_margins),
       frozen(false),
       needs_relayout_for_stretch(false),
       ng_input_node(/* LayoutBox* */ nullptr) {
@@ -97,45 +100,50 @@ FlexItem::FlexItem(LayoutBox* box,
 }
 
 bool FlexItem::MainAxisIsInlineAxis() const {
-  return algorithm->IsHorizontalFlow() == box->IsHorizontalWritingMode();
+  return algorithm->IsHorizontalFlow() == style.IsHorizontalWritingMode();
 }
 
 LayoutUnit FlexItem::FlowAwareMarginStart() const {
   if (algorithm->IsHorizontalFlow()) {
-    return algorithm->IsLeftToRightFlow() ? box->MarginLeft()
-                                          : box->MarginRight();
+    return algorithm->IsLeftToRightFlow() ? physical_margins.left
+                                          : physical_margins.right;
   }
-  return algorithm->IsLeftToRightFlow() ? box->MarginTop()
-                                        : box->MarginBottom();
+  return algorithm->IsLeftToRightFlow() ? physical_margins.top
+                                        : physical_margins.bottom;
 }
 
 LayoutUnit FlexItem::FlowAwareMarginEnd() const {
   if (algorithm->IsHorizontalFlow()) {
-    return algorithm->IsLeftToRightFlow() ? box->MarginRight()
-                                          : box->MarginLeft();
+    return algorithm->IsLeftToRightFlow() ? physical_margins.right
+                                          : physical_margins.left;
   }
-  return algorithm->IsLeftToRightFlow() ? box->MarginBottom()
-                                        : box->MarginTop();
+  return algorithm->IsLeftToRightFlow() ? physical_margins.bottom
+                                        : physical_margins.top;
 }
 
 LayoutUnit FlexItem::FlowAwareMarginBefore() const {
   switch (algorithm->GetTransformedWritingMode()) {
     case TransformedWritingMode::kTopToBottomWritingMode:
-      return box->MarginTop();
+      return physical_margins.top;
     case TransformedWritingMode::kBottomToTopWritingMode:
-      return box->MarginBottom();
+      return physical_margins.bottom;
     case TransformedWritingMode::kLeftToRightWritingMode:
-      return box->MarginLeft();
+      return physical_margins.left;
     case TransformedWritingMode::kRightToLeftWritingMode:
-      return box->MarginRight();
+      return physical_margins.right;
   }
   NOTREACHED();
-  return box->MarginTop();
+  return LayoutUnit();
+}
+
+LayoutUnit FlexItem::MainAxisMarginExtent() const {
+  return algorithm->IsHorizontalFlow() ? physical_margins.HorizontalSum()
+                                       : physical_margins.VerticalSum();
 }
 
 LayoutUnit FlexItem::CrossAxisMarginExtent() const {
-  return algorithm->IsHorizontalFlow() ? box->MarginHeight()
-                                       : box->MarginWidth();
+  return algorithm->IsHorizontalFlow() ? physical_margins.VerticalSum()
+                                       : physical_margins.HorizontalSum();
 }
 
 LayoutUnit FlexItem::MarginBoxAscent() const {
@@ -152,31 +160,28 @@ LayoutUnit FlexItem::AvailableAlignmentSpace() const {
 
 bool FlexItem::HasAutoMarginsInCrossAxis() const {
   if (algorithm->IsHorizontalFlow()) {
-    return box->StyleRef().MarginTop().IsAuto() ||
-           box->StyleRef().MarginBottom().IsAuto();
+    return style.MarginTop().IsAuto() || style.MarginBottom().IsAuto();
   }
-  return box->StyleRef().MarginLeft().IsAuto() ||
-         box->StyleRef().MarginRight().IsAuto();
+  return style.MarginLeft().IsAuto() || style.MarginRight().IsAuto();
 }
 
 ItemPosition FlexItem::Alignment() const {
-  return FlexLayoutAlgorithm::AlignmentForChild(*algorithm->Style(),
-                                                box->StyleRef());
+  return FlexLayoutAlgorithm::AlignmentForChild(*algorithm->Style(), style);
 }
 
 void FlexItem::UpdateAutoMarginsInMainAxis(LayoutUnit auto_margin_offset) {
   DCHECK_GE(auto_margin_offset, LayoutUnit());
 
   if (algorithm->IsHorizontalFlow()) {
-    if (box->StyleRef().MarginLeft().IsAuto())
-      box->SetMarginLeft(auto_margin_offset);
-    if (box->StyleRef().MarginRight().IsAuto())
-      box->SetMarginRight(auto_margin_offset);
+    if (style.MarginLeft().IsAuto())
+      physical_margins.left = auto_margin_offset;
+    if (style.MarginRight().IsAuto())
+      physical_margins.right = auto_margin_offset;
   } else {
-    if (box->StyleRef().MarginTop().IsAuto())
-      box->SetMarginTop(auto_margin_offset);
-    if (box->StyleRef().MarginBottom().IsAuto())
-      box->SetMarginBottom(auto_margin_offset);
+    if (style.MarginTop().IsAuto())
+      physical_margins.top = auto_margin_offset;
+    if (style.MarginBottom().IsAuto())
+      physical_margins.bottom = auto_margin_offset;
   }
 }
 
@@ -186,30 +191,29 @@ bool FlexItem::UpdateAutoMarginsInCrossAxis(
   DCHECK_GE(available_alignment_space, LayoutUnit());
 
   bool is_horizontal = algorithm->IsHorizontalFlow();
-  const Length& top_or_left = is_horizontal ? box->StyleRef().MarginTop()
-                                            : box->StyleRef().MarginLeft();
-  const Length& bottom_or_right = is_horizontal ? box->StyleRef().MarginBottom()
-                                                : box->StyleRef().MarginRight();
+  const Length& top_or_left =
+      is_horizontal ? style.MarginTop() : style.MarginLeft();
+  const Length& bottom_or_right =
+      is_horizontal ? style.MarginBottom() : style.MarginRight();
   if (top_or_left.IsAuto() && bottom_or_right.IsAuto()) {
     desired_location.Move(LayoutUnit(), available_alignment_space / 2);
     if (is_horizontal) {
-      box->SetMarginTop(available_alignment_space / 2);
-      box->SetMarginBottom(available_alignment_space / 2);
+      physical_margins.top = available_alignment_space / 2;
+      physical_margins.bottom = available_alignment_space / 2;
     } else {
-      box->SetMarginLeft(available_alignment_space / 2);
-      box->SetMarginRight(available_alignment_space / 2);
+      physical_margins.left = available_alignment_space / 2;
+      physical_margins.right = available_alignment_space / 2;
     }
     return true;
   }
   bool should_adjust_top_or_left = true;
-  if (algorithm->IsColumnFlow() && !box->StyleRef().IsLeftToRightDirection()) {
+  if (algorithm->IsColumnFlow() && !style.IsLeftToRightDirection()) {
     // For column flows, only make this adjustment if topOrLeft corresponds to
     // the "before" margin, so that flipForRightToLeftColumn will do the right
     // thing.
     should_adjust_top_or_left = false;
   }
-  if (!algorithm->IsColumnFlow() &&
-      box->StyleRef().IsFlippedBlocksWritingMode()) {
+  if (!algorithm->IsColumnFlow() && style.IsFlippedBlocksWritingMode()) {
     // If we are a flipped writing mode, we need to adjust the opposite side.
     // This is only needed for row flows because this only affects the
     // block-direction axis.
@@ -221,9 +225,9 @@ bool FlexItem::UpdateAutoMarginsInCrossAxis(
       desired_location.Move(LayoutUnit(), available_alignment_space);
 
     if (is_horizontal)
-      box->SetMarginTop(available_alignment_space);
+      physical_margins.top = available_alignment_space;
     else
-      box->SetMarginLeft(available_alignment_space);
+      physical_margins.left = available_alignment_space;
     return true;
   }
   if (bottom_or_right.IsAuto()) {
@@ -231,9 +235,9 @@ bool FlexItem::UpdateAutoMarginsInCrossAxis(
       desired_location.Move(LayoutUnit(), available_alignment_space);
 
     if (is_horizontal)
-      box->SetMarginBottom(available_alignment_space);
+      physical_margins.bottom = available_alignment_space;
     else
-      box->SetMarginRight(available_alignment_space);
+      physical_margins.right = available_alignment_space;
     return true;
   }
   return false;
@@ -241,14 +245,13 @@ bool FlexItem::UpdateAutoMarginsInCrossAxis(
 
 void FlexItem::ComputeStretchedSize() {
   DCHECK_EQ(Alignment(), ItemPosition::kStretch);
-  if (MainAxisIsInlineAxis() && box->StyleRef().LogicalHeight().IsAuto()) {
+  if (MainAxisIsInlineAxis() && style.LogicalHeight().IsAuto()) {
     LayoutUnit stretched_logical_height =
         std::max(box->BorderAndPaddingLogicalHeight(),
                  Line()->cross_axis_extent - CrossAxisMarginExtent());
     cross_axis_size = box->ConstrainLogicalHeightByMinMax(
         stretched_logical_height, box->IntrinsicContentLogicalHeight());
-  } else if (!MainAxisIsInlineAxis() &&
-             box->StyleRef().LogicalWidth().IsAuto()) {
+  } else if (!MainAxisIsInlineAxis() && style.LogicalWidth().IsAuto()) {
     LayoutUnit child_width =
         (Line()->cross_axis_extent - CrossAxisMarginExtent())
             .ClampNegativeToZero();
@@ -588,9 +591,8 @@ FlexLine* FlexLayoutAlgorithm::ComputeNextFlexLine(
     }
     line_has_in_flow_item = true;
     sum_flex_base_size += flex_item.FlexBaseMarginBoxSize();
-    total_flex_grow += flex_item.box->StyleRef().ResolvedFlexGrow(StyleRef());
-    const float flex_shrink =
-        flex_item.box->StyleRef().ResolvedFlexShrink(StyleRef());
+    total_flex_grow += flex_item.style.ResolvedFlexGrow(StyleRef());
+    const float flex_shrink = flex_item.style.ResolvedFlexShrink(StyleRef());
     total_flex_shrink += flex_shrink;
     total_weighted_flex_shrink +=
         flex_shrink * flex_item.flex_base_content_size;
@@ -967,14 +969,17 @@ void FlexLayoutAlgorithm::LayoutColumnReverse(
          child_number < line_context.line_items.size(); ++child_number) {
       FlexItem& flex_item = line_context.line_items[child_number];
       LayoutUnit item_main_size = flex_item.FlexedBorderBoxSize();
+
+      NGBoxStrut margins = flex_item.physical_margins.ConvertToLogical(
+          Style()->GetWritingMode(), Style()->Direction());
+
       // We passed 0 as the initial main_axis offset to ComputeLineItemsPosition
       // for ColumnReverse containers so here we have to add the
       // border_scrollbar_padding of the container.
       flex_item.desired_location.SetX(
           main_axis_content_size + border_scrollbar_padding_before -
-          flex_item.desired_location.X() - item_main_size -
-          flex_item.box->MarginAfter(Style()) +
-          flex_item.box->MarginBefore(Style()));
+          flex_item.desired_location.X() - item_main_size - margins.block_end +
+          margins.block_start);
     }
   }
 }

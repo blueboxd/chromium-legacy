@@ -131,6 +131,13 @@ class Traversal {
   }
   template <typename MatchFunc>
   static ElementType* FirstWithin(const ContainerNode&, MatchFunc);
+
+  static ElementType* InclusiveFirstWithin(Node& current) {
+    if (IsElementOfType<const ElementType>(current))
+      return To<ElementType>(&current);
+    return FirstWithin(current);
+  }
+
   static ElementType* LastWithin(const ContainerNode& current) {
     return LastWithinTemplate(current);
   }

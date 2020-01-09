@@ -129,7 +129,7 @@ public abstract class RemoteFragmentImpl extends IRemoteFragment.Stub {
         }
     }
 
-    public void onSaveInstaceState(Bundle outState) {
+    public void onSaveInstanceState(Bundle outState) {
         try {
             mClient.superOnSaveInstanceState(ObjectWrapper.wrap(outState));
         } catch (RemoteException e) {
@@ -244,7 +244,7 @@ public abstract class RemoteFragmentImpl extends IRemoteFragment.Stub {
     @Override
     public final void handleOnSaveInstanceState(IObjectWrapper outState) {
         StrictModeWorkaround.apply();
-        onSaveInstaceState(ObjectWrapper.unwrap(outState, Bundle.class));
+        onSaveInstanceState(ObjectWrapper.unwrap(outState, Bundle.class));
     }
 
     @Override

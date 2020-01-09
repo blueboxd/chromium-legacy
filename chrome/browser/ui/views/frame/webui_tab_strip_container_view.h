@@ -72,6 +72,8 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   // the container's preferred size will change.
   void SetVisibleForTesting(bool visible);
   views::WebView* web_view_for_testing() const { return web_view_; }
+  ToolbarButton* new_tab_button_for_testing() const { return new_tab_button_; }
+  views::View* tab_counter_for_testing() const { return tab_counter_; }
 
  private:
   class AutoCloser;

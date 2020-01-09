@@ -328,10 +328,13 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     if (wgpu_format.value() == WGPUTextureFormat_Undefined) {
       wgpu_format = base::nullopt;
     }
-    return base::WrapUnique(new ExternalVkImageBacking(
+
+    auto result = base::WrapUnique(new ExternalVkImageBacking(
         mailbox, resource_format, size, color_space, usage, context_state,
         vk_image, vk_device_memory, memory_size, vk_image_info.format,
         command_pool, gr_ycbcr_info, wgpu_format, {}));
+    result->SetCleared();
+    return result;
   }
 
   if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {

@@ -139,6 +139,7 @@ void AppServiceAppWindowArcTracker::OnTaskCreated(
   app_service_controller_->app_service_instance_helper()->OnInstances(
       task_id_to_arc_app_window_info_[task_id]->app_shelf_id().ToString(),
       window, std::string(), state);
+  arc_window_candidates_.erase(window);
 }
 
 void AppServiceAppWindowArcTracker::OnTaskDescriptionUpdated(

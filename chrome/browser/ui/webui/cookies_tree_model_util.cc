@@ -19,7 +19,6 @@
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/cache_storage_context.h"
-#include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "extensions/buildflags/buildflags.h"

@@ -8,7 +8,7 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite
 
 import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-import {keydown, TestProxy} from 'chrome://test/new_tab_page/test_support.js';
+import {assertFocus, keydown, TestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageMostVisitedFocusTest', () => {
@@ -57,14 +57,6 @@ suite('NewTabPageMostVisitedFocusTest', () => {
     });
     await testProxy.callbackRouterRemote.$.flushForTesting();
     await tilesRendered;
-  }
-
-  /**
-   * @param {!HTMLElement} element
-   * @private
-   */
-  function assertFocus(element) {
-    assertEquals(element, getDeepActiveElement());
   }
 
   setup(() => {

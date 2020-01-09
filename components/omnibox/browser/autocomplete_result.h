@@ -100,8 +100,7 @@ class AutocompleteResult {
   bool TopMatchIsStandaloneVerbatimMatch() const;
 
   // Returns the first match in |matches| which might be chosen as default.
-  // If |kOmniboxPreserveDefaultMatchScore| is enabled and the page is not
-  // the fake box, the scores are not demoted by type.
+  // If the page is not the fake box, the scores are not demoted by type.
   static ACMatches::const_iterator FindTopMatch(const AutocompleteInput& input,
                                                 const ACMatches& matches);
   static ACMatches::iterator FindTopMatch(const AutocompleteInput& input,

@@ -18,6 +18,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
+#include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/notification/download_notification_manager.h"
@@ -174,6 +175,10 @@ void RecordButtonClickAction(DownloadCommands::Command command) {
     case DownloadCommands::ANNOTATE:
       base::RecordAction(
           UserMetricsAction("DownloadNotification.Button_Annotate"));
+      break;
+    case DownloadCommands::DEEP_SCAN:
+      base::RecordAction(
+          UserMetricsAction("DownloadNotification.Button_DeepScan"));
       break;
   }
 }
@@ -682,6 +687,7 @@ base::string16 DownloadItemNotification::GetCommandLabel(
     case DownloadCommands::ALWAYS_OPEN_TYPE:
     case DownloadCommands::PLATFORM_OPEN:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
+    case DownloadCommands::DEEP_SCAN:
       // Only for menu.
       NOTREACHED();
       return base::string16();

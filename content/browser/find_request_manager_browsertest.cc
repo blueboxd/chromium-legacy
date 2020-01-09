@@ -390,6 +390,25 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_RemoveFrame) {
   EXPECT_EQ(8, results.active_match_ordinal);
 }
 
+IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, RemoveMainFrame) {
+  LoadAndWait("/find_in_page.html");
+
+  auto options = blink::mojom::FindOptions::New();
+  options->run_synchronously_for_testing = true;
+  Find("result", options->Clone());
+  delegate()->WaitForFinalReply();
+  options->find_next = true;
+  options->forward = false;
+  Find("result", options->Clone());
+  Find("result", options->Clone());
+  Find("result", options->Clone());
+  Find("result", options->Clone());
+  Find("result", options->Clone());
+
+  // Don't wait for the reply, and end the test. This will remove the main
+  // frame, which should not crash.
+}
+
 // Tests adding a frame during a find session.
 // TODO(crbug.com/657331): Test is flaky on all platforms.
 IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_AddFrame) {

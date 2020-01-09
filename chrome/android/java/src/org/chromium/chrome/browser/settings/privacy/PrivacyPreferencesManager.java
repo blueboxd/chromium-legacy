@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.settings.privacy;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
@@ -18,6 +17,8 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 import org.chromium.components.minidump_uploader.util.NetworkPermissionUtil;
@@ -27,23 +28,16 @@ import org.chromium.content_public.browser.BrowserStartupController;
  * Reads, writes, and migrates preferences related to network usage and privacy.
  */
 public class PrivacyPreferencesManager implements CrashReportingPermissionManager{
-    public static final String PREF_METRICS_REPORTING = "metrics_reporting";
-    private static final String PREF_METRICS_IN_SAMPLE = "in_metrics_sample";
-    private static final String PREF_NETWORK_PREDICTIONS = "network_predictions";
-    private static final String PREF_BANDWIDTH_OLD = "prefetch_bandwidth";
-    private static final String PREF_BANDWIDTH_NO_CELLULAR_OLD = "prefetch_bandwidth_no_cellular";
-    private static final String ALLOW_PRERENDER_OLD = "allow_prefetch";
-
     @SuppressLint("StaticFieldLeak")
     private static PrivacyPreferencesManager sInstance;
 
     private final Context mContext;
-    private final SharedPreferences mSharedPreferences;
+    private final SharedPreferencesManager mPrefs;
 
     @VisibleForTesting
     PrivacyPreferencesManager(Context context) {
         mContext = context;
-        mSharedPreferences = ContextUtils.getAppSharedPreferences();
+        mPrefs = SharedPreferencesManager.getInstance();
     }
 
     public static PrivacyPreferencesManager getInstance() {
@@ -65,7 +59,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         // See if PREF_NETWORK_PREDICTIONS is an old boolean value.
         boolean predictionOptionIsBoolean = false;
         try {
-            mSharedPreferences.getString(PREF_NETWORK_PREDICTIONS, "");
+            mPrefs.readString(ChromePreferenceKeys.PRIVACY_NETWORK_PREDICTIONS, "");
         } catch (ClassCastException ex) {
             predictionOptionIsBoolean = true;
         }
@@ -78,8 +72,8 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
 
         // Nothing to do if the old preferences are unset.
         if (!predictionOptionIsBoolean
-                && !mSharedPreferences.contains(PREF_BANDWIDTH_OLD)
-                && !mSharedPreferences.contains(PREF_BANDWIDTH_NO_CELLULAR_OLD)) {
+                && !mPrefs.contains(ChromePreferenceKeys.PRIVACY_BANDWIDTH_OLD)
+                && !mPrefs.contains(ChromePreferenceKeys.PRIVACY_BANDWIDTH_NO_CELLULAR_OLD)) {
             return;
         }
 
@@ -89,17 +83,18 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         final String prefBandwidthDefault =
                 BandwidthType.title(BandwidthType.Type.PRERENDER_ON_WIFI);
         final String prefBandwidth =
-                mSharedPreferences.getString(PREF_BANDWIDTH_OLD, prefBandwidthDefault);
+                mPrefs.readString(ChromePreferenceKeys.PRIVACY_BANDWIDTH_OLD, prefBandwidthDefault);
         boolean prefBandwidthNoCellularDefault = true;
-        boolean prefBandwidthNoCellular = mSharedPreferences.getBoolean(
-                PREF_BANDWIDTH_NO_CELLULAR_OLD, prefBandwidthNoCellularDefault);
+        boolean prefBandwidthNoCellular =
+                mPrefs.readBoolean(ChromePreferenceKeys.PRIVACY_BANDWIDTH_NO_CELLULAR_OLD,
+                        prefBandwidthNoCellularDefault);
 
         if (!(prefBandwidthDefault.equals(prefBandwidth))
                 || (prefBandwidthNoCellular != prefBandwidthNoCellularDefault)) {
             boolean newValue = true;
             // Observe PREF_BANDWIDTH on mobile network capable devices.
             if (isMobileNetworkCapable()) {
-                if (mSharedPreferences.contains(PREF_BANDWIDTH_OLD)) {
+                if (mPrefs.contains(ChromePreferenceKeys.PRIVACY_BANDWIDTH_OLD)) {
                     @BandwidthType.Type
                     int prefetchBandwidthTypePref =
                             BandwidthType.getBandwidthFromTitle(prefBandwidth);
@@ -112,7 +107,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
                 }
             // Observe PREF_BANDWIDTH_NO_CELLULAR on devices without mobile network.
             } else {
-                if (mSharedPreferences.contains(PREF_BANDWIDTH_NO_CELLULAR_OLD)) {
+                if (mPrefs.contains(ChromePreferenceKeys.PRIVACY_BANDWIDTH_NO_CELLULAR_OLD)) {
                     newValue = prefBandwidthNoCellular;
                 }
             }
@@ -121,27 +116,26 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         }
 
         // Delete old sharedPreferences.
-        SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
+
         // Delete PREF_BANDWIDTH and PREF_BANDWIDTH_NO_CELLULAR: just migrated these options.
-        if (mSharedPreferences.contains(PREF_BANDWIDTH_OLD)) {
-            sharedPreferencesEditor.remove(PREF_BANDWIDTH_OLD);
+        if (mPrefs.contains(ChromePreferenceKeys.PRIVACY_BANDWIDTH_OLD)) {
+            mPrefs.removeKey(ChromePreferenceKeys.PRIVACY_BANDWIDTH_OLD);
         }
-        if (mSharedPreferences.contains(PREF_BANDWIDTH_NO_CELLULAR_OLD)) {
-            sharedPreferencesEditor.remove(PREF_BANDWIDTH_NO_CELLULAR_OLD);
+        if (mPrefs.contains(ChromePreferenceKeys.PRIVACY_BANDWIDTH_NO_CELLULAR_OLD)) {
+            mPrefs.removeKey(ChromePreferenceKeys.PRIVACY_BANDWIDTH_NO_CELLULAR_OLD);
         }
         // Also delete ALLOW_PRERENDER, which was updated based on PREF_BANDWIDTH[_NO_CELLULAR] and
         // network connectivity type, therefore does not carry additional information.
-        if (mSharedPreferences.contains(ALLOW_PRERENDER_OLD)) {
-            sharedPreferencesEditor.remove(ALLOW_PRERENDER_OLD);
+        if (mPrefs.contains(ChromePreferenceKeys.PRIVACY_ALLOW_PRERENDER_OLD)) {
+            mPrefs.removeKey(ChromePreferenceKeys.PRIVACY_ALLOW_PRERENDER_OLD);
         }
         // Delete bool PREF_NETWORK_PREDICTIONS so that string values can be stored. Note that this
         // SharedPreference carries no information, because it used to be overwritten by
         // kNetworkPredictionEnabled on startup, and now it is overwritten by
         // kNetworkPredictionOptions on startup.
-        if (mSharedPreferences.contains(PREF_NETWORK_PREDICTIONS)) {
-            sharedPreferencesEditor.remove(PREF_NETWORK_PREDICTIONS);
+        if (mPrefs.contains(ChromePreferenceKeys.PRIVACY_NETWORK_PREDICTIONS)) {
+            mPrefs.removeKey(ChromePreferenceKeys.PRIVACY_NETWORK_PREDICTIONS);
         }
-        sharedPreferencesEditor.apply();
     }
 
     protected boolean isNetworkAvailable() {
@@ -179,7 +173,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      * @param enabled A boolean corresponding whether usage and crash reports uploads are allowed.
      */
     public void setUsageAndCrashReporting(boolean enabled) {
-        mSharedPreferences.edit().putBoolean(PREF_METRICS_REPORTING, enabled).apply();
+        mPrefs.writeBoolean(ChromePreferenceKeys.PRIVACY_METRICS_REPORTING, enabled);
         syncUsageAndCrashReportingPrefs();
         if (!enabled) {
             SurveyController.getInstance().clearCache(ContextUtils.getApplicationContext());
@@ -204,7 +198,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      * {@link org.chromium.chrome.browser.metrics.UmaUtils#isClientInMetricsSample} for details.
      */
     public void setClientInMetricsSample(boolean inSample) {
-        mSharedPreferences.edit().putBoolean(PREF_METRICS_IN_SAMPLE, inSample).apply();
+        mPrefs.writeBoolean(ChromePreferenceKeys.PRIVACY_METRICS_IN_SAMPLE, inSample);
     }
 
     /**
@@ -218,7 +212,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         // The default value is true to avoid sampling out crashes that occur before native code has
         // been initialized on first run. We'd rather have some extra crashes than none from that
         // time.
-        return mSharedPreferences.getBoolean(PREF_METRICS_IN_SAMPLE, true);
+        return mPrefs.readBoolean(ChromePreferenceKeys.PRIVACY_METRICS_IN_SAMPLE, true);
     }
 
     /**
@@ -242,7 +236,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      */
     @Override
     public boolean isUsageAndCrashReportingPermittedByUser() {
-        return mSharedPreferences.getBoolean(PREF_METRICS_REPORTING, false);
+        return mPrefs.readBoolean(ChromePreferenceKeys.PRIVACY_METRICS_REPORTING, false);
     }
 
     /**

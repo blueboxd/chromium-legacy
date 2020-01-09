@@ -40,14 +40,13 @@ void FakePendingNetworkConfigurationTracker::MarkComplete(
 }
 
 void FakePendingNetworkConfigurationTracker::IncrementCompletedAttempts(
-    const std::string& change_id,
+    const std::string& change_guid,
     const NetworkIdentifier& id) {
-  base::Optional<PendingNetworkConfigurationUpdate> existing_update =
-      GetPendingUpdate(change_id, id);
-  id_to_pending_update_map_.emplace(
-      std::piecewise_construct, std::forward_as_tuple(id),
-      std::forward_as_tuple(id, change_id, existing_update->specifics(),
-                            existing_update->completed_attempts() + 1));
+  PendingNetworkConfigurationUpdate& existing_update =
+      id_to_pending_update_map_.at(id);
+  existing_update.SetCompletedAttemptsForTesting(
+      existing_update.completed_attempts() + 1);
+
   id_to_completed_attempts_map_[id]++;
 }
 

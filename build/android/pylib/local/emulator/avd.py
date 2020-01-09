@@ -440,7 +440,11 @@ class _AvdInstance(object):
   def __str__(self):
     return '%s|%s' % (self._avd_name, (self._emulator_serial or id(self)))
 
-  def Start(self, read_only=True, snapshot_save=False, window=False):
+  def Start(self,
+            read_only=True,
+            snapshot_save=False,
+            window=False,
+            writable_system=False):
     """Starts the emulator running an instance of the given AVD."""
 
     with tempfile_ext.TemporaryFileName() as socket_path, (contextlib.closing(
@@ -469,6 +473,9 @@ class _AvdInstance(object):
         emulator_cmd.append('-read-only')
       if not snapshot_save:
         emulator_cmd.append('-no-snapshot-save')
+      if writable_system:
+        emulator_cmd.append('-writable-system')
+
       emulator_env = {}
       if self._emulator_home:
         emulator_env['ANDROID_EMULATOR_HOME'] = self._emulator_home

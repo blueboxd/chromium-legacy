@@ -74,10 +74,15 @@ void ExternalBeginFrameSourceMojo::MaybeProduceFrameCallback() {
     return;
   if (!pending_frame_callback_)
     return;
-  // If root frame is missing, the display scheduler will not produce a
-  // frame, so fire the pending frame callback early.
-  if (!display_->IsRootFrameMissing())
+  // If there aren't pending surfaces and the root frame is not missing,
+  // the display scheduler is likely to produce proper frame, so let it do
+  // its work. Otherwise, fire the pending frame callback early.
+  if (!display_->IsRootFrameMissing() &&
+      !display_->HasPendingSurfaces(last_begin_frame_args_)) {
     return;
+  }
+
+  frame_sink_manager_->DiscardPendingCopyOfOutputRequests(this);
 
   // All frame sinks are done with frame, yet the root frame is still missing,
   // the display won't draw, so resolve callback now.

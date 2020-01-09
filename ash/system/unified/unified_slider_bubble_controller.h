@@ -68,6 +68,9 @@ class ASH_EXPORT UnifiedSliderBubbleController
   // Start auto close timer.
   void StartAutoCloseTimer();
 
+  // Returns the insets for the bubble.
+  gfx::Insets GetInsets();
+
   // Unowned.
   UnifiedSystemTray* const tray_;
 

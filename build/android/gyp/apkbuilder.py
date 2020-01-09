@@ -351,12 +351,20 @@ def main(args):
       # 3. Dex files
       logging.debug('Adding classes.dex')
       if options.dex_file:
-        with zipfile.ZipFile(options.dex_file, 'r') as dex_zip:
-          for dex in (d for d in dex_zip.namelist() if d.endswith('.dex')):
+        with open(options.dex_file) as dex_file_obj:
+          if options.dex_file.endswith('.dex'):
+            # This is the case for incremental_install=true.
             add_to_zip(
-                apk_dex_dir + dex,
-                dex_zip.read(dex),
+                apk_dex_dir + 'classes.dex',
+                dex_file_obj.read(),
                 compress=not options.uncompress_dex)
+          else:
+            with zipfile.ZipFile(dex_file_obj) as dex_zip:
+              for dex in (d for d in dex_zip.namelist() if d.endswith('.dex')):
+                add_to_zip(
+                    apk_dex_dir + dex,
+                    dex_zip.read(dex),
+                    compress=not options.uncompress_dex)
 
       # 4. Native libraries.
       logging.debug('Adding lib/')

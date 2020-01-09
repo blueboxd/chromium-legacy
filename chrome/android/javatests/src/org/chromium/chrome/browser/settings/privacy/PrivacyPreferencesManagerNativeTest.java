@@ -21,6 +21,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -47,7 +48,7 @@ public class PrivacyPreferencesManagerNativeTest {
 
         // Setup prefs to be out of sync.
         PrivacyPreferencesManager.getInstance().setMetricsReportingEnabled(false);
-        pref.edit().putBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, true).apply();
+        pref.edit().putBoolean(ChromePreferenceKeys.PRIVACY_METRICS_REPORTING, true).apply();
 
         preferenceManager.syncUsageAndCrashReportingPrefs();
         Assert.assertTrue("Native preference should be True ",
@@ -67,13 +68,12 @@ public class PrivacyPreferencesManagerNativeTest {
         PrivacyPreferencesManager preferenceManager = new PrivacyPreferencesManager(context);
 
         preferenceManager.setUsageAndCrashReporting(true);
-        Assert.assertTrue(pref.getBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, false));
+        Assert.assertTrue(pref.getBoolean(ChromePreferenceKeys.PRIVACY_METRICS_REPORTING, false));
         Assert.assertTrue("Native preference should be True ",
                 PrivacyPreferencesManager.getInstance().isMetricsReportingEnabled());
 
         preferenceManager.setUsageAndCrashReporting(false);
-        Assert.assertFalse(
-                pref.getBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, false));
+        Assert.assertFalse(pref.getBoolean(ChromePreferenceKeys.PRIVACY_METRICS_REPORTING, false));
         Assert.assertFalse("Native preference should be False ",
                 PrivacyPreferencesManager.getInstance().isMetricsReportingEnabled());
     }

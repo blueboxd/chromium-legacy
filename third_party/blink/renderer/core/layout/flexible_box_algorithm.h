@@ -116,21 +116,24 @@ class FlexItem {
   // - |min_max_sizes| is the resolved min and max size properties in the
   //   main axis direction (not intrinsic widths). It does not include
   //   border/scrollbar/padding.
-  FlexItem(LayoutBox*,
+  FlexItem(const FlexLayoutAlgorithm*,
+           LayoutBox*,
+           const ComputedStyle& style,
            LayoutUnit flex_base_content_size,
            MinMaxSize min_max_main_axis_sizes,
            // Ignored for legacy, required for NG:
            base::Optional<MinMaxSize> min_max_cross_axis_sizes,
            LayoutUnit main_axis_border_padding,
-           LayoutUnit main_axis_margin);
+           NGPhysicalBoxStrut physical_margins);
 
   LayoutUnit HypotheticalMainAxisMarginBoxSize() const {
     return hypothetical_main_content_size + main_axis_border_padding +
-           main_axis_margin;
+           MainAxisMarginExtent();
   }
 
   LayoutUnit FlexBaseMarginBoxSize() const {
-    return flex_base_content_size + main_axis_border_padding + main_axis_margin;
+    return flex_base_content_size + main_axis_border_padding +
+           MainAxisMarginExtent();
   }
 
   LayoutUnit FlexedBorderBoxSize() const {
@@ -138,7 +141,8 @@ class FlexItem {
   }
 
   LayoutUnit FlexedMarginBoxSize() const {
-    return flexed_content_size + main_axis_border_padding + main_axis_margin;
+    return flexed_content_size + main_axis_border_padding +
+           MainAxisMarginExtent();
   }
 
   LayoutUnit ClampSizeToMinAndMax(LayoutUnit size) const {
@@ -152,6 +156,8 @@ class FlexItem {
   LayoutUnit FlowAwareMarginStart() const;
   LayoutUnit FlowAwareMarginEnd() const;
   LayoutUnit FlowAwareMarginBefore() const;
+
+  LayoutUnit MainAxisMarginExtent() const;
   LayoutUnit CrossAxisMarginExtent() const;
 
   LayoutUnit MarginBoxAscent() const;
@@ -178,15 +184,17 @@ class FlexItem {
                                     bool is_wrap_reverse,
                                     bool is_deprecated_webkit_box);
 
-  FlexLayoutAlgorithm* algorithm;
+  const FlexLayoutAlgorithm* algorithm;
   wtf_size_t line_number;
   LayoutBox* box;
+  const ComputedStyle& style;
   const LayoutUnit flex_base_content_size;
   const MinMaxSize min_max_sizes;
   const base::Optional<MinMaxSize> min_max_cross_sizes;
   const LayoutUnit hypothetical_main_content_size;
   const LayoutUnit main_axis_border_padding;
-  const LayoutUnit main_axis_margin;
+  NGPhysicalBoxStrut physical_margins;
+
   LayoutUnit flexed_content_size;
 
   // When set by the caller, this should be the size pre-stretching.
@@ -352,14 +360,13 @@ class FlexLayoutAlgorithm {
 
   template <typename... Args>
   FlexItem& emplace_back(Args&&... args) {
-    FlexItem& item = all_items_.emplace_back(std::forward<Args>(args)...);
-    item.algorithm = this;
-    return item;
+    return all_items_.emplace_back(this, std::forward<Args>(args)...);
   }
 
   const ComputedStyle* Style() const { return style_; }
   const ComputedStyle& StyleRef() const { return *style_; }
 
+  const Vector<FlexLine>& FlexLines() const { return flex_lines_; }
   Vector<FlexLine>& FlexLines() { return flex_lines_; }
 
   // Computes the next flex line, stores it in FlexLines(), and returns a

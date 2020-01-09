@@ -104,6 +104,16 @@ String BaseTemporalInputType::RangeUnderflowText(const Decimal& minimum) const {
                                  LocalizeValue(Serialize(minimum)));
 }
 
+String BaseTemporalInputType::RangeInvalidText(const Decimal& minimum,
+                                               const Decimal& maximum) const {
+  DCHECK(minimum > maximum)
+      << "RangeInvalidText should only be called with minimum>maximum";
+
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_RANGE_INVALID_DATETIME,
+                                 LocalizeValue(Serialize(minimum)),
+                                 LocalizeValue(Serialize(maximum)));
+}
+
 Decimal BaseTemporalInputType::DefaultValueForStepUp() const {
   return Decimal::FromDouble(
       ConvertToLocalTime(base::Time::Now()).InMillisecondsF());

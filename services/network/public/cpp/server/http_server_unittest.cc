@@ -188,7 +188,11 @@ class HttpServerTest : public testing::Test, public HttpServer::Delegate {
     run_loop.Run();
     EXPECT_EQ(net::OK, net_error);
 
-    server_.reset(new HttpServer(std::move(server_socket_), this));
+    server_ = std::make_unique<HttpServer>(std::move(server_socket_), this);
+    // Wait for the HttpServer to start accepting connections. Since this is
+    // done in response to a request sent over a Mojo socket, it happens
+    // asynchronously.
+    base::RunLoop().RunUntilIdle();
   }
 
   void OnConnect(int connection_id) override {

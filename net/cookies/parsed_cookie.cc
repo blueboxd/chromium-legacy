@@ -361,13 +361,9 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
   // Then we can log any unexpected terminators.
   std::string::const_iterator end = FindFirstTerminator(cookie_line);
 
-  // For an empty |cookie_line|, add an empty-key with an empty value, which
-  // has the effect of clearing any prior setting of the empty-key. This is done
-  // to match the behavior of other browsers. See https://crbug.com/601786.
-  if (it == end) {
-    pairs_.push_back(TokenValuePair("", ""));
+  // Exit early for an empty cookie string.
+  if (it == end)
     return;
-  }
 
   for (int pair_num = 0; it != end; ++pair_num) {
     TokenValuePair pair;
@@ -412,9 +408,16 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line) {
     // OK, we're finished with a Token/Value.
     pair.second = std::string(value_start, value_end);
 
+    // Ignore cookies with neither name nor value.
+    if (pair_num == 0 && (pair.first.empty() && pair.second.empty())) {
+      pairs_.clear();
+      break;
+    }
+
     // From RFC2109: "Attributes (names) (attr) are case-insensitive."
     if (pair_num != 0)
       pair.first = base::ToLowerASCII(pair.first);
+
     // Ignore Set-Cookie directives contaning control characters. See
     // http://crbug.com/238041.
     if (!IsValidCookieAttributeValue(pair.first) ||

@@ -5108,6 +5108,57 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
   }
 }
 
+// Tests that downward swipe on shelf does not start window drag.
+TEST_F(ShelfLayoutManagerWindowDraggingTest,
+       DownwardSwipeDoesnotStartWnidowDrag) {
+  // Starts the drag from the center of the shelf's bottom.
+  const gfx::Rect shelf_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
+  gfx::Point start = shelf_bounds.top_center();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  // Tests that downward swipe on shelf does not start window drag, nor change
+  // the window transform when hotseat is hidden.
+  ASSERT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+  StartScroll(start);
+  EXPECT_FALSE(IsWindowDragInProgress());
+  EXPECT_TRUE(window->transform().IsIdentity());
+
+  UpdateScroll(shelf_bounds.height() / 2);
+  EXPECT_FALSE(IsWindowDragInProgress());
+  EXPECT_TRUE(window->transform().IsIdentity());
+
+  UpdateScroll(shelf_bounds.height() / 2);
+  EXPECT_FALSE(IsWindowDragInProgress());
+  EXPECT_TRUE(window->transform().IsIdentity());
+
+  EndScroll(/*is_fling=*/false, 0.f);
+  EXPECT_FALSE(IsWindowDragInProgress());
+  EXPECT_TRUE(window->transform().IsIdentity());
+
+  // Tests that downward swipe on shelf does not start window drag, nor change
+  // the window transform when hotseat is extended.
+  SwipeUpOnShelf();
+  ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  StartScroll(start);
+  EXPECT_FALSE(IsWindowDragInProgress());
+  EXPECT_TRUE(window->transform().IsIdentity());
+
+  UpdateScroll(shelf_bounds.height() / 2);
+  EXPECT_FALSE(IsWindowDragInProgress());
+  EXPECT_TRUE(window->transform().IsIdentity());
+
+  UpdateScroll(shelf_bounds.height() / 2);
+  EXPECT_FALSE(IsWindowDragInProgress());
+  EXPECT_TRUE(window->transform().IsIdentity());
+
+  EndScroll(/*is_fling=*/false, 0.f);
+  EXPECT_FALSE(IsWindowDragInProgress());
+  EXPECT_TRUE(window->transform().IsIdentity());
+}
+
 // Test that drag from shelf when overview is active is a no-op.
 TEST_F(ShelfLayoutManagerWindowDraggingTest, NoOpInOverview) {
   const gfx::Rect shelf_widget_bounds =

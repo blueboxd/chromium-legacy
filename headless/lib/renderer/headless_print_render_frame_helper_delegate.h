@@ -19,6 +19,7 @@ class HeadlessPrintRenderFrameHelperDelegate
  private:
   // printing::PrintRenderFrameHelper::Delegate:
   bool IsPrintPreviewEnabled() override;
+  bool ShouldGenerateTaggedPDF() override;
   bool OverridePrint(blink::WebLocalFrame* frame) override;
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override;
 

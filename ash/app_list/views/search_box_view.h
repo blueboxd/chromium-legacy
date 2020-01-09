@@ -162,6 +162,8 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   bool HandleKeyEventForDisabledSearchBoxSelection(
       const ui::KeyEvent& key_event);
 
+  base::string16 current_query_;
+
   // The range of highlighted text for autocomplete.
   gfx::Range highlight_range_;
 

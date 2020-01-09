@@ -71,7 +71,6 @@ void ExtensionTestNotificationObserver::NotificationSet::
 ExtensionTestNotificationObserver::ExtensionTestNotificationObserver(
     content::BrowserContext* context)
     : context_(context),
-      extension_installs_observed_(0),
       extension_load_errors_observed_(0),
       crx_installers_done_observed_(0) {
   if (context_)
@@ -91,15 +90,6 @@ void ExtensionTestNotificationObserver::WaitForNotification(
   content::WindowedNotificationObserver(
       notification_type, content::NotificationService::AllSources())
       .Wait();
-}
-
-bool ExtensionTestNotificationObserver::WaitForExtensionInstallError() {
-  int before = extension_installs_observed_;
-  content::WindowedNotificationObserver(
-      NOTIFICATION_EXTENSION_INSTALL_ERROR,
-      content::NotificationService::AllSources())
-      .Wait();
-  return extension_installs_observed_ == before;
 }
 
 bool ExtensionTestNotificationObserver::WaitForExtensionLoadError() {

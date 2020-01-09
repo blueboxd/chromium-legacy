@@ -33,7 +33,9 @@ class BoxModelObjectPainter : public BoxPainterBase {
   BoxPainterBase::FillLayerInfo GetFillLayerInfo(
       const Color&,
       const FillLayer&,
-      BackgroundBleedAvoidance) const override;
+      BackgroundBleedAvoidance,
+      bool is_painting_scrolling_background) const override;
+  bool IsPaintingScrollingBackground(const PaintInfo&) const override;
 
   void PaintTextClipMask(GraphicsContext&,
                          const IntRect& mask_rect,

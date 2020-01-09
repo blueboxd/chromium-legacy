@@ -159,7 +159,8 @@ class FakeHidService {
   makeDevice(vendorId, productId) {
     let guidValue = ++this.nextGuidValue_;
     let info = new device.mojom.HidDeviceInfo();
-    info.guid = guidValue.toString();
+    info.guid = 'guid-' + guidValue.toString();
+    info.physicalDeviceId = 'physical-device-id-' + guidValue.toString();
     info.vendorId = vendorId;
     info.productId = productId;
     info.productName = 'product name';

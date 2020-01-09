@@ -262,24 +262,20 @@ void Pointer::DisablePointerCapture() {
   if (!capture_window_)
     return;
 
-  auto* capture_client = WMHelper::GetInstance()->GetCaptureClient();
-  capture_client->RemoveObserver(this);
-  if (capture_window_ && capture_window_->HasCapture())
-    capture_client->ReleaseCapture(capture_window_);
-  capture_window_ = nullptr;
+  // Remove the pre-target handler that consumes all mouse events.
+  aura::Env::GetInstance()->RemovePreTargetHandler(this);
 
   auto* cursor_client = WMHelper::GetInstance()->GetCursorClient();
   cursor_client->UnlockCursor();
   cursor_client->ShowCursor();
 
-  aura::Window* focusedWindow = WMHelper::GetInstance()->GetFocusedWindow();
-  aura::Window* root = focusedWindow->GetRootWindow();
+  aura::Window* root = capture_window_->GetRootWindow();
   gfx::Point p = location_when_pointer_capture_enabled_
                      ? *location_when_pointer_capture_enabled_
                      : root->bounds().CenterPoint();
   root->MoveCursorTo(p);
 
-  focus_surface_ = nullptr;
+  capture_window_ = nullptr;
   location_when_pointer_capture_enabled_.reset();
   UpdateCursor();
 }
@@ -312,15 +308,24 @@ bool Pointer::EnablePointerCapture(Surface* capture_surface) {
   if (!base::FeatureList::IsEnabled(kPointerCapture))
     return false;
 
+  if (capture_surface->window() !=
+      WMHelper::GetInstance()->GetFocusedWindow()) {
+    LOG(ERROR)
+        << "Cannot enable pointer capture on a window that is not focused.";
+    return false;
+  }
+
   if (!capture_surface->HasSurfaceObserver(this))
     capture_surface->AddSurfaceObserver(this);
 
   capture_window_ = capture_surface->window();
 
-  auto* capture_client = WMHelper::GetInstance()->GetCaptureClient();
-  capture_client->SetCapture(capture_window_);
-  capture_client->AddObserver(this);
+  // Add a pre-target handler that can consume all mouse events before it gets
+  // sent to other targets.
+  aura::Env::GetInstance()->AddPreTargetHandler(
+      this, ui::EventTarget::Priority::kSystem);
 
+  // TODO(b/146082565): Do not hide cursor when enabling pointer capture.
   auto* cursor_client = WMHelper::GetInstance()->GetCursorClient();
   cursor_client->HideCursor();
   cursor_client->LockCursor();
@@ -354,6 +359,8 @@ void Pointer::OnSurfaceDestroying(Surface* surface) {
     pointer_constraint_delegate_->OnConstraintBroken();
     UnconstrainPointer();
   }
+  if (surface && surface->window() == capture_window_)
+    DisablePointerCapture();
   if (surface == focus_surface_) {
     SetFocus(nullptr, gfx::PointF(), 0);
     return;
@@ -388,8 +395,7 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
 
   TRACE_EXO_INPUT_EVENT(event);
 
-  if (event->IsMouseEvent() && event->type() != ui::ET_MOUSE_EXITED &&
-      event->type() != ui::ET_MOUSE_CAPTURE_CHANGED) {
+  if (event->IsMouseEvent() && event->type() != ui::ET_MOUSE_CAPTURE_CHANGED) {
     // Generate motion event if location changed. We need to check location
     // here as mouse movement can generate both "moved" and "entered" events
     // but OnPointerMotion should only be called if location changed since
@@ -402,16 +408,18 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
                              : gfx::ToFlooredPoint(location_in_root) ==
                                    gfx::ToFlooredPoint(location_);
     if (!same_location) {
-      if (relative_pointer_delegate_)
-        HandleRelativePointerMotion(event->time_stamp(), location_in_root);
+      bool needs_frame =
+          HandleRelativePointerMotion(event->time_stamp(), location_in_root);
       if (capture_window_) {
         if (ShouldMoveToCenter())
           MoveCursorToCenterOfActiveDisplay();
-      } else {
+      } else if (event->type() != ui::ET_MOUSE_EXITED) {
         delegate_->OnPointerMotion(event->time_stamp(), location_in_target);
+        needs_frame = true;
       }
+      if (needs_frame)
+        delegate_->OnPointerFrame();
       location_ = location_in_root;
-      delegate_->OnPointerFrame();
     }
   }
   switch (event->type()) {
@@ -481,6 +489,12 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
   }
 
   last_event_type_ = event->type();
+
+  // Consume all mouse events when pointer capture is enabled.
+  if (capture_window_) {
+    event->SetHandled();
+    event->StopPropagation();
+  }
 }
 
 void Pointer::OnScrollEvent(ui::ScrollEvent* event) {
@@ -517,16 +531,12 @@ void Pointer::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
-}
 
-////////////////////////////////////////////////////////////////////////////////
-// aura::client::CaptureClientObserver overrides:
-
-void Pointer::OnCaptureChanged(aura::Window* lost_capture,
-                               aura::Window* gained_capture) {
-  // Note: This observer is only set when pointer capture in enabled.
-  if (capture_window_ && gained_capture != capture_window_)
-    DisablePointerCapture();
+  // Consume all mouse events when pointer capture is enabled.
+  if (capture_window_) {
+    event->SetHandled();
+    event->StopPropagation();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -565,14 +575,23 @@ void Pointer::OnCursorDisplayChanged(const display::Display& display) {
 
 void Pointer::OnWindowFocused(aura::Window* gained_focus,
                               aura::Window* lost_focus) {
-  if (capture_window_)
-    DisablePointerCapture();
+  if (capture_window_ && capture_window_ != gained_focus) {
+    if (pointer_constraint_delegate_) {
+      pointer_constraint_delegate_->OnConstraintBroken();
+      UnconstrainPointer();
+    } else {
+      DisablePointerCapture();
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Pointer, private:
 
 Surface* Pointer::GetEffectiveTargetForEvent(ui::LocatedEvent* event) const {
+  if (capture_window_)
+    return Surface::AsSurface(capture_window_);
+
   Surface* target = GetTargetSurfaceForLocatedEvent(event);
 
   if (!target)
@@ -598,7 +617,8 @@ void Pointer::SetFocus(Surface* surface,
     delegate_->OnPointerEnter(surface, location, button_flags);
     location_ = GetLocationInRoot(surface, location);
     focus_surface_ = surface;
-    focus_surface_->AddSurfaceObserver(this);
+    if (!focus_surface_->HasSurfaceObserver(this))
+      focus_surface_->AddSurfaceObserver(this);
   }
   delegate_->OnPointerFrame();
   UpdateCursor();
@@ -744,27 +764,28 @@ gfx::PointF Pointer::GetLocationInRoot(Surface* target,
 }
 
 bool Pointer::ShouldMoveToCenter() {
-  // Early out if the pointer doesn't have a surface in focus.
-  if (!focus_surface_)
+  if (!capture_window_)
     return false;
 
-  gfx::Rect rect =
-      WMHelper::GetInstance()->GetFocusedWindow()->GetRootWindow()->bounds();
-
+  gfx::Rect rect = capture_window_->GetRootWindow()->bounds();
   rect.Inset(rect.width() / 6, rect.height() / 6);
   return !rect.Contains(location_.x(), location_.y());
 }
 
 void Pointer::MoveCursorToCenterOfActiveDisplay() {
-  aura::Window* focusedWindow = WMHelper::GetInstance()->GetFocusedWindow();
-  aura::Window* root = focusedWindow->GetRootWindow();
+  if (!capture_window_)
+    return;
+  aura::Window* root = capture_window_->GetRootWindow();
   gfx::Point p = root->bounds().CenterPoint();
   location_synthetic_move_ = p;
   root->MoveCursorTo(p);
 }
 
-void Pointer::HandleRelativePointerMotion(base::TimeTicks time_stamp,
+bool Pointer::HandleRelativePointerMotion(base::TimeTicks time_stamp,
                                           gfx::PointF location_in_root) {
+  if (!relative_pointer_delegate_)
+    return false;
+
   if (location_synthetic_move_) {
     gfx::Point synthetic = *location_synthetic_move_;
     // Since MoveCursorTo() takes integer coordinates, the resulting move could
@@ -774,13 +795,14 @@ void Pointer::HandleRelativePointerMotion(base::TimeTicks time_stamp,
       // This was a synthetic move event, so do not forward it and clear the
       // synthetic move.
       location_synthetic_move_.reset();
-      return;
+      return false;
     }
   }
 
   gfx::PointF delta(location_in_root.x() - location_.x(),
                     location_in_root.y() - location_.y());
   relative_pointer_delegate_->OnPointerRelativeMotion(time_stamp, delta);
+  return true;
 }
 
 }  // namespace exo

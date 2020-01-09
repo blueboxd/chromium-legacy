@@ -36,27 +36,19 @@ class StartSurfaceToolbarMediator {
     StartSurfaceToolbarMediator(PropertyModel model) {
         mPropertyModel = model;
         mPropertyModel.set(MENU_IS_VISIBLE, !FeatureUtilities.isBottomToolbarEnabled());
-
-        // Observers
-
-        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
-            @Override
-            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
-                mPropertyModel.set(IS_INCOGNITO, mTabModelSelector.isIncognitoSelected());
-            }
-        };
     }
 
     void onNativeLibraryReady() {
-        if (mTemplateUrlObserver != null) {
-            mTemplateUrlObserver = new TemplateUrlServiceObserver() {
-                @Override
-                public void onTemplateURLServiceChanged() {
-                    mPropertyModel.set(LOGO_IS_VISIBLE,
-                            TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
-                }
-            };
-        }
+        assert mTemplateUrlObserver == null;
+
+        mTemplateUrlObserver = new TemplateUrlServiceObserver() {
+            @Override
+            public void onTemplateURLServiceChanged() {
+                mPropertyModel.set(LOGO_IS_VISIBLE,
+                        TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
+            }
+        };
+
         TemplateUrlServiceFactory.get().addObserver(mTemplateUrlObserver);
         mPropertyModel.set(
                 LOGO_IS_VISIBLE, TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
@@ -82,7 +74,7 @@ class StartSurfaceToolbarMediator {
     void setTabModelSelector(TabModelSelector selector) {
         mTabModelSelector = selector;
 
-        if (mTabModelSelector != null) {
+        if (mTabModelSelectorObserver == null) {
             mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
                 @Override
                 public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
@@ -90,6 +82,7 @@ class StartSurfaceToolbarMediator {
                 }
             };
         }
+        mPropertyModel.set(IS_INCOGNITO, mTabModelSelector.isIncognitoSelected());
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
     }
 

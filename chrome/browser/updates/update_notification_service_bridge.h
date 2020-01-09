@@ -12,19 +12,25 @@ namespace updates {
 
 // Functions for calling into UpdateNotifiactionServiceBridge.java.
 
-// Updates and persists |timestamp| in Android shared preference.
+// Updates and persists |timestamp| in Android SharedPreferences.
 void UpdateLastShownTimeStamp(base::Time timestamp);
 
-// Return persisted timestamp of last shown notification from Android shared
-// preference. Return nullopt if there is no data.
+// Returns persisted timestamp of last shown notification from Android
+// SharedPreferences. Return nullopt if there is no data.
 base::Optional<base::Time> GetLastShownTimeStamp();
 
-// Updates and persists |interval| in Android shared preference.
+// Updates and persists |interval| in Android SharedPreferences.
 void UpdateThrottleInterval(base::TimeDelta interval);
 
-// Return persisted interval that might be throttled from Android shared
-// preference. Return nullopt if there is no data.
+// Returns persisted interval that might be throttled from Android
+// SharedPreferences. Return nullopt if there is no data.
 base::Optional<base::TimeDelta> GetThrottleInterval();
+
+// Updates and persists |count| in Android SharedPreferences.
+void UpdateUserDismissCount(int count);
+
+// Returns persisted count from Android SharedPreferences.
+int GetUserDismissCount();
 
 }  // namespace updates
 

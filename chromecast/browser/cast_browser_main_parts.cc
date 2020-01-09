@@ -123,7 +123,7 @@
 #include "extensions/browser/extension_prefs.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+#if defined(OS_LINUX) && defined(USE_OZONE)
 #include "chromecast/browser/exo/wayland_server_controller.h"
 #endif
 
@@ -629,7 +629,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       cast_browser_process_->browser_context());
 #endif
 
-#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+#if defined(OS_LINUX) && defined(USE_OZONE)
   wayland_server_controller_ =
       std::make_unique<WaylandServerController>(window_manager_.get());
 #endif
@@ -712,7 +712,7 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 }
 
 void CastBrowserMainParts::PostMainMessageLoopRun() {
-#if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
+#if defined(OS_LINUX) && defined(USE_OZONE)
   wayland_server_controller_.reset();
 #endif
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)

@@ -5,11 +5,13 @@
 #include "chrome/browser/download/download_shelf_context_menu.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/download/download_commands.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "content/public/common/content_features.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/simple_menu_model.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
@@ -47,6 +49,9 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
       download_->GetDangerType() ==
           download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK) {
     model = GetInterruptedMenuModel(is_download);
+  } else if (download_->GetDangerType() ==
+             download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
+    model = GetDeepScanningMenuModel(is_download);
   } else if (download_->IsMalicious()) {
     model = GetMaliciousMenuModel(is_download);
   } else if (download_->MightBeMalicious()) {
@@ -163,6 +168,9 @@ base::string16 DownloadShelfContextMenu::GetLabelForCommandId(
     case DownloadCommands::ANNOTATE:
       // These commands are implemented only for the Download notification.
       NOTREACHED();
+      break;
+    case DownloadCommands::DEEP_SCAN:
+      id = IDS_DOWNLOAD_MENU_DEEP_SCAN;
       break;
   }
   CHECK(id != -1);
@@ -336,4 +344,36 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMaliciousMenuModel(
       GetLabelForCommandId(DownloadCommands::LEARN_MORE_SCANNING));
 
   return malicious_download_menu_model_.get();
+}
+
+ui::SimpleMenuModel* DownloadShelfContextMenu::GetDeepScanningMenuModel(
+    bool is_download) {
+  if (deep_scanning_menu_model_)
+    return deep_scanning_menu_model_.get();
+
+  deep_scanning_menu_model_.reset(new ui::SimpleMenuModel(this));
+  deep_scanning_menu_model_->AddItem(
+      DownloadCommands::DEEP_SCAN,
+      GetLabelForCommandId(DownloadCommands::DEEP_SCAN));
+
+  deep_scanning_menu_model_->AddItem(
+      DownloadCommands::DISCARD,
+      GetLabelForCommandId(DownloadCommands::DISCARD));
+
+  deep_scanning_menu_model_->AddItem(
+      DownloadCommands::KEEP, l10n_util::GetStringUTF16(IDS_OPEN_DOWNLOAD_NOW));
+
+  deep_scanning_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+
+  if (is_download) {
+    deep_scanning_menu_model_->AddItem(
+        DownloadCommands::SHOW_IN_FOLDER,
+        GetLabelForCommandId(DownloadCommands::SHOW_IN_FOLDER));
+    deep_scanning_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+  }
+
+  deep_scanning_menu_model_->AddItem(
+      DownloadCommands::CANCEL, GetLabelForCommandId(DownloadCommands::CANCEL));
+
+  return deep_scanning_menu_model_.get();
 }

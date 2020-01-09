@@ -589,6 +589,9 @@ struct URLLoaderFactoryParams {
   // Key used to isolate shared network resources like the cache.
   NetworkIsolationKey? network_isolation_key;
 
+  // Whether secure DNS should be disabled for requests.
+  bool disable_secure_dns = false;
+
   // True if this is for exclusive use by a trusted consumer. Only trusted
   // consumers can issue requests with ResourceRequest::trusted_params
   // populated.

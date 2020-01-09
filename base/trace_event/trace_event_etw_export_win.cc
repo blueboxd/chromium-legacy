@@ -92,6 +92,7 @@ const char* const kFilteredEventGroupNames[] = {
     "latency",                               // 0x8000
     "blink.user_timing",                     // 0x10000
     "media",                                 // 0x20000
+    "loading",                               // 0x40000
 };
 const char kOtherEventsGroupName[] = "__OTHER_EVENTS";  // 0x2000000000000000
 const char kDisabledOtherEventsGroupName[] =

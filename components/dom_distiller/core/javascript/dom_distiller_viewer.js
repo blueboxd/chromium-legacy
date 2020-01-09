@@ -9,10 +9,18 @@ if (typeof distillerOnIos === 'undefined') {
   distillerOnIos = false;
 }
 
+// The style guide recommends preferring $() to getElementById(). Chrome's
+// standard implementation of $() is imported from chrome://resources, which the
+// distilled page is prohibited from accessing. A version of it is
+// re-implemented here to allow stylistic consistency with other JS code.
+function $(id) {
+  return document.getElementById(id);
+}
+
 function addToPage(html) {
   const div = document.createElement('div');
   div.innerHTML = html;
-  document.getElementById('content').appendChild(div);
+  $('content').appendChild(div);
   fillYouTubePlaceholders();
 }
 
@@ -42,15 +50,12 @@ function fillYouTubePlaceholders() {
 }
 
 function showLoadingIndicator(isLastPage) {
-  document.getElementById('loading-indicator').className =
-      isLastPage ? 'hidden' : 'visible';
+  $('loading-indicator').className = isLastPage ? 'hidden' : 'visible';
 }
 
 // Sets the title.
 function setTitle(title) {
-  const holder = document.getElementById('title-holder');
-
-  holder.textContent = title;
+  $('title-holder').textContent = title;
   document.title = title;
 }
 
@@ -94,7 +99,7 @@ function updateToolbarColor(theme) {
   } else {
     toolbarColor = '#F5F5F5';
   }
-  document.getElementById('theme-color').content = toolbarColor;
+  $('theme-color').content = toolbarColor;
 }
 
 function useFontScaling(scaling) {
@@ -161,8 +166,7 @@ class FontSizeSlider {
 }
 
 const fontSizeSlider = new FontSizeSlider(
-    document.querySelector('#font-size-selection'),
-    [14, 15, 16, 18, 20, 24, 28, 32, 40, 48]);
+    $('font-size-selection'), [14, 15, 16, 18, 20, 24, 28, 32, 40, 48]);
 
 updateToolbarColor(getClassFromElement(document.body, themeClasses));
 maybeSetWebFont();
@@ -272,7 +276,7 @@ class Pincher {
 
     this.restoreCenter_();
 
-    let img = document.getElementById('fontscaling-img');
+    let img = $('fontscaling-img');
     if (!img) {
       img = document.createElement('img');
       img.id = 'fontscaling-img';
@@ -432,9 +436,9 @@ class Pincher {
 
 const pincher = new Pincher;
 
-document.querySelector('#settings-toggle').addEventListener('click', (e) => {
-  const dialog = document.querySelector('#settings-dialog');
-  const toggle = document.querySelector('#settings-toggle');
+$('settings-toggle').addEventListener('click', (e) => {
+  const dialog = $('settings-dialog');
+  const toggle = $('settings-toggle');
   if (dialog.open) {
     toggle.classList.remove('activated');
     dialog.close();
@@ -444,17 +448,15 @@ document.querySelector('#settings-toggle').addEventListener('click', (e) => {
   }
 });
 
-document.querySelector('#close-settings-button')
-    .addEventListener('click', (e) => {
-      document.querySelector('#settings-toggle').classList.remove('activated');
-      document.querySelector('#settings-dialog').close();
-    });
+$('close-settings-button').addEventListener('click', (e) => {
+  $('settings-toggle').classList.remove('activated');
+  $('settings-dialog').close();
+});
 
-document.querySelector('#theme-selection').addEventListener('change', (e) => {
+$('theme-selection').addEventListener('change', (e) => {
   useTheme(e.target.value);
 });
 
-document.querySelector('#font-family-selection')
-    .addEventListener('change', (e) => {
-      useFontFamily(e.target.value);
-    });
+$('font-family-selection').addEventListener('change', (e) => {
+  useFontFamily(e.target.value);
+});

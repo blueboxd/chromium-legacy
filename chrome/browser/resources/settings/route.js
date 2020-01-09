@@ -473,16 +473,6 @@ cr.define('settings', function() {
       r.FINGERPRINT = r.LOCK_SCREEN.createChild('/lockScreen/fingerprint');
     }
 
-    // Show Android Apps page in the browser if split settings is turned off.
-    if (!loadTimeData.getBoolean('isOSSettings') &&
-        loadTimeData.getBoolean('showOSSettings') &&
-        loadTimeData.valueExists('androidAppsVisible') &&
-        loadTimeData.getBoolean('androidAppsVisible')) {
-      r.ANDROID_APPS = r.BASIC.createSection('/androidApps', 'androidApps');
-      r.ANDROID_APPS_DETAILS =
-          r.ANDROID_APPS.createChild('/androidApps/details');
-    }
-
     if (loadTimeData.valueExists('showCrostini') &&
         loadTimeData.getBoolean('showCrostini')) {
       r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
@@ -509,91 +499,56 @@ cr.define('settings', function() {
 
     r.GOOGLE_ASSISTANT = r.SEARCH.createChild('/googleAssistant');
 
-    // This if/else accounts for sections that were added or refactored in
-    // the settings split (crbug.com/950007) and some routes that were created
-    // in browser settings conditioned on the pageVisibility constant, which is
-    // being decoupled from OS Settings in the split. The 'else' block provides
-    // a section-by-section comparison.
-    // TODO (crbug.com/967861): Make 'if' block unconditional. Remove 'else'
-    // block.
-    if (loadTimeData.getBoolean('isOSSettings')) {
-      r.ADVANCED = new Route('/advanced');
+    r.ADVANCED = new Route('/advanced');
 
-      r.PRIVACY = r.ADVANCED.createSection('/privacy', 'privacy');
+    r.PRIVACY = r.ADVANCED.createSection('/privacy', 'privacy');
 
-      // Languages and input
-      r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
-      r.LANGUAGES_DETAILS = r.LANGUAGES.createChild('/languages/details');
-      r.INPUT_METHODS =
-          r.LANGUAGES_DETAILS.createChild('/languages/inputMethods');
+    // Languages and input
+    r.LANGUAGES = r.ADVANCED.createSection('/languages', 'languages');
+    r.LANGUAGES_DETAILS = r.LANGUAGES.createChild('/languages/details');
+    r.INPUT_METHODS =
+        r.LANGUAGES_DETAILS.createChild('/languages/inputMethods');
 
-      r.PRINTING = r.ADVANCED.createSection('/printing', 'printing');
+    r.PRINTING = r.ADVANCED.createSection('/printing', 'printing');
 
-      r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
+    r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
 
-      if (!loadTimeData.getBoolean('isGuest')) {
-        if (loadTimeData.valueExists('splitSettingsSyncEnabled') &&
-            loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
-          r.OS_SYNC = r.PEOPLE.createChild('/osSync');
-        }
-        // Personalization
-        r.PERSONALIZATION =
-            r.BASIC.createSection('/personalization', 'personalization');
-        r.CHANGE_PICTURE = r.PERSONALIZATION.createChild('/changePicture');
-
-        // Files (analogous to Downloads)
-        r.FILES = r.ADVANCED.createSection('/files', 'files');
-        r.SMB_SHARES = r.FILES.createChild('/smbShares');
+    if (!loadTimeData.getBoolean('isGuest')) {
+      if (loadTimeData.valueExists('splitSettingsSyncEnabled') &&
+          loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+        r.OS_SYNC = r.PEOPLE.createChild('/osSync');
       }
+      // Personalization
+      r.PERSONALIZATION =
+          r.BASIC.createSection('/personalization', 'personalization');
+      r.CHANGE_PICTURE = r.PERSONALIZATION.createChild('/changePicture');
 
-      // Reset
-      if (loadTimeData.valueExists('allowPowerwash') &&
-          loadTimeData.getBoolean('allowPowerwash')) {
-        r.RESET = r.ADVANCED.createSection('/reset', 'reset');
+      // Files (analogous to Downloads)
+      r.FILES = r.ADVANCED.createSection('/files', 'files');
+      r.SMB_SHARES = r.FILES.createChild('/smbShares');
+    }
+
+    // Reset
+    if (loadTimeData.valueExists('allowPowerwash') &&
+        loadTimeData.getBoolean('allowPowerwash')) {
+      r.RESET = r.ADVANCED.createSection('/reset', 'reset');
+    }
+
+    const showAppManagement = loadTimeData.valueExists('showAppManagement') &&
+        loadTimeData.getBoolean('showAppManagement');
+    const showAndroidApps = loadTimeData.valueExists('androidAppsVisible') &&
+        loadTimeData.getBoolean('androidAppsVisible');
+    // Apps
+    if (showAppManagement || showAndroidApps) {
+      r.APPS = r.BASIC.createSection('/apps', 'apps');
+      if (showAppManagement) {
+        r.APP_MANAGEMENT = r.APPS.createChild('/app-management');
+        r.APP_MANAGEMENT_DETAIL =
+            r.APP_MANAGEMENT.createChild('/app-management/detail');
       }
-
-      const showAppManagement = loadTimeData.valueExists('showAppManagement') &&
-          loadTimeData.getBoolean('showAppManagement');
-      const showAndroidApps = loadTimeData.valueExists('androidAppsVisible') &&
-          loadTimeData.getBoolean('androidAppsVisible');
-      // Apps
-      if (showAppManagement || showAndroidApps) {
-        r.APPS = r.BASIC.createSection('/apps', 'apps');
-        if (showAppManagement) {
-          r.APP_MANAGEMENT = r.APPS.createChild('/app-management');
-          r.APP_MANAGEMENT_DETAIL =
-              r.APP_MANAGEMENT.createChild('/app-management/detail');
-        }
-        if (showAndroidApps) {
-          r.ANDROID_APPS_DETAILS = r.APPS.createChild('/androidAppsDetails');
-        }
+      if (showAndroidApps) {
+        r.ANDROID_APPS_DETAILS = r.APPS.createChild('/androidAppsDetails');
       }
-    } else {
-      assert(r.ADVANCED, 'ADVANCED route should exist');
-
-      assert(r.PRIVACY, 'PRIVACY route should exist');
-
-      // Languages and input
-      assert(r.LANGUAGES, 'LANGUAGES route should exist');
-      r.INPUT_METHODS = r.LANGUAGES.createChild('/inputMethods');
-
-      assert(r.PRINTING, 'PRINTING route should exist');
-
-      assert(r.ACCESSIBILITY, 'ACCESSIBILITY route should exist');
-
-      if (!loadTimeData.getBoolean('isGuest')) {
-        // People
-        r.CHANGE_PICTURE = r.PEOPLE.createChild('/changePicture');
-
-        // Downloads (analogous to Files)
-        assert(r.DOWNLOADS, 'DOWNLOADS route should exist');
-        r.SMB_SHARES = r.DOWNLOADS.createChild('/smbShares');
-
-        // Reset
-        assert(r.RESET, 'RESET route should exist');
-      }
-
-      assert(!r.APPS, 'APPS route should not exist');
     }
 
     r.DATETIME = r.ADVANCED.createSection('/dateTime', 'dateTime');

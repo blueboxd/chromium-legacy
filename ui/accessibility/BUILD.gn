@@ -108,6 +108,7 @@ jumbo_component("accessibility") {
     "ax_tree_source.h",
     "ax_tree_source_checker.h",
     "ax_tree_update.h",
+    "ax_tree_update_forward.h",
     "null_ax_action_target.cc",
     "null_ax_action_target.h",
     "platform/ax_android_constants.cc",

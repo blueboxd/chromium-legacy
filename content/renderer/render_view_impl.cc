@@ -440,6 +440,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
     : routing_id_(params.view_id),
       renderer_wide_named_frame_lookup_(
           params.renderer_wide_named_frame_lookup),
+      widgets_never_visible_(params.never_visible),
       compositor_deps_(compositor_deps),
       webkit_preferences_(params.web_preferences),
       session_storage_namespace_id_(params.session_storage_namespace_id) {

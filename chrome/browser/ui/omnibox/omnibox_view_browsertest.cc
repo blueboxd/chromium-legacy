@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
@@ -1315,6 +1316,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, TabAcceptKeyword) {
 #if !defined(OS_MACOSX)
 // Mac intentionally does not support this behavior.
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, WrappingTabTraverseResultsTest) {
+  if (base::FeatureList::IsEnabled(
+          omnibox::kOmniboxSuggestionTransparencyOptions)) {
+    return;
+  }
+
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();

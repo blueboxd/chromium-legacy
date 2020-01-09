@@ -51,6 +51,12 @@ class PendingNetworkConfigurationUpdate {
   bool IsDeleteOperation() const;
 
  private:
+  friend class FakePendingNetworkConfigurationTracker;
+
+  void SetCompletedAttemptsForTesting(int completed_attempts) {
+    completed_attempts_ = completed_attempts;
+  }
+
   NetworkIdentifier id_;
   std::string change_guid_;
   base::Optional<sync_pb::WifiConfigurationSpecificsData> specifics_;

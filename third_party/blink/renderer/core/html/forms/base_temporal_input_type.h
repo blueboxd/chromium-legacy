@@ -96,6 +96,8 @@ class BaseTemporalInputType : public InputType {
   bool ValueMissing(const String&) const override;
   String RangeOverflowText(const Decimal& maximum) const override;
   String RangeUnderflowText(const Decimal& minimum) const override;
+  String RangeInvalidText(const Decimal& minimum,
+                          const Decimal& maximum) const override;
   Decimal DefaultValueForStepUp() const override;
   bool IsSteppable() const override;
   virtual String SerializeWithDate(const base::Optional<base::Time>&) const;

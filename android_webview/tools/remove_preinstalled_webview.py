@@ -36,13 +36,13 @@ import sys
 
 sys.path.append(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir, 'build', 'android'))
-import devil_chromium  # pylint: disable=import-error
-from devil.android import device_errors  # pylint: disable=import-error
-from devil.android import device_utils  # pylint: disable=import-error
-from devil.android.sdk import keyevent  # pylint: disable=import-error
-from devil.android.tools import script_common  # pylint: disable=import-error
-from devil.android.tools import system_app  # pylint: disable=import-error
-from devil.utils import logging_common  # pylint: disable=import-error
+import devil_chromium
+from devil.android import device_errors
+from devil.android import device_utils
+from devil.android.sdk import keyevent
+from devil.android.tools import script_common
+from devil.android.tools import system_app
+from devil.utils import logging_common
 
 WEBVIEW_PACKAGES = ['com.android.webview', 'com.google.android.webview']
 

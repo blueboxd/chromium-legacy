@@ -16,11 +16,9 @@ using infobars::InfoBar;
 
 OVERLAY_USER_DATA_SETUP_IMPL(InfobarOverlayRequestConfig);
 
-InfobarOverlayRequestConfig::InfobarOverlayRequestConfig(InfoBar* infobar)
+InfobarOverlayRequestConfig::InfobarOverlayRequestConfig(InfoBarIOS* infobar)
     : infobar_(infobar),
-      infobar_type_(
-          static_cast<InfoBarIOS*>(infobar)->InfobarUIDelegate().infobarType),
-      has_badge_(
-          static_cast<InfoBarIOS*>(infobar)->InfobarUIDelegate().hasBadge) {}
+      infobar_type_(infobar->InfobarUIDelegate().infobarType),
+      has_badge_(infobar->InfobarUIDelegate().hasBadge) {}
 
 InfobarOverlayRequestConfig::~InfobarOverlayRequestConfig() = default;

@@ -17,8 +17,23 @@ def CommonChecks(input_api, output_api):
   """Presubmit checks run on both upload and commit.
   """
   checks = []
-  checks.extend(input_api.canned_checks.GetPylint(
-      input_api, output_api, pylintrc='pylintrc'))
+
+  src_root = input_api.os_path.join(input_api.PresubmitLocalPath(), '..', '..')
+  checks.extend(
+      input_api.canned_checks.GetPylint(
+          input_api,
+          output_api,
+          pylintrc='pylintrc',
+          # Allows pylint to find dependencies imported by scripts in this
+          # directory.
+          extra_paths_list=[
+              input_api.os_path.join(src_root, 'build', 'android'),
+              input_api.os_path.join(src_root, 'build', 'android', 'gyp'),
+              input_api.os_path.join(src_root, 'third_party', 'catapult',
+                                     'common', 'py_utils'),
+              input_api.os_path.join(src_root, 'third_party', 'catapult',
+                                     'devil'),
+          ]))
   checks.extend(_GetPythonUnitTests(input_api, output_api))
   return input_api.RunTests(checks, False)
 

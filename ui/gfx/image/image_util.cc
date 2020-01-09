@@ -85,10 +85,9 @@ Image ResizedImageForSearchByImageSkiaRepresentation(const Image& image) {
   if (bitmap.height() * bitmap.width() > kSearchByImageMaxImageArea &&
       (bitmap.width() > kSearchByImageMaxImageWidth ||
        bitmap.height() > kSearchByImageMaxImageHeight)) {
-    SkBitmap new_bitmap;
-    new_bitmap = skia::ImageOperations::Resize(
-        new_bitmap, skia::ImageOperations::RESIZE_GOOD,
-        kSearchByImageMaxImageWidth, kSearchByImageMaxImageHeight);
+    SkBitmap new_bitmap = skia::ImageOperations::Resize(
+        bitmap, skia::ImageOperations::RESIZE_GOOD, kSearchByImageMaxImageWidth,
+        kSearchByImageMaxImageHeight);
     return Image(ImageSkia(ImageSkiaRep(new_bitmap, 0.0f)));
   }
 

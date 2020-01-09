@@ -136,6 +136,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // Write back resolved margins to legacy.
   void StoreMargins(const NGConstraintSpace&, const NGBoxStrut& margins);
+  void StoreMargins(const NGPhysicalBoxStrut& margins);
 
   static bool CanUseNewLayout(const LayoutBox&);
   bool CanUseNewLayout() const;

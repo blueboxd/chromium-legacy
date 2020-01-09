@@ -498,7 +498,6 @@ class BrowserView : public BrowserWindow,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;
-  void AddedToWidget() override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void ChildPreferredSizeChanged(View* child) override;
@@ -579,6 +578,9 @@ class BrowserView : public BrowserWindow,
   // tab navigations and need to give users a visual clue as to what tabs are
   // affected.
   void RevealTabStripIfNeeded();
+
+  // Constructs and initializes the child views.
+  void InitViews();
 
   // Make sure the WebUI tab strip exists if it should.
   void MaybeInitializeWebUITabStrip();

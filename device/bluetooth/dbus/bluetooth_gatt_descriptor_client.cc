@@ -150,11 +150,11 @@ class BluetoothGattDescriptorClientImpl
       dbus::ObjectProxy* object_proxy,
       const dbus::ObjectPath& object_path,
       const std::string& interface_name) override {
-    Properties* properties = new Properties(
+    return new Properties(
         object_proxy, interface_name,
-        base::Bind(&BluetoothGattDescriptorClientImpl::OnPropertyChanged,
-                   weak_ptr_factory_.GetWeakPtr(), object_path));
-    return static_cast<dbus::PropertySet*>(properties);
+        base::BindRepeating(
+            &BluetoothGattDescriptorClientImpl::OnPropertyChanged,
+            weak_ptr_factory_.GetWeakPtr(), object_path));
   }
 
   // dbus::ObjectManager::Interface override.

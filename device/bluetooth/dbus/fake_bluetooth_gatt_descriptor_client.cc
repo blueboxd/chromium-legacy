@@ -162,8 +162,8 @@ dbus::ObjectPath FakeBluetoothGattDescriptorClient::ExposeDescriptor(
   }
 
   Properties* properties = new Properties(
-      base::Bind(&FakeBluetoothGattDescriptorClient::OnPropertyChanged,
-                 weak_ptr_factory_.GetWeakPtr(), object_path));
+      base::BindRepeating(&FakeBluetoothGattDescriptorClient::OnPropertyChanged,
+                          weak_ptr_factory_.GetWeakPtr(), object_path));
   properties->uuid.ReplaceValue(uuid);
   properties->characteristic.ReplaceValue(characteristic_path);
 

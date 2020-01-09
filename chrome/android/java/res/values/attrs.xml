@@ -14,11 +14,6 @@
         <attr name="helpContext" format="string" />
     </declare-styleable>
 
-    <declare-styleable name="ChromeBasePreference">
-        <!-- The tint color for the icon set by android:icon. -->
-        <attr name="iconTint" format="color" />
-    </declare-styleable>
-
     <declare-styleable name="ChromeSwitchPreference">
         <!-- Prevents the summary text from being styled like title text in the
              case that the title is empty. -->

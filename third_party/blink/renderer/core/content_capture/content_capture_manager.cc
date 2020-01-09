@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 
 #include "third_party/blink/renderer/core/content_capture/sent_nodes.h"
-#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 
@@ -20,14 +19,13 @@ ContentCaptureManager::ContentCaptureManager(LocalFrame& local_frame_root)
 
 ContentCaptureManager::~ContentCaptureManager() = default;
 
-DOMNodeId ContentCaptureManager::GetNodeId(Node& node) {
+void ContentCaptureManager::ScheduleTaskIfNeeded() {
   if (first_node_holder_created_) {
     ScheduleTask(ContentCaptureTask::ScheduleReason::kContentChange);
   } else {
     ScheduleTask(ContentCaptureTask::ScheduleReason::kFirstContentChange);
     first_node_holder_created_ = true;
   }
-  return DOMNodeIds::IdForNode(&node);
 }
 
 void ContentCaptureManager::ScheduleTask(

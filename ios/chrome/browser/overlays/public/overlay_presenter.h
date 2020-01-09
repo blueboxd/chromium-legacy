@@ -24,6 +24,9 @@ class OverlayPresenter {
   static OverlayPresenter* FromBrowser(Browser* browser,
                                        OverlayModality modality);
 
+  // Returns the presenter's modality.
+  virtual OverlayModality GetModality() const = 0;
+
   // Sets the presentation context in which to show overlay UI.  Upon being set,
   // the presenter will attempt to begin presenting overlay UI for the active
   // WebState in its Browser.

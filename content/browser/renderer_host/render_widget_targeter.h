@@ -155,10 +155,6 @@ class RenderWidgetTargeter {
     gfx::PointF GetLocation() const;
     const ui::LatencyInfo& GetLatency() const;
 
-    // Queued TargetingRequest
-    void StartQueueingTimeTracker();
-    void StopQueueingTimeTracker();
-
    private:
     base::WeakPtr<RenderWidgetHostViewBase> root_view;
 
@@ -170,9 +166,6 @@ class RenderWidgetTargeter {
     // |event| if set is in the coordinate space of |root_view|.
     ui::WebScopedInputEvent event;
     ui::LatencyInfo latency;
-
-    // To track how long the request has been queued.
-    std::unique_ptr<TracingUmaTracker> tracker;
 
     DISALLOW_COPY_AND_ASSIGN(TargetingRequest);
   };

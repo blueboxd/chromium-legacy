@@ -428,6 +428,10 @@ bool Display::IsRootFrameMissing() const {
   return damage_tracker_->root_frame_missing();
 }
 
+bool Display::HasPendingSurfaces(const BeginFrameArgs& args) const {
+  return damage_tracker_->HasPendingSurfaces(args);
+}
+
 void Display::OnContextLost() {
   if (scheduler_)
     scheduler_->OutputSurfaceLost();

@@ -1632,12 +1632,17 @@ ImageData* BaseRenderingContext2D::getImageData(
                              NotShared<DOMArrayBufferView>(array_buffer_view),
                              color_settings);
   }
+  if (size_in_bytes > std::numeric_limits<unsigned int>::max()) {
+    exception_state.ThrowRangeError(
+        "Buffer size exceeds maximum heap object size.");
+    return nullptr;
+  }
   DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
 
   ImageData* imageData = ImageData::Create(
       image_data_rect.Size(),
       NotShared<DOMUint8ClampedArray>(DOMUint8ClampedArray::Create(
-          array_buffer, 0, array_buffer->DeprecatedByteLengthAsUnsigned())),
+          array_buffer, 0, static_cast<unsigned int>(size_in_bytes))),
       color_settings);
 
   if (!IsPaint2D()) {

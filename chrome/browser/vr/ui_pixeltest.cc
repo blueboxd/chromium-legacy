@@ -18,14 +18,7 @@ constexpr gfx::Transform kIdentity;
 
 }  // namespace
 
-// Failing on Win7 Tests (dbg)(1). crbug.com/1035767
-#if defined(OS_WIN)
-#define MAYBE_DrawVrBrowsingMode DISABLED_DrawVrBrowsingMode
-#else
-#define MAYBE_DrawVrBrowsingMode DrawVrBrowsingMode
-#endif
-
-TEST_F(UiPixelTest, MAYBE_DrawVrBrowsingMode) {
+TEST_F(UiPixelTest, DrawVrBrowsingMode) {
   // Set up scene.
   UiInitialState ui_initial_state;
   ui_initial_state.in_web_vr = false;

@@ -726,6 +726,8 @@ const base::Feature kWebXrHitTest{"WebXRHitTest",
 // Enables access to experimental WebXR features.
 const base::Feature kWebXrIncubations{"WebXRIncubations",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kWebXrPermissionsApi{"WebXrPermissionsApi",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Start streaming scripts on script preload.
 const base::Feature kScriptStreamingOnPreload{"ScriptStreamingOnPreload",

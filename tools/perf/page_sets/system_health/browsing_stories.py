@@ -1412,7 +1412,7 @@ class GoogleMapsStory2019(_BrowsingStory):
     '''
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
   TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.WEBGL,
-          story_tags.YEAR_2018]
+          story_tags.YEAR_2019]
 
   def _DidLoadDocument(self, action_runner):
     # Click on the search box.

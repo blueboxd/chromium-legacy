@@ -110,6 +110,8 @@ class CastSessionTracker : public MediaSinkServiceBase::Observer,
                            HandleMediaStatusMessageFancy);
   FRIEND_TEST_ALL_PREFIXES(CastSessionTrackerTest,
                            CopySavedMediaFieldsToMediaList);
+  FRIEND_TEST_ALL_PREFIXES(CastSessionTrackerTest,
+                           DoNotCopySavedMediaFieldsWhenFieldPresent);
 };
 
 }  // namespace media_router

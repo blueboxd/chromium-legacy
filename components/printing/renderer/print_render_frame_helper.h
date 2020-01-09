@@ -106,6 +106,10 @@ class PrintRenderFrameHelper
     // The default implementation returns |true|.
     virtual bool IsScriptedPrintEnabled();
 
+    // Whether we should send extra metadata necessary to produce a tagged
+    // (accessible) PDF.
+    virtual bool ShouldGenerateTaggedPDF();
+
     // Returns true if printing is overridden and the default behavior should be
     // skipped for |frame|.
     virtual bool OverridePrint(blink::WebLocalFrame* frame) = 0;

@@ -24,22 +24,74 @@ import java.lang.reflect.Method;
  * and dispatch them.
  */
 @JNINamespace("content")
-class NestedSystemMessageHandler {
-    // See org.chromium.base.SystemMessageHandler for more message ids.
-    // The id here should not conflict with the ones in SystemMessageHandler.
+public class NestedSystemMessageHandler {
     private static final int QUIT_MESSAGE = 10;
     private static final Handler sHandler = new Handler();
+    private static final Method sNextMethod = getMethod(MessageQueue.class, "next");
+    private static final Field sMessageTargetField = getField(Message.class, "target");
+    private static final Field sMessageFlagsField = getField(Message.class, "flags");
+
+    private static Field getField(Class<?> clazz, String name) {
+        Field f = null;
+        try {
+            f = clazz.getDeclaredField(name);
+            f.setAccessible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return f;
+    }
+
+    private static Method getMethod(Class<?> clazz, String name) {
+        Method m = null;
+        try {
+            m = clazz.getDeclaredMethod(name);
+            m.setAccessible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return m;
+    }
 
     private NestedSystemMessageHandler() {}
+
+    /**
+     * Runs a single nested task on the provided MessageQueue
+     *
+     * @return whether the current loop should quit.
+     */
+    public static boolean runSingleNestedLooperTask(MessageQueue queue)
+            throws IllegalArgumentException, IllegalAccessException, SecurityException,
+                   InvocationTargetException {
+        boolean quitLoop = false;
+        Message msg = (Message) sNextMethod.invoke(queue);
+        if (msg == null) return true;
+        if (msg.what == QUIT_MESSAGE) {
+            quitLoop = true;
+        }
+        Handler target = (Handler) sMessageTargetField.get(msg);
+
+        if (target == null) {
+            // No target is a magic identifier for the quit message.
+            quitLoop = true;
+        } else {
+            target.dispatchMessage(msg);
+        }
+
+        // Unset in-use flag.
+        Integer oldFlags = (Integer) sMessageFlagsField.get(msg);
+        sMessageFlagsField.set(msg, oldFlags & ~(1 << 0 /* FLAG_IN_USE */));
+
+        msg.recycle();
+        return quitLoop;
+    }
 
     /**
      * Processes messages from the current MessageQueue till the queue becomes idle.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private boolean runNestedLoopTillIdle() {
-        boolean quitLoop = false;
-
+    private static boolean runNestedLoopTillIdle() {
         MessageQueue queue = Looper.myQueue();
         queue.addIdleHandler(new MessageQueue.IdleHandler() {
             @Override
@@ -49,107 +101,14 @@ class NestedSystemMessageHandler {
             }
         });
 
-        Class<?> messageQueueClazz = queue.getClass();
-        Method nextMethod = null;
         try {
-            nextMethod = messageQueueClazz.getDeclaredMethod("next");
-        } catch (SecurityException e) {
+            while (!runSingleNestedLooperTask(queue)) {
+            }
+        } catch (IllegalArgumentException | IllegalAccessException | SecurityException
+                | InvocationTargetException e) {
             e.printStackTrace();
             return false;
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-            return false;
-        }
-        nextMethod.setAccessible(true);
-
-        while (!quitLoop) {
-            Message msg = null;
-            try {
-                msg = (Message) nextMethod.invoke(queue);
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-                return false;
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-                return false;
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-                return false;
-            }
-
-            if (msg != null) {
-                if (msg.what == QUIT_MESSAGE) {
-                    quitLoop = true;
-                }
-                Class messageClazz = msg.getClass();
-                Field targetFiled = null;
-                try {
-                    targetFiled = messageClazz.getDeclaredField("target");
-                } catch (SecurityException e) {
-                    e.printStackTrace();
-                    return false;
-                } catch (NoSuchFieldException e) {
-                    e.printStackTrace();
-                    return false;
-                }
-                targetFiled.setAccessible(true);
-
-                Handler target = null;
-                try {
-                    target = (Handler) targetFiled.get(msg);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                    return false;
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                    return false;
-                }
-
-                if (target == null) {
-                    // No target is a magic identifier for the quit message.
-                    quitLoop = true;
-                } else {
-                    target.dispatchMessage(msg);
-                }
-
-                // Unset in-use flag.
-                Field flagsField = null;
-                try {
-                    flagsField = messageClazz.getDeclaredField("flags");
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                    return false;
-                } catch (SecurityException e) {
-                    e.printStackTrace();
-                    return false;
-                } catch (NoSuchFieldException e) {
-                    e.printStackTrace();
-                    return false;
-                }
-                flagsField.setAccessible(true);
-
-                try {
-                    Integer oldFlags = (Integer) flagsField.get(msg);
-                    flagsField.set(msg, oldFlags & ~(1 << 0 /* FLAG_IN_USE */));
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                    return false;
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                    return false;
-                }
-
-                msg.recycle();
-            } else {
-                quitLoop = true;
-            }
         }
         return true;
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private static NestedSystemMessageHandler create() {
-        return new NestedSystemMessageHandler();
     }
 }

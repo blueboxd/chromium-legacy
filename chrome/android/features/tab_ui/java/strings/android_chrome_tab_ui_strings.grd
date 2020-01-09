@@ -249,8 +249,8 @@
       <message name="IDS_TAB_SWITCHER_CAROUSEL_TITLE" desc="Title of the Tabs carousel section on the single pane start surface.">
           Continue browsing
       </message>
-      <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_CAROUSEL_MORE_TABS" desc="Accessibility message of the more Tabs button on the single pane start surface.">
-          More tabs
+      <message name="IDS_TAB_SWITCHER_CAROUSEL_VIEW_ALL" desc="Title of the text view button in the Tabs carousel section on the single pane start surface. Click it to view all the existing Tabs.">
+          View all
       </message>
 
       <!-- Tab Suggestion strings -->

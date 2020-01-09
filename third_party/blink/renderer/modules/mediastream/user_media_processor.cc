@@ -300,33 +300,13 @@ std::vector<T> ToStdVector(const Vector<T>& format_vector) {
   return formats;
 }
 
-media::VideoFacingMode ToMediaVideoFacingMode(
-    mojom::blink::FacingMode facing_mode) {
-  switch (facing_mode) {
-    case mojom::FacingMode::NONE:
-      return media::MEDIA_VIDEO_FACING_NONE;
-    case mojom::FacingMode::USER:
-      return media::MEDIA_VIDEO_FACING_USER;
-    case mojom::FacingMode::ENVIRONMENT:
-      return media::MEDIA_VIDEO_FACING_ENVIRONMENT;
-    case mojom::FacingMode::LEFT:
-    case mojom::FacingMode::RIGHT:
-      NOTREACHED();
-  }
-  return media::MEDIA_VIDEO_FACING_NONE;
-}
-
 Vector<blink::VideoInputDeviceCapabilities> ToVideoInputDeviceCapabilities(
     const Vector<blink::mojom::blink::VideoInputDeviceCapabilitiesPtr>&
         input_capabilities) {
   Vector<blink::VideoInputDeviceCapabilities> capabilities;
   for (const auto& capability : input_capabilities) {
-    // TODO(crbug.com/704136): Make the conversion from mojom::blink::FacingMode
-    // to be handled automatically, eg by making media_devices.typemap work in
-    // blink/renderer/platform/mojo/blink_typemaps.gni.
     capabilities.emplace_back(capability->device_id, capability->group_id,
-                              capability->formats,
-                              ToMediaVideoFacingMode(capability->facing_mode));
+                              capability->formats, capability->facing_mode);
   }
 
   return capabilities;

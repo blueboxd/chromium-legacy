@@ -544,16 +544,6 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
                            : "NQE.WifiSignalStrength.LevelAvailable";
 
     base::UmaHistogramBoolean(histogram_name, signal_strength_available);
-
-    if (signal_strength_available) {
-      std::string histogram_name =
-          is_cell_connection ? "NQE.CellularSignalStrength.LevelDifference"
-                             : "NQE.WifiSignalStrength.LevelDifference";
-      base::UmaHistogramCounts100(
-          histogram_name,
-          max_signal_strength_since_connection_change_.value() -
-              min_signal_strength_since_connection_change_.value());
-    }
   }
 #endif  // OS_ANDROID
   current_network_id_.signal_strength = INT32_MIN;

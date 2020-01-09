@@ -85,6 +85,12 @@ Resource files are specified in a `.grdp` file. Here's our
 </grit-part>
 ```
 
+Add the created file in `components/resources/dev_ui_components_resources.grd`:
+
+```xml
++<part file="hello_world_resources.grdp" />
+```
+
 ## Adding URL constants for the new chrome URL
 
 Create the `constants.cc` and `constants.h` files to add the URL constants. This is where you will add the URL or URL's which will be directed to your new resources.
@@ -148,8 +154,8 @@ class HelloWorldUI : public content::WebUIController {
 ```c++
 #include "components/hello_world/hello_world_ui.h"
 
-#include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/grit/dev_ui_components_resources.h"
 #include "components/hello_world/constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_context.h"
@@ -199,9 +205,9 @@ sources = [
 and `src/components/hello_world/DEPS:`
 ```
 include_rules = [
-  "+components/grit/components_resources.h",
   "+components/strings/grit/components_strings.h",
   "+components/grit/components_scaled_resources.h"
+  "+components/grit/dev_ui_components_resources.h",
 ]
 ```
 
@@ -300,6 +306,11 @@ You'll notice that the call is asynchronous. We must wait for the C++ side to ca
 
 Some pages have many messages or share code that sends messages. To make possible message handling and/or to create a WebUI dialogue `c++->js` and `js->c++`, follow the guide in [WebUI Explainer](https://chromium.googlesource.com/chromium/src/+/master/docs/webui_explainer.md).
 
+## DevUI Pages
+
+DevUI pages are WebUI pages intended for developers, and unlikely used by most users. An example is `chrome://bluetooth-internals`. On Android Chrome, these pages are moved to a separate [Dynamic Feature Module (DFM)](https://chromium.googlesource.com/chromium/src/+/master/docs/android_dynamic_feature_modules.md) to reduce binary size. Most WebUI pages are DevUI. This is why in this doc uses `dev_ui_components_resources.{grd, h}` in its examples.
+
+`components/` resources that are intended for end users are associated with `components_resources.{grd, h}` and `components_scaled_resorces.{grd, h}`. Use these in place of or inadditional to `dev_ui_components_resources.{grd, h}` if needed.
 
 <script>
 let nameEls = Array.from(document.querySelectorAll('[id], a[name]'));

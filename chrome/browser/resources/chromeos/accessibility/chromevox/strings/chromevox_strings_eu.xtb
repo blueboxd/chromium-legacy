@@ -418,7 +418,7 @@ Tutoriala amaitzen duzunean, erabili ChromeVox Itxi botoira joateko, eta saka ez
 <translation id="3914732343065571127">ChromeVox agindu-erreferentzia</translation>
 <translation id="3930383913623796990">Berde bizia</translation>
 <translation id="3930498801443296724">Aipamena</translation>
-<translation id="3935615366277838204">Cap <ph name="LETTER" /></translation>
+<translation id="3935615366277838204"><ph name="LETTER" /> maiuskula</translation>
 <translation id="3936394396199829062">Izpiliku-kolore oso argikoa</translation>
 <translation id="3941269780691800708">Irakurri ozen saguaren kurtsorearen azpiko testua.</translation>
 <translation id="394953087167197343">Adierazi ortografia-akatsa:</translation>
@@ -935,7 +935,7 @@ Chrome arakatzaileko menua irekitzeko, sakatu Alt + F.</translation>
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">Idatzitako elkarrizketa</translation>
-<translation id="7505149250476994901">Esan "cap" hizkia baino lehen</translation>
+<translation id="7505149250476994901">Esan "maiuskula" hizkia baino lehen</translation>
 <translation id="7518543783849163354">Aldi batez ChromeVox-ek hitz egiteari utz diezaion, sakatu Kontrol tekla.</translation>
 <translation id="7521682724501952239">Ukipen-pantailarekin ere erabil dezakezu ChromeVox.</translation>
 <translation id="7532613204005497612">Ekaina</translation>

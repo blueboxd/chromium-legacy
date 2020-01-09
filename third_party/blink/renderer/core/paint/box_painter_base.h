@@ -116,7 +116,8 @@ class BoxPainterBase {
                   RespectImageOrientationEnum,
                   bool include_left_edge,
                   bool include_right_edge,
-                  bool is_inline);
+                  bool is_inline,
+                  bool is_painting_scrolling_background);
 
     // FillLayerInfo is a temporary, stack-allocated container which cannot
     // outlive the StyleImage.  This would normally be a raw pointer, if not for
@@ -155,9 +156,12 @@ class BoxPainterBase {
   virtual PhysicalRect AdjustRectForScrolledContent(const PaintInfo&,
                                                     const FillLayerInfo&,
                                                     const PhysicalRect&) = 0;
-  virtual FillLayerInfo GetFillLayerInfo(const Color&,
-                                         const FillLayer&,
-                                         BackgroundBleedAvoidance) const = 0;
+  virtual FillLayerInfo GetFillLayerInfo(
+      const Color&,
+      const FillLayer&,
+      BackgroundBleedAvoidance,
+      bool is_painting_scrolling_background) const = 0;
+  virtual bool IsPaintingScrollingBackground(const PaintInfo&) const = 0;
   static void PaintInsetBoxShadow(const PaintInfo&,
                                   const FloatRoundedRect&,
                                   const ComputedStyle&,

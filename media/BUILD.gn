@@ -162,7 +162,9 @@ test("media_unittests") {
     "test/data/",
   ]
 
-  data_deps = []
+  data_deps = [
+    "//testing/buildbot/filters:media_unittests_filters",
+  ]
 
   if (media_use_ffmpeg) {
     deps += [ "//media/ffmpeg:unit_tests" ]

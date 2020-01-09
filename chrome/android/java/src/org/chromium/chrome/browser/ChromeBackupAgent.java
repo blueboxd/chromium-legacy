@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -92,7 +91,7 @@ public class ChromeBackupAgent extends BackupAgent {
             ChromePreferenceKeys.FIRST_RUN_FLOW_COMPLETE,
             ChromePreferenceKeys.FIRST_RUN_LIGHTWEIGHT_FLOW_COMPLETE,
             ChromePreferenceKeys.FIRST_RUN_FLOW_SIGNIN_SETUP,
-            PrivacyPreferencesManager.PREF_METRICS_REPORTING,
+            ChromePreferenceKeys.PRIVACY_METRICS_REPORTING,
     };
 
     // Timeout for running the background tasks, needs to be quite long since they may be doing

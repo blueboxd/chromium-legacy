@@ -28,6 +28,9 @@ const char kFlagName[] = "flag-system-test-flag-1";
 const char kExpiredFlagName[] = "flag-system-test-flag-2";
 const char kExpiredFlagSwitchName[] = "flag-system-test-expired-switch";
 
+const char kFlagWithOptionSelectorName[] = "flag-system-test-flag-3";
+const char kFlagWithOptionSelectorSwitchName[] = "flag-system-test-switch";
+
 // Command line switch containing an invalid origin.
 const char kUnsanitizedCommandLine[] =
     "http://example-cmdline.test,invalid-cmdline";
@@ -138,7 +141,9 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
         {{kFlagName, "name-1", "description-1", -1,
           ORIGIN_LIST_VALUE_TYPE(kSwitchName, "")},
          {kExpiredFlagName, "name-2", "description-2", -1,
-          SINGLE_VALUE_TYPE(kExpiredFlagSwitchName)}});
+          SINGLE_VALUE_TYPE(kExpiredFlagSwitchName)},
+         {kFlagWithOptionSelectorName, "name-3", "description-3", -1,
+          SINGLE_VALUE_TYPE(kFlagWithOptionSelectorSwitchName)}});
     flags::testing::SetFlagExpiredPredicate(
         base::BindLambdaForTesting([&](const std::string& name) -> bool {
           return expiration_enabled_ && name == kExpiredFlagName;
@@ -344,5 +349,27 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_ExpiredFlagDoesntApply) {
       kExpiredFlagSwitchName));
 }
 #endif
+
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, FormRestore) {
+  NavigateToFlagsPage();
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Remove the internal_name property from a flag's selector, then synthesize a
+  // change event for it. This simulates what happens during form restoration in
+  // Blink, when navigating back and then forward to the flags page. This test
+  // ensures that that does not crash the browser.
+  // See https://crbug.com/1038638 for more details.
+  EXPECT_TRUE(content::ExecJs(
+      contents,
+      base::StringPrintf(
+          "var k = document.getElementById('%s');"
+          "var s = k.getElementsByClassName('experiment-enable-disable')[0];"
+          "delete s.internal_name;"
+          "const e = document.createEvent('HTMLEvents');"
+          "e.initEvent('change', true, true);"
+          "s.dispatchEvent(e);",
+          kFlagWithOptionSelectorName)));
+}
 
 }  // namespace

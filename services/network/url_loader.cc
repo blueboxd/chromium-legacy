@@ -420,7 +420,9 @@ URLLoader::URLLoader(
         request.trusted_params->network_isolation_key);
   }
 
-  if (request.trusted_params) {
+  if (factory_params_->disable_secure_dns) {
+    url_request_->SetDisableSecureDns(true);
+  } else if (request.trusted_params) {
     url_request_->SetDisableSecureDns(
         request.trusted_params->disable_secure_dns);
   }

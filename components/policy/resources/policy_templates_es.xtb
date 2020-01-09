@@ -248,13 +248,6 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
           Esta política proporciona un valor alternativo a las políticas <ph name="IDLE_ACTION_AC_POLICY_NAME" /> y <ph name="IDLE_ACTION_BATTERY_POLICY_NAME" />, que son más específicas. Si se establece esta política, su valor se utiliza si no se establece la política más específica correspondiente.
 
           Si no se establece esta política, el comportamiento de las políticas más específicas no se verá afectado.</translation>
-<translation id="1383493480903114193">Esta política fuerza que el código de red se ejecute en el proceso del navegador.
-
-      Está inhabilitada de forma predeterminada, pero, si se habilita, deja a los usuarios desprotegidos frente a problemas de seguridad cuando el proceso de red se pone en zona de pruebas.
-
-      El objetivo de esta política es dar a las empresas la opción de migrar a software de terceros que no dependa de la modificación de las API de red. Es recomendable utilizar servidores proxy en lugar de LSP y parches de Win32 API.
-
-      Si no se define la política, el código de red puede agotarse en el proceso del navegador dependiendo de las pruebas de campo del experimento NetworkService.</translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
 <translation id="138847842893090358">Envía el estado de las actualizaciones del sistema operativo</translation>
 <translation id="1393485621820363363">Impresoras de dispositivos de empresa habilitadas</translation>
@@ -4278,21 +4271,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Cuando esta política está activada, el código de acceso parental se puede verificar en el dispositivo del menor.
       Cuando esta política está desactivada, no se puede verificar el código de acceso parental en el dispositivo del menor.</translation>
 <translation id="7625444193696794922">Permite especificar el canal de versiones al que se vinculará este dispositivo.</translation>
-<translation id="7625498350540361483">
-      Si se asigna el valor True a esta política, <ph name="PRODUCT_NAME" /> podrá recoger registros de eventos WebRTC procedentes de los servicios de Google (p. ej., Google Meet) y enviarlos a Google.
-
-      Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no podrá recoger ni subir esos registros.
-
-      Si no se define esta política, en las versiones hasta la M76 (incluida), <ph name="PRODUCT_NAME" /> no podrá recoger ni subir esos registros.
-
-      Si no se define esta política, a partir de la versión M77, <ph name="PRODUCT_NAME" /> podrá recoger o subir estos registros de forma predeterminada si se considera que el perfil del navegador está administrado, es decir, si el perfil recibe políticas de nivel de ordenador o nube y no es un perfil infantil, efímero, de inicio de sesión o de incógnito.
-
-      Estos registros contienen información de diagnóstico que resulta útil para depurar errores de las llamadas de audio o las videollamadas en Chrome, como la hora y el tamaño de los paquetes RTP recibidos y enviados, comentarios sobre la congestión de la red y metadatos del tiempo y la calidad de los marcos de audio y vídeo. Estos registros no incluyen contenidos de audio ni de vídeo de las llamadas.
-
-      Esta recogida de datos solo la pueden activar los servicios web de Google, como Google Hangouts o Google Meet.
-
-      Google puede asociar estos registros, mediante un ID de sesión, a otros registros recogidos por el servicio de Google para facilitar la depuración.
-      </translation>
 <translation id="7632724434767231364">Nombre de biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Establece la configuración regional de la aplicación en <ph name="PRODUCT_NAME" /> e impide que los usuarios la modifiquen.
 

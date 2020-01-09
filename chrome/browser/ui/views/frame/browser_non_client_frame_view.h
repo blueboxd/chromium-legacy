@@ -177,6 +177,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   int GetSystemMenuY() const override;
 #endif
 
+  void MaybeObserveTabstrip();
+
   // Gets a theme provider that should be non-null even before we're added to a
   // view hierarchy.
   const ui::ThemeProvider* GetThemeProviderForProfile() const;

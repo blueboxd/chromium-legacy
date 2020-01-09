@@ -178,7 +178,7 @@ bool MetafileSkia::FinishDocument() {
   cc::PlaybackParams::CustomDataRasterCallback custom_callback;
   switch (data_->type) {
     case SkiaDocumentType::PDF:
-      doc = MakePdfDocument(printing::GetAgent(), &stream);
+      doc = MakePdfDocument(printing::GetAgent(), accessibility_tree_, &stream);
       break;
     case SkiaDocumentType::MSKP:
       SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info);

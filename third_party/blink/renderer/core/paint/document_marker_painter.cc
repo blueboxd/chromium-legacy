@@ -210,7 +210,7 @@ void DocumentMarkerPainter::PaintDocumentMarker(
   // place the underline at the bottom of the text, but in larger fonts that's
   // not so good so we pin to two pixels under the baseline.
   float zoom = style.EffectiveZoom();
-  int line_thickness = kMarkerHeight * zoom;
+  int line_thickness = static_cast<int>(ceilf(kMarkerHeight * zoom));
 
   const SimpleFontData* font_data = style.GetFont().PrimaryFont();
   DCHECK(font_data);

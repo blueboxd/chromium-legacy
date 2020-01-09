@@ -70,4 +70,14 @@ base::Optional<base::TimeDelta> GetThrottleInterval() {
                              base::TimeDelta::FromMilliseconds(interval)));
 }
 
+void UpdateUserDismissCount(int count) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_UpdateNotificationServiceBridge_updateUserDismissCount(env, count);
+}
+
+int GetUserDismissCount() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_UpdateNotificationServiceBridge_getUserDismissCount(env);
+}
+
 }  // namespace updates

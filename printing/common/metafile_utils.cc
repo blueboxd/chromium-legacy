@@ -11,6 +11,10 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkTime.h"
 #include "third_party/skia/include/docs/SkPDFDocument.h"
+#include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_tree_update.h"
 
 namespace {
 
@@ -38,11 +42,94 @@ sk_sp<SkPicture> GetEmptyPicture() {
   return rec.finishRecordingAsPicture();
 }
 
+// Convert an AXNode into a SkPDF::StructureElementNode in order to make a
+// tagged (accessible) PDF. Returns true on success and false if we don't
+// have enough data to build a valid tree.
+bool RecursiveBuildStructureTree(const ui::AXNode* ax_node,
+                                 SkPDF::StructureElementNode* tag) {
+  bool valid = false;
+
+  tag->fNodeId = ax_node->GetIntAttribute(ax::mojom::IntAttribute::kDOMNodeId);
+  switch (ax_node->data().role) {
+    case ax::mojom::Role::kRootWebArea:
+      tag->fType = SkPDF::DocumentStructureType::kDocument;
+      break;
+    case ax::mojom::Role::kParagraph:
+      tag->fType = SkPDF::DocumentStructureType::kP;
+      break;
+    case ax::mojom::Role::kGenericContainer:
+      tag->fType = SkPDF::DocumentStructureType::kDiv;
+      break;
+    case ax::mojom::Role::kHeading:
+      // TODO(dmazzoni): heading levels. https://crbug.com/1039816
+      tag->fType = SkPDF::DocumentStructureType::kH;
+      break;
+    case ax::mojom::Role::kList:
+      tag->fType = SkPDF::DocumentStructureType::kL;
+      break;
+    case ax::mojom::Role::kListMarker:
+      tag->fType = SkPDF::DocumentStructureType::kLbl;
+      break;
+    case ax::mojom::Role::kListItem:
+      tag->fType = SkPDF::DocumentStructureType::kLI;
+      break;
+    case ax::mojom::Role::kTable:
+      tag->fType = SkPDF::DocumentStructureType::kTable;
+      break;
+    case ax::mojom::Role::kRow:
+      tag->fType = SkPDF::DocumentStructureType::kTR;
+      break;
+    case ax::mojom::Role::kColumnHeader:
+    case ax::mojom::Role::kRowHeader:
+      tag->fType = SkPDF::DocumentStructureType::kTH;
+      break;
+    case ax::mojom::Role::kCell:
+      tag->fType = SkPDF::DocumentStructureType::kTD;
+      break;
+    case ax::mojom::Role::kFigure:
+    case ax::mojom::Role::kImage:
+      tag->fType = SkPDF::DocumentStructureType::kFigure;
+      break;
+    case ax::mojom::Role::kStaticText:
+      // Currently we're only marking text content, so we can't generate
+      // a nonempty structure tree unless we have at least one kStaticText
+      // node in the tree.
+      tag->fType = SkPDF::DocumentStructureType::kNonStruct;
+      valid = true;
+      break;
+    default:
+      tag->fType = SkPDF::DocumentStructureType::kNonStruct;
+  }
+
+  tag->fChildCount = ax_node->GetUnignoredChildCount();
+  // Allocated here, cleaned up in DestroyStructureElementNodeTree().
+  SkPDF::StructureElementNode* children =
+      new SkPDF::StructureElementNode[tag->fChildCount];
+  tag->fChildren = children;
+  for (size_t i = 0; i < tag->fChildCount; i++) {
+    bool success = RecursiveBuildStructureTree(
+        ax_node->GetUnignoredChildAtIndex(i), &children[i]);
+    if (success)
+      valid = true;
+  }
+
+  return valid;
+}
+
+void DestroyStructureElementNodeTree(SkPDF::StructureElementNode* node) {
+  for (size_t i = 0; i < node->fChildCount; i++) {
+    DestroyStructureElementNodeTree(
+        const_cast<SkPDF::StructureElementNode*>(&node->fChildren[i]));
+  }
+  delete[] node->fChildren;
+}
+
 }  // namespace
 
 namespace printing {
 
 sk_sp<SkDocument> MakePdfDocument(const std::string& creator,
+                                  const ui::AXTreeUpdate& accessibility_tree,
                                   SkWStream* stream) {
   SkPDF::Metadata metadata;
   SkTime::DateTime now = TimeToSkTime(base::Time::Now());
@@ -56,7 +143,17 @@ sk_sp<SkDocument> MakePdfDocument(const std::string& creator,
       base::FeatureList::IsEnabled(printing::features::kHarfBuzzPDFSubsetter)
           ? SkPDF::Metadata::kHarfbuzz_Subsetter
           : SkPDF::Metadata::kSfntly_Subsetter;
-  return SkPDF::MakeDocument(stream, metadata);
+
+  SkPDF::StructureElementNode tag_root = {};
+  if (!accessibility_tree.nodes.empty()) {
+    ui::AXTree tree(accessibility_tree);
+    if (RecursiveBuildStructureTree(tree.root(), &tag_root))
+      metadata.fStructureElementTreeRoot = &tag_root;
+  }
+
+  sk_sp<SkDocument> document = SkPDF::MakeDocument(stream, metadata);
+  DestroyStructureElementNodeTree(&tag_root);
+  return document;
 }
 
 sk_sp<SkData> SerializeOopPicture(SkPicture* pic, void* ctx) {

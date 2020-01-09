@@ -7677,10 +7677,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "device_os": "KTU84P",
-              "device_os_type": "userdebug",
-              "device_type": "hammerhead",
-              "os": "Android"
+              "os": "Ubuntu-16.04"
             }
           ]
         },

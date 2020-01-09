@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chromeos/components/sync_wifi/fake_pending_network_configuration_tracker.h"
+#include "chromeos/components/sync_wifi/fake_timer_factory.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
 #include "chromeos/components/sync_wifi/pending_network_configuration_tracker_impl.h"
 #include "chromeos/components/sync_wifi/synced_network_updater_impl.h"
@@ -134,9 +135,12 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
 
     auto tracker_unique_ptr =
         std::make_unique<FakePendingNetworkConfigurationTracker>();
+    auto timer_factory_unique_ptr = std::make_unique<FakeTimerFactory>();
     tracker_ = tracker_unique_ptr.get();
+    timer_factory_ = timer_factory_unique_ptr.get();
     updater_ = std::make_unique<SyncedNetworkUpdaterImpl>(
-        std::move(tracker_unique_ptr), remote_cros_network_config_.get());
+        std::move(tracker_unique_ptr), remote_cros_network_config_.get(),
+        std::move(timer_factory_unique_ptr));
   }
 
   void TearDown() override {
@@ -145,6 +149,7 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
   }
 
   FakePendingNetworkConfigurationTracker* tracker() { return tracker_; }
+  FakeTimerFactory* timer_factory() { return timer_factory_; }
   SyncedNetworkUpdaterImpl* updater() { return updater_.get(); }
   chromeos::NetworkStateTestHelper* network_state_helper() {
     return network_state_helper_.get();
@@ -154,6 +159,7 @@ class SyncedNetworkUpdaterImplTest : public testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
+  FakeTimerFactory* timer_factory_;
   FakePendingNetworkConfigurationTracker* tracker_;
   std::unique_ptr<NetworkStateTestHelper> network_state_helper_;
   std::unique_ptr<SyncedNetworkUpdaterImpl> updater_;
@@ -223,7 +229,68 @@ TEST_F(SyncedNetworkUpdaterImplTest, TestFailToAdd_Error) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(FindLocalNetworkById(fred_network_id()));
+
+  // The tracker should no longer be tracking the update because it reached the
+  // max failed number of attempts.
+  EXPECT_FALSE(tracker()->GetPendingUpdateById(fred_network_id()));
+  // Our test tracker holds on to the number of completed attempts after an
+  // update has been removed, and that should be equal to kMaxRetries (3).
+  EXPECT_EQ(3, tracker()->GetCompletedAttempts(fred_network_id()));
+}
+
+TEST_F(SyncedNetworkUpdaterImplTest, TestFailToAdd_Timeout) {
+  network_state_helper()->manager_test()->SetSimulateConfigurationResult(
+      chromeos::FakeShillSimulatedResult::kTimeout);
+
+  updater()->AddOrUpdateNetwork(GenerateTestWifiSpecifics(fred_network_id()));
   EXPECT_TRUE(tracker()->GetPendingUpdateById(fred_network_id()));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(tracker()->GetPendingUpdateById(fred_network_id()));
+  EXPECT_EQ(0, tracker()->GetCompletedAttempts(fred_network_id()));
+
+  timer_factory()->FireAll();
+
+  EXPECT_TRUE(tracker()->GetPendingUpdateById(fred_network_id()));
+  EXPECT_EQ(1, tracker()->GetCompletedAttempts(fred_network_id()));
+
+  timer_factory()->FireAll();
+
+  EXPECT_TRUE(tracker()->GetPendingUpdateById(fred_network_id()));
+  EXPECT_EQ(2, tracker()->GetCompletedAttempts(fred_network_id()));
+
+  timer_factory()->FireAll();
+
+  EXPECT_EQ(3, tracker()->GetCompletedAttempts(fred_network_id()));
+  EXPECT_FALSE(tracker()->GetPendingUpdateById(fred_network_id()));
+}
+
+TEST_F(SyncedNetworkUpdaterImplTest, TestFailToAdd_Timeout_ThenSucceed) {
+  network_state_helper()->manager_test()->SetSimulateConfigurationResult(
+      chromeos::FakeShillSimulatedResult::kTimeout);
+
+  updater()->AddOrUpdateNetwork(GenerateTestWifiSpecifics(fred_network_id()));
+  EXPECT_TRUE(tracker()->GetPendingUpdateById(fred_network_id()));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(tracker()->GetPendingUpdateById(fred_network_id()));
+  EXPECT_EQ(0, tracker()->GetCompletedAttempts(fred_network_id()));
+
+  timer_factory()->FireAll();
+
+  EXPECT_TRUE(tracker()->GetPendingUpdateById(fred_network_id()));
+  EXPECT_EQ(1, tracker()->GetCompletedAttempts(fred_network_id()));
+
+  network_state_helper()->manager_test()->SetSimulateConfigurationResult(
+      chromeos::FakeShillSimulatedResult::kSuccess);
+
+  timer_factory()->FireAll();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(tracker()->GetPendingUpdateById(fred_network_id()));
+  EXPECT_TRUE(FindLocalNetworkById(fred_network_id()));
 }
 
 TEST_F(SyncedNetworkUpdaterImplTest, TestFailToRemove) {
@@ -240,7 +307,8 @@ TEST_F(SyncedNetworkUpdaterImplTest, TestFailToRemove) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(FindLocalNetworkById(fred_network_id()));
-  EXPECT_TRUE(tracker()->GetPendingUpdateById(fred_network_id()));
+  EXPECT_FALSE(tracker()->GetPendingUpdateById(fred_network_id()));
+  EXPECT_EQ(3, tracker()->GetCompletedAttempts(fred_network_id()));
 }
 
 }  // namespace sync_wifi

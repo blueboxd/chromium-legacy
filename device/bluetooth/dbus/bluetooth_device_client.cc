@@ -246,11 +246,10 @@ class BluetoothDeviceClientImpl : public BluetoothDeviceClient,
       dbus::ObjectProxy* object_proxy,
       const dbus::ObjectPath& object_path,
       const std::string& interface_name) override {
-    Properties* properties =
-        new Properties(object_proxy, interface_name,
-                       base::Bind(&BluetoothDeviceClientImpl::OnPropertyChanged,
-                                  weak_ptr_factory_.GetWeakPtr(), object_path));
-    return static_cast<dbus::PropertySet*>(properties);
+    return new Properties(
+        object_proxy, interface_name,
+        base::BindRepeating(&BluetoothDeviceClientImpl::OnPropertyChanged,
+                            weak_ptr_factory_.GetWeakPtr(), object_path));
   }
 
   // BluetoothDeviceClient override.

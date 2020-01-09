@@ -7,6 +7,7 @@
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_token_pair.h>
+#include <iostream>
 
 #include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"
@@ -26,9 +27,11 @@ constexpr char kRemoteDebuggingPortSwitch[] = "remote-debugging-port";
 constexpr char kEnableLoggingSwitch[] = "enable-logging";
 
 void PrintUsage() {
-  LOG(INFO) << "Usage: "
+  std::cerr << "Usage: "
             << base::CommandLine::ForCurrentProcess()->GetProgram().BaseName()
-            << " [--" << kRemoteDebuggingPortSwitch << "] URL";
+            << " [--" << kRemoteDebuggingPortSwitch << "] URL." << std::endl
+            << "Setting " << kRemoteDebuggingPortSwitch << " to 0 will "
+            << "automatically choose an available port.";
 }
 
 int main(int argc, char** argv) {
@@ -63,10 +66,10 @@ int main(int argc, char** argv) {
     std::string port_str =
         command_line->GetSwitchValueNative(kRemoteDebuggingPortSwitch);
     int port_parsed;
-    if (!base::StringToInt(port_str, &port_parsed) || port_parsed <= 0 ||
+    if (!base::StringToInt(port_str, &port_parsed) || port_parsed < 0 ||
         port_parsed > 65535) {
       LOG(ERROR) << "Invalid value for --remote-debugging-port (must be in the "
-                    "range 1-65535).";
+                    "range 0-65535).";
       PrintUsage();
       return 1;
     }
@@ -131,6 +134,20 @@ int main(int argc, char** argv) {
         ZX_LOG(ERROR, status) << "Frame connection lost:";
         quit_run_loop.Run();
       });
+
+  // Log the debugging port, if debugging is requested.
+  if (remote_debugging_port) {
+    context->GetRemoteDebuggingPort(
+        [](fuchsia::web::Context_GetRemoteDebuggingPort_Result result) {
+          if (result.is_err()) {
+            LOG(ERROR) << "Remote debugging service was not opened.";
+            return;
+          }
+          // Telemetry expects this exact format of log line output to retrieve
+          // the remote debugging port.
+          LOG(INFO) << "Remote debugging port: " << result.response().port;
+        });
+  }
 
   // Navigate |frame| to |url|.
   fuchsia::web::LoadUrlParams load_params;

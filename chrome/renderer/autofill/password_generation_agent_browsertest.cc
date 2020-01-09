@@ -606,14 +606,7 @@ TEST_F(PasswordGenerationAgentTest, AccountCreationFormsDetectedTest) {
   ExpectAutomaticGenerationAvailable("first_password", kAvailable);
 }
 
-// https://crbug.com/1036807.
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_MaximumCharsForGenerationOffer \
-  DISABLED_MaximumCharsForGenerationOffer
-#else
-#define MAYBE_MaximumCharsForGenerationOffer MaximumCharsForGenerationOffer
-#endif
-TEST_F(PasswordGenerationAgentTest, MAYBE_MaximumCharsForGenerationOffer) {
+TEST_F(PasswordGenerationAgentTest, MaximumCharsForGenerationOffer) {
   base::HistogramTester histogram_tester;
 
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
@@ -669,6 +662,7 @@ TEST_F(PasswordGenerationAgentTest, MAYBE_MaximumCharsForGenerationOffer) {
   // display event is sent.
   EXPECT_CALL(fake_pw_client_, GenerationElementLostFocus());
   LoadHTMLWithUserGesture(kSigninFormHTML);
+  fake_pw_client_.Flush();
 
   histogram_tester.ExpectBucketCount(
       "PasswordGeneration.Event",

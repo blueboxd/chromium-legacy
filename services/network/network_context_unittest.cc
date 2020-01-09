@@ -4145,6 +4145,52 @@ TEST_F(NetworkContextTest, TrustedParams_DisableSecureDns) {
   }
 }
 
+// Test that the disable_secure_dns factory param is passed through to the
+// host resolver.
+TEST_F(NetworkContextTest, FactoryParams_DisableSecureDns) {
+  net::MockHostResolver resolver;
+  net::TestURLRequestContext url_request_context(
+      true /* delay_initialization */);
+  url_request_context.set_host_resolver(&resolver);
+  url_request_context.Init();
+
+  network_context_remote_.reset();
+  NetworkContext network_context(
+      network_service_.get(),
+      network_context_remote_.BindNewPipeAndPassReceiver(),
+      &url_request_context,
+      /*cors_exempt_header_list=*/std::vector<std::string>());
+
+  for (bool disable_secure_dns : {false, true}) {
+    mojo::Remote<mojom::URLLoaderFactory> loader_factory;
+    mojom::URLLoaderFactoryParamsPtr params =
+        mojom::URLLoaderFactoryParams::New();
+    params->process_id = mojom::kBrowserProcessId;
+    params->is_corb_enabled = false;
+    params->disable_secure_dns = disable_secure_dns;
+    network_context.CreateURLLoaderFactory(
+        loader_factory.BindNewPipeAndPassReceiver(), std::move(params));
+
+    ResourceRequest request;
+    request.url = GURL("http://example.test");
+    request.load_flags = net::LOAD_BYPASS_CACHE;
+    auto client = std::make_unique<TestURLLoaderClient>();
+    mojo::Remote<mojom::URLLoader> loader;
+    loader_factory->CreateLoaderAndStart(
+        loader.BindNewPipeAndPassReceiver(), 0 /* routing_id */,
+        0 /* request_id */, 0 /* options */, request, client->CreateRemote(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+
+    client->RunUntilComplete();
+    EXPECT_EQ(disable_secure_dns,
+              resolver.last_secure_dns_mode_override().has_value());
+    if (disable_secure_dns) {
+      EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
+                resolver.last_secure_dns_mode_override().value());
+    }
+  }
+}
+
 #if BUILDFLAG(IS_CT_SUPPORTED)
 TEST_F(NetworkContextTest, ExpectCT) {
   std::unique_ptr<NetworkContext> network_context =

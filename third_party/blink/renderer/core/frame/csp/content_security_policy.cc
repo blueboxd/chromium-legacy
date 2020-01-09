@@ -1037,7 +1037,8 @@ void ContentSecurityPolicy::ReportViolation(
   if (!delegate_ && !context_frame) {
     DCHECK(effective_type == DirectiveType::kChildSrc ||
            effective_type == DirectiveType::kFrameSrc ||
-           effective_type == DirectiveType::kPluginTypes);
+           effective_type == DirectiveType::kPluginTypes ||
+           effective_type == DirectiveType::kTrustedTypes);
     return;
   }
 

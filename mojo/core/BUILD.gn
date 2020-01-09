@@ -377,10 +377,8 @@ if (is_mac) {
     args = [
       "--encode=mojo_fuzzer.ChannelMac",
       "-I",
-      rebase_path("//testing/libfuzzer/fuzzers/mach"),
-      "-I",
-      rebase_path("//mojo/core/test/data/channel_mac"),
-      "channel_mac.proto",
+      rebase_path("//"),
+      "mojo/core/test/data/channel_mac/channel_mac.proto",
     ]
   }
 

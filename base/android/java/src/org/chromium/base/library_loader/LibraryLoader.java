@@ -25,6 +25,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.JNIUtils;
 import org.chromium.base.Log;
+import org.chromium.base.NativeLibraryLoadedStatus;
+import org.chromium.base.NativeLibraryLoadedStatus.NativeLibraryLoadedStatusProvider;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.TraceEvent;
@@ -32,6 +34,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
@@ -240,6 +243,23 @@ public class LibraryLoader {
 
     public boolean areTestsEnabled() {
         return NativeLibraries.sEnableLinkerTests;
+    }
+
+    @RemovableInRelease
+    public void enableJniChecks() {
+        if (!BuildConfig.DCHECK_IS_ON) return;
+
+        NativeLibraryLoadedStatus.setProvider(new NativeLibraryLoadedStatusProvider() {
+            @Override
+            public boolean areMainDexNativeMethodsReady() {
+                return mLoadState >= LoadState.MAIN_DEX_LOADED;
+            }
+
+            @Override
+            public boolean areNativeMethodsReady() {
+                return isInitialized();
+            }
+        });
     }
 
     /**

@@ -16,6 +16,8 @@ static_library("sync_wifi") {
     "synced_network_updater.h",
     "synced_network_updater_impl.cc",
     "synced_network_updater_impl.h",
+    "timer_factory.cc",
+    "timer_factory.h",
     "wifi_configuration_bridge.cc",
     "wifi_configuration_bridge.h",
     "wifi_configuration_sync_service.cc",
@@ -38,8 +40,12 @@ static_library("sync_wifi") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "fake_one_shot_timer.cc",
+    "fake_one_shot_timer.h",
     "fake_pending_network_configuration_tracker.cc",
     "fake_pending_network_configuration_tracker.h",
+    "fake_timer_factory.cc",
+    "fake_timer_factory.h",
     "test_data_generator.cc",
     "test_data_generator.h",
   ]

@@ -99,10 +99,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://bluetooth-pairing/*",
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
-      "chrome://settings/*"
+      "chrome://os-settings/*"
     ]
   }],
   "bluetoothLowEnergy": {
@@ -118,10 +115,7 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://bluetooth-pairing/*",
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
-      "chrome://settings/*"
+      "chrome://os-settings/*"
     ]
   }],
   "bluetoothSocket": {
@@ -269,9 +263,6 @@
     "matches": [
       "chrome://extensions/*",
       "chrome://extensions-frame/*",  // TODO(dbeam): still needed?
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
       "chrome://settings/*"
     ]
   }],
@@ -320,8 +311,6 @@
     "matches": [
       "chrome://bookmarks/*",
       "chrome://extensions/*",
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
       "chrome://os-settings/*",
       "chrome://settings/*",
       "chrome://sync-confirmation/*",
@@ -404,10 +393,7 @@
       "chrome://oobe/*",
       "chrome://internet-config-dialog/*",
       "chrome://internet-detail-dialog/*",
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
-      "chrome://settings/*"
+      "chrome://os-settings/*"
     ]
   }],
   "power": {
@@ -558,10 +544,7 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      // TODO(maybelle): Audit and remove chrome://settings or
-      // chrome://os-settings as appropriate
-      "chrome://os-settings/*",
-      "chrome://settings/*"
+      "chrome://os-settings/*"
     ]
   }],
   "system.memory": {

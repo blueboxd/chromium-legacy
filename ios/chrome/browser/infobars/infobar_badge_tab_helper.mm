@@ -31,7 +31,8 @@ WEB_STATE_USER_DATA_KEY_IMPL(InfobarBadgeTabHelper)
 
 InfobarBadgeTabHelper::InfobarBadgeTabHelper(web::WebState* web_state)
     : infobar_accept_observer_(this),
-      infobar_manager_observer_(this, web_state, &infobar_accept_observer_) {}
+      infobar_manager_observer_(this, web_state, &infobar_accept_observer_),
+      web_state_(web_state) {}
 
 InfobarBadgeTabHelper::~InfobarBadgeTabHelper() = default;
 
@@ -55,13 +56,15 @@ void InfobarBadgeTabHelper::UpdateBadgeForInfobarReverted(
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerPresented(
     InfobarType infobar_type) {
   infobar_badge_models_[infobar_type].badgeState |= BadgeStatePresented;
-  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]];
+  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]
+                    forWebState:web_state_];
 }
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerDismissed(
     InfobarType infobar_type) {
   infobar_badge_models_[infobar_type].badgeState &= ~BadgeStatePresented;
-  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]];
+  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]
+                    forWebState:web_state_];
 }
 
 NSArray<id<BadgeItem>>* InfobarBadgeTabHelper::GetInfobarBadgeItems() {
@@ -81,14 +84,14 @@ void InfobarBadgeTabHelper::ResetStateForAddedInfobar(
   InfobarBadgeModel* new_badge =
       [[InfobarBadgeModel alloc] initWithInfobarType:infobar_type];
   infobar_badge_models_[infobar_type] = new_badge;
-  [delegate_ addInfobarBadge:new_badge];
+  [delegate_ addInfobarBadge:new_badge forWebState:web_state_];
 }
 
 void InfobarBadgeTabHelper::ResetStateForRemovedInfobar(
     InfobarType infobar_type) {
   InfobarBadgeModel* removed_badge = infobar_badge_models_[infobar_type];
   infobar_badge_models_[infobar_type] = nil;
-  [delegate_ removeInfobarBadge:removed_badge];
+  [delegate_ removeInfobarBadge:removed_badge forWebState:web_state_];
 }
 
 void InfobarBadgeTabHelper::OnInfobarAcceptanceStateChanged(
@@ -100,7 +103,7 @@ void InfobarBadgeTabHelper::OnInfobarAcceptanceStateChanged(
   } else {
     item.badgeState &= ~BadgeStateAccepted;
   }
-  [delegate_ updateInfobarBadge:item];
+  [delegate_ updateInfobarBadge:item forWebState:web_state_];
 }
 
 #pragma mark - InfobarBadgeTabHelper::InfobarAcceptanceObserver

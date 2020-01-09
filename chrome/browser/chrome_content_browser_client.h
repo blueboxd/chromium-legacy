@@ -470,6 +470,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
       bool* bypass_redirect_checks,
+      bool* disable_secure_dns,
       network::mojom::URLLoaderFactoryOverridePtr* factory_override) override;
   std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
   WillCreateURLLoaderRequestInterceptors(

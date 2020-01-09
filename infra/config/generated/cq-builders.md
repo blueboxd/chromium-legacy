@@ -320,3 +320,6 @@ as required builders.
 * [fuchsia-compile-x64-dbg](https://ci.chromium.org/p/chromium/builders/try/fuchsia-compile-x64-dbg) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+fuchsia-compile-x64-dbg)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+fuchsia-compile-x64-dbg))
   * Experiment percentage: 50
 
+* [win10_chromium_x64_coverage_rel_ng](https://ci.chromium.org/p/chromium/builders/try/win10_chromium_x64_coverage_rel_ng) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+win10_chromium_x64_coverage_rel_ng)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+win10_chromium_x64_coverage_rel_ng))
+  * Experiment percentage: 3
+

@@ -20,6 +20,7 @@ static_library("pdf_compositor") {
     "//printing/common",
     "//skia",
     "//third_party/blink/public:blink_headers",
+    "//ui/accessibility",
   ]
 
   if (is_win) {

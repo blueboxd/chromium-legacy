@@ -233,15 +233,20 @@ void FuchsiaAudioRenderer::StartTicking() {
     flags = fuchsia::media::AudioConsumerStartFlags::LOW_LATENCY;
   }
 
+  bool send_stop = false;
   base::TimeDelta media_pos;
   {
     base::AutoLock lock(state_lock_);
     media_pos = media_pos_;
+    send_stop = state_ != PlaybackState::kStopped;
     state_ = PlaybackState::kStarting;
   }
 
-  audio_consumer_->Start(flags, media_pos.ToZxDuration(),
-                         fuchsia::media::NO_TIMESTAMP);
+  if (send_stop)
+    audio_consumer_->Stop();
+
+  audio_consumer_->Start(flags, fuchsia::media::NO_TIMESTAMP,
+                         media_pos.ToZxDuration());
 }
 
 void FuchsiaAudioRenderer::StopTicking() {

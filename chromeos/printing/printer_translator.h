@@ -19,7 +19,7 @@ namespace chromeos {
 CHROMEOS_EXPORT extern const char kPrinterId[];
 
 // Returns a new printer populated with the fields from |pref|.  Processes
-// dictionaries from policy i.e. cPanel.
+// dictionaries from policy.
 CHROMEOS_EXPORT std::unique_ptr<Printer> RecommendedPrinterToPrinter(
     const base::DictionaryValue& pref);
 

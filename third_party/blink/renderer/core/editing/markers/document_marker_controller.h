@@ -166,7 +166,8 @@ class CORE_EXPORT DocumentMarkerController final
  private:
   void AddMarkerInternal(
       const EphemeralRange&,
-      std::function<DocumentMarker*(int, int)> create_marker_from_offsets);
+      std::function<DocumentMarker*(int, int)> create_marker_from_offsets,
+      const TextIteratorBehavior& iterator_behavior = {});
   void AddMarkerToNode(const Text&, DocumentMarker*);
 
   using MarkerLists = HeapVector<Member<DocumentMarkerList>,

@@ -12,6 +12,7 @@ group("resources") {
   public_deps = [
     ":components_resources",
     ":components_scaled_resources",
+    ":dev_ui_components_resources",
   ]
 }
 
@@ -42,6 +43,16 @@ grit("components_resources") {
   deps = [
     ":about_credits",
   ]
+}
+
+grit("dev_ui_components_resources") {
+  source = "dev_ui_components_resources.grd"
+
+  outputs = [
+    "grit/dev_ui_components_resources.h",
+    "dev_ui_components_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/components"
 }
 
 grit("components_scaled_resources") {

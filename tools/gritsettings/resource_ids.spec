@@ -225,6 +225,9 @@
   "components/sync/driver/resources.grd": {
     "includes": [2200],
   },
+  "components/resources/dev_ui_components_resources.grd": {
+    "includes": [2210],
+  },
   "content/browser/resources/media/media_internals_resources.grd": {
     "includes": [2220],
   },

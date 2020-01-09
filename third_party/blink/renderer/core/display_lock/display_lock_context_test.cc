@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -337,6 +338,84 @@ TEST_F(DisplayLockContextTest,
   Find(search_text, client);
   EXPECT_EQ(1, client.Count());
   EXPECT_FALSE(container->GetDisplayLockContext()->IsLocked());
+}
+
+TEST_F(DisplayLockContextTest,
+       ActivatableLockedElementTickmarksAreAtLockedRoots) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    .small {
+      width: 100px;
+      height: 100px;
+    }
+    .medium {
+      width: 150px;
+      height: 150px;
+    }
+    .large {
+      width: 200px;
+      height: 200px;
+    }
+    </style>
+    <body>
+      testing
+      <div id="container1" class=small>testing</div>
+      <div id="container2" class=medium>testing</div>
+      <div id="container3" class=large>
+        <div id="container4" class=medium>testing</div>
+      </div>
+      <div id="container5" class=small>testing</div>
+    </body>
+  )HTML");
+
+  const String search_text = "testing";
+  DisplayLockTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+
+  auto* container1 = GetDocument().getElementById("container1");
+  auto* container2 = GetDocument().getElementById("container2");
+  auto* container3 = GetDocument().getElementById("container3");
+  auto* container4 = GetDocument().getElementById("container4");
+  auto* container5 = GetDocument().getElementById("container5");
+  LockElement(*container5, false /* activatable */);
+  LockElement(*container4, true /* activatable */);
+  LockElement(*container3, true /* activatable */);
+  LockElement(*container2, true /* activatable */);
+  LockElement(*container1, true /* activatable */);
+
+  EXPECT_TRUE(container1->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(container2->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(container3->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(container4->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(container5->GetDisplayLockContext()->IsLocked());
+
+  // Do a find-in-page.
+  Find(search_text, client);
+  // "testing" outside of the container divs, and 3 inside activatable divs.
+  EXPECT_EQ(4, client.Count());
+
+  auto tick_rects = GetDocument().Markers().LayoutRectsForTextMatchMarkers();
+  ASSERT_EQ(4u, tick_rects.size());
+
+  // Sort the layout rects by y coordinate for deterministic checks below.
+  std::sort(tick_rects.begin(), tick_rects.end(),
+            [](const IntRect& a, const IntRect& b) { return a.Y() < b.Y(); });
+
+  int y_offset = tick_rects[0].Height();
+
+  // The first tick rect will be based on the text itself, so we don't need to
+  // check that. The next three should be the small, medium and large rects,
+  // since those are the locked roots.
+  EXPECT_EQ(IntRect(0, y_offset, 100, 100), tick_rects[1]);
+  y_offset += tick_rects[1].Height();
+  EXPECT_EQ(IntRect(0, y_offset, 150, 150), tick_rects[2]);
+  y_offset += tick_rects[2].Height();
+  EXPECT_EQ(IntRect(0, y_offset, 200, 200), tick_rects[3]);
 }
 
 TEST_F(DisplayLockContextTest,

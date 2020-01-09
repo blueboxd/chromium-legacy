@@ -268,7 +268,7 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
       ContentBrowserClient::URLLoaderFactoryType::kWorkerSubResource, origin,
       /*navigation_id=*/base::nullopt, &default_factory_receiver,
       &factory_params->header_client, bypass_redirect_checks,
-      &factory_params->factory_override);
+      /*disable_secure_dns=*/nullptr, &factory_params->factory_override);
 
   // TODO(nhiroki): Call devtools_instrumentation::WillCreateURLLoaderFactory()
   // here.

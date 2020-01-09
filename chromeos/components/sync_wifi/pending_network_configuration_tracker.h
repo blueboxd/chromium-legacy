@@ -47,7 +47,8 @@ class PendingNetworkConfigurationTracker {
       const std::string& change_guid,
       const NetworkIdentifier& id) = 0;
 
-  // Increments the number of completed attempts for the given update.
+  // Increments the number of completed attempts for the given update.  Be sure
+  // that the |change_guid| and |ssid| exist in the tracker before calling.
   virtual void IncrementCompletedAttempts(const std::string& change_guid,
                                           const NetworkIdentifier& id) = 0;
 

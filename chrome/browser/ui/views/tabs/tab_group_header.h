@@ -43,6 +43,8 @@ class TabGroupHeader : public TabSlotView {
   void RemoveObserverFromWidget(views::Widget* widget);
 
  private:
+  friend class TabGroupEditorBubbleViewDialogBrowserTest;
+
   // Calculate the width for this View.
   int CalculateWidth() const;
 
@@ -60,6 +62,7 @@ class TabGroupHeader : public TabSlotView {
 
     void Opened(views::Widget* bubble_widget);
     bool is_open() const { return is_open_; }
+    views::Widget* widget() const { return widget_; }
 
     // views::WidgetObserver:
     void OnWidgetDestroyed(views::Widget* widget) override;

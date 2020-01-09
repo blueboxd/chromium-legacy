@@ -159,7 +159,6 @@ source_set("blink_headers") {
     "platform/user_metrics_action.h",
     "platform/viewport_intersection_state.h",
     "platform/web_audio_bus.h",
-    "platform/web_audio_destination_consumer.h",
     "platform/web_audio_device.h",
     "platform/web_audio_latency_hint.h",
     "platform/web_audio_source_provider.h",

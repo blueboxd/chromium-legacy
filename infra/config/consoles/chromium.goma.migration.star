@@ -1038,6 +1038,33 @@ luci.console_view(
             short_name = 'x64',
         ),
         luci.console_view_entry(
+            builder = 'ci/Win x64 Builder',
+            category = 'win|week5',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU Win x64 Builder',
+            category = 'win|week5',
+            short_name = 'gpu',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/Win x64 Builder',
+            category = 'win|week5|beta',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-beta/GPU Win x64 Builder',
+            category = 'win|week5|beta',
+            short_name = 'gpu',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-stable/Win x64 Builder',
+            category = 'win|week5|stable',
+        ),
+        luci.console_view_entry(
+            builder = 'ci-stable/GPU Win x64 Builder',
+            category = 'win|week5|stable',
+            short_name = 'gpu',
+        ),
+        luci.console_view_entry(
             builder = 'ci/linux-chromeos-dbg',
             category = 'cros|week1',
             short_name = 'dbg',

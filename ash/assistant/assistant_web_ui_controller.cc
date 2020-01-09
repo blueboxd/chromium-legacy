@@ -76,39 +76,47 @@ AssistantWebUiController::AssistantWebUiController(
 
 AssistantWebUiController::~AssistantWebUiController() {
   assistant_controller_->RemoveObserver(this);
+  CloseUi();
 }
 
 void AssistantWebUiController::OnWidgetDestroying(views::Widget* widget) {
   ResetWebContainerView();
 }
 
-void AssistantWebUiController::OnAssistantControllerDestroying() {
-  if (!web_container_view_)
-    return;
+void AssistantWebUiController::OnAssistantControllerConstructed() {
+  assistant_controller_->state_controller()->AddObserver(this);
+}
 
-  // The view should not outlive the controller.
-  web_container_view_->GetWidget()->CloseNow();
-  DCHECK_EQ(nullptr, web_container_view_);
+void AssistantWebUiController::OnAssistantControllerDestroying() {
+  assistant_controller_->state_controller()->RemoveObserver(this);
 }
 
 void AssistantWebUiController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
-  if (!assistant::util::IsWebDeepLinkType(type, params))
-    return;
-
-  ShowUi();
-
-  // Open the url associated w/ the deep link.
-  web_container_view_->OpenUrl(
-      assistant::util::GetWebUrl(type, params).value());
+  if (assistant::util::IsWebDeepLinkType(type, params))
+    ShowUi(assistant::util::GetWebUrl(type, params).value());
 }
 
-void AssistantWebUiController::ShowUi() {
+void AssistantWebUiController::OnAssistantSettingsEnabled(bool enabled) {
+  if (!enabled)
+    CloseUi();
+}
+
+void AssistantWebUiController::ShowUi(const GURL& url) {
   if (!web_container_view_)
     CreateWebContainerView();
 
   web_container_view_->GetWidget()->Show();
+  web_container_view_->OpenUrl(url);
+}
+
+void AssistantWebUiController::CloseUi() {
+  if (!web_container_view_)
+    return;
+
+  web_container_view_->GetWidget()->CloseNow();
+  DCHECK_EQ(nullptr, web_container_view_);
 }
 
 void AssistantWebUiController::OnBackButtonPressed() {

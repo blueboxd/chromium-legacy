@@ -2,10 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from absl import flags
 import os
 
 from infra import ChromeEnterpriseTestCase
 from chrome_ent_test.infra.core import before_all, category, environment, test
+
+
+FLAGS = flags.FLAGS
+flags.DEFINE_string(
+    'enrollToken', None,
+    'The enrollment token to use, it overwrites the default token')
 
 
 @category("chrome_only")
@@ -20,10 +27,12 @@ class CloudManagementEnrollmentTokenTest(ChromeEnterpriseTestCase):
     self.InstallWebDriver('client2012')
 
   @test
-  def test_browser_enrolled(self):
-    path = "gs://%s/secrets/enrollToken" % self.gsbucket
-    cmd = r'gsutil cat ' + path
-    token = self.RunCommand('win2012-dc', cmd).rstrip()
+  def test_browser_enrolled_prod(self):
+    token = FLAGS.enrollToken
+    if token == None:
+      path = "gs://%s/secrets/enrollToken" % self.gsbucket
+      cmd = r'gsutil cat ' + path
+      token = self.RunCommand('win2012-dc', cmd).rstrip()
     self.SetPolicy('win2012-dc', r'CloudManagementEnrollmentToken', token,
                    'String')
     self.RunCommand('client2012', 'gpupdate /force')

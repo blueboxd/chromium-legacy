@@ -288,12 +288,6 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
     return observer_->WaitForPageActionVisibilityChangeTo(count);
   }
 
-  // Wait for an extension install error to be raised. Returns true if an
-  // error was raised.
-  bool WaitForExtensionInstallError() {
-    return observer_->WaitForExtensionInstallError();
-  }
-
   // Wait for the specified extension to crash. Returns true if it really
   // crashed.
   bool WaitForExtensionCrash(const std::string& extension_id) {

@@ -176,9 +176,11 @@ bool ShouldHandleChildren(const Node& node,
   if (!behavior.EntersTextControls() && IsTextControl(node))
     return false;
 
-  if (auto* element = DynamicTo<Element>(node)) {
-    if (auto* context = element->GetDisplayLockContext()) {
-      return context->IsActivatable(DisplayLockActivationReason::kSelection);
+  if (!behavior.IgnoresDisplayLock()) {
+    if (auto* element = DynamicTo<Element>(node)) {
+      if (auto* context = element->GetDisplayLockContext()) {
+        return context->IsActivatable(DisplayLockActivationReason::kSelection);
+      }
     }
   }
   return true;
@@ -310,7 +312,14 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
       node_ = nullptr;
       return;
     }
+
+    // If an element is locked, we shouldn't recurse down into its children
+    // since they might not have up-to-date layout. In particular, they might
+    // not have the NG offset mapping which is required. The display lock can
+    // still be bypassed by marking the iterator behavior to ignore display
+    // lock.
     const bool locked =
+        !behavior_.IgnoresDisplayLock() &&
         DisplayLockUtilities::NearestLockedInclusiveAncestor(*node_);
 
     LayoutObject* layout_object = node_->GetLayoutObject();

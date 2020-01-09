@@ -71,6 +71,8 @@ class CORE_EXPORT TextIteratorBehavior final {
   bool SuppressesExtraNewlineEmission() const {
     return values_.bits.suppresses_newline_emission;
   }
+
+  bool IgnoresDisplayLock() const { return values_.bits.ignores_display_lock; }
   static TextIteratorBehavior EmitsObjectReplacementCharacterBehavior();
   static TextIteratorBehavior IgnoresStyleVisibilityBehavior();
   static TextIteratorBehavior DefaultRangeLengthBehavior();
@@ -100,6 +102,7 @@ class CORE_EXPORT TextIteratorBehavior final {
       bool does_not_emit_space_beyond_range_end : 1;
       bool skips_unselectable_content : 1;
       bool suppresses_newline_emission : 1;
+      bool ignores_display_lock : 1;
     } bits;
   } values_;
 };
@@ -133,6 +136,7 @@ class CORE_EXPORT TextIteratorBehavior::Builder final {
   Builder& SetDoesNotEmitSpaceBeyondRangeEnd(bool);
   Builder& SetSkipsUnselectableContent(bool);
   Builder& SetSuppressesExtraNewlineEmission(bool);
+  Builder& SetIgnoresDisplayLock(bool);
 
  private:
   TextIteratorBehavior behavior_;

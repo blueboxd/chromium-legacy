@@ -183,7 +183,7 @@ void CastSessionTracker::CopySavedMediaFieldsToMediaList(
   for (auto& media : media_list) {
     const base::Value* media_session_id_value =
         media.FindKeyOfType("mediaSessionId", base::Value::Type::INTEGER);
-    if (!media_session_id_value)
+    if (!media_session_id_value || media.FindKey("media"))
       continue;
 
     auto session_media_it = std::find_if(

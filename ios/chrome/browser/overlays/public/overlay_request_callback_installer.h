@@ -24,12 +24,12 @@ class OverlayRequestCallbackInstaller {
   // supported request if called more than once.  |request| must be non-null.
   void InstallCallbacks(OverlayRequest* request);
 
- protected:
   // Returns the request support for this installer.  InstallCallbacksInternal()
   // will only be called for supported requests.  By default, all requests are
   // supported.
   virtual const OverlayRequestSupport* GetRequestSupport() const;
 
+ protected:
   // Called from InstallCallbacks() if |request| is supported by
   // GetRequestSupport().  Subclasses should override to supply callbacks for a
   // specific kind of request.  Does nothing by default.

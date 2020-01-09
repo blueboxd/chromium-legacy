@@ -283,6 +283,13 @@ bool DeepScanningDialogDelegate::FileTypeSupported(const bool for_malware_scan,
     base::FilePath::StringType extension(path.FinalExtension());
     std::transform(extension.begin(), extension.end(), extension.begin(),
                    tolower);
+
+    // TODO: Replace this DCHECK with a static assert once std::is_sorted is
+    // constexpr in C++20.
+    DCHECK(std::is_sorted(
+        kSupportedDLPFileTypes.begin(), kSupportedDLPFileTypes.end(),
+        [](const base::FilePath::StringType& a,
+           const base::FilePath::StringType& b) { return a.compare(b) < 0; }));
     return std::binary_search(kSupportedDLPFileTypes.begin(),
                               kSupportedDLPFileTypes.end(), extension);
   }
@@ -583,9 +590,10 @@ void DeepScanningDialogDelegate::UploadTextForDeepScanning(
 void DeepScanningDialogDelegate::UploadFileForDeepScanning(
     const base::FilePath& path,
     std::unique_ptr<BinaryUploadService::Request> request) {
-  DCHECK_EQ(
-      DlpDeepScanningClientRequest::FILE_UPLOAD,
-      request->deep_scanning_request().dlp_scan_request().content_source());
+  DCHECK(
+      !data_.do_dlp_scan ||
+      (DlpDeepScanningClientRequest::FILE_UPLOAD ==
+       request->deep_scanning_request().dlp_scan_request().content_source()));
   BinaryUploadService* upload_service =
       g_browser_process->safe_browsing_service()->GetBinaryUploadService(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext()));

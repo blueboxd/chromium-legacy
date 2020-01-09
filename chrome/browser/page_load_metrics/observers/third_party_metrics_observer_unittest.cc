@@ -71,7 +71,7 @@ class ThirdPartyMetricsObserverTest
 TEST_F(ThirdPartyMetricsObserverTest, NoThirdPartyFrame_NoneRecorded) {
   RenderFrameHost* main_frame = NavigateMainFrame("https://top.com");
   RenderFrameHost* sub_frame =
-      CreateAndNavigateSubFrame("https://top.com/foo", main_frame);
+      CreateAndNavigateSubFrame("https://a.top.com/foo", main_frame);
 
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);

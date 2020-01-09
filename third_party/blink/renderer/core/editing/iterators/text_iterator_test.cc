@@ -1034,7 +1034,7 @@ TEST_P(TextIteratorTest, EmitsSpaceForNbsp) {
 TEST_P(TextIteratorTest, IterateWithLockedSubtree) {
   SetBodyContent("<div id='parent'>foo<div id='locked'>text</div>bar</div>");
   auto* locked = GetDocument().getElementById("locked");
-  locked->setAttribute("rendersubtree", "invisible activatable");
+  locked->setAttribute("rendersubtree", "invisible");
   GetDocument().UpdateStyleAndLayout();
   auto* parent = GetDocument().getElementById("parent");
   const Position start_position = Position::FirstPositionInNode(*parent);

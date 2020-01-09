@@ -16,6 +16,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "components/variations/field_trial_config/fieldtrial_testing_config.h"
@@ -39,13 +40,11 @@ bool HasPlatform(const FieldTrialTestingExperiment& experiment,
 // is_low_end_device than the current system value does.
 // If experiment has is_low_end_device missing, then it is False.
 bool HasDeviceLevelMismatch(const FieldTrialTestingExperiment& experiment) {
-  if (experiment.is_low_end_device == Study::OPTIONAL_BOOL_MISSING) {
+  if (!experiment.is_low_end_device.has_value()) {
     return false;
   }
-  if (base::SysInfo::IsLowEndDevice()) {
-    return experiment.is_low_end_device == Study::OPTIONAL_BOOL_FALSE;
-  }
-  return experiment.is_low_end_device == Study::OPTIONAL_BOOL_TRUE;
+  return experiment.is_low_end_device.value() !=
+         base::SysInfo::IsLowEndDevice();
 }
 
 // Gets current form factor and converts it from enum DeviceFormFactor to enum

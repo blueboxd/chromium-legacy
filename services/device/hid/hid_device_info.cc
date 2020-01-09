@@ -11,6 +11,7 @@
 namespace device {
 
 HidDeviceInfo::HidDeviceInfo(const HidPlatformDeviceId& platform_device_id,
+                             const std::string& physical_device_id,
                              uint16_t vendor_id,
                              uint16_t product_id,
                              const std::string& product_name,
@@ -31,13 +32,14 @@ HidDeviceInfo::HidDeviceInfo(const HidPlatformDeviceId& platform_device_id,
                                &max_feature_report_size);
 
   device_ = mojom::HidDeviceInfo::New(
-      base::GenerateGUID(), vendor_id, product_id, product_name, serial_number,
-      bus_type, report_descriptor, std::move(collections), has_report_id,
-      max_input_report_size, max_output_report_size, max_feature_report_size,
-      device_node);
+      base::GenerateGUID(), physical_device_id, vendor_id, product_id,
+      product_name, serial_number, bus_type, report_descriptor,
+      std::move(collections), has_report_id, max_input_report_size,
+      max_output_report_size, max_feature_report_size, device_node);
 }
 
 HidDeviceInfo::HidDeviceInfo(const HidPlatformDeviceId& platform_device_id,
+                             const std::string& physical_device_id,
                              uint16_t vendor_id,
                              uint16_t product_id,
                              const std::string& product_name,
@@ -54,10 +56,10 @@ HidDeviceInfo::HidDeviceInfo(const HidPlatformDeviceId& platform_device_id,
 
   std::vector<uint8_t> report_descriptor;
   device_ = mojom::HidDeviceInfo::New(
-      base::GenerateGUID(), vendor_id, product_id, product_name, serial_number,
-      bus_type, report_descriptor, std::move(collections), has_report_id,
-      max_input_report_size, max_output_report_size, max_feature_report_size,
-      "");
+      base::GenerateGUID(), physical_device_id, vendor_id, product_id,
+      product_name, serial_number, bus_type, report_descriptor,
+      std::move(collections), has_report_id, max_input_report_size,
+      max_output_report_size, max_feature_report_size, "");
 }
 
 HidDeviceInfo::~HidDeviceInfo() {}

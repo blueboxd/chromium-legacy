@@ -286,6 +286,7 @@ jumbo_component("gfx") {
     ":gfx_switches",
     ":memory_buffer_sources",
     ":native_widget_types",
+    ":resize_image_dimensions",
     ":selection_bound_sources",
     "//base",
     "//skia",
@@ -298,7 +299,6 @@ jumbo_component("gfx") {
   ]
   deps = [
     ":gfx_export",
-    ":resize_image_dimensions",
     "//base",
     "//base:base_static",
     "//base:i18n",

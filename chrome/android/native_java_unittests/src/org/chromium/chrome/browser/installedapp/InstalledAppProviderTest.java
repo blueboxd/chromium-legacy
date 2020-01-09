@@ -1,0 +1,921 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.installedapp;
+
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.AssetManager;
+import android.content.res.Resources;
+import android.os.Bundle;
+import android.os.Looper;
+import android.util.Pair;
+
+import org.junit.Assert;
+
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.TimeoutTimer;
+import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.content_public.browser.test.NestedSystemMessageHandler;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.installedapp.mojom.InstalledAppProvider;
+import org.chromium.installedapp.mojom.RelatedApplication;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+/** Ensure that the InstalledAppProvider returns the correct apps. */
+public class InstalledAppProviderTest {
+    private static final String ASSET_STATEMENTS_KEY =
+            InstalledAppProviderImpl.ASSET_STATEMENTS_KEY;
+    private static final String RELATION_HANDLE_ALL_URLS =
+            "delegate_permission/common.handle_all_urls";
+    private static final String NAMESPACE_WEB =
+            InstalledAppProviderImpl.ASSET_STATEMENT_NAMESPACE_WEB;
+    private static final String PLATFORM_ANDROID =
+            InstalledAppProviderImpl.RELATED_APP_PLATFORM_ANDROID;
+    private static final int MAX_ALLOWED_RELATED_APPS =
+            InstalledAppProviderImpl.MAX_ALLOWED_RELATED_APPS;
+    private static final String PLATFORM_OTHER = "itunes";
+    // Note: Android package name and origin deliberately unrelated (there is no requirement that
+    // they be the same).
+    private static final String PACKAGE_NAME_1 = "com.app1.package";
+    private static final String PACKAGE_NAME_2 = "com.app2.package";
+    private static final String PACKAGE_NAME_3 = "com.app3.package";
+    private static final String URL_UNRELATED = "https://appstore.example.com/app1";
+    private static final String ORIGIN = "https://example.com:8000";
+    private static final String URL_ON_ORIGIN =
+            "https://example.com:8000/path/to/page.html?key=value#fragment";
+    private static final String ORIGIN_SYNTAX_ERROR = "https:{";
+    private static final String ORIGIN_MISSING_SCHEME = "path/only";
+    private static final String ORIGIN_MISSING_HOST = "file:///path/piece";
+    private static final String ORIGIN_MISSING_PORT = "http://example.com";
+    private static final String ORIGIN_DIFFERENT_SCHEME = "http://example.com:8000";
+    private static final String ORIGIN_DIFFERENT_HOST = "https://example.org:8000";
+    private static final String ORIGIN_DIFFERENT_PORT = "https://example.com:8001";
+
+    private FakePackageManager mFakePackageManager;
+    private FakeFrameUrlDelegate mFrameUrlDelegate;
+    private InstalledAppProviderTestImpl mInstalledAppProvider;
+    private FakeInstantAppsHandler mFakeInstantAppsHandler;
+
+    private static class FakePackageManager extends PackageManagerDelegate {
+        private Map<String, PackageInfo> mPackageInfo = new HashMap<>();
+        private Map<String, Resources> mResources = new HashMap<>();
+
+        public void addPackageInfo(PackageInfo packageInfo) {
+            mPackageInfo.put(packageInfo.packageName, packageInfo);
+        }
+
+        public void addResources(String packageName, Resources resources) {
+            mResources.put(packageName, resources);
+        }
+
+        @Override
+        public ApplicationInfo getApplicationInfo(String packageName, int flags)
+                throws NameNotFoundException {
+            return getPackageInfo(packageName, flags).applicationInfo;
+        }
+
+        @Override
+        public Resources getResourcesForApplication(ApplicationInfo appInfo)
+                throws NameNotFoundException {
+            if (!mResources.containsKey(appInfo.packageName)) throw new NameNotFoundException();
+            return mResources.get(appInfo.packageName);
+        }
+
+        @Override
+        public PackageInfo getPackageInfo(String packageName, int flags)
+                throws NameNotFoundException {
+            if (!mPackageInfo.containsKey(packageName)) throw new NameNotFoundException();
+            return mPackageInfo.get(packageName);
+        }
+    }
+
+    private static class InstalledAppProviderTestImpl extends InstalledAppProviderImpl {
+        private long mLastDelayMillis;
+
+        public InstalledAppProviderTestImpl(FrameUrlDelegate frameUrlDelegate,
+                PackageManagerDelegate packageManagerDelegate,
+                FakeInstantAppsHandler instantAppsHandler) {
+            super(frameUrlDelegate, packageManagerDelegate, instantAppsHandler);
+        }
+
+        public long getLastDelayMillis() {
+            return mLastDelayMillis;
+        }
+
+        @Override
+        protected void delayThenRun(Runnable r, long delayMillis) {
+            mLastDelayMillis = delayMillis;
+            r.run();
+        }
+    }
+
+    /**
+     * FakeInstantAppsHandler lets us mock getting RelatedApplications from a URL in the absence of
+     * proper GMSCore calls.
+     */
+    private static class FakeInstantAppsHandler extends InstantAppsHandler {
+        private final List<Pair<String, Boolean>> mRelatedApplicationList;
+
+        public FakeInstantAppsHandler() {
+            mRelatedApplicationList = new ArrayList<Pair<String, Boolean>>();
+        }
+
+        public void addInstantApp(String url, boolean holdback) {
+            mRelatedApplicationList.add(Pair.create(url, holdback));
+        }
+
+        public void resetForTest() {
+            mRelatedApplicationList.clear();
+        }
+
+        // TODO(thildebr): When the implementation of isInstantAppAvailable is complete, we need to
+        // test its functionality instead of stubbing it out here. Instead we can create a wrapper
+        // around the GMSCore functionality we need and override that here instead.
+        @Override
+        public boolean isInstantAppAvailable(
+                String url, boolean checkHoldback, boolean includeUserPrefersBrowser) {
+            for (Pair<String, Boolean> pair : mRelatedApplicationList) {
+                if (url.startsWith(pair.first) && checkHoldback == pair.second) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Helper function allows for the "installation" of Android package names and setting up
+     * Resources for installed packages.
+     */
+    private void setMetaDataAndResourcesForTest(
+            String packageName, Bundle metaData, Resources resources) {
+        PackageInfo packageInfo = new PackageInfo();
+        packageInfo.packageName = packageName;
+        packageInfo.applicationInfo = new ApplicationInfo();
+        packageInfo.applicationInfo.packageName = packageName;
+        packageInfo.applicationInfo.metaData = metaData;
+
+        mFakePackageManager.addPackageInfo(packageInfo);
+        mFakePackageManager.addResources(packageName, resources);
+    }
+
+    /**
+     * Fakes the Resources object, allowing lookup of a single String value.
+     *
+     * <p>Note: The real Resources object defines a mapping to many values. This fake object only
+     * allows a single value in the mapping, and it must be a String (which is all that is required
+     * for these tests).
+     */
+    private static class FakeResources extends Resources {
+        private static AssetManager sAssetManager = createAssetManager();
+        private final int mId;
+        private final String mValue;
+
+        private static AssetManager createAssetManager() {
+            try {
+                return (AssetManager) AssetManager.class.getConstructor().newInstance();
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        // Do not warn about deprecated call to Resources(); the documentation says code is not
+        // supposed to create its own Resources object, but we are using it to fake out the
+        // Resources, and there is no other way to do that.
+        @SuppressWarnings("deprecation")
+        public FakeResources(int identifier, String value) {
+            super(sAssetManager, null, null);
+            mId = identifier;
+            mValue = value;
+        }
+
+        @Override
+        public int getIdentifier(String name, String defType, String defPackage) {
+            if (name == null) throw new NullPointerException();
+
+            // There is *no guarantee* (in the Digital Asset Links spec) about what the string
+            // resource should be called ("asset_statements" is just an example). Therefore,
+            // getIdentifier cannot be used to get the asset statements string. Always fail the
+            // lookup here, to ensure the implementation isn't relying on any particular hard-coded
+            // string.
+            return 0;
+        }
+
+        @Override
+        public String getString(int id) {
+            if (id != mId) {
+                throw new Resources.NotFoundException("id 0x" + Integer.toHexString(id));
+            }
+
+            return mValue;
+        }
+    }
+
+    private static final class FakeFrameUrlDelegate
+            implements InstalledAppProviderImpl.FrameUrlDelegate {
+        private URI mFrameUrl;
+        private boolean mIncognito;
+
+        public FakeFrameUrlDelegate(String frameUrl) {
+            setFrameUrl(frameUrl);
+        }
+
+        public void setFrameUrl(String frameUrl) {
+            if (frameUrl == null) {
+                mFrameUrl = null;
+                return;
+            }
+
+            try {
+                mFrameUrl = new URI(frameUrl);
+            } catch (URISyntaxException e) {
+                throw new AssertionError(e);
+            }
+        }
+
+        @Override
+        public URI getUrl() {
+            return mFrameUrl;
+        }
+
+        public void setIncognito(boolean incognito) {
+            mIncognito = incognito;
+        }
+
+        @Override
+        public boolean isIncognito() {
+            return mIncognito;
+        }
+    }
+
+    /** Creates a metaData bundle with a single resource-id key. */
+    private static Bundle createMetaData(String metaDataName, int metaDataResourceId) {
+        Bundle metaData = new Bundle();
+        metaData.putInt(metaDataName, metaDataResourceId);
+        return metaData;
+    }
+
+    /**
+     * Sets a resource with a single key-value pair in an Android package's manifest.
+     *
+     * <p>The value is always a string.
+     */
+    private void setStringResource(String packageName, String key, String value) {
+        int identifier = 0x1234;
+        Bundle metaData = createMetaData(key, identifier);
+        FakeResources resources = new FakeResources(identifier, value);
+        setMetaDataAndResourcesForTest(packageName, metaData, resources);
+    }
+
+    /** Creates a valid Android asset statement string. */
+    private String createAssetStatement(String platform, String relation, String url) {
+        return String.format(
+                "{\"relation\": [\"%s\"], \"target\": {\"namespace\": \"%s\", \"site\": \"%s\"}}",
+                relation, platform, url);
+    }
+
+    /**
+     * Sets an asset statement to an Android package's manifest (in the fake package manager).
+     *
+     * <p>Only one asset statement can be set for a given package (if this is called twice on the
+     * same package, overwrites the previous asset statement).
+     *
+     * <p>This corresponds to a Statement List in the Digital Asset Links spec v1.
+     */
+    private void setAssetStatement(
+            String packageName, String platform, String relation, String url) {
+        String statements = "[" + createAssetStatement(platform, relation, url) + "]";
+        setStringResource(packageName, ASSET_STATEMENTS_KEY, statements);
+    }
+
+    /** Creates a RelatedApplication to put in the web app manifest. */
+    private RelatedApplication createRelatedApplication(String platform, String id, String url) {
+        RelatedApplication application = new RelatedApplication();
+        application.platform = platform;
+        application.id = id;
+        application.url = url;
+        return application;
+    }
+
+    /**
+     * Calls filterInstalledApps with the given inputs, and tests that the expected result is
+     * returned.
+     */
+    private void verifyInstalledApps(RelatedApplication[] manifestRelatedApps,
+            RelatedApplication[] expectedInstalledRelatedApps) throws Exception {
+        final AtomicBoolean called = new AtomicBoolean(false);
+        mInstalledAppProvider.filterInstalledApps(
+                manifestRelatedApps, new InstalledAppProvider.FilterInstalledAppsResponse() {
+                    @Override
+                    public void call(RelatedApplication[] installedRelatedApps) {
+                        Assert.assertEquals(
+                                expectedInstalledRelatedApps.length, installedRelatedApps.length);
+
+                        for (int i = 0; i < installedRelatedApps.length; i++) {
+                            Assert.assertEquals(
+                                    expectedInstalledRelatedApps[i], installedRelatedApps[i]);
+                        }
+                        called.set(true);
+                    }
+                });
+        pollUiThread(() -> called.get());
+    }
+
+    private static void pollUiThread(final Callable<Boolean> criteria) throws Exception {
+        boolean isSatisfied = criteria.call();
+        TimeoutTimer timer = new TimeoutTimer(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        while (!isSatisfied && !timer.isTimedOut()) {
+            NestedSystemMessageHandler.runSingleNestedLooperTask(Looper.myQueue());
+            isSatisfied = criteria.call();
+        }
+        Assert.assertTrue(isSatisfied);
+    }
+
+    @CalledByNative
+    public static InstalledAppProviderTest create() {
+        return new InstalledAppProviderTest();
+    }
+
+    private InstalledAppProviderTest() {}
+
+    @CalledByNative
+    public void setUp() {
+        mFakePackageManager = new FakePackageManager();
+        mFrameUrlDelegate = new FakeFrameUrlDelegate(URL_ON_ORIGIN);
+        mFakeInstantAppsHandler = new FakeInstantAppsHandler();
+        mInstalledAppProvider = new InstalledAppProviderTestImpl(
+                mFrameUrlDelegate, mFakePackageManager, mFakeInstantAppsHandler);
+    }
+
+    /** Origin of the page using the API is missing certain parts of the URI. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testOriginMissingParts() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+
+        mFrameUrlDelegate.setFrameUrl(ORIGIN_MISSING_SCHEME);
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+
+        mFrameUrlDelegate.setFrameUrl(ORIGIN_MISSING_HOST);
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** Incognito mode with one related Android app. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testIncognitoWithOneInstalledRelatedApp() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+
+        mFrameUrlDelegate.setIncognito(true);
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * No related Android apps.
+     *
+     * <p>An Android app relates to the web app, but not mutual.
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testNoRelatedApps() throws Exception {
+        // The web manifest has no related apps.
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {};
+
+        // One Android app is installed named |PACKAGE_NAME_1|. It has a related web app with origin
+        // |ORIGIN|.
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * One related Android app with no id (package name).
+     *
+     * <p>An Android app relates to the web app, but not mutual.
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testOneRelatedAppNoId() throws Exception {
+        RelatedApplication manifestRelatedApps[] =
+                new RelatedApplication[] {createRelatedApplication(PLATFORM_ANDROID, null, null)};
+
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * One related app (from a non-Android platform).
+     *
+     * <p>An Android app with the same id relates to the web app. This should be ignored since the
+     * manifest doesn't mention the Android app.
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testOneRelatedNonAndroidApp() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_OTHER, PACKAGE_NAME_1, null)};
+
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * One related Android app; Android app is not installed.
+     *
+     * <p>Another Android app relates to the web app, but not mutual.
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testOneRelatedAppNotInstalled() throws Exception {
+        // The web manifest has a related Android app named |PACKAGE_NAME_1|.
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        // One Android app is installed named |PACKAGE_NAME_2|. It has a related web app with origin
+        // |ORIGIN|.
+        setAssetStatement(PACKAGE_NAME_2, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * Android app manifest has an asset_statements key, but the resource it links to is missing.
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testOneRelatedAppBrokenAssetStatementsResource() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        Bundle metaData = createMetaData(ASSET_STATEMENTS_KEY, 0x1234);
+        String statements =
+                "[" + createAssetStatement(NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN) + "]";
+        FakeResources resources = new FakeResources(0x4321, statements);
+        setMetaDataAndResourcesForTest(PACKAGE_NAME_1, metaData, resources);
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** One related Android app; Android app is not mutually related (has no asset_statements). */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testOneRelatedAppNoAssetStatements() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        setStringResource(PACKAGE_NAME_1, null, null);
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** One related Android app; Android app is not mutually related (has no asset_statements). */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testOneRelatedAppNoAssetStatementsNullMetadata() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        FakeResources resources = new FakeResources(0x4321, null);
+        setMetaDataAndResourcesForTest(PACKAGE_NAME_1, null, resources);
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * One related Android app; Android app is related to other origins.
+     *
+     * <p>Tests three cases: - The Android app is related to a web app with a different scheme. -
+     * The Android app is related to a web app with a different host. - The Android app is related
+     * to a web app with a different port.
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testOneRelatedAppRelatedToDifferentOrigins() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        setAssetStatement(
+                PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN_DIFFERENT_SCHEME);
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+
+        setAssetStatement(
+                PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN_DIFFERENT_HOST);
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+
+        setAssetStatement(
+                PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN_DIFFERENT_PORT);
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** One related Android app; Android app is installed and mutually related. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testOneInstalledRelatedApp() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        RelatedApplication[] expectedInstalledRelatedApps = manifestRelatedApps;
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * Change the frame URL and ensure the app relates to the new URL, not the old one.
+     *
+     * <p>This simulates navigating the frame while keeping the same Mojo service open.
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testDynamicallyChangingUrl() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        setAssetStatement(
+                PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN_DIFFERENT_SCHEME);
+
+        // Should be empty, since Android app does not relate to this frame's origin.
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+
+        // Simulate a navigation to a different origin.
+        mFrameUrlDelegate.setFrameUrl(ORIGIN_DIFFERENT_SCHEME);
+
+        // Now the result should include the Android app that relates to the new origin.
+        expectedInstalledRelatedApps = manifestRelatedApps;
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+
+        // Simulate the native RenderFrameHost disappearing.
+        mFrameUrlDelegate.setFrameUrl(null);
+
+        expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** One related Android app (installed and mutually related), with a non-null URL field. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testInstalledRelatedAppWithUrl() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, URL_UNRELATED)};
+
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        RelatedApplication[] expectedInstalledRelatedApps = manifestRelatedApps;
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** One related Android app; Android app is related to multiple origins. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testMultipleAssetStatements() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        // Create an asset_statements field with multiple statements. The second one matches the web
+        // app.
+        String statements = "["
+                + createAssetStatement(
+                        NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN_DIFFERENT_HOST)
+                + ", " + createAssetStatement(NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN)
+                + "]";
+        setStringResource(PACKAGE_NAME_1, ASSET_STATEMENTS_KEY, statements);
+
+        RelatedApplication[] expectedInstalledRelatedApps = manifestRelatedApps;
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** A JSON syntax error in the Android app's asset statement. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testAssetStatementSyntaxError() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        String statements = "[{\"target\" {}}]";
+        setStringResource(PACKAGE_NAME_1, ASSET_STATEMENTS_KEY, statements);
+
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** The Android app's asset statement is not an array. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testAssetStatementNotArray() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        String statement = createAssetStatement(NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+        setStringResource(PACKAGE_NAME_1, ASSET_STATEMENTS_KEY, statement);
+
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** The Android app's asset statement array contains non-objects. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testAssetStatementArrayNoObjects() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        String statements = "["
+                + createAssetStatement(NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN) + ", 4]";
+        setStringResource(PACKAGE_NAME_1, ASSET_STATEMENTS_KEY, statements);
+
+        // Expect it to ignore the integer and successfully parse the valid object.
+        RelatedApplication[] expectedInstalledRelatedApps = manifestRelatedApps;
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * Android app has no "relation" in the asset statement.
+     *
+     * <p>Currently, the relation string (in the Android package's asset statement) is ignored, so
+     * the app is still returned as "installed".
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testAssetStatementNoRelation() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        String statements = String.format(
+                "[{\"target\": {\"namespace\": \"%s\", \"site\": \"%s\"}}]", NAMESPACE_WEB, ORIGIN);
+        setStringResource(PACKAGE_NAME_1, ASSET_STATEMENTS_KEY, statements);
+
+        // TODO(mgiuca): [Spec issue] Should we require a specific relation string, rather than any
+        // or no relation?
+        RelatedApplication[] expectedInstalledRelatedApps = manifestRelatedApps;
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * Android app is related with a non-standard relation.
+     *
+     * <p>Currently, the relation string (in the Android package's asset statement) is ignored, so
+     * any will do. Is this desirable, or do we want to require a specific relation string?
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testAssetStatementNonStandardRelation() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, "nonstandard/relation", ORIGIN);
+
+        // TODO(mgiuca): [Spec issue] Should we require a specific relation string, rather than any
+        // or no relation?
+        RelatedApplication[] expectedInstalledRelatedApps = manifestRelatedApps;
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** Android app has no "target" in the asset statement. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testAssetStatementNoTarget() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        String statements = String.format("[{\"relation\": [\"%s\"]}]", RELATION_HANDLE_ALL_URLS);
+        setStringResource(PACKAGE_NAME_1, ASSET_STATEMENTS_KEY, statements);
+
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** Android app has no "namespace" in the asset statement. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testAssetStatementNoNamespace() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        String statements =
+                String.format("[{\"relation\": [\"%s\"], \"target\": {\"site\": \"%s\"}}]",
+                        RELATION_HANDLE_ALL_URLS, ORIGIN);
+        setStringResource(PACKAGE_NAME_1, ASSET_STATEMENTS_KEY, statements);
+
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** Android app is related, but not to the web namespace. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testNonWebAssetStatement() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        setAssetStatement(PACKAGE_NAME_1, "play", RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** Android app has no "site" in the asset statement. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testAssetStatementNoSite() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        String statements =
+                String.format("[{\"relation\": [\"%s\"], \"target\": {\"namespace\": \"%s\"}}]",
+                        RELATION_HANDLE_ALL_URLS, NAMESPACE_WEB);
+        setStringResource(PACKAGE_NAME_1, ASSET_STATEMENTS_KEY, statements);
+
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** Android app has a syntax error in the "site" field of the asset statement. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testAssetStatementSiteSyntaxError() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        setAssetStatement(
+                PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN_SYNTAX_ERROR);
+
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** Android app has a "site" field missing certain parts of the URI (scheme, host, port). */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testAssetStatementSiteMissingParts() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        setAssetStatement(
+                PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN_MISSING_SCHEME);
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+
+        setAssetStatement(
+                PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN_MISSING_HOST);
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+
+        setAssetStatement(
+                PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN_MISSING_PORT);
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * One related Android app; Android app is related with a path part in the "site" field.
+     *
+     * <p>The path part shouldn't really be there (according to the Digital Asset Links spec), but
+     * if it is, we are lenient and just ignore it (matching only the origin).
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testAssetStatementSiteHasPath() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        String site = ORIGIN + "/path";
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, site);
+
+        RelatedApplication[] expectedInstalledRelatedApps = manifestRelatedApps;
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * One related Android app; Android app is installed and mutually related.
+     *
+     * <p>Another Android app relates to the web app, but not mutual.
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testExtraInstalledApp() throws Exception {
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+        setAssetStatement(PACKAGE_NAME_2, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        RelatedApplication[] expectedInstalledRelatedApps = manifestRelatedApps;
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * Two related Android apps; Android apps both installed and mutually related.
+     *
+     * <p>Web app also related to an app with the same name on another platform, and another Android
+     * app which is not installed.
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testMultipleInstalledRelatedApps() throws Exception {
+        RelatedApplication[] manifestRelatedApps = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null),
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_2, null),
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_3, null)};
+
+        setAssetStatement(PACKAGE_NAME_2, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+        setAssetStatement(PACKAGE_NAME_3, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        RelatedApplication[] expectedInstalledRelatedApps =
+                new RelatedApplication[] {manifestRelatedApps[1], manifestRelatedApps[2]};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /** Tests the pseudo-random artificial delay to counter a timing attack. */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testArtificialDelay() throws Exception {
+        byte[] salt = {0x64, 0x09, -0x68, -0x25, 0x70, 0x11, 0x25, 0x24, 0x68, -0x1a, 0x08, 0x79,
+                -0x12, -0x50, 0x3b, -0x57, -0x17, -0x4d, 0x46, 0x02};
+        PackageHash.setGlobalSaltForTesting(salt);
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        // Installed app.
+        RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};
+        RelatedApplication[] expectedInstalledRelatedApps = manifestRelatedApps;
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+        // This expectation is based on HMAC_SHA256(salt, packageName encoded in UTF-8), taking the
+        // low 10 bits of the first two bytes of the result / 100.
+        Assert.assertEquals(2, mInstalledAppProvider.getLastDelayMillis());
+
+        // Non-installed app.
+        manifestRelatedApps = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_2, null)};
+        expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+        // This expectation is based on HMAC_SHA256(salt, packageName encoded in UTF-8), taking the
+        // low 10 bits of the first two bytes of the result / 100.
+        Assert.assertEquals(5, mInstalledAppProvider.getLastDelayMillis());
+    }
+
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testMultipleAppsIncludingInstantApps() throws Exception {
+        RelatedApplication[] manifestRelatedApps = new RelatedApplication[] {
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null),
+                // Instant Apps:
+                createRelatedApplication(
+                        PLATFORM_ANDROID, InstalledAppProviderImpl.INSTANT_APP_ID_STRING, ORIGIN),
+                createRelatedApplication(PLATFORM_ANDROID,
+                        InstalledAppProviderImpl.INSTANT_APP_HOLDBACK_ID_STRING, ORIGIN)};
+
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+        mFakeInstantAppsHandler.addInstantApp(ORIGIN, true);
+
+        RelatedApplication[] expectedInstalledRelatedApps =
+                new RelatedApplication[] {manifestRelatedApps[0], manifestRelatedApps[2]};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+
+    /**
+     * Multiple related uninstalled apps (over the allowed limit) followed by one related Android
+     * app which is installed and mutually related.
+     */
+    @Feature({"InstalledApp"})
+    @CalledByNative
+    public void testRelatedAppsOverAllowedThreshold() throws Exception {
+        RelatedApplication manifestRelatedApps[] =
+                new RelatedApplication[MAX_ALLOWED_RELATED_APPS + 1];
+        for (int i = 0; i < MAX_ALLOWED_RELATED_APPS; i++) {
+            manifestRelatedApps[i] = createRelatedApplication(
+                    PLATFORM_ANDROID, PACKAGE_NAME_2 + String.valueOf(i), null);
+        }
+        manifestRelatedApps[MAX_ALLOWED_RELATED_APPS] =
+                createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null);
+        setAssetStatement(PACKAGE_NAME_1, NAMESPACE_WEB, RELATION_HANDLE_ALL_URLS, ORIGIN);
+
+        // Although the app is installed, and verifiable, it was included after the maximum allowed
+        // number of related apps.
+        RelatedApplication[] expectedInstalledRelatedApps = new RelatedApplication[] {};
+        verifyInstalledApps(manifestRelatedApps, expectedInstalledRelatedApps);
+    }
+}

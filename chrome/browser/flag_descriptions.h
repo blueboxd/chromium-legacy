@@ -850,9 +850,6 @@ extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 extern const char kOmniboxExperimentalSuggestScoringName[];
 extern const char kOmniboxExperimentalSuggestScoringDescription[];
 
-extern const char kOmniboxGroupSuggestionsBySearchVsUrlName[];
-extern const char kOmniboxGroupSuggestionsBySearchVsUrlDescription[];
-
 extern const char kOmniboxLocalEntitySuggestionsName[];
 extern const char kOmniboxLocalEntitySuggestionsDescription[];
 

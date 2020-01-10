@@ -28,6 +28,11 @@ class SharedProtoDatabaseClientTest : public testing::Test {
         new SharedProtoDatabase("client", temp_dir_.GetPath()));
   }
 
+  void TearDown() override {
+    if (db_)
+      db_->Shutdown();
+  }
+
  protected:
   scoped_refptr<SharedProtoDatabase> db() { return db_; }
   base::ScopedTempDir* temp_dir() { return &temp_dir_; }

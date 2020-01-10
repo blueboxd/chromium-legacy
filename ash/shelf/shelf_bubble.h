@@ -45,9 +45,6 @@ class ASH_EXPORT ShelfBubble : public views::BubbleDialogDelegateView,
   void CreateBubble();
 
  private:
-  // BubbleDialogDelegateView overrides:
-  int GetDialogButtons() const override;
-
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfBackground(SkColor color) override;
 

@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">Leit í huliðsstillingu</translation>
 <translation id="277771892408211951">Velja tungumál</translation>
 <translation id="2780046210906776326">Engir tölvupóstreikningar</translation>
+<translation id="2781331604911854368">Kveikt</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Fara úr flipavali</translation>
 <translation id="2830972654601096923">Stjórna heimilisföngum ...</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">Opna flipa</translation>
 <translation id="3277021493514034324">Veffang afritað</translation>
 <translation id="3290875554372353449">Veldu reikning</translation>
+<translation id="3311748811247479259">Slökkt</translation>
 <translation id="3324193307694657476">Heimilisfang 2</translation>
 <translation id="3329904751041170572">Ekki var hægt að tengjast þjóninum.</translation>
 <translation id="3335947283844343239">Enduropna lokaðan flipa</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">Samstillir flipa...</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /> um uppástungur að efni</translation>
 <translation id="3494788280727468875">Staðfesta hreinsun vefskoðunargagna</translation>
+<translation id="35083190962747987">Opna ${url}</translation>
 <translation id="3519193562722059437">Opnaðu flipa til að vafra.</translation>
 <translation id="3527085408025491307">Mappa</translation>
 <translation id="3529024052484145543">Ekki öruggt</translation>
@@ -301,6 +304,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5062321486222145940">Setja upp Google Drive</translation>
 <translation id="5083464117946352670">Ekki var hægt að ákvarða skráarstærð.</translation>
 <translation id="5094827893301452931">Tíst birt.</translation>
+<translation id="5118764316110575523">Slökkt</translation>
 <translation id="5127805178023152808">Slökkt er á samstillingu</translation>
 <translation id="5132942445612118989">Samstilltu aðgangsorðin, ferilinn og fleira í öllum tækjum</translation>
 <translation id="5140288047769711648">Chrome man þetta aðgangsorð fyrir þig. Þú þarft ekki að leggja það á minnið.</translation>
@@ -363,6 +367,7 @@ Einnig þarf að vera kveikt á Handoff í hlutanum General í Settings og tæki
 <translation id="5979837087407522202">Leita að aðgangsorðum</translation>
 <translation id="5982717868370722439">Bæta fyrirliggjandi gögnum við <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">Nýlega heimsótt</translation>
+<translation id="5988851877894965432">Opna vefslóðir í Chrome</translation>
 <translation id="6012140227487808125">Dulkóðar…</translation>
 <translation id="6021332621416007159">Opna í...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="7961015016161918242">Aldrei</translation>
 <translation id="7971521879845308059">Útiloka sprettiglugga</translation>
 <translation id="7982789257301363584">Símkerfi</translation>
+<translation id="800361585186029508">Opnar innslegnar vefslóðir í Google Chrome.</translation>
 <translation id="8007420562015504427">Leit í huliðsstillingu</translation>
 <translation id="8019783059653722575">Með þessu móti geturðu vistað myndir og hlaðið þeim upp.</translation>
 <translation id="802154636333426148">Niðurhal mistókst</translation>

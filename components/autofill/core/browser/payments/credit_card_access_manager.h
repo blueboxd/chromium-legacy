@@ -166,6 +166,10 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // immediately.
   bool IsFidoAuthenticationEnabled();
 
+  // Returns true if |unmask_details_| is set and the card selected is listed as
+  // FIDO eligible.
+  bool IsSelectedCardFidoAuthorized();
+
   // TODO(crbug.com/991037): Move this function under the build flags after the
   // refactoring is done.
   // Offer the option to use WebAuthn for authenticating future card unmasking.

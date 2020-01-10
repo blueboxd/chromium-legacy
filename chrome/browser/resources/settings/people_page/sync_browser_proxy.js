@@ -2,111 +2,101 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview A helper object used from the the People section to get the
- * status of the sync backend and user preferences on what data to sync. Used
- * for both Chrome browser and ChromeOS.
- */
-cr.exportPath('settings');
-
-/**
- * @typedef {{fullName: (string|undefined),
- *            givenName: (string|undefined),
- *            email: string,
- *            avatarImage: (string|undefined)}}
- * @see chrome/browser/ui/webui/settings/people_handler.cc
- */
-settings.StoredAccount;
-
-/**
- * @typedef {{childUser: (boolean|undefined),
- *            disabled: (boolean|undefined),
- *            domain: (string|undefined),
- *            hasError: (boolean|undefined),
- *            hasPasswordsOnlyError: (boolean|undefined),
- *            hasUnrecoverableError: (boolean|undefined),
- *            managed: (boolean|undefined),
- *            firstSetupInProgress: (boolean|undefined),
- *            signedIn: (boolean|undefined),
- *            signedInUsername: (string|undefined),
- *            signinAllowed: (boolean|undefined),
- *            statusAction: (!settings.StatusAction),
- *            statusActionText: (string|undefined),
- *            statusText: (string|undefined),
- *            supervisedUser: (boolean|undefined),
- *            syncSystemEnabled: (boolean|undefined)}}
- * @see chrome/browser/ui/webui/settings/people_handler.cc
- */
-settings.SyncStatus;
-
-
-/**
- * Must be kept in sync with the return values of getSyncErrorAction in
- * chrome/browser/ui/webui/settings/people_handler.cc
- * @enum {string}
- */
-settings.StatusAction = {
-  NO_ACTION: 'noAction',             // No action to take.
-  REAUTHENTICATE: 'reauthenticate',  // User needs to reauthenticate.
-  SIGNOUT_AND_SIGNIN:
-      'signOutAndSignIn',               // User needs to sign out and sign in.
-  UPGRADE_CLIENT: 'upgradeClient',      // User needs to upgrade the client.
-  ENTER_PASSPHRASE: 'enterPassphrase',  // User needs to enter passphrase.
-  // User needs to go through key retrieval.
-  RETRIEVE_TRUSTED_VAULT_KEYS: 'retrieveTrustedVaultKeys',
-  CONFIRM_SYNC_SETTINGS:
-      'confirmSyncSettings',  // User needs to confirm sync settings.
-};
-
-/**
- * The state of sync. This is the data structure sent back and forth between
- * C++ and JS. Its naming and structure is not optimal, but changing it would
- * require changes to the C++ handler, which is already functional.
- * @typedef {{
- *   appsRegistered: boolean,
- *   appsSynced: boolean,
- *   autofillRegistered: boolean,
- *   autofillSynced: boolean,
- *   bookmarksRegistered: boolean,
- *   bookmarksSynced: boolean,
- *   encryptAllData: boolean,
- *   encryptAllDataAllowed: boolean,
- *   enterPassphraseBody: (string|undefined),
- *   extensionsRegistered: boolean,
- *   extensionsSynced: boolean,
- *   fullEncryptionBody: string,
- *   passphrase: (string|undefined),
- *   passphraseRequired: boolean,
- *   passwordsRegistered: boolean,
- *   passwordsSynced: boolean,
- *   paymentsIntegrationEnabled: boolean,
- *   preferencesRegistered: boolean,
- *   preferencesSynced: boolean,
- *   setNewPassphrase: (boolean|undefined),
- *   syncAllDataTypes: boolean,
- *   tabsRegistered: boolean,
- *   tabsSynced: boolean,
- *   themesRegistered: boolean,
- *   themesSynced: boolean,
- *   trustedVaultKeysRequired: boolean,
- *   typedUrlsRegistered: boolean,
- *   typedUrlsSynced: boolean,
- * }}
- */
-settings.SyncPrefs;
-
-/**
- * @enum {string}
- */
-settings.PageStatus = {
-  SPINNER: 'spinner',                     // Before the page has loaded.
-  CONFIGURE: 'configure',                 // Preferences ready to be configured.
-  TIMEOUT: 'timeout',                     // Preferences loading has timed out.
-  DONE: 'done',                           // Sync subpage can be closed now.
-  PASSPHRASE_FAILED: 'passphraseFailed',  // Error in the passphrase.
-};
-
 cr.define('settings', function() {
+  /**
+   * @typedef {{fullName: (string|undefined),
+   *            givenName: (string|undefined),
+   *            email: string,
+   *            avatarImage: (string|undefined)}}
+   * @see chrome/browser/ui/webui/settings/people_handler.cc
+   */
+  let StoredAccount;
+
+  /**
+   * @typedef {{childUser: (boolean|undefined),
+   *            disabled: (boolean|undefined),
+   *            domain: (string|undefined),
+   *            hasError: (boolean|undefined),
+   *            hasPasswordsOnlyError: (boolean|undefined),
+   *            hasUnrecoverableError: (boolean|undefined),
+   *            managed: (boolean|undefined),
+   *            firstSetupInProgress: (boolean|undefined),
+   *            signedIn: (boolean|undefined),
+   *            signedInUsername: (string|undefined),
+   *            signinAllowed: (boolean|undefined),
+   *            statusAction: (!settings.StatusAction),
+   *            statusActionText: (string|undefined),
+   *            statusText: (string|undefined),
+   *            supervisedUser: (boolean|undefined),
+   *            syncSystemEnabled: (boolean|undefined)}}
+   * @see chrome/browser/ui/webui/settings/people_handler.cc
+   */
+  let SyncStatus;
+
+  /**
+   * Must be kept in sync with the return values of getSyncErrorAction in
+   * chrome/browser/ui/webui/settings/people_handler.cc
+   * @enum {string}
+   */
+  const StatusAction = {
+    NO_ACTION: 'noAction',             // No action to take.
+    REAUTHENTICATE: 'reauthenticate',  // User needs to reauthenticate.
+    SIGNOUT_AND_SIGNIN:
+        'signOutAndSignIn',               // User needs to sign out and sign in.
+    UPGRADE_CLIENT: 'upgradeClient',      // User needs to upgrade the client.
+    ENTER_PASSPHRASE: 'enterPassphrase',  // User needs to enter passphrase.
+    // User needs to go through key retrieval.
+    RETRIEVE_TRUSTED_VAULT_KEYS: 'retrieveTrustedVaultKeys',
+    CONFIRM_SYNC_SETTINGS:
+        'confirmSyncSettings',  // User needs to confirm sync settings.
+  };
+
+  /**
+   * The state of sync. This is the data structure sent back and forth between
+   * C++ and JS. Its naming and structure is not optimal, but changing it would
+   * require changes to the C++ handler, which is already functional.
+   * @typedef {{
+   *   appsRegistered: boolean,
+   *   appsSynced: boolean,
+   *   autofillRegistered: boolean,
+   *   autofillSynced: boolean,
+   *   bookmarksRegistered: boolean,
+   *   bookmarksSynced: boolean,
+   *   encryptAllData: boolean,
+   *   encryptAllDataAllowed: boolean,
+   *   enterPassphraseBody: (string|undefined),
+   *   extensionsRegistered: boolean,
+   *   extensionsSynced: boolean,
+   *   fullEncryptionBody: string,
+   *   passphrase: (string|undefined),
+   *   passphraseRequired: boolean,
+   *   passwordsRegistered: boolean,
+   *   passwordsSynced: boolean,
+   *   paymentsIntegrationEnabled: boolean,
+   *   preferencesRegistered: boolean,
+   *   preferencesSynced: boolean,
+   *   setNewPassphrase: (boolean|undefined),
+   *   syncAllDataTypes: boolean,
+   *   tabsRegistered: boolean,
+   *   tabsSynced: boolean,
+   *   themesRegistered: boolean,
+   *   themesSynced: boolean,
+   *   trustedVaultKeysRequired: boolean,
+   *   typedUrlsRegistered: boolean,
+   *   typedUrlsSynced: boolean,
+   * }}
+   */
+  let SyncPrefs;
+
+  /** @enum {string} */
+  const PageStatus = {
+    SPINNER: 'spinner',      // Before the page has loaded.
+    CONFIGURE: 'configure',  // Preferences ready to be configured.
+    TIMEOUT: 'timeout',      // Preferences loading has timed out.
+    DONE: 'done',            // Sync subpage can be closed now.
+    PASSPHRASE_FAILED: 'passphraseFailed',  // Error in the passphrase.
+  };
+
   /**
    * Key to be used with localStorage.
    * @type {string}
@@ -319,7 +309,12 @@ cr.define('settings', function() {
   cr.addSingletonGetter(SyncBrowserProxyImpl);
 
   return {
-    SyncBrowserProxy: SyncBrowserProxy,
-    SyncBrowserProxyImpl: SyncBrowserProxyImpl,
+    PageStatus,
+    StatusAction,
+    StoredAccount,
+    SyncBrowserProxy,
+    SyncBrowserProxyImpl,
+    SyncPrefs,
+    SyncStatus,
   };
 });

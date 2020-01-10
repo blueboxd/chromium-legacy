@@ -8,6 +8,7 @@
 #include "base/strings/string_piece.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/ios/ios_live_tab.h"
+#include "components/sessions/ios/ios_restore_live_tab.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -78,9 +79,15 @@
   if (!_restoreService)
     return;
 
+  web::NavigationManager* navigationManager = webState->GetNavigationManager();
+  if (navigationManager->IsRestoreSessionInProgress()) {
+    auto live_tab = std::make_unique<sessions::RestoreIOSLiveTab>(
+        webState->BuildSessionStorage());
+    _restoreService->CreateHistoricalTab(live_tab.get(), atIndex);
+    return;
+  }
   // No need to record history if the tab has no navigation or has only
   // presented the NTP or the bookmark UI.
-  web::NavigationManager* navigationManager = webState->GetNavigationManager();
   if (navigationManager->GetItemCount() <= 1) {
     web::NavigationItem* item = navigationManager->GetLastCommittedItem();
     if (!item)

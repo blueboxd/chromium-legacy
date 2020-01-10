@@ -318,10 +318,7 @@
   }, {
     "channel": "stable",
     "contexts": ["webui"],
-    "matches": [
-      "chrome://extensions/*",
-      "chrome://extensions-frame/*"  // TODO(dbeam): still needed?
-    ]
+    "matches": ["chrome://extensions/*"]
   }],
   // All devtools APIs are implemented by hand, so don't compile them.
   "devtools.inspectedWindow": {
@@ -439,7 +436,7 @@
     "internal": true,
     "channel": "stable",
     "contexts": ["webui"],
-    "matches": ["chrome://extensions-frame/*", "chrome://extensions/*"]
+    "matches": ["chrome://extensions/*"]
   },
   // This is not a real API, only here for documentation purposes.
   // See http://crbug.com/275944 for background.

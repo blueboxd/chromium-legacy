@@ -4586,6 +4586,49 @@ void LayerTreeHostImpl::SetRenderFrameObserver(
   render_frame_metadata_observer_->BindToCurrentThread();
 }
 
+bool LayerTreeHostImpl::ShouldAnimateScroll(
+    const ScrollState& scroll_state,
+    InputHandler::ScrollInputType type) const {
+  if (!settings_.enable_smooth_scroll)
+    return false;
+
+  bool has_precise_scroll_deltas =
+      scroll_state.delta_granularity() ==
+      static_cast<double>(
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+
+#if defined(OS_MACOSX)
+  // Mac does not smooth scroll wheel events (crbug.com/574283).
+  return type == InputHandler::SCROLLBAR ? !has_precise_scroll_deltas : false;
+#else
+  return !has_precise_scroll_deltas;
+#endif
+}
+
+InputHandlerScrollResult LayerTreeHostImpl::ScrollUpdate(
+    ScrollState* scroll_state,
+    InputHandler::ScrollInputType type,
+    base::TimeDelta delayed_by) {
+  DCHECK(scroll_state);
+
+  if (ShouldAnimateScroll(*scroll_state, type)) {
+    DCHECK(!scroll_state->is_in_inertial_phase());
+    gfx::Vector2dF scroll_delta(scroll_state->delta_x(),
+                                scroll_state->delta_y());
+    ScrollAnimated(gfx::Point(), scroll_delta, delayed_by);
+
+    // TODO(bokan): Always return |did_scroll| to preserve existing behavior
+    // where ScrollAnimated used to not return anything at all and then ACK as
+    // DID_HANDLE. Long term we should fill in the result with meaningful
+    // values.
+    InputHandlerScrollResult result;
+    result.did_scroll = true;
+    return result;
+  }
+
+  return ScrollBy(scroll_state);
+}
+
 InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     ScrollState* scroll_state) {
   DCHECK(scroll_state);

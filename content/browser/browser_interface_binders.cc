@@ -208,8 +208,8 @@ void BindQuotaDispatcherHost(
 void BindSharedWorkerConnector(
     RenderFrameHostImpl* host,
     mojo::PendingReceiver<blink::mojom::SharedWorkerConnector> receiver) {
-  SharedWorkerConnectorImpl::Create(host->GetProcess()->GetID(),
-                                    host->GetRoutingID(), std::move(receiver));
+  SharedWorkerConnectorImpl::Create(host->GetGlobalFrameRoutingId(),
+                                    std::move(receiver));
 }
 
 #if defined(OS_ANDROID)

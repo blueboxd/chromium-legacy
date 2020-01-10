@@ -48,8 +48,9 @@ class HidService : public content::FrameServiceBase<blink::mojom::HidService>,
 
   void FinishGetDevices(GetDevicesCallback callback,
                         std::vector<device::mojom::HidDeviceInfoPtr> devices);
-  void FinishRequestDevice(RequestDeviceCallback callback,
-                           device::mojom::HidDeviceInfoPtr device);
+  void FinishRequestDevice(
+      RequestDeviceCallback callback,
+      std::vector<device::mojom::HidDeviceInfoPtr> devices);
   void FinishConnect(
       ConnectCallback callback,
       mojo::PendingRemote<device::mojom::HidConnection> connection);

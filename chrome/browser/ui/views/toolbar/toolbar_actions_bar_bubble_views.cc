@@ -33,11 +33,18 @@ ToolbarActionsBarBubbleViews::ToolbarActionsBarBubbleViews(
                                       views::BubbleBorder::TOP_RIGHT),
       delegate_(std::move(delegate)),
       anchored_to_action_(anchored_to_action) {
+  base::string16 ok_text = delegate_->GetActionButtonText();
+  base::string16 cancel_text = delegate_->GetDismissButtonText();
+
+  int buttons = ui::DIALOG_BUTTON_NONE;
+  if (!ok_text.empty())
+    buttons |= ui::DIALOG_BUTTON_OK;
+  if (!cancel_text.empty())
+    buttons |= ui::DIALOG_BUTTON_CANCEL;
+  DialogDelegate::set_buttons(buttons);
   DialogDelegate::set_default_button(delegate_->GetDefaultDialogButton());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
-                                   delegate_->GetActionButtonText());
-  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
-                                   delegate_->GetDismissButtonText());
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK, ok_text);
+  DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL, cancel_text);
   DialogDelegate::SetExtraView(CreateExtraInfoView());
 
   DCHECK(anchor_view);
@@ -176,15 +183,6 @@ void ToolbarActionsBarBubbleViews::Init() {
     item_list_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(item_list_);
   }
-}
-
-int ToolbarActionsBarBubbleViews::GetDialogButtons() const {
-  int buttons = ui::DIALOG_BUTTON_NONE;
-  if (!delegate_->GetActionButtonText().empty())
-    buttons |= ui::DIALOG_BUTTON_OK;
-  if (!delegate_->GetDismissButtonText().empty())
-    buttons |= ui::DIALOG_BUTTON_CANCEL;
-  return buttons;
 }
 
 void ToolbarActionsBarBubbleViews::ButtonPressed(views::Button* sender,

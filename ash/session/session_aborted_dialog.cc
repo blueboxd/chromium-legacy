@@ -54,10 +54,6 @@ bool SessionAbortedDialog::Accept() {
   return true;
 }
 
-int SessionAbortedDialog::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
 ui::ModalType SessionAbortedDialog::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
@@ -78,6 +74,7 @@ gfx::Size SessionAbortedDialog::CalculatePreferredSize() const {
 }
 
 SessionAbortedDialog::SessionAbortedDialog() {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(

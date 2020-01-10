@@ -314,12 +314,16 @@ void ChromeBrowserCloudManagementController::InvalidatePolicies() {
 
 void ChromeBrowserCloudManagementController::InvalidateDMTokenCallback(
     bool success) {
+  UMA_HISTOGRAM_BOOLEAN(
+      "Enterprise.MachineLevelUserCloudPolicyEnrollment.UnenrollSuccess",
+      success);
   if (success) {
     DVLOG(1) << "Successfully invalidated the DM token";
     InvalidatePolicies();
   } else {
     DVLOG(1) << "Failed to invalidate the DM token";
   }
+  NotifyBrowserUnenrolled(success);
 }
 
 void ChromeBrowserCloudManagementController::OnPolicyFetched(
@@ -345,6 +349,12 @@ void ChromeBrowserCloudManagementController::NotifyPolicyRegisterFinished(
   for (auto& observer : observers_) {
     observer.OnPolicyRegisterFinished(succeeded);
   }
+}
+
+void ChromeBrowserCloudManagementController::NotifyBrowserUnenrolled(
+    bool succeeded) {
+  for (auto& observer : observers_)
+    observer.OnBrowserUnenrolled(succeeded);
 }
 
 bool ChromeBrowserCloudManagementController::GetEnrollmentTokenAndClientId(

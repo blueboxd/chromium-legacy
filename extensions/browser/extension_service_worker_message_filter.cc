@@ -146,7 +146,7 @@ void ExtensionServiceWorkerMessageFilter::OnDidInitializeServiceWorkerContext(
 
 void ExtensionServiceWorkerMessageFilter::OnDidStartServiceWorkerContext(
     const ExtensionId& extension_id,
-    int activation_sequence,
+    ActivationSequence activation_sequence,
     const GURL& service_worker_scope,
     int64_t service_worker_version_id,
     int thread_id) {
@@ -168,7 +168,7 @@ void ExtensionServiceWorkerMessageFilter::OnDidStartServiceWorkerContext(
 
 void ExtensionServiceWorkerMessageFilter::OnDidStopServiceWorkerContext(
     const ExtensionId& extension_id,
-    int activation_sequence,
+    ActivationSequence activation_sequence,
     const GURL& service_worker_scope,
     int64_t service_worker_version_id,
     int thread_id) {

@@ -1005,10 +1005,10 @@ TEST_P(OverviewSessionTest, ActivateDraggedWindowNotCancelOverview) {
 
   // Start drag on |window1|.
   std::unique_ptr<WindowResizer> resizer(CreateWindowResizer(
-      window1.get(), gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_TOUCH));
+      window1.get(), gfx::PointF(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_TOUCH));
   EXPECT_TRUE(InOverviewSession());
 
-  resizer->Drag(gfx::Point(400, 0), 0);
+  resizer->Drag(gfx::PointF(400, 0), 0);
   EXPECT_TRUE(InOverviewSession());
 
   wm::ActivateWindow(window1.get());
@@ -1032,7 +1032,7 @@ TEST_P(OverviewSessionTest, ActivateAnotherWindowDuringDragNotCancelOverview) {
   // Start drag on |window1|.
   wm::ActivateWindow(window1.get());
   std::unique_ptr<WindowResizer> resizer(CreateWindowResizer(
-      window1.get(), gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_TOUCH));
+      window1.get(), gfx::PointF(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_TOUCH));
   EXPECT_TRUE(InOverviewSession());
 
   // Activate |window2| should not cancel overview mode.
@@ -1315,7 +1315,7 @@ TEST_P(OverviewSessionTest,
   ASSERT_FALSE(InOverviewSession());
   {
     std::unique_ptr<WindowResizer> resizer =
-        CreateWindowResizer(primary_screen_window.get(), gfx::Point(400, 0),
+        CreateWindowResizer(primary_screen_window.get(), gfx::PointF(400, 0),
                             HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
     ASSERT_TRUE(InOverviewSession());
     EXPECT_FALSE(GetDropTarget(1));
@@ -1326,7 +1326,7 @@ TEST_P(OverviewSessionTest,
   ASSERT_FALSE(InOverviewSession());
   {
     std::unique_ptr<WindowResizer> resizer =
-        CreateWindowResizer(secondary_screen_window.get(), gfx::Point(400, 0),
+        CreateWindowResizer(secondary_screen_window.get(), gfx::PointF(400, 0),
                             HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
     ASSERT_TRUE(InOverviewSession());
     EXPECT_FALSE(GetDropTarget(0));
@@ -1402,7 +1402,7 @@ TEST_P(OverviewSessionTest,
   window->SetProperty(aura::client::kAppType,
                       static_cast<int>(AppType::BROWSER));
   std::unique_ptr<WindowResizer> resizer =
-      CreateWindowResizer(window.get(), gfx::Point(400, 0), HTCAPTION,
+      CreateWindowResizer(window.get(), gfx::PointF(400, 0), HTCAPTION,
                           ::wm::WINDOW_MOVE_SOURCE_TOUCH);
   ASSERT_TRUE(InOverviewSession());
   EXPECT_TRUE(GetDropTarget(0));
@@ -1631,9 +1631,9 @@ TEST_P(OverviewSessionTest, CancelOverviewOnTap) {
 TEST_P(OverviewSessionTest, OverviewWhileDragging) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
   std::unique_ptr<WindowResizer> resizer(CreateWindowResizer(
-      window.get(), gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE));
+      window.get(), gfx::PointF(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE));
   ASSERT_TRUE(resizer.get());
-  gfx::Point location = resizer->GetInitialLocation();
+  gfx::PointF location = resizer->GetInitialLocation();
   location.Offset(20, 20);
   resizer->Drag(location, 0);
   ToggleOverview();
@@ -2390,12 +2390,12 @@ TEST_P(OverviewSessionTest, DropTargetStackedAtBottomForWindowDraggedFromTop) {
   wm::ActivateWindow(window2.get());
   wm::ActivateWindow(window1.get());
   std::unique_ptr<WindowResizer> resizer =
-      CreateWindowResizer(window1.get(), gfx::Point(400, 0), HTCAPTION,
+      CreateWindowResizer(window1.get(), gfx::PointF(400, 0), HTCAPTION,
                           ::wm::WINDOW_MOVE_SOURCE_TOUCH);
   ASSERT_TRUE(GetDropTarget(0));
   EXPECT_LT(IndexOf(GetDropTarget(0)->GetWindow(), parent),
             IndexOf(window2.get(), parent));
-  resizer->Drag(gfx::Point(400, 500), ui::EF_NONE);
+  resizer->Drag(gfx::PointF(400, 500), ui::EF_NONE);
   resizer->CompleteDrag();
   EXPECT_FALSE(GetDropTarget(0));
 }
@@ -2804,13 +2804,13 @@ TEST_P(OverviewSessionTest, DraggingFromTopAnimation) {
   ui::GestureEvent event(0, 0, 0, base::TimeTicks(),
                          ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN));
   WindowState* window_state = WindowState::Get(widget->GetNativeWindow());
-  window_state->CreateDragDetails(event.location(), HTCAPTION,
+  window_state->CreateDragDetails(event.location_f(), HTCAPTION,
                                   ::wm::WINDOW_MOVE_SOURCE_TOUCH);
   auto drag_controller = std::make_unique<TabletModeWindowResizer>(
       window_state, std::make_unique<TabletModeBrowserWindowDragDelegate>());
   ui::Event::DispatcherApi dispatch_helper(&event);
   dispatch_helper.set_target(widget->GetNativeWindow());
-  drag_controller->Drag(event.location(), event.flags());
+  drag_controller->Drag(event.location_f(), event.flags());
 
   ASSERT_TRUE(InOverviewSession());
   EXPECT_EQ(OverviewSession::EnterExitOverviewType::kImmediateEnter,
@@ -3700,12 +3700,13 @@ TEST_P(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
 
 // Verify the correct behavior when dragging windows in overview mode.
 TEST_P(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
-  // TODO(sammiequon): Make this work once this feature is enabled by default
-  // for good.
-  if (base::FeatureList::IsEnabled(features::kNewOverviewLayout))
+  if (!base::FeatureList::IsEnabled(features::kNewOverviewLayout))
     return;
 
-  aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
+  ui::GestureConfiguration* gesture_config =
+      ui::GestureConfiguration::GetInstance();
+  gesture_config->set_long_press_time_in_ms(1);
+  gesture_config->set_show_press_delay_in_ms(1);
 
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
@@ -3723,9 +3724,18 @@ TEST_P(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
   generator->set_current_screen_location(
       gfx::ToRoundedPoint(window_item1->target_bounds().CenterPoint()));
   generator->PressTouch();
+
+  // Simulate a long press, which is required to snap windows.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(2));
+  run_loop.Run();
+
   OverviewWindowDragController* drag_controller =
       overview_session()->window_drag_controller();
-  EXPECT_EQ(DragBehavior::kUndefined, drag_controller->current_drag_behavior());
+  ASSERT_TRUE(drag_controller);
+  EXPECT_EQ(DragBehavior::kNormalDrag,
+            drag_controller->current_drag_behavior());
   generator->MoveTouchBy(20, 0);
   EXPECT_EQ(DragBehavior::kNormalDrag,
             drag_controller->current_drag_behavior());
@@ -3737,12 +3747,13 @@ TEST_P(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
   generator->set_current_screen_location(
       gfx::ToRoundedPoint(window_item2->target_bounds().CenterPoint()));
   generator->PressTouch();
-  drag_controller = overview_session()->window_drag_controller();
-  EXPECT_EQ(DragBehavior::kUndefined, drag_controller->current_drag_behavior());
 
   // Use small increments otherwise a fling event will be fired.
   for (int j = 0; j < 20; ++j)
     generator->MoveTouchBy(0, 1);
+
+  // A new instance of drag controller gets created each time a drag starts.
+  drag_controller = overview_session()->window_drag_controller();
   EXPECT_EQ(DragBehavior::kDragToClose,
             drag_controller->current_drag_behavior());
 }
@@ -6380,6 +6391,37 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
 
   EXPECT_EQ(root1_drop_target_bounds(item1), root1_drop_target_bounds(item2));
   EXPECT_EQ(root1_drop_target_bounds(item3), root1_drop_target_bounds(item4));
+}
+
+// Test dragging from one display to another and then snapping.
+TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
+       DragFromOneDisplayToAnotherAndSnap) {
+  UpdateDisplay("800x600,800x600");
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, root_windows.size());
+  SplitViewController* split_view_controller1 =
+      SplitViewController::Get(root_windows[0]);
+  SplitViewController* split_view_controller2 =
+      SplitViewController::Get(root_windows[1]);
+  const gfx::Rect bounds_within_root1(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds_within_root1);
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds_within_root1);
+  ToggleOverview();
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(gfx::ToRoundedPoint(
+      GetOverviewItemForWindow(window2.get())->target_bounds().CenterPoint()));
+  generator->PressLeftButton();
+  Shell::Get()->cursor_manager()->SetDisplay(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
+  generator->MoveMouseTo(800, 300);
+  generator->ReleaseLeftButton();
+  EXPECT_EQ(SplitViewController::State::kNoSnap,
+            split_view_controller1->state());
+  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller2->state());
+  EXPECT_EQ(window2.get(), split_view_controller2->left_window());
+  EXPECT_EQ(root_windows[1], window2->GetRootWindow());
+  EXPECT_TRUE(InOverviewSession());
 }
 
 // Verify that |SplitViewController::CanSnapWindow| checks that the minimum size

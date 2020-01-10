@@ -73,8 +73,8 @@ Run `git commit`. Here are some
 If you have many commits on your current branch, and you want to avoid some
 nasty commit-by-commit merge conflicts in the next step, it is recommended to
 squash your commits into a single commit. This is done by running `git rebase -i
-<upstream-branch>`. The upstream branch is usually origin/master, but check `git
-branch -vv` to make sure. After running the git rebase command, you should see a
+@{u}`. The `@{u}` is a short-hand pointer for the upstream branch, which is
+usually origin/master. After running the git rebase command, you should see a
 list of commits, each commit starting with the word "pick". Make sure the first
 commit says "pick" and change the rest from "pick" to "squash". This will squash
 each commit into the previous commit, which will continue until each commit is
@@ -86,7 +86,7 @@ Run `git rebase-update`. This command updates all of your local branches with
 remote changes that have landed since you started development work, which
 could've been a while ago. It also deletes any branches that match the remote
 repository, such as after the CL associated with that branch had merged. You may
-run into rebase conflicts which should be manually fixed before proceeding with
+run into rebase conflicts, which should be manually fixed before proceeding with
 `git rebase --continue`. Rebasing prevents unintended changes from creeping into
 your CL.
 

@@ -23,6 +23,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/browser/appcache/appcache_cache_test_helper.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_response.h"
@@ -59,6 +60,7 @@ const base::TimeDelta kFullUpdateInterval = base::TimeDelta::FromHours(24);
 const base::TimeDelta kMaxEvictableErrorDuration =
     base::TimeDelta::FromDays(14);
 const base::TimeDelta kOneHour = base::TimeDelta::FromHours(1);
+const base::TimeDelta kOneYear = base::TimeDelta::FromDays(365);
 
 const char kManifest1Contents[] =
     "CACHE MANIFEST\n"
@@ -67,6 +69,8 @@ const char kManifest1Contents[] =
     "fallback1 fallback1a\n"
     "NETWORK:\n"
     "*\n";
+
+const char kExplicit1Contents[] = "explicit1";
 
 // By default, kManifest2Contents is served from a path in /files/, so any
 // resource listing in it that references outside of that path will require a
@@ -174,7 +178,7 @@ class MockHttpServer {
       (*body) = "CACHE MANIFEST\n";
     } else if (path == "/files/explicit1") {
       (*headers) = std::string(ok_headers, base::size(ok_headers));
-      (*body) = "explicit1";
+      (*body) = kExplicit1Contents;
     } else if (path == "/files/explicit2") {
       (*headers) = std::string(ok_headers, base::size(ok_headers));
       (*body) = "explicit2";
@@ -542,36 +546,40 @@ int RetryRequestTestJob::expected_requests_ = 0;
 // Helper class to check for certain HTTP headers.
 class HttpHeadersRequestTestJob {
  public:
-  // Call this at the start of each HTTP header-related test.
-  static void Initialize(const std::string& expect_if_modified_since,
-                         const std::string& expect_if_none_match,
-                         bool headers_allowed = true) {
-    expect_if_modified_since_ = expect_if_modified_since;
-    expect_if_none_match_ = expect_if_none_match;
-    headers_allowed_ = headers_allowed;
-  }
-
-  // Verifies results at end of test and resets class.
-  static void Verify() {
-    if (!expect_if_modified_since_.empty())
-      EXPECT_TRUE(saw_if_modified_since_);
-    if (!expect_if_none_match_.empty())
-      EXPECT_TRUE(saw_if_none_match_);
-    if (!headers_allowed_)
-      EXPECT_FALSE(saw_headers_);
-
-    // Reset.
-    expect_if_modified_since_.clear();
+  HttpHeadersRequestTestJob() {
     saw_if_modified_since_ = false;
-    expect_if_none_match_.clear();
     saw_if_none_match_ = false;
     headers_allowed_ = true;
     saw_headers_ = false;
     already_checked_ = false;
   }
 
-  static void ValidateExtraHeaders(
-      const net::HttpRequestHeaders& extra_headers) {
+  HttpHeadersRequestTestJob(const std::string& expect_if_modified_since,
+                            const std::string& expect_if_none_match,
+                            bool headers_allowed = true)
+      : expect_if_modified_since_(expect_if_modified_since),
+        saw_if_modified_since_(false),
+        expect_if_none_match_(expect_if_none_match),
+        saw_if_none_match_(false),
+        headers_allowed_(headers_allowed),
+        saw_headers_(false),
+        already_checked_(false),
+        verify_called_(false) {}
+
+  ~HttpHeadersRequestTestJob() { DCHECK(verify_called_); }
+
+  // Verifies results at end of test.
+  void Verify(const GURL& url) {
+    verify_called_ = true;
+    if (!expect_if_modified_since_.empty())
+      EXPECT_TRUE(saw_if_modified_since_) << "URL " << url.spec() << " failed";
+    if (!expect_if_none_match_.empty())
+      EXPECT_TRUE(saw_if_none_match_) << "URL " << url.spec() << " failed";
+    if (!headers_allowed_)
+      EXPECT_FALSE(saw_headers_) << "URL " << url.spec() << " failed";
+  }
+
+  void ValidateExtraHeaders(const net::HttpRequestHeaders& extra_headers) {
     if (already_checked_)
       return;
 
@@ -593,74 +601,19 @@ class HttpHeadersRequestTestJob {
   }
 
  private:
-  static std::string expect_if_modified_since_;
-  static bool saw_if_modified_since_;
-  static std::string expect_if_none_match_;
-  static bool saw_if_none_match_;
-  static bool headers_allowed_;
-  static bool saw_headers_;
-  static bool already_checked_;
+  std::string expect_if_modified_since_;
+  bool saw_if_modified_since_;
+  std::string expect_if_none_match_;
+  bool saw_if_none_match_;
+  bool headers_allowed_;
+  bool saw_headers_;
+  bool already_checked_;
+  bool verify_called_;
 };
-
-// static
-std::string HttpHeadersRequestTestJob::expect_if_modified_since_;
-bool HttpHeadersRequestTestJob::saw_if_modified_since_ = false;
-std::string HttpHeadersRequestTestJob::expect_if_none_match_;
-bool HttpHeadersRequestTestJob::saw_if_none_match_ = false;
-bool HttpHeadersRequestTestJob::headers_allowed_ = true;
-bool HttpHeadersRequestTestJob::saw_headers_ = false;
-bool HttpHeadersRequestTestJob::already_checked_ = false;
-
-// TODO(ananta/michaeln). Remove dependencies on URLRequest based
-// classes by refactoring the response headers/data into a common class.
-bool InterceptRequest(URLLoaderInterceptor::RequestParams* params) {
-  const auto& url_request = params->url_request;
-  if (url_request.url.host() == "failme" ||
-      url_request.url.host() == "testme") {
-    params->client->OnComplete(network::URLLoaderCompletionStatus(-100));
-    return true;
-  }
-
-  HttpHeadersRequestTestJob::ValidateExtraHeaders(url_request.headers);
-
-  std::string headers;
-  std::string body;
-  if (url_request.url == RetryRequestTestJob::kRetryUrl) {
-    RetryRequestTestJob::GetResponseForURL(url_request.url, &headers, &body);
-  } else {
-    MockHttpServer::GetMockResponse(url_request.url.path(), &headers, &body);
-  }
-
-  net::HttpResponseInfo info;
-  info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-      net::HttpUtil::AssembleRawHeaders(headers));
-
-  auto response = network::mojom::URLResponseHead::New();
-  response->headers = info.headers;
-  response->headers->GetMimeType(&response->mime_type);
-
-  params->client->OnReceiveResponse(std::move(response));
-
-  mojo::ScopedDataPipeProducerHandle producer_handle;
-  mojo::ScopedDataPipeConsumerHandle consumer_handle;
-  mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
-
-  uint32_t bytes_written = body.size();
-  producer_handle->WriteData(body.data(), &bytes_written,
-                             MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-  params->client->OnStartLoadingResponseBody(std::move(consumer_handle));
-  return true;
-}
 
 class AppCacheUpdateJobTest : public testing::Test,
                               public AppCacheGroup::UpdateObserver {
  public:
-  enum class ScopeType {
-    kScopeRoot,
-    kScopeBar,
-    kScopeOther,
-  };
-
   AppCacheUpdateJobTest()
       : do_checks_after_update_finished_(false),
         expect_group_obsolete_(false),
@@ -673,10 +626,61 @@ class AppCacheUpdateJobTest : public testing::Test,
         expect_non_null_update_time_(false),
         tested_manifest_(NONE),
         tested_manifest_path_override_(nullptr),
-        interceptor_(base::BindRepeating(&InterceptRequest)),
+        interceptor_(
+            base::BindRepeating(&AppCacheUpdateJobTest::InterceptRequest,
+                                base::Unretained(this))),
         process_id_(123),
         weak_partition_factory_(static_cast<StoragePartitionImpl*>(
             BrowserContext::GetDefaultStoragePartition(&browser_context_))) {}
+
+  // TODO(ananta/michaeln): Remove dependencies on URLRequest based
+  // classes by refactoring the response headers/data into a common class.
+  bool InterceptRequest(URLLoaderInterceptor::RequestParams* params) {
+    const auto& url_request = params->url_request;
+    if (url_request.url.host() == "failme" ||
+        url_request.url.host() == "testme") {
+      params->client->OnComplete(network::URLLoaderCompletionStatus(-100));
+      return true;
+    }
+
+    auto it = http_headers_request_test_jobs_.find(url_request.url);
+    if (it != http_headers_request_test_jobs_.end())
+      it->second->ValidateExtraHeaders(url_request.headers);
+
+    std::string headers;
+    std::string body;
+    if (url_request.url == RetryRequestTestJob::kRetryUrl) {
+      RetryRequestTestJob::GetResponseForURL(url_request.url, &headers, &body);
+    } else {
+      MockHttpServer::GetMockResponse(url_request.url.path(), &headers, &body);
+    }
+
+    net::HttpResponseInfo info;
+    info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers));
+
+    auto response = network::mojom::URLResponseHead::New();
+    response->headers = info.headers;
+    response->headers->GetMimeType(&response->mime_type);
+
+    // Provide valid request and response times to
+    // UpdateUrlLoaderRequest.  It's still up to that class's
+    // |OnReceiveResponse| to capture these values in the net::HttpResponseInfo.
+    response->request_time = base::Time::Now();
+    response->response_time = base::Time::Now();
+
+    params->client->OnReceiveResponse(std::move(response));
+
+    mojo::ScopedDataPipeProducerHandle producer_handle;
+    mojo::ScopedDataPipeConsumerHandle consumer_handle;
+    mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+
+    uint32_t bytes_written = body.size();
+    producer_handle->WriteData(body.data(), &bytes_written,
+                               MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+    params->client->OnStartLoadingResponseBody(std::move(consumer_handle));
+    return true;
+  }
 
   void SetUp() override {
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(process_id_,
@@ -3245,8 +3249,11 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_->AddUpdateObserver(this);
   }
 
-  static void VerifyHeadersAndDeleteUpdate(AppCacheUpdateJob* update) {
-    HttpHeadersRequestTestJob::Verify();
+  void VerifyHeadersAndDeleteUpdate(AppCacheUpdateJob* update) {
+    for (auto it = http_headers_request_test_jobs_.begin();
+         it != http_headers_request_test_jobs_.end(); ++it) {
+      it->second->Verify(it->first);
+    }
     delete update;
   }
 
@@ -3260,7 +3267,9 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // First test against a cache attempt. Will start manifest fetch
     // synchronously.
-    HttpHeadersRequestTestJob::Initialize(std::string(), std::string());
+    http_headers_request_test_jobs_.emplace(
+        group_->manifest_url(), std::make_unique<HttpHeadersRequestTestJob>(
+                                    std::string(), std::string()));
     MockFrontend mock_frontend;
     AppCacheHost host(/*host_id=*/base::UnguessableToken::Create(),
                       /*process_id=*/1, /*render_frame_id=*/1,
@@ -3273,11 +3282,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                       update));
+                       base::Unretained(this), update));
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
-                                  base::Unretained(this)));
+    TriggerTestComplete();
   }
 
   void IfModifiedTestRefetch() {
@@ -3294,7 +3301,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = base::MakeRefCounted<AppCacheGroup>(
         service_->storage(), GURL("http://headertest"), 111);
 
-    HttpHeadersRequestTestJob::Initialize(std::string(), std::string());
+    http_headers_request_test_jobs_.emplace(
+        group_->manifest_url(), std::make_unique<HttpHeadersRequestTestJob>(
+                                    std::string(), std::string()));
 
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
@@ -3309,11 +3318,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                       update));
+                       base::Unretained(this), update));
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
-                                  base::Unretained(this)));
+    TriggerTestComplete();
   }
 
   void IfModifiedTestLastModified() {
@@ -3331,8 +3338,10 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_ = base::MakeRefCounted<AppCacheGroup>(
         service_->storage(), GURL("http://headertest"), 111);
 
-    HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT",
-                                          std::string());
+    http_headers_request_test_jobs_.emplace(
+        group_->manifest_url(),
+        std::make_unique<HttpHeadersRequestTestJob>(
+            "Sat, 29 Oct 1994 19:43:31 GMT", std::string()));
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3346,11 +3355,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                       update));
+                       base::Unretained(this), update));
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
-                                  base::Unretained(this)));
+    TriggerTestComplete();
   }
 
   // AppCaches built with manifest parser version 0 should update without
@@ -3361,13 +3368,15 @@ class AppCacheUpdateJobTest : public testing::Test,
   void IfModifiedSinceUpgradeParserVersion0Test() {
     base::test::ScopedFeatureList f;
     f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
-    HttpHeadersRequestTestJob::Initialize(std::string(), std::string(),
-                                          /*headers_allowed=*/false);
 
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
         service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
         111);
+    http_headers_request_test_jobs_.emplace(
+        group_->manifest_url(), std::make_unique<HttpHeadersRequestTestJob>(
+                                    std::string(), std::string(),
+                                    /*headers_allowed=*/false));
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3429,8 +3438,6 @@ class AppCacheUpdateJobTest : public testing::Test,
   void IfModifiedSinceUpgradeParserVersion1Test() {
     base::test::ScopedFeatureList f;
     f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
-    HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT",
-                                          std::string());
 
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
@@ -3440,12 +3447,9 @@ class AppCacheUpdateJobTest : public testing::Test,
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
 
-    // Give the newest cache a manifest entry that is in storage.
-    response_writer_ =
-        service_->storage()->CreateResponseWriter(group_->manifest_url());
-
-    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
-                                        response_writer_->response_id());
+    // Create a cache without a manifest entry.  The manifest entry will be
+    // added later.
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), -1);
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(frontend);
     host->AssociateCompleteCache(cache);
@@ -3469,26 +3473,41 @@ class AppCacheUpdateJobTest : public testing::Test,
     frontend->AddExpectedEvent(
         blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
 
+    AppCacheCacheTestHelper::CacheEntries cache_entries;
+
+    // Add cache entry for manifest.
     // Seed storage with expected manifest response info that will cause
     // an If-Modified-Since header to be put in the manifest fetch request.
     const char data[] =
         "HTTP/1.1 200 OK\0"
-        "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
-        "\0";
+        "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0";
     scoped_refptr<net::HttpResponseHeaders> headers =
         base::MakeRefCounted<net::HttpResponseHeaders>(
             std::string(data, base::size(data)));
     std::unique_ptr<net::HttpResponseInfo> response_info =
         std::make_unique<net::HttpResponseInfo>();
     response_info->headers = std::move(headers);
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
-        base::MakeRefCounted<HttpResponseInfoIOBuffer>(
-            std::move(response_info));
-    response_writer_->WriteInfo(
-        io_buffer.get(),
+    AppCacheCacheTestHelper::AddCacheEntry(
+        &cache_entries, group_->manifest_url(), AppCacheEntry::EXPLICIT,
+        /*expect_if_modified_since=*/"Sat, 29 Oct 1994 19:43:31 GMT",
+        /*expect_if_none_match=*/std::string(), /*headers_allowed=*/true,
+        std::move(response_info), kManifest1Contents);
+
+    // Add all header checks from |cache_entries|.
+    for (auto it = cache_entries.begin(); it != cache_entries.end(); ++it) {
+      http_headers_request_test_jobs_.emplace(
+          it->first,
+          std::make_unique<HttpHeadersRequestTestJob>(
+              it->second->expect_if_modified_since,
+              it->second->expect_if_none_match, it->second->headers_allowed));
+    }
+
+    cache_helper_ = std::make_unique<AppCacheCacheTestHelper>(
+        service_.get(), group_->manifest_url(), cache, std::move(cache_entries),
         base::BindOnce(
             &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
             base::Unretained(this)));
+    cache_helper_->Write();
 
     // Start update after data write completes asynchronously.
   }
@@ -3501,13 +3520,15 @@ class AppCacheUpdateJobTest : public testing::Test,
   void IfNoneMatchUpgradeParserVersion0Test() {
     base::test::ScopedFeatureList f;
     f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
-    HttpHeadersRequestTestJob::Initialize(std::string(), std::string(),
-                                          /*headers_allowed=*/false);
 
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
         service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
         111);
+    http_headers_request_test_jobs_.emplace(
+        group_->manifest_url(), std::make_unique<HttpHeadersRequestTestJob>(
+                                    std::string(), std::string(),
+                                    /*headers_allowed=*/false));
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3569,12 +3590,14 @@ class AppCacheUpdateJobTest : public testing::Test,
   void IfNoneMatchUpgradeParserVersion1Test() {
     base::test::ScopedFeatureList f;
     f.InitAndEnableFeature(kAppCacheManifestScopeChecksFeature);
-    HttpHeadersRequestTestJob::Initialize(std::string(), "\"LadeDade\"");
 
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
         service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
         111);
+    http_headers_request_test_jobs_.emplace(
+        group_->manifest_url(), std::make_unique<HttpHeadersRequestTestJob>(
+                                    std::string(), "\"LadeDade\""));
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3632,12 +3655,96 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Start update after data write completes asynchronously.
   }
 
-  void IfNoneMatchRefetchTest() {
-    HttpHeadersRequestTestJob::Initialize(std::string(), "\"LadeDade\"");
+  void RequestResponseTimesAreSetTest() {
+    MakeService();
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(), MockHttpServer::GetMockUrl("files/manifest1"),
+        111);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
 
+    // Create a cache without a manifest entry.  The manifest entry will be
+    // added later.
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), -1);
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(frontend);
+    host->AssociateCompleteCache(cache);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = false;
+
+    AppCacheCacheTestHelper::CacheEntries cache_entries;
+
+    // Add cache entry for manifest.
+    // Seed storage with expected manifest response info that will cause
+    // an If-Modified-Since header to be put in the manifest fetch request.
+    {
+      const char data[] =
+          "HTTP/1.1 200 OK\0"
+          "Last-Modified: Sat, 29 Oct 2019 19:43:31 GMT\0";
+      scoped_refptr<net::HttpResponseHeaders> headers =
+          base::MakeRefCounted<net::HttpResponseHeaders>(
+              std::string(data, base::size(data)));
+      std::unique_ptr<net::HttpResponseInfo> response_info =
+          std::make_unique<net::HttpResponseInfo>();
+      response_info->headers = std::move(headers);
+      response_info->request_time = base::Time::Now() - kOneYear;
+      response_info->response_time = base::Time::Now() - kOneYear;
+      AppCacheCacheTestHelper::AddCacheEntry(
+          &cache_entries, group_->manifest_url(), AppCacheEntry::EXPLICIT,
+          /*expect_if_modified_since=*/std::string(),
+          /*expect_if_none_match=*/std::string(), /*headers_allowed=*/true,
+          std::move(response_info), kManifest1Contents);
+    }
+
+    cache_helper_ = std::make_unique<AppCacheCacheTestHelper>(
+        service_.get(), group_->manifest_url(), cache, std::move(cache_entries),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
+    cache_helper_->Write();
+
+    post_update_finished_cb_ = base::BindOnce(
+        &AppCacheUpdateJobTest::RequestResponseTimesAreSetUpdateFinished,
+        base::Unretained(this));
+
+    // Start update after data write completes asynchronously.
+    // After update is finished, continues async in
+    // |RequestResponseTimesAreSetUpdateFinished|.
+  }
+
+  void RequestResponseTimesAreSetUpdateFinished() {
+    ASSERT_NE(group_->newest_complete_cache(), cache_helper_->write_cache());
+    ASSERT_NE(group_->newest_complete_cache(), nullptr);
+    cache_helper_->PrepareForRead(
+        group_->newest_complete_cache(),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::RequestResponseTimesAreSetReadFinished,
+            base::Unretained(this)));
+    cache_helper_->Read();
+    // Continues async in |RequestResponseTimesAreSetReadFinished|.
+  }
+
+  void RequestResponseTimesAreSetReadFinished() {
+    auto it = cache_helper_->read_cache_entries().find(
+        MockHttpServer::GetMockUrl("files/explicit1"));
+    ASSERT_NE(it, cache_helper_->read_cache_entries().end());
+    CHECK_GT(it->second->response_info->request_time,
+             base::Time::Now() - kOneHour);
+    CHECK_GT(it->second->response_info->response_time,
+             base::Time::Now() - kOneHour);
+    TriggerTestComplete();
+    // Continues async in |TestComplete|.
+  }
+
+  void IfNoneMatchRefetchTest() {
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
         service_->storage(), GURL("http://headertest"), 111);
+    http_headers_request_test_jobs_.emplace(
+        group_->manifest_url(), std::make_unique<HttpHeadersRequestTestJob>(
+                                    std::string(), "\"LadeDade\""));
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3661,21 +3768,20 @@ class AppCacheUpdateJobTest : public testing::Test,
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                       update));
+                       base::Unretained(this), update));
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
-                                  base::Unretained(this)));
+    TriggerTestComplete();
   }
 
   void MultipleHeadersRefetchTest() {
     // Verify that code is correct when building multiple extra headers.
-    HttpHeadersRequestTestJob::Initialize("Sat, 29 Oct 1994 19:43:31 GMT",
-                                          "\"LadeDade\"");
-
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
         service_->storage(), GURL("http://headertest"), 111);
+    http_headers_request_test_jobs_.emplace(
+        group_->manifest_url(),
+        std::make_unique<HttpHeadersRequestTestJob>(
+            "Sat, 29 Oct 1994 19:43:31 GMT", "\"LadeDade\""));
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -3700,11 +3806,9 @@ class AppCacheUpdateJobTest : public testing::Test,
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                       update));
+                       base::Unretained(this), update));
 
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
-                                  base::Unretained(this)));
+    TriggerTestComplete();
   }
 
   void CrossOriginHttpsSuccessTest() {
@@ -3773,20 +3877,30 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void UpdateFinished() {
+    if (post_update_finished_cb_) {
+      std::move(post_update_finished_cb_).Run();
+      return;
+    }
+
+    TriggerTestComplete();
+  }
+
+  void TriggerTestComplete() {
     // We unwind the stack prior to finishing up to let stack-based objects
     // get deleted.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::UpdateFinishedUnwound,
+        FROM_HERE, base::BindOnce(&AppCacheUpdateJobTest::TestComplete,
                                   base::Unretained(this)));
   }
 
-  void UpdateFinishedUnwound() {
+  void TestComplete() {
     EXPECT_EQ(AppCacheGroup::IDLE, group_->update_status());
     EXPECT_TRUE(group_->update_job() == nullptr);
     if (do_checks_after_update_finished_)
       VerifyExpectations();
 
     // Clean up everything that was created on the IO thread.
+    cache_helper_.reset();
     protect_newest_cache_ = nullptr;
     group_ = nullptr;
     hosts_.clear();
@@ -3819,8 +3933,10 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_->set_last_full_update_check_time(cache->update_time());
 
     // Add manifest entry to cache.
-    cache->AddEntry(manifest_entry_url, AppCacheEntry(AppCacheEntry::MANIFEST,
-                                                      manifest_response_id));
+    if (manifest_response_id >= 0) {
+      cache->AddEntry(manifest_entry_url, AppCacheEntry(AppCacheEntry::MANIFEST,
+                                                        manifest_response_id));
+    }
 
     // Specific tests that expect a newer time should set
     // expect_full_update_time_newer_than_ which causes this
@@ -3863,7 +3979,10 @@ class AppCacheUpdateJobTest : public testing::Test,
   // has finished. Cannot verify update job internals as update is deleted.
   void VerifyExpectations() {
     RetryRequestTestJob::Verify();
-    HttpHeadersRequestTestJob::Verify();
+    for (auto it = http_headers_request_test_jobs_.begin();
+         it != http_headers_request_test_jobs_.end(); ++it) {
+      it->second->Verify(it->first);
+    }
 
     EXPECT_EQ(expect_group_obsolete_, group_->is_obsolete());
     EXPECT_EQ(expect_group_is_being_deleted_ || expect_eviction_,
@@ -4546,8 +4665,10 @@ class AppCacheUpdateJobTest : public testing::Test,
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> protect_newest_cache_;
   base::OnceClosure test_completed_cb_;
+  base::OnceClosure post_update_finished_cb_;
 
   std::unique_ptr<AppCacheResponseWriter> response_writer_;
+  std::unique_ptr<AppCacheCacheTestHelper> cache_helper_;
 
   // Hosts used by an async test that need to live until update job finishes.
   // Otherwise, test can put host on the stack instead of here.
@@ -4579,6 +4700,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   content::TestBrowserContext browser_context_;
   URLLoaderInterceptor interceptor_;
   const int process_id_;
+  std::map<GURL, std::unique_ptr<HttpHeadersRequestTestJob>>
+      http_headers_request_test_jobs_;
   base::WeakPtrFactory<StoragePartitionImpl> weak_partition_factory_;
 };
 
@@ -4957,6 +5080,10 @@ TEST_F(AppCacheUpdateJobTest, IfNoneMatchUpgradeParserVersion0) {
 TEST_F(AppCacheUpdateJobTest, IfNoneMatchUpgradeParserVersion1) {
   RunTestOnUIThread(
       &AppCacheUpdateJobTest::IfNoneMatchUpgradeParserVersion1Test);
+}
+
+TEST_F(AppCacheUpdateJobTest, RequestResponseTimesAreSet) {
+  RunTestOnUIThread(&AppCacheUpdateJobTest::RequestResponseTimesAreSetTest);
 }
 
 TEST_F(AppCacheUpdateJobTest, IfNoneMatchRefetch) {

@@ -16,6 +16,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 
+using extensions::ActivationSequence;
 using extensions::APIPermission;
 using extensions::APIPermissionInfo;
 using extensions::APIPermissionSet;
@@ -62,7 +63,7 @@ ExtensionMsg_Loaded_Params::~ExtensionMsg_Loaded_Params() {}
 ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
     const Extension* extension,
     bool include_tab_permissions,
-    base::Optional<int> worker_activation_sequence)
+    base::Optional<ActivationSequence> worker_activation_sequence)
     : manifest(static_cast<base::DictionaryValue&&>(
           extension->manifest()->value()->Clone())),
       location(extension->location()),

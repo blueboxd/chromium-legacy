@@ -122,7 +122,7 @@ void UnifiedMessageCenterView::SetAvailableHeight(int available_height) {
 }
 
 void UnifiedMessageCenterView::SetExpanded() {
-  if (!GetVisible() || !collapsed_)
+  if (!collapsed_)
     return;
 
   collapsed_ = false;

@@ -18,7 +18,11 @@ hid_test(async (t, fake) => {
   fake.setSelectedDevice(guid);
 
   await trustedClick();
-  const device = await navigator.hid.requestDevice({filters: []});
+  const devices = await navigator.hid.requestDevice({filters: []});
+  assert_true(devices instanceof Array);
+  assert_equals(devices.length, 1);
+
+  const device = devices[0];
   assert_true(device instanceof HIDDevice);
   assert_false(device.opened);
 
@@ -31,7 +35,12 @@ hid_test(async (t, fake) => {
   fake.setSelectedDevice(guid);
 
   await trustedClick();
-  const device = await navigator.hid.requestDevice({filters: []});
+  const devices = await navigator.hid.requestDevice({filters: []});
+  assert_true(devices instanceof Array);
+  assert_equals(devices.length, 1);
+
+  const device = devices[0];
+  assert_true(device instanceof HIDDevice);
   assert_false(device.opened);
 
   await device.open();
@@ -46,7 +55,12 @@ hid_test(async (t, fake) => {
   fake.setSelectedDevice(guid);
 
   await trustedClick();
-  const device = await navigator.hid.requestDevice({filters: []});
+  const devices = await navigator.hid.requestDevice({filters: []});
+  assert_true(devices instanceof Array);
+  assert_equals(devices.length, 1);
+
+  const device = devices[0];
+  assert_true(device instanceof HIDDevice);
   assert_false(device.opened);
 
   await device.open();
@@ -58,7 +72,12 @@ hid_test(async (t, fake) => {
   fake.setSelectedDevice(guid);
 
   await trustedClick();
-  const device = await navigator.hid.requestDevice({filters: []});
+  const devices = await navigator.hid.requestDevice({filters: []});
+  assert_true(devices instanceof Array);
+  assert_equals(devices.length, 1);
+
+  const device = devices[0];
+  assert_true(device instanceof HIDDevice);
   assert_false(device.opened);
 
   const firstRequest = device.open();

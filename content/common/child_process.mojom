@@ -92,6 +92,6 @@ interface ChildProcess {
   BindReceiver(mojo_base.mojom.GenericPendingReceiver receiver);
 
   // Sets the coverage file for the child process.
-  [EnableIf=clang_coverage]
+  [EnableIf=clang_coverage_inside_sandbox]
   SetCoverageFile(mojo_base.mojom.File file);
 };

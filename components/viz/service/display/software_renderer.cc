@@ -144,12 +144,18 @@ void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
   // Skia applies the current matrix to clip rects so we reset it temporarily.
   SkMatrix current_matrix = current_canvas_->getTotalMatrix();
   current_canvas_->resetMatrix();
+
+  // Checks below are incompatible with WebView as the canvas size and clip
+  // provided by Android or embedder app. And Chrome doesn't use
+  // SoftwareRenderer on Android.
+#if !defined(OS_ANDROID)
   // SetClipRect is assumed to be applied temporarily, on an
   // otherwise-unclipped canvas.
   DCHECK_EQ(current_canvas_->getDeviceClipBounds().width(),
             current_canvas_->imageInfo().width());
   DCHECK_EQ(current_canvas_->getDeviceClipBounds().height(),
             current_canvas_->imageInfo().height());
+#endif
   current_canvas_->clipRect(gfx::RectToSkRect(rect));
   current_canvas_->setMatrix(current_matrix);
 }

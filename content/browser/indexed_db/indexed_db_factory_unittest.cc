@@ -92,7 +92,11 @@ class IndexedDBFactoryTest : public testing::Test {
           open_factory_origins.size(), base::BindLambdaForTesting([&]() {
             // All leveldb databases are closed, and they can be deleted.
             for (auto origin : context_->GetAllOrigins()) {
-              context_->DeleteForOrigin(origin);
+              bool success = false;
+              storage::mojom::IndexedDBControlAsyncWaiter waiter(
+                  context_.get());
+              waiter.DeleteForOrigin(origin, &success);
+              EXPECT_TRUE(success);
             }
             loop.Quit();
           }));

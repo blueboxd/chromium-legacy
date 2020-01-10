@@ -671,19 +671,6 @@ int OmniboxViewIOS::GetOmniboxTextLength() const {
   return [field_ displayedText].length();
 }
 
-void OmniboxViewIOS::EmphasizeURLComponents() {
-// TODO(rohitrao): Implement this function using code like below.  This code
-// is being left out for now because it was not present before the OmniboxView
-// rewrite.
-#if 0
-  // When editing is in progress, the url text is not colored, so there is
-  // nothing to emphasize.  (Calling SetText() in that situation would also be
-  // harmful, as it would reset the carat position to the end of the text.)
-  if (!IsEditingOrEmpty())
-    SetText(GetText());
-#endif
-}
-
 #pragma mark - OmniboxPopupViewSuggestionsDelegate
 
 void OmniboxViewIOS::OnSelectedMatchImageChanged(

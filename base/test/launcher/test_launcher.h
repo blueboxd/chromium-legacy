@@ -135,17 +135,31 @@ class TestLauncher {
 
   // Launches a child process (assumed to be gtest-based binary) which runs
   // tests indicated by |test_names|.
-  // |task_runner| is used to post results back to the launcher
-  // on the main thread. |temp_dir| is used for child process files,
-  // such as user data, result file, and flag_file.
+  // |task_runner| is used to post results back to the launcher on the main
+  // thread. |task_temp_dir| is used for child process files such as user data,
+  // result file, and flag_file. |child_temp_dir|, if not empty, specifies a
+  // directory (within task_temp_dir) that the child process will use as its
+  // process-wide temporary directory.
   // virtual to mock in testing.
   virtual void LaunchChildGTestProcess(
       scoped_refptr<TaskRunner> task_runner,
       const std::vector<std::string>& test_names,
-      const FilePath& temp_dir);
+      const FilePath& task_temp_dir,
+      const FilePath& child_temp_dir);
 
   // Called when a test has finished running.
   void OnTestFinished(const TestResult& result);
+
+  // Returns true if child test processes should have dedicated temporary
+  // directories.
+  static constexpr bool SupportsPerChildTempDirs() {
+#if defined(OS_WIN)
+    return true;
+#else
+    // TODO(https://crbug.com/1038857): Enable for macOS, Linux, and Fuchsia.
+    return false;
+#endif
+  }
 
  private:
   bool Init(CommandLine* command_line) WARN_UNUSED_RESULT;
@@ -206,12 +220,15 @@ class TestLauncher {
   // EXPECT/ASSERT/DCHECK statements. Test launcher parses that
   // file to get additional information about test run (status,
   // error-messages, stack-traces and file/line for failures).
+  // |leaked_items| is the number of files and/or directories remaining in the
+  // child process's temporary directory upon its termination.
   void ProcessTestResults(const std::vector<std::string>& test_names,
                           const FilePath& result_file,
                           const std::string& output,
                           TimeDelta elapsed_time,
                           int exit_code,
-                          bool was_timeout);
+                          bool was_timeout,
+                          int leaked_items);
 
   // Make sure we don't accidentally call the wrong methods e.g. on the worker
   // pool thread.  Should be the first member so that it's destroyed last: when

@@ -97,8 +97,7 @@ void SharedWorkerServiceImpl::SetURLLoaderFactoryForTesting(
 }
 
 void SharedWorkerServiceImpl::ConnectToWorker(
-    int client_process_id,
-    int frame_id,
+    GlobalFrameRoutingId client_render_frame_host_id,
     blink::mojom::SharedWorkerInfoPtr info,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
@@ -109,7 +108,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(client_process_id, frame_id);
+      RenderFrameHostImpl::FromID(client_render_frame_host_id);
   if (!render_frame_host) {
     // TODO(crbug.com/31666): Support the case where the requester is a worker
     // (i.e., nested worker).
@@ -135,9 +134,10 @@ void SharedWorkerServiceImpl::ConnectToWorker(
           info->url,
           render_frame_host->ComputeSiteForCookies().RepresentativeUrl(),
           main_frame->GetLastCommittedOrigin(), info->name, constructor_origin,
-          WebContentsImpl::FromRenderFrameHostID(client_process_id, frame_id)
+          WebContentsImpl::FromRenderFrameHostID(client_render_frame_host_id)
               ->GetBrowserContext(),
-          client_process_id, frame_id)) {
+          client_render_frame_host_id.child_id,
+          client_render_frame_host_id.frame_routing_id)) {
     ScriptLoadFailed(std::move(client));
     return;
   }
@@ -152,7 +152,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       return;
     }
 
-    host->AddClient(std::move(client), client_process_id, frame_id,
+    host->AddClient(std::move(client), client_render_frame_host_id,
                     message_port);
     return;
   }
@@ -178,9 +178,9 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       info->content_security_policy_type, info->creation_address_space,
       creation_context_type);
   host = CreateWorker(instance, std::move(outside_fetch_client_settings_object),
-                      client_process_id, frame_id, storage_domain, message_port,
+                      client_render_frame_host_id, storage_domain, message_port,
                       std::move(blob_url_loader_factory));
-  host->AddClient(std::move(client), client_process_id, frame_id, message_port);
+  host->AddClient(std::move(client), client_render_frame_host_id, message_port);
 }
 
 void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
@@ -206,10 +206,9 @@ void SharedWorkerServiceImpl::NotifyWorkerTerminating(
 
 void SharedWorkerServiceImpl::NotifyClientAdded(
     const SharedWorkerInstance& instance,
-    int client_process_id,
-    int frame_id) {
+    GlobalFrameRoutingId client_render_frame_host_id) {
   auto insertion_result = shared_worker_client_counts_.insert(
-      {{instance, GlobalFrameRoutingId(client_process_id, frame_id)}, 0});
+      {{instance, client_render_frame_host_id}, 0});
 
   int& count = insertion_result.first->second;
   ++count;
@@ -218,16 +217,15 @@ void SharedWorkerServiceImpl::NotifyClientAdded(
   // shared worker.
   if (insertion_result.second) {
     for (Observer& observer : observers_)
-      observer.OnClientAdded(instance, client_process_id, frame_id);
+      observer.OnClientAdded(instance, client_render_frame_host_id);
   }
 }
 
 void SharedWorkerServiceImpl::NotifyClientRemoved(
     const SharedWorkerInstance& instance,
-    int client_process_id,
-    int frame_id) {
-  auto it = shared_worker_client_counts_.find(std::make_pair(
-      instance, GlobalFrameRoutingId(client_process_id, frame_id)));
+    GlobalFrameRoutingId client_render_frame_host_id) {
+  auto it = shared_worker_client_counts_.find(
+      std::make_pair(instance, client_render_frame_host_id));
   DCHECK(it != shared_worker_client_counts_.end());
 
   int& count = it->second;
@@ -239,7 +237,7 @@ void SharedWorkerServiceImpl::NotifyClientRemoved(
   if (count == 0) {
     shared_worker_client_counts_.erase(it);
     for (Observer& observer : observers_)
-      observer.OnClientRemoved(instance, client_process_id, frame_id);
+      observer.OnClientRemoved(instance, client_render_frame_host_id);
   }
 }
 
@@ -247,8 +245,7 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
     const SharedWorkerInstance& instance,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
-    int creator_process_id,
-    int creator_frame_id,
+    GlobalFrameRoutingId creator_render_frame_host_id,
     const std::string& storage_domain,
     const blink::MessagePortChannel& message_port,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
@@ -256,7 +253,8 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   DCHECK(!blob_url_loader_factory || instance.url().SchemeIsBlob());
 
   // Allocate the worker in the same process as the creator.
-  auto* worker_process_host = RenderProcessHost::FromID(creator_process_id);
+  auto* worker_process_host =
+      RenderProcessHost::FromID(creator_render_frame_host_id.child_id);
   DCHECK(!IsShuttingDown(worker_process_host));
 
   // Create the host. We need to do this even before starting the worker,
@@ -288,7 +286,7 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   const auto credentials_mode = network::mojom::CredentialsMode::kSameOrigin;
 
   RenderFrameHostImpl* creator_render_frame_host =
-      RenderFrameHostImpl::FromID(creator_process_id, creator_frame_id);
+      RenderFrameHostImpl::FromID(creator_render_frame_host_id);
   url::Origin origin(
       creator_render_frame_host->frame_tree_node()->current_origin());
 

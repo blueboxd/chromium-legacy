@@ -58,6 +58,11 @@ const char switches::kIsolatedScriptTestLauncherRetryLimit[] =
 const char switches::kTestLauncherSummaryOutput[] =
     "test-launcher-summary-output";
 
+// Causes the test launcher to print information about leaked files and/or
+// directories in child process's temporary directories.
+const char switches::kTestLauncherPrintTempLeaks[] =
+    "test-launcher-print-temp-leaks";
+
 // Flag controlling when test stdio is displayed as part of the launcher's
 // standard output.
 const char switches::kTestLauncherPrintTestStdio[] =

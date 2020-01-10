@@ -473,8 +473,8 @@ TEST_F(AnimationTest, AddRemoveAnimationCausesSetNeedsCommit) {
   EXPECT_TRUE(client_.mutators_need_commit());
   client_.set_mutators_need_commit(false);
 
-  animation_->PauseKeyframeModelForKeyframeEffect(keyframe_model_id, 1.,
-                                                  keyframe_effect_id_);
+  animation_->PauseKeyframeModelForKeyframeEffect(
+      keyframe_model_id, base::TimeDelta::FromSeconds(1), keyframe_effect_id_);
   EXPECT_TRUE(client_.mutators_need_commit());
   client_.set_mutators_need_commit(false);
 

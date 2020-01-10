@@ -814,6 +814,85 @@ scooby doo
     except jni_generator.ParseError as e:
       self.assertEqual(('@CalledByNative', 'scooby doo'), e.context_lines)
 
+  def testCalledByNativeJavaTest(self):
+    test_data = """
+    class MyOuterClass {
+      @CalledByNative
+      public MyOuterClass() {}
+
+      @CalledByNativeJavaTest
+      public int testFoo() {}
+
+      @CalledByNativeJavaTest
+      public void testOtherFoo() {}
+
+      class MyInnerClass {
+        @CalledByNativeJavaTest("MyInnerClass")
+        public void testInnerFoo() {}
+      }
+    }
+    """
+    jni_params = jni_generator.JniParams('org/chromium/Foo')
+    jni_params.ExtractImportsAndInnerClasses(test_data)
+    called_by_natives = jni_generator.ExtractCalledByNatives(
+        jni_params, test_data, always_mangle=False)
+    golden_called_by_natives = [
+        CalledByNative(
+            return_type='MyOuterClass',
+            system_class=False,
+            static=False,
+            name='Constructor',
+            method_id_var_name='Constructor',
+            java_class_name='',
+            params=[],
+            env_call=('Void', ''),
+            unchecked=False,
+            gen_test_method=False,
+            is_constructor=True,
+        ),
+        CalledByNative(
+            return_type='int',
+            system_class=False,
+            static=False,
+            name='testFoo',
+            method_id_var_name='testFoo',
+            java_class_name='',
+            params=[],
+            env_call=('Void', ''),
+            unchecked=False,
+            gen_test_method=True,
+        ),
+        CalledByNative(
+            return_type='void',
+            system_class=False,
+            static=False,
+            name='testOtherFoo',
+            method_id_var_name='testOtherFoo',
+            java_class_name='',
+            params=[],
+            env_call=('Void', ''),
+            unchecked=False,
+            gen_test_method=True,
+        ),
+        CalledByNative(
+            return_type='void',
+            system_class=False,
+            static=False,
+            name='testInnerFoo',
+            method_id_var_name='testInnerFoo',
+            java_class_name='MyInnerClass',
+            params=[],
+            env_call=('Void', ''),
+            unchecked=False,
+            gen_test_method=True,
+        )
+    ]
+    self.AssertListEquals(golden_called_by_natives, called_by_natives)
+    h = jni_generator.InlHeaderFileGenerator('', 'org/chromium/TestJni', [],
+                                             called_by_natives, [], jni_params,
+                                             TestOptions())
+    self.AssertGoldenTextEquals(h.GetContent())
+
   def testFullyQualifiedClassName(self):
     contents = """
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.

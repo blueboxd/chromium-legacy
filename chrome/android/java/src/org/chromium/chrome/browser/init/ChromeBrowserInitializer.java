@@ -411,9 +411,6 @@ public class ChromeBrowserInitializer {
             mTasksToRunWithNative = null;
         }
 
-        // TODO(crbug.com/960767): Remove this in M77.
-        ServiceManagerStartupUtils.cleanupSharedPreferences();
-
         // Needed for field trial metrics to be properly collected in ServiceManager only mode.
         FeatureUtilities.cacheNativeFlagsForServiceManagerOnlyMode();
 

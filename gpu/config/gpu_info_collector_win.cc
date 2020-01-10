@@ -45,7 +45,9 @@ enum class D3D12FeatureLevel {
   kD3DFeatureLevelUnknown = 0,
   kD3DFeatureLevel_12_0 = 1,
   kD3DFeatureLevel_12_1 = 2,
-  kMaxValue = kD3DFeatureLevel_12_1,
+  kD3DFeatureLevel_11_0 = 3,
+  kD3DFeatureLevel_11_1 = 4,
+  kMaxValue = kD3DFeatureLevel_11_1,
 };
 
 inline D3D12FeatureLevel ConvertToHistogramFeatureLevel(
@@ -57,6 +59,10 @@ inline D3D12FeatureLevel ConvertToHistogramFeatureLevel(
       return D3D12FeatureLevel::kD3DFeatureLevel_12_0;
     case D3D_FEATURE_LEVEL_12_1:
       return D3D12FeatureLevel::kD3DFeatureLevel_12_1;
+    case D3D_FEATURE_LEVEL_11_0:
+      return D3D12FeatureLevel::kD3DFeatureLevel_11_0;
+    case D3D_FEATURE_LEVEL_11_1:
+      return D3D12FeatureLevel::kD3DFeatureLevel_11_1;
     default:
       NOTREACHED();
       return D3D12FeatureLevel::kD3DFeatureLevelUnknown;
@@ -169,8 +175,9 @@ void GetGpuSupportedD3D12Version(Dx12VulkanVersionInfo* info) {
   }
 
   // The order of feature levels to attempt to create in D3D CreateDevice
-  const D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_12_1,
-                                              D3D_FEATURE_LEVEL_12_0};
+  const D3D_FEATURE_LEVEL feature_levels[] = {
+      D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_1,
+      D3D_FEATURE_LEVEL_11_0};
 
   PFN_D3D12_CREATE_DEVICE D3D12CreateDevice =
       reinterpret_cast<PFN_D3D12_CREATE_DEVICE>(
@@ -183,7 +190,7 @@ void GetGpuSupportedD3D12Version(Dx12VulkanVersionInfo* info) {
       if (SUCCEEDED(D3D12CreateDevice(nullptr, level, _uuidof(ID3D12Device),
                                       nullptr))) {
         info->d3d12_feature_level = level;
-        info->supports_dx12 = true;
+        info->supports_dx12 = (level >= D3D_FEATURE_LEVEL_12_0) ? true : false;
         break;
       }
     }

@@ -29,7 +29,8 @@ class MockHidDelegate : public HidDelegate {
       std::vector<blink::mojom::HidDeviceFilterPtr> filters,
       HidChooser::Callback callback) override;
 
-  MOCK_METHOD0(RunChooserInternal, device::mojom::HidDeviceInfoPtr());
+  MOCK_METHOD0(RunChooserInternal,
+               std::vector<device::mojom::HidDeviceInfoPtr>());
   MOCK_METHOD2(CanRequestDevicePermission,
                bool(content::WebContents* web_contents,
                     const url::Origin& requesting_origin));

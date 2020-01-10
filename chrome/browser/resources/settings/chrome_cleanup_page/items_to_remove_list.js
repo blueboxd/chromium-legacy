@@ -2,24 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('settings');
+cr.define('settings', function() {
+  /**
+   * For each line in the item list, the text field will be shown in normal
+   * style at front of the line. The highlightSuffix will be appended to the end
+   * of line and emphasized with bold font.
+   * @typedef {{
+   *   text: string,
+   *   highlightSuffix: ?string,
+   * }}
+   */
+  let ChromeCleanupRemovalListItem;
 
-/**
- * For each line in the item list, the text field will be shown in normal style
- * at front of the line. The highlightSuffix will be appended to the end of line
- * and emphasized with bold font.
- * @typedef {{
- *   text: string,
- *   highlightSuffix: ?string,
- * }}
- */
-settings.ChromeCleanupRemovalListItem;
+  /**
+   * The default number of items to show for files, registry keys and extensions
+   * on the detailed view when user-initiated cleanups are enabled.
+   */
+  const CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW = 4;
 
-/**
- * The default number of items to show for files, registry keys and extensions
- * on the detailed view when user-initiated cleanups are enabled.
- */
-settings.CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW = 4;
+  return {ChromeCleanupRemovalListItem, CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW};
+});
 
 /**
  * @fileoverview

@@ -5,8 +5,8 @@
 #include "components/password_manager/ios/credential_manager_util.h"
 
 #include "components/security_state/ios/security_state_utils.h"
-#import "ios/web/common/origin_util.h"
 #import "ios/web/public/web_state.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "url/origin.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -135,7 +135,7 @@ bool ParseCredentialDictionary(const base::DictionaryValue& json,
   if (json.GetString(kCredentialIconKey, &iconUrl) && !iconUrl.empty()) {
     credential->icon = GURL(iconUrl);
     if (!credential->icon.is_valid() ||
-        !web::IsOriginSecure(credential->icon)) {
+        !network::IsUrlPotentiallyTrustworthy(credential->icon)) {
       // |iconUrl| is either not a valid URL or not a secure URL.
       if (reason) {
         *reason = "iconURL is either invalid or insecure URL";
@@ -189,8 +189,7 @@ bool WebStateContentIsSecureHtml(const web::WebState* web_state) {
 
   const GURL last_committed_url = web_state->GetLastCommittedURL();
 
-  if (!web::IsOriginSecure(last_committed_url) ||
-      last_committed_url.scheme() == url::kDataScheme) {
+  if (!network::IsUrlPotentiallyTrustworthy(last_committed_url)) {
     return false;
   }
 

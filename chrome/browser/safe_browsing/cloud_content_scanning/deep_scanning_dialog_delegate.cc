@@ -605,7 +605,13 @@ bool DeepScanningDialogDelegate::CloseTabModalDialog() {
   if (!dialog_)
     return false;
 
-  dialog_->CancelDialogIfShowing();
+  auto is_true = [](bool x) { return x; };
+  bool success = std::all_of(result_.text_results.begin(),
+                             result_.text_results.end(), is_true) &&
+                 std::all_of(result_.paths_results.begin(),
+                             result_.paths_results.end(), is_true);
+
+  dialog_->ShowResult(success);
   return true;
 }
 

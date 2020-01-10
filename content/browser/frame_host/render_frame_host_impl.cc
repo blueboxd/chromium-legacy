@@ -797,6 +797,11 @@ class FileChooserImpl : public blink::mojom::FileChooser,
 };
 
 // static
+RenderFrameHost* RenderFrameHost::FromID(GlobalFrameRoutingId id) {
+  return RenderFrameHostImpl::FromID(id);
+}
+
+// static
 RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
                                          int render_frame_id) {
   return RenderFrameHostImpl::FromID(
@@ -809,13 +814,6 @@ void RenderFrameHost::AllowInjectingJavaScript() {
 }
 
 // static
-RenderFrameHostImpl* RenderFrameHostImpl::FromID(int render_process_id,
-                                                 int render_frame_id) {
-  return RenderFrameHostImpl::FromID(
-      GlobalFrameRoutingId(render_process_id, render_frame_id));
-}
-
-// static
 RenderFrameHostImpl* RenderFrameHostImpl::FromID(GlobalFrameRoutingId id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDFrameMap* frames = g_routing_id_frame_map.Pointer();
@@ -823,6 +821,12 @@ RenderFrameHostImpl* RenderFrameHostImpl::FromID(GlobalFrameRoutingId id) {
   return it == frames->end() ? NULL : it->second;
 }
 
+// static
+RenderFrameHostImpl* RenderFrameHostImpl::FromID(int render_process_id,
+                                                 int render_frame_id) {
+  return RenderFrameHostImpl::FromID(
+      GlobalFrameRoutingId(render_process_id, render_frame_id));
+}
 // static
 RenderFrameHost* RenderFrameHost::FromAXTreeID(ui::AXTreeID ax_tree_id) {
   return RenderFrameHostImpl::FromAXTreeID(ax_tree_id);

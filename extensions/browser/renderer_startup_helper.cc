@@ -24,6 +24,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/service_worker_task_queue.h"
+#include "extensions/common/activation_sequence.h"
 #include "extensions/common/cors_util.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
@@ -60,8 +61,9 @@ bool IsExtensionVisibleToContext(const Extension& extension,
 
 // Returns the current ActivationSequence of |extension| if the extension is
 // Service Worker-based, otherwise returns base::nullopt.
-base::Optional<int> GetWorkerActivationSequence(BrowserContext* browser_context,
-                                                const Extension& extension) {
+base::Optional<ActivationSequence> GetWorkerActivationSequence(
+    BrowserContext* browser_context,
+    const Extension& extension) {
   if (BackgroundInfo::IsServiceWorkerBased(&extension)) {
     return ServiceWorkerTaskQueue::Get(browser_context)
         ->GetCurrentSequence(extension.id());

@@ -57,6 +57,8 @@ class CastMediaNotificationItem
   void OnMediaStatusUpdated(
       media_router::mojom::MediaStatusPtr status) override;
 
+  void OnRouteUpdated(const media_router::MediaRoute& route);
+
   // Returns a pending remote bound to |this|. This should not be called more
   // than once per instance.
   mojo::PendingRemote<media_router::mojom::MediaStatusObserver>

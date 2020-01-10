@@ -1591,7 +1591,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void BindContentSecurityPolicy();
 
   void UpdateForcedColors();
-  bool InForcedColorsMode() const { return in_forced_colors_mode_; }
+  bool InForcedColorsMode() const;
 
   // Returns true if the subframe document is cross-site to the main frame. If
   // we can't tell whether the document was ever cross-site or not (e.g. it is

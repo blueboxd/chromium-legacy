@@ -62,6 +62,7 @@ class BulletView : public views::View {
 PublicAccountWarningDialog::PublicAccountWarningDialog(
     base::WeakPtr<LoginExpandedPublicAccountView> controller)
     : controller_(controller) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       kBetweenLabelPaddingDp));
@@ -116,10 +117,6 @@ bool PublicAccountWarningDialog::IsVisible() {
 void PublicAccountWarningDialog::Show() {
   if (GetWidget())
     GetWidget()->Show();
-}
-
-int PublicAccountWarningDialog::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void PublicAccountWarningDialog::AddedToWidget() {

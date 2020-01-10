@@ -4,11 +4,13 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "url/origin.h"
@@ -21,13 +23,9 @@ namespace media_router {
 CastActivityRecord::CastActivityRecord(
     const MediaRoute& route,
     const std::string& app_id,
-    MediaSinkServiceBase* media_sink_service,
     cast_channel::CastMessageHandler* message_handler,
-    CastSessionTracker* session_tracker,
-    CastActivityManagerBase* owner)
-    : ActivityRecord(route, app_id, message_handler, session_tracker),
-      media_sink_service_(media_sink_service),
-      activity_manager_(owner) {
+    CastSessionTracker* session_tracker)
+    : ActivityRecord(route, app_id, message_handler, session_tracker) {
   route_.set_controller_type(RouteControllerType::kGeneric);
 }
 
@@ -101,7 +99,7 @@ cast_channel::Result CastActivityRecord::SendAppMessageToReceiver(
     return cast_channel::Result::kFailed;
   }
   return message_handler_->SendAppMessage(
-      GetCastChannelId(),
+      cast_channel_id(),
       cast_channel::CreateCastMessage(
           message_namespace, cast_message.app_message_body(),
           cast_message.client_id(), session->transport_id()));
@@ -113,7 +111,7 @@ base::Optional<int> CastActivityRecord::SendMediaRequestToReceiver(
   if (!session)
     return base::nullopt;
   return message_handler_->SendMediaRequest(
-      GetCastChannelId(), cast_message.v2_message_body(),
+      cast_channel_id(), cast_message.v2_message_body(),
       cast_message.client_id(), session->transport_id());
 }
 
@@ -121,30 +119,17 @@ void CastActivityRecord::SendSetVolumeRequestToReceiver(
     const CastInternalMessage& cast_message,
     cast_channel::ResultCallback callback) {
   message_handler_->SendSetVolumeRequest(
-      GetCastChannelId(), cast_message.v2_message_body(),
+      cast_channel_id(), cast_message.v2_message_body(),
       cast_message.client_id(), std::move(callback));
 }
 
-// TODO(jrw): Revise the name of this method.
-void CastActivityRecord::SendStopSessionMessageToReceiver(
-    const base::Optional<std::string>& client_id,
-    const std::string& hash_token,
-    mojom::MediaRouteProvider::TerminateRouteCallback callback) {
-  const std::string& sink_id = route_.media_sink_id();
-  const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
-  DCHECK(sink);
-  DCHECK(session_id_);
-
-  // TODO(jrw): Add test for this loop.
-  for (const auto& client : connected_clients()) {
+void CastActivityRecord::SendStopSessionMessageToClients(
+    const std::string& hash_token) {
+  // TODO(jrw): Add test for this method.
+  for (const auto& client : connected_clients_) {
     client.second->SendMessageToClient(
-        CreateReceiverActionStopMessage(client.first, *sink, hash_token));
+        CreateReceiverActionStopMessage(client.first, sink_, hash_token));
   }
-
-  message_handler_->StopSession(
-      sink->cast_data().cast_channel_id, *session_id_, client_id,
-      activity_manager_->MakeResultCallbackForRoute(route_.media_route_id(),
-                                                    std::move(callback)));
 }
 
 void CastActivityRecord::HandleLeaveSession(const std::string& client_id) {
@@ -181,7 +166,7 @@ void CastActivityRecord::SendMessageToClient(
 void CastActivityRecord::SendMediaStatusToClients(
     const base::Value& media_status,
     base::Optional<int> request_id) {
-  for (auto& client : connected_clients())
+  for (auto& client : connected_clients_)
     client.second->SendMediaStatusToClient(media_status, request_id);
   if (media_controller_)
     media_controller_->SetMediaStatus(media_status);
@@ -210,7 +195,7 @@ void CastActivityRecord::CreateMediaController(
       media_controller_->SetSession(*session);
       base::Value status_request(base::Value::Type::DICTIONARY);
       status_request.SetKey("type", base::Value("MEDIA_GET_STATUS"));
-      message_handler_->SendMediaRequest(GetCastChannelId(), status_request,
+      message_handler_->SendMediaRequest(cast_channel_id(), status_request,
                                          media_controller_->sender_id(),
                                          session->transport_id());
     }
@@ -226,7 +211,7 @@ void CastActivityRecord::OnAppMessage(
 
   const std::string& client_id = message.destination_id();
   if (client_id == "*") {
-    for (const auto& client : connected_clients()) {
+    for (const auto& client : connected_clients_) {
       SendMessageToClient(
           client.first, CreateAppMessage(*session_id_, client.first, message));
     }
@@ -239,15 +224,29 @@ void CastActivityRecord::OnAppMessage(
 void CastActivityRecord::OnInternalMessage(
     const cast_channel::InternalMessage& message) {}
 
-int CastActivityRecord::GetCastChannelId() {
-  const MediaSinkInternal* sink = media_sink_service_->GetSinkByRoute(route_);
-  if (!sink) {
-    // TODO(crbug.com/905002): Add UMA metrics for this and other error
-    // conditions.
-    DLOG(ERROR) << "Sink not found for route: " << route_;
-    return -1;
-  }
-  return sink->cast_data().cast_channel_id;
+bool CastActivityRecord::CanJoinSession(const CastMediaSource& cast_source,
+                                        bool incognito) const {
+  if (!cast_source.ContainsApp(app_id()))
+    return false;
+
+  if (base::Contains(connected_clients_, cast_source.client_id()))
+    return false;
+
+  if (route().is_incognito() != incognito)
+    return false;
+
+  return true;
+}
+
+bool CastActivityRecord::HasJoinableClient(AutoJoinPolicy policy,
+                                           const url::Origin& origin,
+                                           int tab_id) const {
+  return std::any_of(connected_clients_.begin(), connected_clients_.end(),
+                     [policy, &origin, tab_id](const auto& client) {
+                       return IsAutoJoinAllowed(policy, origin, tab_id,
+                                                client.second->origin(),
+                                                client.second->tab_id());
+                     });
 }
 
 CastSessionClientFactoryForTest* CastActivityRecord::client_factory_for_test_ =

@@ -26,7 +26,6 @@ namespace {
 const char kContextGone[] = "Script context has shut down.";
 const char kFeaturePolicyBlocked[] =
     "Access to the feature \"hid\" is disallowed by feature policy.";
-const char kNoDeviceSelected[] = "No device selected.";
 
 void RejectWithTypeError(const String& message,
                          ScriptPromiseResolver* resolver) {
@@ -211,17 +210,15 @@ void HID::FinishGetDevices(
 
 void HID::FinishRequestDevice(
     ScriptPromiseResolver* resolver,
-    device::mojom::blink::HidDeviceInfoPtr device_info) {
+    Vector<device::mojom::blink::HidDeviceInfoPtr> device_infos) {
   DCHECK(request_device_promises_.Contains(resolver));
   request_device_promises_.erase(resolver);
 
-  if (device_info) {
-    resolver->Resolve(GetOrCreateDevice(std::move(device_info)));
-  } else {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotFoundError, kNoDeviceSelected));
-  }
-  request_device_promises_.erase(resolver);
+  HeapVector<Member<HIDDevice>> devices;
+  for (auto& device_info : device_infos)
+    devices.push_back(GetOrCreateDevice(std::move(device_info)));
+
+  resolver->Resolve(devices);
 }
 
 void HID::EnsureServiceConnection() {
@@ -250,10 +247,8 @@ void HID::OnServiceConnectionError() {
 
   HeapHashSet<Member<ScriptPromiseResolver>> request_device_promises;
   request_device_promises_.swap(request_device_promises);
-  for (ScriptPromiseResolver* resolver : request_device_promises) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotFoundError, kNoDeviceSelected));
-  }
+  for (ScriptPromiseResolver* resolver : request_device_promises)
+    resolver->Resolve(HeapVector<Member<HIDDevice>>());
 }
 
 void HID::Trace(blink::Visitor* visitor) {

@@ -609,7 +609,8 @@ TEST_F(ElementAnimationsTest, SyncPause) {
 
   // Pause the animation at the middle of the second range so the offset
   // delays animation until the middle of the third range.
-  animation_->PauseKeyframeModel(keyframe_model_id, 1.5);
+  animation_->PauseKeyframeModel(keyframe_model_id,
+                                 base::TimeDelta::FromMilliseconds(1500));
   EXPECT_EQ(KeyframeModel::PAUSED, animation_->keyframe_effect()
                                        ->GetKeyframeModelById(keyframe_model_id)
                                        ->run_state());

@@ -124,7 +124,7 @@ void BackgroundContents::AddNewContents(
                             was_blocked);
 }
 
-bool BackgroundContents::IsNeverVisible(content::WebContents* web_contents) {
+bool BackgroundContents::IsNeverComposited(content::WebContents* web_contents) {
   DCHECK_EQ(extensions::VIEW_TYPE_BACKGROUND_CONTENTS,
             extensions::GetViewType(web_contents));
   return true;

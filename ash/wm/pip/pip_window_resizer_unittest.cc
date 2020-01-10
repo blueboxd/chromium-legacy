@@ -128,23 +128,24 @@ class PipWindowResizerTest : public AshTestBase,
   }
 
   PipWindowResizer* CreateResizerForTest(int window_component,
-                                         gfx::Point point_in_parent) {
+                                         const gfx::Point& point_in_parent) {
     return CreateResizerForTest(window_component, window(), point_in_parent);
   }
 
   PipWindowResizer* CreateResizerForTest(int window_component,
                                          aura::Window* window,
-                                         gfx::Point point_in_parent) {
+                                         const gfx::Point& point_in_parent) {
     WindowState* window_state = WindowState::Get(window);
-    window_state->CreateDragDetails(point_in_parent, window_component,
+    window_state->CreateDragDetails(gfx::PointF(point_in_parent),
+                                    window_component,
                                     ::wm::WINDOW_MOVE_SOURCE_MOUSE);
     return new PipWindowResizer(window_state);
   }
 
-  gfx::Point CalculateDragPoint(const WindowResizer& resizer,
-                                int delta_x,
-                                int delta_y) const {
-    gfx::Point location = resizer.GetInitialLocation();
+  gfx::PointF CalculateDragPoint(const WindowResizer& resizer,
+                                 int delta_x,
+                                 int delta_y) const {
+    gfx::PointF location = resizer.GetInitialLocation();
     location.set_x(location.x() + delta_x);
     location.set_y(location.y() + delta_y);
     return location;

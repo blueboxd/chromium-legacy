@@ -3872,6 +3872,124 @@ TEST_F(LayerTreeHostImplTest, MaxScrollOffsetAffectedByViewportBoundsDelta) {
   EXPECT_EQ(gfx::ScrollOffset(10, 10), inner_scroll->MaxScrollOffset());
 }
 
+// Ensures scroll gestures coming from scrollbars cause animations in the
+// appropriate scenarios.
+TEST_F(LayerTreeHostImplTest, AnimatedGranularityCausesSmoothScroll) {
+  // Enable animated scrolling
+  LayerTreeSettings settings = DefaultSettings();
+  settings.enable_smooth_scroll = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
+  gfx::Size viewport_size(300, 200);
+  gfx::Size content_size(1000, 1000);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+
+  gfx::Point position(295, 195);
+  gfx::Vector2dF offset(0, 50);
+
+// TODO(bokan): Unfortunately, Mac currently doesn't support smooth scrolling
+// wheel events. https://crbug.com/574283.
+#if defined(OS_MACOSX)
+  std::vector<InputHandler::ScrollInputType> types = {InputHandler::SCROLLBAR};
+#else
+  std::vector<InputHandler::ScrollInputType> types = {InputHandler::SCROLLBAR,
+                                                      InputHandler::WHEEL};
+#endif
+  for (auto type : types) {
+    auto begin_state = BeginState(position, offset, type);
+    begin_state->data()->set_current_native_scrolling_element(
+        host_impl_->OuterViewportScrollNode()->element_id);
+    begin_state->data()->delta_granularity =
+        static_cast<double>(ui::input_types::ScrollGranularity::kScrollByPixel);
+
+    auto update_state = UpdateState(position, offset, type);
+    update_state->data()->delta_granularity =
+        static_cast<double>(ui::input_types::ScrollGranularity::kScrollByPixel);
+
+    ASSERT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+
+    // Perform a scrollbar-like scroll (one injected by the
+    // ScrollbarController). It should cause an animation to be created.
+    {
+      host_impl_->ScrollBegin(begin_state.get(), type);
+      ASSERT_EQ(host_impl_->CurrentlyScrollingNode(),
+                host_impl_->OuterViewportScrollNode());
+
+      host_impl_->ScrollUpdate(update_state.get(), type);
+      EXPECT_TRUE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+
+      host_impl_->ScrollEnd();
+    }
+
+    GetImplAnimationHost()->ScrollAnimationAbort();
+    ASSERT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+
+    // Perform a scrollbar-like scroll (one injected by the
+    // ScrollbarController). This time we change the granularity to precise (as
+    // if thumb-dragging). This should not cause an animation.
+    {
+      begin_state->data()->delta_granularity = static_cast<double>(
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+      update_state->data()->delta_granularity = static_cast<double>(
+          ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+
+      host_impl_->ScrollBegin(begin_state.get(), type);
+      ASSERT_EQ(host_impl_->CurrentlyScrollingNode(),
+                host_impl_->OuterViewportScrollNode());
+
+      host_impl_->ScrollUpdate(update_state.get(), type);
+      EXPECT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+
+      host_impl_->ScrollEnd();
+    }
+  }
+}
+
+// Ensures scroll gestures coming from scrollbars don't cause animations if
+// smooth scrolling is disabled.
+TEST_F(LayerTreeHostImplTest, NonAnimatedGranularityCausesInstantScroll) {
+  // Disable animated scrolling
+  LayerTreeSettings settings = DefaultSettings();
+  settings.enable_smooth_scroll = false;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
+  gfx::Size viewport_size(300, 200);
+  gfx::Size content_size(1000, 1000);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+
+  gfx::Point position(295, 195);
+  gfx::Vector2dF offset(0, 50);
+
+  std::vector<InputHandler::ScrollInputType> types = {InputHandler::SCROLLBAR,
+                                                      InputHandler::WHEEL};
+  for (auto type : types) {
+    auto begin_state = BeginState(position, offset, type);
+    begin_state->data()->set_current_native_scrolling_element(
+        host_impl_->OuterViewportScrollNode()->element_id);
+    begin_state->data()->delta_granularity =
+        static_cast<double>(ui::input_types::ScrollGranularity::kScrollByPixel);
+
+    auto update_state = UpdateState(position, offset, type);
+    update_state->data()->delta_granularity =
+        static_cast<double>(ui::input_types::ScrollGranularity::kScrollByPixel);
+
+    ASSERT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+
+    // Perform a scrollbar-like scroll (one injected by the
+    // ScrollbarController). It should cause an animation to be created.
+    {
+      host_impl_->ScrollBegin(begin_state.get(), type);
+      ASSERT_EQ(host_impl_->CurrentlyScrollingNode(),
+                host_impl_->OuterViewportScrollNode());
+
+      host_impl_->ScrollUpdate(update_state.get(), type);
+      EXPECT_FALSE(GetImplAnimationHost()->IsImplOnlyScrollAnimating());
+
+      host_impl_->ScrollEnd();
+    }
+  }
+}
+
 class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
  public:
   LayerTreeHostImplOverridePhysicalTime(

@@ -476,7 +476,7 @@ bool DecodeBlobJournal(StringPiece* slice, BlobJournalType* journal) {
     if (!DecodeVarInt(slice, &blob_number))
       return false;
     if (!DatabaseMetaDataKey::IsValidBlobNumber(blob_number) &&
-        (blob_number != DatabaseMetaDataKey::kAllBlobsKey)) {
+        (blob_number != DatabaseMetaDataKey::kAllBlobsNumber)) {
       return false;
     }
     output.push_back({database_id, blob_number});
@@ -1570,7 +1570,7 @@ bool DatabaseMetaDataKey::IsValidBlobNumber(int64_t blob_number) {
   return blob_number >= kBlobNumberGeneratorInitialNumber;
 }
 
-const int64_t DatabaseMetaDataKey::kAllBlobsKey = 1;
+const int64_t DatabaseMetaDataKey::kAllBlobsNumber = 1;
 const int64_t DatabaseMetaDataKey::kBlobNumberGeneratorInitialNumber = 2;
 const int64_t DatabaseMetaDataKey::kInvalidBlobNumber = -1;
 

@@ -17,21 +17,11 @@
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-
+#include "base/strings/utf_string_conversions.h"
+#include "components/url_formatter/spoof_checks/skeleton_generator.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/uspoof.h"
-
-std::string GetSkeleton(const std::string& domain,
-                        const USpoofChecker* spoof_checker) {
-  UErrorCode status = U_ZERO_ERROR;
-  icu::UnicodeString ustr_skeleton;
-  uspoof_getSkeletonUnicodeString(spoof_checker, 0 /* not used */,
-                                  icu::UnicodeString::fromUTF8(domain),
-                                  ustr_skeleton, &status);
-  std::string skeleton;
-  return U_SUCCESS(status) ? ustr_skeleton.toUTF8String(skeleton) : skeleton;
-}
 
 base::FilePath GetPath(base::StringPiece basename) {
   base::FilePath path;
@@ -78,19 +68,24 @@ int GenerateSkeletons(const char* input_file_name,
 
 )";
 
+  SkeletonGenerator skeleton_generator(spoof_checker);
+
   std::string domain;
   size_t max_labels = 0;
   std::string domain_with_max_labels;
   while (std::getline(input, domain)) {
     if (domain[0] == '#')
       continue;
-    std::string skeleton = GetSkeleton(domain, spoof_checker);
-    if (skeleton.empty()) {
-      std::cerr << "Failed to generate the skeleton of " << domain << '\n';
-      output += "# " + domain + '\n';
-    } else {
+
+    const base::string16 domain16 = base::UTF8ToUTF16(domain);
+    const Skeletons skeletons = skeleton_generator.GetSkeletons(domain16);
+    DCHECK(!skeletons.empty()) << "Failed to generate skeletons of " << domain;
+
+    for (const std::string& skeleton : skeletons) {
+      DCHECK(!skeleton.empty()) << "Empty skeleton for " << domain;
       output += skeleton + ", " + domain + "\n";
     }
+
     std::vector<base::StringPiece> labels = base::SplitStringPiece(
         domain, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (labels.size() > max_labels) {

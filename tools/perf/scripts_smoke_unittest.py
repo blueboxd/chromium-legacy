@@ -251,7 +251,7 @@ class ScriptsSmokeTest(unittest.TestCase):
           print fh.read()
       # pylint: disable=bare-except
       except:
-      # pylint: enable=bare-except
+        # pylint: enable=bare-except
         pass
       raise
     try:
@@ -351,16 +351,41 @@ class ScriptsSmokeTest(unittest.TestCase):
     self.assertIn('--run-abridged-story-set', command)
 
   def testRunPerformanceTestsGtestArgsParser(self):
-     options = run_performance_tests.parse_arguments([
-        'media_perftests', '--non-telemetry=true', '--single-process-tests',
+    options = run_performance_tests.parse_arguments([
+        'media_perftests',
+        '--non-telemetry=true',
+        '--single-process-tests',
         '--test-launcher-retry-limit=0',
         '--isolated-script-test-filter=*::-*_unoptimized::*_unaligned::'
         '*unoptimized_aligned',
-        '--gtest-benchmark-name', 'media_perftests',
+        '--gtest-benchmark-name',
+        'media_perftests',
         '--isolated-script-test-output=/x/y/z/output.json',
-     ])
-     self.assertIn('--single-process-tests', options.passthrough_args)
-     self.assertIn('--test-launcher-retry-limit=0', options.passthrough_args)
-     self.assertEqual(options.executable, 'media_perftests')
-     self.assertEqual(options.isolated_script_test_output,
-                      r'/x/y/z/output.json')
+    ])
+    self.assertIn('--single-process-tests', options.passthrough_args)
+    self.assertIn('--test-launcher-retry-limit=0', options.passthrough_args)
+    self.assertEqual(options.executable, 'media_perftests')
+    self.assertEqual(options.isolated_script_test_output, r'/x/y/z/output.json')
+
+  def testRunPerformanceTestsExecuteGtest_OSError(self):
+    class FakeCommandGenerator(object):
+      def __init__(self):
+        self.executable_name = 'binary_that_doesnt_exist'
+
+      def generate(self, unused_path):
+        return [self.executable_name]
+
+    tempdir = tempfile.mkdtemp()
+    try:
+      fake_command_generator = FakeCommandGenerator()
+      output_paths = run_performance_tests.OutputFilePaths(
+          tempdir, 'fake_gtest')
+      output_paths.SetUp()
+      return_code = run_performance_tests.execute_gtest_perf_test(
+          fake_command_generator, output_paths)
+      self.assertEqual(return_code, 1)
+      with open(output_paths.test_results) as fh:
+        json_test_results = json.load(fh)
+      self.assertGreater(json_test_results['num_failures_by_type']['FAIL'], 0)
+    finally:
+      shutil.rmtree(tempdir)

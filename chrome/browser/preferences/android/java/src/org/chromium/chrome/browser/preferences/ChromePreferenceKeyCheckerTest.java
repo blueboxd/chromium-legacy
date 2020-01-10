@@ -30,6 +30,7 @@ public class ChromePreferenceKeyCheckerTest {
     private static final KeyPrefix KEY_PREFIX3_NOT_IN_USE =
             new KeyPrefix("Chrome.Feature.KeyPrefix3.*");
     private static final String GRANDFATHERED_KEY_IN_USE = "grandfatheredkey";
+    private static final String GRANDFATHERED_PREFIX_IN_USE = "grandfatheredprefix_";
 
     private ChromePreferenceKeyChecker mSubject;
 
@@ -38,7 +39,10 @@ public class ChromePreferenceKeyCheckerTest {
         List<String> keysInUse = Arrays.asList(KEY1_IN_USE, KEY2_IN_USE,
                 KEY_PREFIX1_IN_USE.pattern(), KEY_PREFIX2_IN_USE.pattern());
         List<String> grandfatheredKeys = Arrays.asList(GRANDFATHERED_KEY_IN_USE);
-        mSubject = new ChromePreferenceKeyChecker(keysInUse, grandfatheredKeys);
+        List<KeyPrefix> grandfatheredPrefixes =
+                Arrays.asList(new KeyPrefix(GRANDFATHERED_PREFIX_IN_USE + "*"));
+        mSubject =
+                new ChromePreferenceKeyChecker(keysInUse, grandfatheredKeys, grandfatheredPrefixes);
     }
 
     @Test
@@ -47,6 +51,7 @@ public class ChromePreferenceKeyCheckerTest {
         mSubject.checkIsKeyInUse(KEY1_IN_USE);
         mSubject.checkIsKeyInUse(KEY2_IN_USE);
         mSubject.checkIsKeyInUse(GRANDFATHERED_KEY_IN_USE);
+        mSubject.checkIsKeyInUse(GRANDFATHERED_PREFIX_IN_USE + "restofkey");
     }
 
     @Test(expected = RuntimeException.class)

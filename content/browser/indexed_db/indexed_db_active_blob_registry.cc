@@ -39,7 +39,7 @@ bool IndexedDBActiveBlobRegistry::MarkBlobInfoDeletedAndCheckIfReferenced(
     int64_t database_id,
     int64_t blob_number) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_NE(blob_number, DatabaseMetaDataKey::kAllBlobsKey);
+  DCHECK_NE(blob_number, DatabaseMetaDataKey::kAllBlobsNumber);
   DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
   const auto& db_pair = blob_reference_tracker_.find(database_id);
   if (db_pair == blob_reference_tracker_.end())
@@ -134,7 +134,7 @@ void IndexedDBActiveBlobRegistry::MarkBlobInactive(int64_t database_id,
     blob_reference_tracker_.erase(db_pair);
     if (db_marked_for_deletion) {
       delete_blob_in_backend = true;
-      blob_number = DatabaseMetaDataKey::kAllBlobsKey;
+      blob_number = DatabaseMetaDataKey::kAllBlobsNumber;
       deleted_dbs_.erase(deleted_database_it);
     }
   }

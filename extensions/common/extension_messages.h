@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
+#include "extensions/common/activation_sequence.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_context.h"
@@ -357,7 +358,8 @@ struct ExtensionMsg_Loaded_Params {
   ~ExtensionMsg_Loaded_Params();
   ExtensionMsg_Loaded_Params(const extensions::Extension* extension,
                              bool include_tab_permissions,
-                             base::Optional<int> worker_activation_sequence);
+                             base::Optional<extensions::ActivationSequence>
+                                 worker_activation_sequence);
 
   ExtensionMsg_Loaded_Params(ExtensionMsg_Loaded_Params&& other);
   ExtensionMsg_Loaded_Params& operator=(ExtensionMsg_Loaded_Params&& other);
@@ -398,7 +400,7 @@ struct ExtensionMsg_Loaded_Params {
 
   // If this extension is Service Worker based, then this contains the
   // activation sequence of the extension.
-  base::Optional<int> worker_activation_sequence;
+  base::Optional<extensions::ActivationSequence> worker_activation_sequence;
 
   // Send creation flags so extension is initialized identically.
   int creation_flags;
@@ -1071,7 +1073,7 @@ IPC_MESSAGE_CONTROL3(ExtensionHostMsg_DidInitializeServiceWorkerContext,
 // See https://crbug.com/879015#c4 for details.
 IPC_MESSAGE_CONTROL5(ExtensionHostMsg_DidStartServiceWorkerContext,
                      std::string /* extension_id */,
-                     int /* activation_sequence */,
+                     extensions::ActivationSequence /* activation_sequence */,
                      GURL /* service_worker_scope */,
                      int64_t /* service_worker_version_id */,
                      int /* worker_thread_id */)
@@ -1080,7 +1082,7 @@ IPC_MESSAGE_CONTROL5(ExtensionHostMsg_DidStartServiceWorkerContext,
 // destroyed.
 IPC_MESSAGE_CONTROL5(ExtensionHostMsg_DidStopServiceWorkerContext,
                      std::string /* extension_id */,
-                     int /* activation_sequence */,
+                     extensions::ActivationSequence /* activation_sequence */,
                      GURL /* service_worker_scope */,
                      int64_t /* service_worker_version_id */,
                      int /* worker_thread_id */)

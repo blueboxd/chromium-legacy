@@ -164,7 +164,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         // compositor.
         float alpha = 1;
 
-        update(mRenderHost.getBrowserControlsBackgroundColor(), alpha,
+        update(mRenderHost.getBrowserControlsBackgroundColor(mContext.getResources()), alpha,
                 mLayoutProvider.getFullscreenManager(), resourceManager,
                 forceHideBrowserControlsAndroidView, viewportMode,
                 DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext), viewport.height());

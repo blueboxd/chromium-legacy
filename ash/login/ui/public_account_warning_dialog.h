@@ -25,7 +25,6 @@ class ASH_EXPORT PublicAccountWarningDialog : public views::DialogDelegateView {
   void Show();
 
   // views::DialogDelegate:
-  int GetDialogButtons() const override;
   void AddedToWidget() override;
 
   // views::WidgetDelegate:

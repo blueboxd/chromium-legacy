@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleToolbarController;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
-import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 
@@ -41,7 +40,6 @@ public interface CustomTabActivityComponent extends BaseCustomTabActivityCompone
     CustomTabActivityLifecycleUmaTracker resolveUmaTracker();
     CustomTabIntentHandler resolveIntentHandler();
     CustomTabIncognitoManager resolveCustomTabIncognitoManager();
-    CustomTabToolbarColorController resolveToolbarColorController();
     CustomTabUmaRecorder resolveCustomTabUmaRecorder();
     CustomTabSessionHandler resolveSessionHandler();
     CustomTabActivityClientConnectionKeeper resolveConnectionKeeper();

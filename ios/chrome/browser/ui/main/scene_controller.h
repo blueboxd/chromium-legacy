@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/app/application_delegate/tab_switching.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
@@ -14,8 +15,10 @@
 @protocol MainControllerGuts;
 
 // The controller object for a scene. Reacts to scene state changes.
-@interface SceneController
-    : NSObject <SceneStateObserver, ApplicationCommands, TabSwitcherDelegate>
+@interface SceneController : NSObject <SceneStateObserver,
+                                       ApplicationCommands,
+                                       TabSwitcherDelegate,
+                                       TabSwitching>
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithSceneState:(SceneState*)sceneState

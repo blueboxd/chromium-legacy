@@ -360,6 +360,8 @@ void MediaWebContentsObserver::AddMediaPlayerEntry(
     ActiveMediaPlayerMap* player_map) {
   (*player_map)[id.render_frame_host].insert(id.delegate_id);
   if (power_experiment_manager_) {
+    // Bind the callback to a WeakPtr for the frame, so that we won't try to
+    // notify the frame after it's been destroyed.
     power_experiment_manager_->PlayerStarted(
         id,
         base::BindRepeating(&MediaWebContentsObserver::OnExperimentStateChanged,
@@ -426,7 +428,9 @@ void MediaWebContentsObserver::SuspendAllMediaPlayers() {
 
 void MediaWebContentsObserver::OnExperimentStateChanged(MediaPlayerId id,
                                                         bool is_starting) {
-  // TODO(liberato): Notify the player.
+  id.render_frame_host->Send(
+      new MediaPlayerDelegateMsg_NotifyPowerExperimentState(
+          id.render_frame_host->GetRoutingID(), id.delegate_id, is_starting));
 }
 
 void MediaWebContentsObserver::RemoveAllPlayers(

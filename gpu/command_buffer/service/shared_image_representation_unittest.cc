@@ -74,13 +74,26 @@ TEST_F(SharedImageRepresentationTest, GLTextureClearing) {
   }
   EXPECT_TRUE(representation->IsCleared());
 
-  // We can now begin accdess with |allow_uncleared| == false.
+  // We can now begin access with |allow_uncleared| == false.
   {
     auto scoped_access = representation->BeginScopedAccess(
         GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM,
         SharedImageRepresentation::AllowUnclearedAccess::kNo);
     EXPECT_TRUE(scoped_access);
   }
+
+  // Reset the representation to uncleared. This should unclear the texture on
+  // BeginAccess.
+  representation->SetClearedRect(gfx::Rect());
+  {
+    auto scoped_access = representation->BeginScopedAccess(
+        GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM,
+        SharedImageRepresentation::AllowUnclearedAccess::kYes);
+    ASSERT_TRUE(scoped_access);
+    EXPECT_FALSE(
+        representation->GetTexture()->IsLevelCleared(GL_TEXTURE_2D, 0));
+  }
+  EXPECT_FALSE(representation->IsCleared());
 }
 
 TEST_F(SharedImageRepresentationTest, GLTexturePassthroughClearing) {

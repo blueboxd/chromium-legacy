@@ -78,6 +78,7 @@
 <translation id="1108600514891325577">&amp;Стоп</translation>
 <translation id="1110155001042129815">Изчакване</translation>
 <translation id="1112420131909513020">Раздел на заден план използва Bluetooth</translation>
+<translation id="1113042067630273625">Съхранените данни за сайтове ще бъдат изчистени, при което ще се освободят <ph name="TOTAL_USAGE" />.</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MODEL" /> от <ph name="PRINTER_MANUFACTURER" /> (USB)</translation>
 <translation id="1114202307280046356">Ромб</translation>
 <translation id="1114335938027186412">Компютърът ви съдържа устройство за сигурност от типа „модул за надеждна платформа (TPM)“, което служи за реализиране на множество критични защитни функции в Chrome OS. За да научите повече, посетете Помощния център на Chromebook: https://support.google.com/chromebook/?p=tpm</translation>
@@ -535,6 +536,7 @@
 <translation id="1737968601308870607">Картотекиране на програмната грешка</translation>
 <translation id="1741314857973421784">Напред</translation>
 <translation id="1743570585616704562">Не е разпознато</translation>
+<translation id="1743846852744439013">Ще излезете от профила си във всички сайтове, включително в отворените раздели.</translation>
 <translation id="1743970419083351269">Затваряне на лентата на изтеглянето</translation>
 <translation id="1744060673522309905">Устройството не може да се присъедини към домейна. Проверете дали не сте надхвърлили броя устройства, които можете да добавите.</translation>
 <translation id="1744108098763830590">фонова страница</translation>
@@ -593,6 +595,7 @@
 <translation id="1813278315230285598">Услуги</translation>
 <translation id="18139523105317219">Име на EDI страна</translation>
 <translation id="1815083418640426271">Поставяне като неформатиран текст</translation>
+<translation id="1815181278146012280">Извеждане на запитване, когато сайт иска достъп до HID устройства</translation>
 <translation id="181577467034453336">Още <ph name="NUMBER_OF_VIEWS" />...</translation>
 <translation id="1816036116994822943">Скорост на сканиране за клавиатурата</translation>
 <translation id="1817871734039893258">Възстановяване на файл от Microsoft</translation>
@@ -764,6 +767,7 @@
 <translation id="2076672359661571384">Среден (по подразбиране)</translation>
 <translation id="2077129598763517140">Да се използва хардуерно ускорение, когато е налице</translation>
 <translation id="2078019350989722914">Предупреждение преди излизане (<ph name="KEY_EQUIVALENT" />)</translation>
+<translation id="2078494137444990774">Изключено</translation>
 <translation id="2079053412993822885">Ако изтриете някой от собствените си сертификати, няма да можете повече да го използвате, за да се идентифицирате.</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="2080070583977670716">Още настройки</translation>
@@ -930,6 +934,7 @@
 <translation id="2289270750774289114">Извеждане на запитване, когато сайт иска да открива устройства с Bluetooth в близост (препоръчително)</translation>
 <translation id="2292848386125228270">Моля, стартирайте <ph name="PRODUCT_NAME" /> като обикновен потребител. Ако имате нужда от права на потребител root, за да преминете в режим за програмиране, стартирайте отново браузъра с флага --no-sandbox.</translation>
 <translation id="2294358108254308676">Искате ли да инсталирате <ph name="PRODUCT_NAME" />?</translation>
+<translation id="2295864384543949385"><ph name="NUM_RESULTS" /> резултата</translation>
 <translation id="2297705863329999812">Търсете принтери</translation>
 <translation id="2299734369537008228">Плъзгач: от <ph name="MIN_LABEL" /> до <ph name="MAX_LABEL" /></translation>
 <translation id="2300383962156589922">Персонализиране и управление на <ph name="APP_NAME" /></translation>
@@ -1063,6 +1068,7 @@
 <translation id="2485005079599453134">Паролата е запазена на това устройство</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
 <translation id="2487067538648443797">Добавяне на нова отметка</translation>
+<translation id="2487268545026948104">За да възстановите данните си, свържете се с интернет</translation>
 <translation id="2489829450872380594">Следващия път нов телефон ще отключи това устройство <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
 <translation id="2489918096470125693">Добавяне на &amp;папка...</translation>
 <translation id="2490481887078769936">Премахнахте „<ph name="FILE_NAME" />“ от списъка</translation>
@@ -1114,6 +1120,7 @@
 <translation id="2541706104884128042">Зададено е ново време за сън</translation>
 <translation id="2544853746127077729">Сертификатът за удостоверяване бе отхвърлен от мрежата</translation>
 <translation id="2546283357679194313">„Бисквитки“ и данни за сайтове</translation>
+<translation id="2547583314137677375">Изключване на синхронизирането</translation>
 <translation id="2549985041256363841">Старт на записа</translation>
 <translation id="2550212893339833758">Резервна памет</translation>
 <translation id="2550596535588364872">Да се разреши ли на <ph name="EXTENSION_NAME" /> да отвори <ph name="FILE_NAME" />?</translation>
@@ -1207,6 +1214,7 @@
 <translation id="2672142220933875349">Невалиден crx файл. Разпакетирането не бе успешно.</translation>
 <translation id="2673135533890720193">Да чете историята на сърфирането ви</translation>
 <translation id="2673589024369449924">Създаване на пряк път на работния плот за този потребител</translation>
+<translation id="2674764818721168631">Изключено</translation>
 <translation id="2677748264148917807">Излизане</translation>
 <translation id="2678063897982469759">Повторно активиране</translation>
 <translation id="268053382412112343">&amp;Хронология</translation>
@@ -1996,6 +2004,7 @@
 <translation id="3780211714699334884"><ph name="ORIGIN" /> ще може да редактира файловете в(ъв) „<ph name="FOLDERNAME" />“, докато не затворите раздела</translation>
 <translation id="3780827508782506612">Тази страница е преведена</translation>
 <translation id="378312418865624974">Четене на уникалния идентификатор на този компютър</translation>
+<translation id="3784472333786002075">„Бисквитките“ са файлове, създавани от уебсайтовете. Има два типа „бисквитки“: тези на посещавания домейн се създават от сайта, който преглеждате. Той се показва в адресната лента. „Бисквитките“ на трети страни се създават от други сайтове. Те притежават част от съдържанието, като например реклами или изображения, което виждате на посетения от вас уебсайт.</translation>
 <translation id="3785308913036335955">Показване на прекия път към приложенията</translation>
 <translation id="3785727820640310185">Запазени пароли за този сайт</translation>
 <translation id="3788401245189148511">То би имало възможност за:</translation>
@@ -2003,6 +2012,7 @@
 <translation id="379082410132524484">Картата ви е изтекла</translation>
 <translation id="3792890930871100565">Прекъсване на връзката с принтерите</translation>
 <translation id="3793395331556663376">Отворени са твърде много файлови системи.</translation>
+<translation id="379509625511193653">Изключено</translation>
 <translation id="3796648294839530037">Любими мрежи:</translation>
 <translation id="3797739167230984533">Устройството ви <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> се управлява<ph name="END_LINK" /> от организацията ви</translation>
 <translation id="3797900183766075808">&amp;Търсене на „<ph name="SEARCH_TERMS" />“ със: <ph name="SEARCH_ENGINE" /></translation>
@@ -2135,6 +2145,7 @@
 <translation id="3954354850384043518">В ход</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> херца)</translation>
 <translation id="3954953195017194676">Нямате наскоро записани регистрационни файлове за събития с WebRTC.</translation>
+<translation id="3955163004258753966">Грешка при стартирането на надстройването</translation>
 <translation id="3955193568934677022">Разрешаване на сайтовете да възпроизвеждат защитено съдържание (препоръчително)</translation>
 <translation id="3955896417885489542">Преглед на опциите за Google Play след настройването</translation>
 <translation id="3956702100721821638">Не можа да се установи връзка с Google Play</translation>
@@ -2195,6 +2206,7 @@
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{Изход от страницата}other{Изход от страниците}}</translation>
 <translation id="4044612648082411741">Въведете паролата си за сертификата</translation>
 <translation id="404493185430269859">Основна търсеща машина</translation>
+<translation id="4046013316139505482">Тези разширения нямат нужда да виждат и променят информацията на сайта.</translation>
 <translation id="4046123991198612571">Следващ запис</translation>
 <translation id="4050225813016893843">Метод за удостоверяване</translation>
 <translation id="4052120076834320548">Миниатюрен</translation>
@@ -2374,6 +2386,7 @@
 <translation id="4330387663455830245">Никога да не се превежда от <ph name="LANGUAGE" /></translation>
 <translation id="4332976768901252016">Настройване на родителските контроли</translation>
 <translation id="4333854382783149454">PKCS 1 SHA-1 с RSA шифроване</translation>
+<translation id="4336434711095810371">Изчистване на всички данни</translation>
 <translation id="4336979451636460645">За регистрационни файлове за мрежата вижте <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> иска да комуникира с приложението „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="4345587454538109430">Конфигуриране...</translation>
@@ -2474,6 +2487,7 @@
 <translation id="4479877282574735775">Виртуалната машина се конфигурира. Това може да отнеме няколко минути.</translation>
 <translation id="4480590691557335796">Chrome може да намери опасния софтуер на компютъра ви и да го премахне</translation>
 <translation id="4481530544597605423">Несдвоени устройства</translation>
+<translation id="4488502501195719518">Да се изчистят ли всички данни?</translation>
 <translation id="4495419450179050807">Да не се показва на тази страница</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> претърпя срив</translation>
 <translation id="450099669180426158">Икона на удивителен знак</translation>
@@ -2534,6 +2548,7 @@
 <translation id="4570387585180509432">Адреси, телефонни номера и др.</translation>
 <translation id="4572659312570518089">Удостоверяването бе анулирано при установяването на връзка с/ъс <ph name="DEVICE_NAME" />.</translation>
 <translation id="4572779512957829735">Въведете ПИН кода за ключа си за сигурност</translation>
+<translation id="4573515936045019911">За надстройването на Linux е необходима връзка с мрежата. Моля, свържете се с интернет и опитайте отново.</translation>
 <translation id="457386861538956877">Още...</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4579581181964204535">Предаването на <ph name="HOST_NAME" /> не е възможно.</translation>
@@ -2813,6 +2828,7 @@
 <translation id="4994754230098574403">Настройва се</translation>
 <translation id="4996978546172906250">Споделяне чрез</translation>
 <translation id="4997086284911172121">Няма връзка с интернет.</translation>
+<translation id="4998430619171209993">Включено</translation>
 <translation id="4998873842614926205">Потвърждаване на промените</translation>
 <translation id="5000922062037820727">Блокирано (препоръчително)</translation>
 <translation id="5008936837313706385">Име на активността</translation>
@@ -2909,6 +2925,7 @@
 <translation id="5143712164865402236">Вход за цял екран</translation>
 <translation id="514575469079499857">Определяне на местоположението посредством IP адреса ви (по подразбиране)</translation>
 <translation id="5146995429444047494">Известията за <ph name="ORIGIN" /> са блокирани</translation>
+<translation id="5147103632304200977">Извеждане на запитване, когато сайт иска достъп до HID устройства (препоръчително)</translation>
 <translation id="5150254825601720210">Име на SSL сървър за сертификат на Netscape</translation>
 <translation id="5151354047782775295">Освободете място на диска, в противен случай е възможно автоматично да бъдат изтрити определени данни</translation>
 <translation id="5153234146675181447">Забравяне на телефона</translation>
@@ -3043,6 +3060,7 @@
 <translation id="5353252989841766347">Експортиране на пароли от Chrome</translation>
 <translation id="5355099869024327351">Разрешаване на Асистент да ви показва известия</translation>
 <translation id="5355926466126177564">Разширението „<ph name="EXTENSION_NAME" />“ промени страницата, която се показва при търсене от полето за всичко.</translation>
+<translation id="5359910752122114278">1 резултат</translation>
 <translation id="5360150013186312835">Показване в лентата с инструменти</translation>
 <translation id="5362741141255528695">Изберете файла с личен ключ.</translation>
 <translation id="5363109466694494651">Powerwash и възстановяване</translation>
@@ -3293,6 +3311,7 @@
 <translation id="5700836101007545240">Опцията за добавяне на връзка е деактивирана от администратора ви</translation>
 <translation id="5701080607174488915">Грешка при извличането на правилото от сървъра.</translation>
 <translation id="5701381305118179107">Центриране</translation>
+<translation id="5701441174893770082">Надстройването на Linux може да изтощи батерията. Моля, включете устройството си в електрическата мрежа и опитайте отново.</translation>
 <translation id="5702898740348134351">&amp;Редактиране на търсещите машини...</translation>
 <translation id="570302979952009979">Изберете име за този отпечатък</translation>
 <translation id="5704875434923668958">Синхронизира се със:</translation>
@@ -3522,6 +3541,7 @@
 <translation id="6026819612896463875"><ph name="WINDOW_TITLE" /> – установена е връзка с USB устройство</translation>
 <translation id="6028117231645531007">Добавяне на отпечатъка</translation>
 <translation id="6029587122245504742">Най-бавна</translation>
+<translation id="6032715498678347852">Kликнете върху дадено разширение, за да му предоставите достъп до този сайт.</translation>
 <translation id="6032912588568283682">Файлова система</translation>
 <translation id="6038929619733116134">Блокиране, ако на сайта се показват натрапчиви или подвеждащи реклами</translation>
 <translation id="6039651071822577588">Неправилно образуван речник на свойствата на мрежата</translation>
@@ -3906,6 +3926,7 @@
 <translation id="6582080224869403177">Нулирайте устройството си <ph name="DEVICE_TYPE" />, за да надстроите функциите за сигурност.</translation>
 <translation id="6584878029876017575">Подписване на периода на валидност от Microsoft</translation>
 <translation id="6586451623538375658">Да се размени основният бутон на мишката</translation>
+<translation id="6586604979641883411">За надстройването на Linux е необходимо свободно дисково пространство от поне <ph name="REQUIRED_SPACE" />. Моля, освободете място на устройството си и опитайте отново.</translation>
 <translation id="6590458744723262880">Преименуване на папка</translation>
 <translation id="6592267180249644460">Записан е регистрационен файл за WebRTC: <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">Отпечатъкът ви бе записан</translation>
@@ -4016,6 +4037,7 @@
 <translation id="6757101664402245801">URL адресът е копиран</translation>
 <translation id="6758056191028427665">Уведомете ни как се справяме.</translation>
 <translation id="6759193508432371551">Възстановяване на фабричните настройки</translation>
+<translation id="6762833852331690540">Включено</translation>
 <translation id="6767566652486411142">Избор на друг език...</translation>
 <translation id="6767639283522617719">Присъединяването към домейна не успя. Проверете дали настройките за организационната единица са правилни.</translation>
 <translation id="6769712124046837540">Добавяне на принтер...</translation>
@@ -4137,6 +4159,7 @@
 <translation id="6935286146439255109">Липсва тава за хартия</translation>
 <translation id="693807610556624488">Операцията за запис надвишава максималната дължина на атрибута за: <ph name="DEVICE_NAME" />.</translation>
 <translation id="6938386202199793006">Имате 1 запазен принтер.</translation>
+<translation id="6938789263968032501">Хора</translation>
 <translation id="6941937518557314510">Моля, влезте в/ъв <ph name="TOKEN_NAME" />, за да удостоверите самоличността си пред <ph name="HOST_NAME" /> със сертификата си.</translation>
 <translation id="6943176775188458830">Анулиране на отпечатването</translation>
 <translation id="6943836128787782965">Получаването на HTTP не бе успешно</translation>
@@ -4161,6 +4184,7 @@
 <translation id="6970856801391541997">Отпечатване на конкретни страници</translation>
 <translation id="6972180789171089114">Аудио/видео</translation>
 <translation id="6972553992270299730"><ph name="ORIGIN" /> не може да отваря файловете в тази папка, защото тя съдържа системни файлове</translation>
+<translation id="6972629891077993081">HID устройства</translation>
 <translation id="6972754398087986839">Първи стъпки</translation>
 <translation id="6973611239564315524">Налице е надстройка до Debian 10 (Buster)</translation>
 <translation id="6974609594866392343">Офлайн демонстрационен режим</translation>
@@ -4485,8 +4509,10 @@
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">Фонова страница: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7427798576651127129">Обаждане от <ph name="DEVICE_NAME" /></translation>
+<translation id="7431719494109538750">Няма намерени HID устройства</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Отваряне на всички в &amp;нов прозорец}=1{Отваряне в &amp;нов прозорец}other{Отваряне на всички (#) в &amp;нов прозорец}}</translation>
 <translation id="7434509671034404296">Програмист</translation>
+<translation id="7434635829372401939">Синхронизиране на настройките ви</translation>
 <translation id="7436921188514130341">Ужас! При преименуването възникна грешка.</translation>
 <translation id="7438976808740265764">Поддръжката на Flash Player ще бъде прекратена след декември 2020 г.</translation>
 <translation id="7441736921018636843">За да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" />, така че да премахнете съответния си пропуск</translation>
@@ -4808,6 +4834,7 @@
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> – сдвоено</translation>
 <translation id="7870730066603611552">Преглед на опциите за синхронизиране след настройването</translation>
 <translation id="7870790288828963061">Няма намерени павилионни приложения с по-нова версия. Няма нищо за актуализиране. Моля, извадете USB паметта.</translation>
+<translation id="787268756490971083">Изключено</translation>
 <translation id="7874257161694977650">Фонове за Chrome</translation>
 <translation id="7877451762676714207">Неизвестна грешка в сървъра. Моля, опитайте отново или се свържете с администратора му.</translation>
 <translation id="7877680364634660272">Обиколка</translation>
@@ -4835,6 +4862,7 @@
 <translation id="7908378463497120834">За съжаление поне един дял на външното ви устройство за съхранение не можа да бъде свързан.</translation>
 <translation id="7909969815743704077">Изтеглено в режим „инкогнито“</translation>
 <translation id="7910768399700579500">&amp;Нова папка</translation>
+<translation id="7910831464510799808">Включено</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">Паролата ви е променена в сървъра. Моля, излезте от профила си и влезте отново в него.</translation>
 <translation id="7915457674565721553">Свържете се с интернет, за да настроите родителските контроли</translation>
@@ -5773,6 +5801,7 @@
 <translation id="934503638756687833">При необходимост ще бъдат премахнати и елементи, които не са посочени тук. Научете повече за &lt;a href="<ph name="URL" />"&gt;защитата от нежелан софтуер&lt;/a&gt; в информационния бюлетин за поверителността на Chrome.</translation>
 <translation id="935490618240037774">Вашите отметки, история, пароли и други настройки ще се синхронизират с профила ви в Google, за да можете да ги използвате на всичките си устройства.</translation>
 <translation id="935854577147268200">Телефонът за Smart Lock е променен. Въведете паролата си, за да актуализирате функцията. Следващия път телефонът ви ще отключи устройството ви <ph name="DEVICE_TYPE" />. Можете да изключите Smart Lock от настройките.</translation>
+<translation id="93610034168535821">Общо място за съхранение, използвано от сайтове:</translation>
 <translation id="936801553271523408">Диагностични данни за системата</translation>
 <translation id="93766956588638423">Поправяне на разширението</translation>
 <translation id="938339467127511841">Хранилище (бета) за Linux</translation>
@@ -5794,6 +5823,7 @@
 <translation id="964286338916298286">Системният ви администратор е деактивирал екстрите за Chrome за устройството ви.</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Приложение}other{Приложения}}</translation>
 <translation id="965211523698323809">Изпращайте и получавайте SMS съобщения от своя <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Научете повече<ph name="LINK_END" /></translation>
+<translation id="967398046773905967">Забраняване на сайтовете да осъществяват достъп до HID устройства</translation>
 <translation id="967624055006145463">Съхранени данни</translation>
 <translation id="968000525894980488">Включете услугите за Google Play.</translation>
 <translation id="968037381421390582">Пост&amp;авяне и търсене на „<ph name="SEARCH_TERMS" />“</translation>

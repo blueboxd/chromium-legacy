@@ -98,25 +98,27 @@ FilePath GetBlobDirectoryName(const FilePath& path_base, int64_t database_id) {
 
 FilePath GetBlobDirectoryNameForKey(const FilePath& path_base,
                                     int64_t database_id,
-                                    int64_t key) {
+                                    int64_t blob_number) {
   FilePath path = GetBlobDirectoryName(path_base, database_id);
   path = path.AppendASCII(base::StringPrintf(
-      "%02x", static_cast<int>(key & 0x000000000000ff00) >> 8));
+      "%02x", static_cast<int>(blob_number & 0x000000000000ff00) >> 8));
   return path;
 }
 
 FilePath GetBlobFileNameForKey(const FilePath& path_base,
                                int64_t database_id,
-                               int64_t key) {
-  FilePath path = GetBlobDirectoryNameForKey(path_base, database_id, key);
-  path = path.AppendASCII(base::StringPrintf("%" PRIx64, key));
+                               int64_t blob_number) {
+  FilePath path =
+      GetBlobDirectoryNameForKey(path_base, database_id, blob_number);
+  path = path.AppendASCII(base::StringPrintf("%" PRIx64, blob_number));
   return path;
 }
 
 bool MakeIDBBlobDirectory(const FilePath& path_base,
                           int64_t database_id,
-                          int64_t key) {
-  FilePath path = GetBlobDirectoryNameForKey(path_base, database_id, key);
+                          int64_t blob_number) {
+  FilePath path =
+      GetBlobDirectoryNameForKey(path_base, database_id, blob_number);
   return base::CreateDirectory(path);
 }
 
@@ -240,7 +242,7 @@ Status MergeDatabaseIntoBlobJournal(
   Status s = GetBlobJournal(key, transaction, &journal);
   if (!s.ok())
     return s;
-  journal.push_back({database_id, DatabaseMetaDataKey::kAllBlobsKey});
+  journal.push_back({database_id, DatabaseMetaDataKey::kAllBlobsNumber});
   UpdateBlobJournal(transaction, key, journal);
   return Status::OK();
 }
@@ -260,7 +262,7 @@ Status MergeDatabaseIntoActiveBlobJournal(
 }
 
 // Blob Data is encoded as a series of:
-//   { is_file [bool], key [int64_t as varInt],
+//   { is_file [bool], blob_number [int64_t as varInt],
 //     type [string-with-length, may be empty],
 //     (for Blobs only) size [int64_t as varInt]
 //     (for Files only) fileName [string-with-length]
@@ -270,7 +272,7 @@ std::string EncodeBlobInfos(const std::vector<IndexedDBBlobInfo*>& blob_info) {
   std::string ret;
   for (const auto* info : blob_info) {
     EncodeBool(info->is_file(), &ret);
-    EncodeVarInt(info->key(), &ret);
+    EncodeVarInt(info->blob_number(), &ret);
     EncodeStringWithLength(info->type(), &ret);
     if (info->is_file())
       EncodeStringWithLength(info->file_name(), &ret);
@@ -287,26 +289,26 @@ bool DecodeBlobInfos(const std::string& data,
   StringPiece slice(data);
   while (!slice.empty()) {
     bool is_file;
-    int64_t key;
+    int64_t blob_number;
     base::string16 type;
     int64_t size;
     base::string16 file_name;
 
     if (!DecodeBool(&slice, &is_file))
       return false;
-    if (!DecodeVarInt(&slice, &key) ||
-        !DatabaseMetaDataKey::IsValidBlobNumber(key))
+    if (!DecodeVarInt(&slice, &blob_number) ||
+        !DatabaseMetaDataKey::IsValidBlobNumber(blob_number))
       return false;
     if (!DecodeStringWithLength(&slice, &type))
       return false;
     if (is_file) {
       if (!DecodeStringWithLength(&slice, &file_name))
         return false;
-      ret.push_back(IndexedDBBlobInfo(key, type, file_name));
+      ret.push_back(IndexedDBBlobInfo(blob_number, type, file_name));
     } else {
       if (!DecodeVarInt(&slice, &size) || size < 0)
         return false;
-      ret.push_back(IndexedDBBlobInfo(type, size, key));
+      ret.push_back(IndexedDBBlobInfo(type, size, blob_number));
     }
   }
   output->swap(ret);
@@ -1620,12 +1622,12 @@ bool IndexedDBBackingStore::WriteBlobFile(
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
-  if (!MakeIDBBlobDirectory(blob_path_, database_id, descriptor.key()))
+  if (!MakeIDBBlobDirectory(blob_path_, database_id, descriptor.blob_number()))
     return false;
 
   bool use_copy_file = descriptor.is_file() && !descriptor.file_path().empty();
 
-  FilePath path = GetBlobFileName(database_id, descriptor.key());
+  FilePath path = GetBlobFileName(database_id, descriptor.blob_number());
 
   if (use_copy_file) {
     if (!base::CopyFile(descriptor.file_path(), path))
@@ -1672,7 +1674,7 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(initialized_);
 #endif
-  bool all_blobs = blob_number == DatabaseMetaDataKey::kAllBlobsKey;
+  bool all_blobs = blob_number == DatabaseMetaDataKey::kAllBlobsNumber;
   DCHECK(all_blobs || DatabaseMetaDataKey::IsValidBlobNumber(blob_number));
   std::unique_ptr<LevelDBDirectTransaction> transaction =
       transactional_leveldb_factory_->CreateLevelDBDirectTransaction(db_.get());
@@ -1684,13 +1686,13 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
   if (!GetRecoveryBlobJournal(transaction.get(), &recovery_journal).ok())
     return;
 
-  // There are several cases to handle.  If blob_number is kAllBlobsKey, we want
-  // to remove all entries with database_id from the active blob journal and add
-  // only kAllBlobsKey to the recovery journal.  Otherwise if
-  // IsValidBlobNumber(blob_number) and we hit kAllBlobsKey for the right
-  // database_id in the journal, we leave the kAllBlobsKey entry in the active
-  // blob journal but add the specific blob to the recovery.  Otherwise if
-  // IsValidBlobNumber(blob_number) and we find a matching (database_id,
+  // There are several cases to handle.  If blob_number is kAllBlobsNumber, we
+  // want to remove all entries with database_id from the active blob journal
+  // and add only kAllBlobsNumber to the recovery journal.  Otherwise if
+  // IsValidBlobNumber(blob_number) and we hit kAllBlobsNumber for the right
+  // database_id in the journal, we leave the kAllBlobsNumber entry in the
+  // active blob journal but add the specific blob to the recovery.  Otherwise
+  // if IsValidBlobNumber(blob_number) and we find a matching (database_id,
   // blob_number) tuple, we should move it to the recovery journal.
   BlobJournalType new_active_blob_journal;
   for (auto journal_iter = active_blob_journal.begin();
@@ -1698,7 +1700,7 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
     int64_t current_database_id = journal_iter->first;
     int64_t current_blob_number = journal_iter->second;
     bool current_all_blobs =
-        current_blob_number == DatabaseMetaDataKey::kAllBlobsKey;
+        current_blob_number == DatabaseMetaDataKey::kAllBlobsNumber;
     DCHECK(KeyPrefix::IsValidDatabaseId(current_database_id) ||
            current_all_blobs);
     if (current_database_id == database_id &&
@@ -1719,7 +1721,7 @@ void IndexedDBBackingStore::ReportBlobUnused(int64_t database_id,
   }
   if (all_blobs) {
     recovery_journal.push_back(
-        {database_id, DatabaseMetaDataKey::kAllBlobsKey});
+        {database_id, DatabaseMetaDataKey::kAllBlobsNumber});
   }
   UpdateRecoveryBlobJournal(transaction.get(), recovery_journal);
   UpdateActiveBlobJournal(transaction.get(), new_active_blob_journal);
@@ -1775,18 +1777,18 @@ void IndexedDBBackingStore::StartJournalCleaningTimer() {
 
 // This assumes a file path of dbId/second-to-LSB-of-counter/counter.
 FilePath IndexedDBBackingStore::GetBlobFileName(int64_t database_id,
-                                                int64_t key) const {
+                                                int64_t blob_number) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
-  return GetBlobFileNameForKey(blob_path_, database_id, key);
+  return GetBlobFileNameForKey(blob_path_, database_id, blob_number);
 }
 
 bool IndexedDBBackingStore::RemoveBlobFile(int64_t database_id,
-                                           int64_t key) const {
+                                           int64_t blob_number) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
-  FilePath path = GetBlobFileName(database_id, key);
+  FilePath path = GetBlobFileName(database_id, blob_number);
 #if DCHECK_IS_ON()
   ++num_blob_files_deleted_;
-  DVLOG(1) << "Deleting blob " << key << " from IndexedDB database "
+  DVLOG(1) << "Deleting blob " << blob_number << " from IndexedDB database "
            << database_id << " at path " << path.value();
 #endif
   return base::DeleteFile(path, false);
@@ -1834,7 +1836,7 @@ Status IndexedDBBackingStore::CleanUpBlobJournalEntries(
     int64_t database_id = entry.first;
     int64_t blob_number = entry.second;
     DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
-    if (blob_number == DatabaseMetaDataKey::kAllBlobsKey) {
+    if (blob_number == DatabaseMetaDataKey::kAllBlobsNumber) {
       if (!RemoveBlobDirectory(database_id))
         return IOErrorStatus();
     } else {
@@ -1904,13 +1906,13 @@ Status IndexedDBBackingStore::Transaction::GetBlobInfoForRecord(
     }
     for (auto& entry : value->blob_info) {
       entry.set_file_path(
-          backing_store_->GetBlobFileName(database_id, entry.key()));
+          backing_store_->GetBlobFileName(database_id, entry.blob_number()));
       entry.set_mark_used_callback(
           backing_store_->active_blob_registry()->GetMarkBlobActiveCallback(
-              database_id, entry.key()));
+              database_id, entry.blob_number()));
       entry.set_release_callback(
           backing_store_->active_blob_registry()->GetFinalReleaseCallback(
-              database_id, entry.key()));
+              database_id, entry.blob_number()));
       if (entry.is_file() && !entry.file_path().empty()) {
         base::File::Info info;
         if (base::GetFileInfo(entry.file_path(), &info)) {
@@ -3049,7 +3051,7 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
             WriteDescriptor(entry.remote(), next_blob_number, entry.size(),
                             entry.last_modified()));
       }
-      entry.set_key(next_blob_number);
+      entry.set_blob_number(next_blob_number);
       new_blob_numbers.push_back(&entry);
       ++next_blob_number;
       result = indexed_db::UpdateBlobNumberGeneratorCurrentNumber(
@@ -3106,7 +3108,7 @@ bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
         return false;
       }
       for (const auto& blob : blob_info) {
-        blobs_to_remove_.push_back({database_id_, blob.key()});
+        blobs_to_remove_.push_back({database_id_, blob.blob_number()});
         s = transaction_->Remove(blob_entry_key_bytes);
         if (!s.ok()) {
           transaction_ = nullptr;

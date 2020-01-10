@@ -310,6 +310,9 @@ template("chrome_paks") {
     if (enable_hidpi) {
       public_deps += [ ":${target_name}_200_percent" ]
     }
+    if (!defined(invoker.copy_data_to_bundle) || !invoker.copy_data_to_bundle) {
+      data_deps = public_deps
+    }
     if (defined(invoker.public_deps)) {
       public_deps += invoker.public_deps
     }

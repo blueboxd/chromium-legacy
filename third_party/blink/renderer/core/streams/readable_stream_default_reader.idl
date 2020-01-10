@@ -10,8 +10,8 @@
     [CallWith=ScriptState, NotEnumerable] readonly attribute Promise<void>
         closed;
 
-    [CallWith=ScriptState, NotEnumerable] Promise<void> cancel(
+    [CallWith=ScriptState, RaisesException, NotEnumerable] Promise<void> cancel(
         optional any reason);
-    [CallWith=ScriptState, NotEnumerable] Promise<void> read();
+    [CallWith=ScriptState, RaisesException, NotEnumerable] Promise<void> read();
     [CallWith=ScriptState, NotEnumerable, RaisesException] void releaseLock();
 };

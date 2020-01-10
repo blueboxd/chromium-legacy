@@ -264,7 +264,7 @@ void WorkerThreadDispatcher::OnDispatchOnDisconnect(
 
 void WorkerThreadDispatcher::AddWorkerData(
     int64_t service_worker_version_id,
-    int activation_sequence,
+    ActivationSequence activation_sequence,
     ScriptContext* script_context,
     std::unique_ptr<NativeExtensionBindingsSystem> bindings_system) {
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();

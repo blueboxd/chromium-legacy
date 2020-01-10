@@ -533,13 +533,13 @@ void WindowState::OnDragStarted(int window_component) {
     delegate_->OnDragStarted(window_component);
 }
 
-void WindowState::OnCompleteDrag(const gfx::Point& location) {
+void WindowState::OnCompleteDrag(const gfx::PointF& location) {
   DCHECK(drag_details_);
   if (delegate_)
     delegate_->OnDragFinished(/*canceled=*/false, location);
 }
 
-void WindowState::OnRevertDrag(const gfx::Point& location) {
+void WindowState::OnRevertDrag(const gfx::PointF& location) {
   DCHECK(drag_details_);
   if (delegate_)
     delegate_->OnDragFinished(/*canceled=*/true, location);
@@ -557,7 +557,7 @@ display::Display WindowState::GetDisplay() {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window());
 }
 
-void WindowState::CreateDragDetails(const gfx::Point& point_in_parent,
+void WindowState::CreateDragDetails(const gfx::PointF& point_in_parent,
                                     int window_component,
                                     ::wm::WindowMoveSource source) {
   drag_details_ = std::make_unique<DragDetails>(window_, point_in_parent,

@@ -310,9 +310,12 @@ void CreditCardAccessManager::FetchCreditCard(
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  // On desktop, show the verify pending dialog for opted-in user.
-  if (user_is_opted_in)
+  // On desktop, show the verify pending dialog for opted-in user, unless it is
+  // already known that selected card requires CVC.
+  if (user_is_opted_in &&
+      (!get_unmask_details_returned || IsSelectedCardFidoAuthorized())) {
     ShowVerifyPendingDialog();
+  }
 #endif
 
   if (should_wait_to_authenticate) {
@@ -363,9 +366,7 @@ void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
                                          AutofillClient::UnmaskAuthMethod::FIDO;
 
   bool card_is_authorized_for_fido =
-      fido_auth_suggested &&
-      unmask_details_.fido_eligible_card_ids.find(card_->server_id()) !=
-          unmask_details_.fido_eligible_card_ids.end();
+      fido_auth_suggested && IsSelectedCardFidoAuthorized();
 
   // If FIDO authentication was suggested, but card is not in authorized list,
   // must authenticate with CVC followed by FIDO in order to authorize this card
@@ -533,6 +534,14 @@ bool CreditCardAccessManager::IsFidoAuthenticationEnabled() {
   return is_user_verifiable_.value_or(false) &&
          GetOrCreateFIDOAuthenticator()->IsUserOptedIn();
 #endif
+}
+
+bool CreditCardAccessManager::IsSelectedCardFidoAuthorized() {
+  DCHECK_NE(unmask_details_.unmask_auth_method,
+            AutofillClient::UnmaskAuthMethod::UNKNOWN);
+  return IsFidoAuthenticationEnabled() &&
+         unmask_details_.fido_eligible_card_ids.find(card_->server_id()) !=
+             unmask_details_.fido_eligible_card_ids.end();
 }
 
 void CreditCardAccessManager::ShowWebauthnOfferDialog(

@@ -2945,6 +2945,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -2970,6 +2971,7 @@
         "name": "tab_capture_end2end_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -2991,6 +2993,7 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3012,6 +3015,7 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3034,6 +3038,7 @@
         "name": "xr_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3065,6 +3070,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3093,6 +3099,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3121,6 +3128,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3149,6 +3157,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3181,6 +3190,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3222,6 +3232,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3264,6 +3275,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3294,6 +3306,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3323,6 +3336,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3351,6 +3365,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",
@@ -3380,6 +3395,7 @@
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
           "dimension_sets": [
             {
               "gpu": "nvidia-quadro-p400-win10-stable",

@@ -197,13 +197,11 @@ class LocalDeviceInstrumentationTestRun(
         @trace_event.traced
         def install_helper_internal(d, apk_path=None):
           # pylint: disable=unused-argument
-          logging.info('Start Installing %s', apk.path)
           d.Install(
               apk,
               modules=modules,
               fake_modules=fake_modules,
               permissions=permissions)
-          logging.info('Finished Installing %s', apk.path)
 
         return install_helper_internal
 
@@ -212,10 +210,7 @@ class LocalDeviceInstrumentationTestRun(
         @trace_event.traced
         def incremental_install_helper_internal(d, apk_path=None):
           # pylint: disable=unused-argument
-          logging.info('Start Incremental Installing %s', apk.path)
           installer.Install(d, json_path, apk=apk, permissions=permissions)
-          logging.info('Finished Incremental Installing %s', apk.path)
-
         return incremental_install_helper_internal
 
       permissions = self._test_instance.test_apk.GetPermissions()

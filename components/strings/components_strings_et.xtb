@@ -210,7 +210,7 @@
 <translation id="1914326953223720820">Lahtipakkimisteenus</translation>
 <translation id="1915697529809968049">Kas kasutada CVC asemel Touch ID-d?</translation>
 <translation id="1916770123977586577">Laadige leht uuesti, et rakendada värskendatud seaded saidile</translation>
-<translation id="1917876262703816781">Saidil või rakenduses esines andmetega seotud rikkumine, mille käigus avalikustati teie parool. Chrome soovitab teil teenuse <ph name="ORIGIN" /> parooli kohe muuta.</translation>
+<translation id="1917876262703816781">Mõnel saidil või rakenduses esines andmetega seotud rikkumine, mille käigus avalikustati teie parool. Chrome soovitab teil teenuse <ph name="ORIGIN" /> parooli kohe muuta.</translation>
 <translation id="1919345977826869612">Reklaamid</translation>
 <translation id="1919367280705858090">Konkreetse veateate puhul abi hankimine</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ühtegi}=1{1 sait}other{# saiti}}</translation>
@@ -913,7 +913,7 @@
 <translation id="5287240709317226393">Kuva küpsised</translation>
 <translation id="5287456746628258573">See sait kasutab vananenud turvaseadistust, mis võib paljastada teie teabe (näiteks paroolid või krediitkaardinumbrid), kui see saadetakse sellele saidile.</translation>
 <translation id="5288108484102287882">Reegli väärtuste valideerimisel ilmnesid hoiatused</translation>
-<translation id="5295292838686006428">Saidil või rakenduses esines andmetega seotud rikkumine, mille käigus avalikustati teie parool. Chrome soovitab teil salvestatud paroole kohe kontrollida.</translation>
+<translation id="5295292838686006428">Mõnel saidil või rakenduses esines andmetega seotud rikkumine, mille käigus avalikustati teie parool. Chrome soovitab teil salvestatud paroole kohe kontrollida.</translation>
 <translation id="5299298092464848405">Reegli sõelumisel ilmnes viga</translation>
 <translation id="5300589172476337783">Kuva</translation>
 <translation id="5308380583665731573">Ühendamine</translation>
@@ -1359,7 +1359,7 @@ Lisateave:
 <translation id="7473891865547856676">Tänan, ei</translation>
 <translation id="7481312909269577407">Edasta</translation>
 <translation id="7485870689360869515">Andmeid ei leitud.</translation>
-<translation id="7495290002932347110">Saidil või rakenduses esines andmetega seotud rikkumine, mille käigus avalikustati teie parool. Chrome soovitab teil salvestatud paroole kontrollida ja teenuse <ph name="ORIGIN" /> parooli kohe muuta.</translation>
+<translation id="7495290002932347110">Mõnel saidil või rakenduses esines andmetega seotud rikkumine, mille käigus avalikustati teie parool. Chrome soovitab teil salvestatud paroole kontrollida ja teenuse <ph name="ORIGIN" /> parooli kohe muuta.</translation>
 <translation id="7498234416455752244">Jätka muutmist</translation>
 <translation id="7508255263130623398">Tagastatud reegli seadme-ID on tühi või ei kattu praeguse seadme-ID-ga</translation>
 <translation id="7508870219247277067">Avokaadoroheline</translation>

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_HID_HID_CHOOSER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_HID_HID_CHOOSER_CONTROLLER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -63,7 +64,12 @@ class HidChooserController : public ChooserController {
   // The lifetime of the chooser context is tied to the browser context used to
   // create it, and may be destroyed while the chooser is still active.
   base::WeakPtr<HidChooserContext> chooser_context_;
-  std::vector<device::mojom::HidDeviceInfoPtr> devices_;
+
+  // Information about connected devices and their HID interfaces. A single
+  // physical device may expose multiple HID interfaces. Keys are physical
+  // device IDs, values are collections of HidDeviceInfo objects representing
+  // the HID interfaces hosted by the physical device.
+  std::map<std::string, std::vector<device::mojom::HidDeviceInfoPtr>> devices_;
 
   base::WeakPtrFactory<HidChooserController> weak_factory_{this};
 

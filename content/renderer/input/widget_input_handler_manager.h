@@ -151,7 +151,6 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void InitInputHandler();
   void InitOnInputHandlingThread(
       const base::WeakPtr<cc::InputHandler>& input_handler,
-      bool smooth_scroll_enabled,
       bool sync_compositing);
   void BindAssociatedChannel(
       mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver);

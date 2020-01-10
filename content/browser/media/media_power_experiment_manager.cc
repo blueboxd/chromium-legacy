@@ -40,6 +40,8 @@ void MediaPowerExperimentManager::PlayerStopped(
       current_experiment_player_ && *current_experiment_player_ == player_id) {
     current_experiment_player_.reset();
     current_experiment_cb_ = ExperimentCB();
+    // Note that there will be no incoming player; there's exactly one and we're
+    // removing it.
   }
   players_.erase(player_id);
   CheckExperimentState();

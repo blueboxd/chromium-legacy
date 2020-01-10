@@ -28,7 +28,7 @@ MANIFEST_NAME = 'MANIFEST.json'
 # The filename used for the base manifest includes the version as a
 # workaround for trouble landing huge changes to the base manifest when
 # the version changes. See https://crbug.com/876717.
-BASE_MANIFEST_NAME = 'WPT_BASE_MANIFEST_6.json'
+BASE_MANIFEST_NAME = 'WPT_BASE_MANIFEST_7.json'
 
 # TODO(robertma): Use the official wpt.manifest module.
 

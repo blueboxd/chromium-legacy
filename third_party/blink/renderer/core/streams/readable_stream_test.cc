@@ -191,7 +191,7 @@ TEST_F(ReadableStreamTest, GetReader) {
   EXPECT_EQ(stream->IsDisturbed(script_state, ASSERT_NO_EXCEPTION),
             base::make_optional(false));
 
-  reader->read(script_state);
+  reader->read(script_state, ASSERT_NO_EXCEPTION);
 
   EXPECT_EQ(stream->IsDisturbed(script_state, ASSERT_NO_EXCEPTION),
             base::make_optional(true));

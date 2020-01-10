@@ -146,7 +146,7 @@ class OmniboxViewIOS : public OmniboxView,
 
  protected:
   int GetOmniboxTextLength() const override;
-  void EmphasizeURLComponents() override;
+  void EmphasizeURLComponents() override {}
 
  private:
   void SetEmphasis(bool emphasize, const gfx::Range& range) override {}

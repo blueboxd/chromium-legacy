@@ -44,14 +44,12 @@
         .then(runScript);
   }
 
-  function runScript() {
-    Promise
-        .all([
-          SourcesTestRunner.waitBreakpointSidebarPane(),
-          new Promise(resolve => SourcesTestRunner.waitUntilPaused(resolve))
-        ])
-        .then(() => SourcesTestRunner.dumpBreakpointSidebarPane('while paused'))
-        .then(() => SourcesTestRunner.completeDebuggerTest());
+  async function runScript() {
     TestRunner.evaluateInPageWithTimeout('f2()');
+    await SourcesTestRunner.waitUntilPausedPromise();
+    runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).doUpdate();
+    await SourcesTestRunner.waitBreakpointSidebarPane();
+    SourcesTestRunner.dumpBreakpointSidebarPane('while paused');
+    SourcesTestRunner.completeDebuggerTest();
   }
 })();

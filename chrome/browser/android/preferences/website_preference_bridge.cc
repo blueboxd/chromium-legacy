@@ -477,15 +477,32 @@ static jint JNI_WebsitePreferenceBridge_GetNotificationSettingForOrigin(
       env, ContentSettingsType::NOTIFICATIONS, origin, origin, is_incognito);
 }
 
+static jboolean JNI_WebsitePreferenceBridge_IsNotificationEmbargoedForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jprofile,
+    const JavaParamRef<jstring>& origin) {
+  GURL origin_url(ConvertJavaStringToUTF8(env, origin));
+  PermissionResult status =
+      PermissionManager::Get(ProfileAndroid::FromProfileAndroid(jprofile))
+          ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS, origin_url,
+                                origin_url);
+  return status.content_setting == ContentSetting::CONTENT_SETTING_BLOCK &&
+         (status.source == PermissionStatusSource::MULTIPLE_IGNORES ||
+          status.source == PermissionStatusSource::MULTIPLE_DISMISSALS);
+}
+
 static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
     JNIEnv* env,
     const JavaParamRef<jstring>& origin,
     jint value,
     jboolean is_incognito) {
-  // Note: For Android O+, SetNotificationSettingForOrigin is only called when
-  // the "Clear & Reset" button in Site Settings is pressed. Otherwise, we rely
-  // on ReportNotificationRevokedForOrigin to explicitly record metrics
-  // when we detect changes initiated in Android.
+  // Note: For Android O+, SetNotificationSettingForOrigin is only called when:
+  //  1) the "Clear & Reset" button in Site Settings is pressed,
+  //  2) the notification permission is blocked by embargo, so no notification
+  //     channel exists yet, and in this state the user changes the setting to
+  //     allow or "real" block in SingleWebsitePreferences.
+  // Otherwise, we rely on ReportNotificationRevokedForOrigin to explicitly
+  // record metrics when we detect changes initiated in Android.
   //
   // Note: Web Notification permission behaves differently from all other
   // permission types. See https://crbug.com/416894.
@@ -493,10 +510,8 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
   GURL url = GURL(ConvertJavaStringToUTF8(env, origin));
   ContentSetting setting = static_cast<ContentSetting>(value);
 
-  if (setting != CONTENT_SETTING_BLOCK) {
-    PermissionDecisionAutoBlocker::GetForProfile(profile)->RemoveEmbargoByUrl(
-        url, ContentSettingsType::NOTIFICATIONS);
-  }
+  PermissionDecisionAutoBlocker::GetForProfile(profile)->RemoveEmbargoByUrl(
+      url, ContentSettingsType::NOTIFICATIONS);
 
   if (MaybeResetDSEPermission(ContentSettingsType::NOTIFICATIONS, url, GURL(),
                               is_incognito, setting)) {

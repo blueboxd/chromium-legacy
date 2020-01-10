@@ -55,24 +55,25 @@ ScriptPromise ReadableStreamReader::closed(ScriptState* script_state) const {
   return closed_promise_->GetScriptPromise(script_state);
 }
 
-ScriptPromise ReadableStreamReader::cancel(ScriptState* script_state) {
+ScriptPromise ReadableStreamReader::cancel(ScriptState* script_state,
+                                           ExceptionState& exception_state) {
   return cancel(script_state,
                 ScriptValue(script_state->GetIsolate(),
-                            v8::Undefined(script_state->GetIsolate())));
+                            v8::Undefined(script_state->GetIsolate())),
+                exception_state);
 }
 
 ScriptPromise ReadableStreamReader::cancel(ScriptState* script_state,
-                                           ScriptValue reason) {
+                                           ScriptValue reason,
+                                           ExceptionState& exception_state) {
   // https://streams.spec.whatwg.org/#default-reader-cancel
   // 2. If this.[[ownerReadableStream]] is undefined, return a promise rejected
   //    with a TypeError exception.
   if (!owner_readable_stream_) {
-    return ScriptPromise::Reject(
-        script_state,
-        v8::Exception::TypeError(V8String(
-            script_state->GetIsolate(),
-            "This readable stream reader has been released and cannot be used "
-            "to cancel its previous owner stream")));
+    exception_state.ThrowTypeError(
+        "This readable stream reader has been released and cannot be used to "
+        "cancel its previous owner stream");
+    return ScriptPromise();
   }
 
   // 3. Return ! ReadableStreamReaderGenericCancel(this, reason).
@@ -81,17 +82,16 @@ ScriptPromise ReadableStreamReader::cancel(ScriptState* script_state,
   return ScriptPromise(script_state, result);
 }
 
-ScriptPromise ReadableStreamReader::read(ScriptState* script_state) {
+ScriptPromise ReadableStreamReader::read(ScriptState* script_state,
+                                         ExceptionState& exception_state) {
   // https://streams.spec.whatwg.org/#default-reader-read
   // 2. If this.[[ownerReadableStream]] is undefined, return a promise rejected
   //  with a TypeError exception.
   if (!owner_readable_stream_) {
-    return ScriptPromise::Reject(
-        script_state,
-        v8::Exception::TypeError(V8String(
-            script_state->GetIsolate(),
-            "This readable stream reader has been released and cannot be used "
-            "to read from its previous owner stream")));
+    exception_state.ThrowTypeError(
+        "This readable stream reader has been released and cannot be used to "
+        "read from its previous owner stream");
+    return ScriptPromise();
   }
 
   // 3. Return ! ReadableStreamReaderRead(this).

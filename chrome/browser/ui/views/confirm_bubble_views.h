@@ -49,8 +49,7 @@ class ConfirmBubbleViews : public views::DialogDelegateView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View implementation.
-  void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override;
+  void AddedToWidget() override;
 
  private:
   // The model to customize this bubble view.

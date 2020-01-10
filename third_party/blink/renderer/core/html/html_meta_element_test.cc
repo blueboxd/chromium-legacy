@@ -30,13 +30,11 @@ namespace blink {
 class HTMLMetaElementTest : public PageTestBase,
                             private ScopedDisplayCutoutAPIForTest,
                             private ScopedMetaColorSchemeForTest,
-                            private ScopedMediaQueryPrefersColorSchemeForTest,
                             private ScopedCSSColorSchemeForTest {
  public:
   HTMLMetaElementTest()
       : ScopedDisplayCutoutAPIForTest(true),
         ScopedMetaColorSchemeForTest(true),
-        ScopedMediaQueryPrefersColorSchemeForTest(true),
         ScopedCSSColorSchemeForTest(true) {}
   void SetUp() override {
     PageTestBase::SetUp();

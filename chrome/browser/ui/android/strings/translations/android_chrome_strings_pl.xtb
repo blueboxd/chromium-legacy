@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Numery telefonów</translation>
 <translation id="3819178904835489326">Usunięte pobrane pliki: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Wyczyścić dane witryn?</translation>
+<translation id="3853625385350850937">Aby kontynuować, włącz NFC na urządzeniu</translation>
 <translation id="3859306556332390985">Przewiń do przodu</translation>
 <translation id="388596076286380598">Możesz czytać artykuły i oglądać filmy oraz inne treści ze swoich ulubionych stron nawet wtedy, gdy jesteś offline lub masz słabe połączenie.</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
@@ -1049,6 +1050,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8912362522468806198">Konta Google</translation>
 <translation id="8920114477895755567">Oczekiwanie na informacje o rodzicach.</translation>
 <translation id="8922289737868596582">Pobierz strony, używając przycisku Więcej opcji, by korzystać z nich w trybie offline</translation>
+<translation id="8926666909099850184">Funkcja NFC na tym urządzeniu jest wyłączona. Włącz ją w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Usunąć Twoją aktywność w Chrome z Cyfrowej równowagi?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Otwórz w innym oknie</translation>

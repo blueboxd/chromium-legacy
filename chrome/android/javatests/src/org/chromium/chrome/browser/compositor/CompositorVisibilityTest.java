@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.compositor;
 
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Build;
 import android.support.test.filters.SmallTest;
@@ -62,7 +63,7 @@ public class CompositorVisibilityTest {
         public void loadPersitentTextureDataIfNeeded() {}
 
         @Override
-        public int getBrowserControlsBackgroundColor() {
+        public int getBrowserControlsBackgroundColor(Resources res) {
             return 0;
         }
 

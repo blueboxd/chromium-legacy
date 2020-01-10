@@ -43,7 +43,7 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
       gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
   ~PlatformVideoFramePool() override;
 
-  // VideoFramePoolBase Implementation.
+  // DmabufVideoFramePool implementation.
   base::Optional<GpuBufferLayout> RequestFrames(const Fourcc& fourcc,
                                                 const gfx::Size& coded_size,
                                                 const gfx::Rect& visible_rect,
@@ -60,18 +60,6 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
 
  private:
   friend class PlatformVideoFramePoolTest;
-
-  using CreateFrameCB = base::RepeatingCallback<scoped_refptr<VideoFrame>(
-      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-      VideoPixelFormat format,
-      const gfx::Size& coded_size,
-      const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size,
-      base::TimeDelta timestamp)>;
-
-  // Allows injection of create frame callback. This is used to test the
-  // behavior of the video frame pool.
-  PlatformVideoFramePool(CreateFrameCB cb);
 
   // Returns the number of frames in the pool for testing purposes.
   size_t GetPoolSizeForTesting();
@@ -99,10 +87,17 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   bool IsExhausted_Locked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // The function used to allocate new frames.
-  const CreateFrameCB create_frame_cb_;
+  using CreateFrameCB = base::RepeatingCallback<scoped_refptr<VideoFrame>(
+      gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
+      VideoPixelFormat format,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      base::TimeDelta timestamp)>;
+  CreateFrameCB create_frame_cb_;
 
   // Lock to protect all data members.
-  // Every public method and OnFrameReleased() should acquire this lock.
+  // Every public method and OnFrameReleased() acquire this lock.
   base::Lock lock_;
 
   // Used to allocate the video frame GpuMemoryBuffers, passed directly to

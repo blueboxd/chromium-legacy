@@ -152,7 +152,7 @@ class FakeHidService {
   reset() {
     this.devices_ = new Map();
     this.fakeConnections_ = new Map();
-    this.selectedDevice_ = null;
+    this.selectedDevices_ = [];
   }
 
   // Creates and returns a HidDeviceInfo with the specified device IDs.
@@ -171,24 +171,32 @@ class FakeHidService {
     return info;
   }
 
-  // Simulates a connected device. Returns the device GUID. A device connection
-  // event is not generated.
+  // Simulates a connected device. Returns the key used to store the device in
+  // the map. The key is either the physical device ID, or the device GUID if it
+  // has no physical device ID. A device connection event is not generated.
   addDevice(deviceInfo) {
-    this.devices_.set(deviceInfo.guid, deviceInfo);
-    return deviceInfo.guid;
+    let key = deviceInfo.physicalDeviceId;
+    if (key.length === 0)
+      key = deviceInfo.guid;
+    let devices = this.devices_.get(key);
+    if (devices === undefined)
+      devices = [];
+    devices.push(deviceInfo);
+    this.devices_.set(key, devices);
+    return key;
   }
 
   // Simulates disconnecting a connected device. A device disconnection event is
   // not generated.
-  removeDevice(guid) {
-    this.devices_.delete(guid);
+  removeDevice(key) {
+    this.devices_.delete(key);
   }
 
-  // Sets the GUID of the device that will be returned as the selected item the
-  // next time requestDevice is called. The device with this GUID must have been
+  // Sets the key of the device that will be returned as the selected item the
+  // next time requestDevice is called. The device with this key must have been
   // previously added with addDevice.
-  setSelectedDevice(guid) {
-    this.selectedDevice_ = this.devices_.get(guid);
+  setSelectedDevice(key) {
+    this.selectedDevices_ = this.devices_.get(key);
   }
 
   // Returns the fake HidConnection object for this device, if there is one. A
@@ -205,13 +213,17 @@ class FakeHidService {
   // devices that the client has already been granted permission to access, but
   // for the fake implementation all simulated devices are returned.
   async getDevices() {
-    return { devices: Array.from(this.devices_.values()) };
+    let devices = [];
+    this.devices_.forEach((value) => {
+      devices = devices.concat(value);
+    });
+    return { devices: devices };
   }
 
-  // Simulates a device chooser prompt, returning |selectedDevice_| as the
+  // Simulates a device chooser prompt, returning |selectedDevices_| as the
   // simulated selection. |filters| is ignored.
   async requestDevice(filters) {
-    return { device: this.selectedDevice_ };
+    return { devices: this.selectedDevices_ };
   }
 
   // Returns a fake connection to the device with the specified GUID. If

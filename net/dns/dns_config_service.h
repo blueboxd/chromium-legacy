@@ -29,6 +29,11 @@ class NET_EXPORT_PRIVATE DnsConfigService {
   // ReadConfig() and WatchConfig().
   typedef base::Callback<void(const DnsConfig& config)> CallbackType;
 
+  // DHCP and user-induced changes are on the order of seconds, so 150ms should
+  // not add perceivable delay. On the other hand, config readers should finish
+  // within 150ms with the rare exception of I/O block or extra large HOSTS.
+  static const base::TimeDelta kInvalidationTimeout;
+
   // Creates the platform-specific DnsConfigService. May return |nullptr| if
   // reading system DNS settings is not supported on the current platform.
   static std::unique_ptr<DnsConfigService> CreateSystemService();

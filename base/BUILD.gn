@@ -2156,7 +2156,10 @@ buildflag_header("clang_coverage_buildflags") {
   header = "clang_coverage_buildflags.h"
   header_dir = "base"
 
-  flags = [ "CLANG_COVERAGE=$use_clang_coverage" ]
+  flags = [
+    "CLANG_COVERAGE=$use_clang_coverage",
+    "CLANG_COVERAGE_INSIDE_SANDBOX=$use_clang_coverage_inside_sandbox"
+  ]
 }
 
 buildflag_header("sanitizer_buildflags") {
@@ -3305,6 +3308,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/UserDataHost.java",
       "android/java/src/org/chromium/base/annotations/AccessedByNative.java",
       "android/java/src/org/chromium/base/annotations/CalledByNative.java",
+      "android/java/src/org/chromium/base/annotations/CalledByNativeJavaTest.java",
       "android/java/src/org/chromium/base/annotations/CalledByNativeUnchecked.java",
       "android/java/src/org/chromium/base/annotations/CheckDiscard.java",
       "android/java/src/org/chromium/base/annotations/DoNotInline.java",

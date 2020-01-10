@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WORKER_HOST_SHARED_WORKER_CONNECTOR_IMPL_H_
 
 #include "content/common/content_export.h"
+#include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
@@ -18,12 +19,12 @@ class CONTENT_EXPORT SharedWorkerConnectorImpl
     : public blink::mojom::SharedWorkerConnector {
  public:
   static void Create(
-      int client_process_id,
-      int frame_id,
+      GlobalFrameRoutingId client_render_frame_host_id,
       mojo::PendingReceiver<blink::mojom::SharedWorkerConnector> receiver);
 
  private:
-  SharedWorkerConnectorImpl(int client_process_id, int frame_id);
+  explicit SharedWorkerConnectorImpl(
+      GlobalFrameRoutingId client_render_frame_host_id);
 
   // blink::mojom::SharedWorkerConnector methods:
   void Connect(
@@ -35,8 +36,7 @@ class CONTENT_EXPORT SharedWorkerConnectorImpl
       mojo::ScopedMessagePipeHandle message_port,
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) override;
 
-  const int client_process_id_;
-  const int frame_id_;
+  const GlobalFrameRoutingId client_render_frame_host_id_;
 };
 
 }  // namespace content

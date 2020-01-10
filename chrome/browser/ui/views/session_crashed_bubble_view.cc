@@ -177,6 +177,15 @@ SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
       uma_option_(NULL),
       offer_uma_optin_(offer_uma_optin),
       ignored_(true) {
+  const SessionStartupPref session_startup_pref =
+      SessionStartupPref::GetStartupPref(browser_->profile());
+  // Offer the option to open the startup pages using the cancel button, but
+  // only when the user has selected the URLS option, and set at least one url.
+  DialogDelegate::set_buttons(
+      (session_startup_pref.type == SessionStartupPref::URLS &&
+       !session_startup_pref.urls.empty())
+          ? ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL
+          : ui::DIALOG_BUTTON_OK);
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON));
@@ -305,19 +314,6 @@ bool SessionCrashedBubbleView::Close() {
   // Don't default to Accept() just because that's the only choice. Instead, do
   // nothing.
   return true;
-}
-
-int SessionCrashedBubbleView::GetDialogButtons() const {
-  int buttons = ui::DIALOG_BUTTON_OK;
-  // Offer the option to open the startup pages using the cancel button, but
-  // only when the user has selected the URLS option, and set at least one url.
-  SessionStartupPref session_startup_pref =
-      SessionStartupPref::GetStartupPref(browser_->profile());
-  if (session_startup_pref.type == SessionStartupPref::URLS &&
-      !session_startup_pref.urls.empty()) {
-    buttons |= ui::DIALOG_BUTTON_CANCEL;
-  }
-  return buttons;
 }
 
 void SessionCrashedBubbleView::StyledLabelLinkClicked(views::StyledLabel* label,

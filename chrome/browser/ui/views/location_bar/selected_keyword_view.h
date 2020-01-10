@@ -29,11 +29,9 @@ class SelectedKeywordView : public IconLabelBubbleView {
                       Profile* profile);
   ~SelectedKeywordView() override;
 
-  // Sets the icon for this chip to |image|.
-  void SetCustomImage(const gfx::ImageSkia& image);
-
-  // Resets the icon for this chip to its default.
-  void ResetImage();
+  // Sets the icon for this chip to |image|.  If there is no custom image (i.e.
+  // |image| is empty), resets the icon for this chip to its default.
+  void SetCustomImage(const gfx::Image& image);
 
   // IconLabelBubbleView:
   gfx::Size CalculatePreferredSize() const override;

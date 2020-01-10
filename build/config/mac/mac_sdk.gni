@@ -31,6 +31,11 @@ declare_args() {
 
   # The SDK name as accepted by xcodebuild.
   mac_sdk_name = "macosx"
+
+  # The SDK version used when making official builds. This is a single exact
+  # version, not a minimum. If this version isn't available official builds
+  # will fail.
+  mac_sdk_official_version = "10.14"
 }
 
 # Check that the version of macOS SDK used is the one requested when building
@@ -67,7 +72,7 @@ if (!use_system_xcode) {
 if (_verify_sdk) {
   find_sdk_args += [
     "--verify",
-    mac_sdk_min,
+    mac_sdk_official_version,
     "--sdk_path=" + mac_sdk_path,
   ]
 } else {

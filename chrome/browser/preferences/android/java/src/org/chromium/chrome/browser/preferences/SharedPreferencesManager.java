@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -124,7 +125,7 @@ public class SharedPreferencesManager {
         Set<String> values = new HashSet<>(
                 ContextUtils.getAppSharedPreferences().getStringSet(key, Collections.emptySet()));
         values.add(value);
-        writeStringSetUnchecked(key, values);
+        writeStringSetUnchecked(key, values, false);
     }
 
     /**
@@ -135,7 +136,7 @@ public class SharedPreferencesManager {
         Set<String> values = new HashSet<>(
                 ContextUtils.getAppSharedPreferences().getStringSet(key, Collections.emptySet()));
         if (values.remove(value)) {
-            writeStringSetUnchecked(key, values);
+            writeStringSetUnchecked(key, values, false);
         }
     }
 
@@ -144,11 +145,28 @@ public class SharedPreferencesManager {
      */
     public void writeStringSet(String key, Set<String> values) {
         mKeyChecker.checkIsKeyInUse(key);
-        writeStringSetUnchecked(key, values);
+        writeStringSetUnchecked(key, values, /*sync=*/false);
     }
 
-    private void writeStringSetUnchecked(String key, Set<String> values) {
-        ContextUtils.getAppSharedPreferences().edit().putStringSet(key, values).apply();
+    /**
+     * Writes string set to shared preferences.
+     */
+    public boolean writeStringSet(String key, Set<String> values, boolean sync) {
+        mKeyChecker.checkIsKeyInUse(key);
+        return writeStringSetUnchecked(key, values, sync);
+    }
+
+    /**
+     * Writes string set to shared preferences.
+     */
+    private boolean writeStringSetUnchecked(String key, Set<String> values, boolean sync) {
+        Editor editor = ContextUtils.getAppSharedPreferences().edit().putStringSet(key, values);
+        if (sync) {
+            return editor.commit();
+        } else {
+            editor.apply();
+            return true;
+        }
     }
 
     /**
@@ -303,6 +321,18 @@ public class SharedPreferencesManager {
         SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
         ed.remove(key);
         ed.apply();
+    }
+
+    public boolean removeKey(String key, boolean sync) {
+        mKeyChecker.checkIsKeyInUse(key);
+        SharedPreferences.Editor ed = ContextUtils.getAppSharedPreferences().edit();
+        ed.remove(key);
+        if (sync) {
+            return ed.commit();
+        } else {
+            ed.apply();
+            return true;
+        }
     }
 
     /**

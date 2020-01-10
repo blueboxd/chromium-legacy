@@ -7,7 +7,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/media/router/providers/cast/activity_record.h"
+#include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "components/cast_channel/enum_table.h"
 
@@ -60,7 +60,7 @@ base::Optional<gfx::Size> GetValidSize(const base::Value* value) {
 }  // namespace
 
 CastMediaController::CastMediaController(
-    ActivityRecord* activity,
+    CastActivityRecord* activity,
     mojo::PendingReceiver<mojom::MediaController> receiver,
     mojo::PendingRemote<mojom::MediaStatusObserver> observer)
     : sender_id_("sender-" + base::NumberToString(base::RandUint64())),

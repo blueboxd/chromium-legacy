@@ -599,7 +599,6 @@ source_set("vr_test_support") {
 
   public_deps = [
     ":vr_common",
-    ":vr_test_pak",
     ":vr_ui",
     "//base/test:test_support",
     "//cc:test_support",
@@ -620,8 +619,8 @@ source_set("vr_test_support") {
     # doesn't propagate to individual test executable targets.
   ]
 
-  data = [
-    "$root_out_dir/vr_test.pak",
+  data_deps = [
+    ":vr_test_pak",
   ]
 }
 

@@ -4365,7 +4365,7 @@ bool Element::ActivateDisplayLockIfNeeded(DisplayLockActivationReason reason) {
     if (auto* context = ancestor_element->GetDisplayLockContext()) {
       // If any of the ancestors is not activatable for the given reason, we
       // can't activate.
-      if (!context->IsActivatable(reason))
+      if (context->IsLocked() && !context->IsActivatable(reason))
         return false;
       activatable_targets.push_back(std::make_pair(
           ancestor_element, &ancestor.GetTreeScope().Retarget(*this)));
@@ -4406,7 +4406,7 @@ bool Element::DisplayLockPreventsActivation(
     if (!current_element)
       continue;
     if (auto* context = current_element->GetDisplayLockContext()) {
-      if (!context->IsActivatable(reason))
+      if (context->IsLocked() && !context->IsActivatable(reason))
         return true;
     }
   }

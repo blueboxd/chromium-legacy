@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_visibility_state.h"
@@ -81,6 +82,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns the RenderFrameHost given its ID and the ID of its render process.
   // Returns nullptr if the IDs do not correspond to a live RenderFrameHost.
+  static RenderFrameHost* FromID(GlobalFrameRoutingId id);
   static RenderFrameHost* FromID(int render_process_id, int render_frame_id);
 
   // Globally allows for injecting JavaScript into the main world. This feature

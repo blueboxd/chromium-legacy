@@ -302,7 +302,7 @@ class NotificationPlatformBridgeLinuxImpl
   void Init() {
     product_logo_png_bytes_ =
         gfx::Image(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-                       IDR_PRODUCT_LOGO_256))
+                       IDR_PRODUCT_LOGO_64))
             .As1xPNGBytes();
     task_runner_->PostTask(
         FROM_HERE,

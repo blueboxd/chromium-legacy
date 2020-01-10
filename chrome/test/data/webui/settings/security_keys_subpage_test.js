@@ -912,7 +912,7 @@ suite('SecurityKeysBioEnrollment', function() {
         test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
     dialog.$.cancelButton.click();
     await browserProxy.whenCalled('cancelEnrollment');
-    enrollResolver.resolve({code: Ctap2Status.ERR_KEEPALIVE_CANCEL});
+    enrollResolver.resolve({code: settings.Ctap2Status.ERR_KEEPALIVE_CANCEL});
     await browserProxy.whenCalled('enumerateEnrollments');
 
     await uiReady;

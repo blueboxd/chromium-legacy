@@ -1674,23 +1674,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
          ![tabModel browserState]->IsOffTheRecord();
 }
 
-#pragma mark - TabSwitching implementation.
-
-- (BOOL)openNewTabFromTabSwitcher {
-  if (!_tabSwitcher)
-    return NO;
-
-  UrlLoadParams urlLoadParams =
-      UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
-  urlLoadParams.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
-
-  Browser* mainBrowser = self.interfaceProvider.mainInterface.browser;
-  [_tabSwitcher dismissWithNewTabAnimationToBrowser:mainBrowser
-                                  withUrlLoadParams:urlLoadParams
-                                            atIndex:self.mainTabModel.count];
-  return YES;
-}
-
 #pragma mark - TabSwitcherDelegate helper methods
 
 - (void)beginDismissingTabSwitcherWithCurrentModel:(TabModel*)tabModel

@@ -457,7 +457,7 @@ void Dispatcher::WillEvaluateServiceWorkerOnWorkerThread(
     std::unique_ptr<IPCMessageSender> ipc_sender =
         IPCMessageSender::CreateWorkerThreadIPCMessageSender(
             worker_dispatcher, service_worker_version_id);
-    int worker_activation_sequence =
+    ActivationSequence worker_activation_sequence =
         *RendererExtensionRegistry::Get()->GetWorkerActivationSequence(
             extension->id());
     worker_dispatcher->AddWorkerData(

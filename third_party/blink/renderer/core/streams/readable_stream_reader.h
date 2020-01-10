@@ -41,11 +41,11 @@ class CORE_EXPORT ReadableStreamReader : public ScriptWrappable {
   ScriptPromise closed(ScriptState*) const;
 
   // https://streams.spec.whatwg.org/#default-reader-cancel
-  ScriptPromise cancel(ScriptState*);
-  ScriptPromise cancel(ScriptState*, ScriptValue reason);
+  ScriptPromise cancel(ScriptState*, ExceptionState&);
+  ScriptPromise cancel(ScriptState*, ScriptValue reason, ExceptionState&);
 
   // https://streams.spec.whatwg.org/#default-reader-read
-  ScriptPromise read(ScriptState*);
+  ScriptPromise read(ScriptState*, ExceptionState&);
 
   // https://streams.spec.whatwg.org/#default-reader-release-lock
   void releaseLock(ScriptState*, ExceptionState&);

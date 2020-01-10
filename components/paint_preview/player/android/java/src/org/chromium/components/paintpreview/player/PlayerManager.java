@@ -12,6 +12,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.components.paintpreview.browser.PaintPreviewBaseService;
 import org.chromium.components.paintpreview.player.frame.PlayerFrameCoordinator;
 
 import java.util.HashMap;
@@ -27,9 +28,9 @@ public class PlayerManager {
     private PlayerFrameCoordinator mRootFrameCoordinator;
     private FrameLayout mHostView;
 
-    public PlayerManager(Context context, String url) {
+    public PlayerManager(Context context, PaintPreviewBaseService service, String url) {
         mContext = context;
-        mDelegate = new PlayerCompositorDelegateImpl(url, this::onCompositorReady);
+        mDelegate = new PlayerCompositorDelegateImpl(service, url, this::onCompositorReady);
         mHostView = new FrameLayout(mContext);
     }
 
@@ -55,6 +56,7 @@ public class PlayerManager {
      * This method builds a hierarchy of {@link PaintPreviewFrame}s from primitive variables
      * that originate from native. Detailed explanation of the parameters can be found in
      * {@link PlayerCompositorDelegateImpl#onCompositorReady}.
+     *
      * @return The root {@link PaintPreviewFrame}
      */
     @VisibleForTesting

@@ -562,6 +562,7 @@ public class WebsitePreferenceBridge {
         int getMidiSettingForOrigin(String origin, String embedder, boolean isIncognito);
         int getNfcSettingForOrigin(String origin, String embedder, boolean isIncognito);
         int getNotificationSettingForOrigin(String origin, boolean isIncognito);
+        boolean isNotificationEmbargoedForOrigin(Profile profile, String origin);
         int getProtectedMediaIdentifierSettingForOrigin(
                 String origin, String embedder, boolean isIncognito);
         int getSensorsSettingForOrigin(String origin, String embedder, boolean isIncognito);

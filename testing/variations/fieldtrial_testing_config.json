@@ -1702,6 +1702,36 @@
             ]
         }
     ],
+    "ContentIndexingDownloadHome": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ContentIndexingDownloadHome",
+                    "enable_features": [
+                        "ContentIndexingDownloadHome"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ContentIndexingNTP": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ContentIndexingNTP",
+                    "enable_features": [
+                        "ContentIndexingNTP"
+                    ]
+                }
+            ]
+        }
+    ],
     "ContextMenuSearchWithGoogleLensMultiArm": [
         {
             "platforms": [
@@ -1907,26 +1937,6 @@
                     "name": "Experiment",
                     "enable_features": [
                         "DecodeJpeg420ImagesToYUV"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DecodeWebPToYUV": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Experiment",
-                    "enable_features": [
-                        "DecodeLossyWebPImagesToYUV"
                     ]
                 }
             ]
@@ -5055,6 +5065,26 @@
             ]
         }
     ],
+    "ProfileSyncServiceUsesThreadPool": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20191112",
+                    "enable_features": [
+                        "ProfileSyncServiceUsesThreadPool"
+                    ]
+                }
+            ]
+        }
+    ],
     "ProgressBarAnimationAndroid": [
         {
             "platforms": [
@@ -6098,45 +6128,23 @@
             ]
         }
     ],
-    "SimpleCachePrefetchExperiment2": [
+    "SimpleCacheTrailerPrefetchHint": [
         {
             "platforms": [
-                "android",
-                "chromeos",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "PrefetchTrailerHint0",
-                    "params": {
-                        "FullPrefetchBytes": "0",
-                        "TrailerPrefetchHint": "true"
-                    },
-                    "enable_features": [
-                        "SimpleCachePrefetchExperiment2"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SimpleCacheTrial": [
-        {
-            "platforms": [
+                "windows",
                 "mac",
-                "windows"
+                "chromeos",
+                "linux",
+                "android"
             ],
             "experiments": [
                 {
-                    "name": "ExperimentNoTrailerPrefetchHint4",
+                    "name": "Enabled0",
                     "params": {
-                        "FullPrefetchBytes": "0",
                         "TrailerPrefetchHint": "true"
                     },
                     "enable_features": [
                         "SimpleCachePrefetchExperiment2"
-                    ],
-                    "disable_features": [
-                        "HttpCacheForceBackend"
                     ]
                 }
             ]
@@ -7889,6 +7897,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebViewWakeMetricsService"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WindowsSensorAPIs": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WinrtSensorsImplementation"
                     ]
                 }
             ]

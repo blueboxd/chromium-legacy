@@ -87,6 +87,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // mojom::IndexedDBControl implementation:
   void GetUsage(GetUsageCallback usage_callback) override;
+  void DeleteForOrigin(const url::Origin& origin,
+                       DeleteForOriginCallback callback) override;
 
   IndexedDBFactoryImpl* GetIDBFactory();
 
@@ -99,7 +101,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // IndexedDBContext implementation:
   base::SequencedTaskRunner* IDBTaskRunner() override;
-  void DeleteForOrigin(const url::Origin& origin) override;
   void CopyOriginData(const url::Origin& origin,
                       IndexedDBContext* dest_context) override;
   base::FilePath GetFilePathForTesting(const url::Origin& origin) override;
@@ -131,6 +132,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   // ForceClose takes a value rather than a reference since it may release the
   // owning object.
+  // ForceClose needs to move to async to support multi-thread scopes. See
+  // https://crbug.com/965142.
   void ForceClose(const url::Origin origin, ForceCloseReason reason);
   bool ForceSchemaDowngrade(const url::Origin& origin);
   V2SchemaCorruptionStatus HasV2SchemaCorruption(const url::Origin& origin);

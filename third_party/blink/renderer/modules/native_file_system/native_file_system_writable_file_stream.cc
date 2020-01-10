@@ -62,8 +62,8 @@ ScriptPromise NativeFileSystemWritableFileStream::write(
   if (exception_state.HadException())
     return ScriptPromise();
 
-  ScriptPromise promise =
-      writer->write(script_state, ScriptValue::From(script_state, data));
+  ScriptPromise promise = writer->write(
+      script_state, ScriptValue::From(script_state, data), exception_state);
 
   WritableStreamDefaultWriter::Release(script_state, writer);
   return promise;
@@ -82,8 +82,8 @@ ScriptPromise NativeFileSystemWritableFileStream::truncate(
   options->setType("truncate");
   options->setSize(size);
 
-  ScriptPromise promise =
-      writer->write(script_state, ScriptValue::From(script_state, options));
+  ScriptPromise promise = writer->write(
+      script_state, ScriptValue::From(script_state, options), exception_state);
 
   WritableStreamDefaultWriter::Release(script_state, writer);
   return promise;
@@ -97,7 +97,7 @@ ScriptPromise NativeFileSystemWritableFileStream::close(
   if (exception_state.HadException())
     return ScriptPromise();
 
-  ScriptPromise promise = writer->close(script_state);
+  ScriptPromise promise = writer->close(script_state, exception_state);
 
   WritableStreamDefaultWriter::Release(script_state, writer);
   return promise;
@@ -116,8 +116,8 @@ ScriptPromise NativeFileSystemWritableFileStream::seek(
   options->setType("seek");
   options->setPosition(offset);
 
-  ScriptPromise promise =
-      writer->write(script_state, ScriptValue::From(script_state, options));
+  ScriptPromise promise = writer->write(
+      script_state, ScriptValue::From(script_state, options), exception_state);
 
   WritableStreamDefaultWriter::Release(script_state, writer);
   return promise;

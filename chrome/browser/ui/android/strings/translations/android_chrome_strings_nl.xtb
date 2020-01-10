@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Telefoonnummers</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads verwijderd</translation>
 <translation id="3822502789641063741">Site-opslag wissen?</translation>
+<translation id="3853625385350850937">Schakel NFC in op je apparaat om door te gaan</translation>
 <translation id="3859306556332390985">Vooruit zoeken</translation>
 <translation id="388596076286380598">Krijg artikelen, video's en andere content van sites die je leuk vindt, ook als je offline bent of je een slechte verbinding hebt.</translation>
 <translation id="3894427358181296146">Map toevoegen</translation>
@@ -1049,6 +1050,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8912362522468806198">Google-account</translation>
 <translation id="8920114477895755567">Wachten op gegevens van ouders.</translation>
 <translation id="8922289737868596582">Download pagina's via de knop 'Meer opties' om ze offline te gebruiken</translation>
+<translation id="8926666909099850184">NFC is uitgeschakeld voor dit apparaat. Schakel deze functie in via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Je Chrome-activiteit verwijderen uit Digitaal welzijn?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Openen in een ander venster</translation>

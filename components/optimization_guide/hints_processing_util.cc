@@ -12,6 +12,7 @@
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/store_update_data.h"
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace optimization_guide {
@@ -38,6 +39,8 @@ std::string GetStringNameForOptimizationType(
       return "PerformanceHints";
     case proto::OptimizationType::LITE_PAGE:
       return "LitePage";
+    case proto::OptimizationType::COMPRESS_PUBLIC_IMAGES:
+      return "CompressPublicImages";
   }
   NOTREACHED();
   return std::string();
@@ -89,55 +92,6 @@ std::string HashHostForDictionary(const std::string& host) {
   return base::StringPrintf("%x", base::PersistentHash(host));
 }
 
-bool ProcessHints(google::protobuf::RepeatedPtrField<proto::Hint>* hints,
-                  optimization_guide::StoreUpdateData* update_data) {
-  // If there's no update data, then there's nothing to do.
-  if (!update_data)
-    return false;
-
-  base::flat_set<std::string> seen_host_suffixes;
-
-  bool did_process_hints = false;
-  // Process each hint in the the hint configuration. The hints are mutable
-  // because once processing is completed on each individual hint, it is moved
-  // into the component update data. This eliminates the need to make any
-  // additional copies of the hints.
-  for (auto& hint : *hints) {
-    // We only support host suffixes at the moment. Skip anything else.
-    // One |hint| applies to one host URL suffix.
-    if (hint.key_representation() != proto::HOST_SUFFIX) {
-      continue;
-    }
-
-    const std::string& hint_key = hint.key();
-
-    // Validate configuration keys.
-    DCHECK(!hint_key.empty());
-    if (hint_key.empty()) {
-      continue;
-    }
-
-    auto seen_host_suffixes_iter = seen_host_suffixes.find(hint_key);
-    DCHECK(seen_host_suffixes_iter == seen_host_suffixes.end());
-    if (seen_host_suffixes_iter != seen_host_suffixes.end()) {
-      DLOG(WARNING) << "Received config with duplicate key";
-      continue;
-    }
-    seen_host_suffixes.insert(hint_key);
-
-    if (!hint.page_hints().empty()) {
-      // Now that processing is finished on |hint|, move it into the update
-      // data.
-      // WARNING: Do not use |hint| after this call. Its contents will no
-      // longer be valid.
-      update_data->MoveHintIntoUpdateData(std::move(hint));
-      did_process_hints = true;
-    }
-  }
-
-  return did_process_hints;
-}
-
 net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
     proto::EffectiveConnectionType proto_ect) {
   switch (proto_ect) {
@@ -154,6 +108,20 @@ net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
     case proto::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G:
       return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G;
   }
+}
+
+bool IsValidURLForURLKeyedHint(const GURL& url) {
+  if (!url.has_host())
+    return false;
+  if (net::IsLocalhost(url))
+    return false;
+  if (url.HostIsIPAddress())
+    return false;
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return false;
+  if (url.has_username() || url.has_password())
+    return false;
+  return true;
 }
 
 }  // namespace optimization_guide

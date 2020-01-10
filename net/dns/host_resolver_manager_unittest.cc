@@ -3716,8 +3716,8 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
       base::test::TaskEnvironment::TimeSource time_source =
           base::test::TaskEnvironment::TimeSource::SYSTEM_TIME)
       : HostResolverManagerTest(time_source),
-        notifier_task_runner_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock()})),
+        notifier_task_runner_(
+            base::MakeRefCounted<base::TestMockTimeTaskRunner>()),
         dns_client_(nullptr) {
     auto config_service = std::make_unique<TestDnsConfigService>();
     config_service_ = config_service.get();
@@ -3729,6 +3729,10 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
   void TearDown() override {
     HostResolverManagerTest::TearDown();
     InvalidateDnsConfig();
+
+    // Ensure |notifier_| is fully cleaned up before test shutdown.
+    notifier_.reset();
+    notifier_task_runner_->RunUntilIdle();
   }
 
   // HostResolverManagerTest implementation:
@@ -3922,10 +3926,8 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
         FROM_HERE, base::BindOnce(&TestDnsConfigService::OnConfigRead,
                                   base::Unretained(config_service_), config));
 
-    base::RunLoop run_loop;
-    notifier_task_runner_->PostTask(FROM_HERE,
-                                    base::BindOnce(run_loop.QuitClosure()));
-    run_loop.Run();
+    notifier_task_runner_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void InvalidateDnsConfig() {
@@ -3937,10 +3939,9 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
         FROM_HERE, base::BindOnce(&TestDnsConfigService::InvalidateConfig,
                                   base::Unretained(config_service_)));
 
-    base::RunLoop run_loop;
-    notifier_task_runner_->PostTask(FROM_HERE,
-                                    base::BindOnce(run_loop.QuitClosure()));
-    run_loop.Run();
+    notifier_task_runner_->FastForwardBy(
+        DnsConfigService::kInvalidationTimeout);
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetInitialDnsConfig(const DnsConfig& config) {
@@ -3948,7 +3949,7 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
     ChangeDnsConfig(config);
   }
 
-  scoped_refptr<base::SequencedTaskRunner> notifier_task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> notifier_task_runner_;
   TestDnsConfigService* config_service_;
   std::unique_ptr<SystemDnsConfigChangeNotifier> notifier_;
 
@@ -8417,6 +8418,83 @@ TEST_F(HostResolverManagerDnsTest,
 
   DestroyResolver();
   request->Cancel();
+}
+
+TEST_F(HostResolverManagerDnsTest, DohProbeRequest_BeforeConfig) {
+  InvalidateDnsConfig();
+
+  std::unique_ptr<HostResolverManager::CancellableProbeRequest> request =
+      resolver_->CreateDohProbeRequest(request_context_.get());
+  EXPECT_THAT(request->Start(), IsError(ERR_IO_PENDING));
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+
+  ChangeDnsConfig(CreateValidDnsConfig());
+  EXPECT_TRUE(dns_client_->factory()->doh_probes_running());
+}
+
+TEST_F(HostResolverManagerDnsTest, DohProbeRequest_InvalidateConfig) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  std::unique_ptr<HostResolverManager::CancellableProbeRequest> request =
+      resolver_->CreateDohProbeRequest(request_context_.get());
+  EXPECT_THAT(request->Start(), IsError(ERR_IO_PENDING));
+  ASSERT_TRUE(dns_client_->factory()->doh_probes_running());
+
+  InvalidateDnsConfig();
+
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+}
+
+TEST_F(HostResolverManagerDnsTest, DohProbeRequest_CancelBeforeConfig) {
+  InvalidateDnsConfig();
+
+  std::unique_ptr<HostResolverManager::CancellableProbeRequest> request =
+      resolver_->CreateDohProbeRequest(request_context_.get());
+  EXPECT_THAT(request->Start(), IsError(ERR_IO_PENDING));
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+
+  request->Cancel();
+
+  ChangeDnsConfig(CreateValidDnsConfig());
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+}
+
+TEST_F(HostResolverManagerDnsTest, DohProbeRequest_RestartOnConnectionChange) {
+  DestroyResolver();
+  test::ScopedMockNetworkChangeNotifier notifier;
+  CreateSerialResolver();
+  notifier.mock_network_change_notifier()->SetConnectionType(
+      NetworkChangeNotifier::CONNECTION_NONE);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  std::unique_ptr<HostResolverManager::CancellableProbeRequest> request =
+      resolver_->CreateDohProbeRequest(request_context_.get());
+  EXPECT_THAT(request->Start(), IsError(ERR_IO_PENDING));
+  ASSERT_FALSE(dns_client_->factory()->doh_probes_running());
+
+  notifier.mock_network_change_notifier()->SetConnectionTypeAndNotifyObservers(
+      NetworkChangeNotifier::CONNECTION_WIFI);
+
+  EXPECT_TRUE(dns_client_->factory()->doh_probes_running());
+}
+
+TEST_F(HostResolverManagerDnsTest, DohProbeRequest_CancelOnConnectionLoss) {
+  DestroyResolver();
+  test::ScopedMockNetworkChangeNotifier notifier;
+  CreateSerialResolver();
+  notifier.mock_network_change_notifier()->SetConnectionType(
+      NetworkChangeNotifier::CONNECTION_4G);
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  std::unique_ptr<HostResolverManager::CancellableProbeRequest> request =
+      resolver_->CreateDohProbeRequest(request_context_.get());
+  EXPECT_THAT(request->Start(), IsError(ERR_IO_PENDING));
+  ASSERT_TRUE(dns_client_->factory()->doh_probes_running());
+
+  notifier.mock_network_change_notifier()->SetConnectionTypeAndNotifyObservers(
+      NetworkChangeNotifier::CONNECTION_NONE);
+
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
 }
 
 TEST_F(HostResolverManagerDnsTest, EsniQuery) {

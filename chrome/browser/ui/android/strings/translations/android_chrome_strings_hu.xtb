@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Telefonszámok</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> letöltés törölve</translation>
 <translation id="3822502789641063741">Törli a webhely tárhelyét?</translation>
+<translation id="3853625385350850937">A folytatáshoz kapcsolja be az NFC-t az eszközén</translation>
 <translation id="3859306556332390985">Ugrás előre</translation>
 <translation id="388596076286380598">Hozzájuthat cikkekhez, videókhoz és más tartalmakhoz a kedvenc webhelyeiről – még akkor is, ha offline állapotban van, vagy ha a kapcsolat rossz minőségű.</translation>
 <translation id="3894427358181296146">Mappa hozzáadása</translation>
@@ -1049,6 +1050,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8912362522468806198">Google Fiókjába</translation>
 <translation id="8920114477895755567">Várakozás a szülői adatokra.</translation>
 <translation id="8922289737868596582">A További lehetőségek gomb segítségével letölthet oldalakat offline használatra</translation>
+<translation id="8926666909099850184">Az NFC ki van kapcsolva ezen az eszközön. Kapcsolja be az <ph name="BEGIN_LINK" />Android Beállítások alkalmazásában<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Eltávolítja Chrome-beli tevékenységét a digitális jóllét funkcióból?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Megnyitás másik ablakban</translation>

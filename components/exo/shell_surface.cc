@@ -639,7 +639,7 @@ void ShellSurface::AttemptToStartDrag(int component) {
   };
 
   if (gesture_target) {
-    gfx::Point location = toplevel_handler->event_location_in_gesture_target();
+    gfx::PointF location = toplevel_handler->event_location_in_gesture_target();
     aura::Window::ConvertPointToTarget(
         gesture_target, widget_->GetNativeWindow()->GetRootWindow(), &location);
     toplevel_handler->AttemptToStartDrag(
@@ -650,7 +650,7 @@ void ShellSurface::AttemptToStartDrag(int component) {
     ::wm::ConvertPointFromScreen(widget_->GetNativeWindow()->GetRootWindow(),
                                  &location);
     toplevel_handler->AttemptToStartDrag(
-        target, location, component,
+        target, gfx::PointF(location), component,
         base::BindOnce(end_drag, base::Unretained(this)));
   }
   // Notify client that resizing state has changed.

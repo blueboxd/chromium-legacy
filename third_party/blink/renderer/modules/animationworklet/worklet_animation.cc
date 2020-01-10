@@ -129,7 +129,6 @@ void StartEffectOnCompositor(CompositorAnimation* animation,
 
   int group = 0;
   base::Optional<double> start_time = base::nullopt;
-  double time_offset = 0;
 
   // Normally the playback rate of a blink animation gets translated into
   // equivalent playback rate of cc::KeyframeModels.
@@ -143,7 +142,7 @@ void StartEffectOnCompositor(CompositorAnimation* animation,
   // it on animation. https://crbug.com/925373.
   double playback_rate = 1;
 
-  effect->StartAnimationOnCompositor(group, start_time, time_offset,
+  effect->StartAnimationOnCompositor(group, start_time, base::TimeDelta(),
                                      playback_rate, animation);
 }
 

@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Números de telefone</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> transferências eliminadas</translation>
 <translation id="3822502789641063741">Limpar armazenamento do site?</translation>
+<translation id="3853625385350850937">Para continuar, ative o NFC no dispositivo.</translation>
 <translation id="3859306556332390985">Procurar para a frente</translation>
 <translation id="388596076286380598">Obtenha artigos, vídeos e outros conteúdos dos sites de que gosta, mesmo se estiver offline ou se a ligação for fraca.</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
@@ -1049,6 +1050,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="8912362522468806198">Conta Google</translation>
 <translation id="8920114477895755567">A aguardar os detalhes dos pais.</translation>
 <translation id="8922289737868596582">Transfira páginas através do botão Mais opções para as utilizar offline.</translation>
+<translation id="8926666909099850184">O NFC está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Pretende remover a sua atividade do Chrome do Bem-estar digital?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Abrir noutra janela</translation>

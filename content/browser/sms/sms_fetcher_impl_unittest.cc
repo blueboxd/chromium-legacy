@@ -200,4 +200,18 @@ TEST_F(SmsFetcherImplTest, TwoOriginsTwoSubscribers) {
   provider()->NotifyReceive(origin1, "123", "foo");
 }
 
+TEST_F(SmsFetcherImplTest, SubscribeIsIdempotent) {
+  StrictMock<MockSubscriber> subscriber;
+
+  SmsFetcherImpl fetcher(nullptr, base::WrapUnique(provider()));
+  fetcher.Subscribe(kTestOrigin, &subscriber);
+  fetcher.Subscribe(kTestOrigin, &subscriber);
+
+  EXPECT_TRUE(fetcher.HasSubscribers());
+
+  fetcher.Unsubscribe(kTestOrigin, &subscriber);
+
+  EXPECT_FALSE(fetcher.HasSubscribers());
+}
+
 }  // namespace content

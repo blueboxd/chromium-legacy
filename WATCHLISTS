@@ -1217,6 +1217,19 @@
     'media_gpu': {
       'filepath': 'media/gpu/',
     },
+    'media_gpu_cros': {
+      'filepath': 'media/gpu/chromeos'\
+                  '|media/gpu/vaapi'\
+                  '|media/gpu/v4l2'\
+                  '|media/gpu/.*\.(cc|h)$'\
+                  '|media/mojo/(clients|mojom|test|services)/.*accelerator.*'
+    },
+    'media_gpu_vaapi': {
+      'filepath': 'media/gpu/vaapi',
+    },
+    'media_gpu_win': {
+      'filepath': 'media/gpu/windows/'
+    },
     'media_mojo': {
       'filepath': 'media/mojo/'
     },
@@ -1245,9 +1258,6 @@
                   '|chrome/test/data/webui/media_router/' \
                   '|chrome/test/media_router/' \
                   '|chrome/utility/media_router/'
-    },
-    'media_win': {
-      'filepath': 'media/gpu/windows/'
     },
     'message_loop': {
       'filepath': 'base/message_'
@@ -1856,9 +1866,6 @@
     },
     'usb': {
       'filepath': '/usb/',
-    },
-    'vaapi': {
-      'filepath': 'media/gpu/vaapi',
     },
     'version_assembly': {
       'filepath': 'chrome/app/version_assembly',
@@ -2519,6 +2526,9 @@
     'media_galleries': ['thestig@chromium.org',
                         'tommycli@chromium.org'],
     'media_gpu': ['hiroh+watch@chromium.org'],
+    'media_gpu_cros': ['media-cros-reviews@chromium.org'],
+    'media_gpu_vaapi': ['vaapi-reviews@chromium.org'],
+    'media_gpu_win': ['media-win-reviews@chromium.org'],
     'media_mojo': ['alokp+watch@chromium.org',
                    'xhwang+watch@chromium.org'],
     'media_recorder': ['emircan+watch+mediarecorder@chromium.org',
@@ -2529,7 +2539,6 @@
     'media_router': ['mfoltz+watch@chromium.org',
                      'pthatcher+watch@chromium.org',
                      'takumif+watch@chromium.org'],
-    'media_win': ['media-win-reviews@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['asvitkine+watch@chromium.org'],
     'metrics_perf': ['cwp-reviews+chromium@google.com'],
@@ -2760,7 +2769,6 @@
     'unified_consent': ['wfh+watch@chromuium.org'],
     'usb': ['mattreynolds+watch@chromium.org',
             'odejesush+watch@chromium.org'],
-    'vaapi': ['vaapi-reviews@chromium.org'],
     'version_assembly': ['caitkp+watch@chromium.org',
                          'gab+watch@chromium.org'],
     'video': ['posciak+watch@chromium.org'],

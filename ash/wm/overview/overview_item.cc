@@ -251,9 +251,6 @@ void OverviewItem::Shutdown() {
 
 void OverviewItem::PrepareForOverview() {
   transform_window_.PrepareForOverview();
-  aura::Window* widget_window = item_widget_->GetNativeWindow();
-  widget_window->parent()->StackChildBelow(widget_window, GetWindow());
-
   prepared_for_overview_ = true;
 }
 

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
@@ -30,6 +31,10 @@ class HistoryTabHelperTest : public PlatformTest {
  public:
   void SetUp() override {
     TestChromeBrowserState::Builder test_cbs_builder;
+
+    ASSERT_TRUE(state_dir_.CreateUniqueTempDir());
+    test_cbs_builder.SetPath(state_dir_.GetPath());
+
     chrome_browser_state_ = test_cbs_builder.Build();
     ASSERT_TRUE(chrome_browser_state_->CreateHistoryService(true));
 
@@ -66,6 +71,11 @@ class HistoryTabHelperTest : public PlatformTest {
   }
 
  protected:
+  // A state directory that outlives |task_environment_| is needed because
+  // CreateHistoryService/CreateBookmarkModel use the directory to host
+  // databases. See https://crbug.com/546640 for more details.
+  base::ScopedTempDir state_dir_;
+
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   web::TestWebState web_state_;

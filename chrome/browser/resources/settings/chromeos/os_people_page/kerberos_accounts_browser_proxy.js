@@ -7,35 +7,34 @@
  * the "People" section of Settings, to interact with the browser. Chrome OS
  * only.
  */
-cr.exportPath('settings');
-
-/**
- * Information for a Chrome OS Kerberos account.
- * @typedef {{
- *   principalName: string,
- *   config: string,
- *   isSignedIn: boolean,
- *   isActive: boolean,
- *   isManaged: boolean,
- *   passwordWasRemembered: boolean,
- *   pic: string,
- *   validForDuration: string
- * }}
- */
-settings.KerberosAccount;
-
-/**
- * @typedef {{
- *   error: !settings.KerberosErrorType,
- *   errorInfo: !{
- *     code: !settings.KerberosConfigErrorCode,
- *     lineIndex: (number|undefined)
- *   }
- * }}
- */
-settings.ValidateKerberosConfigResult;
 
 cr.define('settings', function() {
+  /**
+   * Information for a Chrome OS Kerberos account.
+   * @typedef {{
+   *   principalName: string,
+   *   config: string,
+   *   isSignedIn: boolean,
+   *   isActive: boolean,
+   *   isManaged: boolean,
+   *   passwordWasRemembered: boolean,
+   *   pic: string,
+   *   validForDuration: string
+   * }}
+   */
+  let KerberosAccount;
+
+  /**
+   * @typedef {{
+   *   error: !settings.KerberosErrorType,
+   *   errorInfo: !{
+   *     code: !settings.KerberosConfigErrorCode,
+   *     lineIndex: (number|undefined)
+   *   }
+   * }}
+   */
+  let ValidateKerberosConfigResult;
+
   /**
    *  @enum {number}
    *  These values must be kept in sync with the ErrorType enum in
@@ -163,9 +162,11 @@ cr.define('settings', function() {
   cr.addSingletonGetter(KerberosAccountsBrowserProxyImpl);
 
   return {
-    KerberosErrorType: KerberosErrorType,
-    KerberosConfigErrorCode: KerberosConfigErrorCode,
-    KerberosAccountsBrowserProxy: KerberosAccountsBrowserProxy,
-    KerberosAccountsBrowserProxyImpl: KerberosAccountsBrowserProxyImpl,
+    KerberosAccount,
+    KerberosErrorType,
+    KerberosConfigErrorCode,
+    KerberosAccountsBrowserProxy,
+    KerberosAccountsBrowserProxyImpl,
+    ValidateKerberosConfigResult,
   };
 });

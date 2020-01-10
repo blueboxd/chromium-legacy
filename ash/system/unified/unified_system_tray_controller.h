@@ -117,6 +117,9 @@ class ASH_EXPORT UnifiedSystemTrayController
   // notifications area.
   void ResetToCollapsedIfRequired();
 
+  // Collapse the tray without animating.
+  void CollapseWithoutAnimating();
+
   // views::AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;

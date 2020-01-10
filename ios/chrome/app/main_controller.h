@@ -11,7 +11,6 @@
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
-#import "ios/chrome/app/application_delegate/tab_switching.h"
 #import "ios/chrome/app/main_controller_guts.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
@@ -32,7 +31,6 @@
                                       MainControllerGuts,
                                       StartupInformation,
                                       TabOpening,
-                                      TabSwitching,
                                       BrowsingDataCommands>
 
 // The application window.

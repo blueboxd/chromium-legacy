@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.settings.website;
 
 import static org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge.SITE_WILDCARD;
 
+import android.content.Intent;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -28,7 +29,10 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
@@ -36,6 +40,7 @@ import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.LocationSettings;
 import org.chromium.chrome.browser.settings.NfcSystemLevelSetting;
 import org.chromium.chrome.browser.settings.SettingsActivity;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -45,6 +50,7 @@ import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.ServerCertificate;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,10 +62,8 @@ import java.util.concurrent.Callable;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-@CommandLineFlags.Add({
-        ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1",
-})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
+        ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1", "ignore-certificate-errors"})
 public class SiteSettingsTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
@@ -70,7 +74,8 @@ public class SiteSettingsTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
+                InstrumentationRegistry.getContext(), ServerCertificate.CERT_OK);
     }
 
     @After
@@ -878,5 +883,46 @@ public class SiteSettingsTest {
     private int getTabCount() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testEmbargoedNotificationSiteSettings() throws Exception {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+        final String url = mTestServer.getURLWithHostName(
+                "example.com", "/chrome/test/data/notifications/notification_tester.html");
+
+        // Ignore notification request 4 times to enter embargo. 5th one ensures that notifications
+        // are blocked by actually causing a deny-by-embargo.
+        for (int i = 0; i < 5; i++) {
+            mActivityTestRule.loadUrl(url);
+            mActivityTestRule.runJavaScriptCodeInCurrentTab("requestPermissionAndRespond()");
+        }
+
+        Intent intent = SettingsLauncher.createIntentForSettingsPage(
+                InstrumentationRegistry.getTargetContext(), SingleWebsiteSettings.class.getName(),
+                SingleWebsiteSettings.createFragmentArgsForSite(url));
+        final SettingsActivity settingsActivity =
+                (SettingsActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
+                        intent);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            final SingleWebsiteSettings websitePreferences =
+                    (SingleWebsiteSettings) settingsActivity.getMainFragment();
+
+            final Preference notificationPreference =
+                    websitePreferences.findPreference("push_notifications_list");
+
+            websitePreferences.launchOsChannelSettingsFromPreference(notificationPreference);
+
+            // Ensure that a proper separate channel has indeed been created to allow the user to
+            // alter the setting.
+            Assert.assertNotEquals(ChannelDefinitions.ChannelId.SITES,
+                    SiteChannelsManager.getInstance().getChannelIdForOrigin(
+                            Origin.createOrThrow(url).toString()));
+        });
+
+        settingsActivity.finish();
     }
 }

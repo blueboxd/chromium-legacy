@@ -393,7 +393,7 @@ void DisplayLockContext::DidPaint(DisplayLockLifecycleTarget) {
 
 bool DisplayLockContext::IsActivatable(
     DisplayLockActivationReason reason) const {
-  return !IsLocked() || (activatable_mask_ & static_cast<uint16_t>(reason));
+  return activatable_mask_ & static_cast<uint16_t>(reason);
 }
 
 void DisplayLockContext::FireActivationEvent(Element* activated_element) {
@@ -757,13 +757,13 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
       document_->View()->RegisterForLifecycleNotifications(this);
   }
 
-  if (!IsActivatable(DisplayLockActivationReason::kAny)) {
-    old_document.RemoveActivationBlockingDisplayLock();
-    document_->AddActivationBlockingDisplayLock();
-  }
   if (IsLocked()) {
     old_document.RemoveLockedDisplayLock();
     document_->AddLockedDisplayLock();
+    if (!IsActivatable(DisplayLockActivationReason::kAny)) {
+      old_document.RemoveActivationBlockingDisplayLock();
+      document_->AddActivationBlockingDisplayLock();
+    }
   }
 }
 
@@ -980,13 +980,16 @@ operator=(State new_state) {
   if (!context_->document_)
     return *this;
 
-  UpdateActivationBlockingCount(
-      was_activatable,
-      context_->IsActivatable(DisplayLockActivationReason::kAny));
+  bool is_activatable =
+      context_->IsActivatable(DisplayLockActivationReason::kAny);
+  bool is_locked = context_->IsLocked();
+
+  UpdateActivationBlockingCount(!was_locked || was_activatable,
+                                !is_locked || is_activatable);
 
   // Adjust the total number of locked display locks.
   auto& document = *context_->document_;
-  if (context_->IsLocked() != was_locked) {
+  if (is_locked != was_locked) {
     if (was_locked)
       document.RemoveLockedDisplayLock();
     else

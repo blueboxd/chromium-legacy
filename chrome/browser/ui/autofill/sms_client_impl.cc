@@ -19,7 +19,6 @@ SmsClientImpl::~SmsClientImpl() {
 }
 
 void SmsClientImpl::Subscribe() {
-  // TODO(goto): Deal with corner cases like multiple forms in the DOM.
   fetcher_->Subscribe(origin_, this);
 }
 

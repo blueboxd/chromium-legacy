@@ -412,16 +412,16 @@ std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     CompositorDependencies* compositor_deps,
     blink::mojom::DisplayMode display_mode,
     bool is_undead,
-    bool never_visible) {
+    bool never_composited) {
   if (g_create_render_widget_for_frame) {
     return g_create_render_widget_for_frame(
         widget_routing_id, compositor_deps, display_mode, is_undead,
-        never_visible, mojo::NullReceiver());
+        never_composited, mojo::NullReceiver());
   }
 
   return std::make_unique<RenderWidget>(
       widget_routing_id, compositor_deps, display_mode, is_undead,
-      /*hidden=*/true, never_visible, mojo::NullReceiver());
+      /*hidden=*/true, never_composited, mojo::NullReceiver());
 }
 
 RenderWidget* RenderWidget::CreateForPopup(
@@ -429,10 +429,10 @@ RenderWidget* RenderWidget::CreateForPopup(
     CompositorDependencies* compositor_deps,
     blink::mojom::DisplayMode display_mode,
     bool hidden,
-    bool never_visible,
+    bool never_composited,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {
   return new RenderWidget(widget_routing_id, compositor_deps, display_mode,
-                          /*is_undead=*/false, hidden, never_visible,
+                          /*is_undead=*/false, hidden, never_composited,
                           std::move(widget_receiver));
 }
 
@@ -441,12 +441,12 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
                            blink::mojom::DisplayMode display_mode,
                            bool is_undead,
                            bool hidden,
-                           bool never_visible,
+                           bool never_composited,
                            mojo::PendingReceiver<mojom::Widget> widget_receiver)
     : routing_id_(widget_routing_id),
       compositor_deps_(compositor_deps),
       is_hidden_(hidden),
-      compositor_never_visible_(never_visible),
+      never_composited_(never_composited),
       display_mode_(display_mode),
       is_undead_(is_undead),
       next_previous_flags_(kInvalidNextPreviousFlagsValue),
@@ -454,6 +454,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       widget_receiver_(this, std::move(widget_receiver)) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(RenderThread::IsMainThread());
+  DCHECK(compositor_deps_);
 
   // In tests there may not be a RenderThreadImpl.
   if (RenderThreadImpl::current()) {
@@ -1287,7 +1288,7 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
     LayerTreeFrameSinkCallback callback) {
   // For widgets that are never visible, we don't start the compositor, so we
   // never get a request for a cc::LayerTreeFrameSink.
-  DCHECK(!compositor_never_visible_);
+  DCHECK(!never_composited_);
   // Undead RenderWidgets should not be doing any compositing. However note that
   // widgets for provisional frames do start their compositor.
   DCHECK(!is_undead_);
@@ -1955,7 +1956,7 @@ void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
 
   input_event_queue_ = base::MakeRefCounted<MainThreadEventQueue>(
       this, widget_scheduler_->InputTaskRunner(), main_thread_scheduler,
-      /*allow_raf_aligned_input=*/!compositor_never_visible_);
+      /*allow_raf_aligned_input=*/!never_composited_);
 
   // We only use an external input handler for frame RenderWidgets because only
   // frames use the compositor for input handling. Other kinds of RenderWidgets
@@ -1972,7 +1973,7 @@ void RenderWidget::InitCompositing(const ScreenInfo& screen_info) {
 }
 
 void RenderWidget::StartStopCompositor() {
-  if (compositor_never_visible_)
+  if (never_composited_)
     return;
 
   if (is_undead_) {
@@ -3085,6 +3086,8 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   // offsets internally: https://crbug.com/414283.
   settings.commit_fractional_scroll_deltas =
       blink::WebRuntimeFeatures::IsFractionalScrollOffsetsEnabled();
+
+  settings.enable_smooth_scroll = compositor_deps->IsScrollAnimatorEnabled();
 
   // The means the renderer compositor has 2 possible modes:
   // - Threaded compositing with a scheduler.

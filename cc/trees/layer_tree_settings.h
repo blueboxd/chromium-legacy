@@ -136,6 +136,13 @@ class CC_EXPORT LayerTreeSettings {
   // on the compositor thread.
   bool compositor_threaded_scrollbar_scrolling = false;
 
+  // Determines whether animated scrolling is supported. If true, and the
+  // incoming gesture scroll is of a type that would normally be animated (e.g.
+  // coarse granularity scrolls like those coming from an external mouse wheel),
+  // the scroll will be performed smoothly using the animation system rather
+  // than instantly.
+  bool enable_smooth_scroll = false;
+
   // Whether layer tree commits should be made directly to the active
   // tree on the impl thread. If |false| LayerTreeHostImpl creates a
   // pending layer tree and produces that as the 'sync tree' with

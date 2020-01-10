@@ -522,6 +522,12 @@ void RenderWidgetHostImpl::UpdatePriority() {
     process_->UpdateClientPriority(this);
 }
 
+void RenderWidgetHostImpl::DidDestroyRenderWidget() {
+  if (owner_delegate_)
+    DCHECK(!owner_delegate_->IsMainFrameActive());
+  frame_token_message_queue_->Reset();
+}
+
 void RenderWidgetHostImpl::Init() {
   DCHECK(process_->IsInitializedAndNotDead());
 
@@ -859,8 +865,8 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
     bool scroll_focused_node_into_view) {
   // If the RenderViewHost is inactive, then there is no RenderWidget that can
   // receive visual properties yet, even though we are setting them on the
-  // browser side. Wait until the RenderWidget is not undead before sending the
-  // visual properties.
+  // browser side. Wait until there is a local main frame with a RenderWidget
+  // to receive these before sending the visual properties.
   //
   // When the RenderViewHost becomes active, a SynchronizeVisualProperties()
   // call does not explicitly get made. That is because RenderWidgets for frames
@@ -2925,6 +2931,13 @@ void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frames) {
 }
 
 void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {
+  // In this case the RenderWidgetHostImpl is still here because it's the top
+  // level RenderWidgetHostImpl, but the renderer's RenderWidget no longer
+  // exists and this would clobber state that was reset in
+  // DidDestroyRenderWidget() with data from the destroyed RenderWidget.
+  if (owner_delegate_ && !owner_delegate_->IsMainFrameActive())
+    return;
+
   frame_token_message_queue_->DidProcessFrame(frame_token);
 }
 

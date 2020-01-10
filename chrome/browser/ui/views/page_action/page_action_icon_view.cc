@@ -219,8 +219,10 @@ void PageActionIconView::UpdateIconImage() {
                            ? theme->GetSystemColor(
                                  ui::NativeTheme::kColorId_ProminentButtonColor)
                            : icon_color_;
-  SetImage(gfx::CreateVectorIconWithBadge(GetVectorIcon(), icon_size_,
-                                          icon_color, GetVectorIconBadge()));
+  gfx::ImageSkia image = gfx::CreateVectorIconWithBadge(
+      GetVectorIcon(), icon_size_, icon_color, GetVectorIconBadge());
+  if (!image.isNull())
+    SetImage(image);
 }
 
 void PageActionIconView::InstallLoadingIndicator() {

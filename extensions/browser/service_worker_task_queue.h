@@ -16,6 +16,7 @@
 #include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/browser/service_worker/worker_id.h"
+#include "extensions/common/activation_sequence.h"
 #include "extensions/common/extension_id.h"
 #include "url/gurl.h"
 
@@ -72,12 +73,6 @@ class Extension;
 class ServiceWorkerTaskQueue : public KeyedService,
                                public LazyContextTaskQueue {
  public:
-  // Unique identifier for an extension's activation->deactivation span.
-  // TODO(lazyboy): Move this under extensions/common/ for consistency, so that
-  // renderer process can use this instead of using "int" directly. We'd also
-  // want StrongAlias for this.
-  using ActivationSequence = int;
-
   explicit ServiceWorkerTaskQueue(content::BrowserContext* browser_context);
   ~ServiceWorkerTaskQueue() override;
 
@@ -108,14 +103,14 @@ class ServiceWorkerTaskQueue : public KeyedService,
   // has completed executing.
   void DidStartServiceWorkerContext(int render_process_id,
                                     const ExtensionId& extension_id,
-                                    int activation_sequence,
+                                    ActivationSequence activation_sequence,
                                     const GURL& service_worker_scope,
                                     int64_t service_worker_version_id,
                                     int thread_id);
   // Called once an extension Service Worker was destroyed.
   void DidStopServiceWorkerContext(int render_process_id,
                                    const ExtensionId& extension_id,
-                                   int activation_sequence,
+                                   ActivationSequence activation_sequence,
                                    const GURL& service_worker_scope,
                                    int64_t service_worker_version_id,
                                    int thread_id);
@@ -202,7 +197,7 @@ class ServiceWorkerTaskQueue : public KeyedService,
 
   WorkerState* GetWorkerState(const SequencedContextId& context_id);
 
-  ActivationSequence next_activation_sequence_ = 0;
+  int next_activation_sequence_ = 0;
 
   // The state of worker of each activated extension.
   std::map<SequencedContextId, WorkerState> worker_state_map_;

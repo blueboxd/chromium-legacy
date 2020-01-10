@@ -46,6 +46,7 @@
 <translation id="1460620680449458626">အသံ တိတ်ထားသည်။</translation>
 <translation id="1467432559032391204">ဘယ်</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1508507608940204251">ဖွင့်ရန်</translation>
 <translation id="1516740043221086139">'မနှောင့်ယှက်ရ' ဖွင့်ထားသည်။</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{အကြောင်းကြားချက်ဆက်တင်များကို ပြရန်။ အက်ပ်တစ်ခုအတွက် အကြောင်းကြားချက်များကို ပိတ်ထားသည်}other{အကြောင်းကြားချက်ဆက်တင်များကို ပြရန်။ အက်ပ် # ခုအတွက် အကြောင်းကြားချက်များကို ပိတ်ထားသည်}}</translation>
 <translation id="1525508553941733066">ပယ်ရန်</translation>
@@ -70,6 +71,7 @@
 <translation id="1836215606488044471">Assistant (ဖွင့်နေပါသည်...)</translation>
 <translation id="1838895407229022812">'ညအလင်းရောင်' ပိတ်ထားသည်။</translation>
 <translation id="1850504506766569011">ကြိုးမဲ့ ပိတ်ထားသည်။</translation>
+<translation id="1859889070386344428">ပိတ်ရန်</translation>
 <translation id="1864454756846565995">USB-C ကိရိယာ (နောက်ဘက် ပို့တ်)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> သို့ ပုံတူပွားနေ</translation>
 <translation id="1885785240814121742">လက်ဗွေရာသုံး၍ လော့ခ်ဖွင့်ခြင်း</translation>
@@ -122,6 +124,7 @@
 <translation id="2501920221385095727">Sticky keys</translation>
 <translation id="2509468283778169019">စာလုံးကြီးရန် သော့ခလုတ် ပွင့်နေ</translation>
 <translation id="2517825809102302935">ယနေ့ညအတွက် ပိတ်ရန်</translation>
+<translation id="2519465031217098801">ဖွင့်ရန်</translation>
 <translation id="2542089167727451762">သင့်ပရိုဖိုင်ပုံကို တို့ရန်</translation>
 <translation id="255671100581129685">အများသုံးစက်ရှင်တွင် Google Assistant အသုံးပြု၍ မရပါ။</translation>
 <translation id="256712445991462162">နေရာချထားသည့် မှန်ဘီလူး</translation>
@@ -225,6 +228,7 @@
 <translation id="3901991538546252627"><ph name="NAME" />သို့ ချိတ်ဆက်​ေနေ</translation>
 <translation id="394485226368336402">အသံဆက်တင်များ</translation>
 <translation id="3962859241508114581">ယခင်တစ်ပုဒ်</translation>
+<translation id="3965097803111112935">ပိတ်ရန်</translation>
 <translation id="397105322502079400">တွက်ချက်နေ...</translation>
 <translation id="3977512764614765090">ဘက်ထရီသည် <ph name="PERCENTAGE" />% ရှိပြီး အားသွင်းနေပါသည်။</translation>
 <translation id="3995138139523574647">USB-C ကိရိယာ (ညာဘက် နောက်ပိုင်း ပို့တ်)</translation>
@@ -307,6 +311,7 @@
 <translation id="5207949376430453814">စာရိုက်ထည့်ရန်အကွက်ကို မြင်သာထင်သာဖြစ်အောင်ပြုလုပ်ရန်</translation>
 <translation id="5222676887888702881">ထွက်ခွာရန်</translation>
 <translation id="523505283826916779">ရယူသုံးနိုင်မှု ဆက်တင်များ</translation>
+<translation id="5250225880026334010">ပိတ်ရန်</translation>
 <translation id="5260676007519551770">စာရေးခုံ ၄</translation>
 <translation id="5283198616748585639">၁ မိနစ် တိုးရန်</translation>
 <translation id="5286194356314741248">ရှာဖွေနေသည်</translation>
@@ -408,6 +413,7 @@
 <translation id="6650933572246256093">ဘလူးတုသ် ကိရိယာ"<ph name="DEVICE_NAME" />"က ချိတ်တွဲရန် ခွင့်ပြုချက် ရယူလိုသည်။ ကျေးဇူးပြုပြီး ထိုကိရိယာ ထဲသို့ ဒီခွင့်ပြုသော့ ကို ထည့်ပေးပါ: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">စကားဝှက်</translation>
 <translation id="6665545700722362599">တည်နေရာ ဝန်ဆောင်မှုများ၊ စက်ပစ္စည်း၏ မိုက်ခရိုဖုန်း၊ ကင်မရာ သို့မဟုတ် အခြားဝန်ဆောင်မှုများကို အသုံးပြုရန် ဝဘ်ဆိုက်၊ အက်ပ်နှင့် နောက်ဆက်တွဲများကို ခွင့်ပြုချက်ပေးနိုင်သည်</translation>
+<translation id="6669268301501499730">ဖွင့်ရန်</translation>
 <translation id="6670153871843998651">စာရေးခုံ ၃</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">သင်၏ ဖြုတ်လွယ်တပ်လွယ်ကီးဘုတ်အတွက် အရေးကြီးသည့်အပ်ဒိတ် လိုအပ်နေသည်</translation>

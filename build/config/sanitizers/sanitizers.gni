@@ -155,6 +155,13 @@ declare_args() {
       !use_clang_coverage &&
       (use_fuzzing_engine || sanitizer_coverage_flags != "")
 
+  # https://crbug.com/1002058: Code coverage works inside the sandbox via the
+  # help of several helper IPCs. Unfortunately, the sandbox-only path does not
+  # work well for fuzzing builds. Since fuzzing builds already disable the
+  # sandbox when dumping coverage, limit the sandbox-only path to non-fuzzing
+  # builds.
+  use_clang_coverage_inside_sandbox = use_clang_coverage && !use_fuzzing_engine
+
   # Detect overflow/underflow for global objects.
   #
   # Mac: http://crbug.com/352073

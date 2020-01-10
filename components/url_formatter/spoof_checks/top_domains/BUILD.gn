@@ -13,6 +13,7 @@ if (!is_ios && !is_android) {
     deps = [
       "//base",
       "//base:i18n",
+      "//components/url_formatter:skeleton_generator",
       "//third_party/icu",
     ]
   }
@@ -28,7 +29,9 @@ executable("top_domain_generator") {
   ]
   deps = [
     "//base",
+    "//base:i18n",
     "//net/tools/huffman_trie:huffman_trie_generator_sources",
+    "//url:url",
   ]
   if (is_ios) {
     libs = [ "UIKit.framework" ]

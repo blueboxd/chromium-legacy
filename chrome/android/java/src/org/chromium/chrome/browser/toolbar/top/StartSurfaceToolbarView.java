@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar.top;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Rect;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
@@ -30,6 +31,9 @@ class StartSurfaceToolbarView extends RelativeLayout {
     private ColorStateList mLightIconTint;
     private ColorStateList mDarkIconTint;
 
+    private Rect mLogoRect = new Rect();
+    private Rect mViewRect = new Rect();
+
     public StartSurfaceToolbarView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -43,6 +47,26 @@ class StartSurfaceToolbarView extends RelativeLayout {
         mMenuButton = findViewById(R.id.menu_button_wrapper);
         mLogo = findViewById(R.id.logo);
         updatePrimaryColorAndTint(false);
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        // TODO(https://crbug.com/1040526)
+
+        super.onLayout(changed, l, t, r, b);
+
+        if (mLogo.getVisibility() == View.GONE) return;
+
+        mLogoRect.set(mLogo.getLeft(), mLogo.getTop(), mLogo.getRight(), mLogo.getBottom());
+        for (int viewIndex = 0; viewIndex < getChildCount(); viewIndex++) {
+            View view = getChildAt(viewIndex);
+            if (view == mLogo) continue;
+            mViewRect.set(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
+            if (Rect.intersects(mLogoRect, mViewRect)) {
+                mLogo.setVisibility(View.GONE);
+                break;
+            }
+        }
     }
 
     /**
@@ -64,7 +88,8 @@ class StartSurfaceToolbarView extends RelativeLayout {
     }
 
     /**
-     * @param isVisible Whether the Logo is visible.
+     * Sets the Logo visibility. Logo will not show if screen is not wide enough.
+     * @param isVisible Whether the Logo should be visible.
      */
     void setLogoVisibility(boolean isVisible) {
         mLogo.setVisibility(isVisible ? View.VISIBLE : View.GONE);

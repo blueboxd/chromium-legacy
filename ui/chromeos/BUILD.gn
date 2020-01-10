@@ -76,12 +76,13 @@ test("ui_chromeos_unittests") {
     "//ui/events:test_support",
     "//ui/gl:test_support",
     "//ui/message_center",
-    "//ui/resources:ui_test_pak",
     "//ui/views",
     "//ui/views:test_support",
   ]
   data = [
     "$root_out_dir/locales/en-US.pak",
-    "$root_out_dir/ui_test.pak",
+  ]
+  data_deps = [
+    "//ui/resources:ui_test_pak_data",
   ]
 }

@@ -464,6 +464,15 @@ android_library("chrome_java") {
   if (enable_vr) {
     deps += [ ":chrome_vr_java_resources" ]
   }
+
+  if (enable_arcore) {
+    # AR DFM is disabled, so include the ARCore dependencies here as well.
+    # They are needed for "java/src/org/chromium/chrome/browser/vr/ArCoreShimImpl.java"
+    # to compile.
+    deps +=
+        [ "//third_party/arcore-android-sdk-client:com_google_ar_core_java" ]
+  }
+
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
   if (enable_feed_in_chrome) {
     deps += [ ":chrome_feed_java_resources" ]
@@ -2156,10 +2165,8 @@ if (enable_arcore) {
     ]
 
     # Include ArCore files directly instead of using bundles.
-    deps += [
-      "//chrome/browser/android/vr:ar_java",
-      "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
-    ]
+    deps +=
+        [ "//third_party/arcore-android-sdk-client:com_google_ar_core_java" ]
 
     _libarcore_dir = get_label_info(
                          "//third_party/arcore-android-sdk-client:com_google_ar_core_java($default_toolchain)",
@@ -2816,6 +2823,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizations.java",
     "java/src/org/chromium/chrome/browser/password_manager/AccountChooserDialog.java",
     "java/src/org/chromium/chrome/browser/password_manager/AutoSigninFirstRunDialog.java",
+    "java/src/org/chromium/chrome/browser/password_manager/AutoSigninSnackbarController.java",
     "java/src/org/chromium/chrome/browser/password_manager/Credential.java",
     "java/src/org/chromium/chrome/browser/password_manager/CredentialLeakDialogBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/OnboardingDialogBridge.java",
@@ -2873,7 +2881,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/signin/SigninUtils.java",
     "java/src/org/chromium/chrome/browser/signin/UnifiedConsentServiceBridge.java",
     "java/src/org/chromium/chrome/browser/sms/SmsReceiverInfoBar.java",
-    "java/src/org/chromium/chrome/browser/snackbar/smartlockautosignin/AutoSigninSnackbarController.java",
     "java/src/org/chromium/chrome/browser/ssl/CaptivePortalHelper.java",
     "java/src/org/chromium/chrome/browser/ssl/SecurityStateModel.java",
     "java/src/org/chromium/chrome/browser/status_indicator/StatusIndicatorSceneLayer.java",

@@ -17,7 +17,6 @@
 <translation id="5073204694187207510">Skjul fuldskærmsgitter</translation>
 <translation id="5082793167783849073">Sammenlign hurtigt sider ved at oprette en gruppe. Hold et link nede for at starte.</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> faner blev grupperet</translation>
-<translation id="5792534911093536736">Flere faner</translation>
 <translation id="58326064309361797">Træk og slip faner for at gruppere dem</translation>
 <translation id="6040143037577758943">Luk</translation>
 <translation id="6193448654517602979">Vælg faner</translation>
@@ -29,6 +28,7 @@
 <translation id="7792771145871471484">Gennemgå forslagene.</translation>
 <translation id="7885132941432959125">Flyt fane til højre</translation>
 <translation id="7966321538264951561">Afvis forslagene.</translation>
+<translation id="814503310257431685">Se alle</translation>
 <translation id="8205266828577616993">Flyt fane op</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Luk <ph name="TABS_COUNT_ONE" /> valgt fane}one{Luk <ph name="TABS_COUNT_MANY" /> valgt fane}other{Luk de <ph name="TABS_COUNT_MANY" /> valgte faner}}</translation>
 <translation id="9150694013019234766">Skift mellem faner i din fanegruppe nederst på skærmen</translation>

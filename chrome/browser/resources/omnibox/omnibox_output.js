@@ -94,7 +94,7 @@ export class OmniboxOutput extends OmniboxElement {
    */
   clearResultsGroups_() {
     this.resultsGroups_ = [];
-    clearChildren(this.$$('#contents'));
+    clearChildren(this.$('#contents'));
   }
 
   /**
@@ -104,7 +104,7 @@ export class OmniboxOutput extends OmniboxElement {
   createResultsGroup_(response) {
     const resultsGroup = OutputResultsGroup.create(response);
     this.resultsGroups_.push(resultsGroup);
-    this.$$('#contents').appendChild(resultsGroup);
+    this.$('#contents').appendChild(resultsGroup);
 
     this.updateDisplay_();
     this.updateFilterHighlights_();
@@ -238,17 +238,16 @@ class OutputResultsGroup extends OmniboxElement {
     /** @private {!Array<!Element>} */
     this.innerHeaders_ = [];
 
-    customElements.whenDefined(this.$$('output-results-details').localName)
-        .then(
-            () => this.$$('output-results-details').setDetails(this.details_));
+    customElements.whenDefined(this.$('output-results-details').localName)
+        .then(() => this.$('output-results-details').setDetails(this.details_));
 
-    this.$$('#table').appendChild(this.renderHeader_());
-    this.$$('#table').appendChild(this.combinedResults);
+    this.$('#table').appendChild(this.renderHeader_());
+    this.$('#table').appendChild(this.combinedResults);
     this.individualResultsList.forEach(results => {
       const innerHeader = this.renderInnerHeader_(results);
       this.innerHeaders_.push(innerHeader);
-      this.$$('#table').appendChild(innerHeader);
-      this.$$('#table').appendChild(results);
+      this.$('#table').appendChild(innerHeader);
+      this.$('#table').appendChild(results);
     });
   }
 
@@ -288,7 +287,7 @@ class OutputResultsGroup extends OmniboxElement {
   updateVisibility(showIncompleteResults, showDetails, showAllProviders) {
     // Show the details section above each table if showDetails or
     // showIncompleteResults are true.
-    this.$$('output-results-details').hidden =
+    this.$('output-results-details').hidden =
         !showDetails && !showIncompleteResults;
 
     // Show individual results when showAllProviders is true.
@@ -343,12 +342,12 @@ class OutputResultsDetails extends OmniboxElement {
 
   /** @param {ResultsDetails} details */
   setDetails(details) {
-    this.$$('#cursor-position').textContent = details.cursorPosition;
-    this.$$('#time').textContent = details.time;
-    this.$$('#done').textContent = details.done;
-    this.$$('#type').textContent = details.type;
-    this.$$('#host').textContent = details.host;
-    this.$$('#is-typed-host').textContent = details.isTypedHost;
+    this.$('#cursor-position').textContent = details.cursorPosition;
+    this.$('#time').textContent = details.time;
+    this.$('#done').textContent = details.done;
+    this.$('#type').textContent = details.type;
+    this.$('#host').textContent = details.host;
+    this.$('#is-typed-host').textContent = details.isTypedHost;
   }
 }
 
@@ -877,7 +876,8 @@ class OutputAdditionalInfoProperty extends OutputProperty {
       obj[key] = value;
       return obj;
     }, {});
-    const obj64 = btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+    const text = JSON.stringify(obj, null, 2);
+    const obj64 = btoa(unescape(encodeURIComponent(text)));
     return `data:application/json;base64,${obj64}`;
   }
 }

@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.customtabs.features.toolbar;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
@@ -14,8 +16,15 @@ import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.webapps.WebDisplayMode;
+import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Inject;
 
@@ -24,26 +33,31 @@ import javax.inject.Inject;
  */
 @ActivityScope
 public class CustomTabToolbarColorController {
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({ToolbarColorType.THEME_COLOR, ToolbarColorType.DEFAULT_COLOR,
+            ToolbarColorType.INTENT_TOOLBAR_COLOR})
+    public @interface ToolbarColorType {
+        int THEME_COLOR = 0;
+        int DEFAULT_COLOR = 1;
+        // BrowserServicesIntentDataProvider#getToolbarColor() should be used.
+        int INTENT_TOOLBAR_COLOR = 2;
+    }
+
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final ChromeActivity mActivity;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final CustomTabActivityTabProvider mTabProvider;
 
-    /** Keeps track of the original color before the preview was shown. */
-    private int mOriginalColor;
-
-    /** True if a change to the toolbar color was made because of a preview. */
-    private boolean mTriggeredPreviewChange;
-
     private final CustomTabActivityTabProvider.Observer mActivityTabObserver =
             new CustomTabActivityTabProvider.Observer() {
                 @Override
                 public void onTabSwapped(@NonNull Tab tab) {
-                    updateColor(tab);
+                    updateColor();
                 }
             };
 
     private ToolbarManager mToolbarManager;
+    private boolean mUseTabThemeColor;
 
     @Inject
     public CustomTabToolbarColorController(BrowserServicesIntentDataProvider intentDataProvider,
@@ -56,6 +70,30 @@ public class CustomTabToolbarColorController {
     }
 
     /**
+     * Computes the toolbar color type.
+     * Returns a 'type' instead of a color so that the function can be used by non-toolbar UI
+     * surfaces with different values for {@link ToolbarColorType.DEFAULT_COLOR}.
+     */
+    public static int computeToolbarColorType(BrowserServicesIntentDataProvider intentDataProvider,
+            boolean useTabThemeColor, @Nullable Tab tab) {
+        if (intentDataProvider.isOpenedByChrome()) {
+            return (tab == null) ? ToolbarColorType.DEFAULT_COLOR : ToolbarColorType.THEME_COLOR;
+        }
+
+        if (shouldUseDefaultThemeColorForFullscreen(intentDataProvider)
+                || (tab != null && ((TabImpl) tab).isPreview())) {
+            return ToolbarColorType.DEFAULT_COLOR;
+        }
+
+        if (tab != null && useTabThemeColor) {
+            return ToolbarColorType.THEME_COLOR;
+        }
+
+        return intentDataProvider.hasCustomToolbarColor() ? ToolbarColorType.INTENT_TOOLBAR_COLOR
+                                                          : ToolbarColorType.DEFAULT_COLOR;
+    }
+
+    /**
      * Notifies the ColorController that the ToolbarManager has been created and is ready for
      * use. ToolbarManager isn't passed directly to the constructor because it's not guaranteed to
      * be initialized yet.
@@ -64,16 +102,10 @@ public class CustomTabToolbarColorController {
         mToolbarManager = manager;
         assert manager != null : "Toolbar manager not initialized";
 
-        // Logic isn't shared with WebappActivity yet.
-        if (mIntentDataProvider.getWebappExtras() != null) return;
-
-        int toolbarColor = mIntentDataProvider.getToolbarColor();
-        manager.onThemeColorChanged(toolbarColor, false);
-        if (!mIntentDataProvider.isOpenedByChrome()) {
-            manager.setShouldUpdateToolbarPrimaryColor(false);
-        }
         observeTabToUpdateColor();
         mTabProvider.addObserver(mActivityTabObserver);
+
+        updateColor();
     }
 
     private void observeTabToUpdateColor() {
@@ -81,44 +113,77 @@ public class CustomTabToolbarColorController {
             @Override
             public void onPageLoadFinished(Tab tab, String url) {
                 // Update the color when the page load finishes.
-                updateColor(tab);
+                updateColor();
             }
 
             @Override
             public void onUrlUpdated(Tab tab) {
                 // Update the color on every new URL.
-                updateColor(tab);
+                updateColor();
+            }
+
+            @Override
+            public void onDidChangeThemeColor(Tab tab, int color) {
+                updateColor();
+            }
+
+            @Override
+            public void onShown(Tab tab, @TabSelectionType int type) {
+                updateColor();
             }
         });
     }
 
     /**
-     * Updates the color of the Activity's CCT Toolbar. When a preview is shown, it should
-     * be reset to the default color. If the user later navigates away from that preview to
-     * a non-preview page, reset the color back to the original. This does not interfere
-     * with site-specific theme colors which are disabled when a preview is being shown.
+     * Sets whether the tab's theme color should be used for the toolbar and triggers an update of
+     * the toolbar color if needed.
      */
-    private void updateColor(Tab tab) {
-        ToolbarManager manager = mToolbarManager;
+    public void setUseTabThemeColor(boolean useTabThemeColor) {
+        if (mUseTabThemeColor == useTabThemeColor) return;
 
-        // Record the original toolbar color in case we need to revert back to it later
-        // after a preview has been shown then the user navigates to another non-preview
-        // page.
-        if (mOriginalColor == 0) mOriginalColor = manager.getPrimaryColor();
+        mUseTabThemeColor = useTabThemeColor;
+        updateColor();
+    }
 
-        final boolean shouldUpdateOriginal = manager.getShouldUpdateToolbarPrimaryColor();
-        manager.setShouldUpdateToolbarPrimaryColor(true);
+    /**
+     * Updates the color of the Activity's CCT Toolbar.
+     */
+    private void updateColor() {
+        if (mToolbarManager == null) return;
 
-        if (((TabImpl) tab).isPreview()) {
-            final int defaultColor =
-                    ChromeColors.getDefaultThemeColor(mActivity.getResources(), false);
-            manager.onThemeColorChanged(defaultColor, false);
-            mTriggeredPreviewChange = true;
-        } else if (mOriginalColor != manager.getPrimaryColor() && mTriggeredPreviewChange) {
-            manager.onThemeColorChanged(mOriginalColor, false);
-            mTriggeredPreviewChange = false;
-            mOriginalColor = 0;
+        mToolbarManager.setShouldUpdateToolbarPrimaryColor(true);
+        mToolbarManager.onThemeColorChanged(computeColor(), false);
+        mToolbarManager.setShouldUpdateToolbarPrimaryColor(false);
+    }
+
+    private int computeColor() {
+        Tab tab = mTabProvider.getTab();
+        @ToolbarColorType
+        int toolbarColorType = computeToolbarColorType(mIntentDataProvider, mUseTabThemeColor, tab);
+        switch (toolbarColorType) {
+            case ToolbarColorType.THEME_COLOR:
+                assert tab != null;
+                return TabThemeColorHelper.getColor(tab);
+            case ToolbarColorType.DEFAULT_COLOR:
+                return getDefaultColor();
+            case ToolbarColorType.INTENT_TOOLBAR_COLOR:
+                return mIntentDataProvider.getToolbarColor();
         }
-        manager.setShouldUpdateToolbarPrimaryColor(shouldUpdateOriginal);
+        return getDefaultColor();
+    }
+
+    private int getDefaultColor() {
+        return ChromeColors.getDefaultThemeColor(
+                mActivity.getResources(), mIntentDataProvider.isIncognito());
+    }
+
+    private static boolean shouldUseDefaultThemeColorForFullscreen(
+            BrowserServicesIntentDataProvider intentDataProvider) {
+        // Don't use the theme color provided by the page if we're in display: fullscreen. This
+        // works around an issue where the status bars go transparent and can't be seen on top of
+        // the page content when users swipe them in or they appear because the on-screen keyboard
+        // was triggered.
+        WebappExtras webappExtras = intentDataProvider.getWebappExtras();
+        return (webappExtras != null && webappExtras.displayMode == WebDisplayMode.FULLSCREEN);
     }
 }

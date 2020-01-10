@@ -103,7 +103,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   int GetDefaultDialogButton() const;
 
   // Returns the label of the specified dialog button.
-  virtual base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
 
   // Returns whether the specified dialog button is enabled.
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const;

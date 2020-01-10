@@ -17,7 +17,6 @@
 <translation id="5073204694187207510">Amaga la quadrícula en pantalla completa</translation>
 <translation id="5082793167783849073">Crea un grup per comparar pàgines ràpidament. Per començar, mantén premut un enllaç.</translation>
 <translation id="5580090775658607195">S'han agrupat <ph name="TAB_COUNT" /> pestanyes</translation>
-<translation id="5792534911093536736">Més pestanyes</translation>
 <translation id="58326064309361797">Arrossega les pestanyes per agrupar-les</translation>
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="6193448654517602979">Selecciona pestanyes</translation>
@@ -29,6 +28,7 @@
 <translation id="7792771145871471484">Revisa els suggeriments.</translation>
 <translation id="7885132941432959125">Mou la pestanya cap a la dreta</translation>
 <translation id="7966321538264951561">Ignora els suggeriments.</translation>
+<translation id="814503310257431685">Mostra tot</translation>
 <translation id="8205266828577616993">Mou la pestanya cap amunt</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Tanca <ph name="TABS_COUNT_ONE" /> pestanya seleccionada}other{Tanca les <ph name="TABS_COUNT_MANY" /> pestanyes seleccionades}}</translation>
 <translation id="9150694013019234766">Canvia de pestanya al grup de pestanyes de la part inferior de la pantalla</translation>

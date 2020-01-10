@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Телефонни номера</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> изтегляния бяха изтрити</translation>
 <translation id="3822502789641063741">Изчистване на данните?</translation>
+<translation id="3853625385350850937">За да продължите, включете NFC на устройството си</translation>
 <translation id="3859306556332390985">Придвижване напред</translation>
 <translation id="388596076286380598">Получавайте статии, видеоклипове и друго съдържание от сайтовете, които харесвате, дори ако сте офлайн или връзката е лоша.</translation>
 <translation id="3894427358181296146">Добавяне на папка</translation>
@@ -1049,6 +1050,7 @@
 <translation id="8912362522468806198">Профил в Google</translation>
 <translation id="8920114477895755567">Изчакват се подробности за родителите.</translation>
 <translation id="8922289737868596582">Изтеглете страниците чрез бутона „Още опции“, за да ги използвате офлайн</translation>
+<translation id="8926666909099850184">Функцията за NFC е изключена на това устройство. Включете я от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Искате ли активността ви в Chrome да се премахне от „Дигитално благополучие“?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Отваряне в другия прозорец</translation>

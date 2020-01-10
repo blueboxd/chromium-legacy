@@ -399,6 +399,10 @@ void CupsPrintersHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getEulaUrl", base::BindRepeating(&CupsPrintersHandler::HandleGetEulaUrl,
                                         base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "queryPrintServer",
+      base::BindRepeating(&CupsPrintersHandler::HandleQueryPrintServer,
+                          base::Unretained(this)));
 }
 
 void CupsPrintersHandler::OnJavascriptAllowed() {

@@ -6,14 +6,14 @@ Running: testSetup
 Running: testBreakpointsInOriginalAndFormattedSource
 Script execution paused.
 Breakpoint sidebar pane while paused in raw
-named-inline-script.js:5      console.log("Hello!");
+named-inline-script.js:5checked breakpoint hit      console.log("Hello!");
 Script execution resumed.
 Script execution paused.
 Breakpoint sidebar pane while paused in pretty printed
-named-inline-script.js:formatted:3    console.log("Hello!");
+named-inline-script.js:formatted:3checked breakpoint hit    console.log("Hello!");
 Breakpoint sidebar pane while paused after removing breakpoint in pretty printed and closing pretty printed
 No breakpoints
 Breakpoint sidebar pane while paused in original script again
-named-inline-script.js:5      console.log("Hello!");
+named-inline-script.js:5checked breakpoint hit      console.log("Hello!");
 Script execution resumed.
 

@@ -29,7 +29,10 @@
         android:layout_height="32dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         android:scaleType="centerInside"
+        android:adjustViewBounds="true"
         app:srcCompat="@drawable/google_logo"
         android:visibility="gone"
         android:contentDescription="@null"/>

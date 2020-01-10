@@ -222,6 +222,9 @@ void OnYUVReadbackDone(
     std::unique_ptr<const SkSurface::AsyncReadResult> async_result) {
   std::unique_ptr<ReadPixelsContext> context(
       static_cast<ReadPixelsContext*>(c));
+  if (context->impl_on_gpu)
+    context->impl_on_gpu->ReadbackDone();
+
   if (!async_result) {
     // This will automatically send an empty result.
     return;
@@ -243,6 +246,9 @@ void OnRGBAReadbackDone(
     std::unique_ptr<const SkSurface::AsyncReadResult> async_result) {
   std::unique_ptr<ReadPixelsContext> context(
       static_cast<ReadPixelsContext*>(c));
+  if (context->impl_on_gpu)
+    context->impl_on_gpu->ReadbackDone();
+
   if (!async_result) {
     // This will automatically send an empty result.
     return;

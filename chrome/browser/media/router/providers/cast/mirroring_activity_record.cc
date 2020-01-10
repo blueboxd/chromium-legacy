@@ -67,8 +67,6 @@ MirroringActivityRecord::MirroringActivityRecord(
     int target_tab_id,
     const CastSinkExtraData& cast_data,
     mojom::MediaRouter* media_router,
-    MediaSinkServiceBase* media_sink_service,
-    CastActivityManagerBase* activity_manager,
     OnStopCallback callback)
     : ActivityRecord(route, app_id, message_handler, session_tracker),
       channel_id_(cast_data.cast_channel_id),
@@ -76,8 +74,6 @@ MirroringActivityRecord::MirroringActivityRecord(
       // once the Presentation API 1UA mode is supported.
       mirroring_type_(target_tab_id == -1 ? MirroringType::kDesktop
                                           : MirroringType::kTab),
-      media_sink_service_(media_sink_service),
-      activity_manager_(activity_manager),
       on_stop_(std::move(callback)) {
   // TODO(jrw): Detect and report errors.
 
@@ -155,81 +151,6 @@ void MirroringActivityRecord::Send(mirroring::mojom::CastMessagePtr message) {
                           weak_ptr_factory_.GetWeakPtr(),
                           route().media_route_id()));
 }
-
-Result MirroringActivityRecord::SendAppMessageToReceiver(
-    const CastInternalMessage& cast_message) {
-  // This method is only called from CastSessionClient.
-  NOTREACHED();
-  return Result::kOk;
-}
-
-base::Optional<int> MirroringActivityRecord::SendMediaRequestToReceiver(
-    const CastInternalMessage& cast_message) {
-  // This method is only called from CastSessionClient.
-  NOTREACHED();
-  return base::nullopt;
-}
-
-void MirroringActivityRecord::SendSetVolumeRequestToReceiver(
-    const CastInternalMessage& cast_message,
-    cast_channel::ResultCallback callback) {
-  // This method is only called from CastSessionClient.
-  //
-  // Comment from tamumif: This method may become relevant when we are adding
-  // global media controls support, but the current plan is to not show
-  // mirroring sessions in global media controls, in which case we don't need
-  // this. I think the implementation is shared between CastActivityRecord and
-  // MirroringActivityRecord, so it could be put in the ActivityRecord base
-  // class if we wanted to.
-  NOTREACHED();
-}
-
-void MirroringActivityRecord::SendStopSessionMessageToReceiver(
-    const base::Optional<std::string>& client_id,
-    const std::string& hash_token,
-    MediaRouteProvider::TerminateRouteCallback callback) {
-  const std::string& sink_id = route_.media_sink_id();
-  const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
-  DCHECK(sink);
-  DCHECK(session_id_);
-  message_handler_->StopSession(
-      sink->cast_data().cast_channel_id, *session_id_, client_id,
-      activity_manager_->MakeResultCallbackForRoute(route_.media_route_id(),
-                                                    std::move(callback)));
-}
-
-void MirroringActivityRecord::HandleLeaveSession(const std::string& client_id) {
-  // This method is only called from CastSessionClient.
-  NOTREACHED();
-}
-
-mojom::RoutePresentationConnectionPtr MirroringActivityRecord::AddClient(
-    const CastMediaSource& source,
-    const url::Origin& origin,
-    int tab_id) {
-  // This method seems to only be called on CastActivityRecord instances.
-  NOTREACHED();
-  return nullptr;
-}
-
-void MirroringActivityRecord::RemoveClient(const std::string& client_id) {
-  // This method is never called, and it should probably only ever be called on
-  // CastActivityRecord instances.
-  NOTREACHED();
-}
-
-void MirroringActivityRecord::SendMessageToClient(
-    const std::string& client_id,
-    PresentationConnectionMessagePtr message) {}
-
-void MirroringActivityRecord::SendMediaStatusToClients(
-    const base::Value& media_status,
-    base::Optional<int> request_id) {}
-
-void MirroringActivityRecord::ClosePresentationConnections(
-    blink::mojom::PresentationConnectionCloseReason close_reason) {}
-
-void MirroringActivityRecord::TerminatePresentationConnections() {}
 
 void MirroringActivityRecord::OnAppMessage(
     const cast::channel::CastMessage& message) {

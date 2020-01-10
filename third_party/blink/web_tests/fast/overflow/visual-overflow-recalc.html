@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
+<style>
+#scroller {
+  height: 200px;
+  overflow: scroll;
+  position: relative;
+}
+#wrapper {
+  margin-top: 100px;
+  width: 200px;
+  height: 200px;
+  overflow: hidden;
+  font-family: Ahem;
+  color: green;
+}
+#red {
+  background: red;
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  top: 100px;
+  z-index: -1;
+}
+</style>
+<p>Test passes if there is <strong>no red</strong>.</p>
+<div id="scroller">
+  <div id="wrapper">
+    <span id="inlineouter">
+      <span id="inlineinner">X</span>
+    </span>
+  </div>
+  <div id="red"></div>
+</div>
+
+<script>
+  runAfterLayoutAndPaint(function() {
+    inlineinner.style.fontSize = "200px";
+  }, true);
+</script>

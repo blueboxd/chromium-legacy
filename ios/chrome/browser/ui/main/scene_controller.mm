@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -584,6 +585,25 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)tabSwitcherDismissTransitionDidEnd:(id<TabSwitcher>)tabSwitcher {
   [self.mainController finishDismissingTabSwitcher];
+}
+
+#pragma mark - TabSwitching
+
+- (BOOL)openNewTabFromTabSwitcher {
+  if (!self.mainController.tabSwitcher)
+    return NO;
+
+  UrlLoadParams urlLoadParams =
+      UrlLoadParams::InNewTab(GURL(kChromeUINewTabURL));
+  urlLoadParams.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
+
+  Browser* mainBrowser = self.mainInterface.browser;
+  WebStateList* webStateList = mainBrowser->GetWebStateList();
+  [self.mainController.tabSwitcher
+      dismissWithNewTabAnimationToBrowser:mainBrowser
+                        withUrlLoadParams:urlLoadParams
+                                  atIndex:webStateList->count()];
+  return YES;
 }
 
 @end

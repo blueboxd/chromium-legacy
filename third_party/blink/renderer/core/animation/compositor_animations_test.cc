@@ -171,7 +171,8 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
  public:
   bool ConvertTimingForCompositor(const Timing& t,
                                   CompositorAnimations::CompositorTiming& out) {
-    return CompositorAnimations::ConvertTimingForCompositor(t, 0, out, 1);
+    return CompositorAnimations::ConvertTimingForCompositor(
+        t, base::TimeDelta(), out, 1);
   }
 
   CompositorAnimations::FailureReasons CanStartEffectOnCompositor(
@@ -206,8 +207,8 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
       Vector<std::unique_ptr<CompositorKeyframeModel>>& keyframe_models,
       double animation_playback_rate) {
     CompositorAnimations::GetAnimationOnCompositor(
-        *element_, timing, 0, base::nullopt, 0, effect, keyframe_models,
-        animation_playback_rate);
+        *element_, timing, 0, base::nullopt, base::TimeDelta(), effect,
+        keyframe_models, animation_playback_rate);
   }
 
   CompositorAnimations::FailureReasons

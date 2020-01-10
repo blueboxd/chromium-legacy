@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_WORKER_HOST_DEDICATED_WORKER_HOST_H_
 #define CONTENT_BROWSER_WORKER_HOST_DEDICATED_WORKER_HOST_H_
 
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -48,11 +50,13 @@ void CreateDedicatedWorkerHostFactory(
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
 
 // A host for a single dedicated worker. It deletes itself upon Mojo
-// disconnection from the worker in the renderer. This lives on the UI thread.
-class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost {
+// disconnection from the worker in the renderer or when the RenderProcessHost
+// of the worker is destroyed. This lives on the UI thread.
+class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
+                                  public RenderProcessHostObserver {
  public:
   DedicatedWorkerHost(
-      int worker_process_id,
+      RenderProcessHost* worker_process_host,
       int ancestor_render_frame_id,
       int creator_render_frame_id,
       const url::Origin& origin,
@@ -62,10 +66,7 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost {
   void BindBrowserInterfaceBrokerReceiver(
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver);
 
-  // May return nullptr.
-  RenderProcessHost* GetProcessHost() {
-    return RenderProcessHost::FromID(worker_process_id_);
-  }
+  RenderProcessHost* GetProcessHost() { return worker_process_host_; }
   const url::Origin& GetOrigin() { return origin_; }
 
   void CreateIdleManager(
@@ -105,6 +106,10 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost {
       mojo::Remote<blink::mojom::DedicatedWorkerHostFactoryClient> client);
 
  private:
+  // RenderProcessHostObserver:
+  void RenderProcessHostDestroyed(
+      RenderProcessHost* render_process_host) override;
+
   // Called from WorkerScriptFetchInitiator. Continues starting the dedicated
   // worker in the renderer process.
   //
@@ -134,8 +139,7 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost {
   // Creates a network factory for subresource requests from this worker. The
   // network factory is meant to be passed to the renderer.
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
-  CreateNetworkFactoryForSubresources(RenderProcessHost* worker_process_host,
-                                      RenderFrameHostImpl* render_frame_host,
+  CreateNetworkFactoryForSubresources(RenderFrameHostImpl* render_frame_host,
                                       bool* bypass_redirect_checks);
 
   // Updates subresource loader factories. This is supposed to be called when
@@ -147,8 +151,11 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost {
 
   void OnMojoDisconnect();
 
-  // The ID of the render process host that hosts this worker.
-  const int worker_process_id_;
+  // The RenderProcessHost that hosts this worker.
+  RenderProcessHost* const worker_process_host_;
+
+  ScopedObserver<RenderProcessHost, RenderProcessHostObserver>
+      scoped_process_host_observer_;
 
   // The ID of the frame that owns this worker, either directly, or (in the case
   // of nested workers) indirectly via a tree of dedicated workers.

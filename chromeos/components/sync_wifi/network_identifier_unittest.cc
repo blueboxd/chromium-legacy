@@ -39,7 +39,7 @@ TEST_F(NetworkIdentifierTest, FromProto) {
 }
 
 TEST_F(NetworkIdentifierTest, FromString) {
-  std::string string_id("0123456789ABCDEF_psk");
+  std::string string_id("0123456789ABCDEF<||>psk");
   NetworkIdentifier id = NetworkIdentifier::DeserializeFromString(string_id);
   EXPECT_EQ(kHexSsid, id.hex_ssid());
   EXPECT_EQ(shill::kSecurityPsk, id.security_type());

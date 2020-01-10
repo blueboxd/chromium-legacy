@@ -438,7 +438,7 @@ void RenderViewTest::SetUp() {
   view_params->replicated_frame_state = FrameReplicationState();
   view_params->proxy_routing_id = MSG_ROUTING_NONE;
   view_params->hidden = false;
-  view_params->never_visible = false;
+  view_params->never_composited = false;
   view_params->visual_properties = InitialVisualProperties();
 
   RenderViewImpl* view_impl = RenderViewImpl::Create(

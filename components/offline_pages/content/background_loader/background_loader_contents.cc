@@ -42,9 +42,9 @@ void BackgroundLoaderContents::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-bool BackgroundLoaderContents::IsNeverVisible(
+bool BackgroundLoaderContents::IsNeverComposited(
     content::WebContents* web_contents) {
-  // Background, so not visible.
+  // Background, so not user-visible.
   return true;
 }
 

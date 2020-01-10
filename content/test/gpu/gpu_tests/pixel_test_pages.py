@@ -788,6 +788,22 @@ class PixelTestPages(object):
         browser_args=browser_args)
     ]
 
+  # Pages that should be run with off-thread paint worklet flags.
+  @staticmethod
+  def PaintWorkletPages(base_name):
+    browser_args = [
+      '--enable-blink-features=OffMainThreadCSSPaint',
+      '--enable-gpu-rasterization',
+      '--enable-oop-rasterization']
+
+    return [
+      PixelTestPage(
+        'pixel_paintWorklet_basics.html',
+        base_name + '_PaintWorkletBasics',
+        test_rect=[0, 0, 300, 300],
+        browser_args=browser_args),
+    ]
+
   # Pages that should be run with experimental canvas features.
   @staticmethod
   def ExperimentalCanvasFeaturesPages(base_name):

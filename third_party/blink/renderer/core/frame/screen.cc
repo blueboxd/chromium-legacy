@@ -134,7 +134,7 @@ int Screen::availTop() const {
 int Screen::availHeight() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
-    return display_->work_area.width;
+    return display_->work_area.height;
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
@@ -151,7 +151,7 @@ int Screen::availHeight() const {
 int Screen::availWidth() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
-    return display_->work_area.height;
+    return display_->work_area.width;
   }
   LocalFrame* frame = GetFrame();
   if (!frame)

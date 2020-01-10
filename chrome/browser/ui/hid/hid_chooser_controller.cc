@@ -47,7 +47,7 @@ HidChooserController::HidChooserController(
 
 HidChooserController::~HidChooserController() {
   if (callback_)
-    std::move(callback_).Run(nullptr);
+    std::move(callback_).Run(std::vector<device::mojom::HidDeviceInfoPtr>());
 }
 
 bool HidChooserController::ShouldShowHelpButton() const {
@@ -68,7 +68,10 @@ size_t HidChooserController::NumOptions() const {
 
 base::string16 HidChooserController::GetOption(size_t index) const {
   DCHECK_LT(index, devices_.size());
-  const device::mojom::HidDeviceInfo& device = *devices_[index];
+  auto it = devices_.begin();
+  std::advance(it, index);
+  DCHECK_GT(it->second.size(), 0u);
+  auto& device = *it->second[0];
   if (device.product_name.empty()) {
     return l10n_util::GetStringFUTF16(
         IDS_HID_CHOOSER_ITEM_WITHOUT_NAME,
@@ -87,8 +90,17 @@ bool HidChooserController::IsPaired(size_t index) const {
   if (!chooser_context_)
     return false;
 
-  return chooser_context_->HasDevicePermission(
-      requesting_origin_, embedding_origin_, *devices_[index]);
+  auto it = devices_.begin();
+  std::advance(it, index);
+  DCHECK_GT(it->second.size(), 0u);
+  for (auto& device : it->second) {
+    if (!chooser_context_->HasDevicePermission(requesting_origin_,
+                                               embedding_origin_, *device)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void HidChooserController::Select(const std::vector<size_t>& indices) {
@@ -98,13 +110,18 @@ void HidChooserController::Select(const std::vector<size_t>& indices) {
   DCHECK_LT(index, devices_.size());
 
   if (!chooser_context_) {
-    std::move(callback_).Run(nullptr);
+    std::move(callback_).Run(std::vector<device::mojom::HidDeviceInfoPtr>());
     return;
   }
 
-  chooser_context_->GrantDevicePermission(requesting_origin_, embedding_origin_,
-                                          *devices_[index]);
-  std::move(callback_).Run(std::move(devices_[index]));
+  auto it = devices_.begin();
+  std::advance(it, index);
+  DCHECK_GT(it->second.size(), 0u);
+  for (auto& device : it->second) {
+    chooser_context_->GrantDevicePermission(requesting_origin_,
+                                            embedding_origin_, *device);
+  }
+  std::move(callback_).Run(std::move(it->second));
 }
 
 void HidChooserController::Cancel() {
@@ -128,8 +145,18 @@ void HidChooserController::OnGotDevices(
     if (ShouldExcludeDevice(*device))
       continue;
 
-    if (FilterMatchesAny(*device))
-      devices_.push_back(std::move(device));
+    if (FilterMatchesAny(*device)) {
+      // A single physical device may expose multiple HID interfaces, each
+      // represented by a HidDeviceInfo object. When a device exposes multiple
+      // HID interfaces, the HidDeviceInfo objects will share a common
+      // |physical_device_id|. Group these devices so that a single chooser item
+      // is shown for each physical device. If a device's physical device ID is
+      // empty, use its GUID instead.
+      const std::string& key = device->physical_device_id.empty()
+                                   ? device->guid
+                                   : device->physical_device_id;
+      devices_[key].push_back(std::move(device));
+    }
   }
 
   if (view())

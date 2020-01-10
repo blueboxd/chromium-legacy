@@ -449,7 +449,6 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         });
         mCustomTabIntentHandler = component.resolveIntentHandler();
         component.resolveSessionHandler();
-        component.resolveToolbarColorController();
         component.resolveCustomTabIncognitoManager();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {

@@ -4828,6 +4828,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(paint_preview::kPaintPreviewTest)},
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+    {"enable-profile-card", flag_descriptions::kProfileCardName,
+     flag_descriptions::kProfileCardDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kProfileCard)},
+#endif  // defined(OS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

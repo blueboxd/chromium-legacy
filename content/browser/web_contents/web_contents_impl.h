@@ -167,6 +167,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   static WebContentsImpl* FromFrameTreeNode(
       const FrameTreeNode* frame_tree_node);
+  static WebContents* FromRenderFrameHostID(
+      GlobalFrameRoutingId render_frame_host_id);
   static WebContents* FromRenderFrameHostID(int render_process_host_id,
                                             int render_frame_host_id);
   static WebContents* FromFrameTreeNodeId(int frame_tree_node_id);
@@ -562,7 +564,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                    const base::string16& title,
                    base::i18n::TextDirection title_direction) override;
   WebContents* GetAsWebContents() override;
-  bool IsNeverVisible() override;
+  bool IsNeverComposited() override;
   ui::AXMode GetAccessibilityMode() override;
   // Broadcasts the mode change to all frames.
   void SetAccessibilityMode(ui::AXMode mode) override;

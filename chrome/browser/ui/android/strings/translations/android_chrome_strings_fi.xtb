@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Puhelinnumerot</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> latausta poistettiin.</translation>
 <translation id="3822502789641063741">Poistetaanko tiedot?</translation>
+<translation id="3853625385350850937">Laita NFC päälle puhelimella jatkaaksesi</translation>
 <translation id="3859306556332390985">Kelaa eteenpäin</translation>
 <translation id="388596076286380598">Selaa suosikkisivustojesi artikkeleja, videoita ja muuta sisältöä, vaikka olet offline-tilassa tai yhteys on heikko.</translation>
 <translation id="3894427358181296146">Lisää kansio</translation>
@@ -1049,6 +1050,7 @@ Sivusto EI saa kameran käyttöoikeutta. Kamerakuvat näkyvät vain sinulle.</tr
 <translation id="8912362522468806198">Google-tilisi avulla</translation>
 <translation id="8920114477895755567">Odotetaan vanhempien tietoja.</translation>
 <translation id="8922289737868596582">Lataa sivuja lisäasetuksien kautta, niin voit käyttää niitä offline-tilassa.</translation>
+<translation id="8926666909099850184">NFC on pois päältä tällä laitteella. Voit laittaa sen päälle <ph name="BEGIN_LINK" />Androidin asetuksista<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Poistetaanko Chrome-toimintasi Digitaalisesta hyvinvoinnista?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Avaa uudessa ikkunassa</translation>

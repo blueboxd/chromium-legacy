@@ -22,12 +22,17 @@
 //
 // Lazy(Sequenced|SingleThread|COMSTA)TaskRunner is meant to be instantiated in
 // an anonymous namespace (no static initializer is generated) and used to post
-// tasks to the same sequence/thread from pieces of code that don't have a
-// better way of sharing a TaskRunner. It is important to use this class
-// instead of a self-managed global variable or LazyInstance so that the
-// TaskRunners do not outlive the scope of the TaskEnvironment in unit
-// tests (otherwise the next test in the same process will die in use-after-
-// frees).
+// tasks to the same thread-pool-bound sequence/thread from pieces of code that
+// don't have a better way of sharing a TaskRunner. It is important to use this
+// class instead of a self-managed global variable or LazyInstance so that the
+// TaskRunners do not outlive the scope of the TaskEnvironment in unit tests
+// (otherwise the next test in the same process will die in use-after-frees).
+//
+// Note: This is only meant for base::ThreadPool bound task runners. Task
+// runners bound to other destination which share an existing sequence (like
+// BrowserThreads) should just use the appropriate getter each time (e.g.
+// base::Create*TaskRunner({BrowserThread::UI})).
+// TODO(1026641): Rename this API to LazyThreadPoolTaskRunner.
 //
 // IMPORTANT: Only use this API as a last resort. Prefer storing a
 // (Sequenced|SingleThread)TaskRunner returned by
@@ -96,6 +101,7 @@ using LazyCOMSTATaskRunner =
 // |traits| are TaskTraits used when creating the SequencedTaskRunner.
 #define LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(traits)                 \
   base::LazySequencedTaskRunner::CreateInternal(traits);               \
+  static_assert(traits.use_thread_pool(), "");                         \
   ALLOW_UNUSED_TYPE constexpr base::TaskTraits                         \
       LAZY_TASK_RUNNER_CONCATENATE_INTERNAL(kVerifyTraitsAreConstexpr, \
                                             __LINE__) = traits
@@ -105,6 +111,7 @@ using LazyCOMSTATaskRunner =
 // thread with other SingleThreadTaskRunners.
 #define LAZY_SINGLE_THREAD_TASK_RUNNER_INITIALIZER(traits, thread_mode)   \
   base::LazySingleThreadTaskRunner::CreateInternal(traits, thread_mode);  \
+  static_assert(traits.use_thread_pool(), "");                            \
   ALLOW_UNUSED_TYPE constexpr base::TaskTraits                            \
       LAZY_TASK_RUNNER_CONCATENATE_INTERNAL(kVerifyTraitsAreConstexpr,    \
                                             __LINE__) = traits;           \
@@ -118,6 +125,7 @@ using LazyCOMSTATaskRunner =
 // SingleThreadTaskRunners.
 #define LAZY_COM_STA_TASK_RUNNER_INITIALIZER(traits, thread_mode)         \
   base::LazyCOMSTATaskRunner::CreateInternal(traits, thread_mode);        \
+  static_assert(traits.use_thread_pool(), "");                            \
   ALLOW_UNUSED_TYPE constexpr base::TaskTraits                            \
       LAZY_TASK_RUNNER_CONCATENATE_INTERNAL(kVerifyTraitsAreConstexpr,    \
                                             __LINE__) = traits;           \

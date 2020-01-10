@@ -1474,7 +1474,8 @@ void Animation::StartAnimationOnCompositor(
   DCHECK(To<KeyframeEffect>(content_.Get()));
   DCHECK(std::isfinite(time_offset));
   To<KeyframeEffect>(content_.Get())
-      ->StartAnimationOnCompositor(compositor_group_, start_time, time_offset,
+      ->StartAnimationOnCompositor(compositor_group_, start_time,
+                                   base::TimeDelta::FromSecondsD(time_offset),
                                    EffectivePlaybackRate());
 }
 
@@ -1781,7 +1782,8 @@ void Animation::PauseForTesting(double pause_time) {
     base::Optional<double> current_time = CurrentTimeInternal();
     DCHECK(current_time);
     To<KeyframeEffect>(content_.Get())
-        ->PauseAnimationForTestingOnCompositor(current_time.value());
+        ->PauseAnimationForTestingOnCompositor(
+            base::TimeDelta::FromSecondsD(current_time.value()));
   }
 
   // Do not wait for animation ready to lock in the hold time. Otherwise,

@@ -24,19 +24,12 @@ namespace cast_channel {
 class CastMessageHandler;
 }
 
-namespace url {
-class Origin;
-}
-
 namespace media_router {
 
 class CastSessionTracker;
 
 class ActivityRecord {
  public:
-  using ClientMap =
-      base::flat_map<std::string, std::unique_ptr<CastSessionClient>>;
-
   ActivityRecord(const MediaRoute& route,
                  const std::string& app_id,
                  cast_channel::CastMessageHandler* message_handler,
@@ -62,61 +55,7 @@ class ActivityRecord {
                                   const MediaSinkInternal& sink,
                                   const std::string& hash_token);
 
-  // TODO(jrw): Get rid of this accessor.
-  const ClientMap& connected_clients() const { return connected_clients_; }
-
-  // Sends app message |cast_message|, which came from the SDK client, to the
-  // receiver hosting this session. Returns true if the message is sent
-  // successfully.
-  //
-  // TODO(jrw): Move this method to CastActivityRecord.
-  virtual cast_channel::Result SendAppMessageToReceiver(
-      const CastInternalMessage& cast_message) = 0;
-
-  // Sends media command |cast_message|, which came from the SDK client, to the
-  // receiver hosting this session. Returns the locally-assigned request ID of
-  // the message sent to the receiver.
-  //
-  // TODO(jrw): Move this method to CastActivityRecord.
-  virtual base::Optional<int> SendMediaRequestToReceiver(
-      const CastInternalMessage& cast_message) = 0;
-
-  // Sends a SET_VOLUME request to the receiver and calls |callback| when a
-  // response indicating whether the request succeeded is received.
-  //
-  // TODO(jrw): Move this method to CastActivityRecord.
-  virtual void SendSetVolumeRequestToReceiver(
-      const CastInternalMessage& cast_message,
-      cast_channel::ResultCallback callback) = 0;
-
-  virtual void SendStopSessionMessageToReceiver(
-      const base::Optional<std::string>& client_id,
-      const std::string& hash_token,
-      mojom::MediaRouteProvider::TerminateRouteCallback callback) = 0;
-
-  // Called when the client given by |client_id| requests to leave the session.
-  // This will also cause all clients within the session with matching origin
-  // and/or tab ID to leave (i.e., their presentation connections will be
-  // closed).
-  //
-  // TODO(jrw): Move this method to CastActivityRecord.
-  virtual void HandleLeaveSession(const std::string& client_id) = 0;
-
-  // Adds a new client |client_id| to this session and returns the handles of
-  // the two pipes to be held by Blink It is invalid to call this method if the
-  // client already exists.
-  //
-  // TODO(jrw): This method is only called on CastActivityRecord instances.
-  // Should it be moved?
-  virtual mojom::RoutePresentationConnectionPtr AddClient(
-      const CastMediaSource& source,
-      const url::Origin& origin,
-      int tab_id) = 0;
-
-  // TODO(jrw): This method is never called outside of unit tests.  Figure out
-  // where it should be called.  If AddClient() is moved to CastActivityRecord,
-  // this method probably should be, too.
-  virtual void RemoveClient(const std::string& client_id) = 0;
+  virtual void SendStopSessionMessageToClients(const std::string& hash_token);
 
   // Sends |message| to the client given by |client_id|.
   //
@@ -124,21 +63,21 @@ class ActivityRecord {
   // Can the methods be combined?
   virtual void SendMessageToClient(
       const std::string& client_id,
-      blink::mojom::PresentationConnectionMessagePtr message) = 0;
+      blink::mojom::PresentationConnectionMessagePtr message);
 
   virtual void SendMediaStatusToClients(const base::Value& media_status,
-                                        base::Optional<int> request_id) = 0;
+                                        base::Optional<int> request_id);
 
   // Handles a message forwarded by CastActivityManager.
   virtual void OnAppMessage(const cast::channel::CastMessage& message) = 0;
   virtual void OnInternalMessage(
       const cast_channel::InternalMessage& message) = 0;
 
-  // Closes / Terminates the PresentationConnections of all clients connected
-  // to this activity.
+  // Closes/terminates the PresentationConnections of all clients connected to
+  // this activity.
   virtual void ClosePresentationConnections(
-      blink::mojom::PresentationConnectionCloseReason close_reason) = 0;
-  virtual void TerminatePresentationConnections() = 0;
+      blink::mojom::PresentationConnectionCloseReason close_reason);
+  virtual void TerminatePresentationConnections();
 
   virtual void CreateMediaController(
       mojo::PendingReceiver<mojom::MediaController> media_controller,
@@ -150,7 +89,6 @@ class ActivityRecord {
   MediaRoute route_;
   std::string app_id_;
   base::Optional<int> mirroring_tab_id_;
-  ClientMap connected_clients_;
 
   // Called when a session is initially set from SetOrUpdateSession().
   base::OnceCallback<void()> on_session_set_;

@@ -52,7 +52,6 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;
-  int GetDialogButtons() const override;
 
   // views::BubbleDialogDelegateView methods.
   void Init() override;

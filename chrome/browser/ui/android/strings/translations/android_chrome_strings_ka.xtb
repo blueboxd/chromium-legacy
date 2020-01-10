@@ -366,6 +366,7 @@
 <translation id="381841723434055211">ტელეფონის ნომრები</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ჩამოტვირთული ფაილი წაიშალა</translation>
 <translation id="3822502789641063741">გასუფთავდეს საიტების მეხსიერება?</translation>
+<translation id="3853625385350850937">გასაგრძელებლად თქვენს მოწყობილობაზე ჩართეთ NFC</translation>
 <translation id="3859306556332390985">წინ ძიება</translation>
 <translation id="388596076286380598">მიიღეთ სტატიები, ვიდეოები და სხვა კონტენტი საიტებიდან, რომლებიც მოგწონთ, მაშინაც კი თუ ხაზგარეშე რეჟიმში ხართ ან ცუდი კავშირი გაქვთ.</translation>
 <translation id="3894427358181296146">საქაღალდის დამატება</translation>
@@ -1049,6 +1050,7 @@
 <translation id="8912362522468806198">Google ანგარიში</translation>
 <translation id="8920114477895755567">ველოდებით მშობლების დეტალებს.</translation>
 <translation id="8922289737868596582">ჩამოტვირთეთ გვერდები ხაზგარეშე რეჟიმში გამოსაყენებლად, „დამატებითი ვარიანტების“ ღილაკის მეშვეობით</translation>
+<translation id="8926666909099850184">NFC გამორთულია ამ მოწყობილობისთვის. მისი ჩართვა შეგიძლიათ <ph name="BEGIN_LINK" />Android-ის პარამეტრებიდან<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">გსურთ, ციფრული კომფორტიდან ამოშალოთ თქვენი აქტივობა Chrome-ში?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">სხვა ფანჯარაში გახსნა</translation>

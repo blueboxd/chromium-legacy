@@ -58,6 +58,12 @@ class MultiUserWindowManagerHelper {
   static void CreateInstanceForTest(
       std::unique_ptr<ash::MultiUserWindowManager> window_manager);
 
+  // Initializes |multi_profile_support_| if there is one. Separated from
+  // constructor because |multi_profile_support_| initialization code path
+  // accesses the helper instance via GetInstance(), which return nullptr
+  // before the constructor finishes. See https://crbug.com/1038300
+  void Init();
+
   // Adds user to monitor starting and running V1/V2 application windows.
   // Returns immediately if the user (identified by a |profile|) is already
   // known to the manager. Note: This function is not implemented as a

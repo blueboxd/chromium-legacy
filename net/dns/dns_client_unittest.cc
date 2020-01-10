@@ -246,50 +246,6 @@ TEST_F(DnsClientTest, OverrideToInvalid) {
   EXPECT_FALSE(client_->GetEffectiveConfig());
 }
 
-TEST_F(DnsClientTest, ActivateDohProbes) {
-  client_->SetSystemConfig(ValidConfigWithDoh());
-  auto transaction_factory =
-      std::make_unique<MockDnsTransactionFactory>(MockDnsClientRuleList());
-  auto* transaction_factory_ptr = transaction_factory.get();
-  client_->SetTransactionFactoryForTesting(std::move(transaction_factory));
-
-  ASSERT_FALSE(transaction_factory_ptr->doh_probes_running());
-
-  URLRequestContext context;
-  client_->ActivateDohProbes(&context);
-  EXPECT_TRUE(transaction_factory_ptr->doh_probes_running());
-}
-
-TEST_F(DnsClientTest, CancelDohProbes) {
-  client_->SetSystemConfig(ValidConfigWithDoh());
-  auto transaction_factory =
-      std::make_unique<MockDnsTransactionFactory>(MockDnsClientRuleList());
-  auto* transaction_factory_ptr = transaction_factory.get();
-  client_->SetTransactionFactoryForTesting(std::move(transaction_factory));
-
-  URLRequestContext context;
-  client_->ActivateDohProbes(&context);
-
-  ASSERT_TRUE(transaction_factory_ptr->doh_probes_running());
-
-  client_->CancelDohProbes();
-  EXPECT_FALSE(transaction_factory_ptr->doh_probes_running());
-}
-
-TEST_F(DnsClientTest, CancelDohProbes_BeforeConfig) {
-  URLRequestContext context;
-  client_->ActivateDohProbes(&context);
-  client_->CancelDohProbes();
-
-  client_->SetSystemConfig(ValidConfigWithDoh());
-  auto transaction_factory =
-      std::make_unique<MockDnsTransactionFactory>(MockDnsClientRuleList());
-  auto* transaction_factory_ptr = transaction_factory.get();
-  client_->SetTransactionFactoryForTesting(std::move(transaction_factory));
-
-  EXPECT_FALSE(transaction_factory_ptr->doh_probes_running());
-}
-
 }  // namespace
 
 }  // namespace net

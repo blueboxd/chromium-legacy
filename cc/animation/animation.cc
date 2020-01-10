@@ -197,7 +197,7 @@ void Animation::AddKeyframeModelForKeyframeEffect(
 
 void Animation::PauseKeyframeModelForKeyframeEffect(
     int keyframe_model_id,
-    double time_offset,
+    base::TimeDelta time_offset,
     KeyframeEffectId keyframe_effect_id) {
   DCHECK(GetKeyframeEffectById(keyframe_effect_id));
   GetKeyframeEffectById(keyframe_effect_id)

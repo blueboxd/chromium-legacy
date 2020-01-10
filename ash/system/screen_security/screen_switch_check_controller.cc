@@ -36,10 +36,6 @@ class CancelCastingDialog : public views::DialogDelegateView {
     return l10n_util::GetStringUTF16(IDS_DESKTOP_CASTING_ACTIVE_TITLE);
   }
 
-  int GetDialogButtons() const override {
-    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  }
-
   bool Cancel() override {
     std::move(callback_).Run(false);
     return true;

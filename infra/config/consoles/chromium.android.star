@@ -188,7 +188,7 @@ luci.console_view(
         ),
         luci.console_view_entry(
             builder = 'ci/android-pie-arm64-rel',
-            category = 'on_cq',
+            category = 'on_cq|future',
             short_name = 'P',
         ),
     ],

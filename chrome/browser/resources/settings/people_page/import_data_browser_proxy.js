@@ -2,39 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview A helper object used from the the Import Data dialog to allow
- * users to import data (like bookmarks) from other web browsers.
- */
-cr.exportPath('settings');
-
-/**
- * An object describing a source browser profile that may be imported.
- * The structure of this data must be kept in sync with C++ ImportDataHandler.
- * @typedef {{
- *   name: string,
- *   index: number,
- *   history: boolean,
- *   favorites: boolean,
- *   passwords: boolean,
- *   search: boolean,
- *   autofillFormData: boolean,
- * }}
- */
-settings.BrowserProfile;
-
-/**
- * @enum {string}
- * These string values must be kept in sync with the C++ ImportDataHandler.
- */
-settings.ImportDataStatus = {
-  INITIAL: 'initial',
-  IN_PROGRESS: 'inProgress',
-  SUCCEEDED: 'succeeded',
-  FAILED: 'failed',
-};
-
 cr.define('settings', function() {
+  /**
+   * An object describing a source browser profile that may be imported.
+   * The structure of this data must be kept in sync with C++ ImportDataHandler.
+   * @typedef {{
+   *   name: string,
+   *   index: number,
+   *   history: boolean,
+   *   favorites: boolean,
+   *   passwords: boolean,
+   *   search: boolean,
+   *   autofillFormData: boolean,
+   * }}
+   */
+  let BrowserProfile;
+
+  /**
+   * @enum {string}
+   * These string values must be kept in sync with the C++ ImportDataHandler.
+   */
+  const ImportDataStatus = {
+    INITIAL: 'initial',
+    IN_PROGRESS: 'inProgress',
+    SUCCEEDED: 'succeeded',
+    FAILED: 'failed',
+  };
+
   /** @interface */
   class ImportDataBrowserProxy {
     /**
@@ -81,7 +75,9 @@ cr.define('settings', function() {
   cr.addSingletonGetter(ImportDataBrowserProxyImpl);
 
   return {
-    ImportDataBrowserProxy: ImportDataBrowserProxy,
-    ImportDataBrowserProxyImpl: ImportDataBrowserProxyImpl,
+    BrowserProfile,
+    ImportDataStatus,
+    ImportDataBrowserProxy,
+    ImportDataBrowserProxyImpl,
   };
 });

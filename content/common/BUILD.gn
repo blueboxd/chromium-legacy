@@ -429,7 +429,7 @@ source_set("common") {
     deps += [ "//third_party/fuchsia-sdk/sdk:fdio" ]
   }
 
-  if (use_clang_coverage) {
+  if (use_clang_coverage_inside_sandbox) {
     sources += [
       "coverage_utils.cc",
       "coverage_utils.h",
@@ -493,8 +493,8 @@ mojom("mojo_bindings") {
   if (is_linux || is_chromeos) {
     enabled_features += [ "supports_thread_priorities" ]
   }
-  if (use_clang_coverage) {
-    enabled_features += [ "clang_coverage" ]
+  if (use_clang_coverage_inside_sandbox) {
+    enabled_features += [ "clang_coverage_inside_sandbox" ]
   }
 
   import_dirs = [ "//mojo/services" ]

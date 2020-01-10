@@ -246,12 +246,6 @@
     <style name="PreferenceSpinnerItem">
         <item name="android:textAppearance">@style/TextAppearance.PreferenceMediumText</item>
     </style>
-    <style name="PreferenceSpinnerUnderlineView">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">1dp</item>
-        <item name="android:layout_marginTop">2dp</item>
-        <item name="android:background">@color/modern_grey_600</item>
-    </style>
     <style name="TextAppearance.AccessibilityTextPreference">
         <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>

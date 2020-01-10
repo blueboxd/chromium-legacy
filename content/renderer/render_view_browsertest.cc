@@ -1077,11 +1077,12 @@ TEST_F(RenderViewImplTest, OriginReplicationForUnload) {
       web_frame->FirstChild()->NextSibling()->GetSecurityOrigin().IsOpaque());
 }
 
-// When we enable --use-zoom-for-dsf, visiting the first web page after opening
-// a new tab looks fine, but visiting the second web page renders smaller DOM
-// elements. We can solve this by updating DSF after swapping in the main frame.
+// Test that when navigating cross-origin, which creates a new main frame
+// RenderWidget, that the device scale is set correctly for that RenderWidget
+// the WebView and frames.
 // See crbug.com/737777#c37.
-TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
+TEST_F(RenderViewImplEnableZoomForDSFTest,
+       DeviceScaleCorrectAfterCrossOriginNav) {
   const float device_scale = 3.0f;
   SetDeviceScaleFactor(device_scale);
   EXPECT_EQ(device_scale, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
@@ -1119,8 +1120,9 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
       routing_id, std::move(stub_interface_provider),
       std::move(stub_browser_interface_broker), kProxyRoutingId,
       MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-      base::UnguessableToken::Create(), replication_state, nullptr,
-      &widget_params, FrameOwnerProperties(), /*has_committed_real_load=*/true);
+      base::UnguessableToken::Create(), replication_state,
+      compositor_deps_.get(), &widget_params, FrameOwnerProperties(),
+      /*has_committed_real_load=*/true);
   TestRenderFrame* provisional_frame =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
   EXPECT_TRUE(provisional_frame);

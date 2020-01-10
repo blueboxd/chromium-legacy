@@ -23,6 +23,11 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   auto theme = new_tab_page::mojom::Theme::New();
   if (ntp_theme.using_default_theme) {
     theme->type = new_tab_page::mojom::ThemeType::DEFAULT;
+    // TODO(crbug.com/1040682): This info has no meaning for the default theme
+    // and shouldn't be used. We set it here to prevent a crash where mojo is
+    // complaing about an unset info. However, we cannot make the field optional
+    // as that is crashing JS. Once the JS crash is solved remove this line.
+    theme->info = new_tab_page::mojom::ThemeInfo::NewChromeThemeId(-1);
   } else if (ntp_theme.color_id == -1) {
     theme->type = new_tab_page::mojom::ThemeType::THIRD_PARTY;
     auto info = new_tab_page::mojom::ThirdPartyThemeInfo::New();

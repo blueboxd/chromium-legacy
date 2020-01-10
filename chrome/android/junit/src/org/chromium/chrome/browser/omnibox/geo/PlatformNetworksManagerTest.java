@@ -258,7 +258,7 @@ public class PlatformNetworksManagerTest {
 
     @Test
     public void testGetAllVisibleCells_Q() {
-        // TODO(crbug.com/954620): Add test once Q is supported by Robolectric.
+        // TODO(chouinard): Add this test once Q is supported by Robolectric (crbug.com/965286).
     }
 
     @Test

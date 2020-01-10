@@ -345,7 +345,7 @@ BPF_TEST_C(BaselinePolicy, PrctlDumpable, BaselinePolicy) {
 #define PR_CAPBSET_READ 23
 #endif
 
-#if !BUILDFLAG(CLANG_COVERAGE)
+#if !BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
 BPF_DEATH_TEST_C(BaselinePolicy,
                  PrctlSigsys,
                  DEATH_SEGV_MESSAGE(GetPrctlErrorMessageContentForTests()),

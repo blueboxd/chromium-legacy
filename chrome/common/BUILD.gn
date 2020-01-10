@@ -136,8 +136,6 @@ static_library("common") {
     "mac/launchd.mm",
     "mac/service_management.h",
     "mac/service_management.mm",
-    "mac/staging_watcher.h",
-    "mac/staging_watcher.mm",
     "media/media_resource_provider.cc",
     "media/media_resource_provider.h",
     "media_galleries/metadata_types.h",

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SMS_SMS_FETCHER_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/optional.h"
 #include "base/sequence_checker.h"
@@ -14,10 +15,7 @@
 #include "content/browser/sms/sms_queue.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/sms_fetcher.h"
-
-namespace url {
-class Origin;
-}
+#include "url/origin.h"
 
 namespace content {
 

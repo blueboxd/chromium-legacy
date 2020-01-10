@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Test styles defined in forced-colors media query while printing in forced colors mode.</title>
+<style>
+  div::before {
+    content: "FAIL";
+    font-size: 100px;
+  }
+</style>
+<script>
+  if (window.testRunner)
+      testRunner.setPrinting();
+</script>
+<p>You should not see a FAIL below when printing</p>
+<div></div>

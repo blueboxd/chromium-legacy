@@ -6,7 +6,7 @@ Script source was shown.
 Set timer for test function.
 Test function finished.
 Breakpoint sidebar pane 
-set-breakpoint.html:15  return x;
+set-breakpoint.html:15checked  return x;
 Message count: 1
 VM:1 x is 3.1622776601683795
 Breakpoints removed.

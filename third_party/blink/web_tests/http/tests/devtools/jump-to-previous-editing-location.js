@@ -206,7 +206,7 @@
       function onScriptSource(uiSourceCode) {
         var linkifier = new Components.Linkifier();
         var anchorURI = uiSourceCode.url();
-        var anchor = linkifier.linkifyScriptLocation(SDK.targetManager.mainTarget(), null, anchorURI, 10, 1);
+        var anchor = linkifier.linkifyScriptLocation(SDK.targetManager.mainTarget(), null, anchorURI, 10, {columnNumber: 1});
         var info = Components.Linkifier._linkInfo(anchor);
         Common.Revealer.reveal(info.uiLocation).then(function() {
           TestRunner.addResult('Selection: ' + panel.visibleView.textEditor.selection().toString());

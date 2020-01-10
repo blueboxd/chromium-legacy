@@ -718,21 +718,6 @@ const DnsHosts* MockDnsClient::GetHosts() const {
   return &config->hosts;
 }
 
-void MockDnsClient::ActivateDohProbes(URLRequestContext* url_request_context) {
-  DCHECK(url_request_context);
-  DCHECK(!probe_context_);
-  DCHECK(!probe_transaction_);
-
-  probe_context_ = url_request_context;
-  probe_transaction_ = factory_->CreateDohProbeRunner(probe_context_);
-  probe_transaction_->Start();
-}
-
-void MockDnsClient::CancelDohProbes() {
-  probe_context_ = nullptr;
-  probe_transaction_.reset();
-}
-
 DnsTransactionFactory* MockDnsClient::GetTransactionFactory() {
   return GetEffectiveConfig() ? factory_.get() : nullptr;
 }

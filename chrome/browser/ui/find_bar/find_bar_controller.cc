@@ -6,17 +6,12 @@
 
 #include <algorithm>
 
-#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_list_observer.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
@@ -29,78 +24,16 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
 
 using content::NavigationController;
 using content::WebContents;
 
-namespace {
-
-// The minimum space between the FindInPage window and the search result.
-constexpr int kMinFindWndDistanceFromSelection = 5;
-
-// Tracks windows and makes sure that closing the last Guest browser window
-// clears the find pre-populate text.
-class FindBrowserListObserver : public BrowserListObserver {
- public:
-  FindBrowserListObserver() {
-    BrowserList::AddObserver(this);
-  }
-
-  ~FindBrowserListObserver() override { BrowserList::RemoveObserver(this); }
-
-  static void EnsureInstance() {
-    static base::NoDestructor<FindBrowserListObserver> the_instance;
-    the_instance.get();
-  }
-
- protected:
-  // BrowserListObserver:
-  void OnBrowserRemoved(Browser* browser) override {
-    Profile* const guest_profile = GetGuestProfile(browser);
-    if (!guest_profile)
-      return;
-
-    if (IsGuestWindowOpen())
-      return;
-
-    // Remove persistent find text across guest sessions. If we don't do this, a
-    // future guest session in this browser process might get its find text
-    // prepopulated with something that was searched in this session, which is a
-    // violation of privacy expectations.
-    FindBarState* const find_bar_state =
-        FindBarStateFactory::GetForProfile(guest_profile);
-    find_bar_state->set_last_prepopulate_text(base::string16());
-  }
-
- private:
-  // Returns a guest profile if the current browser has one, or nullptr
-  // otherwise.
-  static Profile* GetGuestProfile(Browser* browser) {
-    Profile* profile = browser->profile();
-    DCHECK(profile);
-    return profile->IsGuestSession() ? profile : nullptr;
-  }
-
-  static bool IsGuestWindowOpen() {
-    for (Browser* other : *BrowserList::GetInstance()) {
-      if (GetGuestProfile(other))
-        return true;
-    }
-    return false;
-  }
-};
-
-}  // namespace
-
 FindBarController::FindBarController(std::unique_ptr<FindBar> find_bar,
                                      Browser* browser)
     : find_bar_(std::move(find_bar)),
       browser_(browser),
-      find_bar_platform_helper_(FindBarPlatformHelper::Create(this)) {
-  FindBrowserListObserver::EnsureInstance();
-}
+      find_bar_platform_helper_(FindBarPlatformHelper::Create(this)) {}
 
 FindBarController::~FindBarController() {
   DCHECK(!web_contents_);
@@ -252,46 +185,6 @@ void FindBarController::Observe(int type,
                      FindBoxResultAction::kClear);
     }
   }
-}
-
-// static
-gfx::Rect FindBarController::GetLocationForFindbarView(
-    gfx::Rect view_location,
-    const gfx::Rect& dialog_bounds,
-    const gfx::Rect& avoid_overlapping_rect) {
-  if (base::i18n::IsRTL()) {
-    int boundary = dialog_bounds.width() - view_location.width();
-    view_location.set_x(std::min(view_location.x(), boundary));
-  } else {
-    view_location.set_x(std::max(view_location.x(), dialog_bounds.x()));
-  }
-
-  gfx::Rect new_pos = view_location;
-
-  // If the selection rectangle intersects the current position on screen then
-  // we try to move our dialog to the left (right for RTL) of the selection
-  // rectangle.
-  if (!avoid_overlapping_rect.IsEmpty() &&
-      avoid_overlapping_rect.Intersects(new_pos)) {
-    if (base::i18n::IsRTL()) {
-      new_pos.set_x(avoid_overlapping_rect.x() +
-                    avoid_overlapping_rect.width() +
-                    (2 * kMinFindWndDistanceFromSelection));
-
-      // If we moved it off-screen to the right, we won't move it at all.
-      if (new_pos.x() + new_pos.width() > dialog_bounds.width())
-        new_pos = view_location;  // Reset.
-    } else {
-      new_pos.set_x(avoid_overlapping_rect.x() - new_pos.width() -
-        kMinFindWndDistanceFromSelection);
-
-      // If we moved it off-screen to the left, we won't move it at all.
-      if (new_pos.x() < 0)
-        new_pos = view_location;  // Reset.
-    }
-  }
-
-  return new_pos;
 }
 
 void FindBarController::OnFindResultAvailable(

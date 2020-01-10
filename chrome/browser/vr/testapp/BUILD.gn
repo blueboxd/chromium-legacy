@@ -23,7 +23,6 @@ executable("vr_testapp") {
 
   deps = [
     ":assets_component_version_header",
-    ":vr_testapp_pak",
     ":vr_testapp_resources",
     "//chrome/browser/vr:vr_common",
     "//chrome/browser/vr:vr_test_support",
@@ -40,6 +39,9 @@ executable("vr_testapp") {
     "//ui/gl/init",
     "//ui/ozone",
     "//ui/platform_window",
+  ]
+  data_deps = [
+    ":vr_testapp_pak",
   ]
 }
 

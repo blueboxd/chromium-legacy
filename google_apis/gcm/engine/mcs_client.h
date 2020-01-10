@@ -84,10 +84,12 @@ class GCM_EXPORT MCSClient {
     SEND_STATUS_COUNT
   };
 
-  // Callback for MCSClient's error conditions.
+  // Callback for MCSClient's error conditions. A repeating callback is used
+  // because occasionally multiple errors are reported, see crbug.com/1039598
+  // for more context.
   // TODO(fgorski): Keeping it as a callback with intention to add meaningful
   // error information.
-  using ErrorCallback = base::OnceCallback<void()>;
+  using ErrorCallback = base::RepeatingClosure;
   // Callback when a message is received.
   using OnMessageReceivedCallback =
       base::RepeatingCallback<void(const MCSMessage& message)>;
@@ -116,7 +118,7 @@ class GCM_EXPORT MCSClient {
   // |success == true|.
   // If an error loading the GCM store is encountered,
   // |initialization_callback| will be invoked with |success == false|.
-  void Initialize(ErrorCallback initialization_callback,
+  void Initialize(const ErrorCallback& initialization_callback,
                   const OnMessageReceivedCallback& message_received_callback,
                   const OnMessageSentCallback& message_sent_callback,
                   std::unique_ptr<GCMStore::LoadResult> load_result);

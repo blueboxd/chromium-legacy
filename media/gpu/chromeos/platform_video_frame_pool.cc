@@ -40,12 +40,6 @@ PlatformVideoFramePool::PlatformVideoFramePool(
   weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
-PlatformVideoFramePool::PlatformVideoFramePool(CreateFrameCB cb)
-    : create_frame_cb_(std::move(cb)) {
-  DVLOGF(4);
-  weak_this_ = weak_this_factory_.GetWeakPtr();
-}
-
 PlatformVideoFramePool::~PlatformVideoFramePool() {
   if (parent_task_runner_)
     DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
@@ -214,9 +208,8 @@ void PlatformVideoFramePool::OnFrameReleased(
   DCHECK(it != frames_in_use_.end());
   frames_in_use_.erase(it);
 
-  if (IsSameFormat_Locked(origin_frame->format(), origin_frame->coded_size())) {
+  if (IsSameFormat_Locked(origin_frame->format(), origin_frame->coded_size()))
     InsertFreeFrame_Locked(std::move(origin_frame));
-  }
 
   if (frame_available_cb_ && !IsExhausted_Locked())
     std::move(frame_available_cb_).Run();

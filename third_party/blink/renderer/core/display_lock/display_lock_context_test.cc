@@ -1071,6 +1071,13 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
   auto* activatable = GetDocument().getElementById("activatable");
   auto* non_activatable = GetDocument().getElementById("nonActivatable");
 
+  // Initial display lock context should be activatable, since nothing skipped
+  // activation for it.
+  EXPECT_TRUE(
+      activatable
+          ->EnsureDisplayLockContext(DisplayLockContextCreateMethod::kAttribute)
+          .IsActivatable(DisplayLockActivationReason::kAny));
+
   LockElement(*activatable, true);
 
   EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
@@ -1092,7 +1099,19 @@ TEST_F(DisplayLockContextTest, ActivatableNotCountedAsBlocking) {
   EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
   EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable(
       DisplayLockActivationReason::kAny));
-  EXPECT_TRUE(activatable->GetDisplayLockContext()->IsActivatable(
+  EXPECT_TRUE(non_activatable->GetDisplayLockContext()->IsActivatable(
+      DisplayLockActivationReason::kAny));
+
+  // Set just the skip activation token, without the invisible token. This
+  // should make the element not be locked, but also not be activatable.
+  StringBuilder value;
+  value.Append("skip-activation");
+  non_activatable->setAttribute(html_names::kRendersubtreeAttr,
+                                value.ToAtomicString());
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(non_activatable->GetDisplayLockContext()->IsLocked());
+  EXPECT_FALSE(non_activatable->GetDisplayLockContext()->IsActivatable(
       DisplayLockActivationReason::kAny));
 
   // Re-acquire the lock for |activatable|, but without the activatable flag.

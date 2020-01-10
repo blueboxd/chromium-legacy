@@ -225,6 +225,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
       mouse_actively_entered_(false) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DCHECK(delegate_);
   DCHECK(params_.parent_window);
   // anchor_widget() is computed by BubbleDialogDelegateView().
@@ -348,10 +349,6 @@ void TrayBubbleView::ChangeAnchorAlignment(ShelfAlignment alignment) {
 
 bool TrayBubbleView::IsAnchoredToStatusArea() const {
   return true;
-}
-
-int TrayBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 ax::mojom::Role TrayBubbleView::GetAccessibleWindowRole() {

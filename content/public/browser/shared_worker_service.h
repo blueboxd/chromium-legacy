@@ -9,6 +9,7 @@
 
 #include "base/observer_list_types.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/global_routing_id.h"
 
 class GURL;
 
@@ -46,12 +47,12 @@ class CONTENT_EXPORT SharedWorkerService {
     // Called when a frame starts/stop being a client of a shared worker. It is
     // guaranteed that OnWorkerStarted() is called before receiving these
     // notifications.
-    virtual void OnClientAdded(const SharedWorkerInstance& instance,
-                               int client_process_id,
-                               int frame_id) = 0;
-    virtual void OnClientRemoved(const SharedWorkerInstance& instance,
-                                 int client_process_id,
-                                 int frame_id) = 0;
+    virtual void OnClientAdded(
+        const SharedWorkerInstance& instance,
+        content::GlobalFrameRoutingId render_frame_host_id) = 0;
+    virtual void OnClientRemoved(
+        const SharedWorkerInstance& instance,
+        content::GlobalFrameRoutingId render_frame_host_id) = 0;
   };
 
   // Adds/removes an observer.

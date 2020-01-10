@@ -34,7 +34,7 @@ class MockChildProcess : public mojom::ChildProcess {
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   MOCK_METHOD1(SetIPCLoggingEnabled, void(bool));
 #endif
-#if BUILDFLAG(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
   MOCK_METHOD1(SetCoverageFile, void(base::File));
 #endif
   MOCK_METHOD1(GetBackgroundTracingAgentProvider,

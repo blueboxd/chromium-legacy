@@ -232,11 +232,6 @@ mojom::CSPSourceListPtr ParseFrameAncestorsSourceList(
   base::StringPiece value = base::TrimString(
       frame_ancestors_value, base::kWhitespaceASCII, base::TRIM_ALL);
 
-  std::vector<mojom::CSPSourcePtr> sources;
-
-  if (frame_ancestors_value.empty())
-    return {};
-
   auto directive = mojom::CSPSourceList::New();
 
   if (base::EqualsCaseInsensitiveASCII(value, "'none'"))
@@ -262,7 +257,9 @@ mojom::CSPSourceListPtr ParseFrameAncestorsSourceList(
     }
 
     // Parsing error.
-    return {};
+    // Ignore this source-expression.
+    // TODO(lfg): Emit a warning to the user when parsing an invalid
+    // expression.
   }
 
   return directive;
@@ -273,7 +270,7 @@ mojom::CSPSourceListPtr ParseFrameAncestorsSourceList(
 // TODO(lfg): The report-to should be treated as a single token according to the
 // spec, but this implementation accepts multiple endpoints
 // https://crbug.com/916265.
-bool ParseReportDirective(const GURL& request_url,
+void ParseReportDirective(const GURL& request_url,
                           base::StringPiece value,
                           bool using_reporting_api,
                           std::vector<std::string>* report_endpoints) {
@@ -293,16 +290,16 @@ bool ParseReportDirective(const GURL& request_url,
     } else {
       GURL url = request_url.Resolve(uri);
 
+      // TODO(lfg): Emit a warning when parsing an invalid reporting URL.
       if (!url.is_valid())
-        return false;
+        continue;
       report_endpoints->push_back(url.spec());
     }
   }
-  return true;
 }
 
 // Parses the frame-ancestor directive of a Content-Security-Policy header.
-bool ParseFrameAncestors(
+void ParseFrameAncestors(
     const mojom::ContentSecurityPolicyPtr& content_security_policy_ptr,
     base::StringPiece frame_ancestors_value) {
   // A frame-ancestors directive has already been parsed. Skip further
@@ -311,7 +308,7 @@ bool ParseFrameAncestors(
   if (FindDirective(mojom::CSPDirective::Name::FrameAncestors,
                     &(content_security_policy_ptr->directives))) {
     // TODO(arthursonzogni, lfg): Should a warning be fired to the user here?
-    return true;
+    return;
   }
 
   auto source_list = ParseFrameAncestorsSourceList(frame_ancestors_value);
@@ -319,16 +316,14 @@ bool ParseFrameAncestors(
   // TODO(lfg): Emit a warning to the user when parsing an invalid
   // expression.
   if (!source_list)
-    return false;
+    return;
 
   content_security_policy_ptr->directives.push_back(mojom::CSPDirective::New(
       mojom::CSPDirective::Name::FrameAncestors, std::move(source_list)));
-
-  return true;
 }
 
 // Parses the report-uri directive of a Content-Security-Policy header.
-bool ParseReportEndpoint(
+void ParseReportEndpoint(
     const mojom::ContentSecurityPolicyPtr& content_security_policy_ptr,
     const GURL& base_url,
     base::StringPiece header_value,
@@ -336,16 +331,10 @@ bool ParseReportEndpoint(
   // A report-uri directive has already been parsed. Skip further directives per
   // https://www.w3.org/TR/CSP3/#parse-serialized-policy.
   if (!content_security_policy_ptr->report_endpoints.empty())
-    return true;
+    return;
 
-  if (!ParseReportDirective(base_url, header_value, using_reporting_api,
-                            &(content_security_policy_ptr->report_endpoints))) {
-    // TODO(lfg): Emit a warning to the user when parsing an invalid
-    // expression.
-    return false;
-  }
-
-  return true;
+  ParseReportDirective(base_url, header_value, using_reporting_api,
+                       &(content_security_policy_ptr->report_endpoints));
 }
 
 }  // namespace
@@ -353,27 +342,24 @@ bool ParseReportEndpoint(
 ContentSecurityPolicy::ContentSecurityPolicy() = default;
 ContentSecurityPolicy::~ContentSecurityPolicy() = default;
 
-bool ContentSecurityPolicy::Parse(const GURL& base_url,
+void ContentSecurityPolicy::Parse(const GURL& base_url,
                                   const net::HttpResponseHeaders& headers) {
   size_t iter = 0;
   std::string header_value;
   while (headers.EnumerateHeader(&iter, "content-security-policy",
                                  &header_value)) {
-    if (!Parse(base_url, network::mojom::ContentSecurityPolicyType::kEnforce,
-               header_value))
-      return false;
+    Parse(base_url, network::mojom::ContentSecurityPolicyType::kEnforce,
+          header_value);
   }
   iter = 0;
   while (headers.EnumerateHeader(&iter, "content-security-policy-report-only",
                                  &header_value)) {
-    if (!Parse(base_url, network::mojom::ContentSecurityPolicyType::kReport,
-               header_value))
-      return false;
+    Parse(base_url, network::mojom::ContentSecurityPolicyType::kReport,
+          header_value);
   }
-  return true;
 }
 
-bool ContentSecurityPolicy::Parse(
+void ContentSecurityPolicy::Parse(
     const GURL& base_url,
     network::mojom::ContentSecurityPolicyType type,
     base::StringPiece header_value) {
@@ -388,13 +374,8 @@ bool ContentSecurityPolicy::Parse(
     content_security_policy_ptr->type = type;
 
     auto frame_ancestors = directives.find("frame-ancestors");
-    if (frame_ancestors != directives.end()) {
-      if (!ParseFrameAncestors(content_security_policy_ptr,
-                               frame_ancestors->second)) {
-        content_security_policy_ptr.reset();
-        return false;
-      }
-    }
+    if (frame_ancestors != directives.end())
+      ParseFrameAncestors(content_security_policy_ptr, frame_ancestors->second);
 
     auto report_endpoints = directives.find("report-to");
     if (report_endpoints != directives.end()) {
@@ -407,19 +388,14 @@ bool ContentSecurityPolicy::Parse(
     }
 
     if (report_endpoints != directives.end()) {
-      if (!ParseReportEndpoint(
-              content_security_policy_ptr, base_url, report_endpoints->second,
-              content_security_policy_ptr->use_reporting_api)) {
-        content_security_policy_ptr.reset();
-        return false;
-      }
+      ParseReportEndpoint(content_security_policy_ptr, base_url,
+                          report_endpoints->second,
+                          content_security_policy_ptr->use_reporting_api);
     }
 
     content_security_policies_.push_back(
         std::move(content_security_policy_ptr));
   }
-
-  return true;
 }
 
 }  // namespace network

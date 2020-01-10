@@ -184,7 +184,6 @@ android_builder(
     cores = 16,
     goma_jobs = goma.jobs.J300,
     ssd = True,
-    tryjob = tryjob(),
 )
 
 android_builder(
@@ -458,6 +457,35 @@ blink_mac_builder(
 
 blink_mac_builder(
     name = 'mac10.14-blink-rel',
+)
+
+
+# Used for listing chrome trybots in chromium's commit-queue.cfg without also
+# adding them to chromium's cr-buildbucket.cfg. Note that the recipe these
+# builders run allow only known roller accounts when triggered via the CQ.
+def chrome_internal_verififer(
+    *,
+    builder):
+  luci.cq_tryjob_verifier(
+      builder = 'chrome:try/' + builder,
+      cq_group = 'cq',
+      includable_only = True,
+  )
+
+chrome_internal_verififer(
+    builder = 'chromeos-betty-chrome',
+)
+
+chrome_internal_verififer(
+    builder = 'chromeos-betty-pi-arc-chrome',
+)
+
+chrome_internal_verififer(
+    builder = 'chromeos-eve-compile-chrome',
+)
+
+chrome_internal_verififer(
+    builder = 'chromeos-kevin-compile-chrome',
 )
 
 

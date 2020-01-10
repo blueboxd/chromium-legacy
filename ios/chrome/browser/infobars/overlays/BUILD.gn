@@ -30,27 +30,15 @@ source_set("overlays") {
   ]
 }
 
-source_set("browser_agent_util") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "infobar_overlay_browser_agent_util.cc",
-    "infobar_overlay_browser_agent_util.h",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/browser/main:public",
-    "//ios/chrome/browser/ui/infobars:feature_flags",
-  ]
-}
-
 source_set("util") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "overlay_request_infobar_type_util.h",
-    "overlay_request_infobar_type_util.mm",
+    "overlay_request_infobar_util.h",
+    "overlay_request_infobar_util.mm",
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/overlays/public/common/infobars",

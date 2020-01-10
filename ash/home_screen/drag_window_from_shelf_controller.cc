@@ -307,8 +307,7 @@ void DragWindowFromShelfController::OnDragStarted(
   initial_location_in_screen_ = location_in_screen;
   previous_location_in_screen_ = location_in_screen;
   WindowState::Get(window_)->CreateDragDetails(
-      gfx::ToRoundedPoint(initial_location_in_screen_), HTCLIENT,
-      ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+      initial_location_in_screen_, HTCLIENT, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
 
   // Disable the backdrop on the dragged window during dragging.
   original_backdrop_mode_ = window_->GetProperty(kBackdropWindowMode);

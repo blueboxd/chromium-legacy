@@ -57,64 +57,6 @@ TEST(HintsProcessingUtilTest, FindPageHintForSubstringPagePattern) {
   EXPECT_EQ(page_hint3, FindPageHintForURL(
                             GURL("https://www.foo.org/bar/three.jpg"), &hint1));
 }
-
-TEST(HintsProcessingUtilTest, ProcessHintsNoUpdateData) {
-  proto::Hint hint;
-  hint.set_key("whatever.com");
-  hint.set_key_representation(proto::HOST_SUFFIX);
-  proto::PageHint* page_hint = hint.add_page_hints();
-  page_hint->set_page_pattern("foo.org/*/one/");
-
-  google::protobuf::RepeatedPtrField<proto::Hint> hints;
-  *(hints.Add()) = hint;
-
-  EXPECT_FALSE(ProcessHints(&hints, nullptr));
-}
-
-TEST(HintsProcessingUtilTest, ProcessHintsWithNoPageHintsAndUpdateData) {
-  proto::Hint hint;
-  hint.set_key("whatever.com");
-  hint.set_key_representation(proto::HOST_SUFFIX);
-
-  google::protobuf::RepeatedPtrField<proto::Hint> hints;
-  *(hints.Add()) = hint;
-
-  std::unique_ptr<StoreUpdateData> update_data =
-      StoreUpdateData::CreateComponentStoreUpdateData(base::Version("1.0.0"));
-  EXPECT_FALSE(ProcessHints(&hints, update_data.get()));
-  // Verify there is 1 store entries: 1 for the metadata entry.
-  EXPECT_EQ(1ul, update_data->TakeUpdateEntries()->size());
-}
-
-TEST(HintsProcessingUtilTest, ProcessHintsWithPageHintsAndUpdateData) {
-  google::protobuf::RepeatedPtrField<proto::Hint> hints;
-
-  proto::Hint hint;
-  hint.set_key("foo.org");
-  hint.set_key_representation(proto::HOST_SUFFIX);
-  proto::PageHint* page_hint = hint.add_page_hints();
-  page_hint->set_page_pattern("foo.org/*/one/");
-  *(hints.Add()) = hint;
-
-  proto::Hint no_host_suffix_hint;
-  no_host_suffix_hint.set_key("foo2.org");
-  proto::PageHint* page_hint3 = no_host_suffix_hint.add_page_hints();
-  page_hint3->set_page_pattern("foo2.org/blahh");
-  *(hints.Add()) = no_host_suffix_hint;
-
-  proto::Hint no_page_hints_hint;
-  no_page_hints_hint.set_key("whatever.com");
-  no_page_hints_hint.set_key_representation(proto::HOST_SUFFIX);
-  *(hints.Add()) = no_page_hints_hint;
-
-  std::unique_ptr<StoreUpdateData> update_data =
-      StoreUpdateData::CreateComponentStoreUpdateData(base::Version("1.0.0"));
-  EXPECT_TRUE(ProcessHints(&hints, update_data.get()));
-  // Verify there are 2 store entries: 1 for the metadata entry plus
-  // the 1 added hint entries.
-  EXPECT_EQ(2ul, update_data->TakeUpdateEntries()->size());
-}
-
 TEST(HintsProcessingUtilTest, ConvertProtoEffectiveConnectionType) {
   EXPECT_EQ(
       ConvertProtoEffectiveConnectionType(
@@ -137,6 +79,18 @@ TEST(HintsProcessingUtilTest, ConvertProtoEffectiveConnectionType) {
   EXPECT_EQ(ConvertProtoEffectiveConnectionType(
                 proto::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G),
             net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G);
+}
+
+TEST(HintsProcessingUtilTest, IsValidURLForURLKeyedHints) {
+  EXPECT_TRUE(IsValidURLForURLKeyedHint(GURL("https://blerg.com")));
+  EXPECT_TRUE(IsValidURLForURLKeyedHint(GURL("http://blerg.com")));
+
+  EXPECT_FALSE(IsValidURLForURLKeyedHint(GURL("file://blerg")));
+  EXPECT_FALSE(IsValidURLForURLKeyedHint(GURL("chrome://blerg")));
+  EXPECT_FALSE(IsValidURLForURLKeyedHint(
+      GURL("https://username:password@www.example.com/")));
+  EXPECT_FALSE(IsValidURLForURLKeyedHint(GURL("https://localhost:5000")));
+  EXPECT_FALSE(IsValidURLForURLKeyedHint(GURL("https://192.168.1.1")));
 }
 
 }  // namespace optimization_guide

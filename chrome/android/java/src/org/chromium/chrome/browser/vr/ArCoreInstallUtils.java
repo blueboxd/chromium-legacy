@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.vr;
 
 import android.app.Activity;
 
-import org.chromium.base.BundleUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
@@ -82,7 +81,8 @@ public class ArCoreInstallUtils implements ModuleInstallUi.FailureUiListener {
     @CalledByNative
     private boolean canRequestInstallArModule() {
         // We can only try to install the AR module if we are in a bundle mode.
-        return BundleUtils.isBundle();
+        // Currently, AR DFM is disabled so we should never have to install it.
+        return false;
     }
 
     @CalledByNative

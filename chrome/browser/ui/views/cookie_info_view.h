@@ -43,19 +43,11 @@ class CookieInfoView : public views::ScrollView {
   // Enables or disables the cookie property text fields.
   void EnableCookieDisplay(bool enabled);
 
- protected:
-  // views::View:
-  void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override;
-
  private:
   // Layout helper routines.
   views::Textfield* AddLabelRow(int layout_id,
                                 views::GridLayout* layout,
                                 int label_message_id);
-
-  // Sets up the view layout.
-  void Init();
 
   // Individual property labels
   views::Textfield* name_value_field_ = nullptr;

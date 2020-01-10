@@ -49,34 +49,35 @@ cr.define('settings', function() {
     FURTHER_SETUP_REQUIRED: 8,
   };
 
+  /**
+   * Container for the initial data that the page requires in order to display
+   * the correct content. It is also used for receiving status updates during
+   * use. Note that the host device may be verified (enabled or disabled),
+   * awaiting verification, or it may have failed setup because it was not able
+   * to connect to the server.
+   *
+   * For each MultiDevice feature (including the "suite" feature, which acts as
+   * a gatekeeper for the others), the corresponding *State property is an enum
+   * containing the data necessary to display it. Note that hostDeviceName
+   * should be undefined if and only if no host has been set up, regardless of
+   * whether there are potential hosts on the account.
+   *
+   * @typedef {{
+   *   mode: !settings.MultiDeviceSettingsMode,
+   *   hostDeviceName: (string|undefined),
+   *   betterTogetherState: !settings.MultiDeviceFeatureState,
+   *   instantTetheringState: !settings.MultiDeviceFeatureState,
+   *   messagesState: !settings.MultiDeviceFeatureState,
+   *   smartLockState: !settings.MultiDeviceFeatureState,
+   *   isAndroidSmsPairingComplete: boolean
+   * }}
+   */
+  let MultiDevicePageContentData;
+
   return {
-    MultiDeviceSettingsMode: MultiDeviceSettingsMode,
-    MultiDeviceFeature: MultiDeviceFeature,
-    MultiDeviceFeatureState: MultiDeviceFeatureState,
+    MultiDeviceSettingsMode,
+    MultiDeviceFeature,
+    MultiDeviceFeatureState,
+    MultiDevicePageContentData,
   };
 });
-
-/**
- * Container for the initial data that the page requires in order to display
- * the correct content. It is also used for receiving status updates during
- * use. Note that the host device may be verified (enabled or disabled),
- * awaiting verification, or it may have failed setup because it was not able
- * to connect to the server.
- *
- * For each MultiDevice feature (including the "suite" feature, which acts as a
- * gatekeeper for the others), the corresponding *State property is an enum
- * containing the data necessary to display it. Note that hostDeviceName should
- * be undefined if and only if no host has been set up, regardless of whether
- * there are potential hosts on the account.
- *
- * @typedef {{
- *   mode: !settings.MultiDeviceSettingsMode,
- *   hostDeviceName: (string|undefined),
- *   betterTogetherState: !settings.MultiDeviceFeatureState,
- *   instantTetheringState: !settings.MultiDeviceFeatureState,
- *   messagesState: !settings.MultiDeviceFeatureState,
- *   smartLockState: !settings.MultiDeviceFeatureState,
- *   isAndroidSmsPairingComplete: boolean
- * }}
- */
-let MultiDevicePageContentData;

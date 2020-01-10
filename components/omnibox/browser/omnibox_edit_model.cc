@@ -767,15 +767,21 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     elapsed_time_since_user_first_modified_omnibox = default_time_delta;
     elapsed_time_since_last_change_to_default_match = default_time_delta;
   }
-  // If the popup is closed or this is a paste-and-go action (meaning the
-  // contents of the dropdown are ignored regardless), we record for logging
-  // purposes a selected_index of 0 and a suggestion list as having a single
-  // entry of the match used.
-  const bool dropdown_ignored = !popup_open || !pasted_text.empty();
+
+  // In some unusual cases, we ignore result() and instead log a fake result set
+  // with a single element (|match|) and selected_index of 0. For these cases:
+  //  1. If the popup is closed (there is no result set).
+  //  2. If the index is out of bounds. This should only happen if |index| is
+  //     kNoMatch, which can happen if the default search provider is disabled.
+  //  3. If this is a paste-and-go action (meaning the contents of the dropdown
+  //     are ignored regardless).
+  const bool dropdown_ignored =
+      !popup_open || index >= result().size() || !pasted_text.empty();
   ACMatches fake_single_entry_matches;
   fake_single_entry_matches.push_back(match);
   AutocompleteResult fake_single_entry_result;
   fake_single_entry_result.AppendMatches(input_, fake_single_entry_matches);
+
   OmniboxLog log(
       input_.from_omnibox_focus() ? base::string16() : input_text,
       just_deleted_text_, input_.type(), is_keyword_selected(),

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.preferences;
 import org.chromium.base.annotations.CheckDiscard;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -236,6 +237,13 @@ public final class ChromePreferenceKeys {
      */
     public static final String DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE =
             "data_reduction_site_breakdown_allowed_date";
+
+    public static final String DOWNLOAD_IS_DOWNLOAD_HOME_ENABLED =
+            "org.chromium.chrome.browser.download.IS_DOWNLOAD_HOME_ENABLED";
+    public static final String DOWNLOAD_PENDING_DOWNLOAD_NOTIFICATIONS =
+            "PendingDownloadNotifications";
+    public static final String DOWNLOAD_PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
+    public static final String DOWNLOAD_UMA_ENTRY = "DownloadUmaEntry";
 
     /**
      * Indicates whether or not there are prefetched content in chrome that can be viewed offline.
@@ -532,6 +540,7 @@ public final class ChromePreferenceKeys {
                 "PhysicalWeb.TotalUrls.OnRefresh",
                 "PhysicalWeb.UrlSelected",
                 "PrefMigrationVersion",
+                "ServiceManagerFeatures",
                 "allow_low_end_device_ui",
                 "allow_starting_service_manager_only",
                 "bookmark_search_history",
@@ -624,6 +633,10 @@ public final class ChromePreferenceKeys {
                 DATA_REDUCTION_FIRST_ENABLED_TIME,
                 DATA_REDUCTION_FRE_PROMO_OPT_OUT,
                 DATA_REDUCTION_SITE_BREAKDOWN_ALLOWED_DATE,
+                DOWNLOAD_IS_DOWNLOAD_HOME_ENABLED,
+                DOWNLOAD_PENDING_DOWNLOAD_NOTIFICATIONS,
+                DOWNLOAD_PENDING_OMA_DOWNLOADS,
+                DOWNLOAD_UMA_ENTRY,
                 FIRST_RUN_CACHED_TOS_ACCEPTED,
                 FIRST_RUN_FLOW_COMPLETE,
                 FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME,
@@ -682,6 +695,16 @@ public final class ChromePreferenceKeys {
                 WEBAPK_UNINSTALLED_PACKAGES
         );
         // clang-format on
+    }
+
+    @CheckDiscard("Validation is performed in tests and in debug builds.")
+    static List<KeyPrefix> createGrandfatheredPrefixesInUse() {
+        return Collections.EMPTY_LIST;
+    }
+
+    @CheckDiscard("Validation is performed in tests and in debug builds.")
+    static List<KeyPrefix> createDeprecatedPrefixesForTesting() {
+        return Collections.EMPTY_LIST;
     }
 
     private ChromePreferenceKeys() {}

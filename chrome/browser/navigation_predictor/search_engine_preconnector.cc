@@ -123,6 +123,9 @@ void SearchEnginePreconnector::PreconnectDSE() {
   auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context_));
 
+  if (!loading_predictor)
+    return;
+
   loading_predictor->preconnect_manager()->StartPreconnectUrl(
       preconnect_url, true /* allow_credentials */,
       net::NetworkIsolationKey(url::Origin::Create(preconnect_url),

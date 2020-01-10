@@ -1013,6 +1013,9 @@ extern const char kPrintPreviewRegisterPromosDescription[];
 extern const char kPrivacySettingsRedesignName[];
 extern const char kPrivacySettingsRedesignDescription[];
 
+extern const char kProfileCardName[];
+extern const char kProfileCardDescription[];
+
 extern const char kProminentDarkModeActiveTabTitleName[];
 extern const char kProminentDarkModeActiveTabTitleDescription[];
 

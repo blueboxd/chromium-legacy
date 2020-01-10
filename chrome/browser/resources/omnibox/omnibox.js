@@ -314,8 +314,8 @@ class ExportDelegate {
   }
 
   exportClipboard() {
-    navigator.clipboard.writeText(JSON.stringify(this.exportData_)).catch(
-        error => console.error('unable to export to clipboard:', error));
+    navigator.clipboard.writeText(JSON.stringify(this.exportData_, null, 2))
+        .catch(error => console.error('unable to export to clipboard:', error));
   }
 
   exportFile() {

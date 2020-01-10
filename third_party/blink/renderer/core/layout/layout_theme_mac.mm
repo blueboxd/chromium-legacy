@@ -367,138 +367,86 @@ void LayoutThemeMac::SystemFont(CSSValueID system_font_id,
   font_family = font_family_names::kSystemUi;
 }
 
-void LayoutThemeMac::PlatformColorsDidChange() {
-  system_color_cache_.clear();
-  LayoutTheme::PlatformColorsDidChange();
-}
-
 Color LayoutThemeMac::SystemColor(CSSValueID css_value_id,
                                   WebColorScheme color_scheme) const {
-  {
-    HashMap<CSSValueID, RGBA32>::iterator it =
-        system_color_cache_.find(css_value_id);
-    if (it != system_color_cache_.end())
-      return it->value;
-  }
-
-  Color color;
-  bool needs_fallback = false;
   switch (css_value_id) {
     case CSSValueID::kActiveborder:
-      color = GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
-      break;
+      return GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
     case CSSValueID::kActivecaption:
-      color = GetSystemColor(MacSystemColorID::kWindowFrameText);
-      break;
+      return GetSystemColor(MacSystemColorID::kWindowFrameText);
     case CSSValueID::kAppworkspace:
-      color = GetSystemColor(MacSystemColorID::kHeader);
-      break;
+      return GetSystemColor(MacSystemColorID::kHeader);
     case CSSValueID::kBackground:
-      // Use theme independent default
-      needs_fallback = true;
+      // Use theme independent default.
       break;
     case CSSValueID::kButtonface:
-      color = GetSystemColor(MacSystemColorID::kControlBackground);
-      break;
+      return GetSystemColor(MacSystemColorID::kControlBackground);
     case CSSValueID::kButtonhighlight:
-      color = GetSystemColor(MacSystemColorID::kControlHighlight);
-      break;
+      return GetSystemColor(MacSystemColorID::kControlHighlight);
     case CSSValueID::kButtonshadow:
-      color = GetSystemColor(MacSystemColorID::kControlShadow);
-      break;
+      return GetSystemColor(MacSystemColorID::kControlShadow);
     case CSSValueID::kButtontext:
-      color = GetSystemColor(MacSystemColorID::kControlText);
-      break;
+      return GetSystemColor(MacSystemColorID::kControlText);
     case CSSValueID::kCaptiontext:
-      color = GetSystemColor(MacSystemColorID::kText);
-      break;
+      return GetSystemColor(MacSystemColorID::kText);
     case CSSValueID::kField:
-      color = GetSystemColor(MacSystemColorID::kControlBackground);
-      break;
+      return GetSystemColor(MacSystemColorID::kControlBackground);
     case CSSValueID::kFieldtext:
-      color = GetSystemColor(MacSystemColorID::kText);
-      break;
+      return GetSystemColor(MacSystemColorID::kText);
     case CSSValueID::kGraytext:
-      color = GetSystemColor(MacSystemColorID::kDisabledControlText);
-      break;
+      return GetSystemColor(MacSystemColorID::kDisabledControlText);
     case CSSValueID::kHighlight:
-      color = GetSystemColor(MacSystemColorID::kSelectedTextBackground);
-      break;
+      return GetSystemColor(MacSystemColorID::kSelectedTextBackground);
     case CSSValueID::kHighlighttext:
-      color = GetSystemColor(MacSystemColorID::kSelectedText);
-      break;
+      return GetSystemColor(MacSystemColorID::kSelectedText);
     case CSSValueID::kInactiveborder:
-      color = GetSystemColor(MacSystemColorID::kControlBackground);
-      break;
+      return GetSystemColor(MacSystemColorID::kControlBackground);
     case CSSValueID::kInactivecaption:
-      color = GetSystemColor(MacSystemColorID::kControlBackground);
-      break;
+      return GetSystemColor(MacSystemColorID::kControlBackground);
     case CSSValueID::kInactivecaptiontext:
-      color = GetSystemColor(MacSystemColorID::kText);
-      break;
+      return GetSystemColor(MacSystemColorID::kText);
     case CSSValueID::kInfobackground:
       // There is no corresponding NSColor for this so we use a hard coded
       // value.
-      color = 0xFFFBFCC5;
-      break;
+      return 0xFFFBFCC5;
     case CSSValueID::kInfotext:
-      color = GetSystemColor(MacSystemColorID::kText);
-      break;
+      return GetSystemColor(MacSystemColorID::kText);
     case CSSValueID::kMenu:
-      color = GetSystemColor(MacSystemColorID::kMenuBackground);
-      break;
+      return GetSystemColor(MacSystemColorID::kMenuBackground);
     case CSSValueID::kMenutext:
-      color = GetSystemColor(MacSystemColorID::kSelectedMenuItemText);
-      break;
+      return GetSystemColor(MacSystemColorID::kSelectedMenuItemText);
     case CSSValueID::kScrollbar:
-      color = GetSystemColor(MacSystemColorID::kScrollBar);
-      break;
+      return GetSystemColor(MacSystemColorID::kScrollBar);
     case CSSValueID::kText:
-      color = GetSystemColor(MacSystemColorID::kText);
-      break;
+      return GetSystemColor(MacSystemColorID::kText);
     case CSSValueID::kThreeddarkshadow:
-      color = GetSystemColor(MacSystemColorID::kControlDarkShadow);
-      break;
+      return GetSystemColor(MacSystemColorID::kControlDarkShadow);
     case CSSValueID::kThreedshadow:
-      color = GetSystemColor(MacSystemColorID::kShadow);
-      break;
+      return GetSystemColor(MacSystemColorID::kShadow);
     case CSSValueID::kThreedface:
       // We use this value instead of NSColor's controlColor to avoid website
       // incompatibilities. We may want to change this to use the NSColor in
       // future.
-      color = 0xFFC0C0C0;
-      break;
+      return 0xFFC0C0C0;
     case CSSValueID::kThreedhighlight:
-      color = GetSystemColor(MacSystemColorID::kHighlight);
-      break;
+      return GetSystemColor(MacSystemColorID::kHighlight);
     case CSSValueID::kThreedlightshadow:
-      color = GetSystemColor(MacSystemColorID::kControlLightHighlight);
-      break;
+      return GetSystemColor(MacSystemColorID::kControlLightHighlight);
     case CSSValueID::kWebkitFocusRingColor:
-      color = GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
-      break;
+      return GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
     case CSSValueID::kWindow:
     case CSSValueID::kCanvas:
-      color = GetSystemColor(MacSystemColorID::kWindowBackground);
-      break;
+      return GetSystemColor(MacSystemColorID::kWindowBackground);
     case CSSValueID::kWindowframe:
-      color = GetSystemColor(MacSystemColorID::kWindowFrame);
-      break;
+      return GetSystemColor(MacSystemColorID::kWindowFrame);
     case CSSValueID::kWindowtext:
     case CSSValueID::kCanvastext:
-      color = GetSystemColor(MacSystemColorID::kWindowFrameText);
-      break;
+      return GetSystemColor(MacSystemColorID::kWindowFrameText);
     default:
-      needs_fallback = true;
       break;
   }
 
-  if (needs_fallback)
-    color = LayoutTheme::SystemColor(css_value_id, color_scheme);
-
-  system_color_cache_.Set(css_value_id, color.Rgb());
-
-  return color;
+  return LayoutTheme::SystemColor(css_value_id, color_scheme);
 }
 
 bool LayoutThemeMac::IsControlStyled(ControlPart part,

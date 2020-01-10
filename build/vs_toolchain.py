@@ -82,7 +82,6 @@ def SetEnvironmentAndGetRuntimeDllDirs():
       vs_runtime_dll_dirs.append('Arm64Unused')
 
     os.environ['GYP_MSVS_OVERRIDE_PATH'] = toolchain
-    os.environ['GYP_MSVS_VERSION'] = version
 
     os.environ['WINDOWSSDKDIR'] = win_sdk
     os.environ['WDK_DIR'] = wdk
@@ -92,8 +91,6 @@ def SetEnvironmentAndGetRuntimeDllDirs():
   elif sys.platform == 'win32' and not depot_tools_win_toolchain:
     if not 'GYP_MSVS_OVERRIDE_PATH' in os.environ:
       os.environ['GYP_MSVS_OVERRIDE_PATH'] = DetectVisualStudioPath()
-    if not 'GYP_MSVS_VERSION' in os.environ:
-      os.environ['GYP_MSVS_VERSION'] = GetVisualStudioVersion()
 
     # When using an installed toolchain these files aren't needed in the output
     # directory in order to run binaries locally, but they are needed in order
@@ -143,11 +140,6 @@ def _RegistryGetValue(key, value):
 def GetVisualStudioVersion():
   """Return best available version of Visual Studio.
   """
-
-  env_version = os.environ.get('GYP_MSVS_VERSION')
-  if env_version:
-    return env_version
-
   supported_versions = MSVS_VERSIONS.keys()
 
   # VS installed in depot_tools for Googlers
@@ -175,7 +167,7 @@ def GetVisualStudioVersion():
 
 
 def DetectVisualStudioPath():
-  """Return path to the GYP_MSVS_VERSION of Visual Studio.
+  """Return path to the installed Visual Studio.
   """
 
   # Note that this code is used from
@@ -203,8 +195,7 @@ def DetectVisualStudioPath():
     if path and os.path.exists(path):
       return path
 
-  raise Exception('Visual Studio Version %s (from GYP_MSVS_VERSION)'
-                  ' not found.' % version_as_year)
+  raise Exception('Visual Studio Version %s not found.' % version_as_year)
 
 
 def _CopyRuntimeImpl(target, source, verbose=True):
@@ -500,9 +491,6 @@ def Update(force=False, no_download=False):
       subprocess.check_call([
           ciopfs, '-o', 'use_ino', toolchain_dir + '.ciopfs', toolchain_dir])
 
-    # Necessary so that get_toolchain_if_necessary.py will put the VS toolkit
-    # in the correct directory.
-    os.environ['GYP_MSVS_VERSION'] = GetVisualStudioVersion()
     get_toolchain_args = [
         sys.executable,
         os.path.join(depot_tools_path,

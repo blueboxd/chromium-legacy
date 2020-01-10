@@ -5,13 +5,13 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
+#include "ash/system/tray/tray_utils.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -19,7 +19,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/metrics/histogram_macros.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/window.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/wm/core/window_util.h"
@@ -88,7 +87,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   init_params.anchor_view = nullptr;
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = tray->shelf()->GetSystemTrayAnchorRect();
-  init_params.insets = GetInsets();
+  init_params.insets = GetTrayBubbleInsets();
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
   init_params.show_by_click = show_by_click;
@@ -174,6 +173,16 @@ void UnifiedSystemTrayBubble::EnsureExpanded() {
   DCHECK(unified_view_);
   DCHECK(controller_);
   controller_->EnsureExpanded();
+}
+
+void UnifiedSystemTrayBubble::CollapseWithoutAnimating() {
+  if (!bubble_widget_)
+    return;
+
+  DCHECK(unified_view_);
+  DCHECK(controller_);
+
+  controller_->CollapseWithoutAnimating();
 }
 
 void UnifiedSystemTrayBubble::CollapseMessageCenter() {
@@ -359,28 +368,6 @@ void UnifiedSystemTrayBubble::OnAnimationFinished() {
 void UnifiedSystemTrayBubble::SetFrameVisible(bool visible) {
   DCHECK(bubble_widget_);
   bubble_widget_->non_client_view()->frame_view()->SetVisible(visible);
-}
-
-gfx::Insets UnifiedSystemTrayBubble::GetInsets() {
-  // Decrease bottom and right insets to compensate for the adjustment of
-  // the respective edges in Shelf::GetSystemTrayAnchorRect().
-  gfx::Insets insets = gfx::Insets(
-      kUnifiedMenuPadding, kUnifiedMenuPadding, kUnifiedMenuPadding - 1,
-      kUnifiedMenuPadding - (base::i18n::IsRTL() ? 0 : 1));
-
-  // The work area in tablet mode always uses the in-app shelf height, which is
-  // shorter than the standard shelf height. In this state, we need to add back
-  // the difference to compensate (see crbug.com/1033302).
-  bool in_tablet_mode = Shell::Get()->tablet_mode_controller() &&
-                        Shell::Get()->tablet_mode_controller()->InTabletMode();
-  bool is_bottom_alignment =
-      tray_->shelf()->alignment() == ShelfAlignment::kBottom;
-  if (chromeos::switches::ShouldShowShelfHotseat() && in_tablet_mode &&
-      !ShelfConfig::Get()->is_in_app() && is_bottom_alignment) {
-    insets.set_bottom(insets.bottom() + kUnifiedNonInAppBubblePadding);
-  }
-
-  return insets;
 }
 
 }  // namespace ash

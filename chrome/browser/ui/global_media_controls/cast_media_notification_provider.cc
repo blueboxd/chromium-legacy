@@ -49,9 +49,11 @@ void CastMediaNotificationProvider::OnRoutesUpdated(
             media_router::RouteControllerType::kGeneric) {
       continue;
     }
-    if (std::find_if(items_.begin(), items_.end(), [&route](const auto& item) {
+    auto item_it =
+        std::find_if(items_.begin(), items_.end(), [&route](const auto& item) {
           return item.first == route.media_route_id();
-        }) == items_.end()) {
+        });
+    if (item_it == items_.end()) {
       mojo::Remote<media_router::mojom::MediaController> controller_remote;
       mojo::PendingReceiver<media_router::mojom::MediaController>
           controller_receiver = controller_remote.BindNewPipeAndPassReceiver();
@@ -65,6 +67,8 @@ void CastMediaNotificationProvider::OnRoutesUpdated(
       router_->GetMediaController(
           route.media_route_id(), std::move(controller_receiver),
           it_pair.first->second.GetObserverPendingRemote());
+    } else {
+      item_it->second.OnRouteUpdated(route);
     }
   }
   if (HasItems() != had_items)

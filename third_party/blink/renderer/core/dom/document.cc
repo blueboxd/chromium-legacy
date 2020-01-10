@@ -8666,6 +8666,10 @@ void Document::UpdateForcedColors() {
   in_forced_colors_mode_ = forced_colors != ForcedColors::kNone;
 }
 
+bool Document::InForcedColorsMode() const {
+  return in_forced_colors_mode_ && !Printing();
+}
+
 bool Document::IsCrossSiteSubframe() const {
   // It'd be nice to avoid the url::Origin temporaries, but that would require
   // exposing the net internal helper.

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor.layouts;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
@@ -148,7 +149,7 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     public void onContentChanged() {}
 
     @Override
-    public int getBrowserControlsBackgroundColor() {
+    public int getBrowserControlsBackgroundColor(Resources res) {
         return 0;
     }
 

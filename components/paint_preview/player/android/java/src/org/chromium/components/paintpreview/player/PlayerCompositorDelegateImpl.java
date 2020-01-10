@@ -12,6 +12,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.paintpreview.browser.PaintPreviewBaseService;
 
 import javax.annotation.Nonnull;
 
@@ -27,16 +28,22 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     }
 
     private CompositorListener mCompositorListener;
-    private long mNativePaintPreviewPlayerMediator;
+    private long mNativePlayerCompositorDelegate;
 
-    PlayerCompositorDelegateImpl(String url, @Nonnull CompositorListener compositorListener) {
+    PlayerCompositorDelegateImpl(PaintPreviewBaseService service, String url,
+            @Nonnull CompositorListener compositorListener) {
         mCompositorListener = compositorListener;
-        mNativePaintPreviewPlayerMediator =
-                PlayerCompositorDelegateImplJni.get().initialize(this, url);
+        if (service != null && service.getNativePaintPreviewBaseService() != 0) {
+            mNativePlayerCompositorDelegate = PlayerCompositorDelegateImplJni.get().initialize(
+                    this, service.getNativePaintPreviewBaseService(), url);
+        }
+        // TODO(crbug.com/1021590): Handle initialization errors when
+        // mNativePlayerCompositorDelegate == 0.
     }
 
     /**
      * Called by native when the Paint Preview compositor is ready.
+     *
      * @param rootFrameGuid The GUID for the root frame.
      * @param frameGuids Contains all frame GUIDs that are in this hierarchy.
      * @param frameContentSize Contains the content size for each frame. In native, this is called
@@ -68,31 +75,32 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     @Override
     public void requestBitmap(long frameGuid, Rect clipRect, float scaleFactor,
             Callback<Bitmap> bitmapCallback, Runnable errorCallback) {
-        if (mNativePaintPreviewPlayerMediator == 0) return;
+        if (mNativePlayerCompositorDelegate == 0) return;
 
-        PlayerCompositorDelegateImplJni.get().requestBitmap(mNativePaintPreviewPlayerMediator,
+        PlayerCompositorDelegateImplJni.get().requestBitmap(mNativePlayerCompositorDelegate,
                 frameGuid, bitmapCallback, errorCallback, scaleFactor, clipRect.left, clipRect.top,
                 clipRect.width(), clipRect.height());
     }
 
     @Override
     public void onClick(long frameGuid, Point point) {
-        if (mNativePaintPreviewPlayerMediator == 0) return;
+        if (mNativePlayerCompositorDelegate == 0) return;
 
         PlayerCompositorDelegateImplJni.get().onClick(
-                mNativePaintPreviewPlayerMediator, frameGuid, point.x, point.y);
+                mNativePlayerCompositorDelegate, frameGuid, point.x, point.y);
     }
 
     void destroy() {
-        if (mNativePaintPreviewPlayerMediator == 0) return;
+        if (mNativePlayerCompositorDelegate == 0) return;
 
-        PlayerCompositorDelegateImplJni.get().destroy(mNativePaintPreviewPlayerMediator);
-        mNativePaintPreviewPlayerMediator = 0;
+        PlayerCompositorDelegateImplJni.get().destroy(mNativePlayerCompositorDelegate);
+        mNativePlayerCompositorDelegate = 0;
     }
 
     @NativeMethods
     interface Natives {
-        long initialize(PlayerCompositorDelegateImpl caller, String url);
+        long initialize(PlayerCompositorDelegateImpl caller, long nativePaintPreviewBaseService,
+                String url);
         void destroy(long nativePlayerCompositorDelegateAndroid);
         void requestBitmap(long nativePlayerCompositorDelegateAndroid, long frameGuid,
                 Callback<Bitmap> bitmapCallback, Runnable errorCallback, float scaleFactor,

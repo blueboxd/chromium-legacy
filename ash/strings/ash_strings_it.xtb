@@ -46,6 +46,7 @@
 <translation id="1460620680449458626">Il volume è disattivato.</translation>
 <translation id="1467432559032391204">Sinistra</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1508507608940204251">On</translation>
 <translation id="1516740043221086139">La modalità Non disturbare è attiva.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostra impostazioni di notifica. Le notifiche sono disattivate per un'app}other{Mostra impostazioni di notifica. Le notifiche sono disattivate per # app}}</translation>
 <translation id="1525508553941733066">IGNORA</translation>
@@ -70,6 +71,7 @@
 <translation id="1836215606488044471">Assistente (caricamento…)</translation>
 <translation id="1838895407229022812">Luminosità notturna non attiva.</translation>
 <translation id="1850504506766569011">Wi-Fi non attivo.</translation>
+<translation id="1859889070386344428">Off</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta posteriore)</translation>
 <translation id="1882897271359938046">Mirroring su <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Sblocca con l'impronta digitale</translation>
@@ -122,6 +124,7 @@
 <translation id="2501920221385095727">Tasti permanenti</translation>
 <translation id="2509468283778169019">BLOC MAIUSC è attivo</translation>
 <translation id="2517825809102302935">Disattiva per stanotte</translation>
+<translation id="2519465031217098801">On</translation>
 <translation id="2542089167727451762">Tocca la tua immagine del profilo</translation>
 <translation id="255671100581129685">L'Assistente Google non è disponibile in una sessione pubblica.</translation>
 <translation id="256712445991462162">la lente d'ingrandimento ancorata</translation>
@@ -226,6 +229,7 @@
 <translation id="3901991538546252627">Connessione a: <ph name="NAME" /></translation>
 <translation id="394485226368336402">Impostazioni audio</translation>
 <translation id="3962859241508114581">Traccia precedente</translation>
+<translation id="3965097803111112935">Off</translation>
 <translation id="397105322502079400">Calcolo in corso...</translation>
 <translation id="3977512764614765090">Percentuale di carica della batteria: <ph name="PERCENTAGE" />%. La batteria è in carica.</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta posteriore destra)</translation>
@@ -308,6 +312,7 @@
 <translation id="5207949376430453814">Evidenzia il cursore di testo</translation>
 <translation id="5222676887888702881">Esci</translation>
 <translation id="523505283826916779">Impostazioni di accessibilità</translation>
+<translation id="5250225880026334010">Off</translation>
 <translation id="5260676007519551770">Scrivania 4</translation>
 <translation id="5283198616748585639">Aggiungi 1 min</translation>
 <translation id="5286194356314741248">Ricerca</translation>
@@ -409,6 +414,7 @@
 <translation id="6650933572246256093">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questa passkey sul dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6665545700722362599">Concedere a siti web, app ed estensioni l'autorizzazione a utilizzare i servizi di geolocalizzazione, il microfono del dispositivo, la fotocamera o altre funzioni.</translation>
+<translation id="6669268301501499730">On</translation>
 <translation id="6670153871843998651">Scrivania 3</translation>
 <translation id="6691659475504239918">Tasto per la ricerca + MAIUSC + H</translation>
 <translation id="6696025732084565524">La tastiera rimovibile richiede un aggiornamento critico</translation>

@@ -95,6 +95,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   LayoutStrategy layout_strategy_for_test() const { return layout_strategy_; }
   gfx::Vector2dF scroll_offset_for_test() const { return scroll_offset_; }
 
+  const DragImageView* drag_icon_for_test() const { return drag_icon_.get(); }
+
   int first_tappable_app_index() { return first_tappable_app_index_; }
   int last_tappable_app_index() { return last_tappable_app_index_; }
 
@@ -117,6 +119,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
  private:
   class GradientLayerDelegate;
   class ScrollableShelfArrowView;
+  class DragIconDropAnimationDelegate;
 
   struct FadeZone {
     // Bounds of the fade in/out zone.
@@ -436,6 +439,11 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Replaces the dragged app icon during drag procedure. It ensures that the
   // app icon can be dragged out of the shelf view.
   std::unique_ptr<DragImageView> drag_icon_;
+
+  // The delegate to create the animation of moving the dropped icon to the
+  // ideal place after drag release.
+  std::unique_ptr<DragIconDropAnimationDelegate>
+      drag_icon_drop_animation_delegate_;
 
   base::OneShotTimer page_flip_timer_;
 

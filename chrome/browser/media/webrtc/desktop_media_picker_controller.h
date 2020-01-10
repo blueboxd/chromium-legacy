@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -86,6 +87,7 @@ class DesktopMediaPickerController : private content::WebContentsObserver {
   std::vector<std::unique_ptr<DesktopMediaList>> source_lists_;
   std::unique_ptr<DesktopMediaPicker> picker_;
   DesktopMediaPickerFactory* picker_factory_;
+  base::WeakPtrFactory<DesktopMediaPickerController> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_DESKTOP_MEDIA_PICKER_CONTROLLER_H_

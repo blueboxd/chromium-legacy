@@ -38,8 +38,10 @@ void InspectorTaskRunner::AppendTask(Task task) {
       CrossThreadBindOnce(
           &InspectorTaskRunner::PerformSingleInterruptingTaskDontWait,
           WrapRefCounted(this)));
-  if (isolate_)
+  if (isolate_) {
+    AddRef();
     isolate_->RequestInterrupt(&V8InterruptCallback, this);
+  }
 }
 
 void InspectorTaskRunner::AppendTaskDontInterrupt(Task task) {
@@ -69,6 +71,7 @@ void InspectorTaskRunner::PerformSingleInterruptingTaskDontWait() {
 void InspectorTaskRunner::V8InterruptCallback(v8::Isolate*, void* data) {
   InspectorTaskRunner* runner = static_cast<InspectorTaskRunner*>(data);
   Task task = runner->TakeNextInterruptingTask();
+  runner->Release();
   if (!task) {
     return;
   }

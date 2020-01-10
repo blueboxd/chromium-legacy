@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Popup navigating to other origin with COOP: same-origin and back in history assert_equals: name expected "" but got "Popup-navigating-to-other-origin-with-COOP:-same-origin-and-back-in-history"
+Harness: the test ran to completion.
+

@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/layout/animating_layout_manager_test_util.h"
 
 // The param indicates if the feature showing password icon in the new toolbar
 // status chip is enabled.
@@ -64,22 +65,18 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest,
 
   void WaitForAnimationToEnd() {
     auto* const animating_layout = GetAnimatingLayoutManager();
-    if (animating_layout) {
-      // Wait for animations to finish.
-      base::RunLoop loop;
-      animating_layout->PostOrQueueAction(loop.QuitClosure());
-      loop.Run();
-    }
+    if (animating_layout)
+      views::test::WaitForAnimatingLayoutManager(animating_layout);
   }
 
  private:
   views::AnimatingLayoutManager* GetAnimatingLayoutManager() {
-    return GetParam() ? static_cast<views::AnimatingLayoutManager*>(
-                            BrowserView::GetBrowserViewForBrowser(browser())
-                                ->toolbar()
-                                ->toolbar_account_icon_container()
-                                ->GetLayoutManager())
-                      : nullptr;
+    if (!GetParam())
+      return nullptr;
+    return views::test::GetAnimatingLayoutManager(
+        BrowserView::GetBrowserViewForBrowser(browser())
+            ->toolbar()
+            ->toolbar_account_icon_container());
   }
 
   void ReduceAnimationTime() {

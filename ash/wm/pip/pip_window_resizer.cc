@@ -167,16 +167,16 @@ PipWindowResizer::~PipWindowResizer() {
 }
 
 // TODO(edcourtney): Implement swipe-to-dismiss on fling.
-void PipWindowResizer::Drag(const gfx::Point& location_in_parent,
+void PipWindowResizer::Drag(const gfx::PointF& location_in_parent,
                             int event_flags) {
   last_location_in_screen_ = location_in_parent;
   ::wm::ConvertPointToScreen(GetTarget()->parent(), &last_location_in_screen_);
 
-  gfx::Vector2d movement_direction =
+  gfx::Vector2dF movement_direction =
       location_in_parent - details().initial_location_in_parent;
   // If we are not sure if this is a swipe or not yet, don't modify any bounds.
-  int movement_distance2 = movement_direction.x() * movement_direction.x() +
-                           movement_direction.y() * movement_direction.y();
+  float movement_distance2 = movement_direction.x() * movement_direction.x() +
+                             movement_direction.y() * movement_direction.y();
   if ((may_dismiss_horizontally_ || may_dismiss_vertically_) &&
       movement_distance2 <= kPipDismissSlop * kPipDismissSlop) {
     return;

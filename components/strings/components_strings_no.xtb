@@ -722,6 +722,7 @@ brukere av denne nettleseren.</translation>
 <translation id="4340982228985273705">Denne datamaskinen er ikke registrert som administrert av en bedrift, så regelen kan bare automatisk installere utvidelser som finnes på Chrome Nettmarked. Nettadressen for Chrome Nettmarked-oppdateringen er «<ph name="CWS_UPDATE_URL" />».</translation>
 <translation id="4346197816712207223">Godkjente kredittkort</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chrome anbefaler at du går til <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og andre nettsteder der du bruker dette passordet, og endrer det nå.</translation>
 <translation id="4356973930735388585">Angripere på dette nettstedet kan prøve å installere farlige programmer på datamaskinen din. Disse kan stjele eller slette informasjonen din (for eksempel bilder, passord, e-post og kredittkortinformasjon).</translation>
 <translation id="4358059973562876591">Malene du har angitt, kan ikke tas i bruk på grunn av en feil med DnsOverHttpsMode-regelen.</translation>
 <translation id="4358461427845829800">Administrer betalingsmåter…</translation>
@@ -1250,6 +1251,7 @@ brukere av denne nettleseren.</translation>
 <translation id="6970216967273061347">Område</translation>
 <translation id="6973656660372572881">Både statiske proxytjenere og en .pac-skriptnettadresse er angitt.</translation>
 <translation id="6973932557599545801">Beklager, jeg kan ikke hjelpe deg. Fortsett på egen hånd.</translation>
+<translation id="6975012522936652259">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chromium anbefaler at du går til <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> og andre nettsteder der du bruker dette passordet, og endrer det nå.</translation>
 <translation id="6979158407327259162">Google Disk</translation>
 <translation id="6979440798594660689">Kutt lyden (standard)</translation>
 <translation id="6989763994942163495">Vis avanserte innstillinger</translation>
@@ -1380,6 +1382,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7567204685887185387">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat kan ha blitt utstedt på uredelig vis. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="7569952961197462199">Vil du fjerne kredittkortet fra Chrome?</translation>
 <translation id="7569983096843329377">Svart</translation>
+<translation id="7575207903026901870">Knapp for å fjerne forslag – trykk på Enter for å fjerne dette forslaget</translation>
 <translation id="7578104083680115302">Når du lagrer kort med Google, kan du bruke dem til å betale raskt på nettsteder og i apper – uansett hvilken enhet du bruker.</translation>
 <translation id="7592362899630581445">Tjenerens sertifikat bryter navnereglene.</translation>
 <translation id="7598391785903975535">Under <ph name="UPPER_ESTIMATE" /></translation>
@@ -1625,6 +1628,7 @@ Mer informasjon:
 <translation id="8891727572606052622">Ugyldig modus for proxy-tjener.</translation>
 <translation id="8903921497873541725">Zoom inn</translation>
 <translation id="890485472659500557">Engineering-C</translation>
+<translation id="890493561996401738">Knapp for å fjerne forslag – trykk på Enter for å fjerne. <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Nå er du inkognito</translation>
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8918231688545606538">Denne siden er mistenkelig</translation>

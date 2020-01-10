@@ -1421,7 +1421,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   render_view->render_widget_ = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
       params->visual_properties.display_mode,
-      /*is_undead=*/false, render_view->widgets_never_visible());
+      /*is_undead=*/false, render_view->widgets_never_composited());
 
   RenderWidget* render_widget = render_view->GetWidget();
   render_widget->set_delegate(render_view);
@@ -1603,7 +1603,7 @@ void RenderFrameImpl::CreateFrame(
       render_view->render_widget_ = RenderWidget::CreateForFrame(
           widget_params->routing_id, compositor_deps,
           widget_params->visual_properties.display_mode,
-          /*is_undead=*/false, render_view->widgets_never_visible());
+          /*is_undead=*/false, render_view->widgets_never_composited());
 
       render_widget = render_view->GetWidget();
       render_widget->set_delegate(render_view);
@@ -1645,7 +1645,7 @@ void RenderFrameImpl::CreateFrame(
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params->routing_id, compositor_deps,
         widget_params->visual_properties.display_mode,
-        /*is_undead=*/false, render_view->widgets_never_visible());
+        /*is_undead=*/false, render_view->widgets_never_composited());
 
     // Non-owning pointer that is self-referencing and destroyed by calling
     // Close(). We use the new RenderWidget as the client for this

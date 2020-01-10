@@ -346,8 +346,6 @@ class MockDnsClient : public DnsClient {
   bool SetConfigOverrides(DnsConfigOverrides config_overrides) override;
   const DnsConfig* GetEffectiveConfig() const override;
   const DnsHosts* GetHosts() const override;
-  void ActivateDohProbes(URLRequestContext* url_request_context) override;
-  void CancelDohProbes() override;
   DnsTransactionFactory* GetTransactionFactory() override;
   AddressSorter* GetAddressSorter() override;
   void IncrementInsecureFallbackFailures() override;
@@ -387,9 +385,6 @@ class MockDnsClient : public DnsClient {
   int max_fallback_failures_ = DnsClient::kMaxInsecureFallbackFailures;
   bool ignore_system_config_changes_ = false;
   bool doh_server_available_ = true;
-
-  URLRequestContext* probe_context_ = nullptr;
-  std::unique_ptr<DnsProbeRunner> probe_transaction_;
 
   base::Optional<DnsConfig> config_;
   DnsConfigOverrides overrides_;

@@ -187,14 +187,14 @@ MCSClient::~MCSClient() {
 }
 
 void MCSClient::Initialize(
-    ErrorCallback error_callback,
+    const ErrorCallback& error_callback,
     const OnMessageReceivedCallback& message_received_callback,
     const OnMessageSentCallback& message_sent_callback,
     std::unique_ptr<GCMStore::LoadResult> load_result) {
   DCHECK_EQ(state_, UNINITIALIZED);
 
   state_ = LOADED;
-  mcs_error_callback_ = std::move(error_callback);
+  mcs_error_callback_ = error_callback;
   message_received_callback_ = message_received_callback;
   message_sent_callback_ = message_sent_callback;
 
@@ -238,7 +238,7 @@ void MCSClient::Initialize(
     if (!base::StringToUint64(iter->first, &timestamp)) {
       LOG(ERROR) << "Invalid restored message.";
       // TODO(fgorski): Error: data unreadable
-      std::move(mcs_error_callback_).Run();
+      mcs_error_callback_.Run();
       return;
     }
 
@@ -708,7 +708,7 @@ void MCSClient::HandlePacketFromWire(
         LOG(ERROR) << "Failed to log in to GCM, resetting connection.";
         connection_factory_->SignalConnectionReset(
             ConnectionFactory::LOGIN_FAILURE);
-        std::move(mcs_error_callback_).Run();
+        mcs_error_callback_.Run();
         return;
       }
 

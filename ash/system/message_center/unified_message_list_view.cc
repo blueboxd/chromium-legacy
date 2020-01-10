@@ -52,32 +52,6 @@ bool CompareNotifications(message_center::Notification* n1,
 
 }  // namespace
 
-// The background of the UnifiedMessageListView, which has a strait top and a
-// rounded bottom.
-class UnifiedMessageListView::Background : public views::Background {
- public:
-  Background() = default;
-  ~Background() override = default;
-
-  // views::Background:
-  void Paint(gfx::Canvas* canvas, View* view) const override {
-    gfx::Rect bounds = view->GetLocalBounds();
-    SkPath background_path;
-    SkScalar radius = SkIntToScalar(kUnifiedTrayCornerRadius);
-    SkScalar radii[8] = {0, 0, 0, 0, radius, radius, radius, radius};
-    background_path.addRoundRect(gfx::RectToSkRect(bounds), radii);
-
-    cc::PaintFlags flags;
-    flags.setColor(message_center_style::kSwipeControlBackgroundColor);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setAntiAlias(true);
-    canvas->DrawPath(background_path, flags);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Background);
-};
-
 // Container view of notification and swipe control.
 // All children of UnifiedMessageListView should be MessageViewContainer.
 class UnifiedMessageListView::MessageViewContainer
@@ -235,8 +209,8 @@ UnifiedMessageListView::UnifiedMessageListView(
       animation_(std::make_unique<gfx::LinearAnimation>(this)) {
   MessageCenter::Get()->AddObserver(this);
   animation_->SetCurrentValue(1.0);
-  SetBackground(std::unique_ptr<views::Background>(
-      new UnifiedMessageListView::Background()));
+  SetBackground(views::CreateSolidBackground(
+      message_center_style::kSwipeControlBackgroundColor));
 }
 
 UnifiedMessageListView::~UnifiedMessageListView() {

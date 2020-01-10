@@ -258,6 +258,13 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   LayerTreeHostImpl& operator=(const LayerTreeHostImpl&) = delete;
 
+  // TODO(bokan): Replace calls in unit tests to ScrollUpdate and make these
+  // private.
+  void ScrollAnimated(const gfx::Point& viewport_point,
+                      const gfx::Vector2dF& scroll_delta,
+                      base::TimeDelta delayed_by = base::TimeDelta());
+  InputHandlerScrollResult ScrollBy(ScrollState* scroll_state);
+
   // InputHandler implementation
   void BindToClient(InputHandlerClient* client) override;
   InputHandler::ScrollStatus ScrollBegin(
@@ -266,10 +273,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   InputHandler::ScrollStatus RootScrollBegin(
       ScrollState* scroll_state,
       InputHandler::ScrollInputType type) override;
-  void ScrollAnimated(const gfx::Point& viewport_point,
-                      const gfx::Vector2dF& scroll_delta,
-                      base::TimeDelta delayed_by = base::TimeDelta()) override;
-  InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) override;
+  InputHandlerScrollResult ScrollUpdate(
+      ScrollState* scroll_state,
+      InputHandler::ScrollInputType type,
+      base::TimeDelta delayed_by = base::TimeDelta()) override;
   void RequestUpdateForSynchronousInputHandler() override;
   void SetSynchronousInputHandlerRootScrollOffset(
       const gfx::ScrollOffset& root_content_offset) override;
@@ -924,6 +931,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                           InputHandler::ScrollInputType type);
 
   void ScrollLatchedScroller(ScrollState* scroll_state);
+
+  bool ShouldAnimateScroll(const ScrollState& scroll_state,
+                           InputHandler::ScrollInputType type) const;
 
   bool AnimatePageScale(base::TimeTicks monotonic_time);
   bool AnimateScrollbars(base::TimeTicks monotonic_time);

@@ -4,6 +4,8 @@
 
 #include "net/cert_net/nss_ocsp_session_url_request.h"
 
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -76,12 +78,38 @@ OCSPIOLoop* GetOCSPIOLoop() {
   return ocsp_io_loop.get();
 }
 
+class OCSPRequestSessionDelegateFactoryURLRequest
+    : public OCSPRequestSessionDelegateFactory {
+ public:
+  OCSPRequestSessionDelegateFactoryURLRequest(
+      URLRequestContext* request_context)
+      : request_context_(request_context), weak_ptr_factory_(this) {
+    weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
+  }
+
+  scoped_refptr<OCSPRequestSessionDelegate> CreateOCSPRequestSessionDelegate()
+      override;
+
+  ~OCSPRequestSessionDelegateFactoryURLRequest() override = default;
+
+  URLRequestContext* request_context() const { return request_context_; }
+
+ private:
+  URLRequestContext* request_context_;
+
+  base::WeakPtr<OCSPRequestSessionDelegateFactoryURLRequest> weak_ptr_;
+  base::WeakPtrFactory<OCSPRequestSessionDelegateFactoryURLRequest>
+      weak_ptr_factory_;
+};
+
 class OCSPRequestSessionDelegateURLRequest : public OCSPRequestSessionDelegate,
                                              public URLRequest::Delegate {
  public:
-  OCSPRequestSessionDelegateURLRequest(URLRequestContext* request_context)
+  OCSPRequestSessionDelegateURLRequest(
+      base::WeakPtr<OCSPRequestSessionDelegateFactoryURLRequest>
+          delegate_factory)
       : buffer_(base::MakeRefCounted<IOBuffer>(kRecvBufferSize)),
-        request_context_(request_context),
+        delegate_factory_(std::move(delegate_factory)),
         cv_(&lock_) {}
 
   // OCSPRequestSessionDelegate overrides.
@@ -198,14 +226,7 @@ class OCSPRequestSessionDelegateURLRequest : public OCSPRequestSessionDelegate,
       FinishLoad();  // Will return a nullptr as the result.
       return;
     }
-    if (finished_) {
-      // This may occur if the OCSPIOLoop has already called Shutdown() (i.e.
-      // SetURLRequestContextForNSSHttpIO(nullptr) has been called), but the
-      // NSS worker thread posted a StartLoad task before Shutdown() was called.
-      // Since Shutdown() was called already, the tasks should all have been
-      // cancelled and FinishLoad() should already have been called. We have
-      // to make sure we honor the cancellation because |request_context_| may
-      // no longer be valid.
+    if (!delegate_factory_) {
       return;
     }
 
@@ -233,8 +254,8 @@ class OCSPRequestSessionDelegateURLRequest : public OCSPRequestSessionDelegate,
           setting: "This feature cannot be disabled by settings."
           policy_exception_justification: "Not implemented."
         })");
-    request_ = request_context_->CreateRequest(params->url, DEFAULT_PRIORITY,
-                                               this, traffic_annotation);
+    request_ = delegate_factory_->request_context()->CreateRequest(
+        params->url, DEFAULT_PRIORITY, this, traffic_annotation);
     request_->SetLoadFlags(LOAD_DISABLE_CACHE);
     request_->set_allow_credentials(false);
 
@@ -266,7 +287,7 @@ class OCSPRequestSessionDelegateURLRequest : public OCSPRequestSessionDelegate,
       base::AutoLock autolock(lock_);
       finished_ = true;
     }
-    request_context_ = nullptr;
+    delegate_factory_.reset();
     request_.reset();
     GetOCSPIOLoop()->RemoveRequest(this);
 
@@ -277,7 +298,7 @@ class OCSPRequestSessionDelegateURLRequest : public OCSPRequestSessionDelegate,
 
   std::unique_ptr<URLRequest> request_;  // The actual request this wraps
   scoped_refptr<IOBuffer> buffer_;       // Read buffer
-  URLRequestContext* request_context_;
+  base::WeakPtr<OCSPRequestSessionDelegateFactoryURLRequest> delegate_factory_;
 
   std::unique_ptr<OCSPRequestSessionResult> result_;
   bool finished_ = false;
@@ -341,23 +362,11 @@ void OCSPIOLoop::CancelAllRequests() {
     (*request_delegates_.begin())->CancelLoad();
 }
 
-class OCSPRequestSessionDelegateFactoryURLRequest
-    : public OCSPRequestSessionDelegateFactory {
- public:
-  OCSPRequestSessionDelegateFactoryURLRequest(
-      URLRequestContext* request_context)
-      : request_context_(request_context) {}
-  scoped_refptr<OCSPRequestSessionDelegate> CreateOCSPRequestSessionDelegate()
-      override {
-    return base::MakeRefCounted<OCSPRequestSessionDelegateURLRequest>(
-        request_context_);
-  }
-
-  ~OCSPRequestSessionDelegateFactoryURLRequest() override = default;
-
- private:
-  URLRequestContext* request_context_;
-};
+scoped_refptr<OCSPRequestSessionDelegate>
+OCSPRequestSessionDelegateFactoryURLRequest::
+    CreateOCSPRequestSessionDelegate() {
+  return base::MakeRefCounted<OCSPRequestSessionDelegateURLRequest>(weak_ptr_);
+}
 
 void SetURLRequestContextForNSSHttpIO(URLRequestContext* request_context) {
   if (request_context) {

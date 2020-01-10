@@ -13,6 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "content/public/renderer/worker_thread.h"
+#include "extensions/common/activation_sequence.h"
 #include "extensions/common/extension_id.h"
 #include "ipc/ipc_sync_message_filter.h"
 
@@ -63,7 +64,7 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
 
   void AddWorkerData(
       int64_t service_worker_version_id,
-      int activation_sequence,
+      ActivationSequence activation_sequence,
       ScriptContext* script_context,
       std::unique_ptr<NativeExtensionBindingsSystem> bindings_system);
   void RemoveWorkerData(int64_t service_worker_version_id);

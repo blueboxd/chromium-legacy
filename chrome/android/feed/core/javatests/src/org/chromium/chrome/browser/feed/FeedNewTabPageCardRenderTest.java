@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.IntegrationTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -102,6 +103,8 @@ import java.util.List;
     @MediumTest
     @Feature({"FeedNewTabPage", "RenderTest"})
     @DataFilePath(TEST_FEED_DATA_BASE_PATH + "feed_world.gcl.bin")
+    @IntegrationTest
+    // The IntegrationTest annotation skips this test on android-arm-official-tests.
     public void testFeedCardRenderingScenarioWorld() throws Exception {
         renderFeedCards("world");
     }

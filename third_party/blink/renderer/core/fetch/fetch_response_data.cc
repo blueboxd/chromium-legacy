@@ -335,26 +335,21 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
     if (HeaderList()->Get("content-security-policy",
                           content_security_policy_header)) {
       network::ContentSecurityPolicy policy;
-      if (policy.Parse(request_url,
-                       network::mojom::ContentSecurityPolicyType::kEnforce,
-                       StringUTF8Adaptor(content_security_policy_header)
-                           .AsStringPiece())) {
-        response->content_security_policy =
-            ConvertToBlink(policy.TakeContentSecurityPolicy());
-      }
+      policy.Parse(
+          request_url, network::mojom::ContentSecurityPolicyType::kEnforce,
+          StringUTF8Adaptor(content_security_policy_header).AsStringPiece());
+      response->content_security_policy =
+          ConvertToBlink(policy.TakeContentSecurityPolicy());
     }
     if (HeaderList()->Get("content-security-policy-report-only",
                           content_security_policy_header)) {
       network::ContentSecurityPolicy policy;
-      if (policy.Parse(request_url,
-                       network::mojom::ContentSecurityPolicyType::kReport,
-                       StringUTF8Adaptor(content_security_policy_header)
-                           .AsStringPiece())) {
-        auto blink_policies =
-            ConvertToBlink(policy.TakeContentSecurityPolicy());
-        for (auto& policy : blink_policies)
-          response->content_security_policy.push_back(std::move(policy));
-      }
+      policy.Parse(
+          request_url, network::mojom::ContentSecurityPolicyType::kReport,
+          StringUTF8Adaptor(content_security_policy_header).AsStringPiece());
+      auto blink_policies = ConvertToBlink(policy.TakeContentSecurityPolicy());
+      for (auto& policy : blink_policies)
+        response->content_security_policy.push_back(std::move(policy));
     }
   }
   return response;

@@ -17,7 +17,6 @@
 <translation id="5073204694187207510">隐藏“全屏网格状视图”按钮</translation>
 <translation id="5082793167783849073">通过分组快速比较网页。为此，请先轻触并按住某个链接。</translation>
 <translation id="5580090775658607195">已将 <ph name="TAB_COUNT" /> 个标签页合为一组</translation>
-<translation id="5792534911093536736">更多标签页</translation>
 <translation id="58326064309361797">拖动标签可进行分组</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6193448654517602979">选择标签页</translation>
@@ -29,6 +28,7 @@
 <translation id="7792771145871471484">查看建议。</translation>
 <translation id="7885132941432959125">右移标签页</translation>
 <translation id="7966321538264951561">忽略此建议。</translation>
+<translation id="814503310257431685">查看全部</translation>
 <translation id="8205266828577616993">上移标签页</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{关闭 <ph name="TABS_COUNT_ONE" /> 个所选标签页}other{关闭 <ph name="TABS_COUNT_MANY" /> 个所选标签页}}</translation>
 <translation id="9150694013019234766">在屏幕底部附近的标签页组中切换标签页</translation>

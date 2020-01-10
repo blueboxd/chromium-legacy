@@ -2428,6 +2428,11 @@ void WebMediaPlayerImpl::OnBecamePersistentVideo(bool value) {
   MaybeSendOverlayInfoToDecoder();
 }
 
+void WebMediaPlayerImpl::OnPowerExperimentState(bool state) {
+  if (power_status_helper_)
+    power_status_helper_->UpdatePowerExperimentState(state);
+}
+
 void WebMediaPlayerImpl::ScheduleRestart() {
   // TODO(watk): All restart logic should be moved into PipelineController.
   if (pipeline_controller_->IsPipelineRunning() &&

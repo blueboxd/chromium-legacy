@@ -36,6 +36,12 @@ class ExistingTabGroupSubMenuModel : public ui::SimpleMenuModel,
  private:
   void Build();
 
+  // Returns the group ids in the order that they appear in the tab strip model,
+  // so that the user sees an ordered display. Only needed for creating items
+  // and executing commands, which must be in order. Otherwise, ListTabGroups()
+  // is cheaper and sufficient for determining visibility and size of the menu.
+  std::vector<tab_groups::TabGroupId> GetOrderedTabGroups();
+
   // Unowned; |model_| must outlive this instance.
   TabStripModel* model_;
 

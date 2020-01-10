@@ -297,6 +297,7 @@ class FlexLine {
   // cross_axis_size needs to be set correctly on each flex item (to the size
   // the item has without stretching).
   void ComputeLineItemsPosition(LayoutUnit main_axis_offset,
+                                LayoutUnit main_axis_end_offset,
                                 LayoutUnit& cross_axis_offset);
 
   FlexLayoutAlgorithm* algorithm;

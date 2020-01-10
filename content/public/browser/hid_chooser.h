@@ -16,9 +16,10 @@ namespace content {
 // object should cancel the prompt.
 class CONTENT_EXPORT HidChooser {
  public:
-  // Callback type used to report the user action. Passed |nullptr| if no device
-  // was selected.
-  using Callback = base::OnceCallback<void(device::mojom::HidDeviceInfoPtr)>;
+  // Callback type used to report the user action. An empty vector is passed if
+  // no device was selected.
+  using Callback =
+      base::OnceCallback<void(std::vector<device::mojom::HidDeviceInfoPtr>)>;
 
   HidChooser() = default;
   virtual ~HidChooser() = default;

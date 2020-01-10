@@ -363,7 +363,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params->replicated_frame_state = replicated_frame_state;
   params->proxy_routing_id = proxy_route_id;
   params->hidden = GetWidget()->delegate()->IsHidden();
-  params->never_visible = delegate_->IsNeverVisible();
+  params->never_composited = delegate_->IsNeverComposited();
   params->window_was_created_with_opener = window_was_created_with_opener;
   if (main_rfh) {
     params->has_committed_real_load =
@@ -399,8 +399,11 @@ bool RenderViewHostImpl::CreateRenderView(
 }
 
 void RenderViewHostImpl::SetMainFrameRoutingId(int routing_id) {
+  bool was_active = is_active();
   main_frame_routing_id_ = routing_id;
   GetWidget()->UpdatePriority();
+  if (was_active && !is_active())
+    GetWidget()->DidDestroyRenderWidget();
 }
 
 void RenderViewHostImpl::EnterBackForwardCache() {
@@ -440,8 +443,8 @@ bool RenderViewHostImpl::IsMainFrameActive() {
   return is_active();
 }
 
-bool RenderViewHostImpl::IsNeverVisible() {
-  return GetDelegate()->IsNeverVisible();
+bool RenderViewHostImpl::IsNeverComposited() {
+  return GetDelegate()->IsNeverComposited();
 }
 
 WebPreferences RenderViewHostImpl::GetWebkitPreferencesForWidget() {

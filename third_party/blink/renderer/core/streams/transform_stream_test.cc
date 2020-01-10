@@ -265,7 +265,8 @@ TEST_F(TransformStreamTest, EnqueueFromTransform) {
 
   ReadableStream* readable = Stream()->Readable();
   auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester tester(script_state, reader->read(script_state));
+  ScriptPromiseTester tester(script_state,
+                             reader->read(script_state, ASSERT_NO_EXCEPTION));
   tester.WaitUntilSettled();
   EXPECT_TRUE(tester.IsFulfilled());
   EXPECT_TRUE(IsIteratorForStringMatching(script_state, tester.Value(), "a"));
@@ -298,7 +299,8 @@ TEST_F(TransformStreamTest, EnqueueFromFlush) {
 
   ReadableStream* readable = Stream()->Readable();
   auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester tester(script_state, reader->read(script_state));
+  ScriptPromiseTester tester(script_state,
+                             reader->read(script_state, ASSERT_NO_EXCEPTION));
   tester.WaitUntilSettled();
   EXPECT_TRUE(tester.IsFulfilled());
   EXPECT_TRUE(IsIteratorForStringMatching(script_state, tester.Value(), "a"));
@@ -333,7 +335,8 @@ TEST_F(TransformStreamTest, ThrowFromTransform) {
 
   ReadableStream* readable = Stream()->Readable();
   auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester read_tester(script_state, reader->read(script_state));
+  ScriptPromiseTester read_tester(
+      script_state, reader->read(script_state, ASSERT_NO_EXCEPTION));
   read_tester.WaitUntilSettled();
   EXPECT_TRUE(read_tester.IsRejected());
   EXPECT_TRUE(IsTypeError(script_state, read_tester.Value(), kMessage));
@@ -370,7 +373,8 @@ TEST_F(TransformStreamTest, ThrowFromFlush) {
 
   ReadableStream* readable = Stream()->Readable();
   auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
-  ScriptPromiseTester read_tester(script_state, reader->read(script_state));
+  ScriptPromiseTester read_tester(
+      script_state, reader->read(script_state, ASSERT_NO_EXCEPTION));
   read_tester.WaitUntilSettled();
   EXPECT_TRUE(read_tester.IsRejected());
   EXPECT_TRUE(IsTypeError(script_state, read_tester.Value(), kMessage));
@@ -441,7 +445,7 @@ TEST_F(TransformStreamTest, WaitInTransform) {
   Stream()
       ->Readable()
       ->getReader(script_state, ASSERT_NO_EXCEPTION)
-      ->read(script_state);
+      ->read(script_state, ASSERT_NO_EXCEPTION);
 
   ScriptPromiseTester write_tester(script_state,
                                    ScriptPromise::Cast(script_state, promise));
@@ -499,7 +503,7 @@ TEST_F(TransformStreamTest, WaitInFlush) {
   Stream()
       ->Readable()
       ->getReader(script_state, ASSERT_NO_EXCEPTION)
-      ->read(script_state);
+      ->read(script_state, ASSERT_NO_EXCEPTION);
 
   ScriptPromiseTester close_tester(script_state,
                                    ScriptPromise::Cast(script_state, promise));

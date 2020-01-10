@@ -7,7 +7,9 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -258,14 +260,12 @@ TEST_F(OverviewGridTest, FullyOffscreenWindow) {
 
 // Tests that only one window animates when entering overview from splitview
 // double snapped.
-// TODO(sammiequon): The way this test is setup causes an unnatural state by
-// calling |GetGridBoundsInScreen| with split view state both snapped. Find a
-// way to re-enable this.
-TEST_F(OverviewGridTest, DISABLED_SnappedWindow) {
+TEST_F(OverviewGridTest, SnappedWindow) {
   auto window1 = CreateTestWindow(gfx::Rect(100, 100));
   auto window2 = CreateTestWindow(gfx::Rect(100, 100));
   auto window3 = CreateTestWindow(gfx::Rect(100, 100));
   wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window2.get());
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
@@ -275,13 +275,19 @@ TEST_F(OverviewGridTest, DISABLED_SnappedWindow) {
                                       SplitViewController::RIGHT);
   EXPECT_TRUE(WindowState::Get(window3.get())->IsMaximized());
 
+  // We cannot create a grid object like in the other tests because creating a
+  // grid calls |GetGridBoundsInScreen| with split view state both snapped which
+  // is an unnatural state.
+  Shell::Get()->overview_controller()->StartOverview(
+      OverviewSession::EnterExitOverviewType::kNormal);
+
   // Tests that |window3| is not animated even though its bounds are larger than
   // |window2| because it is fully occluded by |window1| + |window2| and the
   // split view divider.
-  std::vector<gfx::RectF> target_bounds = {gfx::RectF(100.f, 100.f),
-                                           gfx::RectF(100.f, 100.f)};
-  CheckAnimationStates({window2.get(), window3.get()}, target_bounds,
-                       {true, false}, {true, false});
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
+  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
+  EXPECT_TRUE(item2->should_animate_when_entering());
+  EXPECT_FALSE(item3->should_animate_when_entering());
 }
 
 }  // namespace ash

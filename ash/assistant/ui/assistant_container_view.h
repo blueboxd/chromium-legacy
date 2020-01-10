@@ -36,7 +36,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantContainerView
   void AddedToWidget() override;
   ax::mojom::Role GetAccessibleWindowRole() override;
   base::string16 GetAccessibleWindowTitle() const override;
-  int GetDialogButtons() const override;
   views::FocusTraversable* GetFocusTraversable() override;
   void ChildPreferredSizeChanged(views::View* child) override;
   void ViewHierarchyChanged(

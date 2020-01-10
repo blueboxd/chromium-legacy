@@ -577,15 +577,24 @@ NGFlexLayoutAlgorithm::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
 scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
   ConstructAndAppendFlexItems();
 
-  LayoutUnit main_axis_offset = border_scrollbar_padding_.inline_start;
+  LayoutUnit main_axis_start_offset;
+  LayoutUnit main_axis_end_offset;
   LayoutUnit cross_axis_offset = border_scrollbar_padding_.block_start;
   if (is_column_) {
-    main_axis_offset = Style().ResolvedIsColumnReverseFlexDirection()
-                           ? LayoutUnit()
-                           : border_scrollbar_padding_.block_start;
+    const bool is_column_reverse =
+        Style().ResolvedIsColumnReverseFlexDirection();
+    main_axis_start_offset = is_column_reverse
+                                 ? LayoutUnit()
+                                 : border_scrollbar_padding_.block_start;
+    main_axis_end_offset =
+        is_column_reverse ? LayoutUnit() : border_scrollbar_padding_.block_end;
     cross_axis_offset = border_scrollbar_padding_.inline_start;
   } else if (Style().ResolvedIsRowReverseFlexDirection()) {
-    main_axis_offset = border_scrollbar_padding_.inline_end;
+    main_axis_start_offset = border_scrollbar_padding_.inline_end;
+    main_axis_end_offset = border_scrollbar_padding_.inline_start;
+  } else {
+    main_axis_start_offset = border_scrollbar_padding_.inline_start;
+    main_axis_end_offset = border_scrollbar_padding_.inline_end;
   }
   FlexLine* line;
   while (
@@ -657,7 +666,8 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     }
     // cross_axis_offset is updated in each iteration of the loop, for passing
     // in to the next iteration.
-    line->ComputeLineItemsPosition(main_axis_offset, cross_axis_offset);
+    line->ComputeLineItemsPosition(main_axis_start_offset, main_axis_end_offset,
+                                   cross_axis_offset);
   }
 
   LayoutUnit intrinsic_block_size = algorithm_->IntrinsicContentBlockSize() +

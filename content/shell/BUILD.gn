@@ -646,7 +646,9 @@ if (is_android) {
         configs -= [ "//build/config/win:console" ]
         configs += [ "//build/config/win:windowed" ]
       }
+    }
 
+    if (is_win || is_linux) {
       data_deps +=
           [ "//third_party/crashpad/crashpad/handler:crashpad_handler" ]
     }

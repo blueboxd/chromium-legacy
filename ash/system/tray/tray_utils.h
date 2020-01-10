@@ -7,6 +7,7 @@
 
 #include "components/session_manager/session_manager_types.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace views {
 class Label;
@@ -19,6 +20,9 @@ void SetupLabelForTray(views::Label* label);
 
 // Gets the current tray icon color for the given session state.
 SkColor TrayIconColor(session_manager::SessionState session_state);
+
+// Returns the insets above the shelf for positioning the tray bubble.
+gfx::Insets GetTrayBubbleInsets();
 
 }  // namespace ash
 

@@ -901,17 +901,6 @@ Chromium is unable to recover your settings.
         </message>
       </if>
 
-      <!-- Cannot update when other instances open dialog -->
-      <message name="IDS_UPDATE_OTHER_INSTANCES_SAME_USER_DIALOG_TITLE" desc="The title for the dialog shown when multiple copies of Chromium are running during a requested update.">
-        Quit all copies of Chromium.
-      </message>
-      <message name="IDS_UPDATE_OTHER_INSTANCES_SAME_USER_DIALOG_MESSAGE" desc="The message for the dialog shown when multiple copies of Chromium are running during a requested update.">
-        Other copies of Chromium are running. To update, close them.
-      </message>
-      <message name="IDS_UPDATE_OTHER_INSTANCES_OTHER_USER_AUTHENTICATION_PROMPT" desc="The window title for the other instances dialog.">
-        To update, Chromium needs to stop running on this computer. This may cause other users logged into this computer to lose unsaved changes.
-      </message>
-
       <!-- Update bubble -->
       <message name="IDS_REINSTALL_APP" desc="Text for the button the user clicks to reinstall the app.">
         Reinstall Chromium

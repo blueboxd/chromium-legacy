@@ -170,13 +170,6 @@ chrome::MessageBoxResult SimpleMessageBoxViews::Show(
   return chrome::MESSAGE_BOX_RESULT_DEFERRED;
 }
 
-int SimpleMessageBoxViews::GetDialogButtons() const {
-  if (type_ == chrome::MESSAGE_BOX_TYPE_QUESTION)
-    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-
-  return ui::DIALOG_BUTTON_OK;
-}
-
 bool SimpleMessageBoxViews::Close() {
   return can_close_ ? DialogDelegate::Close() : false;
 }
@@ -248,6 +241,11 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(
           views::MessageBoxView::InitParams(message))),
       is_system_modal_(is_system_modal),
       can_close_(can_close) {
+  DialogDelegate::set_buttons(type_ == chrome::MESSAGE_BOX_TYPE_QUESTION
+                                  ? ui::DIALOG_BUTTON_OK |
+                                        ui::DIALOG_BUTTON_CANCEL
+                                  : ui::DIALOG_BUTTON_OK);
+
   base::string16 ok_text = yes_text;
   if (ok_text.empty()) {
     ok_text =

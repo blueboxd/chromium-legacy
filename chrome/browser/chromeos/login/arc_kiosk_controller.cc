@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
@@ -56,6 +57,9 @@ void ArcKioskController::StartArcKiosk(const AccountId& account_id) {
 }
 
 void ArcKioskController::OnCancelArcKioskLaunch() {
+  if (ArcKioskAppManager::Get()->GetDisableBailoutShortcut())
+    return;
+
   KioskAppLaunchError::Save(KioskAppLaunchError::USER_CANCEL);
   CleanUp();
   chrome::AttemptUserExit();

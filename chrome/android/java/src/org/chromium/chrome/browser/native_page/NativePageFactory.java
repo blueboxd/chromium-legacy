@@ -78,7 +78,7 @@ public class NativePageFactory {
 
         protected NativePage buildExploreSitesPage(ChromeActivity activity, Tab tab) {
             return new ExploreSitesPage(
-                    activity, new TabShim(tab, activity.getFullscreenManager()));
+                    activity, new TabShim(tab, activity.getFullscreenManager()), (TabImpl) tab);
         }
 
         protected NativePage buildHistoryPage(ChromeActivity activity, Tab tab) {

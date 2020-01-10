@@ -17,7 +17,6 @@
 <translation id="5073204694187207510">Скриване на решетката на цял екран</translation>
 <translation id="5082793167783849073">Сравнявайте бързо страници, като създадете група. За да започнете, докоснете и задръжте дадена връзка.</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> раздела са групирани</translation>
-<translation id="5792534911093536736">Още раздели</translation>
 <translation id="58326064309361797">Преместете с плъзгане разделите, за да ги групирате</translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6193448654517602979">Избиране на раздели</translation>
@@ -29,6 +28,7 @@
 <translation id="7792771145871471484">Преглед на предложенията.</translation>
 <translation id="7885132941432959125">Преместване на раздела надясно</translation>
 <translation id="7966321538264951561">Отхвърляне на предложенията.</translation>
+<translation id="814503310257431685">Преглед на всички</translation>
 <translation id="8205266828577616993">Преместване на раздела нагоре</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Затваряне на избрания <ph name="TABS_COUNT_ONE" /> раздел}other{Затваряне на избраните <ph name="TABS_COUNT_MANY" /> раздела}}</translation>
 <translation id="9150694013019234766">Превключвайте между разделите в групата в долната част на екрана</translation>

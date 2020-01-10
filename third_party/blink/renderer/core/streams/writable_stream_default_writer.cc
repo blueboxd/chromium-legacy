@@ -21,13 +21,15 @@ namespace blink {
 
 namespace {
 
+String CreateWriterLockReleasedMessage(const char* verbed) {
+  return String::Format(
+      "This writable stream writer has been released and cannot be %s", verbed);
+}
+
 v8::Local<v8::Value> CreateWriterLockReleasedException(v8::Isolate* isolate,
                                                        const char* verbed) {
-  return v8::Exception::TypeError(V8String(
-      isolate,
-      String::Format(
-          "This writable stream writer has been released and cannot be %s",
-          verbed)));
+  return v8::Exception::TypeError(
+      V8String(isolate, CreateWriterLockReleasedMessage(verbed)));
 }
 
 }  // namespace
@@ -178,21 +180,25 @@ ScriptPromise WritableStreamDefaultWriter::ready(
   return ready_promise_->GetScriptPromise(script_state);
 }
 
-ScriptPromise WritableStreamDefaultWriter::abort(ScriptState* script_state) {
+ScriptPromise WritableStreamDefaultWriter::abort(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   return abort(script_state,
                ScriptValue(script_state->GetIsolate(),
-                           v8::Undefined(script_state->GetIsolate())));
+                           v8::Undefined(script_state->GetIsolate())),
+               exception_state);
 }
 
-ScriptPromise WritableStreamDefaultWriter::abort(ScriptState* script_state,
-                                                 ScriptValue reason) {
+ScriptPromise WritableStreamDefaultWriter::abort(
+    ScriptState* script_state,
+    ScriptValue reason,
+    ExceptionState& exception_state) {
   // https://streams.spec.whatwg.org/#default-writer-abort
   //  2. If this.[[ownerWritableStream]] is undefined, return a promise rejected
   //     with a TypeError exception.
   if (!owner_writable_stream_) {
-    return ScriptPromise::Reject(script_state,
-                                 CreateWriterLockReleasedException(
-                                     script_state->GetIsolate(), "aborted"));
+    exception_state.ThrowTypeError(CreateWriterLockReleasedMessage("aborted"));
+    return ScriptPromise();
   }
 
   //  3. Return ! WritableStreamDefaultWriterAbort(this, reason).
@@ -200,7 +206,9 @@ ScriptPromise WritableStreamDefaultWriter::abort(ScriptState* script_state,
                        Abort(script_state, this, reason.V8Value()));
 }
 
-ScriptPromise WritableStreamDefaultWriter::close(ScriptState* script_state) {
+ScriptPromise WritableStreamDefaultWriter::close(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   // https://streams.spec.whatwg.org/#default-writer-close
   //  2. Let stream be this.[[ownerWritableStream]].
   WritableStream* stream = owner_writable_stream_;
@@ -208,19 +216,17 @@ ScriptPromise WritableStreamDefaultWriter::close(ScriptState* script_state) {
   //  3. If stream is undefined, return a promise rejected with a TypeError
   //     exception.
   if (!stream) {
-    return ScriptPromise::Reject(script_state,
-                                 CreateWriterLockReleasedException(
-                                     script_state->GetIsolate(), "closed"));
+    exception_state.ThrowTypeError(CreateWriterLockReleasedMessage("closed"));
+    return ScriptPromise();
   }
 
   //  4. If ! WritableStreamCloseQueuedOrInFlight(stream) is true, return a
   //      promise rejected with a TypeError exception.
   if (WritableStream::CloseQueuedOrInFlight(stream)) {
-    return ScriptPromise::Reject(
-        script_state, v8::Exception::TypeError(
-                          V8String(script_state->GetIsolate(),
-                                   "Cannot close a writable stream that has "
-                                   "already been requested to be closed")));
+    exception_state.ThrowTypeError(
+        "Cannot close a writable stream that has "
+        "already been requested to be closed");
+    return ScriptPromise();
   }
 
   //  5. Return ! WritableStreamDefaultWriterClose(this).
@@ -244,21 +250,26 @@ void WritableStreamDefaultWriter::releaseLock(ScriptState* script_state) {
   Release(script_state, this);
 }
 
-ScriptPromise WritableStreamDefaultWriter::write(ScriptState* script_state) {
+ScriptPromise WritableStreamDefaultWriter::write(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
   return write(script_state,
                ScriptValue(script_state->GetIsolate(),
-                           v8::Undefined(script_state->GetIsolate())));
+                           v8::Undefined(script_state->GetIsolate())),
+               exception_state);
 }
 
-ScriptPromise WritableStreamDefaultWriter::write(ScriptState* script_state,
-                                                 ScriptValue chunk) {
+ScriptPromise WritableStreamDefaultWriter::write(
+    ScriptState* script_state,
+    ScriptValue chunk,
+    ExceptionState& exception_state) {
   // https://streams.spec.whatwg.org/#default-writer-write
   //  2. If this.[[ownerWritableStream]] is undefined, return a promise rejected
   //     with a TypeError exception.
   if (!owner_writable_stream_) {
-    return ScriptPromise::Reject(script_state,
-                                 CreateWriterLockReleasedException(
-                                     script_state->GetIsolate(), "written to"));
+    exception_state.ThrowTypeError(
+        CreateWriterLockReleasedMessage("written to"));
+    return ScriptPromise();
   }
 
   //  3. Return ! WritableStreamDefaultWriterWrite(this, chunk).

@@ -858,6 +858,7 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
       : session_(std::move(session)), context_(context) {
     DCHECK(session_);
     DCHECK(context_);
+    DCHECK(!session_->config().dns_over_https_servers.empty());
 
     DNSDomainFromDot(kDoHProbeHostname, &formatted_probe_hostname_);
 

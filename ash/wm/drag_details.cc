@@ -61,7 +61,7 @@ gfx::Rect GetWindowInitialBoundsInParent(aura::Window* window) {
 }  // namespace
 
 DragDetails::DragDetails(aura::Window* window,
-                         const gfx::Point& location,
+                         const gfx::PointF& location,
                          int window_component,
                          ::wm::WindowMoveSource source)
     : initial_state_type(WindowState::Get(window)->GetStateType()),

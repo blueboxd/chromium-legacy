@@ -203,7 +203,11 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       install_button_enabled_(false) {
   DCHECK(prompt_->extension());
 
+  int buttons = prompt_->GetDialogButtons();
+  DCHECK(buttons & ui::DIALOG_BUTTON_CANCEL);
+
   DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
+  DialogDelegate::set_buttons(buttons);
   DialogDelegate::set_draggable(true);
   if (prompt_->has_webstore_data()) {
     auto store_link = std::make_unique<views::Link>(
@@ -359,14 +363,6 @@ bool ExtensionInstallDialogView::Accept() {
   UpdateInstallResultHistogram(true);
   std::move(done_callback_).Run(ExtensionInstallPrompt::Result::ACCEPTED);
   return true;
-}
-
-int ExtensionInstallDialogView::GetDialogButtons() const {
-  int buttons = prompt_->GetDialogButtons();
-  // Simply having just an OK button is *not* supported. See comment on function
-  // GetDialogButtons in dialog_delegate.h for reasons.
-  DCHECK_GT(buttons & ui::DIALOG_BUTTON_CANCEL, 0);
-  return buttons;
 }
 
 bool ExtensionInstallDialogView::IsDialogButtonEnabled(

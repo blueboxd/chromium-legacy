@@ -85,6 +85,14 @@ void MockNetworkChangeNotifier::NotifyNetworkConnected(
   base::RunLoop().RunUntilIdle();
 }
 
+void MockNetworkChangeNotifier::SetConnectionTypeAndNotifyObservers(
+    ConnectionType connection_type) {
+  SetConnectionType(connection_type);
+  NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange();
+  // Spin the message loop so the notification is delivered.
+  base::RunLoop().RunUntilIdle();
+}
+
 MockNetworkChangeNotifier::MockNetworkChangeNotifier(
     std::unique_ptr<SystemDnsConfigChangeNotifier> dns_config_notifier)
     : NetworkChangeNotifier(NetworkChangeCalculatorParams(),

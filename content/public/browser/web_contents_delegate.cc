@@ -263,7 +263,7 @@ gfx::Size WebContentsDelegate::GetSizeForNewRenderView(
   return gfx::Size();
 }
 
-bool WebContentsDelegate::IsNeverVisible(WebContents* web_contents) {
+bool WebContentsDelegate::IsNeverComposited(WebContents* web_contents) {
   return false;
 }
 

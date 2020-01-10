@@ -17,7 +17,6 @@
 <translation id="5073204694187207510">Ocultar grelha em ecrã inteiro</translation>
 <translation id="5082793167783849073">Compare páginas rapidamente através da criação de um grupo. Para começar, toque sem soltar num link.</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> separadores agrupados</translation>
-<translation id="5792534911093536736">Mais separadores</translation>
 <translation id="58326064309361797">Arraste os separadores para os agrupar.</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6193448654517602979">Selecione os separadores</translation>
@@ -29,6 +28,7 @@
 <translation id="7792771145871471484">Reveja as sugestões.</translation>
 <translation id="7885132941432959125">Mover separador para a direita</translation>
 <translation id="7966321538264951561">Ignore as sugestões.</translation>
+<translation id="814503310257431685">Ver todos</translation>
 <translation id="8205266828577616993">Mover separador para cima</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Fechar <ph name="TABS_COUNT_ONE" /> separador selecionado}other{Fechar <ph name="TABS_COUNT_MANY" /> separadores selecionados}}</translation>
 <translation id="9150694013019234766">Alterne entre separadores no grupo de separadores junto à parte inferior do ecrã.</translation>

@@ -75,7 +75,7 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   void ExpandMessageCenter();
 
   // Ensure the quick settings bubble is collapsed.
-  void EnsureQuickSettingsCollapsed();
+  void EnsureQuickSettingsCollapsed(bool animate);
 
   // Ensure the system tray bubble is expanded.
   void EnsureBubbleExpanded();
@@ -109,9 +109,14 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // Focus the first notification in the message center.
   void FocusFirstNotification();
 
+  // Transfer focus to the message center bubble.
   bool FocusMessageCenter(bool reverse);
 
+  // Transfer focus to the quick settings bubble.
   bool FocusQuickSettings(bool reverse);
+
+  // Returns true if the user manually expanded the quick settings.
+  bool IsQuickSettingsExplicitlyExpanded() const;
 
   // TrayBackgroundView:
   bool PerformAction(const ui::Event& event) override;

@@ -51,3 +51,16 @@ var NewTabPageCustomizeDialogFocusTest =
 TEST_F('NewTabPageCustomizeDialogFocusTest', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var NewTabPageCustomizeThemesFocusTest =
+    class extends NewTabPageInteractiveTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/customize_themes_focus_test.js';
+  }
+};
+
+TEST_F('NewTabPageCustomizeThemesFocusTest', 'All', function() {
+  mocha.run();
+});

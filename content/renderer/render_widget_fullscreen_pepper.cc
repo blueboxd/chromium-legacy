@@ -295,7 +295,7 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
                    /*display_mode=*/blink::mojom::DisplayMode::kUndefined,
                    /*is_undead=*/false,
                    /*hidden=*/false,
-                   /*never_visible=*/false,
+                   /*never_composited=*/false,
                    std::move(widget_receiver)),
       plugin_(plugin),
       mouse_lock_dispatcher_(

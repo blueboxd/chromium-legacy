@@ -10,6 +10,10 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/geometry/point.h"
 
+namespace ui {
+class ThemeProvider;
+}  // namespace ui
+
 // Interface to be implemented by the embedder. Provides native UI
 // functionality such as showing context menus.
 class TabStripUIEmbedder {
@@ -26,6 +30,8 @@ class TabStripUIEmbedder {
       std::unique_ptr<ui::MenuModel> menu_model) = 0;
 
   virtual TabStripUILayout GetLayout() = 0;
+
+  virtual const ui::ThemeProvider* GetThemeProvider() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_TAB_STRIP_TAB_STRIP_UI_EMBEDDER_H_

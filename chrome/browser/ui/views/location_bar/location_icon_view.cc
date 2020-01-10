@@ -199,11 +199,12 @@ void LocationIconView::UpdateIcon() {
   gfx::ImageSkia icon = delegate_->GetLocationIcon(
       base::BindOnce(&LocationIconView::OnIconFetched,
                      icon_fetch_weak_ptr_factory_.GetWeakPtr()));
-
-  SetImage(icon);
+  if (!icon.isNull())
+    SetImage(icon);
 }
 
 void LocationIconView::OnIconFetched(const gfx::Image& image) {
+  DCHECK(!image.IsEmpty());
   SetImage(image.AsImageSkia());
 }
 

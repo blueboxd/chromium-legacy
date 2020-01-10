@@ -387,7 +387,7 @@ void ToplevelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   int component = window_util::GetNonClientComponent(target, event->location());
-  gfx::Point event_location = event->location();
+  gfx::PointF event_location = event->location_f();
 
   aura::Window* original_target = target;
   bool client_area_drag = false;
@@ -446,7 +446,7 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
 
       ShowResizeShadow(target, component);
 
-      gfx::Point location_in_parent = event_location;
+      gfx::PointF location_in_parent = event_location;
       aura::Window::ConvertPointToTarget(target, target->parent(),
                                          &location_in_parent);
       AttemptToStartDrag(target, location_in_parent, component,
@@ -505,7 +505,7 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       if (!client_area_drag && !CanStartOneFingerDrag(component))
         return;
 
-      gfx::Point location_in_parent = event_location;
+      gfx::PointF location_in_parent = event_location;
       aura::Window::ConvertPointToTarget(target, target->parent(),
                                          &location_in_parent);
       AttemptToStartDrag(target, location_in_parent, component,
@@ -524,7 +524,7 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_UPDATE: {
       gfx::Rect bounds_in_screen = target->GetRootWindow()->GetBoundsInScreen();
-      gfx::Point screen_location = event->location();
+      gfx::PointF screen_location = event->location_f();
       ::wm::ConvertPointToScreen(target, &screen_location);
 
       // It is physically not possible to move a touch pointer from one display
@@ -533,16 +533,16 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       // display (as happens with gestures on the bezel), and dragging via touch
       // should not trigger moving to a new display.(see
       // https://crbug.com/917060)
-      if (!bounds_in_screen.Contains(screen_location)) {
-        int x = std::max(
-            std::min(screen_location.x(), bounds_in_screen.right() - 1),
-            bounds_in_screen.x());
-        int y = std::max(
-            std::min(screen_location.y(), bounds_in_screen.bottom() - 1),
-            bounds_in_screen.y());
-        gfx::Point updated_location(x, y);
+      if (!bounds_in_screen.Contains(gfx::ToRoundedPoint(screen_location))) {
+        float x = std::max(
+            std::min(screen_location.x(), bounds_in_screen.right() - 1.f),
+            static_cast<float>(bounds_in_screen.x()));
+        float y = std::max(
+            std::min(screen_location.y(), bounds_in_screen.bottom() - 1.f),
+            static_cast<float>(bounds_in_screen.y()));
+        gfx::PointF updated_location(x, y);
         ::wm::ConvertPointFromScreen(target, &updated_location);
-        event->set_location(updated_location);
+        event->set_location_f(updated_location);
       }
 
       HandleDrag(target, event);
@@ -586,6 +586,7 @@ void ToplevelWindowEventHandler::OnTouchEvent(ui::TouchEvent* event) {
     x_drag_amount_ = y_drag_amount_ = 0;
     during_reverse_dragging_ = false;
   } else {
+    // TODO(oshima): Convert to PointF/float.
     const gfx::Point current_location = event->location();
     x_drag_amount_ += (current_location.x() - last_touch_point_.x());
     y_drag_amount_ += (current_location.y() - last_touch_point_.y());
@@ -626,7 +627,7 @@ void ToplevelWindowEventHandler::OnGestureEvent(GestureConsumer* consumer,
 
 bool ToplevelWindowEventHandler::AttemptToStartDrag(
     aura::Window* window,
-    const gfx::Point& point_in_parent,
+    const gfx::PointF& point_in_parent,
     int window_component,
     ToplevelWindowEventHandler::EndClosure end_closure) {
   ::wm::WindowMoveSource source = gesture_target_
@@ -639,7 +640,7 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
 
 bool ToplevelWindowEventHandler::AttemptToStartDrag(
     aura::Window* window,
-    const gfx::Point& point_in_parent,
+    const gfx::PointF& point_in_parent,
     int window_component,
     ::wm::WindowMoveSource source,
     EndClosure end_closure,
@@ -733,18 +734,18 @@ aura::Window* ToplevelWindowEventHandler::GetTargetForClientAreaGesture(
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   aura::Window* root_window = source->GetRootWindow();
   DCHECK(root_window);
-  gfx::Point drag_location;
+  gfx::PointF drag_location;
   if (move_source == ::wm::WINDOW_MOVE_SOURCE_TOUCH &&
       aura::Env::GetInstance()->is_touch_down()) {
     gfx::PointF drag_location_f;
     bool has_point = aura::Env::GetInstance()
                          ->gesture_recognizer()
                          ->GetLastTouchPointForTarget(source, &drag_location_f);
-    drag_location = gfx::ToFlooredPoint(drag_location_f);
+    drag_location = drag_location_f;
     DCHECK(has_point);
   } else {
-    drag_location =
-        root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot();
+    drag_location = gfx::PointF(
+        root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot());
     aura::Window::ConvertPointToTarget(root_window, source->parent(),
                                        &drag_location);
   }
@@ -796,7 +797,7 @@ void ToplevelWindowEventHandler::EndMoveLoop() {
 
 bool ToplevelWindowEventHandler::PrepareForDrag(
     aura::Window* window,
-    const gfx::Point& point_in_parent,
+    const gfx::PointF& point_in_parent,
     int window_component,
     ::wm::WindowMoveSource source) {
   if (window_resizer_)
@@ -850,7 +851,7 @@ void ToplevelWindowEventHandler::HandleMousePressed(aura::Window* target,
   if ((event->flags() & (ui::EF_IS_DOUBLE_CLICK | ui::EF_IS_TRIPLE_CLICK)) ==
           0 &&
       WindowResizer::GetBoundsChangeForWindowComponent(component)) {
-    gfx::Point location_in_parent = event->location();
+    gfx::PointF location_in_parent = event->location_f();
     aura::Window::ConvertPointToTarget(target, target->parent(),
                                        &location_in_parent);
     AttemptToStartDrag(target, location_in_parent, component,
@@ -886,7 +887,7 @@ void ToplevelWindowEventHandler::HandleDrag(aura::Window* target,
 
   if (!window_resizer_)
     return;
-  gfx::Point location_in_parent = event->location();
+  gfx::PointF location_in_parent = event->location_f();
   aura::Window::ConvertPointToTarget(target, target->parent(),
                                      &location_in_parent);
   window_resizer_->resizer()->Drag(location_in_parent, event->flags());
@@ -961,7 +962,7 @@ void ToplevelWindowEventHandler::OnWindowDestroying(aura::Window* window) {
 
 void ToplevelWindowEventHandler::UpdateGestureTarget(
     aura::Window* target,
-    const gfx::Point& location) {
+    const gfx::PointF& location) {
   event_location_in_gesture_target_ = location;
   if (gesture_target_ == target)
     return;

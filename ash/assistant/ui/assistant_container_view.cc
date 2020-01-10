@@ -224,6 +224,8 @@ AssistantContainerView::AssistantContainerView(AssistantViewDelegate* delegate)
     : delegate_(delegate),
       animator_(AssistantContainerViewAnimator::Create(delegate_, this)),
       focus_traversable_(this) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+
   UpdateAnchor();
 
   set_accept_events(true);
@@ -274,10 +276,6 @@ ax::mojom::Role AssistantContainerView::GetAccessibleWindowRole() {
 
 base::string16 AssistantContainerView::GetAccessibleWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_WINDOW);
-}
-
-int AssistantContainerView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 views::FocusTraversable* AssistantContainerView::GetFocusTraversable() {

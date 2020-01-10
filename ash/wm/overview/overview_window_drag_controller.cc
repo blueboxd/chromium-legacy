@@ -711,8 +711,6 @@ void OverviewWindowDragController::SnapWindow(
   DCHECK(!SplitViewController::Get(Shell::GetPrimaryRootWindow())
               ->IsDividerAnimating());
   aura::Window* window = item_->GetWindow();
-  // TODO(crbug.com/970013): Properly implement the multi-display behavior which
-  // involves reparenting |window| to put it on the destination display.
   SplitViewController::Get(GetRootWindowBeingDraggedIn())
       ->SnapWindow(window, snap_position,
                    /*use_divider_spawn_animation=*/true);

@@ -28,6 +28,7 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -116,7 +117,7 @@ public class DownloadNotificationServiceTest {
         DownloadNotificationService.clearResumptionAttemptLeft();
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.remove(DownloadSharedPreferenceHelper.KEY_PENDING_DOWNLOAD_NOTIFICATIONS);
+        editor.remove(ChromePreferenceKeys.DOWNLOAD_PENDING_DOWNLOAD_NOTIFICATIONS);
         editor.apply();
     }
 

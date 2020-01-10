@@ -31,10 +31,10 @@
 namespace ash {
 namespace {
 
-gfx::Point CalculateDragPoint(const WindowResizer& resizer,
-                              int delta_x,
-                              int delta_y) {
-  gfx::Point location = resizer.GetInitialLocation();
+gfx::PointF CalculateDragPoint(const WindowResizer& resizer,
+                               int delta_x,
+                               int delta_y) {
+  gfx::PointF location = resizer.GetInitialLocation();
   location.set_x(location.x() + delta_x);
   location.set_y(location.y() + delta_y);
   return location;
@@ -166,7 +166,7 @@ TEST_F(OverviewControllerTest,
   ASSERT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
   std::unique_ptr<aura::Window> dragged_window = CreateTestWindow();
   std::unique_ptr<WindowResizer> resizer =
-      CreateWindowResizer(dragged_window.get(), gfx::Point(), HTCAPTION,
+      CreateWindowResizer(dragged_window.get(), gfx::PointF(), HTCAPTION,
                           ::wm::WINDOW_MOVE_SOURCE_MOUSE);
   resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
   EXPECT_TRUE(WindowState::Get(dragged_window.get())->is_dragged());

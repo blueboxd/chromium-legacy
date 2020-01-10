@@ -81,6 +81,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/animating_layout_manager.h"
+#include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -787,12 +788,8 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
   void WaitForAnimationToEnd() {
     auto* const animating_layout = GetAnimatingLayoutManager();
-    if (animating_layout) {
-      // Wait for animations to finish.
-      base::RunLoop loop;
-      animating_layout->PostOrQueueAction(loop.QuitClosure());
-      loop.Run();
-    }
+    if (animating_layout)
+      views::test::WaitForAnimatingLayoutManager(animating_layout);
   }
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
@@ -814,11 +811,10 @@ class SaveCardBubbleViewsFullFormBrowserTest
       return nullptr;
     }
 
-    return static_cast<views::AnimatingLayoutManager*>(
+    return views::test::GetAnimatingLayoutManager(
         BrowserView::GetBrowserViewForBrowser(browser())
             ->toolbar()
-            ->toolbar_account_icon_container()
-            ->GetLayoutManager());
+            ->toolbar_account_icon_container());
   }
 
   std::unique_ptr<autofill::EventWaiter<DialogEvent>> event_waiter_;

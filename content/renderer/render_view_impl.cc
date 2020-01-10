@@ -440,7 +440,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
     : routing_id_(params.view_id),
       renderer_wide_named_frame_lookup_(
           params.renderer_wide_named_frame_lookup),
-      widgets_never_visible_(params.never_visible),
+      widgets_never_composited_(params.never_composited),
       compositor_deps_(compositor_deps),
       webkit_preferences_(params.web_preferences),
       session_storage_namespace_id_(params.session_storage_namespace_id) {
@@ -1349,7 +1349,7 @@ WebView* RenderViewImpl::CreateView(
   // render view. So we just assume that the new one is not another background
   // page instead of passing on our own value.
   // TODO(vangelis): Can we tell if the new view will be a background page?
-  bool never_visible = false;
+  bool never_composited = false;
 
   // The initial hidden state for the RenderViewImpl here has to match what the
   // browser will eventually decide for the given disposition. Since we have to
@@ -1382,7 +1382,7 @@ WebView* RenderViewImpl::CreateView(
   view_params->replicated_frame_state.name = frame_name_utf8;
   view_params->devtools_main_frame_token = reply->devtools_main_frame_token;
   view_params->hidden = is_background_tab;
-  view_params->never_visible = never_visible;
+  view_params->never_composited = never_composited;
   view_params->visual_properties = reply->visual_properties;
 
   // Unretained() is safe here because our calling function will also call
@@ -1424,7 +1424,7 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
       widget_routing_id, opener_render_widget->compositor_deps(),
       blink::mojom::DisplayMode::kUndefined,
       /*hidden=*/false,
-      /*never_visible=*/false, std::move(widget_channel_receiver));
+      /*never_composited=*/false, std::move(widget_channel_receiver));
 
   // The returned WebPagePopup is self-referencing, so the pointer here is not
   // an owning pointer. It is de-referenced by calling Close().
@@ -1844,7 +1844,7 @@ void RenderViewImpl::CloseMainFrameRenderWidget() {
   // There is a WebFrameWidget previously attached by AttachWebFrameWidget().
   DCHECK(render_widget_->GetWebWidget());
 
-  if (destroying_) {
+  if (true || destroying_) {
     // We are inside RenderViewImpl::Destroy() and the main frame is being
     // detached as part of shutdown. So we can destroy the RenderWidget.
 

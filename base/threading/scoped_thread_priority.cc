@@ -37,7 +37,8 @@ bool ScopedMayLoadLibraryAtBackgroundPriority::OnScopeFirstEntered() {
 
 ScopedMayLoadLibraryAtBackgroundPriority::
     ~ScopedMayLoadLibraryAtBackgroundPriority() {
-  TRACE_EVENT_END0("base", "ScopedMayLoadLibraryAtBackgroundPriority");
+  // Trace events must be closed in reverse order of opening so that they nest
+  // correctly.
 #if defined(OS_WIN)
   if (original_thread_priority_) {
     TRACE_EVENT_END0(
@@ -46,6 +47,7 @@ ScopedMayLoadLibraryAtBackgroundPriority::
     PlatformThread::SetCurrentThreadPriority(original_thread_priority_.value());
   }
 #endif  // OS_WIN
+  TRACE_EVENT_END0("base", "ScopedMayLoadLibraryAtBackgroundPriority");
 }
 
 }  // namespace internal

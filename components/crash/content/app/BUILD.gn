@@ -236,14 +236,10 @@ if (is_mac || is_android) {
     if (is_mac && is_component_build) {
       ldflags = [
         # The handler is in
-        # Chromium.app/Contents/Versions/X/Chromium Framework.framework/Versions/A/Helpers/
-        # so set rpath up to the base.
-        "-rpath",
-        "@loader_path/../../../../../../../..",
-
-        # The handler is also in
+        # Chromium.app/Contents/Frameworks/Chromium Framework.framework/Versions/A/Helpers/
+        # or
         # Content Shell.app/Contents/Frameworks/Content Shell Framework.framework/Versions/C/Helpers/
-        # so set the rpath for that too.
+        # so set rpath up to the base.
         "-rpath",
         "@loader_path/../../../../../../..",
 

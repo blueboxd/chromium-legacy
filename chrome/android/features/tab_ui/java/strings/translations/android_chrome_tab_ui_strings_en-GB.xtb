@@ -17,7 +17,6 @@
 <translation id="5073204694187207510">Hide full-screen grid</translation>
 <translation id="5082793167783849073">Quickly compare pages by making a group. To start, touch and hold a link.</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> tabs grouped</translation>
-<translation id="5792534911093536736">More tabs</translation>
 <translation id="58326064309361797">Drag tabs to group them</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="6193448654517602979">Select tabs</translation>
@@ -29,6 +28,7 @@
 <translation id="7792771145871471484">Review the suggestions.</translation>
 <translation id="7885132941432959125">Move tab right</translation>
 <translation id="7966321538264951561">Dismiss the suggestions.</translation>
+<translation id="814503310257431685">View all</translation>
 <translation id="8205266828577616993">Move tab up</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Close <ph name="TABS_COUNT_ONE" /> selected tab}other{Close <ph name="TABS_COUNT_MANY" /> selected tabs}}</translation>
 <translation id="9150694013019234766">Switch between tabs in your tab group near bottom of screen</translation>

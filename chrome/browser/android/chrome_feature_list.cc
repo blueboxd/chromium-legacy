@@ -169,6 +169,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kPayWithGoogleV1,
     &kPhotoPickerVideoSupport,
     &kPhotoPickerZoom,
+    &kProfileCard,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
     &kReorderBookmarks,
@@ -516,6 +517,9 @@ const base::Feature kPhotoPickerVideoSupport{"PhotoPickerVideoSupport",
 
 const base::Feature kPhotoPickerZoom{"PhotoPickerZoom",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kProfileCard{"ProfileCard",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kReachedCodeProfiler{"ReachedCodeProfiler",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

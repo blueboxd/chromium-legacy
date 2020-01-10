@@ -59,6 +59,7 @@ AppCacheCacheTestHelper::AppCacheCacheTestHelper(
       manifest_url_(manifest_url),
       cache_(cache),
       cache_entries_(std::move(cache_entries)),
+      state_(State::kIdle),
       post_write_callback_(std::move(post_write_callback)) {}
 
 AppCacheCacheTestHelper::~AppCacheCacheTestHelper() = default;
@@ -71,6 +72,7 @@ void AppCacheCacheTestHelper::PrepareForRead(
 }
 
 void AppCacheCacheTestHelper::Read() {
+  DCHECK_EQ(state_, State::kIdle);
   state_ = State::kReadInfo;
   read_it_ = read_cache_->entries().begin();
   read_cache_entries_.clear();
@@ -78,6 +80,7 @@ void AppCacheCacheTestHelper::Read() {
 }
 
 void AppCacheCacheTestHelper::Write() {
+  DCHECK_EQ(state_, State::kIdle);
   state_ = State::kWriteInfo;
   write_it_ = cache_entries_.begin();
   AsyncWrite(0);
@@ -98,6 +101,7 @@ void AppCacheCacheTestHelper::AsyncRead(int result) {
   DCHECK(state_ == State::kReadInfo || state_ == State::kReadData);
   DCHECK_GE(result, 0);
   if (read_it_ == read_cache_->entries().end()) {
+    state_ = State::kIdle;
     std::move(post_read_callback_).Run();
     return;
   }
@@ -149,7 +153,7 @@ void AppCacheCacheTestHelper::AsyncRead(int result) {
         // Reset after read.
         read_info_response_info_.reset();
         read_entry_response_id_ = 0;
-        read_data_buffer_ = nullptr;
+        read_data_buffer_.reset();
         read_data_loaded_data_ = "";
         read_data_response_reader_.reset();
 
@@ -171,6 +175,7 @@ void AppCacheCacheTestHelper::AsyncWrite(int result) {
   DCHECK(state_ == State::kWriteInfo || state_ == State::kWriteData);
   DCHECK_GE(result, 0);
   if (write_it_ == cache_entries_.end()) {
+    state_ = State::kIdle;
     std::move(post_write_callback_).Run(1);
     return;
   }

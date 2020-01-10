@@ -49,4 +49,11 @@
     </style>
 
     <style name="PreferenceLayout" parent="PreferenceLayoutBase" />
+
+    <style name="PreferenceSpinnerUnderlineView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:background">@color/modern_grey_600</item>
+    </style>
 </resources>

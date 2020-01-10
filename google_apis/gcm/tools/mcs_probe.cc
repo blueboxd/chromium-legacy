@@ -319,7 +319,7 @@ void MCSProbe::LoadCallback(std::unique_ptr<GCMStore::LoadResult> load_result) {
     DVLOG(1) << "Loaded MCS id " << android_id_;
   }
   mcs_client_->Initialize(
-      base::BindOnce(&MCSProbe::ErrorCallback, base::Unretained(this)),
+      base::BindRepeating(&MCSProbe::ErrorCallback, base::Unretained(this)),
       base::BindRepeating(&MessageReceivedCallback),
       base::BindRepeating(&MessageSentCallback), std::move(load_result));
 

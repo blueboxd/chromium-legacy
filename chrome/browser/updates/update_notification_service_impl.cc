@@ -52,7 +52,7 @@ void UpdateNotificationServiceImpl::Schedule(UpdateNotificationInfo data) {
 }
 
 bool UpdateNotificationServiceImpl::IsReadyToDisplay() const {
-  if (config_->is_enabled)
+  if (!config_->is_enabled)
     return false;
 
   auto last_shown_timestamp = updates::GetLastShownTimeStamp();

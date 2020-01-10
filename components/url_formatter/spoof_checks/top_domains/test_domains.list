@@ -34,3 +34,5 @@ qq.com
 nn.com
 # A domain with the same skeleton as itself:
 test.net
+# Unicode domain:
+fóó.com

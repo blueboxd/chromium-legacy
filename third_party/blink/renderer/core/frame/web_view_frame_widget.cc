@@ -21,6 +21,7 @@ WebViewFrameWidget::WebViewFrameWidget(util::PassKey<WebFrameWidget>,
 WebViewFrameWidget::~WebViewFrameWidget() = default;
 
 void WebViewFrameWidget::Close() {
+  GetPage()->WillCloseAnimationHost(nullptr);
   // Closing the WebViewFrameWidget happens in response to the local main frame
   // being detached from the Page/WebViewImpl.
   web_view_->SetWebWidget(nullptr);

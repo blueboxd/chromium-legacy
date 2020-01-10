@@ -33,13 +33,11 @@ const CGFloat kVerticalPadding = 16;
 @property(nonatomic, weak) id<CollectionViewFooterLinkDelegate> linkDelegate;
 
 // Sets the URL to load when the link in |textLabel| is tapped.
-- (void)setLabelLinkURL:(const GURL&)URL
-          withCellStyle:(CollectionViewCellStyle)cellStyle;
+- (void)setLabelLinkURL:(const GURL&)URL;
 
-// Updates the cell's fonts and colors for the given |cellStyle| and uses
-// dynamic types if they are available (iOS 11+).
-- (void)updateForStyle:(CollectionViewCellStyle)cellStyle
-       withFontScaling:(BOOL)withFontScaling;
+// Updates the cell's fonts and colors and uses dynamic types if they are
+// available (iOS 11+).
+- (void)updateWithFontScaling:(BOOL)withFontScaling;
 
 @end
 
@@ -49,14 +47,12 @@ const CGFloat kVerticalPadding = 16;
 @synthesize linkURL = _linkURL;
 @synthesize linkDelegate = _linkDelegate;
 @synthesize image = _image;
-@synthesize cellStyle = _cellStyle;
 @synthesize useScaledFont = _useScaledFont;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [CollectionViewFooterCell class];
-    _cellStyle = CollectionViewCellStyle::kMaterial;
     _linkURL = GURL();
   }
   return self;
@@ -68,9 +64,9 @@ const CGFloat kVerticalPadding = 16;
   [super configureCell:cell];
 
   // Update fonts and colors before setting the link label URL.
-  [cell updateForStyle:_cellStyle withFontScaling:_useScaledFont];
+  [cell updateWithFontScaling:_useScaledFont];
   cell.textLabel.text = _text;
-  [cell setLabelLinkURL:_linkURL withCellStyle:_cellStyle];
+  [cell setLabelLinkURL:_linkURL];
   cell.linkDelegate = _linkDelegate;
   cell.imageView.image = _image;
 }
@@ -129,8 +125,7 @@ const CGFloat kVerticalPadding = 16;
   return self;
 }
 
-- (void)setLabelLinkURL:(const GURL&)URL
-          withCellStyle:(CollectionViewCellStyle)cellStyle {
+- (void)setLabelLinkURL:(const GURL&)URL {
   _linkController = nil;
   if (!URL.is_valid()) {
     return;
@@ -151,18 +146,12 @@ const CGFloat kVerticalPadding = 16;
   }
 }
 
-- (void)updateForStyle:(CollectionViewCellStyle)cellStyle
-       withFontScaling:(BOOL)withFontScaling {
-  if (cellStyle == CollectionViewCellStyle::kUIKit) {
-    self.textLabel.font = [UIFont systemFontOfSize:kUIKitFooterFontSize];
-    self.textLabel.textColor = UIColor.cr_secondaryLabelColor;
-  } else {
-    self.textLabel.shadowOffset = CGSizeMake(1.f, 0.f);
-    self.textLabel.shadowColor = [UIColor whiteColor];
-    self.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
-    MaybeSetUILabelScaledFont(withFontScaling, self.textLabel,
-                              [[MDCTypography fontLoader] mediumFontOfSize:14]);
-  }
+- (void)updateWithFontScaling:(BOOL)withFontScaling {
+  self.textLabel.shadowOffset = CGSizeMake(1.f, 0.f);
+  self.textLabel.shadowColor = [UIColor whiteColor];
+  self.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
+  MaybeSetUILabelScaledFont(withFontScaling, self.textLabel,
+                            [[MDCTypography fontLoader] mediumFontOfSize:14]);
 }
 
 - (void)layoutSubviews {
@@ -193,8 +182,7 @@ const CGFloat kVerticalPadding = 16;
   [super prepareForReuse];
   self.textLabel.text = nil;
   self.imageView.image = nil;
-  [self setLabelLinkURL:GURL()
-          withCellStyle:CollectionViewCellStyle::kMaterial];
+  [self setLabelLinkURL:GURL()];
   self.horizontalPadding = kDefaultHorizontalPadding;
   _linkController = nil;
   _linkDelegate = nil;

@@ -11,11 +11,13 @@ import("//testing/test.gni")
 # Integration helpers for commonly used fuchsia.* APIs.
 source_set("base") {
   sources = [
+    "config_reader.cc",
     "init_logging.cc",
     "mem_buffer_util.cc",
     "string_util.cc",
   ]
   public = [
+    "config_reader.h",
     "init_logging.h",
     "mem_buffer_util.h",
     "string_util.h",

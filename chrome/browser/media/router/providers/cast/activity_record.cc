@@ -50,4 +50,19 @@ void ActivityRecord::SetOrUpdateSession(const CastSession& session,
   }
 }
 
+void ActivityRecord::SendStopSessionMessageToClients(
+    const std::string& hash_token) {}
+
+void ActivityRecord::SendMessageToClient(
+    const std::string& client_id,
+    blink::mojom::PresentationConnectionMessagePtr message) {}
+
+void ActivityRecord::SendMediaStatusToClients(const base::Value& media_status,
+                                              base::Optional<int> request_id) {}
+
+void ActivityRecord::ClosePresentationConnections(
+    blink::mojom::PresentationConnectionCloseReason close_reason) {}
+
+void ActivityRecord::TerminatePresentationConnections() {}
+
 }  // namespace media_router

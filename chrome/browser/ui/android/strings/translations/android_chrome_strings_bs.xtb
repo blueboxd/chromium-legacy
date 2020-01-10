@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Brojevi telefona</translation>
 <translation id="3819178904835489326">Broj izbrisanih preuzimanja: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Obrisati pohranu?</translation>
+<translation id="3853625385350850937">Da nastavite, uključite NFC na uređaju</translation>
 <translation id="3859306556332390985">Pomakni naprijed</translation>
 <translation id="388596076286380598">Preuzmite članke, videozapise i drugi sadržaj s web lokacija koje vam se sviđaju, čak i kada ste van mreže ili kada vam je veza slaba.</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
@@ -1049,6 +1050,7 @@ Web lokacija NEĆE dobiti pristup kameri. Slike kamere ćete moći vidjeti samo 
 <translation id="8912362522468806198">Google račun</translation>
 <translation id="8920114477895755567">Čekanje detalja roditelja.</translation>
 <translation id="8922289737868596582">Preuzmite stranice pomoću dugmeta Više opcija da ih koristite van mreže</translation>
+<translation id="8926666909099850184">NFC je isključen na ovom uređaju. Uključite ga u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Ukloniti aktivnosti Chromea iz Digitalnog blagostanja?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Otvori u drugom prozoru</translation>

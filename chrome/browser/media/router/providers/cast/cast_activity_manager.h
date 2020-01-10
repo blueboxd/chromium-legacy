@@ -135,6 +135,7 @@ class CastActivityManager : public CastActivityManagerBase,
   friend class CastActivityManagerTest;
   using ActivityMap =
       base::flat_map<MediaRoute::Id, std::unique_ptr<ActivityRecord>>;
+  using CastActivityMap = base::flat_map<MediaRoute::Id, CastActivityRecord*>;
 
   // Bundle of parameters for DoLaunchSession().
   struct DoLaunchSessionParams {
@@ -210,13 +211,14 @@ class CastActivityManager : public CastActivityManagerBase,
       mojom::MediaRouteProvider::TerminateRouteCallback callback,
       cast_channel::Result result);
 
-  ActivityRecord* FindActivityForAutoJoin(const CastMediaSource& cast_source,
-                                          const url::Origin& origin,
-                                          int tab_id);
-  bool CanJoinSession(const ActivityRecord& activity,
+  CastActivityRecord* FindActivityForAutoJoin(
+      const CastMediaSource& cast_source,
+      const url::Origin& origin,
+      int tab_id);
+  bool CanJoinSession(const CastActivityRecord& activity,
                       const CastMediaSource& cast_source,
                       bool incognito) const;
-  ActivityRecord* FindActivityForSessionJoin(
+  CastActivityRecord* FindActivityForSessionJoin(
       const CastMediaSource& cast_source,
       const std::string& presentation_id);
 
@@ -232,8 +234,8 @@ class CastActivityManager : public CastActivityManagerBase,
   ActivityMap::iterator FindActivityByChannelId(int channel_id);
   ActivityMap::iterator FindActivityBySink(const MediaSinkInternal& sink);
 
-  ActivityRecord* AddCastActivityRecord(const MediaRoute& route,
-                                        const std::string& app_id);
+  CastActivityRecord* AddCastActivityRecord(const MediaRoute& route,
+                                            const std::string& app_id);
   ActivityRecord* AddMirroringActivityRecord(
       const MediaRoute& route,
       const std::string& app_id,
@@ -247,7 +249,14 @@ class CastActivityManager : public CastActivityManagerBase,
   static CastActivityRecordFactoryForTest* activity_record_factory_;
 
   base::flat_set<MediaSource::Id> route_queries_;
+
+  // This map contains all activities--both Cast app acitivties and mirroring
+  // activities.
   ActivityMap activities_;
+
+  // The values of this map are the subset of those in |activites_| where there
+  // is a CastActivityRecord.
+  CastActivityMap cast_activities_;
 
   // The following raw pointer fields are assumed to outlive |this|.
   MediaSinkServiceBase* const media_sink_service_;

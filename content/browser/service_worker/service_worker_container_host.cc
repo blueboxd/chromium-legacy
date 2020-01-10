@@ -897,14 +897,22 @@ bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
     return GetContentClient()->browser()->AllowServiceWorkerOnUI(
         scope, site_for_cookies().RepresentativeUrl(), top_frame_origin(),
         script_url, context_->wrapper()->browser_context(),
-        base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
-                            process_id_, frame_id_));
+        base::BindRepeating(
+            [](int process_id, int frame_id) {
+              return WebContentsImpl::FromRenderFrameHostID(process_id,
+                                                            frame_id);
+            },
+            process_id_, frame_id_));
   } else {
     return GetContentClient()->browser()->AllowServiceWorkerOnIO(
         scope, site_for_cookies().RepresentativeUrl(), top_frame_origin(),
         script_url, context_->wrapper()->resource_context(),
-        base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
-                            process_id_, frame_id_));
+        base::BindRepeating(
+            [](int process_id, int frame_id) {
+              return WebContentsImpl::FromRenderFrameHostID(process_id,
+                                                            frame_id);
+            },
+            process_id_, frame_id_));
   }
 }
 

@@ -20,7 +20,7 @@ class Value;
 
 namespace media_router {
 
-class ActivityRecord;
+class CastActivityRecord;
 class CastSession;
 
 enum SupportedMediaCommand {
@@ -49,7 +49,7 @@ enum SupportedMediaCommand {
 // notifying an observer of updates on the session's media status.
 class CastMediaController : public mojom::MediaController {
  public:
-  CastMediaController(ActivityRecord* activity,
+  CastMediaController(CastActivityRecord* activity,
                       mojo::PendingReceiver<mojom::MediaController> receiver,
                       mojo::PendingRemote<mojom::MediaStatusObserver> observer);
   ~CastMediaController() override;
@@ -77,7 +77,7 @@ class CastMediaController : public mojom::MediaController {
   void UpdateMediaStatus(const base::Value& message_value);
 
   const std::string sender_id_;
-  ActivityRecord* const activity_;
+  CastActivityRecord* const activity_;
   mojom::MediaStatus media_status_;
   std::string session_id_;
   int media_session_id_;

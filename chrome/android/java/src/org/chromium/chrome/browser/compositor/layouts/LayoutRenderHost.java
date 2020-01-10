@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.compositor.layouts;
 
+import android.content.res.Resources;
 import android.graphics.Rect;
 
 import org.chromium.ui.resources.ResourceManager;
@@ -54,7 +55,7 @@ public interface LayoutRenderHost {
     /**
      * @return The background color of the toolbar.
      */
-    int getBrowserControlsBackgroundColor();
+    int getBrowserControlsBackgroundColor(Resources resources);
 
     /**
      * @return The {@link ResourceManager}.

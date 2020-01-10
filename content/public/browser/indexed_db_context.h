@@ -28,14 +28,13 @@ namespace content {
 // Call these methods only via the exposed IDBTaskRunner.
 // Refcounted because this class is used throughout the codebase on different
 // threads.
+// This class is in the process of being removed in lieu of the
+// IndexedDBControl mojo interface.
 class IndexedDBContext
     : public base::RefCountedDeleteOnSequence<IndexedDBContext> {
  public:
   // Only call the below methods by posting to this IDBTaskRunner.
   virtual base::SequencedTaskRunner* IDBTaskRunner() = 0;
-
-  // Deletes all indexed db files for the given origin.
-  virtual void DeleteForOrigin(const url::Origin& origin) = 0;
 
   // Copies the indexed db files from this context to another. The
   // indexed db directory in the destination context needs to be empty.

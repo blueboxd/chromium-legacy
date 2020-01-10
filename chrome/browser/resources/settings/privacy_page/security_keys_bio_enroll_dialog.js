@@ -68,7 +68,7 @@ Polymer({
 
     /**
      * The list of enrollments displayed.
-     * @private {!Array<!Enrollment>}
+     * @private {!Array<!settings.Enrollment>}
      */
     enrollments_: Array,
 
@@ -135,7 +135,7 @@ Polymer({
 
   /**
    * @private
-   * @param {!Array<!Enrollment>} enrollments
+   * @param {!Array<!settings.Enrollment>} enrollments
    */
   onEnrollments_: function(enrollments) {
     this.enrollments_ = enrollments;
@@ -210,10 +210,10 @@ Polymer({
 
   /**
    * @private
-   * @param {!EnrollmentStatus} response
+   * @param {!settings.EnrollmentStatus} response
    */
   onEnrolling_: function(response) {
-    if (response.code == Ctap2Status.ERR_KEEPALIVE_CANCEL) {
+    if (response.code == settings.Ctap2Status.ERR_KEEPALIVE_CANCEL) {
       this.showEnrollmentsPage_();
       return;
     }

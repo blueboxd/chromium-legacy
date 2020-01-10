@@ -54,12 +54,8 @@ template("repack") {
     script = "//tools/grit/pak_util.py"
 
     inputs = invoker.sources
-    foreach(_invoker_source, invoker.sources) {
-      inputs += [ "${_invoker_source}.info" ]
-    }
     outputs = [
       invoker.output,
-      "${invoker.output}.info",
     ]
 
     args = [ "repack" ]
@@ -194,5 +190,8 @@ template("repack_locales") {
                              "testonly",
                            ])
     public_deps = _locale_targets
+    if (!defined(invoker.copy_data_to_bundle) || !invoker.copy_data_to_bundle) {
+      data_deps = public_deps
+    }
   }
 }

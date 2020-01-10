@@ -183,10 +183,10 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   // Sends the window drag events to client.
   void OnDragStarted(int component);
-  void OnDragFinished(bool cancel, const gfx::Point& location);
+  void OnDragFinished(bool cancel, const gfx::PointF& location);
 
   // Starts the drag operation.
-  void StartDrag(int component, const gfx::Point& location);
+  void StartDrag(int component, const gfx::PointF& location);
 
   // Set if the surface can be maximzied.
   void SetCanMaximize(bool can_maximize);
@@ -282,7 +282,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   void UpdateFrameWidth();
 
-  void AttemptToStartDrag(int component, const gfx::Point& location);
+  void AttemptToStartDrag(int component, const gfx::PointF& location);
 
   // Lock the compositor if it's not already locked, or extends the
   // lock timeout if it's already locked.

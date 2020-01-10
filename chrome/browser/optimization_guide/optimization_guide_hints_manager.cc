@@ -270,7 +270,7 @@ OptimizationGuideHintsManager::ProcessHintsComponent(
                              registered_optimization_types);
 
   if (update_data) {
-    bool did_process_hints = optimization_guide::ProcessHints(
+    bool did_process_hints = hint_cache_->ProcessAndCacheHints(
         config->mutable_hints(), update_data.get());
     optimization_guide::RecordProcessHintsComponentResult(
         did_process_hints
@@ -350,8 +350,8 @@ void OptimizationGuideHintsManager::OnHintCacheInitialized() {
     std::unique_ptr<optimization_guide::StoreUpdateData> update_data =
         hint_cache_->MaybeCreateUpdateDataForComponentHints(
             base::Version(kManualConfigComponentVersion));
-    optimization_guide::ProcessHints(manual_config->mutable_hints(),
-                                     update_data.get());
+    hint_cache_->ProcessAndCacheHints(manual_config->mutable_hints(),
+                                      update_data.get());
     // Allow |UpdateComponentHints| to block startup so that the first
     // navigation gets the hints when a command line hint proto is provided.
     UpdateComponentHints(base::DoNothing(), std::move(update_data));
@@ -748,7 +748,7 @@ OptimizationGuideHintsManager::ShouldTargetNavigation(
     const auto& host = url.host();
     // Check if we have a hint already loaded for this navigation.
     const optimization_guide::proto::Hint* loaded_hint =
-        hint_cache_->GetHintIfLoaded(host);
+        hint_cache_->GetHostKeyedHintIfLoaded(host);
     const optimization_guide::proto::PageHint* matched_page_hint =
         loaded_hint ? GetPageHintForNavigation(navigation_handle, loaded_hint)
                     : nullptr;
@@ -788,7 +788,7 @@ OptimizationGuideHintsManager::CanApplyOptimization(
 
   // Check if we have a hint already loaded for this navigation.
   const optimization_guide::proto::Hint* loaded_hint =
-      hint_cache_->GetHintIfLoaded(host);
+      hint_cache_->GetHostKeyedHintIfLoaded(host);
   bool has_hint_in_cache = hint_cache_->HasHint(host);
   const optimization_guide::proto::PageHint* matched_page_hint =
       loaded_hint ? GetPageHintForNavigation(navigation_handle, loaded_hint)

@@ -15,6 +15,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
@@ -69,8 +70,7 @@ bool BeginRecording(const std::string& data64,
 }
 
 void OnRecordingEnabledAck(WebUIDataSource::GotDataCallback callback) {
-  std::move(callback).Run(
-      scoped_refptr<base::RefCountedMemory>(new base::RefCountedString()));
+  std::move(callback).Run(base::MakeRefCounted<base::RefCountedString>());
 }
 
 void OnTraceBufferUsageResult(WebUIDataSource::GotDataCallback callback,
@@ -103,25 +103,25 @@ void TracingCallbackWrapperBase64(WebUIDataSource::GotDataCallback callback,
 }
 
 bool OnBeginJSONRequest(const std::string& path,
-                        WebUIDataSource::GotDataCallback* callback) {
+                        WebUIDataSource::GotDataCallback callback) {
   if (path == "json/categories") {
     return TracingController::GetInstance()->GetCategories(
-        base::BindOnce(OnGotCategories, std::move(*callback)));
+        base::BindOnce(OnGotCategories, std::move(callback)));
   }
 
   const char kBeginRecordingPath[] = "json/begin_recording?";
   if (base::StartsWith(path, kBeginRecordingPath,
                        base::CompareCase::SENSITIVE)) {
     std::string data = path.substr(strlen(kBeginRecordingPath));
-    return BeginRecording(data, std::move(*callback));
+    return BeginRecording(data, std::move(callback));
   }
   if (path == "json/get_buffer_percent_full") {
     return TracingController::GetInstance()->GetTraceBufferUsage(
-        base::BindOnce(OnTraceBufferUsageResult, std::move(*callback)));
+        base::BindOnce(OnTraceBufferUsageResult, std::move(callback)));
   }
   if (path == "json/get_buffer_status") {
     return TracingController::GetInstance()->GetTraceBufferUsage(
-        base::BindOnce(OnTraceBufferStatusResult, std::move(*callback)));
+        base::BindOnce(OnTraceBufferStatusResult, std::move(callback)));
   }
   if (path == "json/end_recording_compressed") {
     if (!TracingController::GetInstance()->IsTracing())
@@ -129,7 +129,7 @@ bool OnBeginJSONRequest(const std::string& path,
     scoped_refptr<TracingController::TraceDataEndpoint> data_endpoint =
         TracingControllerImpl::CreateCompressedStringEndpoint(
             TracingControllerImpl::CreateCallbackEndpoint(base::BindOnce(
-                TracingCallbackWrapperBase64, std::move(*callback))),
+                TracingCallbackWrapperBase64, std::move(callback))),
             false /* compress_with_background_priority */);
     return TracingController::GetInstance()->StopTracing(data_endpoint);
   }
@@ -145,11 +145,16 @@ bool OnShouldHandleRequest(const std::string& path) {
 void OnTracingRequest(const std::string& path,
                       WebUIDataSource::GotDataCallback callback) {
   DCHECK(OnShouldHandleRequest(path));
-  if (!OnBeginJSONRequest(path, &callback)) {
-    // OnBeginJSONRequest only consumes |callback| if it returns true.
-    DCHECK(callback);
+  // OnBeginJSONRequest() only runs |callback| if it returns true. But it needs
+  // to take ownership of |callback| even though it won't call |callback|
+  // sometimes, as it binds |callback| into other callbacks before it makes that
+  // decision. So we must give it one copy and keep one ourselves.
+  auto repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
+  if (!OnBeginJSONRequest(path, repeating_callback)) {
     std::string error("##ERROR##");
-    std::move(callback).Run(base::RefCountedString::TakeString(&error));
+    std::move(repeating_callback)
+        .Run(base::RefCountedString::TakeString(&error));
   }
 }
 

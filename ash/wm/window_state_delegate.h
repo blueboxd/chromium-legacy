@@ -9,7 +9,7 @@
 #include "base/macros.h"
 
 namespace gfx {
-class Point;
+class PointF;
 }
 
 namespace ash {
@@ -37,7 +37,7 @@ class ASH_EXPORT WindowStateDelegate {
 
   // Invoked when the user finished drag operation. |cancel| is true
   // if the drag operation was canceled.
-  virtual void OnDragFinished(bool cancel, const gfx::Point& location) {}
+  virtual void OnDragFinished(bool cancel, const gfx::PointF& location) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowStateDelegate);

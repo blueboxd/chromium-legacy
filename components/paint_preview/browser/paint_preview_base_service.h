@@ -9,8 +9,11 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/paint_preview/browser/file_manager.h"
 #include "components/paint_preview/browser/paint_preview_policy.h"
@@ -18,6 +21,10 @@
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "components/paint_preview/public/paint_preview_compositor_service.h"
 #include "content/public/browser/web_contents.h"
+#if defined(OS_ANDROID)
+#include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
+#endif  // defined(OS_ANDROID)
 
 namespace paint_preview {
 
@@ -63,6 +70,12 @@ class PaintPreviewBaseService : public KeyedService {
   // Returns whether the created service is off the record.
   bool IsOffTheRecord() const { return is_off_the_record_; }
 
+  // Returns the PaintPreviewProto that is associated with |url|. Implementers
+  // of this class should override this function as it returns base::nullopt by
+  // default.
+  virtual base::Optional<PaintPreviewProto> GetCapturedPaintPreviewProto(
+      const GURL& url);
+
   // The following methods both capture a Paint Preview; however, their behavior
   // and intended use is different. The first method is intended for capturing
   // full page contents. Generally, this is what you should be using for most
@@ -76,7 +89,6 @@ class PaintPreviewBaseService : public KeyedService {
   // if a capture fails the service implementation is responsible for
   // implementing this management and tracking the directories in existence.
   // Data in a directory will contain:
-  // - paint_preview.pb (the metadata proto)
   // - a number of SKPs listed as <guid>.skp (one per frame)
   //
   // Captures the main frame of |web_contents| (an observer for capturing Paint
@@ -100,6 +112,12 @@ class PaintPreviewBaseService : public KeyedService {
   std::unique_ptr<PaintPreviewCompositorService> StartCompositorService(
       base::OnceClosure disconnect_handler);
 
+#if defined(OS_ANDROID)
+  base::android::ScopedJavaGlobalRef<jobject> GetJavaObject() {
+    return java_ref_;
+  }
+#endif  // defined(OS_ANDROID)
+
  private:
   void OnCaptured(OnCapturedCallback callback,
                   base::UnguessableToken guid,
@@ -109,6 +127,11 @@ class PaintPreviewBaseService : public KeyedService {
   std::unique_ptr<PaintPreviewPolicy> policy_ = nullptr;
   FileManager file_manager_;
   bool is_off_the_record_;
+
+#if defined(OS_ANDROID)
+  // Points to the Java reference.
+  base::android::ScopedJavaGlobalRef<jobject> java_ref_;
+#endif  // defined(OS_ANDROID)
 
   base::WeakPtrFactory<PaintPreviewBaseService> weak_ptr_factory_{this};
 

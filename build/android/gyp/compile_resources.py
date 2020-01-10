@@ -844,13 +844,13 @@ def _OptimizeApk(output, options, temp_dir, unoptimized_path, r_txt_path):
         config.write('{}#no_obfuscate\n'.format(resource))
 
     optimize_command += [
-        '--enable-resource-obfuscation',
+        '--collapse-resource-names',
         '--resources-config-path',
         gen_config_path,
     ]
 
   if options.short_resource_paths:
-    optimize_command += ['--enable-resource-path-shortening']
+    optimize_command += ['--shorten-resource-paths']
   if options.resources_path_map_out_path:
     optimize_command += [
         '--resource-path-shortening-map', options.resources_path_map_out_path

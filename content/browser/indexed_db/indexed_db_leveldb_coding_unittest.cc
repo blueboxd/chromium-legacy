@@ -643,7 +643,7 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDecodeBlobJournal) {
   }
 
   {  // kAllBlobsKey
-    journals.push_back({{5, DatabaseMetaDataKey::kAllBlobsKey}});
+    journals.push_back({{5, DatabaseMetaDataKey::kAllBlobsNumber}});
   }
 
   {  // A bunch of items

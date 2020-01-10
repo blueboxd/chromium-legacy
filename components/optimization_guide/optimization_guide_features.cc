@@ -193,6 +193,12 @@ base::TimeDelta StoredHostModelFeaturesFreshnessDuration() {
       "max_store_duration_for_host_model_features_in_days", 7));
 }
 
+base::TimeDelta URLKeyedHintValidCacheDuration() {
+  return base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
+      kOptimizationHints, "max_url_keyed_hint_valid_cache_duration_in_seconds",
+      60 * 60 /* 1 hour */));
+}
+
 size_t MaxHostsForOptimizationGuideServiceModelsFetch() {
   return GetFieldTrialParamByFeatureAsInt(
       kOptimizationTargetPrediction,
@@ -202,6 +208,11 @@ size_t MaxHostsForOptimizationGuideServiceModelsFetch() {
 size_t MaxHostModelFeaturesCacheSize() {
   return GetFieldTrialParamByFeatureAsInt(
       kOptimizationTargetPrediction, "max_host_model_features_cache_size", 100);
+}
+
+size_t MaxURLKeyedHintCacheSize() {
+  return GetFieldTrialParamByFeatureAsInt(kOptimizationHints,
+                                          "max_url_keyed_hint_cache_size", 20);
 }
 
 bool IsOptimizationTargetPredictionEnabled() {

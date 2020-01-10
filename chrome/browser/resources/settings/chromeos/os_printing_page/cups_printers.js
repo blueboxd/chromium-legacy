@@ -58,18 +58,6 @@ Polymer({
     /**@private */
     addPrinterResultText_: String,
 
-    /**
-     * TODO(jimmyxgong): Remove this feature flag conditional once feature
-     * is launched.
-     * @private
-     */
-    enableUpdatedUi_: {
-      type: Boolean,
-      value: function() {
-        return true;
-      },
-    },
-
     /**@private */
     nearbyPrintersAriaLabel_: {
       type: String,
@@ -125,10 +113,6 @@ Polymer({
         .then((responseParams) => {
           this.onActiveNetworksChanged(responseParams.result);
         });
-
-    if (this.enableUpdatedUi_) {
-      return;
-    }
   },
 
   /** @override */
@@ -189,11 +173,9 @@ Polymer({
             'printerEditedSuccessfulMessage', printerName);
         break;
       case PrinterSetupResult.PRINTER_UNREACHABLE:
-        if (this.enableUpdatedUi_) {
-          this.addPrinterResultText_ =
-              loadTimeData.getStringF('printerUnavailableMessage', printerName);
-          break;
-        }
+        this.addPrinterResultText_ =
+            loadTimeData.getStringF('printerUnavailableMessage', printerName);
+        break;
       default:
         assertNotReached();
     }
@@ -223,14 +205,10 @@ Polymer({
    * @private
    */
   onPrintersChanged_: function(cupsPrintersList) {
-    if (this.enableUpdatedUi_) {
-      this.savedPrinters_ = cupsPrintersList.printerList.map(
-          printer => /** @type {!PrinterListEntry} */ (
-              {printerInfo: printer, printerType: PrinterType.SAVED}));
-      this.entryManager_.setSavedPrintersList(this.savedPrinters_);
-    } else {
-      this.printers = cupsPrintersList.printerList;
-    }
+    this.savedPrinters_ = cupsPrintersList.printerList.map(
+        printer => /** @type {!PrinterListEntry} */ (
+            {printerInfo: printer, printerType: PrinterType.SAVED}));
+    this.entryManager_.setSavedPrintersList(this.savedPrinters_);
   },
 
   /** @private */
@@ -240,9 +218,7 @@ Polymer({
 
   /** @private */
   onAddPrinterDialogClose_: function() {
-    cr.ui.focusWithoutInk(assert(
-        this.enableUpdatedUi_ ? this.$$('#addManualPrinterIcon') :
-                                this.$$('#addPrinter')));
+    cr.ui.focusWithoutInk(assert(this.$$('#addManualPrinterIcon')));
   },
 
   /** @private */

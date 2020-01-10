@@ -10,7 +10,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
-#include "url/origin.h"
 
 namespace content {
 
@@ -43,6 +42,10 @@ SmsFetcher* SmsFetcher::Get(BrowserContext* context) {
 void SmsFetcherImpl::Subscribe(const url::Origin& origin,
                                SmsQueue::Subscriber* subscriber) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (subscribers_.HasSubscriber(origin, subscriber))
+    return;
+
   subscribers_.Push(origin, subscriber);
 
   // Fetches a remote SMS.

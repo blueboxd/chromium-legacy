@@ -79,8 +79,9 @@ void SingleKeyframeEffectAnimation::AddKeyframeModel(
                                     GetKeyframeEffect()->id());
 }
 
-void SingleKeyframeEffectAnimation::PauseKeyframeModel(int keyframe_model_id,
-                                                       double time_offset) {
+void SingleKeyframeEffectAnimation::PauseKeyframeModel(
+    int keyframe_model_id,
+    base::TimeDelta time_offset) {
   PauseKeyframeModelForKeyframeEffect(keyframe_model_id, time_offset,
                                       GetKeyframeEffect()->id());
 }

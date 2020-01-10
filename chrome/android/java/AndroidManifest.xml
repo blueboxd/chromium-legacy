@@ -175,21 +175,6 @@ by a child template that "extends" this file.
         <!-- ARCore APK integration -->
         <!-- This tag indicates that this application optionally uses ARCore. -->
         <meta-data android:name="com.google.ar.core" android:value="optional" />
-        <!-- This value must match value present in ARCore SDK's .aar -->
-        <!-- TODO(https://crbug.com/917406): modify build scripts to
-             automatically pull this value in - the problem exists because in
-             bundle mode, the ARCore SDK is packaged into AR module and
-             the module installation will not automatically bring in DFM's
-             manifest entries. -->
-        <meta-data android:name="com.google.ar.core.min_apk_version"
-            android:value="190531000"/>
-        <activity
-            android:name="com.google.ar.core.InstallActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:excludeFromRecents="true"
-            android:exported="false"
-            android:launchMode="singleTop"
-            android:theme="@android:style/Theme.Material.Light.Dialog.Alert" />
         {% endif %}
 
         <!-- Cast support -->

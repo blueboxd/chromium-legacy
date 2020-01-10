@@ -63,6 +63,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/ui/find_bar/find_bar_state.h"
+#include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/buildflags.h"
@@ -639,6 +641,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 #endif
 
     CreateCrashUploadList()->Clear(delete_begin_, delete_end_);
+
+    FindBarStateFactory::GetForProfile(profile_)->set_last_prepopulate_text(
+        base::string16());
   }
 
   //////////////////////////////////////////////////////////////////////////////

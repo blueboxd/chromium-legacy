@@ -241,6 +241,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnSeekBackward(double seconds) override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
+  void OnPowerExperimentState(bool state) override;
   void RequestRemotePlaybackDisabled(bool disabled) override;
 
 #if defined(OS_ANDROID)

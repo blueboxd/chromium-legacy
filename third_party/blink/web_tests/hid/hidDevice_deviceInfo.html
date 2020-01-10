@@ -93,8 +93,11 @@ hid_test(async (t, fake) => {
   fake.setSelectedDevice(guid);
 
   await trustedClick();
-  const d = await navigator.hid.requestDevice({filters: []});
+  const devices = await navigator.hid.requestDevice({filters: []});
+  assert_true(devices instanceof Array, 'devices instanceof Array');
+  assert_equals(devices.length, 1, 'devices.length');
 
+  const d = devices[0];
   assert_true(d instanceof HIDDevice, 'device instanceof HIDDevice');
   assert_false(d.opened, 'device.opened');
   assert_equals(d.vendorId, kTestVendorId, 'device.vendorId');
@@ -168,8 +171,11 @@ hid_test(async (t, fake) => {
   fake.setSelectedDevice(guid);
 
   await trustedClick();
-  const d = await navigator.hid.requestDevice({filters: []});
+  const devices = await navigator.hid.requestDevice({filters: []});
+  assert_true(devices instanceof Array, 'devices instanceof Array');
+  assert_equals(devices.length, 1, 'devices.length');
 
+  const d = devices[0];
   assert_true(d instanceof HIDDevice, 'device instanceof HIDDevice');
   assert_equals(d.collections.length, 1, 'device.collections.length');
 

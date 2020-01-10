@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Telefonnummern</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> Downloads gelöscht</translation>
 <translation id="3822502789641063741">Websitespeicher löschen?</translation>
+<translation id="3853625385350850937">Aktivieren Sie zum Fortfahren NFC auf Ihrem Gerät</translation>
 <translation id="3859306556332390985">Nach vorne navigieren</translation>
 <translation id="388596076286380598">Erhalten Sie Artikel, Videos und weitere Inhalte von Websites, die Ihnen gefallen – auch offline oder bei schlechter Internetverbindung.</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
@@ -1049,6 +1050,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8912362522468806198">Google-Konto</translation>
 <translation id="8920114477895755567">Warten auf Details zu den Eltern</translation>
 <translation id="8922289737868596582">Seiten über die Schaltfläche "Weitere Optionen" zur Offline-Ansicht herunterladen</translation>
+<translation id="8926666909099850184">NFC ist für dieses Gerät deaktiviert. Sie können die Funktion in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="8937772741022875483">Ihre Chrome-Aktivitäten aus Digital Wellbeing entfernen?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">In anderem Fenster öffnen</translation>

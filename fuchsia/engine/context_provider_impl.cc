@@ -42,6 +42,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "content/public/common/content_switches.h"
+#include "fuchsia/base/config_reader.h"
 #include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -114,32 +115,15 @@ bool SetContentDirectoriesInCommandLine(
   return true;
 }
 
-constexpr char kConfigFileName[] = "/config/data/config.json";
-
-base::Value LoadConfigFrom(const base::FilePath& file_path) {
-  if (!base::PathExists(file_path)) {
-    DLOG(WARNING) << file_path.value()
-                  << " doesn't exist. Using default WebEngine configuration.";
+base::Value LoadConfig() {
+  base::Optional<base::Value> config = cr_fuchsia::LoadPackageConfig();
+  if (!config) {
+    DLOG(WARNING) << "Configuration data not found. Using default "
+                     "WebEngine configuration.";
     return base::Value(base::Value::Type::DICTIONARY);
   }
 
-  std::string file_content;
-  bool loaded = base::ReadFileToString(file_path, &file_content);
-  CHECK(loaded) << "Failed to read " << file_path.value();
-
-  base::JSONReader reader;
-  base::Optional<base::Value> parsed = reader.Read(file_content);
-  CHECK(parsed) << "Failed to parse " << file_path.value() << ": "
-                << reader.GetErrorMessage();
-  CHECK(parsed->is_dict()) << "Config is not a JSON dictinary: "
-                           << file_path.value();
-
-  return std::move(parsed.value());
-}
-
-const base::Value& GetWebEngineConfig() {
-  static base::Value config = LoadConfigFrom(base::FilePath(kConfigFileName));
-  return config;
+  return std::move(*config);
 }
 
 // Returns false if the config is present but has invalid contents.
@@ -150,6 +134,7 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
     return true;
 
   static const base::StringPiece kAllowedArgs[] = {
+      switches::kDisableGpuWatchdog,
       switches::kEnableFeatures,
       switches::kEnableFuchsiaAudioConsumer,
       switches::kEnableLowEndDeviceMode,
@@ -302,6 +287,15 @@ void ContextProviderImpl::Create(
   if (params.has_features())
     features = params.features();
 
+  const bool is_headless =
+      (features & fuchsia::web::ContextFeatureFlags::HEADLESS) ==
+      fuchsia::web::ContextFeatureFlags::HEADLESS;
+  if (is_headless) {
+    launch_command.AppendSwitchNative(switches::kOzonePlatform,
+                                      switches::kHeadless);
+    launch_command.AppendSwitch(switches::kHeadless);
+  }
+
   bool enable_vulkan = (features & fuchsia::web::ContextFeatureFlags::VULKAN) ==
                        fuchsia::web::ContextFeatureFlags::VULKAN;
   bool enable_widevine =
@@ -319,19 +313,10 @@ void ContextProviderImpl::Create(
   }
 
   bool enable_drm = enable_widevine || enable_playready;
-  if (enable_drm && !enable_vulkan) {
+  if (enable_drm && !enable_vulkan && !is_headless) {
     DLOG(ERROR) << "WIDEVINE_CDM and PLAYREADY_CDM features require VULKAN.";
     context_request.Close(ZX_ERR_INVALID_ARGS);
     return;
-  }
-
-  const bool is_headless =
-      (features & fuchsia::web::ContextFeatureFlags::HEADLESS) ==
-      fuchsia::web::ContextFeatureFlags::HEADLESS;
-  if (is_headless) {
-    launch_command.AppendSwitchNative(switches::kOzonePlatform,
-                                      switches::kHeadless);
-    launch_command.AppendSwitch(switches::kHeadless);
   }
 
   if (enable_vulkan) {
@@ -364,8 +349,9 @@ void ContextProviderImpl::Create(
     launch_command.AppendSwitch(switches::kDisableSoftwareRasterizer);
   }
 
-  const base::Value& web_engine_config =
-      config_for_test_.is_none() ? GetWebEngineConfig() : config_for_test_;
+  base::Value web_engine_config =
+      config_for_test_.is_none() ? LoadConfig() : std::move(config_for_test_);
+
   bool allow_protected_graphics =
       web_engine_config.FindBoolPath("allow-protected-graphics")
           .value_or(false);

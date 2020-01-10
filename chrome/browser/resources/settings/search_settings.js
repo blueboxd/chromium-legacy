@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('settings');
-
-/**
- * A data structure used by callers to combine the results of multiple search
- * requests.
- *
- * @typedef {{
- *   canceled: Boolean,
- *   didFindMatches: Boolean,
- *   wasClearSearch: Boolean,
- * }}
- */
-settings.SearchResult;
-
 cr.define('settings', function() {
+  /**
+   * A data structure used by callers to combine the results of multiple search
+   * requests.
+   *
+   * @typedef {{
+   *   canceled: Boolean,
+   *   didFindMatches: Boolean,
+   *   wasClearSearch: Boolean,
+   * }}
+   */
+  let SearchResult;
+
   /**
    * A CSS attribute indicating that a node should be ignored during searching.
    * @type {string}
@@ -621,8 +619,9 @@ cr.define('settings', function() {
   }
 
   return {
-    getSearchManager: getSearchManager,
-    setSearchManagerForTesting: setSearchManagerForTesting,
-    SearchRequest: SearchRequest,
+    getSearchManager,
+    setSearchManagerForTesting,
+    SearchRequest,
+    SearchResult,
   };
 });

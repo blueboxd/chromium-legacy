@@ -93,11 +93,12 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
   WebappInstallSource install_source =
       InstallableMetrics::GetInstallSource(web_contents, InstallTrigger::MENU);
 
+  WebAppInstalledCallback callback = base::DoNothing();
+
   provider->install_manager().InstallWebAppFromManifestWithFallback(
       web_contents, force_shortcut_app, install_source,
       base::BindOnce(WebAppInstallDialogCallback, install_source),
-      base::BindOnce(OnWebAppInstalled,
-                     base::DoNothing::Once<const AppId&, InstallResultCode>()));
+      base::BindOnce(OnWebAppInstalled, std::move(callback)));
 }
 
 bool CreateWebAppFromManifest(content::WebContents* web_contents,

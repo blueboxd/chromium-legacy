@@ -25,51 +25,35 @@ class Origin;
 
 namespace media_router {
 
-class CastActivityManagerBase;
 class CastActivityRecord;
 class CastInternalMessage;
 class CastSession;
 class CastSessionClient;
 class CastSessionClientFactoryForTest;
 class CastSessionTracker;
-class MediaSinkServiceBase;
 class MediaRoute;
 
 class CastActivityRecordFactoryForTest {
  public:
-  virtual std::unique_ptr<ActivityRecord> MakeCastActivityRecord(
+  virtual std::unique_ptr<CastActivityRecord> MakeCastActivityRecord(
       const MediaRoute& route,
       const std::string& app_id) = 0;
 };
 
 class CastActivityRecord : public ActivityRecord {
  public:
+  using ClientMap =
+      base::flat_map<std::string, std::unique_ptr<CastSessionClient>>;
+
   // Creates a new record owned by |owner|.
   CastActivityRecord(const MediaRoute& route,
                      const std::string& app_id,
-                     MediaSinkServiceBase* media_sink_service,
                      cast_channel::CastMessageHandler* message_handler,
-                     CastSessionTracker* session_tracker,
-                     CastActivityManagerBase* owner);
+                     CastSessionTracker* session_tracker);
   ~CastActivityRecord() override;
 
   // ActivityRecord implementation
-  cast_channel::Result SendAppMessageToReceiver(
-      const CastInternalMessage& cast_message) override;
-  base::Optional<int> SendMediaRequestToReceiver(
-      const CastInternalMessage& cast_message) override;
-  void SendSetVolumeRequestToReceiver(
-      const CastInternalMessage& cast_message,
-      cast_channel::ResultCallback callback) override;
-  void SendStopSessionMessageToReceiver(
-      const base::Optional<std::string>& client_id,
-      const std::string& hash_token,
-      mojom::MediaRouteProvider::TerminateRouteCallback callback) override;
-  void HandleLeaveSession(const std::string& client_id) override;
-  mojom::RoutePresentationConnectionPtr AddClient(const CastMediaSource& source,
-                                                  const url::Origin& origin,
-                                                  int tab_id) override;
-  void RemoveClient(const std::string& client_id) override;
+  void SendStopSessionMessageToClients(const std::string& hash_token) override;
   void SetOrUpdateSession(const CastSession& session,
                           const MediaSinkInternal& sink,
                           const std::string& hash_token) override;
@@ -87,6 +71,45 @@ class CastActivityRecord : public ActivityRecord {
       mojo::PendingReceiver<mojom::MediaController> media_controller,
       mojo::PendingRemote<mojom::MediaStatusObserver> observer) override;
 
+  // Sends media command |cast_message|, which came from the SDK client, to the
+  // receiver hosting this session. Returns the locally-assigned request ID of
+  // the message sent to the receiver.
+  virtual base::Optional<int> SendMediaRequestToReceiver(
+      const CastInternalMessage& cast_message);
+
+  // Sends app message |cast_message|, which came from the SDK client, to the
+  // receiver hosting this session. Returns true if the message is sent
+  // successfully.
+  virtual cast_channel::Result SendAppMessageToReceiver(
+      const CastInternalMessage& cast_message);
+
+  // Sends a SET_VOLUME request to the receiver and calls |callback| when a
+  // response indicating whether the request succeeded is received.
+  virtual void SendSetVolumeRequestToReceiver(
+      const CastInternalMessage& cast_message,
+      cast_channel::ResultCallback callback);
+
+  // Called when the client given by |client_id| requests to leave the session.
+  // This will also cause all clients within the session with matching origin
+  // and/or tab ID to leave (i.e., their presentation connections will be
+  // closed).
+  virtual void HandleLeaveSession(const std::string& client_id);
+
+  // Adds a new client |client_id| to this session and returns the handles of
+  // the two pipes to be held by Blink It is invalid to call this method if the
+  // client already exists.
+  virtual mojom::RoutePresentationConnectionPtr AddClient(
+      const CastMediaSource& source,
+      const url::Origin& origin,
+      int tab_id);
+
+  virtual void RemoveClient(const std::string& client_id);
+
+  bool CanJoinSession(const CastMediaSource& cast_source, bool incognito) const;
+  bool HasJoinableClient(AutoJoinPolicy policy,
+                         const url::Origin& origin,
+                         int tab_id) const;
+
   static void SetClientFactoryForTest(
       CastSessionClientFactoryForTest* factory) {
     client_factory_for_test_ = factory;
@@ -97,18 +120,16 @@ class CastActivityRecord : public ActivityRecord {
   friend class CastActivityManager;
   friend class CastActivityRecordTest;
 
-  int GetCastChannelId();
+  static CastSessionClientFactoryForTest* client_factory_for_test_;
+
+  int cast_channel_id() const { return sink_.cast_channel_id(); }
 
   CastSessionClient* GetClient(const std::string& client_id) {
     auto it = connected_clients_.find(client_id);
     return it == connected_clients_.end() ? nullptr : it->second.get();
   }
 
-  static CastSessionClientFactoryForTest* client_factory_for_test_;
-
-  MediaSinkServiceBase* const media_sink_service_;
-  CastActivityManagerBase* const activity_manager_;
-
+  ClientMap connected_clients_;
   std::unique_ptr<CastMediaController> media_controller_;
 };
 

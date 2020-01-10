@@ -13,7 +13,6 @@ import("//build/config/ui.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build/util/version.gni")
 import("//chrome/browser/buildflags.gni")
-import("//chrome/chrome_repack_locales.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chromeos/assistant/assistant.gni")
@@ -682,7 +681,6 @@ if (!is_android) {
       "//base/test:test_support",
       "//base/util/memory_pressure:test_support",
       "//build:branding_buildflags",
-      "//chrome:browser_tests_pak",
       "//chrome:packed_resources",
       "//chrome:resources",
       "//chrome:strings",
@@ -770,6 +768,7 @@ if (!is_android) {
 
     # Runtime dependencies
     data_deps = [
+      "//chrome:browser_tests_pak",
       "//chrome/browser/resources/media/mei_preload:component",
 
       # TODO(thakis): Why do these need copying in browser_tests?
@@ -817,7 +816,6 @@ if (!is_android) {
       "//third_party/simplejson/",
       "//third_party/tlslite/",
       "//ui/webui/resources/",
-      "$root_out_dir/browser_tests.pak",
     ]
     data += js2gtest_js_libraries
 
@@ -1534,12 +1532,7 @@ if (!is_android) {
     }
 
     if (!is_mac) {
-      data += [
-        "$root_out_dir/locales/",
-        "$root_out_dir/chrome_100_percent.pak",
-        "$root_out_dir/chrome_200_percent.pak",
-        "$root_out_dir/resources.pak",
-      ]
+      data_deps += [ "//chrome:packed_resources" ]
     }
 
     if (enable_captive_portal_detection) {
@@ -2534,7 +2527,7 @@ if (!is_android) {
       }
     }
     if (enable_kaleidoscope) {
-      deps += [ "../browser/media/kaleidoscope/internal:browser_tests" ]
+      deps += [ "../browser/media/kaleidoscope/internal:browser_tests_js" ]
     }
     if (enable_legacy_desktop_in_product_help) {
       sources += [
@@ -3473,7 +3466,6 @@ test("unit_tests") {
     "../common/ini_parser_unittest.cc",
     "../common/mac/mock_launchd.h",
     "../common/mac/mock_launchd.mm",
-    "../common/mac/staging_watcher_unittest.mm",
     "../common/media_router/issue_unittest.cc",
     "../common/media_router/media_route_unittest.cc",
     "../common/media_router/media_sink_unittest.cc",
@@ -3603,12 +3595,7 @@ test("unit_tests") {
     ]
   }
   if (is_linux || is_win) {
-    data += [
-      "$root_out_dir/chrome_100_percent.pak",
-      "$root_out_dir/chrome_200_percent.pak",
-      "$root_out_dir/locales/en-US.pak",
-      "$root_out_dir/resources.pak",
-    ]
+    data_deps += [ "//chrome:packed_resources" ]
   }
   if (is_win) {
     data_deps += [ "//chrome" ]
@@ -5120,7 +5107,7 @@ test("unit_tests") {
     if (is_android) {
       deps += [ "//chrome/android:chrome_apk_paks" ]
     } else {
-      deps += [ "//chrome:packed_resources" ]
+      data_deps += [ "//chrome:packed_resources" ]
     }
   }
   if (is_win || is_mac || is_chromeos) {
@@ -5696,18 +5683,8 @@ if (!is_android) {
       "$root_out_dir/test_case.html.mock-http-headers",
       "$root_out_dir/test_page.css",
       "$root_out_dir/test_page.css.mock-http-headers",
-      "$root_out_dir/ui_test.pak",
     ]
     data += js2gtest_js_libraries
-    if (is_linux || is_win) {
-      data += [
-        "$root_out_dir/chrome_100_percent.pak",
-        "$root_out_dir/chrome_200_percent.pak",
-        "$root_out_dir/locales/en-US.pak",
-        "$root_out_dir/locales/fr.pak",
-        "$root_out_dir/resources.pak",
-      ]
-    }
     if (is_linux) {
       data += [ "$root_out_dir/libppapi_tests.so" ]
     }
@@ -5754,7 +5731,6 @@ if (!is_android) {
       "//ui/base:test_support",
       "//ui/base/clipboard:clipboard_test_support",
       "//ui/events:events_interactive_ui_tests",
-      "//ui/resources:ui_test_pak",
       "//ui/web_dialogs:test_support",
     ]
 
@@ -5766,7 +5742,11 @@ if (!is_android) {
     data_deps = [
       "//ppapi:ppapi_tests",
       "//third_party/mesa_headers",
+      "//ui/resources:ui_test_pak_data",
     ]
+    if (is_linux || is_win) {
+      data_deps += [ "//chrome:packed_resources" ]
+    }
 
     if (use_aura) {
       sources += [ "../browser/ui/views/drag_and_drop_interactive_uitest.cc" ]
@@ -6252,15 +6232,6 @@ if (!is_android && !is_fuchsia) {
       "//testing/xvfb.py",
     ]
 
-    if (is_linux || is_win) {
-      data += [
-        "$root_out_dir/chrome_100_percent.pak",
-        "$root_out_dir/chrome_200_percent.pak",
-        "$root_out_dir/locales/en-US.pak",
-        "$root_out_dir/resources.pak",
-      ]
-    }
-
     # TODO(phajdan.jr): Only temporary, to make transition easier.
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
@@ -6289,6 +6260,10 @@ if (!is_android && !is_fuchsia) {
       "//testing/buildbot/filters:e2e_sync_integration_tests_filters",
       "//third_party/mesa_headers",
     ]
+
+    if (is_linux || is_win) {
+      data_deps += [ "//chrome:packed_resources" ]
+    }
 
     if (is_mac) {
       # Dictionary sync is disabled on Mac.
@@ -6490,11 +6465,8 @@ if (!is_android && !is_fuchsia) {
     ]
 
     if (is_linux || is_win) {
-      data += [
-        "$root_out_dir/chrome_100_percent.pak",
-        "$root_out_dir/chrome_200_percent.pak",
-        "$root_out_dir/locales/en-US.pak",
-        "$root_out_dir/resources.pak",
+      data_deps = [
+        "//chrome:packed_resources",
       ]
     }
 
@@ -6666,11 +6638,8 @@ if (is_win) {
       ]
     }
     if (!is_mac) {
-      data += [
-        "$root_out_dir/locales/",
-        "$root_out_dir/chrome_100_percent.pak",
-        "$root_out_dir/chrome_200_percent.pak",
-        "$root_out_dir/resources.pak",
+      data_deps = [
+        "//chrome:packed_resources",
       ]
     }
   }
@@ -6853,7 +6822,6 @@ if (!is_android) {
 
     deps = [
       "//base",
-      "//chrome:packed_resources",
       "//chrome/test:browser_tests_runner",
       "//device/base",
       "//services/service_manager/sandbox",
@@ -6870,11 +6838,8 @@ if (!is_android) {
     ]
 
     if (!is_mac) {
-      data += [
-        "$root_out_dir/locales/",
-        "$root_out_dir/chrome_100_percent.pak",
-        "$root_out_dir/chrome_200_percent.pak",
-        "$root_out_dir/resources.pak",
+      data_deps = [
+        "//chrome:packed_resources",
       ]
     }
   }

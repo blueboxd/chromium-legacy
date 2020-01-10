@@ -366,6 +366,7 @@
 <translation id="381841723434055211">ስልክ ቁጥሮች</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> የሚወርዱ ተሰርዘዋል</translation>
 <translation id="3822502789641063741">የጣቢያ ማከማቻ ይጽዳ?</translation>
+<translation id="3853625385350850937">ለመቀጠል በእርስዎ ስልክ ላይ NFCን ያብሩ</translation>
 <translation id="3859306556332390985">ወደፊት ፈልግ</translation>
 <translation id="388596076286380598">ምንም እንኳ እርስዎ ከመስመር ውጭ ቢሆኑም ወይም የእርስዎ ግንኙነት ደካማ ቢሆንም እርስዎ ከሚወዷቸው ጣቢያዎች ጽሑፎችን፣ ቪዲዮዎችን፣ እና ሌላ ይዘት ያግኙ።</translation>
 <translation id="3894427358181296146">አቃፊ ያክሉ</translation>
@@ -1049,6 +1050,7 @@
 <translation id="8912362522468806198">የGoogle መለያ</translation>
 <translation id="8920114477895755567">የወላጆች ዝርዝሮችን በመጠበቅ ላይ።</translation>
 <translation id="8922289737868596582">ገጾችን ከመስመር ውጭ ለመጠቀም ከተጨማሪ አማራጮች አዝራሩ ላይ ያውርዱ</translation>
+<translation id="8926666909099850184">NFC ለዚህ መሣሪያ ጠፍቷል። በ<ph name="BEGIN_LINK" />Android ቅንበሮች<ph name="END_LINK" /> ውስጥ ያብሩት።</translation>
 <translation id="8937772741022875483">የChrome እንቅስቃሰዎ ከዲጂታል ብቁ መሆን ይወገድ?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">በሌላ መስኮት ውስጥ ክፈት</translation>

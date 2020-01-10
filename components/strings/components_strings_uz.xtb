@@ -209,7 +209,7 @@
 <translation id="1914326953223720820">Arxivdan chiqarish xizmati</translation>
 <translation id="1915697529809968049">CVC oʻrniga Touch ID ishlatilsinmi?</translation>
 <translation id="1916770123977586577">Yangilangan sozlamalar bu saytda ishlashi uchun sahifani yangilang</translation>
-<translation id="1917876262703816781">Siz ishlatadigan sayt yoki ilovadagi parolingiz oshkor etilgan. Chrome hoziroq <ph name="ORIGIN" /> parolingizni yangilashni tavsiya qiladi.</translation>
+<translation id="1917876262703816781">Siz ishlatadigan sayt yoki ilovada axborot sizib chiqishi yuz bergan. Chrome hoziroq <ph name="ORIGIN" /> parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="1919345977826869612">Reklamalar</translation>
 <translation id="1919367280705858090">Maxsus turdagi xato xabarlari asosida yordam olish</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Yo‘q}=1{1 ta sayt}other{# ta sayt}}</translation>
@@ -908,7 +908,7 @@
 <translation id="5287240709317226393">Cookie fayllarini ko‘rsatish</translation>
 <translation id="5287456746628258573">Bu sayt eskirgan xavfsizlik sozlamasidan foydalanadi. maʼlumotlaringiz (masalan, parol va kredit kartalari nomlari) shu saytga yuborilganda ular xavf ostida qolishi mumkin.</translation>
 <translation id="5288108484102287882">Parametr qiymatlari tekshiruvida ogohlantiruvlar aniqlandi</translation>
-<translation id="5295292838686006428">Siz ishlatadigan sayt yoki ilovadagi parolingiz oshkor etilgan. Chrome saqlangan parollaringizni hoziroq tekshirishni tavsiya qiladi.</translation>
+<translation id="5295292838686006428">Siz ishlatadigan sayt yoki ilovada axborot sizib chiqishi yuz bergan. Chrome saqlangan parollaringizni hoziroq tekshirishni tavsiya qiladi.</translation>
 <translation id="5299298092464848405">Siyosatni analiz qilishda xatolik yuz berdi</translation>
 <translation id="5300589172476337783">Ko‘rsatish</translation>
 <translation id="5308380583665731573">Ulanish</translation>
@@ -1353,7 +1353,7 @@ Batafsil axborot:
 <translation id="7473891865547856676">Yo‘q, rahmat</translation>
 <translation id="7481312909269577407">Oldinga</translation>
 <translation id="7485870689360869515">Ma‘lumotlar topilmadi.</translation>
-<translation id="7495290002932347110">Siz ishlatadigan sayt yoki ilovadagi parolingiz oshkor etilgan. Chrome hoziroq saqlangan parollaringizni tekshirishni va <ph name="ORIGIN" /> parolingizni yangilashni tavsiya qiladi.</translation>
+<translation id="7495290002932347110">Siz ishlatadigan sayt yoki ilovada axborot sizib chiqishi yuz bergan. Chrome hoziroq saqlangan parollaringizni tekshirishni va <ph name="ORIGIN" /> parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="7498234416455752244">Tahrirlashda davom etish</translation>
 <translation id="7508255263130623398">Qurilmaning qaytarilgan identifikatori bo‘sh yoki joriy qurilma identifikatoriga mos kelmaydi</translation>
 <translation id="7508870219247277067">Yashil avokado</translation>

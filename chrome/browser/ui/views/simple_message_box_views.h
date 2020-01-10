@@ -29,7 +29,6 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
       MessageBoxResultCallback callback = MessageBoxResultCallback());
 
   // views::DialogDelegate:
-  int GetDialogButtons() const override;
   bool Cancel() override;
   bool Accept() override;
   bool Close() override;

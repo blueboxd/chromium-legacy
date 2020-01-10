@@ -26,18 +26,13 @@ class DisabledOverlayRequestSupport : public OverlayRequestSupport {
 
 OverlayRequestSupport::OverlayRequestSupport(
     const std::vector<const OverlayRequestSupport*>& supports)
-    : aggregated_support_(supports) {
-  DCHECK(aggregated_support_.size());
-}
+    : aggregated_support_(supports) {}
 
 OverlayRequestSupport::OverlayRequestSupport() = default;
 
 OverlayRequestSupport::~OverlayRequestSupport() = default;
 
 bool OverlayRequestSupport::IsRequestSupported(OverlayRequest* request) const {
-  DCHECK(aggregated_support_.size())
-      << "Default implementation is only for aggregated support.  Subclasses "
-         "using the default constructor must implement IsRequestSupported().";
   for (const OverlayRequestSupport* support : aggregated_support_) {
     if (support->IsRequestSupported(request))
       return true;

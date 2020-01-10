@@ -210,7 +210,7 @@
 <translation id="1914326953223720820">Usługa rozpakowywania</translation>
 <translation id="1915697529809968049">Używać Touch ID zamiast kodu CVC?</translation>
 <translation id="1916770123977586577">Załaduj stronę ponownie, by zastosować na niej zaktualizowane ustawienia</translation>
-<translation id="1917876262703816781">W Twojej witrynie lub aplikacji doszło do naruszenia bezpieczeństwa danych i ktoś poznał Twoje hasło. Chrome zaleca niezwłoczną zmianę hasła na stronie <ph name="ORIGIN" />.</translation>
+<translation id="1917876262703816781">Naruszenie bezpieczeństwa danych w jednej z witryn lub aplikacji spowodowało ujawnienie Twojego hasła. Chrome zaleca natychmiastową zmianę hasła na <ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919367280705858090">Uzyskiwanie pomocy w przypadku konkretnego komunikatu o błędzie</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Brak}=1{1 witryna}few{# witryny}many{# witryn}other{# witryny}}</translation>
@@ -913,7 +913,7 @@
 <translation id="5287240709317226393">Pokaż pliki cookie</translation>
 <translation id="5287456746628258573">Ta strona używa nieaktualnej konfiguracji zabezpieczeń, co oznacza, że Twoje dane (np. hasła i numery kart kredytowych) mogą być zagrożone podczas przesyłania na tę stronę.</translation>
 <translation id="5288108484102287882">Weryfikacja wartości zasad zakończyła się z ostrzeżeniami</translation>
-<translation id="5295292838686006428">W Twojej witrynie lub aplikacji doszło do naruszenia bezpieczeństwa danych i ktoś poznał Twoje hasło. Chrome zaleca niezwłoczne sprawdzenie zapisanych haseł.</translation>
+<translation id="5295292838686006428">Naruszenie bezpieczeństwa danych w jednej z witryn lub aplikacji spowodowało ujawnienie Twojego hasła. Chrome zaleca natychmiastowe sprawdzenie zapisanych haseł.</translation>
 <translation id="5299298092464848405">Podczas przetwarzania zasady wystąpił błąd</translation>
 <translation id="5300589172476337783">Pokaż</translation>
 <translation id="5308380583665731573">Połącz</translation>
@@ -1359,7 +1359,7 @@ Dodatkowe informacje:
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7481312909269577407">Dalej</translation>
 <translation id="7485870689360869515">Nie znaleziono danych.</translation>
-<translation id="7495290002932347110">W Twojej witrynie lub aplikacji doszło do naruszenia bezpieczeństwa danych i ktoś poznał Twoje hasło. Chrome zaleca natychmiastowe sprawdzenie zapisanych haseł i zmianę hasła na <ph name="ORIGIN" />.</translation>
+<translation id="7495290002932347110">Naruszenie bezpieczeństwa danych w jednej z witryn lub aplikacji spowodowało ujawnienie Twojego hasła. Chrome zaleca natychmiastowe sprawdzenie zapisanych haseł i zmianę hasła na <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Edytuj dalej</translation>
 <translation id="7508255263130623398">Zwrócony identyfikator urządzenia dla zasad jest pusty lub nie pasuje do bieżącego identyfikatora urządzenia</translation>
 <translation id="7508870219247277067">Zielony awokado</translation>

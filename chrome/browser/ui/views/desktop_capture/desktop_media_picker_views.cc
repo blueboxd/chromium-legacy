@@ -210,9 +210,9 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   // picker will be shown modal to the web contents. Otherwise the picker is
   // shown in a separate window.
   views::Widget* widget = nullptr;
-  bool modal_dialog =
-      params.web_contents &&
-      !params.web_contents->GetDelegate()->IsNeverVisible(params.web_contents);
+  bool modal_dialog = params.web_contents &&
+                      !params.web_contents->GetDelegate()->IsNeverComposited(
+                          params.web_contents);
   if (modal_dialog) {
     widget =
         constrained_window::ShowWebModalDialogViews(this, params.web_contents);

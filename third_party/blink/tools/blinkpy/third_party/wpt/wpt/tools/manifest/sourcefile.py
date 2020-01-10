@@ -33,8 +33,8 @@ except ImportError:
 import html5lib
 
 from . import XMLParser
-from .item import (ManifestItem, ManualTest, WebDriverSpecTest, RefTestNode, TestharnessTest,
-                   SupportFile, ConformanceCheckerTest, VisualTest)
+from .item import (ManifestItem, ManualTest, WebDriverSpecTest, RefTest, TestharnessTest,
+                   SupportFile, CrashTest, ConformanceCheckerTest, VisualTest)
 from .utils import ContextManagerBytesIO, cached_property
 
 wd_pattern = "*.py"
@@ -339,6 +339,7 @@ class SourceFile(object):
                 self.filename == "META.yml" or
                 self.filename.startswith(".") or
                 self.filename.endswith(".headers") or
+                self.filename.endswith(".ini") or
                 self.in_non_test_dir())
 
     @property
@@ -407,6 +408,11 @@ class SourceFile(object):
         """Check if the file name matches the conditions for the file to
         be a reference file (not a reftest)"""
         return "/reference/" in self.url or bool(reference_file_re.search(self.name))
+
+    @property
+    def name_is_crashtest(self):
+        # type: () -> bool
+        return self.type_flag == "crash" or "crashtests" in self.dir_path.split(os.path.sep)
 
     @property
     def markup_type(self):
@@ -820,6 +826,15 @@ class SourceFile(object):
                     self.rel_url
                 )]
 
+        elif self.name_is_crashtest:
+            rv = CrashTest.item_type, [
+                CrashTest(
+                    self.tests_root,
+                    self.rel_path,
+                    self.url_base,
+                    self.rel_url
+                )]
+
         elif self.name_is_multi_global:
             globals = b""
             script_metadata = self.script_metadata
@@ -909,8 +924,8 @@ class SourceFile(object):
                 ))
 
         elif self.content_is_ref_node:
-            rv = RefTestNode.item_type, [
-                RefTestNode(
+            rv = RefTest.item_type, [
+                RefTest(
                     self.tests_root,
                     self.rel_path,
                     self.url_base,

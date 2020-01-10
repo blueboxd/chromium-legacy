@@ -1,5 +1,8 @@
 {
   "sandbox": {
+    "features": [
+      "config-data"
+    ],
     "services": [
       "chromium.cast.ApplicationConfigManager",
       "fuchsia.accessibility.semantics.SemanticsManager",

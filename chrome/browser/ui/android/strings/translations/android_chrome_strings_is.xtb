@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Símanúmer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> niðurhölum eytt</translation>
 <translation id="3822502789641063741">Hreinsa geymslu vefsvæða?</translation>
+<translation id="3853625385350850937">Kveiktu á NFC í tækinu til að halda áfram</translation>
 <translation id="3859306556332390985">Leita áfram</translation>
 <translation id="388596076286380598">Fáðu greinar, myndskeið og annað efni frá vefsvæðum sem þú kannt að meta, jafnvel án nettengingar eða þegar tengingin er léleg.</translation>
 <translation id="3894427358181296146">Bæta möppu við</translation>
@@ -1049,6 +1050,7 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="8912362522468806198">Google reikningur</translation>
 <translation id="8920114477895755567">Bíður eftir upplýsingum um foreldra.</translation>
 <translation id="8922289737868596582">Náðu í síður með hnappnum „Fleiri valkostir“ til að nota þær án nettengingar</translation>
+<translation id="8926666909099850184">Slökkt er á NFC fyrir þetta tæki Kveiktu á því í <ph name="BEGIN_LINK" />stillingum Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Viltu fjarlægja það sem þú gerir í Chrome úr stafrænni vellíðan?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Opna í öðrum glugga</translation>

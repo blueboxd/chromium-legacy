@@ -231,9 +231,6 @@ class AdsPageLoadMetricsObserver
   // Time the page was observed to be interactive.
   base::TimeTicks time_interactive_;
 
-  // Duration before |time_interactive_| during which the page was foregrounded.
-  base::TimeDelta pre_interactive_duration_;
-
   // Total ad bytes loaded by the page since it was observed to be interactive.
   size_t page_ad_bytes_at_interactive_ = 0u;
 

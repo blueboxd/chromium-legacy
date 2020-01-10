@@ -17,7 +17,6 @@
 <translation id="5073204694187207510">ซ่อนตารางกริดแบบเต็มหน้าจอ</translation>
 <translation id="5082793167783849073">เปรียบเทียบหน้าต่างๆ อย่างรวดเร็วด้วยการสร้างกลุ่ม แตะลิงก์ค้างไว้เพื่อเริ่มต้น</translation>
 <translation id="5580090775658607195">จัดกลุ่มไว้ <ph name="TAB_COUNT" /> แท็บ</translation>
-<translation id="5792534911093536736">แท็บเพิ่มเติม</translation>
 <translation id="58326064309361797">ลากแท็บเพื่อจัดกลุ่ม</translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="6193448654517602979">เลือกแท็บ</translation>
@@ -29,6 +28,7 @@
 <translation id="7792771145871471484">ดูคำแนะนำ</translation>
 <translation id="7885132941432959125">ย้ายแท็บไปทางขวา</translation>
 <translation id="7966321538264951561">ปิดคำแนะนำ</translation>
+<translation id="814503310257431685">ดูทั้งหมด</translation>
 <translation id="8205266828577616993">เลื่อนแท็บขึ้น</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{ปิดแท็บที่เลือก <ph name="TABS_COUNT_ONE" /> แท็บ}other{ปิดแท็บที่เลือก <ph name="TABS_COUNT_MANY" /> แท็บ}}</translation>
 <translation id="9150694013019234766">สลับไปมาระหว่างแท็บในกลุ่มแท็บบริเวณด้านล่างของหน้าจอ</translation>

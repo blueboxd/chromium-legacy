@@ -848,6 +848,9 @@ void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
 
 void OverviewSession::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
+  if (ignore_window_hierarchy_changes_)
+    return;
+
   // Only care about newly added children of |observed_windows_|.
   if (!observed_windows_.count(params.receiver) ||
       !observed_windows_.count(params.new_parent)) {

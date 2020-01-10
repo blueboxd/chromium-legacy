@@ -28,6 +28,11 @@ class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
       logging.warning('--emulator-count capped at 16.')
     self._emulator_count = min(_MAX_ANDROID_EMULATORS, args.emulator_count)
     self._emulator_window = args.emulator_window
+    self._writable_system = ((hasattr(args, 'use_webview_provider')
+                              and args.use_webview_provider)
+                             or (hasattr(args, 'replace_system_package')
+                                 and args.replace_system_package))
+
     self._emulator_instances = []
     self._device_serials = []
 
@@ -43,7 +48,9 @@ class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
 
       def impl(e):
         try:
-          e.Start(window=self._emulator_window)
+          e.Start(
+              window=self._emulator_window,
+              writable_system=self._writable_system)
         except avd.AvdException:
           logging.exception('Failed to start emulator instance.')
           return None

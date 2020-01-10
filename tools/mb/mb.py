@@ -1230,7 +1230,6 @@ class MetaBuildWrapper(object):
       # TODO(https://crbug.com/912946): Remove this if statement.
       if ((is_msan and f == 'instrumented_libraries_prebuilt/') or
           f == 'mr_extension/' or # https://crbug.com/997947
-          f == 'locales/' or
           f.startswith('nacl_test_data/') or
           f.startswith('ppapi_nacl_tests_libs/') or
           (is_cros and f in (  # https://crbug.com/1002509

@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.preferences;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import android.support.test.filters.SmallTest;
 
@@ -24,8 +26,25 @@ public class KeyPrefixTest {
         KeyPrefix prefix = new KeyPrefix("Chrome.Feature.KP.*");
 
         assertEquals(prefix.pattern(), "Chrome.Feature.KP.*");
+
         assertEquals(prefix.createKey("DynamicKey"), "Chrome.Feature.KP.DynamicKey");
         assertEquals(prefix.createKey("Level.DynamicKey"), "Chrome.Feature.KP.Level.DynamicKey");
+
+        assertTrue(prefix.hasGenerated("Chrome.Feature.KP.DynamicKey"));
+        assertTrue(prefix.hasGenerated("Chrome.Feature.KP.Level.DynamicKey"));
+        assertFalse(prefix.hasGenerated("OtherKey"));
+    }
+
+    @Test
+    @SmallTest
+    public void testSuccess_validGrandfatheredPattern() {
+        KeyPrefix prefix = new KeyPrefix("grandfathered_pattern_*");
+
+        assertEquals(prefix.pattern(), "grandfathered_pattern_*");
+        assertEquals(prefix.createKey("DynamicKey"), "grandfathered_pattern_DynamicKey");
+
+        assertTrue(prefix.hasGenerated("grandfathered_pattern_DynamicKey"));
+        assertFalse(prefix.hasGenerated("OtherKey"));
     }
 
     @Test(expected = AssertionError.class)
@@ -38,11 +57,5 @@ public class KeyPrefixTest {
     @SmallTest
     public void testError_missingStar() {
         new KeyPrefix("Chrome.Feature.KP.");
-    }
-
-    @Test(expected = AssertionError.class)
-    @SmallTest
-    public void testError_extraStar() {
-        new KeyPrefix("Chrome.Feature.KP.**");
     }
 }

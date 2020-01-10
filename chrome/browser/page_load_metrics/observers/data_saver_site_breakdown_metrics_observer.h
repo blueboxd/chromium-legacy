@@ -42,6 +42,7 @@ class DataSaverSiteBreakdownMetricsObserver
       const std::string& mime_type) const override;
 
   std::string committed_host_;
+  std::string committed_origin_;
 
   // The browser context this navigation is operating in.
   content::BrowserContext* browser_context_ = nullptr;

@@ -56,7 +56,6 @@
 #import "ios/chrome/browser/ui/payments/js_payment_request_manager.h"
 #import "ios/chrome/browser/ui/payments/payment_request_coordinator.h"
 #import "ios/chrome/browser/ui/payments/payment_request_error_coordinator.h"
-#include "ios/web/common/origin_util.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
@@ -70,6 +69,7 @@
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 #include "url/gurl.h"
@@ -995,8 +995,7 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
 
   const GURL lastCommittedURL = _activeWebState->GetLastCommittedURL();
 
-  if (!web::IsOriginSecure(lastCommittedURL) ||
-      lastCommittedURL.scheme() == url::kDataScheme) {
+  if (!network::IsUrlPotentiallyTrustworthy(lastCommittedURL)) {
     DLOG(ERROR) << "Not in a secure context.";
     return NO;
   }
@@ -1212,10 +1211,8 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
   // Set the JS isContextSecure global variable at the earliest opportunity.
   [_paymentRequestJsManager
-       setContextSecure:(web::IsOriginSecure(
-                             _activeWebState->GetLastCommittedURL()) &&
-                         _activeWebState->GetLastCommittedURL().scheme() !=
-                             url::kDataScheme)
+       setContextSecure:(network::IsUrlPotentiallyTrustworthy(
+                            _activeWebState->GetLastCommittedURL()))
       completionHandler:nil];
 }
 

@@ -68,9 +68,9 @@ struct Theme {
   skia.mojom.SkColor background_color;
   skia.mojom.SkColor shortcut_background_color;
   skia.mojom.SkColor shortcut_text_color;
-  // Additional info about the theme depending on the type.
-  // That should be optional since only some themes require it. However, making
-  // this field optional crashes JS.
+  // TODO(crbug.com/1040682): Additional info about the theme depending on the
+  // type. That should be optional since only some themes require it. However,
+  // making this field optional crashes JS.
   ThemeInfo info;
 };
 

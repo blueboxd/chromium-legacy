@@ -818,16 +818,23 @@ WebContentsImpl* WebContentsImpl::FromFrameTreeNode(
 }
 
 // static
-WebContents* WebContentsImpl::FromRenderFrameHostID(int render_process_host_id,
-                                                    int render_frame_host_id) {
+WebContents* WebContentsImpl::FromRenderFrameHostID(
+    GlobalFrameRoutingId render_frame_host_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          !BrowserThread::IsThreadInitialized(BrowserThread::UI));
   RenderFrameHost* render_frame_host =
-      RenderFrameHost::FromID(render_process_host_id, render_frame_host_id);
+      RenderFrameHost::FromID(render_frame_host_id);
   if (!render_frame_host)
     return nullptr;
 
   return WebContents::FromRenderFrameHost(render_frame_host);
+}
+
+// static
+WebContents* WebContentsImpl::FromRenderFrameHostID(int render_process_host_id,
+                                                    int render_frame_host_id) {
+  return FromRenderFrameHostID(
+      GlobalFrameRoutingId(render_process_host_id, render_frame_host_id));
 }
 
 // static
@@ -1076,8 +1083,8 @@ void WebContentsImpl::SetAccessibilityMode(ui::AXMode mode) {
     return;
 
   // Don't allow accessibility to be enabled for WebContents that are never
-  // visible, like background pages.
-  if (IsNeverVisible())
+  // user-visible, like background pages.
+  if (IsNeverComposited())
     return;
 
   accessibility_mode_ = mode;
@@ -5689,10 +5696,10 @@ void WebContentsImpl::ClearFocusedElement() {
     frame->ClearFocusedElement();
 }
 
-bool WebContentsImpl::IsNeverVisible() {
+bool WebContentsImpl::IsNeverComposited() {
   if (!delegate_)
     return false;
-  return delegate_->IsNeverVisible(this);
+  return delegate_->IsNeverComposited(this);
 }
 
 RenderViewHostDelegateView* WebContentsImpl::GetDelegateView() {

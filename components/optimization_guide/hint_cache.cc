@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/time/default_clock.h"
 #include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/store_update_data.h"
@@ -16,19 +17,23 @@ namespace optimization_guide {
 
 namespace {
 
-// The default number of hints retained within the memory cache. When the limit
-// is exceeded, the least recently used hint is purged from the cache.
-const size_t kDefaultMaxMemoryCacheHints = 20;
+// The default number of host-keyed hints retained within the host keyed cache.
+// When the limit is exceeded, the least recently used hint is purged from
+// |host_keyed_cache_|.
+const size_t kDefaultMaxMemoryCacheHostKeyedHints = 20;
 
 }  // namespace
 
 HintCache::HintCache(
     std::unique_ptr<OptimizationGuideStore> optimization_guide_store,
-    base::Optional<int> max_memory_cache_hints /*= base::Optional<int>()*/)
+    base::Optional<int>
+        max_memory_cache_host_keyed_hints /*= base::Optional<int>()*/)
     : optimization_guide_store_(std::move(optimization_guide_store)),
-      memory_cache_(
-          std::max(max_memory_cache_hints.value_or(kDefaultMaxMemoryCacheHints),
-                   1)) {
+      host_keyed_cache_(std::max(max_memory_cache_host_keyed_hints.value_or(
+                                     kDefaultMaxMemoryCacheHostKeyedHints),
+                                 1)),
+      url_keyed_hint_cache_(features::MaxURLKeyedHintCacheSize()),
+      clock_(base::DefaultClock::GetInstance()) {
   DCHECK(optimization_guide_store_);
 }
 
@@ -65,9 +70,9 @@ void HintCache::UpdateComponentHints(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(component_data);
 
-  // Clear the memory cache prior to updating the store with the new component
-  // data.
-  memory_cache_.Clear();
+  // Clear the host-keyed cache prior to updating the store with the new
+  // component data.
+  host_keyed_cache_.Clear();
 
   optimization_guide_store_->UpdateComponentHints(std::move(component_data),
                                                   std::move(callback));
@@ -86,8 +91,8 @@ void HintCache::UpdateFetchedHints(
   }
   std::unique_ptr<StoreUpdateData> fetched_hints_update_data =
       CreateUpdateDataForFetchedHints(update_time, expiry_time);
-  ProcessHints(get_hints_response.get()->mutable_hints(),
-               fetched_hints_update_data.get());
+  ProcessAndCacheHints(get_hints_response.get()->mutable_hints(),
+                       fetched_hints_update_data.get());
   optimization_guide_store_->UpdateFetchedHints(
       std::move(fetched_hints_update_data), std::move(callback));
 }
@@ -95,8 +100,10 @@ void HintCache::UpdateFetchedHints(
 void HintCache::ClearFetchedHints() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(optimization_guide_store_);
-  // TODO(mcrouse): Update to remove only fetched hints from |memory_cache_|.
-  memory_cache_.Clear();
+  // TODO(mcrouse): Update to remove only fetched hints from
+  // |host_keyed_cache_|.
+  host_keyed_cache_.Clear();
+  url_keyed_hint_cache_.Clear();
   optimization_guide_store_->ClearFetchedHintsFromDatabase();
 }
 
@@ -115,10 +122,10 @@ void HintCache::LoadHint(const std::string& host, HintLoadedCallback callback) {
     return;
   }
 
-  // Search for the entry key in the memory cache; if it is not already there,
-  // then asynchronously load it from the store and return.
-  auto hint_it = memory_cache_.Get(hint_entry_key);
-  if (hint_it == memory_cache_.end()) {
+  // Search for the entry key in the host-keyed cache; if it is not already
+  // there, then asynchronously load it from the store and return.
+  auto hint_it = host_keyed_cache_.Get(hint_entry_key);
+  if (hint_it == host_keyed_cache_.end()) {
     optimization_guide_store_->LoadHint(
         hint_entry_key,
         base::BindOnce(&HintCache::OnLoadStoreHint, base::Unretained(this),
@@ -126,11 +133,12 @@ void HintCache::LoadHint(const std::string& host, HintLoadedCallback callback) {
     return;
   }
 
-  // Run the callback with the hint from the memory cache.
+  // Run the callback with the hint from the host-keyed cache.
   std::move(callback).Run(hint_it->second.get());
 }
 
-const proto::Hint* HintCache::GetHintIfLoaded(const std::string& host) {
+const proto::Hint* HintCache::GetHostKeyedHintIfLoaded(
+    const std::string& host) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Try to retrieve the hint entry key for the host. If no hint exists for the
@@ -140,13 +148,32 @@ const proto::Hint* HintCache::GetHintIfLoaded(const std::string& host) {
     return nullptr;
   }
 
-  // Find the hint within the memory cache. It will only be available here if
-  // it has been loaded recently enough to be retained within the MRU cache.
-  auto hint_it = memory_cache_.Get(hint_entry_key);
-  if (hint_it != memory_cache_.end()) {
+  // Find the hint within the host-keyed cache. It will only be available here
+  // if it has been loaded recently enough to be retained within the MRU cache.
+  auto hint_it = host_keyed_cache_.Get(hint_entry_key);
+  if (hint_it != host_keyed_cache_.end()) {
     return hint_it->second.get();
   }
 
+  return nullptr;
+}
+
+proto::Hint* HintCache::GetURLKeyedHint(const GURL& url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsValidURLForURLKeyedHint(url))
+    return nullptr;
+
+  auto hint_it = url_keyed_hint_cache_.Get(url.spec());
+  if (hint_it == url_keyed_hint_cache_.end())
+    return nullptr;
+
+  URLKeyedHint* hint = hint_it->second.get();
+  if (hint->expiration_time() > clock_->Now())
+    return hint->url_keyed_hint();
+
+  // The hint is expired so remove it from the cache.
+  url_keyed_hint_cache_.Erase(hint_it);
   return nullptr;
 }
 
@@ -172,15 +199,67 @@ void HintCache::OnLoadStoreHint(
     return;
   }
 
-  // Check if the hint was cached in memory after the load was requested from
-  // the store. This can occur if multiple loads for the same entry key occur
-  // consecutively prior to any returning.
-  auto hint_it = memory_cache_.Get(hint_entry_key);
-  if (hint_it == memory_cache_.end()) {
-    hint_it = memory_cache_.Put(hint_entry_key, std::move(hint));
+  // Check if the hint was cached in the host-keyed cache after the load was
+  // requested from the store. This can occur if multiple loads for the same
+  // entry key occur consecutively prior to any returning.
+  auto hint_it = host_keyed_cache_.Get(hint_entry_key);
+  if (hint_it == host_keyed_cache_.end()) {
+    hint_it = host_keyed_cache_.Put(hint_entry_key, std::move(hint));
   }
 
   std::move(callback).Run(hint_it->second.get());
+}
+
+bool HintCache::ProcessAndCacheHints(
+    google::protobuf::RepeatedPtrField<proto::Hint>* hints,
+    optimization_guide::StoreUpdateData* update_data) {
+  // If there's no update data, then there's nothing to do.
+  if (!update_data)
+    return false;
+
+  bool processed_hints_to_store = false;
+  // Process each hint in the the hint configuration. The hints are mutable
+  // because once processing is completed on each individual hint, it is moved
+  // into the component update data. This eliminates the need to make any
+  // additional copies of the hints.
+  for (auto& hint : *hints) {
+    const std::string& hint_key = hint.key();
+    // Validate configuration keys.
+    DCHECK(!hint_key.empty());
+    if (hint_key.empty())
+      continue;
+
+    if (hint.page_hints().empty())
+      continue;
+
+    base::Time expiry_time =
+        hint.has_max_cache_duration()
+            ? clock_->Now() + base::TimeDelta().FromSeconds(
+                                  hint.max_cache_duration().seconds())
+            : clock_->Now() + features::URLKeyedHintValidCacheDuration();
+
+    switch (hint.key_representation()) {
+      case proto::HOST_SUFFIX:
+        update_data->MoveHintIntoUpdateData(std::move(hint));
+        processed_hints_to_store = true;
+        break;
+      case proto::FULL_URL:
+        if (IsValidURLForURLKeyedHint(GURL(hint_key))) {
+          url_keyed_hint_cache_.Put(
+              hint_key,
+              std::make_unique<URLKeyedHint>(expiry_time, std::move(hint)));
+        }
+        break;
+      case proto::REPRESENTATION_UNSPECIFIED:
+        NOTREACHED();
+        break;
+    }
+  }
+  return processed_hints_to_store;
+}
+
+void HintCache::SetClockForTesting(const base::Clock* clock) {
+  clock_ = clock;
 }
 
 }  // namespace optimization_guide

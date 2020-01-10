@@ -186,7 +186,6 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
 #endif
       gesture_scroll_on_impl_thread_(false),
       scroll_sequence_ignored_(false),
-      smooth_scroll_enabled_(false),
       touch_result_(kEventDispositionUndefined),
       mouse_wheel_result_(kEventDispositionUndefined),
       current_overscroll_params_(nullptr),
@@ -746,21 +745,6 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
   }
 }
 
-bool InputHandlerProxy::ShouldAnimate(blink::WebGestureDevice device,
-                                      bool has_precise_scroll_deltas) const {
-  if (!smooth_scroll_enabled_)
-    return false;
-
-#if defined(OS_MACOSX)
-  // Mac does not smooth scroll wheel events (crbug.com/574283).
-  return device == blink::WebGestureDevice::kScrollbar
-             ? !has_precise_scroll_deltas
-             : false;
-#else
-  return !has_precise_scroll_deltas;
-#endif
-}
-
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     const WebMouseWheelEvent& wheel_event) {
   InputHandlerProxy::EventDisposition result = DROP_EVENT;
@@ -837,13 +821,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
   } else if (gesture_event.data.scroll_begin.target_viewport) {
     scroll_status = input_handler_->RootScrollBegin(
         &scroll_state, GestureScrollInputType(gesture_event.SourceDevice()));
-  } else if (ShouldAnimate(
-                 gesture_event.SourceDevice(),
-                 gesture_event.data.scroll_begin.delta_hint_units !=
-                     ui::input_types::ScrollGranularity::kScrollByPixel)) {
-    DCHECK(!scroll_state.is_in_inertial_phase());
-    scroll_status =
-        input_handler_->ScrollBegin(&scroll_state, cc::InputHandler::WHEEL);
   } else {
     scroll_status = input_handler_->ScrollBegin(
         &scroll_state, GestureScrollInputType(gesture_event.SourceDevice()));
@@ -887,14 +864,13 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
 InputHandlerProxy::EventDisposition
 InputHandlerProxy::HandleGestureScrollUpdate(
     const WebGestureEvent& gesture_event) {
+  TRACE_EVENT2("input", "InputHandlerProxy::HandleGestureScrollUpdate", "dx",
+               -gesture_event.data.scroll_update.delta_x, "dy",
+               -gesture_event.data.scroll_update.delta_y);
+
 #if DCHECK_IS_ON()
   DCHECK(expect_scroll_update_end_);
 #endif
-
-  gfx::Vector2dF scroll_delta(-gesture_event.data.scroll_update.delta_x,
-                              -gesture_event.data.scroll_update.delta_y);
-  TRACE_EVENT2("input", "InputHandlerProxy::HandleGestureScrollUpdate", "dx",
-               scroll_delta.x(), "dy", scroll_delta.y());
 
   if (scroll_sequence_ignored_) {
     TRACE_EVENT_INSTANT0("input", "Scroll Sequence Ignored",
@@ -907,29 +883,10 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
   in_inertial_scrolling_ = scroll_state.is_in_inertial_phase();
-  gfx::PointF scroll_point(gesture_event.PositionInWidget());
 
   TRACE_EVENT_INSTANT1(
       "input", "DeltaUnits", TRACE_EVENT_SCOPE_THREAD, "unit",
       static_cast<int>(gesture_event.data.scroll_update.delta_units));
-  if (ShouldAnimate(gesture_event.SourceDevice(),
-                    gesture_event.data.scroll_update.delta_units !=
-                        ui::input_types::ScrollGranularity::kScrollByPixel)) {
-    if (input_handler_->ScrollingShouldSwitchtoMainThread()) {
-      TRACE_EVENT_INSTANT0("input", "Move Scroll To Main Thread",
-                           TRACE_EVENT_SCOPE_THREAD);
-      gesture_scroll_on_impl_thread_ = false;
-      client_->GenerateScrollBeginAndSendToMainThread(gesture_event);
-      return DID_NOT_HANDLE;
-    } else {
-      DCHECK(!scroll_state.is_in_inertial_phase());
-      base::TimeTicks event_time = gesture_event.TimeStamp();
-      base::TimeDelta delay = base::TimeTicks::Now() - event_time;
-      input_handler_->ScrollAnimated(gfx::ToFlooredPoint(scroll_point),
-                                     scroll_delta, delay);
-      return DID_HANDLE;
-    }
-  }
 
   if (snap_fling_controller_->HandleGestureScrollUpdate(
           GetGestureScrollUpdateInfo(gesture_event))) {
@@ -940,19 +897,30 @@ InputHandlerProxy::HandleGestureScrollUpdate(
     return DROP_EVENT;
   }
 
-  cc::InputHandlerScrollResult scroll_result =
-      input_handler_->ScrollBy(&scroll_state);
-
-  if (!scroll_result.did_scroll &&
-      input_handler_->ScrollingShouldSwitchtoMainThread()) {
+  if (input_handler_->ScrollingShouldSwitchtoMainThread()) {
+    TRACE_EVENT_INSTANT0("input", "Move Scroll To Main Thread",
+                         TRACE_EVENT_SCOPE_THREAD);
     gesture_scroll_on_impl_thread_ = false;
     client_->GenerateScrollBeginAndSendToMainThread(gesture_event);
 
+    // TODO(bokan): |!gesture_pinch_in_progress_| was put here by
+    // https://crrev.com/2720903005 but it's not clear to me how this is
+    // supposed to work - we already generated and sent a GSB to the main
+    // thread above so it's odd to continue handling on the compositor thread
+    // if a pinch was in progress. It probably makes more sense to bake this
+    // condition into ScrollingShouldSwitchToMainThread().
     if (!gesture_pinch_in_progress_)
       return DID_NOT_HANDLE;
   }
 
-  HandleOverscroll(scroll_point, scroll_result);
+  base::TimeTicks event_time = gesture_event.TimeStamp();
+  base::TimeDelta delay = base::TimeTicks::Now() - event_time;
+
+  cc::InputHandlerScrollResult scroll_result = input_handler_->ScrollUpdate(
+      &scroll_state, GestureScrollInputType(gesture_event.SourceDevice()),
+      delay);
+
+  HandleOverscroll(gesture_event.PositionInWidget(), scroll_result);
 
   if (scroll_elasticity_controller_)
     HandleScrollElasticityOverscroll(gesture_event, scroll_result);
@@ -1203,8 +1171,11 @@ bool InputHandlerProxy::GetSnapFlingInfoAndSetAnimatingSnapTarget(
 gfx::Vector2dF InputHandlerProxy::ScrollByForSnapFling(
     const gfx::Vector2dF& delta) {
   cc::ScrollState scroll_state = CreateScrollStateForInertialUpdate(delta);
-  cc::InputHandlerScrollResult scroll_result =
-      input_handler_->ScrollBy(&scroll_state);
+
+  // TODO(bokan): We should be passing in the source device that was used to
+  // scroll during the gesture.
+  cc::InputHandlerScrollResult scroll_result = input_handler_->ScrollUpdate(
+      &scroll_state, cc::InputHandler::TOUCHSCREEN, base::TimeDelta());
   return scroll_result.current_visual_offset;
 }
 

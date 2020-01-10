@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "components/paint_preview/browser/paint_preview_base_service.h"
 #include "components/paint_preview/player/android/jni_headers/PlayerCompositorDelegateImpl_jni.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -26,23 +27,35 @@ namespace paint_preview {
 jlong JNI_PlayerCompositorDelegateImpl_Initialize(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_object,
+    jlong paint_preview_service,
     const JavaParamRef<jstring>& j_string_url) {
-  PlayerCompositorDelegateAndroid* mediator =
-      new PlayerCompositorDelegateAndroid(env, j_object, j_string_url);
-  return reinterpret_cast<intptr_t>(mediator);
+  PlayerCompositorDelegateAndroid* delegate =
+      new PlayerCompositorDelegateAndroid(
+          env, j_object,
+          reinterpret_cast<PaintPreviewBaseService*>(paint_preview_service),
+          j_string_url);
+  return reinterpret_cast<intptr_t>(delegate);
 }
 
 PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_object,
+    PaintPreviewBaseService* paint_preview_service,
     const JavaParamRef<jstring>& j_string_url)
     : PlayerCompositorDelegate(
+          paint_preview_service,
           GURL(base::android::ConvertJavaStringToUTF16(env, j_string_url))) {
   java_ref_.Reset(env, j_object);
 }
 
 void PlayerCompositorDelegateAndroid::OnCompositorReady(
-    const mojom::PaintPreviewBeginCompositeResponse& composite_response) {
+    mojom::PaintPreviewCompositor::Status status,
+    mojom::PaintPreviewBeginCompositeResponsePtr composite_response) {
+  if (status != mojom::PaintPreviewCompositor::Status::kSuccess) {
+    // TODO(crbug.com/1021590): Handle initialization errors.
+    return;
+  }
+
   JNIEnv* env = base::android::AttachCurrentThread();
 
   // We use int64_t instead of uint64_t because (i) there is no equivalent
@@ -54,7 +67,7 @@ void PlayerCompositorDelegateAndroid::OnCompositorReady(
   std::vector<int64_t> subframe_ids;
   std::vector<int> subframe_rects;
 
-  CompositeResponseFramesToVectors(composite_response.frames, &all_guids,
+  CompositeResponseFramesToVectors(composite_response->frames, &all_guids,
                                    &scroll_extents, &subframe_count,
                                    &subframe_ids, &subframe_rects);
 
@@ -70,7 +83,7 @@ void PlayerCompositorDelegateAndroid::OnCompositorReady(
       base::android::ToJavaIntArray(env, subframe_rects);
 
   Java_PlayerCompositorDelegateImpl_onCompositorReady(
-      env, java_ref_, composite_response.root_frame_guid, j_all_guids,
+      env, java_ref_, composite_response->root_frame_guid, j_all_guids,
       j_scroll_extents, j_subframe_count, j_subframe_ids, j_subframe_rects);
 }
 

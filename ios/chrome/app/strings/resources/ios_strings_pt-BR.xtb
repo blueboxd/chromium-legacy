@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">Pesquisa anônima</translation>
 <translation id="277771892408211951">Selecionar idioma</translation>
 <translation id="2780046210906776326">Sem contas de e-mail</translation>
+<translation id="2781331604911854368">Ativado</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Sair do alternador de guias</translation>
 <translation id="2830972654601096923">Gerenciar endereços…</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">Guias abertas</translation>
 <translation id="3277021493514034324">Endereço do site copiado</translation>
 <translation id="3290875554372353449">Escolher uma conta</translation>
+<translation id="3311748811247479259">Desativado</translation>
 <translation id="3324193307694657476">Endereço 2</translation>
 <translation id="3329904751041170572">Não foi possível se conectar ao servidor.</translation>
 <translation id="3335947283844343239">Reabrir guia fechada</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">Sincronizando suas guias...</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /> sobre o conteúdo sugerido</translation>
 <translation id="3494788280727468875">Confirmar limpeza de dados de navegação</translation>
+<translation id="35083190962747987">Abrir ${url}</translation>
 <translation id="3519193562722059437">Abra uma guia para navegar na Web.</translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="3529024052484145543">Não seguro</translation>
@@ -301,6 +304,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5062321486222145940">Instalar o Google Drive</translation>
 <translation id="5083464117946352670">Não é possível saber o tamanho do arquivo.</translation>
 <translation id="5094827893301452931">Tweet concluído.</translation>
+<translation id="5118764316110575523">Desativado</translation>
 <translation id="5127805178023152808">A sincronização está desativada</translation>
 <translation id="5132942445612118989">Sincronize suas senhas, seu histórico e muito mais em todos os dispositivos</translation>
 <translation id="5140288047769711648">Esta senha ficará salva no Chrome. Você não precisa memorizá-la.</translation>
@@ -363,6 +367,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5979837087407522202">Pesquisar senhas</translation>
 <translation id="5982717868370722439">Adicionar dados já existentes à conta <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">Visitados recentemente</translation>
+<translation id="5988851877894965432">Abrir URLs no Chrome</translation>
 <translation id="6012140227487808125">Criptografando…</translation>
 <translation id="6021332621416007159">Abrir no...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7971521879845308059">Bloquear pop-ups</translation>
 <translation id="7982789257301363584">Rede</translation>
+<translation id="800361585186029508">Abre os URLs fornecidos no Google Chrome.</translation>
 <translation id="8007420562015504427">Pesquisa anônima</translation>
 <translation id="8019783059653722575">Isso permite que você salve fotos e faça upload delas.</translation>
 <translation id="802154636333426148">Falha no download</translation>

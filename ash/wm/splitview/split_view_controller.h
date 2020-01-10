@@ -236,6 +236,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void OnOverviewModeEnding(OverviewSession* overview_session) override;
 
   // display::DisplayObserver:
+  void OnDisplayRemoved(const display::Display& old_display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
@@ -384,11 +385,6 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void SetTransformWithAnimation(aura::Window* window,
                                  const gfx::Transform& start_transform,
                                  const gfx::Transform& target_transform);
-
-  // Removes the window item that contains |window| from the overview window
-  // grid if |window| is currently showing in overview window grid. It should be
-  // called before trying to snap the window.
-  void RemoveWindowFromOverviewIfApplicable(aura::Window* window);
 
   // Updates the |snapping_window_transformed_bounds_map_| on |window|. It
   // should be called before trying to snap the window.

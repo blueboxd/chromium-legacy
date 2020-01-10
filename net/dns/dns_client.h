@@ -33,7 +33,8 @@ class NET_EXPORT DnsClient {
   virtual ~DnsClient() {}
 
   // Returns true if the DnsClient is able and allowed to make secure DNS
-  // transactions. If false, secure transactions should not be created.
+  // transactions and DoH probe runners. If false, secure transactions and DoH
+  // probe runners should not be created.
   virtual bool CanUseSecureDnsTransactions() const = 0;
 
   // Returns true if the DnsClient is able and allowed to make insecure DNS
@@ -63,12 +64,6 @@ class NET_EXPORT DnsClient {
   // invalid or a configuration has not yet been read from the system.
   virtual const DnsConfig* GetEffectiveConfig() const = 0;
   virtual const DnsHosts* GetHosts() const = 0;
-
-  // Enables DoH probes to be sent using |url_request_context| whenever the DNS
-  // configuration contains DoH servers. Currently only allows one probe
-  // activation at a time. Must be cancelled before activating another.
-  virtual void ActivateDohProbes(URLRequestContext* url_request_context) = 0;
-  virtual void CancelDohProbes() = 0;
 
   // Returns null if the current config is not valid.
   virtual DnsTransactionFactory* GetTransactionFactory() = 0;

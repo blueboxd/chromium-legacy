@@ -2,70 +2,69 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('settings');
-
-/**
- * Ctap2Status contains a subset of CTAP2 status codes. See
- * device::CtapDeviceResponseCode for the full list.
- * @enum {number}
- */
-const Ctap2Status = {
-  OK: 0x0,
-  ERR_KEEPALIVE_CANCEL: 0x2D,
-};
-
-/**
- * Credential represents a CTAP2 resident credential enumerated from a security
- * key.
- *
- * id: (required) The hex encoding of the CBOR-serialized
- *     PublicKeyCredentialDescriptor of the credential.
- *
- * relyingPartyId: (required) The RP ID (i.e. the site that created the
- *     credential; eTLD+n)
- *
- * userName: (required) The PublicKeyCredentialUserEntity.name
- *
- * userDisplayName: (required) The PublicKeyCredentialUserEntity.display_name
- *
- * @typedef {{id: string,
- *            relyingPartyId: string,
- *            userName: string,
- *            userDisplayName: string}}
- * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
- */
-let Credential;
-
-/**
- * EnrollmentStatus represents the current status of an enrollment suboperation,
- * where 'remaining' is the number of samples left, 'status' is the last
- * enrollment status, 'code' indicates the final CtapDeviceResponseCode of the
- * operation, and 'enrollment' contains the new Enrollment.
- *
- * For each enrollment sample, 'status' is set - when the enrollment operation
- * reaches an end state, 'code' and, if successful, 'enrollment' are set. |OK|
- * indicates successful enrollment. A code of |ERR_KEEPALIVE_CANCEL| indicates
- * user-initated cancellation.
- *
- * @typedef {{status: ?number,
- *            code: ?Ctap2Status,
- *            remaining: number,
- *            enrollment: ?Enrollment}}
- * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
- */
-let EnrollmentStatus;
-
-/**
- * Enrollment represents a valid fingerprint template stored on a security key,
- * which can be used in a user verification request.
- *
- * @typedef {{name: string,
- *            id: string}}
- * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
- */
-let Enrollment;
-
 cr.define('settings', function() {
+  /**
+   * Ctap2Status contains a subset of CTAP2 status codes. See
+   * device::CtapDeviceResponseCode for the full list.
+   * @enum {number}
+   */
+  const Ctap2Status = {
+    OK: 0x0,
+    ERR_KEEPALIVE_CANCEL: 0x2D,
+  };
+
+  /**
+   * Credential represents a CTAP2 resident credential enumerated from a
+   * security key.
+   *
+   * id: (required) The hex encoding of the CBOR-serialized
+   *     PublicKeyCredentialDescriptor of the credential.
+   *
+   * relyingPartyId: (required) The RP ID (i.e. the site that created the
+   *     credential; eTLD+n)
+   *
+   * userName: (required) The PublicKeyCredentialUserEntity.name
+   *
+   * userDisplayName: (required) The PublicKeyCredentialUserEntity.display_name
+   *
+   * @typedef {{id: string,
+   *            relyingPartyId: string,
+   *            userName: string,
+   *            userDisplayName: string}}
+   * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
+   */
+  let Credential;
+
+  /**
+   * EnrollmentStatus represents the current status of an enrollment
+   * suboperation, where 'remaining' is the number of samples left, 'status' is
+   * the last enrollment status, 'code' indicates the final
+   * CtapDeviceResponseCode of the operation, and 'enrollment' contains the new
+   * Enrollment.
+   *
+   * For each enrollment sample, 'status' is set - when the enrollment operation
+   * reaches an end state, 'code' and, if successful, 'enrollment' are set. |OK|
+   * indicates successful enrollment. A code of |ERR_KEEPALIVE_CANCEL| indicates
+   * user-initated cancellation.
+   *
+   * @typedef {{status: ?number,
+   *            code: ?settings.Ctap2Status,
+   *            remaining: number,
+   *            enrollment: ?settings.Enrollment}}
+   * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
+   */
+  let EnrollmentStatus;
+
+  /**
+   * Enrollment represents a valid fingerprint template stored on a security
+   * key, which can be used in a user verification request.
+   *
+   * @typedef {{name: string,
+   *            id: string}}
+   * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
+   */
+  let Enrollment;
+
   /** @interface */
   class SecurityKeysPINBrowserProxy {
     /**
@@ -121,7 +120,7 @@ cr.define('settings', function() {
      * Enumerates credentials on the authenticator. A correct PIN must have
      * previously been supplied via providePIN() before this
      * method may be called.
-     * @return {!Promise<!Array<!Credential>>}
+     * @return {!Promise<!Array<!settings.Credential>>}
      */
     enumerateCredentials() {}
 
@@ -187,7 +186,7 @@ cr.define('settings', function() {
      * previously been supplied via bioEnrollProvidePIN() before this method may
      * be called.
      *
-     * @return {!Promise<!Array<!Enrollment>>}
+     * @return {!Promise<!Array<!settings.Enrollment>>}
      */
     enumerateEnrollments() {}
 
@@ -202,8 +201,8 @@ cr.define('settings', function() {
      * out waiting for a touch, or has successfully processed a touch. Any
      * errors will fire the 'security-keys-bio-enrollment-error' WebListener.
      *
-     * @return {!Promise<!EnrollmentStatus>} resolves when the enrollment
-     *     operation is finished successfully.
+     * @return {!Promise<!settings.EnrollmentStatus>} resolves when the
+     *     enrollment operation is finished successfully.
      */
     startEnrolling() {}
 
@@ -218,7 +217,8 @@ cr.define('settings', function() {
      * Deletes the enrollment with the given ID.
      *
      * @param {string} id
-     * @return {!Promise<!Array<!Enrollment>>} The remaining enrollments.
+     * @return {!Promise<!Array<!settings.Enrollment>>} The remaining
+     *     enrollments.
      */
     deleteEnrollment(id) {}
 
@@ -227,7 +227,8 @@ cr.define('settings', function() {
      *
      * @param {string} id
      * @param {string} name
-     * @return {!Promise<!Array<!Enrollment>>} The updated list of enrollments.
+     * @return {!Promise<!Array<!settings.Enrollment>>} The updated list of
+     *     enrollments.
      */
     renameEnrollment(id, name) {}
 
@@ -350,14 +351,17 @@ cr.define('settings', function() {
   cr.addSingletonGetter(SecurityKeysBioEnrollProxyImpl);
 
   return {
-    SecurityKeysPINBrowserProxy: SecurityKeysPINBrowserProxy,
-    SecurityKeysPINBrowserProxyImpl: SecurityKeysPINBrowserProxyImpl,
-    SecurityKeysCredentialBrowserProxy: SecurityKeysCredentialBrowserProxy,
-    SecurityKeysCredentialBrowserProxyImpl:
-        SecurityKeysCredentialBrowserProxyImpl,
-    SecurityKeysResetBrowserProxy: SecurityKeysResetBrowserProxy,
-    SecurityKeysResetBrowserProxyImpl: SecurityKeysResetBrowserProxyImpl,
-    SecurityKeysBioEnrollProxy: SecurityKeysBioEnrollProxy,
-    SecurityKeysBioEnrollProxyImpl: SecurityKeysBioEnrollProxyImpl,
+    Credential,
+    Ctap2Status,
+    Enrollment,
+    EnrollmentStatus,
+    SecurityKeysBioEnrollProxy,
+    SecurityKeysBioEnrollProxyImpl,
+    SecurityKeysCredentialBrowserProxy,
+    SecurityKeysCredentialBrowserProxyImpl,
+    SecurityKeysPINBrowserProxy,
+    SecurityKeysPINBrowserProxyImpl,
+    SecurityKeysResetBrowserProxy,
+    SecurityKeysResetBrowserProxyImpl,
   };
 });

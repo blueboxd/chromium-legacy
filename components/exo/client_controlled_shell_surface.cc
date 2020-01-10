@@ -191,7 +191,7 @@ class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
     shell_surface_->OnDragStarted(component);
   }
 
-  void OnDragFinished(bool canceled, const gfx::Point& location) override {
+  void OnDragFinished(bool canceled, const gfx::PointF& location) override {
     shell_surface_->OnDragFinished(canceled, location);
   }
 
@@ -483,7 +483,7 @@ void ClientControlledShellSurface::OnWindowStateChangeEvent(
 }
 
 void ClientControlledShellSurface::StartDrag(int component,
-                                             const gfx::Point& location) {
+                                             const gfx::PointF& location) {
   TRACE_EVENT2("exo", "ClientControlledShellSurface::StartDrag", "component",
                component, "location", location.ToString());
 
@@ -494,7 +494,7 @@ void ClientControlledShellSurface::StartDrag(int component,
 
 void ClientControlledShellSurface::AttemptToStartDrag(
     int component,
-    const gfx::Point& location) {
+    const gfx::PointF& location) {
   aura::Window* target = widget_->GetNativeWindow();
   ash::ToplevelWindowEventHandler* toplevel_handler =
       ash::Shell::Get()->toplevel_window_event_handler();
@@ -505,7 +505,7 @@ void ClientControlledShellSurface::AttemptToStartDrag(
   // 2) mouse was pressed on the target or its subsurfaces.
   if (toplevel_handler->gesture_target() ||
       (mouse_pressed_handler && target->Contains(mouse_pressed_handler))) {
-    gfx::Point point_in_root(location);
+    gfx::PointF point_in_root(location);
     wm::ConvertPointFromScreen(target->GetRootWindow(), &point_in_root);
     toplevel_handler->AttemptToStartDrag(
         target, point_in_root, component,
@@ -653,7 +653,7 @@ void ClientControlledShellSurface::OnDragStarted(int component) {
 }
 
 void ClientControlledShellSurface::OnDragFinished(bool canceled,
-                                                  const gfx::Point& location) {
+                                                  const gfx::PointF& location) {
   in_drag_ = false;
   if (drag_finished_callback_)
     drag_finished_callback_.Run(location.x(), location.y(), canceled);

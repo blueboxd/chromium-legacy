@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Telefoninumbrid</translation>
 <translation id="3819178904835489326">Tuvastati <ph name="NUMBER_OF_DOWNLOADS" /> allalaadimist</translation>
 <translation id="3822502789641063741">Kas tühj. saidi salvestusruum?</translation>
+<translation id="3853625385350850937">Jätkamiseks lülitage NFC oma seadmes sisse</translation>
 <translation id="3859306556332390985">Keri edasi</translation>
 <translation id="388596076286380598">Hankige artikleid, videoid ja muud sisu teile meeldivatelt saitidelt – isegi kui võrguühendus on halb või puudub.</translation>
 <translation id="3894427358181296146">Kausta lisamine</translation>
@@ -1049,6 +1050,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8912362522468806198">Google'i konto</translation>
 <translation id="8920114477895755567">Vanema üksikasjade ootamine.</translation>
 <translation id="8922289737868596582">Laadige lehed alla nupu Rohkem valikuid abil, et neid võrguühenduseta kasutada</translation>
+<translation id="8926666909099850184">NFC on selle seadme puhul välja lülitatud. Lülitage see <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" /> sisse.</translation>
 <translation id="8937772741022875483">Kas eemaldada teie Chrome'i tegevused teenusest Digitaalne heaolu?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Ava teises aknas</translation>

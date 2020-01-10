@@ -40,10 +40,10 @@ namespace {
 
 const int kRootHeight = 600;
 
-gfx::Point CalculateDragPoint(const WindowResizer& resizer,
-                              int delta_x,
-                              int delta_y) {
-  gfx::Point location = resizer.GetInitialLocation();
+gfx::PointF CalculateDragPoint(const WindowResizer& resizer,
+                               int delta_x,
+                               int delta_y) {
+  gfx::PointF location = resizer.GetInitialLocation();
   location.set_x(location.x() + delta_x);
   location.set_y(location.y() + delta_y);
   return location;
@@ -176,8 +176,8 @@ class WorkspaceWindowResizerTest : public AshTestBase {
                                       const gfx::Point& point_in_parent,
                                       int window_component) {
     WindowResizer* resizer =
-        CreateWindowResizer(window, point_in_parent, window_component,
-                            ::wm::WINDOW_MOVE_SOURCE_MOUSE)
+        CreateWindowResizer(window, gfx::PointF(point_in_parent),
+                            window_component, ::wm::WINDOW_MOVE_SOURCE_MOUSE)
             .release();
     workspace_resizer_ = WorkspaceWindowResizer::GetInstanceForTest();
     return resizer;
@@ -189,7 +189,8 @@ class WorkspaceWindowResizerTest : public AshTestBase {
       ::wm::WindowMoveSource source,
       const std::vector<aura::Window*>& attached_windows) {
     WindowState* window_state = WindowState::Get(window);
-    window_state->CreateDragDetails(point_in_parent, window_component, source);
+    window_state->CreateDragDetails(gfx::PointF(point_in_parent),
+                                    window_component, source);
     return WorkspaceWindowResizer::Create(window_state, attached_windows);
   }
 
@@ -1910,7 +1911,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeHistogram) {
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTRIGHT));
   ASSERT_TRUE(resizer.get());
-  resizer->Drag(gfx::Point(50, 50), 0);
+  resizer->Drag(gfx::PointF(50, 50), 0);
 
   // A resize should generate a histogram.
   EXPECT_NE(gfx::Size(400, 60), window_->bounds().size());
@@ -1939,7 +1940,7 @@ TEST_F(MultiDisplayWorkspaceWindowResizerTest, Magnetism) {
   EXPECT_EQ(win2->GetRootWindow(), roots[1]);
 
   std::unique_ptr<WindowResizer> resizer = CreateWindowResizer(
-      win1.get(), gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE);
+      win1.get(), gfx::PointF(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE);
   ASSERT_TRUE(resizer.get());
 
   // Drag `win1` such that its right edge is 5 pixels from the left edge of

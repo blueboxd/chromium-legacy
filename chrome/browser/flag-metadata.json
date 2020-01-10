@@ -1692,6 +1692,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-profile-card",
+    "owners": [ "tinazwang" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "enable-query-in-omnibox",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85

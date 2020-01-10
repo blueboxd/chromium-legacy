@@ -74,6 +74,10 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerDelegate {
     // Called to set as the persistent video. A persistent video should hide its
     // controls and go fullscreen.
     virtual void OnBecamePersistentVideo(bool value) = 0;
+
+    // Notify the player that it is now eligible to start recording power
+    // measurements if |state| is true, else it is no longer eligible.
+    virtual void OnPowerExperimentState(bool state) {}
   };
 
   // Returns true if the host frame is hidden or closed.

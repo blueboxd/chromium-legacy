@@ -68,8 +68,11 @@ struct CreateViewParams {
   // Whether the RenderView should initially be hidden.
   bool hidden;
 
-  // Whether the RenderView will never be visible.
-  bool never_visible;
+  // When true, all RenderWidgets under this RenderView will never be shown to
+  // the user, and thus never composited, and will not need to produce pixels
+  // for display. This allows the renderer to optimize and avoid resources used
+  // for displaying graphical output.
+  bool never_composited;
 
   // Whether the window associated with this view was created with an opener.
   bool window_was_created_with_opener;

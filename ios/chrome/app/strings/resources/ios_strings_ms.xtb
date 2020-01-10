@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">Carian Inkognito</translation>
 <translation id="277771892408211951">Pilih Bahasa</translation>
 <translation id="2780046210906776326">Tiada Akaun E-mel</translation>
+<translation id="2781331604911854368">Hidupkan</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Tinggalkan Penukar Tab</translation>
 <translation id="2830972654601096923">Urus Alamat...</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">Tab Terbuka</translation>
 <translation id="3277021493514034324">Alamat tapak disalin</translation>
 <translation id="3290875554372353449">Pilih Akaun</translation>
+<translation id="3311748811247479259">Mati</translation>
 <translation id="3324193307694657476">Alamat 2</translation>
 <translation id="3329904751041170572">Tidak dapat menyambung ke pelayan.</translation>
 <translation id="3335947283844343239">Buka Semula Tab Yang Ditutup</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">Menyegerakkan tab anda...</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> tentang kandungan yang disyorkan</translation>
 <translation id="3494788280727468875">Sahkan Kosongkan Data Semakan Imbas.</translation>
+<translation id="35083190962747987">Buka ${url}</translation>
 <translation id="3519193562722059437">Buka tab untuk menyemak imbas web.</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3529024052484145543">Tidak selamat</translation>
@@ -301,6 +304,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5062321486222145940">Pasang Google Drive</translation>
 <translation id="5083464117946352670">Tidak dapat menentukan saiz fail.</translation>
 <translation id="5094827893301452931">Tweet selesai.</translation>
+<translation id="5118764316110575523">Mati</translation>
 <translation id="5127805178023152808">Penyegerakan dimatikan</translation>
 <translation id="5132942445612118989">Segerakkan kata laluan, sejarah &amp; pelbagai lagi pada semua peranti</translation>
 <translation id="5140288047769711648">Chrome akan mengingati kata laluan ini untuk anda. Anda tidak perlu mengingatnya.</translation>
@@ -363,6 +367,7 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="5979837087407522202">Cari Kata Laluan</translation>
 <translation id="5982717868370722439">Tambahkan data sedia ada pada <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">Dilawati Baru-baru Ini</translation>
+<translation id="5988851877894965432">Buka URL dalam Chrome</translation>
 <translation id="6012140227487808125">Menyulitkan...</translation>
 <translation id="6021332621416007159">Buka dalam...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7961015016161918242">Tidak sama sekali</translation>
 <translation id="7971521879845308059">Sekat P/Timbul</translation>
 <translation id="7982789257301363584">Rangkaian</translation>
+<translation id="800361585186029508">Membuka URL yang dimasukkan dalam Google Chrome.</translation>
 <translation id="8007420562015504427">Carian Inkognito</translation>
 <translation id="8019783059653722575">Langkah ini membolehkan anda menyimpan dan memuat naik foto.</translation>
 <translation id="802154636333426148">Muat turun gagal</translation>

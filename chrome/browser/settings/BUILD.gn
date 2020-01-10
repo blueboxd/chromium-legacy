@@ -15,6 +15,7 @@ android_library("java") {
     "android/widget/java/src/org/chromium/chrome/browser/settings/ChromeBasePreference.java",
     "android/widget/java/src/org/chromium/chrome/browser/settings/ChromeImageViewPreference.java",
     "android/widget/java/src/org/chromium/chrome/browser/settings/ChromeSwitchPreference.java",
+    "android/widget/java/src/org/chromium/chrome/browser/settings/SpinnerPreference.java",
     "android/widget/java/src/org/chromium/chrome/browser/settings/TextMessagePreference.java",
   ]
   deps = [

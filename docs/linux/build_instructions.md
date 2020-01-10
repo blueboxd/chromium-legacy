@@ -332,7 +332,7 @@ other settings):
 ### More links
 
 *   Information about [building with Clang](clang.md).
-*   You may want to [use a chroot](linux/using_a_chroot.md) to
+*   You may want to [use a chroot](using_a_chroot.md) to
     isolate yourself from versioning or packaging conflicts.
 *   Cross-compiling for ARM? See [LinuxChromiumArm](chromium_arm.md).
 *   Want to use Eclipse as your IDE? See

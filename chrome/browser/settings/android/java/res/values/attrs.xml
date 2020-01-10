@@ -8,4 +8,11 @@
         <!-- The tint color for the icon set by android:icon. -->
         <attr name="iconTint" format="color" />
     </declare-styleable>
+
+    <declare-styleable name="SpinnerPreference">
+        <!-- Used to change the SpinnerPreference to display the TextView and the Spinner on the
+             same line. Devices with a smallest width of less than 360dp will still use two separate
+             lines. -->
+        <attr name="singleLine" format="boolean" />
+    </declare-styleable>
 </resources>

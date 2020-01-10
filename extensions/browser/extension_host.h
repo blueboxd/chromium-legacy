@@ -126,7 +126,7 @@ class ExtensionHost : public DeferredStartRenderHost,
   bool CheckMediaAccessPermission(content::RenderFrameHost* render_frame_host,
                                   const GURL& security_origin,
                                   blink::mojom::MediaStreamType type) override;
-  bool IsNeverVisible(content::WebContents* web_contents) override;
+  bool IsNeverComposited(content::WebContents* web_contents) override;
   content::PictureInPictureResult EnterPictureInPicture(
       content::WebContents* web_contents,
       const viz::SurfaceId& surface_id,

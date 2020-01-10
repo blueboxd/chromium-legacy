@@ -70,7 +70,53 @@ class GestureScrollableTextfield : public views::Textfield {
 ///////////////////////////////////////////////////////////////////////////////
 // CookieInfoView, public:
 
-CookieInfoView::CookieInfoView() = default;
+CookieInfoView::CookieInfoView() {
+  constexpr int kLabelValuePadding = 96;
+
+  const ChromeLayoutProvider* const provider = ChromeLayoutProvider::Get();
+  const gfx::Insets& dialog_insets =
+      provider->GetInsetsMetric(views::INSETS_DIALOG);
+  SetBorder(views::CreateEmptyBorder(0, dialog_insets.left(), 0,
+                                     dialog_insets.right()));
+
+  View* const contents = SetContents(std::make_unique<views::View>());
+  views::GridLayout* layout =
+      contents->SetLayoutManager(std::make_unique<views::GridLayout>());
+
+  int three_column_layout_id = 0;
+  views::ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);
+  column_set->AddColumn(
+      provider->GetControlLabelGridAlignment(), views::GridLayout::CENTER,
+      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                               kLabelValuePadding);
+  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                        views::GridLayout::kFixedSize,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
+                        views::GridLayout::USE_PREF, 0, 0);
+
+  name_value_field_ = AddLabelRow(three_column_layout_id, layout,
+                                  IDS_COOKIES_COOKIE_NAME_LABEL);
+
+  content_value_field_ = AddLabelRow(three_column_layout_id, layout,
+                                     IDS_COOKIES_COOKIE_CONTENT_LABEL);
+
+  domain_value_field_ = AddLabelRow(three_column_layout_id, layout,
+                                    IDS_COOKIES_COOKIE_DOMAIN_LABEL);
+
+  path_value_field_ = AddLabelRow(three_column_layout_id, layout,
+                                  IDS_COOKIES_COOKIE_PATH_LABEL);
+
+  send_for_value_field_ = AddLabelRow(three_column_layout_id, layout,
+                                      IDS_COOKIES_COOKIE_SENDFOR_LABEL);
+
+  created_value_field_ = AddLabelRow(three_column_layout_id, layout,
+                                     IDS_COOKIES_COOKIE_CREATED_LABEL);
+
+  expires_value_field_ = AddLabelRow(three_column_layout_id, layout,
+                                     IDS_COOKIES_COOKIE_EXPIRES_LABEL);
+}
 
 CookieInfoView::~CookieInfoView() = default;
 
@@ -120,12 +166,6 @@ void CookieInfoView::EnableCookieDisplay(bool enabled) {
 ///////////////////////////////////////////////////////////////////////////////
 // CookieInfoView, views::View overrides.
 
-void CookieInfoView::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this)
-    Init();
-}
-
 views::Textfield* CookieInfoView::AddLabelRow(int layout_id,
                                               views::GridLayout* layout,
                                               int label_message_id) {
@@ -147,58 +187,4 @@ views::Textfield* CookieInfoView::AddLabelRow(int layout_id,
       ui::NativeTheme::kColorId_DialogBackground));
   textfield_ptr->SetTextColor(SkColorSetRGB(0x78, 0x78, 0x78));
   return textfield_ptr;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CookieInfoView, private:
-
-void CookieInfoView::Init() {
-  constexpr int kLabelValuePadding = 96;
-
-  // Ensure we don't run this more than once and leak memory.
-  DCHECK(!name_value_field_);
-
-  const ChromeLayoutProvider* const provider = ChromeLayoutProvider::Get();
-  const gfx::Insets& dialog_insets =
-      provider->GetInsetsMetric(views::INSETS_DIALOG);
-  SetBorder(views::CreateEmptyBorder(0, dialog_insets.left(), 0,
-                                     dialog_insets.right()));
-
-  View* const contents = SetContents(std::make_unique<views::View>());
-  views::GridLayout* layout =
-      contents->SetLayoutManager(std::make_unique<views::GridLayout>());
-
-  int three_column_layout_id = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);
-  column_set->AddColumn(
-      provider->GetControlLabelGridAlignment(), views::GridLayout::CENTER,
-      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
-                               kLabelValuePadding);
-  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                        views::GridLayout::kFixedSize,
-                        views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
-                        views::GridLayout::USE_PREF, 0, 0);
-
-  name_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                  IDS_COOKIES_COOKIE_NAME_LABEL);
-
-  content_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                     IDS_COOKIES_COOKIE_CONTENT_LABEL);
-
-  domain_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                    IDS_COOKIES_COOKIE_DOMAIN_LABEL);
-
-  path_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                  IDS_COOKIES_COOKIE_PATH_LABEL);
-
-  send_for_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                      IDS_COOKIES_COOKIE_SENDFOR_LABEL);
-
-  created_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                     IDS_COOKIES_COOKIE_CREATED_LABEL);
-
-  expires_value_field_ = AddLabelRow(three_column_layout_id, layout,
-                                     IDS_COOKIES_COOKIE_EXPIRES_LABEL);
 }

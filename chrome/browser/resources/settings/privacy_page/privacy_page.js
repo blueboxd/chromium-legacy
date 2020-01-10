@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('settings');
+cr.define('settings', function() {
+  /**
+   * @typedef {{
+   *   enabled: boolean,
+   *   pref: !chrome.settingsPrivate.PrefObject
+   * }}
+   */
+  let BlockAutoplayStatus;
 
-/**
- * @typedef {{
- *   enabled: boolean,
- *   pref: !chrome.settingsPrivate.PrefObject
- * }}
- */
-let BlockAutoplayStatus;
+  return {BlockAutoplayStatus};
+});
 
 /**
  * @fileoverview
@@ -142,11 +144,11 @@ Polymer({
       }
     },
 
-    /** @private {BlockAutoplayStatus} */
+    /** @private {settings.BlockAutoplayStatus} */
     blockAutoplayStatus_: {
       type: Object,
       value: function() {
-        return /** @type {BlockAutoplayStatus} */ ({});
+        return /** @type {settings.BlockAutoplayStatus} */ ({});
       }
     },
 
@@ -323,7 +325,7 @@ Polymer({
 
   /**
    * Called when the block autoplay status changes.
-   * @param {BlockAutoplayStatus} autoplayStatus
+   * @param {settings.BlockAutoplayStatus} autoplayStatus
    * @private
    */
   onBlockAutoplayStatusChanged_: function(autoplayStatus) {

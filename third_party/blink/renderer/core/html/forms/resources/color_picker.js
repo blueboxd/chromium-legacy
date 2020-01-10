@@ -425,14 +425,11 @@ class ColorPicker extends HTMLElement {
     super();
 
     this.selectedColor_ = initialColor;
+    this.colorWhenOpened_ = initialColor;
 
     this.visualColorPicker_ = new VisualColorPicker(initialColor);
     this.manualColorPicker_ = new ManualColorPicker(initialColor);
-    this.submissionControls_ = new SubmissionControls(
-        this.onSubmitButtonClick_, this.onCancelButtonClick_);
-    this.append(
-        this.visualColorPicker_, this.manualColorPicker_,
-        this.submissionControls_);
+    this.append(this.visualColorPicker_, this.manualColorPicker_);
 
     this.visualColorPicker_.addEventListener(
         'visual-color-picker-initialized', this.initializeListeners_);
@@ -480,6 +477,9 @@ class ColorPicker extends HTMLElement {
       this.processingManualColorChange_ = true;
       this.visualColorPicker_.color = newColor;
       this.processingManualColorChange_ = false;
+
+      const selectedValue = newColor.asHex();
+      window.pagePopupController.setValue(selectedValue);
     }
   }
 
@@ -492,6 +492,9 @@ class ColorPicker extends HTMLElement {
       if (!this.processingManualColorChange_) {
         this.selectedColor = newColor;
         this.manualColorPicker_.color = newColor;
+
+        const selectedValue = newColor.asHex();
+        window.pagePopupController.setValue(selectedValue);
       } else {
         // We are making a visual color change in response to a manual color
         // change. So we do not overwrite the manually specified values and do
@@ -506,10 +509,16 @@ class ColorPicker extends HTMLElement {
   onKeyDown_ = (event) => {
     switch(event.key) {
       case 'Enter':
-        this.submissionControls_.submitButton.click();
+        window.pagePopupController.closePopup();
         break;
       case 'Escape':
-        this.submissionControls_.cancelButton.click();
+        if (this.selectedColor.equals(this.colorWhenOpened_)) {
+          window.pagePopupController.closePopup();
+        } else {
+          this.manualColorPicker_.dispatchEvent(new CustomEvent(
+              'manual-color-change',
+              {bubbles: true, detail: {color: this.colorWhenOpened_}}));
+        }
         break;
       case 'Tab':
         event.preventDefault();
@@ -539,21 +548,6 @@ class ColorPicker extends HTMLElement {
         'color-value-container:not(.hidden-color-value-container) > input,' +
         '[tabindex]:not([tabindex=\'-1\'])'));
   }
-
-  static get COMMIT_DELAY_MS() {
-    return 100;
-  }
-
-  onSubmitButtonClick_ = () => {
-    const selectedValue = this.selectedColor_.asHex();
-    window.setTimeout(function() {
-      window.pagePopupController.setValueAndClosePopup(0, selectedValue);
-    }, ColorPicker.COMMIT_DELAY_MS);
-  };
-
-  onCancelButtonClick_ = () => {
-    window.pagePopupController.closePopup();
-  };
 }
 window.customElements.define('color-picker', ColorPicker);
 
@@ -1873,65 +1867,3 @@ class ChannelLabel extends HTMLElement {
   }
 }
 window.customElements.define('channel-label', ChannelLabel);
-
-/**
- * SubmissionControls: Provides functionality to submit or discard a change.
- */
-class SubmissionControls extends HTMLElement {
-  /**
-   * @param {function} submitCallback executed if the submit button is clicked
-   * @param {function} cancelCallback executed if the cancel button is clicked
-   */
-  constructor(submitCallback, cancelCallback) {
-    super();
-
-    const padding = document.createElement('span');
-    padding.setAttribute('id', 'submission-controls-padding');
-    this.append(padding);
-
-    this.submitButton_ = new SubmissionButton(
-        submitCallback,
-        '<svg width="14" height="10" viewBox="0 0 14 10" fill="none" ' +
-            'xmlns="http://www.w3.org/2000/svg"><path d="M13.3516 ' +
-            '1.35156L5 9.71094L0.648438 5.35156L1.35156 4.64844L5 ' +
-            '8.28906L12.6484 0.648438L13.3516 1.35156Z" fill="WindowText"/></svg>');
-    this.cancelButton_ = new SubmissionButton(
-        cancelCallback,
-        '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" ' +
-            'xmlns="http://www.w3.org/2000/svg"><path d="M7.71094 7L13.1016 ' +
-            '12.3984L12.3984 13.1016L7 7.71094L1.60156 13.1016L0.898438 ' +
-            '12.3984L6.28906 7L0.898438 1.60156L1.60156 0.898438L7 ' +
-            '6.28906L12.3984 0.898438L13.1016 1.60156L7.71094 7Z" ' +
-            'fill="WindowText"/></svg>');
-    this.append(this.submitButton_, this.cancelButton_);
-  }
-
-  get submitButton() {
-    return this.submitButton_;
-  }
-
-  get cancelButton() {
-    return this.cancelButton_;
-  }
-}
-window.customElements.define('submission-controls', SubmissionControls);
-
-/**
- * SubmissionButton: Button with a custom look that can be clicked for
- *                   a submission action.
- */
-class SubmissionButton extends HTMLElement {
-  /**
-   * @param {function} clickCallback executed when the button is clicked
-   * @param {string} htmlString custom look for the button
-   */
-  constructor(clickCallback, htmlString) {
-    super();
-
-    this.setAttribute('tabIndex', '0');
-    this.innerHTML = htmlString;
-
-    this.addEventListener('click', clickCallback);
-  }
-}
-window.customElements.define('submission-button', SubmissionButton);

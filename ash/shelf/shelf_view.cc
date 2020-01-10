@@ -1490,13 +1490,8 @@ void ShelfView::PointerReleasedOnButton(views::View* view,
   if (drag_pointer_ != NONE)
     return;
 
-  if (chromeos::switches::ShouldShowScrollableShelf()) {
+  if (chromeos::switches::ShouldShowScrollableShelf())
     drag_and_drop_host_->DestroyDragIconProxy();
-
-    // |drag_view_| is reset already when being removed from the shelf view.
-    if (drag_view_)
-      drag_view_->layer()->SetOpacity(1.0f);
-  }
 
   // If the drag pointer is NONE, no drag operation is going on and the
   // drag_view can be released.
@@ -1658,13 +1653,17 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
     }
   }
 
+  // Calculates the drag point in screen before MoveDragViewTo is called.
+  gfx::Point drag_point_in_screen(event.location());
+  ConvertPointToScreen(drag_view_, &drag_point_in_screen);
+
   gfx::Point drag_point(event.location());
   ConvertPointToTarget(drag_view_, this, &drag_point);
   MoveDragViewTo(shelf_->PrimaryAxisValue(drag_point.x() - drag_origin_.x(),
                                           drag_point.y() - drag_origin_.y()));
   if (chromeos::switches::ShouldShowScrollableShelf()) {
-    drag_and_drop_host_->UpdateDragIconProxy(
-        drag_view_->GetBoundsInScreen().origin());
+    drag_and_drop_host_->UpdateDragIconProxy(drag_point_in_screen -
+                                             drag_origin_.OffsetFromOrigin());
   }
 }
 
@@ -1873,12 +1872,13 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
                         drag_view_, gfx::Vector2d(0, 0),
                         kDragAndDropProxyScale);
 
+    dragged_off_shelf_ = true;
+
     if (chromeos::switches::ShouldShowScrollableShelf())
       drag_and_drop_host_->DestroyDragIconProxy();
     else
       drag_view_->layer()->SetOpacity(0.0f);
 
-    dragged_off_shelf_ = true;
     if (RemovableByRipOff(current_index) == REMOVABLE) {
       // Move the item to the back and hide it. ShelfItemMoved() callback will
       // handle the |view_model_| update and call AnimateToIdealBounds().

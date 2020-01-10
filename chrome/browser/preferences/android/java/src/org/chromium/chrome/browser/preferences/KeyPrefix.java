@@ -14,7 +14,7 @@ public class KeyPrefix {
 
     KeyPrefix(String pattern) {
         // More thorough checking is performed in ChromePreferenceKeysTest.
-        assert pattern.endsWith(".*");
+        assert pattern.endsWith("*");
         mPrefix = pattern.substring(0, pattern.length() - 1);
     }
 
@@ -28,5 +28,9 @@ public class KeyPrefix {
 
     String pattern() {
         return mPrefix + "*";
+    }
+
+    boolean hasGenerated(String key) {
+        return key.startsWith(mPrefix);
     }
 }

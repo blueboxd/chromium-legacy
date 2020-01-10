@@ -291,7 +291,7 @@
 #include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
 #include "content/common/coverage_utils.h"
 #endif
 
@@ -3471,7 +3471,7 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   child_process_->SetIPCLoggingEnabled(IPC::Logging::GetInstance()->Enabled());
 #endif
 
-#if BUILDFLAG(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
   child_process_->SetCoverageFile(OpenCoverageFile());
 #endif
 }

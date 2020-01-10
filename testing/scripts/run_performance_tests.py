@@ -287,9 +287,10 @@ def execute_gtest_perf_test(command_generator, output_paths, use_xvfb=False):
               command, handle, env=env)
         except OSError as e:
           print('Command to run gtest perf test %s failed with an OSError: %s' %
-                e)
+                (output_paths.name, e))
           return_code = 1
-    if not os.path.exists(output_paths.perf_results):
+    if (not os.path.exists(output_paths.perf_results) and
+        os.path.exists(output_paths.logs)):
       # Get the correct json format from the stdout to write to the perf
       # results file if gtest does not generate one.
       results_processor = generate_legacy_perf_dashboard_json.\

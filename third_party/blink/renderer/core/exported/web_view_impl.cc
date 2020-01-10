@@ -1212,14 +1212,6 @@ void WebViewImpl::Close() {
   DCHECK(AllInstances().Contains(this));
   AllInstances().erase(this);
 
-  if (does_composite_) {
-    // This must occur before WillBeDestroyed, since detaching the main frame
-    // will also destroy the WebWidgetClient and the AnimationHost.
-    // TODO(danakj): Since the AnimationHost will be destroyed anyways, there
-    // is probably no good reason to do this at all.
-    GetPage()->WillCloseAnimationHost(nullptr);
-  }
-
   // Initiate shutdown for the entire frameset.  This will cause a lot of
   // notifications to be sent. This will detach all frames in this WebView's
   // frame tree.

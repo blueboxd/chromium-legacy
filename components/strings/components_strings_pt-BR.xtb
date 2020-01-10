@@ -210,7 +210,7 @@
 <translation id="1914326953223720820">Serviço Descompactar</translation>
 <translation id="1915697529809968049">Usar o Touch ID em vez do CVC?</translation>
 <translation id="1916770123977586577">Para aplicar as configurações atualizadas a este site, recarregue a página</translation>
-<translation id="1917876262703816781">Uma violação de dados em um site ou app expôs sua senha. Por recomendação do Chrome, mude a senha imediatamente em <ph name="ORIGIN" />.</translation>
+<translation id="1917876262703816781">Sua senha foi exposta em uma violação de dados em um site ou app acessado por você. Por recomendação do Chrome, mude a senha imediatamente em <ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">Anúncios</translation>
 <translation id="1919367280705858090">Receber ajuda com uma mensagem de erro específica</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nenhum}=1{1 site}one{# site}other{# sites}}</translation>
@@ -897,7 +897,7 @@
 <translation id="5287240709317226393">Mostrar cookies</translation>
 <translation id="5287456746628258573">Este site usa uma configuração de segurança desatualizada que pode expor suas informações, como senhas ou números de cartão de crédito, quando elas forem enviadas para o site.</translation>
 <translation id="5288108484102287882">A validação dos valores da política gerou alguns avisos</translation>
-<translation id="5295292838686006428">Uma violação de dados em um site ou app expôs sua senha. Por recomendação do Chrome, verifique as senhas salvas imediatamente.</translation>
+<translation id="5295292838686006428">Sua senha foi exposta em uma violação de dados em um site ou app acessado por você. Por recomendação do Chrome, verifique as senhas salvas imediatamente.</translation>
 <translation id="5299298092464848405">Política de análise de erros</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5308380583665731573">Conectar</translation>
@@ -1343,7 +1343,7 @@ Mais detalhes:
 <translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7485870689360869515">Nenhum dado encontrado</translation>
-<translation id="7495290002932347110">Uma violação de dados em um site ou app expôs sua senha. Por recomendação do Chrome, verifique as senhas salvas e mude sua senha imediatamente em <ph name="ORIGIN" />.</translation>
+<translation id="7495290002932347110">Sua senha foi exposta em violação de dados em um site ou app acessado por você. Por recomendação do Chrome, verifique suas senhas salvas e mude-as imediatamente em <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Continuar editando</translation>
 <translation id="7508255263130623398">O código do dispositivo da política retornado está em branco ou não corresponde ao código do dispositivo atual</translation>
 <translation id="7508870219247277067">Verde-abacate</translation>

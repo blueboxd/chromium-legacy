@@ -145,15 +145,6 @@ bool AuthenticatorRequestDialogView::Close() {
   return true;
 }
 
-int AuthenticatorRequestDialogView::GetDialogButtons() const {
-  int button_mask = 0;
-  if (sheet()->model()->IsAcceptButtonVisible())
-    button_mask |= ui::DIALOG_BUTTON_OK;
-  if (sheet()->model()->IsCancelButtonVisible())
-    button_mask |= ui::DIALOG_BUTTON_CANCEL;
-  return button_mask;
-}
-
 bool AuthenticatorRequestDialogView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   switch (button) {
@@ -314,7 +305,14 @@ void AuthenticatorRequestDialogView::UpdateUIForCurrentSheet() {
   DCHECK(sheet_);
 
   sheet_->ReInitChildViews();
-  DialogDelegate::set_default_button(sheet_->model()->IsAcceptButtonVisible()
+
+  int buttons = ui::DIALOG_BUTTON_NONE;
+  if (sheet()->model()->IsAcceptButtonVisible())
+    buttons |= ui::DIALOG_BUTTON_OK;
+  if (sheet()->model()->IsCancelButtonVisible())
+    buttons |= ui::DIALOG_BUTTON_CANCEL;
+  DialogDelegate::set_buttons(buttons);
+  DialogDelegate::set_default_button((buttons & ui::DIALOG_BUTTON_OK)
                                          ? ui::DIALOG_BUTTON_OK
                                          : ui::DIALOG_BUTTON_NONE);
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,

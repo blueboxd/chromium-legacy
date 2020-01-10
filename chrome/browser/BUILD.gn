@@ -2839,6 +2839,8 @@ jumbo_static_library("browser") {
       "password_manager/account_chooser_dialog_android.h",
       "password_manager/auto_signin_first_run_dialog_android.cc",
       "password_manager/auto_signin_first_run_dialog_android.h",
+      "password_manager/auto_signin_prompt_controller.cc",
+      "password_manager/auto_signin_prompt_controller.h",
       "password_manager/credential_android.cc",
       "password_manager/credential_android.h",
       "password_manager/credential_leak_controller_android.cc",
@@ -4170,8 +4172,7 @@ jumbo_static_library("browser") {
     sources += [
       "first_run/upgrade_util.cc",
       "first_run/upgrade_util.h",
-      "first_run/upgrade_util_mac.h",
-      "first_run/upgrade_util_mac.mm",
+      "first_run/upgrade_util_mac.cc",
       "first_run/upgrade_util_win.cc",
       "first_run/upgrade_util_win.h",
       "lifetime/switch_utils.cc",

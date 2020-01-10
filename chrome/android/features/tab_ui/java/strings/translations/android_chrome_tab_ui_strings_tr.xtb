@@ -17,7 +17,6 @@
 <translation id="5073204694187207510">Tam ekran ızgarayı gizler</translation>
 <translation id="5082793167783849073">Grup oluşturarak sayfaları hızlıca karşılaştırın. Başlamak için bir bağlantıya dokunup basılı tutun.</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> sekme gruplandı</translation>
-<translation id="5792534911093536736">Diğer sekmeler</translation>
 <translation id="58326064309361797">Gruplandırmak için sekmeleri sürükleyin</translation>
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="6193448654517602979">Sekmeleri seçin</translation>
@@ -29,6 +28,7 @@
 <translation id="7792771145871471484">Önerileri inceleyin.</translation>
 <translation id="7885132941432959125">Sekmeyi sağa taşı</translation>
 <translation id="7966321538264951561">Önerileri kapat.</translation>
+<translation id="814503310257431685">Tümünü göster</translation>
 <translation id="8205266828577616993">Sekmeyi yukarı taşı</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Seçilen <ph name="TABS_COUNT_ONE" /> sekmeyi kapat}other{Seçilen <ph name="TABS_COUNT_MANY" /> sekmeyi kapat}}</translation>
 <translation id="9150694013019234766">Ekranın altına yakın bir yerde bulunan sekme grubunuzdaki sekmeler arasında geçiş yapın</translation>

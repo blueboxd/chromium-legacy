@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "storage/browser/blob/blob_data_handle.h"
@@ -36,14 +37,16 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
                     const std::string& uuid,
                     const base::string16& type,
                     int64_t size);
-  IndexedDBBlobInfo(const base::string16& type, int64_t size, int64_t key);
+  IndexedDBBlobInfo(const base::string16& type,
+                    int64_t size,
+                    int64_t blob_number);
   // These two are used for Files.
   IndexedDBBlobInfo(mojo::PendingRemote<blink::mojom::Blob> blob_remote,
                     const std::string& uuid,
                     const base::FilePath& file_path,
                     const base::string16& file_name,
                     const base::string16& type);
-  IndexedDBBlobInfo(int64_t key,
+  IndexedDBBlobInfo(int64_t blob_number,
                     const base::string16& type,
                     const base::string16& file_name);
 
@@ -62,7 +65,7 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
   const base::string16& type() const { return type_; }
   int64_t size() const { return size_; }
   const base::string16& file_name() const { return file_name_; }
-  int64_t key() const { return key_; }
+  int64_t blob_number() const { return blob_number_; }
   const base::FilePath& file_path() const { return file_path_; }
   const base::Time& last_modified() const { return last_modified_; }
   const base::RepeatingClosure& mark_used_callback() const {
@@ -75,7 +78,7 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
   void set_size(int64_t size);
   void set_file_path(const base::FilePath& file_path);
   void set_last_modified(const base::Time& time);
-  void set_key(int64_t key);
+  void set_blob_number(int64_t blob_number);
   void set_mark_used_callback(base::RepeatingClosure mark_used_callback);
   void set_release_callback(base::RepeatingClosure release_callback);
 
@@ -98,7 +101,7 @@ class CONTENT_EXPORT IndexedDBBlobInfo {
   base::Time last_modified_;
 
   // Valid only when this comes out of the database.
-  int64_t key_;
+  int64_t blob_number_ = DatabaseMetaDataKey::kInvalidBlobNumber;
   base::RepeatingClosure mark_used_callback_;
   base::RepeatingClosure release_callback_;
 };

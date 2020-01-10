@@ -250,7 +250,6 @@ if (is_android) {
     defines = []
 
     deps = [
-      ":pak",
       ":weblayer_shell_lib",
       "//base",
       "//build/win:default_exe_manifest",

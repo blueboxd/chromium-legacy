@@ -55,7 +55,7 @@ const base::Feature kStopSyncInPausedState{"StopSyncInPausedState",
 
 // Enable USS implementation of Passwords datatype.
 const base::Feature kSyncUSSPasswords{"SyncUSSPasswords",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable USS implementation of Nigori datatype.
 const base::Feature kSyncUSSNigori{"SyncUSSNigori",

@@ -61,7 +61,6 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/web/common/origin_util.h"
 #include "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"

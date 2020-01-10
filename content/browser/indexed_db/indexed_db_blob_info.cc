@@ -35,10 +35,7 @@ void IndexedDBBlobInfo::ConvertBlobInfo(
   }
 }
 
-IndexedDBBlobInfo::IndexedDBBlobInfo()
-    : is_file_(false),
-      size_(-1),
-      key_(DatabaseMetaDataKey::kInvalidBlobNumber) {}
+IndexedDBBlobInfo::IndexedDBBlobInfo() : is_file_(false), size_(-1) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(
     mojo::PendingRemote<blink::mojom::Blob> blob_remote,
@@ -49,13 +46,12 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(
       blob_remote_(std::move(blob_remote)),
       uuid_(uuid),
       type_(type),
-      size_(size),
-      key_(DatabaseMetaDataKey::kInvalidBlobNumber) {}
+      size_(size) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(const base::string16& type,
                                      int64_t size,
-                                     int64_t key)
-    : is_file_(false), type_(type), size_(size), key_(key) {}
+                                     int64_t blob_number)
+    : is_file_(false), type_(type), size_(size), blob_number_(blob_number) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(
     mojo::PendingRemote<blink::mojom::Blob> blob_remote,
@@ -69,17 +65,16 @@ IndexedDBBlobInfo::IndexedDBBlobInfo(
       type_(type),
       size_(-1),
       file_name_(file_name),
-      file_path_(file_path),
-      key_(DatabaseMetaDataKey::kInvalidBlobNumber) {}
+      file_path_(file_path) {}
 
-IndexedDBBlobInfo::IndexedDBBlobInfo(int64_t key,
+IndexedDBBlobInfo::IndexedDBBlobInfo(int64_t blob_number,
                                      const base::string16& type,
                                      const base::string16& file_name)
     : is_file_(true),
       type_(type),
       size_(-1),
       file_name_(file_name),
-      key_(key) {}
+      blob_number_(blob_number) {}
 
 IndexedDBBlobInfo::IndexedDBBlobInfo(const IndexedDBBlobInfo& other) = default;
 
@@ -110,9 +105,9 @@ void IndexedDBBlobInfo::set_last_modified(const base::Time& time) {
   last_modified_ = time;
 }
 
-void IndexedDBBlobInfo::set_key(int64_t key) {
-  DCHECK_EQ(DatabaseMetaDataKey::kInvalidBlobNumber, key_);
-  key_ = key;
+void IndexedDBBlobInfo::set_blob_number(int64_t blob_number) {
+  DCHECK_EQ(DatabaseMetaDataKey::kInvalidBlobNumber, blob_number_);
+  blob_number_ = blob_number;
 }
 
 void IndexedDBBlobInfo::set_mark_used_callback(

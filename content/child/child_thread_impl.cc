@@ -84,7 +84,7 @@
 #include "base/mac/mach_port_rendezvous.h"
 #endif
 
-#if BUILDFLAG(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
 #include <stdio.h>
 #if defined(OS_WIN)
 #include <io.h>
@@ -373,7 +373,7 @@ class ChildThreadImpl::IOThreadState
                                   weak_main_thread_, std::move(receiver)));
   }
 
-#if BUILDFLAG(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
   void SetCoverageFile(base::File file) override {
     // TODO(crbug.com/985574) Remove Android check when possible.
 #if defined(OS_POSIX) && !defined(OS_ANDROID)

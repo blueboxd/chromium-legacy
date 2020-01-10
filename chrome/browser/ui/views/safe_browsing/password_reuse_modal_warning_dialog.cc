@@ -137,6 +137,10 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
       service_(service),
       url_(web_contents->GetLastCommittedURL()),
       password_type_(password_type) {
+  DialogDelegate::set_buttons(
+      password_type_.account_type() == ReusedPasswordAccountType::SAVED_PASSWORD
+          ? ui::DIALOG_BUTTON_OK
+          : ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    GetOkButtonLabel(password_type_));
   DialogDelegate::set_button_label(
@@ -254,13 +258,6 @@ gfx::ImageSkia PasswordReuseModalWarningDialog::GetWindowIcon() {
 
 bool PasswordReuseModalWarningDialog::ShouldShowWindowIcon() const {
   return true;
-}
-
-int PasswordReuseModalWarningDialog::GetDialogButtons() const {
-  return password_type_.account_type() ==
-                 ReusedPasswordAccountType::SAVED_PASSWORD
-             ? ui::DIALOG_BUTTON_OK
-             : ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 bool PasswordReuseModalWarningDialog::Cancel() {

@@ -95,7 +95,7 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   void Pause(base::TimeDelta pause_offset);
 
   void AddKeyframeModel(std::unique_ptr<KeyframeModel> keyframe_model);
-  void PauseKeyframeModel(int keyframe_model_id, double time_offset);
+  void PauseKeyframeModel(int keyframe_model_id, base::TimeDelta time_offset);
   void RemoveKeyframeModel(int keyframe_model_id);
   void AbortKeyframeModel(int keyframe_model_id);
   void AbortKeyframeModelsWithProperty(TargetProperty::Type target_property,

@@ -896,7 +896,9 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
     // |ComputeOverflow()| below calls |AddVisualOverflowFromChildren()|, which
     // computes visual overflow from |RootInlineBox| if |ChildrenInline()|
-    block->SetNeedsVisualOverflowAndPaintInvalidation();
+    // TODO(rego): This causes that ChildNeedsLayoutOverflowRecalc flags are not
+    // cleared after layout (see https://crbug.com/941180).
+    block->SetNeedsOverflowRecalc();
     block->ComputeLayoutOverflow(intrinsic_block_size - borders.block_end -
                                  scrollbars.block_end);
   }

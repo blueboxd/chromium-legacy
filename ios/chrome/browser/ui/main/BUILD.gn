@@ -22,6 +22,7 @@ source_set("scene") {
     "//components/url_formatter",
     "//ios/chrome/app:app",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/main",

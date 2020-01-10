@@ -36,7 +36,6 @@ class ASH_EXPORT ImeModeIndicatorView : public views::BubbleDialogDelegateView {
                                 views::Widget* widget) const override;
   gfx::Size CalculatePreferredSize() const override;
   const char* GetClassName() const override;
-  int GetDialogButtons() const override;
   void Init() override;
 
  protected:

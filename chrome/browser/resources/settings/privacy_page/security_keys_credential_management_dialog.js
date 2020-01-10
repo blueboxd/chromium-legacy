@@ -47,7 +47,7 @@ Polymer({
 
     /**
      * The list of credentials displayed in the dialog.
-     * @private {!Array<!Credential>}
+     * @private {!Array<!settings.Credential>}
      */
     credentials_: Array,
 
@@ -125,7 +125,7 @@ Polymer({
 
   /**
    * @private
-   * @param {!Array<!Credential>} credentials
+   * @param {!Array<!settings.Credential>} credentials
    */
   onCredentials_: function(credentials) {
     if (!credentials.length) {
@@ -193,7 +193,7 @@ Polymer({
   /**
    * Stringifies the user entity of a Credential for display in the dialog.
    * @private
-   * @param {!Credential} credential
+   * @param {!settings.Credential} credential
    * @return {string}
    */
   formatUser_: function(credential) {

@@ -6688,7 +6688,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer --use-gl=egl --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer --use-gl=egl --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode",
           "--dont-restore-color-profile-after-test",
           "--build-revision",
           "${got_revision}",

@@ -23,9 +23,7 @@
 
 namespace media {
 
-namespace {
-
-scoped_refptr<VideoFrame> CreateVideoFrameGpu(
+scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     gpu::GpuMemoryBufferFactory* factory,
     VideoPixelFormat pixel_format,
     const gfx::Size& coded_size,
@@ -56,7 +54,6 @@ scoped_refptr<VideoFrame> CreateVideoFrameGpu(
       pixel_format, coded_size, std::move(planes),
       VideoFrameLayout::kBufferAddressAlignment,
       gmb_handle.native_pixmap_handle.modifier);
-
   if (!layout)
     return nullptr;
 
@@ -64,7 +61,7 @@ scoped_refptr<VideoFrame> CreateVideoFrameGpu(
   for (const auto& plane : gmb_handle.native_pixmap_handle.planes) {
     int duped_fd = HANDLE_EINTR(dup(plane.fd.get()));
     if (duped_fd == -1) {
-      DLOG(ERROR) << "Failed duplicating dmabuf fd";
+      DPLOG(ERROR) << "Failed duplicating dmabuf fd";
       return nullptr;
     }
     dmabuf_fds.emplace_back(duped_fd);
@@ -86,25 +83,6 @@ scoped_refptr<VideoFrame> CreateVideoFrameGpu(
                      base::Unretained(factory), gmb_handle.id,
                      gpu::kPlatformVideoFramePoolClientId));
   return frame;
-}
-
-}  // namespace
-
-scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
-    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-    VideoPixelFormat pixel_format,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size,
-    base::TimeDelta timestamp,
-    gfx::BufferUsage buffer_usage) {
-#if defined(OS_LINUX)
-  return CreateVideoFrameGpu(gpu_memory_buffer_factory, pixel_format,
-                             coded_size, visible_rect, natural_size, timestamp,
-                             buffer_usage);
-#endif  // defined(OS_LINUX)
-  NOTREACHED();
-  return nullptr;
 }
 
 base::Optional<VideoFrameLayout> GetPlatformVideoFrameLayout(

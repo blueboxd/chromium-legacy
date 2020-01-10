@@ -273,12 +273,10 @@ void KeyframeEffect::AddKeyframeModel(
 }
 
 void KeyframeEffect::PauseKeyframeModel(int keyframe_model_id,
-                                        double time_offset) {
-  const base::TimeDelta pause_offset =
-      base::TimeDelta::FromSecondsD(time_offset);
+                                        base::TimeDelta time_offset) {
   for (auto& keyframe_model : keyframe_models_) {
     if (keyframe_model->id() == keyframe_model_id) {
-      keyframe_model->Pause(pause_offset);
+      keyframe_model->Pause(time_offset);
     }
   }
 

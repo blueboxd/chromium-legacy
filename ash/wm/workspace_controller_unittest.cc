@@ -1005,10 +1005,10 @@ TEST_F(WorkspaceControllerTest, TestRestoreToUserModifiedBounds) {
 
   // A user moved the window.
   std::unique_ptr<WindowResizer> resizer(
-      CreateWindowResizer(window1.get(), gfx::Point(), HTCAPTION,
+      CreateWindowResizer(window1.get(), gfx::PointF(), HTCAPTION,
                           ::wm::WINDOW_MOVE_SOURCE_MOUSE)
           .release());
-  gfx::Point location = resizer->GetInitialLocation();
+  gfx::PointF location = resizer->GetInitialLocation();
   location.Offset(-50, 0);
   resizer->Drag(location, 0);
   resizer->CompleteDrag();

@@ -1008,10 +1008,6 @@
       name: "MediaQueryNavigationControls",
     },
     {
-      name: "MediaQueryPrefersColorScheme",
-      status: "stable",
-    },
-    {
       name: "MediaQueryShape",
       status: "experimental",
     },

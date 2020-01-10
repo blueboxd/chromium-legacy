@@ -76,7 +76,7 @@ void CompositorAnimation::RemoveKeyframeModel(int keyframe_model_id) {
 }
 
 void CompositorAnimation::PauseKeyframeModel(int keyframe_model_id,
-                                             double time_offset) {
+                                             base::TimeDelta time_offset) {
   animation_->PauseKeyframeModel(keyframe_model_id, time_offset);
 }
 

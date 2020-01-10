@@ -2,34 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview
- * 'settings-storage' is the settings subpage for storage settings.
- */
-cr.exportPath('settings');
+cr.define('settings', function() {
+  /**
+   * Enumeration for device state about remaining space.
+   * These values must be kept in sync with
+   * StorageManagerHandler::StorageSpaceState in C++ code.
+   * @enum {number}
+   */
+  const StorageSpaceState = {NORMAL: 0, LOW: 1, CRITICALLY_LOW: 2};
 
-/**
- * Enumeration for device state about remaining space.
- * These values must be kept in sync with
- * StorageManagerHandler::StorageSpaceState in C++ code.
- * @enum {number}
- */
-settings.StorageSpaceState = {
-  NORMAL: 0,
-  LOW: 1,
-  CRITICALLY_LOW: 2
-};
+  /**
+   * @typedef {{
+   *   totalSize: string,
+   *   availableSize: string,
+   *   usedSize: string,
+   *   usedRatio: number,
+   *   spaceState: settings.StorageSpaceState,
+   * }}
+   */
+  let StorageSizeStat;
 
-/**
- * @typedef {{
- *   totalSize: string,
- *   availableSize: string,
- *   usedSize: string,
- *   usedRatio: number,
- *   spaceState: settings.StorageSpaceState,
- * }}
- */
-settings.StorageSizeStat;
+  return {StorageSpaceState, StorageSizeStat};
+});
 
 Polymer({
   is: 'settings-storage',

@@ -63,8 +63,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
 
   // Creates the worker if necessary or connects to an already existing worker.
   void ConnectToWorker(
-      int client_process_id,
-      int frame_id,
+      GlobalFrameRoutingId client_render_frame_host_id,
       blink::mojom::SharedWorkerInfoPtr info,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
@@ -81,11 +80,9 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
                            const base::UnguessableToken& dev_tools_token);
   void NotifyWorkerTerminating(const SharedWorkerInstance& instance);
   void NotifyClientAdded(const SharedWorkerInstance& instance,
-                         int client_process_id,
-                         int frame_id);
+                         GlobalFrameRoutingId render_frame_host_id);
   void NotifyClientRemoved(const SharedWorkerInstance& instance,
-                           int client_process_id,
-                           int frame_id);
+                           GlobalFrameRoutingId render_frame_host_id);
 
   StoragePartitionImpl* storage_partition() { return storage_partition_; }
 
@@ -100,8 +97,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       const SharedWorkerInstance& instance,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
-      int creator_process_id,
-      int creator_frame_id,
+      GlobalFrameRoutingId creator_render_frame_host_id,
       const std::string& storage_domain,
       const blink::MessagePortChannel& message_port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);

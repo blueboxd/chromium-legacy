@@ -78,19 +78,22 @@ StartupTemperature g_startup_temperature = UNDETERMINED_STARTUP_TEMPERATURE;
 #if defined(OS_WIN)
 
 // These values are taken from the Startup.BrowserMessageLoopStartHardFaultCount
-// histogram. If the cold start histogram starts looking strongly bimodal it may
-// be because the binary/resource sizes have grown significantly larger than
-// when these values were set. In this case the new values need to be chosen
-// from the original histogram.
+// histogram. The latest revision landed on <5 and >3500 for a good split
+// of warm/cold. In between being considered "lukewarm". Full analysis @
+// https://docs.google.com/document/d/1haXFN1cQ6XE-NfhKgww-rOP-Wi-gK6AczP3gT4M5_kI
+// These values should be reconsidered if either .WarmStartup or .ColdStartup
+// distributions of a suffixed histogram becomes unexplainably bimodal.
 //
 // Maximum number of hard faults tolerated for a startup to be classified as a
-// warm start. Set at roughly the 40th percentile of the HardFaultCount
-// histogram.
+// warm start.
 constexpr uint32_t kWarmStartHardFaultCountThreshold = 5;
-// Minimum number of hard faults expected for a startup to be classified as a
-// cold start. Set at roughly the 60th percentile of the HardFaultCount
-// histogram.
-constexpr uint32_t kColdStartHardFaultCountThreshold = 1200;
+// Minimum number of hard faults (of 4KB pages) expected for a startup to be
+// classified as a cold start. The right value for this seems to be between 10%
+// and 15% of chrome.dll's size (from anecdata of the two times we did this
+// analysis... it was 1200 in M47 back when chrome.dll was 35MB (32-bit and
+// split from chrome_child.dll) and was made 3500 in M81 when chrome.dll was
+// 126MB).
+constexpr uint32_t kColdStartHardFaultCountThreshold = 3500;
 
 // The struct used to return system process information via the NT internal
 // QuerySystemInformation call. This is partially documented at
@@ -210,7 +213,7 @@ bool GetHardFaultCountForCurrentProcess(uint32_t* hard_fault_count) {
         type(basename ".WarmStartup", value);                                 \
         break;                                                                \
       case LUKEWARM_STARTUP_TEMPERATURE:                                      \
-        type(basename ".LukewarmStartup", value);                             \
+        /* No suffix emitted for lukewarm startups. */                        \
         break;                                                                \
       case UNDETERMINED_STARTUP_TEMPERATURE:                                  \
         break;                                                                \
@@ -523,8 +526,7 @@ void RecordFirstWebContentsNonEmptyPaint(
       now - render_process_host_init_time);
 }
 
-void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks,
-                                               WebContentsWorkload workload) {
+void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks) {
   static bool is_first_call = true;
   if (!is_first_call || ticks.is_null())
     return;
@@ -536,21 +538,6 @@ void RecordFirstWebContentsMainNavigationStart(base::TimeTicks ticks,
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.FirstWebContents.MainNavigationStart", g_process_creation_ticks,
       ticks);
-
-  // Log extra information about this startup's workload. Only added to this
-  // histogram as this extra suffix can help making it less noisy but isn't
-  // worth tripling the number of startup histograms either.
-  if (workload == WebContentsWorkload::SINGLE_TAB) {
-    UMA_HISTOGRAM_WITH_TEMPERATURE(
-        UMA_HISTOGRAM_LONG_TIMES_100,
-        "Startup.FirstWebContents.MainNavigationStart.SingleTab",
-        ticks - g_process_creation_ticks);
-  } else {
-    UMA_HISTOGRAM_WITH_TEMPERATURE(
-        UMA_HISTOGRAM_LONG_TIMES_100,
-        "Startup.FirstWebContents.MainNavigationStart.MultiTabs",
-        ticks - g_process_creation_ticks);
-  }
 }
 
 void RecordFirstWebContentsMainNavigationFinished(base::TimeTicks ticks) {

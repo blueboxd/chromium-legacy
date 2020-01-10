@@ -61,7 +61,7 @@ public class StatusBarColorController
          *         version.
          */
         @ColorInt
-        int getBaseStatusBarColor(boolean activityHasTab);
+        int getBaseStatusBarColor(Tab tab);
     }
 
     private final Window mWindow;
@@ -236,8 +236,7 @@ public class StatusBarColorController
 
     private @ColorInt int calculateBaseStatusBarColor() {
         // Return overridden status bar color from StatusBarColorProvider if specified.
-        final int baseStatusBarColor = mStatusBarColorProvider.getBaseStatusBarColor(
-                mCurrentTab != null /* activityHasTab */);
+        final int baseStatusBarColor = mStatusBarColorProvider.getBaseStatusBarColor(mCurrentTab);
         if (baseStatusBarColor != UNDEFINED_STATUS_BAR_COLOR) {
             return baseStatusBarColor;
         }

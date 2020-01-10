@@ -29,6 +29,7 @@
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/views/layout/animating_layout_manager.h"
+#include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view_class_properties.h"
 
@@ -83,9 +84,8 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
           extensions::ExtensionContextMenuModel::UNINSTALL, 0);
 
       // Wait for animations to finish so that the dialog should be showing.
-      base::RunLoop loop;
-      GetAnimatingLayoutManager()->PostOrQueueAction(loop.QuitClosure());
-      loop.Run();
+      views::test::WaitForAnimatingLayoutManager(
+          GetExtensionsToolbarContainer());
     }
   }
 
@@ -150,9 +150,8 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
     } else {
       // After dismissal the icon should become invisible.
       // Wait for animations to finish.
-      base::RunLoop loop;
-      GetAnimatingLayoutManager()->PostOrQueueAction(loop.QuitClosure());
-      loop.Run();
+      views::test::WaitForAnimatingLayoutManager(
+          GetExtensionsToolbarContainer());
 
       // The extension should still be present in the ExtensionRegistry (not
       // uninstalled) when the uninstall dialog is dismissed.
@@ -179,11 +178,6 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
     return BrowserView::GetBrowserViewForBrowser(browser())
         ->toolbar()
         ->extensions_container();
-  }
-
-  views::AnimatingLayoutManager* GetAnimatingLayoutManager() {
-    return static_cast<views::AnimatingLayoutManager*>(
-        GetExtensionsToolbarContainer()->GetLayoutManager());
   }
 
   static std::vector<ExtensionsMenuItemView*> GetExtensionsMenuItemView() {
@@ -218,9 +212,7 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
         ->OnMouseReleased(click_event);
 
     // Wait for animations to finish.
-    base::RunLoop loop;
-    GetAnimatingLayoutManager()->PostOrQueueAction(loop.QuitClosure());
-    loop.Run();
+    views::test::WaitForAnimatingLayoutManager(GetExtensionsToolbarContainer());
   }
 
   std::string ui_test_name_;
@@ -289,9 +281,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
   VerifyUi();
 
   ExtensionsToolbarContainer* const extensions_container =
-      BrowserView::GetBrowserViewForBrowser(browser())
-          ->toolbar()
-          ->extensions_container();
+      GetExtensionsToolbarContainer();
 
   EXPECT_EQ(nullptr, extensions_container->GetPoppedOutAction());
   EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
@@ -309,10 +299,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
   extensions_container->HideActivePopup();
 
   // Wait for animations to finish.
-  base::RunLoop loop;
-  extensions_container->animating_layout_manager()->PostOrQueueAction(
-      loop.QuitClosure());
-  loop.Run();
+  views::test::WaitForAnimatingLayoutManager(extensions_container);
 
   // After dismissing the popup there should no longer be a popped-out action
   // and the icon should no longer be visible in the extensions container.

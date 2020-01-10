@@ -26,6 +26,6 @@ const Feature kUseFiveMinutesThreadReclaimTime = {
     "UseFiveMinutesThreadReclaimTime", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const Feature kNoPriorityInheritanceFromThreadPool{
-    "NoPriorityInheritanceFromThreadPool", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NoPriorityInheritanceFromThreadPool", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace base

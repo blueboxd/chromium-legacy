@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/window_state_type.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/public/window_move_client.h"
 
@@ -18,7 +19,7 @@ namespace ash {
 
 struct ASH_EXPORT DragDetails {
   DragDetails(aura::Window* window,
-              const gfx::Point& location,
+              const gfx::PointF& location,
               int window_component,
               // TODO(sky): make wm type.
               ::wm::WindowMoveSource source);
@@ -34,7 +35,7 @@ struct ASH_EXPORT DragDetails {
   gfx::Rect restore_bounds;
 
   // Location passed to the constructor, in |window->parent()|'s coordinates.
-  const gfx::Point initial_location_in_parent;
+  const gfx::PointF initial_location_in_parent;
 
   // Initial opacity of the window.
   const float initial_opacity;

@@ -70,7 +70,7 @@ void HidService::RequestDevice(
     RequestDeviceCallback callback) {
   HidDelegate* delegate = GetContentClient()->browser()->GetHidDelegate();
   if (!delegate->CanRequestDevicePermission(web_contents(), origin())) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(std::vector<device::mojom::HidDeviceInfoPtr>());
     return;
   }
 
@@ -126,14 +126,10 @@ void HidService::FinishGetDevices(
   std::move(callback).Run(std::move(result));
 }
 
-void HidService::FinishRequestDevice(RequestDeviceCallback callback,
-                                     device::mojom::HidDeviceInfoPtr device) {
-  if (!device) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-
-  std::move(callback).Run(std::move(device));
+void HidService::FinishRequestDevice(
+    RequestDeviceCallback callback,
+    std::vector<device::mojom::HidDeviceInfoPtr> devices) {
+  std::move(callback).Run(std::move(devices));
 }
 
 void HidService::FinishConnect(

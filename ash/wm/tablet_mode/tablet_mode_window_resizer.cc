@@ -35,9 +35,9 @@ TabletModeWindowResizer::~TabletModeWindowResizer() {
     Shell::Get()->cursor_manager()->UnlockCursor();
 }
 
-void TabletModeWindowResizer::Drag(const gfx::Point& location_in_parent,
+void TabletModeWindowResizer::Drag(const gfx::PointF& location_in_parent,
                                    int event_flags) {
-  gfx::Point location_in_screen = location_in_parent;
+  gfx::PointF location_in_screen = location_in_parent;
   ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
   previous_location_in_screen_ = location_in_screen;
 

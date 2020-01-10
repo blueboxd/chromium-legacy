@@ -608,6 +608,10 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(
       gpu_info_.dx12_vulkan_version_info;
 #endif
   gpu_info_ = gpu_info;
+  UMA_HISTOGRAM_CUSTOM_TIMES("GPU.GPUInitializationTime.V2",
+                             gpu_info_.initialization_time,
+                             base::TimeDelta::FromMilliseconds(200),
+                             base::TimeDelta::FromSeconds(5), 50);
 #if defined(OS_WIN)
   if (!dx_diagnostics.IsEmpty()) {
     gpu_info_.dx_diagnostics = dx_diagnostics;

@@ -10,13 +10,17 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_store.h"
+#include "components/optimization_guide/proto/hint_cache.pb.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
+#include "components/optimization_guide/store_update_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -58,6 +62,7 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
     while (!is_store_initialized_) {
       RunUntilIdle();
     }
+    hint_cache_->SetClockForTesting(task_environment_.GetMockClock());
   }
 
   void DestroyHintCache() {
@@ -116,6 +121,27 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
 
   const proto::Hint* GetLoadedHint() const { return loaded_hint_; }
 
+  proto::Hint CreateHintForURL(
+      const GURL url,
+      base::Optional<int> cache_duration_in_secs = base::Optional<int>()) {
+    proto::Hint hint;
+    hint.set_key(url.spec());
+    hint.set_key_representation(proto::FULL_URL);
+    if (cache_duration_in_secs)
+      hint.mutable_max_cache_duration()->set_seconds(*cache_duration_in_secs);
+    proto::PageHint* page_hint = hint.add_page_hints();
+    page_hint->add_whitelisted_optimizations()->set_optimization_type(
+        optimization_guide::proto::PERFORMANCE_HINTS);
+    page_hint->set_page_pattern("whatever/*");
+
+    return hint;
+  }
+
+  void MoveClockForwardBy(base::TimeDelta time_delta) {
+    task_environment_.FastForwardBy(time_delta);
+    RunUntilIdle();
+  }
+
  private:
   void RunUntilIdle() {
     task_environment_.RunUntilIdle();
@@ -129,7 +155,8 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
     loaded_hint_ = hint;
   }
 
-  base::test::TaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   std::unique_ptr<HintCache> hint_cache_;
   const proto::Hint* loaded_hint_;
@@ -440,11 +467,11 @@ TEST_F(HintCacheTest, TestMemoryCacheLeastRecentlyUsedPurge) {
   for (int i = 0; i < kTestHintCount; ++i) {
     std::string host = GetHostDomainOrg(i);
     if (i < kMemoryCacheSize) {
-      ASSERT_TRUE(hint_cache()->GetHintIfLoaded(host));
+      ASSERT_TRUE(hint_cache()->GetHostKeyedHintIfLoaded(host));
       EXPECT_EQ(GetHostDomainOrg(i),
-                hint_cache()->GetHintIfLoaded(host)->key());
+                hint_cache()->GetHostKeyedHintIfLoaded(host)->key());
     } else {
-      EXPECT_FALSE(hint_cache()->GetHintIfLoaded(host));
+      EXPECT_FALSE(hint_cache()->GetHostKeyedHintIfLoaded(host));
     }
     EXPECT_TRUE(hint_cache()->HasHint(host));
   }
@@ -489,9 +516,11 @@ TEST_F(HintCacheTest, TestMemoryCacheLoadCallback) {
 
   UpdateComponentHints(std::move(update_data));
 
-  EXPECT_FALSE(hint_cache()->GetHintIfLoaded("host.subdomain.domain.org"));
+  EXPECT_FALSE(
+      hint_cache()->GetHostKeyedHintIfLoaded("host.subdomain.domain.org"));
   LoadHint("host.subdomain.domain.org");
-  EXPECT_TRUE(hint_cache()->GetHintIfLoaded("host.subdomain.domain.org"));
+  EXPECT_TRUE(
+      hint_cache()->GetHostKeyedHintIfLoaded("host.subdomain.domain.org"));
 
   EXPECT_TRUE(GetLoadedHint());
   EXPECT_EQ(hint_key, GetLoadedHint()->key());
@@ -599,6 +628,183 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
   histogram_tester.ExpectTimeBucketCount(
       "OptimizationGuide.HintCache.FetchedHint.TimeToExpiration",
       optimization_guide::features::StoredFetchedHintsFreshnessDuration(), 1);
+}
+
+TEST_F(HintCacheTest, CacheValidURLKeyedHint) {
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      hint_cache()->CreateUpdateDataForFetchedHints(base::Time(), base::Time());
+  ASSERT_TRUE(update_data);
+
+  GURL url("https://whatever.com/r/werd");
+
+  google::protobuf::RepeatedPtrField<proto::Hint> hints;
+  *(hints.Add()) = CreateHintForURL(url);
+
+  // Only URL-keyed hint included so there are no hints to store within the
+  // update data.
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+
+  EXPECT_TRUE(hint_cache()->GetURLKeyedHint(url));
+}
+
+TEST_F(HintCacheTest, URLKeyedHintExpired) {
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      hint_cache()->CreateUpdateDataForFetchedHints(base::Time(), base::Time());
+  ASSERT_TRUE(update_data);
+
+  GURL url("https://whatever.com/r/werd");
+  int cache_duration_in_secs = 60;
+
+  google::protobuf::RepeatedPtrField<proto::Hint> hints;
+  *(hints.Add()) = CreateHintForURL(url, cache_duration_in_secs);
+
+  // Only URL-keyed hint included so there are no hints to store within the
+  // update data.
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+
+  EXPECT_TRUE(hint_cache()->GetURLKeyedHint(url));
+
+  MoveClockForwardBy(base::TimeDelta().FromSeconds(cache_duration_in_secs + 1));
+  EXPECT_FALSE(hint_cache()->GetURLKeyedHint(url));
+}
+
+TEST_F(HintCacheTest, ClearFetchedHints) {
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      hint_cache()->CreateUpdateDataForFetchedHints(base::Time(), base::Time());
+  ASSERT_TRUE(update_data);
+
+  GURL url("https://whatever.com/r/werd");
+  int cache_duration_in_secs = 60;
+
+  google::protobuf::RepeatedPtrField<proto::Hint> hints;
+  *(hints.Add()) = CreateHintForURL(url, cache_duration_in_secs);
+
+  std::unique_ptr<proto::GetHintsResponse> get_hints_response =
+      std::make_unique<proto::GetHintsResponse>();
+
+  std::string host = "host.com";
+  proto::Hint* hint = get_hints_response->add_hints();
+  hint->set_key_representation(proto::HOST_SUFFIX);
+  hint->set_key(host);
+  proto::PageHint* page_hint = hint->add_page_hints();
+  page_hint->set_page_pattern("page pattern");
+
+  base::Time stored_time = base::Time().Now();
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
+  EXPECT_TRUE(are_fetched_hints_updated());
+  LoadHint(host);
+
+  // Only URL-keyed hint included so there are no hints to store within the
+  // update data.
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+
+  EXPECT_TRUE(hint_cache()->GetURLKeyedHint(url));
+  EXPECT_TRUE(hint_cache()->GetHostKeyedHintIfLoaded(host));
+
+  hint_cache()->ClearFetchedHints();
+  EXPECT_FALSE(hint_cache()->GetURLKeyedHint(url));
+  EXPECT_FALSE(hint_cache()->GetHostKeyedHintIfLoaded(host));
+}
+
+TEST_F(HintCacheTest, UnsupportedURLsForURLKeyedHints) {
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      hint_cache()->CreateUpdateDataForFetchedHints(base::Time(), base::Time());
+  ASSERT_TRUE(update_data);
+
+  GURL https_url("https://whatever.com/r/werd");
+  GURL http_url("http://werd.com/werd/");
+  GURL file_url("file://dog.png");
+  GURL chrome_url("chrome://dog.png");
+  GURL auth_url("https://username:password@www.example.com/");
+
+  google::protobuf::RepeatedPtrField<proto::Hint> hints;
+  *(hints.Add()) = CreateHintForURL(https_url);
+  *(hints.Add()) = CreateHintForURL(http_url);
+  *(hints.Add()) = CreateHintForURL(file_url);
+  *(hints.Add()) = CreateHintForURL(chrome_url);
+  *(hints.Add()) = CreateHintForURL(auth_url);
+
+  // Only URL-keyed hint included so there are no hints to store within the
+  // update data.
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+
+  EXPECT_TRUE(hint_cache()->GetURLKeyedHint(https_url));
+  EXPECT_TRUE(hint_cache()->GetURLKeyedHint(http_url));
+  EXPECT_FALSE(hint_cache()->GetURLKeyedHint(file_url));
+  EXPECT_FALSE(hint_cache()->GetURLKeyedHint(chrome_url));
+  EXPECT_FALSE(hint_cache()->GetURLKeyedHint(auth_url));
+}
+
+TEST_F(HintCacheTest, ProcessHintsNoUpdateData) {
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  proto::Hint hint;
+  hint.set_key("whatever.com");
+  hint.set_key_representation(proto::HOST_SUFFIX);
+  proto::PageHint* page_hint = hint.add_page_hints();
+  page_hint->set_page_pattern("foo.org/*/one/");
+
+  google::protobuf::RepeatedPtrField<proto::Hint> hints;
+  *(hints.Add()) = hint;
+
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, nullptr));
+}
+
+TEST_F(HintCacheTest, ProcessHintsWithNoPageHintsAndUpdateData) {
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  proto::Hint hint;
+  hint.set_key("whatever.com");
+  hint.set_key_representation(proto::HOST_SUFFIX);
+
+  google::protobuf::RepeatedPtrField<proto::Hint> hints;
+  *(hints.Add()) = hint;
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      StoreUpdateData::CreateComponentStoreUpdateData(base::Version("1.0.0"));
+  EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+  // Verify there is 1 store entries: 1 for the metadata entry.
+  EXPECT_EQ(1ul, update_data->TakeUpdateEntries()->size());
+}
+
+TEST_F(HintCacheTest, ProcessHintsWithPageHintsAndUpdateData) {
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  google::protobuf::RepeatedPtrField<proto::Hint> hints;
+
+  proto::Hint hint;
+  hint.set_key("foo.org");
+  hint.set_key_representation(proto::HOST_SUFFIX);
+  proto::PageHint* page_hint = hint.add_page_hints();
+  page_hint->set_page_pattern("foo.org/*/one/");
+  *(hints.Add()) = hint;
+
+  proto::Hint no_page_hints_hint;
+  no_page_hints_hint.set_key("whatever.com");
+  no_page_hints_hint.set_key_representation(proto::HOST_SUFFIX);
+  *(hints.Add()) = no_page_hints_hint;
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      StoreUpdateData::CreateComponentStoreUpdateData(base::Version("1.0.0"));
+  EXPECT_TRUE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+  // Verify there are 2 store entries: 1 for the metadata entry plus
+  // the 1 added hint entries.
+  EXPECT_EQ(2ul, update_data->TakeUpdateEntries()->size());
 }
 
 }  // namespace

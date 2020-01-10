@@ -80,6 +80,9 @@ void WebKioskController::OnTimerFire() {
 }
 
 void WebKioskController::OnCancelAppLaunch() {
+  if (WebKioskAppManager::Get()->GetDisableBailoutShortcut())
+    return;
+
   KioskAppLaunchError::Save(KioskAppLaunchError::USER_CANCEL);
   CleanUp();
   chrome::AttemptUserExit();

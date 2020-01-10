@@ -53,7 +53,6 @@ class ExtensionInstallDialogView : public views::BubbleDialogDelegateView {
   void AddedToWidget() override;
   bool Cancel() override;
   bool Accept() override;
-  int GetDialogButtons() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   bool ShouldShowCloseButton() const override;
 

@@ -2,25 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview A helper object used from the "Change Picture" subpage of
- * the People section to interact with the browser. ChromeOS only.
- */
-cr.exportPath('settings');
-
-/**
- * An object describing a default image.
- * @typedef {{
- *   author: (string|undefined),
- *   index: number,
- *   title: (string|undefined),
- *   url: string,
- *   website: (string|undefined)
- * }}
- */
-settings.DefaultImage;
-
 cr.define('settings', function() {
+  /**
+   * An object describing a default image.
+   * @typedef {{
+   *   author: (string|undefined),
+   *   index: number,
+   *   title: (string|undefined),
+   *   url: string,
+   *   website: (string|undefined)
+   * }}
+   */
+  let DefaultImage;
+
   /** @interface */
   class ChangePictureBrowserProxy {
     /**
@@ -113,7 +107,8 @@ cr.define('settings', function() {
   cr.addSingletonGetter(ChangePictureBrowserProxyImpl);
 
   return {
-    ChangePictureBrowserProxy: ChangePictureBrowserProxy,
-    ChangePictureBrowserProxyImpl: ChangePictureBrowserProxyImpl,
+    ChangePictureBrowserProxy,
+    ChangePictureBrowserProxyImpl,
+    DefaultImage,
   };
 });

@@ -28,26 +28,21 @@ struct ExpectedResult {
 
 struct TestData {
   std::string header;
-  bool is_valid;
   ExpectedResult expected_result;
 
-  TestData(const std::string& header, ExpectedResult expected_result)
-      : header(header), is_valid(true), expected_result(expected_result) {}
-  TestData(const std::string& header) : header(header), is_valid(false) {}
+  TestData(const std::string& header,
+           ExpectedResult expected_result = ExpectedResult())
+      : header(header), expected_result(expected_result) {}
 };
 
-static void TestCSPParser(const std::string& header,
-                          const ExpectedResult* expected_result) {
+static void TestFrameAncestorsCSPParser(const std::string& header,
+                                        const ExpectedResult* expected_result) {
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
   headers->AddHeader("Content-Security-Policy: frame-ancestors " + header);
   ContentSecurityPolicy policy;
   policy.Parse(GURL("https://example.com/"), *headers);
 
-  if (!expected_result) {
-    EXPECT_EQ(0U, policy.content_security_policies().size());
-    return;
-  }
   auto& frame_ancestors =
       policy.content_security_policies()[0]->directives[0]->source_list;
   EXPECT_EQ(frame_ancestors->sources.size(),
@@ -142,8 +137,10 @@ TEST(ContentSecurityPolicy, ParseFrameAncestors) {
       {"'self'", {{}, true, false}},
       {"*", {{}, false, true}},
 
-      // Invalid 'none'
-      {"example.com 'none'"},
+      // Invalid 'none'. This is an invalid expression according to the CSP
+      // grammar, but it is accepted because the parser ignores individual
+      // invalid source-expressions.
+      {"example.com 'none'", {{{"", "example.com"}}}},
 
       // Other.
       {"*:*", {{{"", "", url::PORT_UNSPECIFIED, "", true, true}}}},
@@ -168,7 +165,7 @@ TEST(ContentSecurityPolicy, ParseFrameAncestors) {
   };
 
   for (auto& test : test_data)
-    TestCSPParser(test.header, test.is_valid ? &test.expected_result : nullptr);
+    TestFrameAncestorsCSPParser(test.header, &test.expected_result);
 }
 
 TEST(ContentSecurityPolicy, ParseMultipleDirectives) {

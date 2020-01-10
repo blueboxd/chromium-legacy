@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Numeri di telefono</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> download eliminati</translation>
 <translation id="3822502789641063741">Cancellare i dati dei siti?</translation>
+<translation id="3853625385350850937">Per continuare, attiva la funzionalità NFC sul dispositivo</translation>
 <translation id="3859306556332390985">Posiziona avanti</translation>
 <translation id="388596076286380598">Accedi ad articoli, video e altri contenuti dai siti che ti piacciono anche quando sei offline o se la connessione è insufficiente.</translation>
 <translation id="3894427358181296146">Aggiungi cartella</translation>
@@ -1049,6 +1050,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">In attesa dei dettagli sui genitori.</translation>
 <translation id="8922289737868596582">Usa il pulsante Altre opzioni per scaricare le pagine da usare offline</translation>
+<translation id="8926666909099850184">Funzionalità NFC non attiva per questo dispositivo. Attivala nelle <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Vuoi rimuovere la tua attività di Chrome da Benessere digitale?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Apri nell'altra finestra</translation>

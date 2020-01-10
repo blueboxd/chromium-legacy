@@ -57,8 +57,9 @@ class ChipLabel : public views::Label {
 KeywordHintView::KeywordHintView(LocationBarView* parent, Profile* profile)
     : Button(parent), profile_(profile) {
   auto chip_container = std::make_unique<views::View>();
-  auto chip_label =
-      std::make_unique<ChipLabel>(base::string16(), CONTEXT_OMNIBOX_DECORATION);
+
+  chip_label_ = chip_container->AddChildView(std::make_unique<ChipLabel>(
+      base::string16(), CONTEXT_OMNIBOX_DECORATION));
 
   auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
   layout->SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
@@ -67,32 +68,9 @@ KeywordHintView::KeywordHintView(LocationBarView* parent, Profile* profile)
                       views::MinimumFlexSizeRule::kPreferredSnapToZero,
                       views::MaximumFlexSizeRule::kPreferred, true));
 
-  const ui::ThemeProvider* theme_provider =
-      &ThemeService::GetThemeProviderForProfile(profile_);
-  const SkColor leading_label_text_color =
-      GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
-  const SkColor background_color =
-      GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_BACKGROUND);
-  leading_label_ = CreateLabel(leading_label_text_color, background_color);
+  leading_label_ = AddChildView(std::make_unique<views::Label>(
+      base::string16(), CONTEXT_OMNIBOX_DECORATION));
 
-  const SkColor tab_border_color =
-      GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE);
-  SkColor text_color = leading_label_text_color;
-  SkColor tab_bg_color =
-      GetOmniboxColor(theme_provider, OmniboxPart::RESULTS_BACKGROUND);
-  if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()) {
-    text_color = SK_ColorWHITE;
-    tab_bg_color = tab_border_color;
-  }
-  chip_label->SetEnabledColor(text_color);
-  chip_label->SetBackgroundColor(tab_bg_color);
-
-  chip_container->SetBackground(CreateBackgroundFromPainter(
-      views::Painter::CreateRoundRectWith1PxBorderPainter(
-          tab_bg_color, tab_border_color,
-          views::LayoutProvider::Get()->GetCornerRadiusMetric(
-              views::EMPHASIS_HIGH))));
-  chip_label_ = chip_container->AddChildView(std::move(chip_label));
   chip_container->SetLayoutManager(std::make_unique<views::FillLayout>());
   chip_container->SetProperty(
       views::kFlexBehaviorKey,
@@ -102,7 +80,8 @@ KeywordHintView::KeywordHintView(LocationBarView* parent, Profile* profile)
   chip_container->SizeToPreferredSize();
   chip_container_ = AddChildView(std::move(chip_container));
 
-  trailing_label_ = CreateLabel(text_color, background_color);
+  trailing_label_ = AddChildView(std::make_unique<views::Label>(
+      base::string16(), CONTEXT_OMNIBOX_DECORATION));
 
   SetFocusBehavior(FocusBehavior::NEVER);
 
@@ -207,18 +186,20 @@ const char* KeywordHintView::GetClassName() const {
 }
 
 void KeywordHintView::OnThemeChanged() {
-  const SkColor leading_label_text_color = GetOmniboxColor(
-      GetThemeProvider(), OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
+  const ui::ThemeProvider* theme_provider = GetThemeProvider();
+
+  const SkColor leading_label_text_color =
+      GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
   const SkColor background_color =
-      GetOmniboxColor(GetThemeProvider(), OmniboxPart::LOCATION_BAR_BACKGROUND);
+      GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_BACKGROUND);
   leading_label_->SetEnabledColor(leading_label_text_color);
   leading_label_->SetBackgroundColor(background_color);
 
-  const SkColor tab_border_color = GetOmniboxColor(
-      GetThemeProvider(), OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE);
+  const SkColor tab_border_color =
+      GetOmniboxColor(theme_provider, OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE);
   SkColor text_color = leading_label_text_color;
   SkColor tab_bg_color =
-      GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_BACKGROUND);
+      GetOmniboxColor(theme_provider, OmniboxPart::RESULTS_BACKGROUND);
   if (OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()) {
     text_color = SK_ColorWHITE;
     tab_bg_color = tab_border_color;
@@ -234,13 +215,4 @@ void KeywordHintView::OnThemeChanged() {
 
   trailing_label_->SetEnabledColor(text_color);
   trailing_label_->SetBackgroundColor(background_color);
-}
-
-views::Label* KeywordHintView::CreateLabel(SkColor text_color,
-                                           SkColor background_color) {
-  auto label = std::make_unique<views::Label>(base::string16(),
-                                              CONTEXT_OMNIBOX_DECORATION);
-  label->SetEnabledColor(text_color);
-  label->SetBackgroundColor(background_color);
-  return AddChildView(std::move(label));
 }

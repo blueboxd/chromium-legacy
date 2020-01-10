@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">Cerca d'incògnit</translation>
 <translation id="277771892408211951">Selecciona l'idioma</translation>
 <translation id="2780046210906776326">Cap compte de correu</translation>
+<translation id="2781331604911854368">Activat</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Surt del selector de pestanyes</translation>
 <translation id="2830972654601096923">Gestiona les adreces...</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">Pestanyes obertes</translation>
 <translation id="3277021493514034324">S'ha copiat l'adreça del lloc web</translation>
 <translation id="3290875554372353449">Tria un compte</translation>
+<translation id="3311748811247479259">Desactivat</translation>
 <translation id="3324193307694657476">Adreça 2</translation>
 <translation id="3329904751041170572">No s'ha pogut connectar amb el servidor.</translation>
 <translation id="3335947283844343239">Torna a obrir la pestanya tancada</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">S'estan sincronitzant les pestanyes...</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /> sobre el contingut suggerit</translation>
 <translation id="3494788280727468875">Confirma que vols esborrar les dades de navegació</translation>
+<translation id="35083190962747987">Obre ${url}</translation>
 <translation id="3519193562722059437">Obriu una pestanya per navegar pel web.</translation>
 <translation id="3527085408025491307">Carpeta</translation>
 <translation id="3529024052484145543">No és segur</translation>
@@ -301,6 +304,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5062321486222145940">Instal. de Google Drive</translation>
 <translation id="5083464117946352670">No es determina mida fitxer.</translation>
 <translation id="5094827893301452931">S'ha completat el tuit.</translation>
+<translation id="5118764316110575523">Desactivat</translation>
 <translation id="5127805178023152808">Sincronització desactivada</translation>
 <translation id="5132942445612118989">Sincronitza les contrasenyes, l'historial i altres elements en tots els dispositius</translation>
 <translation id="5140288047769711648">Chrome recordarà aquesta contrasenya. No cal que la memoritzis.</translation>
@@ -363,6 +367,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="5979837087407522202">Cerca contrasenyes</translation>
 <translation id="5982717868370722439">Afegeix les dades existents a <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">Visitats recentment</translation>
+<translation id="5988851877894965432">Obre els URL a Chrome</translation>
 <translation id="6012140227487808125">S'està encriptant…</translation>
 <translation id="6021332621416007159">Obre a...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7971521879845308059">Bloqueig de finestres emerg.</translation>
 <translation id="7982789257301363584">Xarxa</translation>
+<translation id="800361585186029508">Obre els URL introduïts a Google Chrome.</translation>
 <translation id="8007420562015504427">Cerca d'incògnit</translation>
 <translation id="8019783059653722575">Això et permet desar i penjar fotos.</translation>
 <translation id="802154636333426148">Error de baixada</translation>

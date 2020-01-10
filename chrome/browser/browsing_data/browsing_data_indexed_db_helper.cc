@@ -22,7 +22,6 @@
 #include "url/origin.h"
 
 using content::BrowserThread;
-using content::IndexedDBContext;
 using content::StorageUsageInfo;
 
 BrowsingDataIndexedDBHelper::BrowsingDataIndexedDBHelper(
@@ -43,13 +42,8 @@ void BrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
 
 void BrowsingDataIndexedDBHelper::DeleteIndexedDB(const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  storage_partition_->GetIndexedDBContext()->IDBTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread,
-          base::WrapRefCounted(this),
-          base::WrapRefCounted(storage_partition_->GetIndexedDBContext()),
-          origin));
+  storage_partition_->GetIndexedDBControl().DeleteForOrigin(
+      url::Origin::Create(origin), base::DoNothing());
 }
 
 void BrowsingDataIndexedDBHelper::IndexedDBUsageInfoReceived(
@@ -65,13 +59,6 @@ void BrowsingDataIndexedDBHelper::IndexedDBUsageInfoReceived(
                                       origin_usage->last_modified_time));
   }
   std::move(callback).Run(std::move(result));
-}
-
-void BrowsingDataIndexedDBHelper::DeleteIndexedDBInIndexedDBThread(
-    scoped_refptr<content::IndexedDBContext> context,
-    const GURL& origin) {
-  DCHECK(context->IDBTaskRunner()->RunsTasksInCurrentSequence());
-  context->DeleteForOrigin(url::Origin::Create(origin));
 }
 
 CannedBrowsingDataIndexedDBHelper::CannedBrowsingDataIndexedDBHelper(

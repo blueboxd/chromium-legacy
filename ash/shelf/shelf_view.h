@@ -332,7 +332,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
     app_icons_layout_offset_ = app_icons_layout_offset;
   }
 
-  const ShelfAppButton* drag_view() const { return drag_view_; }
+  ShelfAppButton* drag_view() { return drag_view_; }
 
   // Returns true when this ShelfView is used for Overflow Bubble.
   // In this mode, it does not show app list and overflow button.
@@ -356,6 +356,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   ShelfWidget* shelf_widget() const { return shelf_->shelf_widget(); }
   OverflowBubble* overflow_bubble() { return overflow_bubble_.get(); }
   views::ViewModel* view_model() { return view_model_.get(); }
+  bool dragged_off_shelf() const { return dragged_off_shelf_; }
 
  private:
   friend class ShelfViewTestAPI;

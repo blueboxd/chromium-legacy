@@ -31,6 +31,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeImageViewPreference;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
@@ -473,15 +474,7 @@ public class SingleWebsiteSettings extends PreferenceFragmentCompat
             newPreference.setDefaultValue(value);
 
             newPreference.setOnPreferenceClickListener(unused -> {
-                // There is no guarantee that a channel has been initialized yet for sites
-                // that were granted permission before the channel-initialization-on-grant
-                // code was in place. However, getChannelIdForOrigin will fall back to the
-                // generic Sites channel if no specific channel has been created for the given
-                // origin, so it is safe to open the channel settings for whatever channel ID
-                // it returns.
-                String channelId = SiteChannelsManager.getInstance().getChannelIdForOrigin(
-                        mSite.getAddress().getOrigin());
-                launchOsChannelSettings(preference.getContext(), channelId);
+                launchOsChannelSettingsFromPreference(preference);
                 return true;
             });
         } else {
@@ -490,6 +483,29 @@ public class SingleWebsiteSettings extends PreferenceFragmentCompat
                 updatePreferenceForDSESetting(preference);
             }
         }
+    }
+
+    // This is implemented as a public utility function to better facilitate testing.
+    public void launchOsChannelSettingsFromPreference(Preference preference) {
+        final boolean blockedByEmbargo =
+                (WebsitePreferenceBridgeJni.get().isNotificationEmbargoedForOrigin(
+                        Profile.getLastUsedProfile(), mSite.getAddress().getOrigin()));
+
+        // There is no notification channel if the origin is merely embargoed. Create it
+        // just-in-time if the user tries to change to setting.
+        if (blockedByEmbargo) {
+            mSite.setPermission(PermissionInfo.Type.NOTIFICATION, ContentSettingValues.BLOCK);
+        }
+
+        // There is no guarantee that a channel has been initialized yet for sites
+        // that were granted permission before the channel-initialization-on-grant
+        // code was in place. However, getChannelIdForOrigin will fall back to the
+        // generic Sites channel if no specific channel has been created for the given
+        // origin, so it is safe to open the channel settings for whatever channel ID
+        // it returns.
+        String channelId = SiteChannelsManager.getInstance().getChannelIdForOrigin(
+                mSite.getAddress().getOrigin());
+        launchOsChannelSettings(preference.getContext(), channelId);
     }
 
     private void launchOsChannelSettings(Context context, String channelId) {

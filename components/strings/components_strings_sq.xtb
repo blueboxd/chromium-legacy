@@ -210,7 +210,7 @@
 <translation id="1914326953223720820">Shërbimi i shpaketimit</translation>
 <translation id="1915697529809968049">Të përdoret Touch ID në vend të CVC?</translation>
 <translation id="1916770123977586577">Për të aplikuar cilësimet e përparuara në këtë sajt, ringarkoje këtë faqe</translation>
-<translation id="1917876262703816781">Një nxjerrje e paautorizuar e të dhënave në një sajt ose aplikacion ka ekspozuar fjalëkalimin tënd. Chrome rekomandon që të ndryshosh fjalëkalimin tënd në <ph name="ORIGIN" /> tani.</translation>
+<translation id="1917876262703816781">Një nxjerrje e paautorizuar të dhënash në një sajt apo në një prej aplikacioneve të tua e ka ekspozuar fjalëkalimin tënd. Chrome rekomandon që ta kontrollosh menjëherë fjalëkalimin tënd në <ph name="ORIGIN" />.</translation>
 <translation id="1919345977826869612">Reklamat</translation>
 <translation id="1919367280705858090">Merr ndihmë për një mesazh specifik gabimi</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Asnjë}=1{1 sajt}other{# sajte}}</translation>
@@ -897,7 +897,7 @@
 <translation id="5287240709317226393">Shfaq kukit</translation>
 <translation id="5287456746628258573">Ky sajt përdor një konfigurim të vjetruar të sigurisë, i cili mund t'i ekspozojë informacionet e tua (p.sh. fjalëkalimin ose numrat e kartës së kreditit) kur dërgohen te ky sajt.</translation>
 <translation id="5288108484102287882">Vërtetimi i vlerave të politikës ka ngritur shqetësime</translation>
-<translation id="5295292838686006428">Një nxjerrje e paautorizuar e të dhënave në një sajt ose aplikacion ka ekspozuar fjalëkalimin tënd. Chrome rekomandon që të kontrollosh fjalëkalimet e tua të ruajtura tani.</translation>
+<translation id="5295292838686006428">Një nxjerrje e paautorizuar të dhënash në një sajt apo në një prej aplikacioneve të tua e ka ekspozuar fjalëkalimin tënd. Chrome rekomandon që t’i kontrollosh menjëherë fjalëkalimet e tua të ruajtura.</translation>
 <translation id="5299298092464848405">Gabim gjatë analizimit të politikës</translation>
 <translation id="5300589172476337783">Shfaq</translation>
 <translation id="5308380583665731573">Lidh</translation>
@@ -1342,7 +1342,7 @@ Detaje shtesë:
 <translation id="7473891865547856676">Jo, faleminderit</translation>
 <translation id="7481312909269577407">Përpara</translation>
 <translation id="7485870689360869515">Nuk u gjetën të dhëna.</translation>
-<translation id="7495290002932347110">Një nxjerrje e paautorizuar e të dhënave në një sajt ose aplikacion ka ekspozuar fjalëkalimin tënd. Chrome rekomandon që të kontrollosh fjalëkalimet e tua të ruajtura dhe të ndryshosh fjalëkalimin tënd në <ph name="ORIGIN" /> tani.</translation>
+<translation id="7495290002932347110">Një nxjerrje e paautorizuar të dhënash në një sajt apo në një prej aplikacioneve të tua e ka ekspozuar fjalëkalimin tënd. Chrome rekomandon që t’i kontrollosh menjëherë fjalëkalimet e tua të ruajtura si dhe ta ndryshosh fjalëkalimin tënd në <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Vazhdo redaktimin</translation>
 <translation id="7508255263130623398">ID-ja e kthyer e pajisjes së politikës është bosh ose nuk përputhet me ID-në e pajisjes aktuale</translation>
 <translation id="7508870219247277067">Jeshile avokadoje</translation>

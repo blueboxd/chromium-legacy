@@ -16,12 +16,6 @@ building. This slows down linking several minutes, so don't just always set it
 by default.
 ***
 
-*** note
-**Linux:** Add `use_debug_fission = true` to your [gn build
-arguments](https://gn.googlesource.com/gn/+/master/docs/quick_start.md) before
-building.
-***
-
 Then, create a directory where the crash dumps will be stored:
 
 * Linux/Mac:
@@ -67,13 +61,9 @@ Crashpad can be enabled by passing `--enable-crash-reporter` and
 
 ## Retrieving the crash dump
 
-On Linux and Android, we first have to retrieve the crash dump. On Mac and
-Windows, this step can be skipped.
+On Android, we first have to retrieve the crash dump. On other platforms, this
+step can be skipped.
 
-* Linux:
-  ```bash
-  components/crash/content/tools/dmp2minidump.py /tmp/crashes/*.dmp /tmp/minidump
-  ```
 * Android:
   ```bash
   adb pull $(adb shell ls /data/data/org.chromium.content_shell_apk/cache/pending/*.dmp) /tmp/chromium-renderer-minidump.dmp

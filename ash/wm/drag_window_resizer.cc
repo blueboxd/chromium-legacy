@@ -21,6 +21,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/window_util.h"
@@ -51,7 +52,7 @@ DragWindowResizer::~DragWindowResizer() {
     instance_ = NULL;
 }
 
-void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
+void DragWindowResizer::Drag(const gfx::PointF& location, int event_flags) {
   base::WeakPtr<DragWindowResizer> resizer(weak_ptr_factory_.GetWeakPtr());
   next_window_resizer_->Drag(location, event_flags);
 
@@ -150,7 +151,8 @@ void DragWindowResizer::EndDragImpl() {
   ::wm::ConvertRectToScreen(GetTarget()->parent(), &dst_bounds);
 
   // Adjust the position so that the cursor is on the window.
-  gfx::Point last_mouse_location_in_screen = last_mouse_location_;
+  gfx::Point last_mouse_location_in_screen =
+      gfx::ToRoundedPoint(last_mouse_location_);
   ::wm::ConvertPointToScreen(GetTarget()->parent(),
                              &last_mouse_location_in_screen);
   if (!dst_bounds.Contains(last_mouse_location_in_screen)) {

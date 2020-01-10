@@ -14,6 +14,7 @@ import android.view.Window;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsSessionToken;
+import androidx.browser.trusted.sharing.ShareTarget;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -255,6 +256,15 @@ public class CustomTabActivityTabController
     private Tab maybeTakeTabFromStartupTabPreloader() {
         // Don't overwrite any pre-existing tab.
         if (mTabProvider.getTab() != null) return null;
+
+        ShareTarget shareTarget = mIntentDataProvider.getShareTarget();
+        if (mIntentDataProvider.getShareData() != null && shareTarget != null
+                && ShareTarget.METHOD_POST.equals(shareTarget.method)) {
+            // The navigation is likely a POST (We don't do a POST navigation if the POST
+            // target is outside of the TWA scope.) This does not match
+            // StartupTabPreloader's GET navigation.
+            return null;
+        }
 
         LoadUrlParams loadUrlParams = new LoadUrlParams(mIntentDataProvider.getUrlToLoad());
         String referrer = mConnection.getReferrer(mSession, mIntent);

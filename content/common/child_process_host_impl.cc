@@ -41,7 +41,7 @@
 #include "content/common/mac_helpers.h"
 #endif  // OS_LINUX
 
-#if BUILDFLAG(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
 #include "content/common/coverage_utils.h"
 #endif
 
@@ -206,7 +206,7 @@ bool ChildProcessHostImpl::InitChannel() {
   child_process_->SetIPCLoggingEnabled(enabled);
 #endif
 
-#if BUILDFLAG(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
   child_process_->SetCoverageFile(OpenCoverageFile());
 #endif
 

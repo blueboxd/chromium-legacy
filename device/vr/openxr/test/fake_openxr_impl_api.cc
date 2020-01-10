@@ -780,21 +780,7 @@ XrResult xrSuggestInteractionProfileBindings(
       g_test_helper.ValidatePath(suggested_bindings->interactionProfile));
   std::string interaction_profile =
       g_test_helper.PathToString(suggested_bindings->interactionProfile);
-  RETURN_IF(
-      interaction_profile.compare(
-          interaction_profile::kMicrosoftMotionControllerInteractionProfile) !=
-              0 &&
-          interaction_profile.compare(
-              interaction_profile::kKHRSimpleControllerInteractionProfile) !=
-              0 &&
-          interaction_profile.compare(
-              interaction_profile::kOculusTouchControllerInteractionProfile) !=
-              0 &&
-          interaction_profile.compare(
-              interaction_profile::kValveIndexControllerinteractionProfile) !=
-              0,
-      XR_ERROR_VALIDATION_FAILURE,
-      "xrSetInteractionProfileSuggestedBindings invalid interaction_profile");
+
   RETURN_IF(suggested_bindings->suggestedBindings == nullptr,
             XR_ERROR_VALIDATION_FAILURE,
             "XrInteractionProfileSuggestedBinding has nullptr "

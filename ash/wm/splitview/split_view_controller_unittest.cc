@@ -267,7 +267,7 @@ class TestWindowStateDelegate : public WindowStateDelegate {
 
   // WindowStateDelegate:
   void OnDragStarted(int component) override { drag_in_progress_ = true; }
-  void OnDragFinished(bool cancel, const gfx::Point& location) override {
+  void OnDragFinished(bool cancel, const gfx::PointF& location) override {
     drag_in_progress_ = false;
   }
 
@@ -662,7 +662,7 @@ TEST_P(SplitViewControllerTest,
             split_view_divider()->divider_widget()->GetZOrderLevel());
   // The divider should not be always on top while a window is being dragged.
   std::unique_ptr<WindowResizer> resizer =
-      CreateWindowResizer(window2.get(), gfx::Point(400, 0), HTCAPTION,
+      CreateWindowResizer(window2.get(), gfx::PointF(400, 0), HTCAPTION,
                           ::wm::WINDOW_MOVE_SOURCE_TOUCH);
   EXPECT_EQ(ui::ZOrderLevel::kNormal,
             split_view_divider()->divider_widget()->GetZOrderLevel());
@@ -2698,13 +2698,13 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
   // Drags the window to |end_position|.
   void DragWindowTo(WindowResizer* resizer, const gfx::Point& end_position) {
     ASSERT_TRUE(resizer);
-    resizer->Drag(end_position, 0);
+    resizer->Drag(gfx::PointF(end_position), 0);
   }
 
   // Drags the window with offest (delta_x, delta_y) to its initial position.
   void DragWindowWithOffset(WindowResizer* resizer, int delta_x, int delta_y) {
     ASSERT_TRUE(resizer);
-    gfx::Point location = resizer->GetInitialLocation();
+    gfx::PointF location = resizer->GetInitialLocation();
     location.set_x(location.x() + delta_x);
     location.set_y(location.y() + delta_y);
     resizer->Drag(location, 0);
@@ -2738,8 +2738,8 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
       const gfx::Point& point_in_parent,
       int window_component,
       ::wm::WindowMoveSource source = ::wm::WINDOW_MOVE_SOURCE_TOUCH) {
-    return CreateWindowResizer(window, point_in_parent, window_component,
-                               source);
+    return CreateWindowResizer(window, gfx::PointF(point_in_parent),
+                               window_component, source);
   }
 
   // Sets if |dragged_window| is currently in tab-dragging process.
@@ -2906,7 +2906,7 @@ TEST_P(SplitViewTabDraggingTest, NoBackDropDuringDragging) {
   EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
             BackdropWindowMode::kDisabled);
 
-  resizer->Drag(gfx::Point(), 0);
+  resizer->Drag(gfx::PointF(), 0);
   EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
             BackdropWindowMode::kDisabled);
 
@@ -2967,7 +2967,7 @@ TEST_P(SplitViewTabDraggingTest, DividerIsBelowDraggedWindow) {
   ASSERT_TRUE(resizer.get());
   EXPECT_EQ(ui::ZOrderLevel::kNormal, split_divider_widget->GetZOrderLevel());
 
-  resizer->Drag(gfx::Point(), 0);
+  resizer->Drag(gfx::PointF(), 0);
   EXPECT_EQ(ui::ZOrderLevel::kNormal, split_divider_widget->GetZOrderLevel());
 
   CompleteDrag(std::move(resizer));
@@ -3103,7 +3103,7 @@ TEST_P(SplitViewTabDraggingTest, DragMaximizedWindow) {
   // all its tabs are attached into another window), nothing changes.
   resizer = StartDrag(window1.get(), window2.get());
   ASSERT_TRUE(resizer.get());
-  resizer->Drag(gfx::Point(0, 300), 0);
+  resizer->Drag(gfx::PointF(0, 300), 0);
   resizer->CompleteDrag();
   resizer.reset();
   window1.reset();
@@ -3224,7 +3224,7 @@ TEST_P(SplitViewTabDraggingTest, DragSnappedWindow) {
   ASSERT_TRUE(resizer.get());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   CheckOverviewEnterExitHistogram("EnterInSplitViewByDrag3", {0, 0}, {0, 2});
-  resizer->Drag(gfx::Point(100, 100), 0);
+  resizer->Drag(gfx::PointF(100, 100), 0);
   resizer->CompleteDrag();
   resizer.reset();
   window1.reset();
@@ -4560,12 +4560,12 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
   }
 
   // Sends a gesture scroll sequence to TabletModeAppWindowDragController.
-  void SendGestureEvents(const gfx::Point& location) {
+  void SendGestureEvents(const gfx::PointF& location) {
     SendScrollStartAndUpdate(location);
     EndScrollSequence();
   }
 
-  void SendScrollStartAndUpdate(const gfx::Point& location) {
+  void SendScrollStartAndUpdate(const gfx::PointF& location) {
     WindowState* window_state = WindowState::Get(window());
     window_state->CreateDragDetails(location, HTCAPTION,
                                     ::wm::WINDOW_MOVE_SOURCE_TOUCH);
@@ -4581,7 +4581,7 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
     WindowState::Get(window())->DeleteDragDetails();
   }
 
-  void Fling(const gfx::Point& location, float velocity_y, float velocity_x) {
+  void Fling(const gfx::PointF& location, float velocity_y, float velocity_x) {
     ui::GestureEvent event = ui::GestureEvent(
         location.x(), location.y(), ui::EF_NONE, base::TimeTicks::Now(),
         ui::GestureEventDetails(ui::ET_SCROLL_FLING_START, velocity_x,
@@ -4618,7 +4618,7 @@ TEST_P(SplitViewAppDraggingTest, DragNonActiveMaximizedWindow) {
           window());
   const float long_scroll_delta = display_bounds.height() / 4 + 5;
 
-  const gfx::Point location(0, long_scroll_delta);
+  const gfx::PointF location(0, long_scroll_delta);
   // Drag the window that cannot be snapped long enough, the window will be
   // dropped into overview.
   SendScrollStartAndUpdate(location);
@@ -4645,7 +4645,7 @@ TEST_P(SplitViewAppDraggingTest, DragActiveMaximizedWindow) {
 
   // Move the window by a small amount of distance will maximize the window
   // again.
-  gfx::Point location(0, 10);
+  gfx::PointF location(0, 10);
   SendGestureEvents(location);
   EXPECT_TRUE(WindowState::Get(window())->IsMaximized());
 
@@ -4708,7 +4708,7 @@ TEST_P(SplitViewAppDraggingTest, ShelfVisibilityIfDraggingFullscreenedWindow) {
 
   // Drag the window by a small amount of distance, the window will back to
   // fullscreened, and shelf will be hidden again.
-  gfx::Point location(0, 10);
+  gfx::PointF location(0, 10);
   SendGestureEvents(location);
   shelf_layout_manager->UpdateVisibilityState();
   EXPECT_TRUE(window_state->IsFullscreen());
@@ -4743,7 +4743,7 @@ TEST_P(SplitViewAppDraggingTest, AutoHideShelf) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
-  const gfx::Point location(0, display_bounds.height() / 4 + 5);
+  const gfx::PointF location(0, display_bounds.height() / 4 + 5);
   SendScrollStartAndUpdate(location);
   EXPECT_EQ(ShelfAutoHideBehavior::kAlways, shelf->auto_hide_behavior());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -4781,7 +4781,7 @@ TEST_P(SplitViewAppDraggingTest, FlingWhenPreviewAreaIsShown) {
 
   // Fling to the right with large enough velocity when trying to snap the
   // window to the left should drop the window to overview.
-  gfx::Point location(0, long_scroll_delta);
+  gfx::PointF location(0, long_scroll_delta);
   SendScrollStartAndUpdate(location);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
             GetWindowDraggingState());
@@ -4805,7 +4805,7 @@ TEST_P(SplitViewAppDraggingTest, FlingWhenPreviewAreaIsShown) {
 
   // Fling to the left with large enough velocity when trying to snap the window
   // to the right should drop the window to overvie.
-  location = gfx::Point(display_bounds.right(), long_scroll_delta);
+  location = gfx::PointF(display_bounds.right(), long_scroll_delta);
   SendScrollStartAndUpdate(location);
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapRight,
             GetWindowDraggingState());
@@ -4843,7 +4843,7 @@ TEST_P(SplitViewAppDraggingTest, FlingWhenSplitViewIsActive) {
 
   // Fling the window in left snapping area to left should still snap the
   // window.
-  gfx::Point location(0, long_scroll_y);
+  gfx::PointF location(0, long_scroll_y);
   SendScrollStartAndUpdate(location);
   Fling(location, /*velocity_y=*/0, /*velocity_x=*/-large_velocity);
   EXPECT_TRUE(WindowState::Get(window())->IsSnapped());
@@ -4965,7 +4965,7 @@ TEST_P(SplitViewAppDraggingTest, BackdropBoundsDuringDrag) {
             active_desk_container->children()[0]->bounds());
 
   // Start window drag and activate the dragged window during drag.
-  gfx::Point location(0, 10);
+  gfx::PointF location(0, 10);
   SendScrollStartAndUpdate(location);
   wm::ActivateWindow(window());
 

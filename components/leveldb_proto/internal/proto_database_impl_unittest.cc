@@ -161,6 +161,8 @@ class ProtoDatabaseImplTest : public testing::Test {
         kDefaultClientName, shared_db_temp_dir_.GetPath()));
   }
 
+  void TearDown() override { shared_db_->Shutdown(); }
+
   void SetUpExperimentParams(std::map<std::string, std::string> params) {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         kProtoDBSharedMigration, params);

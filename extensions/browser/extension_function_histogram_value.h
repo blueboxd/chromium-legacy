@@ -1490,6 +1490,8 @@ enum HistogramValue {
   INPUTMETHODPRIVATE_RESET = 1427,
   PRINTING_GETPRINTERINFO = 1428,
   AUTOTESTPRIVATE_ISARCPACKAGELISTINITIALREFRESHED = 1429,
+  AUTOTESTPRIVATE_STARTTRACING = 1430,
+  AUTOTESTPRIVATE_STOPTRACING = 1431,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

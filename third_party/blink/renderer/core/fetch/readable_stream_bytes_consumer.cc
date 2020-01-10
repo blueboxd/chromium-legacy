@@ -123,7 +123,16 @@ BytesConsumer::Result ReadableStreamBytesConsumer::BeginRead(
     is_reading_ = true;
     ScriptState::Scope scope(script_state_);
     DCHECK(reader_);
-    reader_->read(script_state_)
+
+    ExceptionState exception_state(script_state_->GetIsolate(),
+                                   ExceptionState::kUnknownContext, "", "");
+
+    ScriptPromise script_promise =
+        reader_->read(script_state_, exception_state);
+    if (exception_state.HadException())
+      script_promise = ScriptPromise::Reject(script_state_, exception_state);
+
+    script_promise
         .Then(OnFulfilled::CreateFunction(script_state_, this),
               OnRejected::CreateFunction(script_state_, this))
         .MarkAsHandled();

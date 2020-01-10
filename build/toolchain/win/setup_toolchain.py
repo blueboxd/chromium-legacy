@@ -69,7 +69,7 @@ def _ExtractImportantEnvironment(output_of_set):
 
 
 def _DetectVisualStudioPath():
-  """Return path to the GYP_MSVS_VERSION of Visual Studio.
+  """Return path to the installed Visual Studio.
   """
 
   # Use the code in build/vs_toolchain.py to avoid duplicating code.

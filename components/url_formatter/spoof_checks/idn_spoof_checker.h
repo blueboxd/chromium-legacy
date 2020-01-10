@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"
+#include "components/url_formatter/spoof_checks/skeleton_generator.h"
 #include "net/extras/preload_data/decoder.h"
 
 #include "third_party/icu/source/common/unicode/uniset.h"
@@ -21,7 +22,6 @@
 // 'icu' does not work. Use U_ICU_NAMESPACE.
 namespace U_ICU_NAMESPACE {
 
-class Transliterator;
 class UnicodeString;
 
 }  // namespace U_ICU_NAMESPACE
@@ -143,8 +143,8 @@ class IDNSpoofChecker {
   icu::UnicodeSet digit_lookalikes_;
   icu::UnicodeSet lgc_letters_n_ascii_;
   icu::UnicodeSet icelandic_characters_;
-  std::unique_ptr<icu::Transliterator> diacritic_remover_;
-  std::unique_ptr<icu::Transliterator> extra_confusable_mapper_;
+
+  std::unique_ptr<SkeletonGenerator> skeleton_generator_;
 
   // List of scripts containing whole-script-confusable information.
   std::vector<std::unique_ptr<WholeScriptConfusable>> wholescriptconfusables_;

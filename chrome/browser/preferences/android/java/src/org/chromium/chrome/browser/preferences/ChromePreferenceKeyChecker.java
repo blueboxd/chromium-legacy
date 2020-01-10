@@ -25,6 +25,7 @@ class ChromePreferenceKeyChecker extends BaseChromePreferenceKeyChecker {
 
     private Set<String> mKeysInUse;
     private Set<String> mGrandfatheredFormatKeys;
+    private List<KeyPrefix> mGrandfatheredPrefixes;
     private Pattern mDynamicPartPattern;
 
     /**
@@ -33,16 +34,19 @@ class ChromePreferenceKeyChecker extends BaseChromePreferenceKeyChecker {
      */
     private ChromePreferenceKeyChecker() {
         this(ChromePreferenceKeys.createKeysInUse(),
-                ChromePreferenceKeys.createGrandfatheredKeysInUse());
+                ChromePreferenceKeys.createGrandfatheredKeysInUse(),
+                ChromePreferenceKeys.createGrandfatheredPrefixesInUse());
     }
 
     /**
      * Generic constructor, dependencies are passed in.
      */
     @VisibleForTesting
-    ChromePreferenceKeyChecker(List<String> keysInUse, List<String> grandfatheredKeys) {
+    ChromePreferenceKeyChecker(List<String> keysInUse, List<String> grandfatheredKeys,
+            List<KeyPrefix> grandfatheredPrefixes) {
         mKeysInUse = new HashSet<>(keysInUse);
         mGrandfatheredFormatKeys = new HashSet<>(grandfatheredKeys);
+        mGrandfatheredPrefixes = grandfatheredPrefixes;
 
         // The dynamic part cannot be empty, but otherwise it is anything that does not contain
         // stars.
@@ -72,9 +76,16 @@ class ChromePreferenceKeyChecker extends BaseChromePreferenceKeyChecker {
      * @return Whether |key| is in use.
      */
     private boolean isKeyInUse(String key) {
-        // Grandfathered keys cannot be dynamic, so a simple map check is enough.
+        // For non-dynamic grandfathered keys, a simple map check is enough.
         if (mGrandfatheredFormatKeys.contains(key)) {
             return true;
+        }
+
+        // For dynamic grandfathered keys, each grandfathered prefix has to be checked.
+        for (KeyPrefix prefix : mGrandfatheredPrefixes) {
+            if (prefix.hasGenerated(key)) {
+                return true;
+            }
         }
 
         // If not a format-grandfathered key, assume it follows the format and find out if it is

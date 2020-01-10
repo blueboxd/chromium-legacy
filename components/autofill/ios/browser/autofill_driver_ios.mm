@@ -8,7 +8,6 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_webframe.h"
-#import "ios/web/common/origin_util.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/web_state.h"

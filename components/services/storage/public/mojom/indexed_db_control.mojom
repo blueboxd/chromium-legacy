@@ -30,4 +30,7 @@ interface IndexedDBControl {
   // returned array has one IndexedDBStorageUsageInfo per origin in the
   // partition that has IndexedDB usage data.
   GetUsage() => (array<IndexedDBStorageUsageInfo> info);
+
+  // Deletes all indexed db files for the given origin.
+  DeleteForOrigin(url.mojom.Origin origin) => (bool success);
 };

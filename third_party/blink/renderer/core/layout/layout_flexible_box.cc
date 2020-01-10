@@ -962,8 +962,9 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
 
     LayoutLineItems(current_line, relayout_children, layout_scope);
 
-    LayoutUnit main_axis_offset = FlowAwareContentInsetStart();
-    current_line->ComputeLineItemsPosition(main_axis_offset, cross_axis_offset);
+    current_line->ComputeLineItemsPosition(FlowAwareContentInsetStart(),
+                                           FlowAwareContentInsetEnd(),
+                                           cross_axis_offset);
     ApplyLineItemsPosition(current_line);
     if (number_of_in_flow_children_on_first_line_ == -1) {
       number_of_in_flow_children_on_first_line_ =

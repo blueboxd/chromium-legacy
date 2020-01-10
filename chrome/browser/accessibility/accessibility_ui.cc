@@ -222,8 +222,8 @@ void HandleAccessibilityRequestCallback(
     content::WebContentsDelegate* delegate = web_contents->GetDelegate();
     if (!delegate)
       continue;
-    // Ignore views that are never visible, like background pages.
-    if (delegate->IsNeverVisible(web_contents))
+    // Ignore views that are never user-visible, like background pages.
+    if (delegate->IsNeverComposited(web_contents))
       continue;
     content::BrowserContext* context = rvh->GetProcess()->GetBrowserContext();
     if (context != current_context)

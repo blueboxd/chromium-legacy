@@ -449,13 +449,16 @@ void UnifiedSystemTrayController::ResetToCollapsedIfRequired() {
   if (model_->IsExplicitlyExpanded())
     return;
 
-  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
-    if (unified_view_->feature_pods_container()->row_count() ==
-        kUnifiedFeaturePodMinRows) {
-      unified_view_->SetExpandedAmount(0.0);
-      animation_->Reset(0);
-    }
+  if (features::IsUnifiedMessageCenterRefactorEnabled() &&
+      unified_view_->feature_pods_container()->row_count() ==
+          kUnifiedFeaturePodMinRows) {
+    CollapseWithoutAnimating();
   }
+}
+
+void UnifiedSystemTrayController::CollapseWithoutAnimating() {
+  unified_view_->SetExpandedAmount(0.0);
+  animation_->Reset(0);
 }
 
 double UnifiedSystemTrayController::GetDragExpandedAmount(

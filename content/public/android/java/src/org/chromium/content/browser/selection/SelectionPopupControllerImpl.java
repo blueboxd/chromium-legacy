@@ -553,7 +553,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     @Override
     public void finishActionMode() {
         mHidden = false;
-        if (mView != null) mView.removeCallbacks(mRepeatingHideRunnable);
+        mHandler.removeCallbacks(mRepeatingHideRunnable);
 
         if (isActionModeValid()) {
             mActionMode.finish();

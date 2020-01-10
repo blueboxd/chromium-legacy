@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">Anonimno pretraživanje</translation>
 <translation id="277771892408211951">Odaberite jezik</translation>
 <translation id="2780046210906776326">Nema računa e-pošte</translation>
+<translation id="2781331604911854368">Uključeno</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Zatvori prekidač za prebacivanje između kartica</translation>
 <translation id="2830972654601096923">Upravljanje adresama...</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">Otvorene kartice</translation>
 <translation id="3277021493514034324">Adresa web-lokacije kopirana</translation>
 <translation id="3290875554372353449">Odabir računa</translation>
+<translation id="3311748811247479259">Isključeno</translation>
 <translation id="3324193307694657476">2. adresni redak</translation>
 <translation id="3329904751041170572">Povezivanje s poslužiteljem nije moguće.</translation>
 <translation id="3335947283844343239">Ponovo otvori zatvorenu karticu</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">Sinkronizacija kartica...</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /> o predloženom sadržaju</translation>
 <translation id="3494788280727468875">Potvrdi brisanje podataka o pregledavanju</translation>
+<translation id="35083190962747987">Otvori ${url}</translation>
 <translation id="3519193562722059437">Otvorite karticu da biste pregledavali web.</translation>
 <translation id="3527085408025491307">Mapa</translation>
 <translation id="3529024052484145543">Nije sigurno</translation>
@@ -301,6 +304,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5062321486222145940">Instaliraj Google disk</translation>
 <translation id="5083464117946352670">Veličina datoteke nije utvrđena.</translation>
 <translation id="5094827893301452931">Tweet je dovršen.</translation>
+<translation id="5118764316110575523">Isključeno</translation>
 <translation id="5127805178023152808">Sinkronizacija je isključena</translation>
 <translation id="5132942445612118989">Sinkronizirajte svoje zaporke, povijest i drugo na svim uređajima</translation>
 <translation id="5140288047769711648">Chrome će zapamtiti ovu zaporku umjesto vas. Ne morate je pamtiti.</translation>
@@ -363,6 +367,7 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 <translation id="5979837087407522202">Pretraživanje zaporki</translation>
 <translation id="5982717868370722439">Dodavanje postojećih podataka na račun <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">Nedavno posjećeno</translation>
+<translation id="5988851877894965432">Otvorite URL-ove u Chromeu</translation>
 <translation id="6012140227487808125">Enkripcija…</translation>
 <translation id="6021332621416007159">Otvori u...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7961015016161918242">Nikad</translation>
 <translation id="7971521879845308059">Blokiraj skočne</translation>
 <translation id="7982789257301363584">Mreža</translation>
+<translation id="800361585186029508">Otvara URL-ove unesene u Google Chrome.</translation>
 <translation id="8007420562015504427">Anonimno pretraživanje</translation>
 <translation id="8019783059653722575">To vam omogućuje spremanje i prijenos fotografija.</translation>
 <translation id="802154636333426148">Preuzimanje nije uspjelo</translation>

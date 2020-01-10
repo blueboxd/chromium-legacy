@@ -75,7 +75,6 @@
     _appState = [[AppState alloc] initWithBrowserLauncher:_browserLauncher
                                        startupInformation:_startupInformation
                                       applicationDelegate:self];
-    _tabSwitcherProtocol = _mainController;
     _appNavigation = _mainController;
     [_mainController setAppState:_appState];
 
@@ -90,6 +89,7 @@
       // This is temporary plumbing that's not supposed to be here.
       _sceneController.mainController = (id<MainControllerGuts>)_mainController;
       _mainController.sceneController = _sceneController;
+      _tabSwitcherProtocol = _sceneController;
     }
   }
   return self;

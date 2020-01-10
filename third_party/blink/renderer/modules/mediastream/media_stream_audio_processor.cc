@@ -522,6 +522,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
 
   // Experimental options provided at creation.
   webrtc::Config config;
+  config.Set<webrtc::ExperimentalNs>(new webrtc::ExperimentalNs(
+      properties.goog_experimental_noise_suppression));
 
   // If the experimental AGC is enabled, check for overridden config params.
   if (properties.goog_experimental_auto_gain_control) {

@@ -12,8 +12,12 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/time/clock.h"
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/url_keyed_hint.h"
+
+class GURL;
 
 namespace optimization_guide {
 class StoreUpdateData;
@@ -23,12 +27,13 @@ using HintLoadedCallback = base::OnceCallback<void(const proto::Hint*)>;
 // Contains a set of optimization hints received from the Cacao service. This
 // may include hints received from the ComponentUpdater and hints fetched from a
 // Cacao Optimization Guide Service API. The availability of hints is queryable
-// via host name. The cache itself consists of a backing store, which allows for
-// asynchronous loading of any available hint, and an MRU memory cache, which
-// can be used to synchronously retrieve recently loaded hints.
+// via host name and full URL. The cache itself consists of a backing store,
+// which allows for asynchronous loading of any available host-keyed hint, and
+// an MRU host-keyed cache and a url-keyed cache, which can be used to
+// synchronously retrieve recently loaded hints keyed by URL or host.
 class HintCache {
  public:
-  // Construct the HintCache with a backing store and an optional max memory
+  // Construct the HintCache with a backing store and an optional max host-keyed
   // cache size. While |optimization_guide_store| is required,
   // |max_memory_cache_hints| is optional and the default max size will be used
   // if it is not provided.
@@ -78,12 +83,12 @@ class HintCache {
       base::Time update_time,
       base::OnceClosure callback);
 
-  // Purge fetched hints from the owned |optimization_guide_store_| and reset
-  // the |memory_cache_|.
+  // Purges fetched hints from the owned |optimization_guide_store_| and resets
+  // the host-keyed cache.
   void ClearFetchedHints();
 
   // Returns whether the cache has a hint data for |host| locally (whether
-  // in memory or persisted on disk).
+  // in the host-keyed cache or persisted on disk).
   bool HasHint(const std::string& host) const;
 
   // Requests that hint data for |host| be loaded asynchronously and passed to
@@ -95,20 +100,44 @@ class HintCache {
   // not initialized, base::Time() is returned.
   base::Time GetFetchedHintsUpdateTime() const;
 
-  // Returns the hint data for |host| if found in memory, otherwise nullptr.
-  const proto::Hint* GetHintIfLoaded(const std::string& host);
+  // Returns the hint data for |host| if found in the host-keyed cache,
+  // otherwise nullptr.
+  const proto::Hint* GetHostKeyedHintIfLoaded(const std::string& host);
+
+  // Returns an unepxired hint data for |url| if found in the url-keyed cache,
+  // otherwise nullptr. If the hint is expired, it is removed from the URL-keyed
+  // cache. Only HTTP/HTTPS URLs without username and password are supported by
+  // the URL-keyed cache, if |url| does not meet this criteria, nullptr is
+  // returned. The returned hint is not guaranteed to remain valid and will
+  // become invalid if any additional URL-keyed hints are added to the cache
+  // that evicts the returned hint.
+  proto::Hint* GetURLKeyedHint(const GURL& url);
+
+  // Verifies and processes |hints| and moves the ones it supports into
+  // |update_data| and caches any valid URL keyed hints.
+  //
+  // Returns true if there was at least one hint is moved into |update_data|.
+  bool ProcessAndCacheHints(
+      google::protobuf::RepeatedPtrField<proto::Hint>* hints,
+      StoreUpdateData* update_data);
+
+  // Override |clock_| for testing.
+  void SetClockForTesting(const base::Clock* clock);
 
  private:
-  using StoreHintMemoryCache =
+  using HostKeyedHintCache =
       base::HashingMRUCache<OptimizationGuideStore::EntryKey,
                             std::unique_ptr<proto::Hint>>;
+
+  using URLKeyedHintCache =
+      base::HashingMRUCache<std::string, std::unique_ptr<URLKeyedHint>>;
 
   // The callback run after the store finishes initialization. This then runs
   // the callback initially provided by the Initialize() call.
   void OnStoreInitialized(base::OnceClosure callback);
 
   // The callback run after the store finishes loading a hint. This adds the
-  // loaded hint to |memory_cache_|, potentially purging the least recently
+  // loaded hint to |host_keyed_cache_|, potentially purging the least recently
   // used element, and then runs the callback initially provided by the
   // LoadHint() call.
   void OnLoadStoreHint(
@@ -119,13 +148,21 @@ class HintCache {
   // The backing store used with this hint cache. Set during construction.
   const std::unique_ptr<OptimizationGuideStore> optimization_guide_store_;
 
-  // The in-memory cache of hints loaded from the store. Maps store EntryKey to
-  // Hint proto. This servers two purposes:
+  // The cache of host-keyed hints loaded from the store. Maps store
+  // EntryKey to Hint proto. This serves two purposes:
   //  1. Allows hints to be requested on navigation and retained in memory until
   //     commit, when they can be synchronously retrieved from the cache.
   //  2. Reduces churn of needing to reload hints from frequently visited sites
   //     multiple times during a session.
-  StoreHintMemoryCache memory_cache_;
+  HostKeyedHintCache host_keyed_cache_;
+
+  // The in-memory cache of URL-keyed hints fetched from the remote optimization
+  // guide. Maps a full URL to Hint proto. All available URL-keyed hints are
+  // maintained within the cache and are not persisted to disk.
+  URLKeyedHintCache url_keyed_hint_cache_;
+
+  // The clock used to determine if hints have expired.
+  const base::Clock* clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

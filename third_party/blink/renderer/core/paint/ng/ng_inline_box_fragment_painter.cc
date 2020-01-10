@@ -178,22 +178,34 @@ void NGInlineBoxFragmentPainterBase::ComputeFragmentOffsetOnLine(
     LayoutUnit* offset_on_line,
     LayoutUnit* total_width) const {
   WritingMode writing_mode = inline_box_fragment_.Style().GetWritingMode();
-  NGPaintFragment::FragmentRange fragments =
-      inline_box_paint_fragment_->InlineFragmentsFor(
-          inline_box_fragment_.GetLayoutObject());
+  NGInlineCursor cursor;
+  DCHECK(inline_box_fragment_.GetLayoutObject());
+  cursor.MoveTo(*inline_box_fragment_.GetLayoutObject());
 
   LayoutUnit before;
   LayoutUnit after;
   bool before_self = true;
-  for (auto iter = fragments.begin(); iter != fragments.end(); ++iter) {
-    if (*iter == inline_box_paint_fragment_) {
-      before_self = false;
-      continue;
+  for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
+    if (inline_box_paint_fragment_) {
+      DCHECK(cursor.CurrentPaintFragment());
+      if (cursor.CurrentPaintFragment() == inline_box_paint_fragment_) {
+        before_self = false;
+        continue;
+      }
+    } else {
+      DCHECK(inline_box_item_);
+      DCHECK(cursor.CurrentItem());
+      if (cursor.CurrentItem() == inline_box_item_) {
+        before_self = false;
+        continue;
+      }
     }
+    const NGPhysicalBoxFragment* box_fragment = cursor.CurrentBoxFragment();
+    DCHECK(box_fragment);
     if (before_self)
-      before += NGFragment(writing_mode, iter->PhysicalFragment()).InlineSize();
+      before += NGFragment(writing_mode, *box_fragment).InlineSize();
     else
-      after += NGFragment(writing_mode, iter->PhysicalFragment()).InlineSize();
+      after += NGFragment(writing_mode, *box_fragment).InlineSize();
   }
 
   NGFragment logical_fragment(writing_mode, inline_box_fragment_);

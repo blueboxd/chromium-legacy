@@ -337,3 +337,49 @@ TEST_F(HidChooserControllerTest, DeviceIdAndUsageFilterUnion) {
 
   EXPECT_EQ(3u, hid_chooser_controller->NumOptions());
 }
+
+TEST_F(HidChooserControllerTest, OneItemForSamePhysicalDevice) {
+  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
+
+  base::RunLoop run_loop;
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
+      run_loop.QuitClosure());
+
+  // These two devices have the same physical device ID and should be coalesced
+  // into a single chooser item.
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "a", "001",
+                            device::mojom::kPageGenericDesktop,
+                            device::mojom::kGenericDesktopGamePad);
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "a", "001",
+                            device::mojom::kPageSimulation, 5);
+
+  // This device has the same info as the first device except for the physical
+  // device ID. It should have a separate chooser item.
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[1], 1, 1, "a", "001",
+                            device::mojom::kPageGenericDesktop,
+                            device::mojom::kGenericDesktopGamePad);
+
+  run_loop.Run();
+
+  EXPECT_EQ(2u, hid_chooser_controller->NumOptions());
+}
+
+TEST_F(HidChooserControllerTest, NoMergeWithEmptyPhysicalDeviceId) {
+  auto hid_chooser_controller = CreateHidChooserControllerWithoutFilters();
+
+  base::RunLoop run_loop;
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
+      run_loop.QuitClosure());
+
+  // These two devices have an empty string for the physical device ID and
+  // should not be coalesced.
+  CreateAndAddFakeHidDevice("", 1, 1, "a", "001",
+                            device::mojom::kPageGenericDesktop,
+                            device::mojom::kGenericDesktopGamePad);
+  CreateAndAddFakeHidDevice("", 1, 1, "a", "001",
+                            device::mojom::kPageSimulation, 5);
+
+  run_loop.Run();
+
+  EXPECT_EQ(2u, hid_chooser_controller->NumOptions());
+}

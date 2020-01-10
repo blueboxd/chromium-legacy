@@ -94,13 +94,17 @@ IN_PROC_BROWSER_TEST_F(HidTest, RequestDevice) {
 
   auto device = device::mojom::HidDeviceInfo::New();
   device->guid = "test-guid";
+  std::vector<device::mojom::HidDeviceInfoPtr> devices;
+  devices.push_back(std::move(device));
   EXPECT_CALL(delegate(), RunChooserInternal)
-      .WillOnce(Return(ByMove(std::move(device))));
+      .WillOnce(Return(ByMove(std::move(devices))));
 
   EXPECT_EQ(true, EvalJs(shell(),
                          R"((async () => {
-               let device = await navigator.hid.requestDevice({filters:[]});
-               return device instanceof HIDDevice;
+               let devices = await navigator.hid.requestDevice({filters:[]});
+               return devices instanceof Array
+                      && devices.length == 1
+                      && devices[0] instanceof HIDDevice;
              })())"));
 }
 
@@ -111,15 +115,11 @@ IN_PROC_BROWSER_TEST_F(HidTest, DisallowRequestDevice) {
       .WillOnce(Return(false));
   EXPECT_CALL(delegate(), RunChooserInternal).Times(Exactly(0));
 
-  EXPECT_EQ(false, EvalJs(shell(),
-                          R"((async () => {
-                            try {
-                              await navigator.hid.requestDevice({filters:[]});
-                              return true;
-                            } catch (e) {
-                              return false;
-                            }
-                          })())"));
+  EXPECT_EQ(0, EvalJs(shell(),
+                      R"((async () => {
+               let devices = await navigator.hid.requestDevice({filters:[]});
+               return devices.length;
+             })())"));
 }
 
 }  // namespace content

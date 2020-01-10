@@ -464,17 +464,19 @@ LayoutUnit FlexLine::ApplyMainAxisAutoMarginAdjustment() {
   return size_of_auto_margin;
 }
 
-void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
+void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_start_offset,
+                                        LayoutUnit main_axis_end_offset,
                                         LayoutUnit& cross_axis_offset) {
-  this->main_axis_offset = main_axis_offset;
+  this->main_axis_offset = main_axis_start_offset;
   // Recalculate the remaining free space. The adjustment for flex factors
   // between 0..1 means we can't just use remainingFreeSpace here.
-  remaining_free_space = container_main_inner_size;
+  LayoutUnit total_item_size;
   for (size_t i = 0; i < line_items.size(); ++i) {
     FlexItem& flex_item = line_items[i];
     DCHECK(!flex_item.box->IsOutOfFlowPositioned());
-    remaining_free_space -= flex_item.FlexedMarginBoxSize();
+    total_item_size += flex_item.FlexedMarginBoxSize();
   }
+  remaining_free_space = container_main_inner_size - total_item_size;
 
   const StyleContentAlignmentData justify_content =
       FlexLayoutAlgorithm::ResolvedJustifyContent(*algorithm->Style());
@@ -486,7 +488,7 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
           algorithm->StyleRef(), available_free_space, justify_content,
           line_items.size());
 
-  main_axis_offset += initial_position;
+  LayoutUnit main_axis_offset = initial_position;
   sum_justify_adjustments += initial_position;
   LayoutUnit max_descent;  // Used when align-items: baseline.
   LayoutUnit max_child_cross_axis_extent;
@@ -499,11 +501,21 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
         !algorithm->StyleRef().ResolvedIsColumnFlexDirection() &&
         !algorithm->IsLeftToRightFlow();
   }
-  LayoutUnit width_for_rtl = container_logical_width;
-  // -webkit-box always started layout at an origin of 0, regardless of
-  // direction.
-  if (should_flip_main_axis && algorithm->StyleRef().IsDeprecatedWebkitBox())
-    width_for_rtl = sum_hypothetical_main_size;
+  LayoutUnit width_when_flipped = container_logical_width;
+  LayoutUnit flipped_offset;
+  // -webkit-box, always did layout starting at 0. ltr and reverse were handled
+  // by reversing the order of iteration. OTOH, flex always iterates in order
+  // and flips the main coordinate. The following gives the same behavior for
+  // -webkit-box while using the same iteration order as flex does by changing
+  // how the flipped coordinate is calculated.
+  if (should_flip_main_axis && algorithm->StyleRef().IsDeprecatedWebkitBox()) {
+    // -webkit-box only distributed space when > 0.
+    width_when_flipped =
+        total_item_size + available_free_space.ClampNegativeToZero();
+    flipped_offset = main_axis_end_offset;
+  } else {
+    main_axis_offset += main_axis_start_offset;
+  }
   for (size_t i = 0; i < line_items.size(); ++i) {
     FlexItem& flex_item = line_items[i];
 
@@ -536,11 +548,11 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_offset,
     // In an RTL column situation, this will apply the margin-right/margin-end
     // on the left. This will be fixed later in
     // LayoutFlexibleBox::FlipForRightToLeftColumn.
-    flex_item.desired_location =
-        LayoutPoint(should_flip_main_axis
-                        ? width_for_rtl - main_axis_offset - child_main_extent
-                        : main_axis_offset,
-                    cross_axis_offset + flex_item.FlowAwareMarginBefore());
+    flex_item.desired_location = LayoutPoint(
+        should_flip_main_axis ? width_when_flipped - main_axis_offset -
+                                    child_main_extent + flipped_offset
+                              : main_axis_offset,
+        cross_axis_offset + flex_item.FlowAwareMarginBefore());
     main_axis_offset += child_main_extent + flex_item.FlowAwareMarginEnd();
 
     if (i != line_items.size() - 1) {
@@ -835,11 +847,14 @@ StyleContentAlignmentData FlexLayoutAlgorithm::ResolvedJustifyContent(
   ContentPosition position;
   if (is_webkit_box) {
     position = BoxPackToContentPosition(style.BoxPack());
-    // -webkit-box treats end as start for horizontal rtl.
-    if (position == ContentPosition::kFlexEnd &&
-        !style.ResolvedIsColumnReverseFlexDirection() &&
-        !style.IsLeftToRightDirection()) {
-      position = ContentPosition::kFlexStart;
+    // As row-reverse does layout in reverse, it effectively swaps end & start.
+    // -webkit-box didn't do this (-webkit-box always did layout starting at 0,
+    // and increasing).
+    if (style.ResolvedIsRowReverseFlexDirection()) {
+      if (position == ContentPosition::kFlexEnd)
+        position = ContentPosition::kFlexStart;
+      else if (position == ContentPosition::kFlexStart)
+        position = ContentPosition::kFlexEnd;
     }
   } else {
     position =
@@ -903,10 +918,8 @@ LayoutUnit FlexLayoutAlgorithm::InitialContentPositionOffset(
     LayoutUnit available_free_space,
     const StyleContentAlignmentData& data,
     unsigned number_of_items) {
-  if (available_free_space <= 0 && style.IsDeprecatedWebkitBox() &&
-      style.ResolvedIsColumnFlexDirection()) {
-    // -webkit-box with vertical orientation and no available spaces positions
-    // relative to the start regardless of ContentPosition.
+  if (available_free_space <= 0 && style.IsDeprecatedWebkitBox()) {
+    // -webkit-box only considers |available_free_space| if > 0.
     return LayoutUnit();
   }
   if (data.GetPosition() == ContentPosition::kFlexEnd)

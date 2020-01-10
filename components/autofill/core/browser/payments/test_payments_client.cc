@@ -29,7 +29,10 @@ TestPaymentsClient::TestPaymentsClient(
     PersonalDataManager* personal_data_manager)
     : PaymentsClient(url_loader_factory_,
                      identity_manager,
-                     personal_data_manager) {}
+                     personal_data_manager) {
+  // Default value should be CVC.
+  unmask_details_.unmask_auth_method = AutofillClient::UnmaskAuthMethod::CVC;
+}
 
 TestPaymentsClient::~TestPaymentsClient() {}
 

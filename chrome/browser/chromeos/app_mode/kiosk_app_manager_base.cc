@@ -71,6 +71,16 @@ void KioskAppManagerBase::OnKioskAppDataLoadFailure(
     observer.OnKioskAppDataLoadFailure(app_id);
 }
 
+bool KioskAppManagerBase::GetDisableBailoutShortcut() const {
+  bool enable;
+  if (CrosSettings::Get()->GetBoolean(
+          kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled, &enable)) {
+    return !enable;
+  }
+
+  return false;
+}
+
 void KioskAppManagerBase::NotifyKioskAppsChanged() const {
   for (auto& observer : observers_)
     observer.OnKioskAppsSettingsChanged();

@@ -191,6 +191,13 @@ cr.define('settings', function() {
      * an empty string if no EULA is required.
      */
     getEulaUrl(ppdManufacturer, ppdModel) {}
+
+    /**
+     * Attempts to query the |serverUrl| and retrieve printers from the url.
+     * @param {string} serverUrl
+     * @return {!Promise<!CupsPrintersList>}
+     */
+    queryPrintServer(serverUrl) {}
   }
 
   /**
@@ -270,6 +277,11 @@ cr.define('settings', function() {
     /** @override */
     getEulaUrl(ppdManufacturer, ppdModel) {
       return cr.sendWithPromise('getEulaUrl', ppdManufacturer, ppdModel);
+    }
+
+    /** @override */
+    queryPrintServer(serverUrl) {
+      return cr.sendWithPromise('queryPrintServer', serverUrl);
     }
   }
 

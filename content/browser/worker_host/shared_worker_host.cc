@@ -117,8 +117,7 @@ SharedWorkerHost::~SharedWorkerHost() {
     // Notify the service that each client still connected will be removed and
     // that the worker will terminate.
     for (const auto& client : clients_) {
-      service_->NotifyClientRemoved(instance_, client.client_process_id,
-                                    client.frame_id);
+      service_->NotifyClientRemoved(instance_, client.render_frame_host_id);
     }
     service_->NotifyWorkerTerminating(instance_);
   } else {
@@ -237,8 +236,7 @@ void SharedWorkerHost::Start(
   service_->NotifyWorkerStarted(instance_, worker_process_host_->GetID(),
                                 devtools_worker_token);
   for (const auto& client : clients_) {
-    service_->NotifyClientAdded(instance_, client.client_process_id,
-                                client.frame_id);
+    service_->NotifyClientAdded(instance_, client.render_frame_host_id);
   }
 }
 
@@ -340,12 +338,10 @@ void SharedWorkerHost::Destruct() {
 SharedWorkerHost::ClientInfo::ClientInfo(
     mojo::Remote<blink::mojom::SharedWorkerClient> client,
     int connection_request_id,
-    int client_process_id,
-    int frame_id)
+    GlobalFrameRoutingId render_frame_host_id)
     : client(std::move(client)),
       connection_request_id(connection_request_id),
-      client_process_id(client_process_id),
-      frame_id(frame_id) {}
+      render_frame_host_id(render_frame_host_id) {}
 
 SharedWorkerHost::ClientInfo::~ClientInfo() {}
 
@@ -401,10 +397,8 @@ std::vector<GlobalFrameRoutingId>
 SharedWorkerHost::GetRenderFrameIDsForWorker() {
   std::vector<GlobalFrameRoutingId> result;
   result.reserve(clients_.size());
-  for (const ClientInfo& info : clients_) {
-    result.push_back(
-        GlobalFrameRoutingId(info.client_process_id, info.frame_id));
-  }
+  for (const ClientInfo& info : clients_)
+    result.push_back(info.render_frame_host_id);
   return result;
 }
 
@@ -414,8 +408,7 @@ base::WeakPtr<SharedWorkerHost> SharedWorkerHost::AsWeakPtr() {
 
 void SharedWorkerHost::AddClient(
     mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
-    int client_process_id,
-    int frame_id,
+    GlobalFrameRoutingId client_render_frame_host_id,
     const blink::MessagePortChannel& port) {
   mojo::Remote<blink::mojom::SharedWorkerClient> remote_client(
       std::move(client));
@@ -425,7 +418,7 @@ void SharedWorkerHost::AddClient(
   remote_client->OnCreated(instance_.creation_context_type());
 
   clients_.emplace_back(std::move(remote_client), next_connection_request_id_++,
-                        client_process_id, frame_id);
+                        client_render_frame_host_id);
   ClientInfo& info = clients_.back();
 
   // Observe when the client goes away.
@@ -438,7 +431,7 @@ void SharedWorkerHost::AddClient(
   // Start() function will handle sending a notification for each existing
   // client.
   if (started_)
-    service_->NotifyClientAdded(instance_, client_process_id, frame_id);
+    service_->NotifyClientAdded(instance_, client_render_frame_host_id);
 }
 
 void SharedWorkerHost::SetAppCacheHandle(
@@ -459,8 +452,7 @@ void SharedWorkerHost::PruneNonExistentClients() {
   // It isn't necessary to send a notification to the removed clients since they
   // are about to be destroyed anyway.
   clients_.remove_if([](const ClientInfo& client_info) {
-    return !RenderFrameHostImpl::FromID(client_info.client_process_id,
-                                        client_info.frame_id);
+    return !RenderFrameHostImpl::FromID(client_info.render_frame_host_id);
   });
 }
 
@@ -488,8 +480,7 @@ void SharedWorkerHost::OnClientConnectionLost() {
       // Notify the service that a client was removed while the worker was
       // running.
       if (started_) {
-        service_->NotifyClientRemoved(instance_, it->client_process_id,
-                                      it->frame_id);
+        service_->NotifyClientRemoved(instance_, it->render_frame_host_id);
       }
       clients_.erase(it);
       break;

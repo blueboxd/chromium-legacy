@@ -14,6 +14,7 @@ cr.define('printerBrowserProxy', function() {
         'getCupsPrinterModelsList',
         'getPrinterInfo',
         'getPrinterPpdManufacturerAndModel',
+        'queryPrintServer',
         'startDiscoveringPrinters',
         'stopDiscoveringPrinters',
         'cancelPrinterSetUp',
@@ -24,6 +25,8 @@ cr.define('printerBrowserProxy', function() {
       ]);
 
       this.printerList = /** @type{} CupsPrintersList*/ ({printerList: []});
+      this.printServerPrinters =
+          /** @type{} CupsPrintersList */ ({printerList: []});
       this.manufacturers = [];
       this.models = [];
       this.printerInfo = {};
@@ -136,6 +139,13 @@ cr.define('printerBrowserProxy', function() {
       this.methodCalled('getEulaUrl', [ppdManufacturer, ppdModel]);
       return Promise.resolve(this.eulaUrl_);
     }
+
+    /** @override */
+    queryPrintServer(serverUrl) {
+      this.methodCalled('queryPrintServer', serverUrl);
+      return Promise.resolve(this.printServerPrinters);
+    }
+
 
     /** @param {string} eulaUrl */
     setEulaUrl(eulaUrl) {

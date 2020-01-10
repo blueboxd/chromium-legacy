@@ -29,7 +29,6 @@
 #include "base/mac/scoped_nsobject.h"
 #import "third_party/blink/renderer/core/layout/layout_theme.h"
 #import "third_party/blink/renderer/core/paint/theme_painter_mac.h"
-#import "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 @class BlinkLayoutThemeNotificationObserver;
 
@@ -66,8 +65,6 @@ class LayoutThemeMac final : public LayoutTheme {
   ScrollbarControlSize ScrollbarControlSizeForPart(ControlPart part) override {
     return part == kListboxPart ? kSmallScrollbar : kRegularScrollbar;
   }
-
-  void PlatformColorsDidChange() override;
 
   // System fonts.
   void SystemFont(CSSValueID system_font_id,
@@ -288,8 +285,6 @@ class LayoutThemeMac final : public LayoutTheme {
   mutable base::scoped_nsobject<NSPopUpButtonCell> popup_button_;
   mutable base::scoped_nsobject<NSSearchFieldCell> search_;
   mutable base::scoped_nsobject<NSTextFieldCell> text_field_;
-
-  mutable HashMap<CSSValueID, RGBA32> system_color_cache_;
 
   base::scoped_nsobject<BlinkLayoutThemeNotificationObserver>
       notification_observer_;

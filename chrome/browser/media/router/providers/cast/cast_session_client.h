@@ -25,7 +25,7 @@
 
 namespace media_router {
 
-class ActivityRecord;
+class CastActivityRecord;
 
 // Represents a Cast SDK client connection to a Cast session. This class
 // contains PresentationConnection Mojo pipes to send and receive messages
@@ -117,7 +117,7 @@ class CastSessionClientImpl : public CastSessionClient,
                         const url::Origin& origin,
                         int tab_id,
                         AutoJoinPolicy auto_join_policy,
-                        ActivityRecord* activity);
+                        CastActivityRecord* activity);
   ~CastSessionClientImpl() override;
 
   // CastSessionClient implementation
@@ -161,7 +161,7 @@ class CastSessionClientImpl : public CastSessionClient,
 
   const AutoJoinPolicy auto_join_policy_;
 
-  ActivityRecord* const activity_;
+  CastActivityRecord* const activity_;
 
   // The maximum number of pending media requests, used to prevent memory leaks.
   // Normally the number of pending requests should be fairly small, but each

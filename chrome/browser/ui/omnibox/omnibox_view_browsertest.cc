@@ -1619,6 +1619,17 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, Paste) {
   // TODO(msw): Test that AltGr+V does not paste.
 }
 
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EditSearchEngines) {
+  OmniboxView* omnibox_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_EDIT_SEARCH_ENGINES));
+  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+  const std::string target_url =
+      std::string(chrome::kChromeUISettingsURL) + chrome::kSearchEnginesSubPage;
+  EXPECT_EQ(ASCIIToUTF16(target_url), omnibox_view->GetText());
+  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+}
+
 // Flaky test. The below suggestions are in a random order, and the injected
 // keys may or may not have registered. Probably https://crbug.com/751031,
 // but I believe the whole input mechanism needs to be re-architected.

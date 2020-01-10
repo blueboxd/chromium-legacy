@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">חיפוש במצב גלישה בסתר</translation>
 <translation id="277771892408211951">בחירת שפה</translation>
 <translation id="2780046210906776326">אין חשבונות אימייל</translation>
+<translation id="2781331604911854368">מופעל</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">‏צא מ-Tab Switcher</translation>
 <translation id="2830972654601096923">ניהול כתובות...</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">כרטיסיות פתוחות</translation>
 <translation id="3277021493514034324">כתובת האתר הועתקה</translation>
 <translation id="3290875554372353449">בחירת חשבון</translation>
+<translation id="3311748811247479259">כבוי</translation>
 <translation id="3324193307694657476">כתובת, שורה 2</translation>
 <translation id="3329904751041170572">לא ניתן להתחבר לשרת.</translation>
 <translation id="3335947283844343239">פתח מחדש כרטיסייה שנסגרה</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">מסנכרן את הכרטיסיות שלך...</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /> על הצעות לתוכן</translation>
 <translation id="3494788280727468875">אישור הניקוי של נתוני הגלישה</translation>
+<translation id="35083190962747987">‏פתיחה של ${url}</translation>
 <translation id="3519193562722059437">פתח כרטיסייה כדי לגלוש באינטרנט.</translation>
 <translation id="3527085408025491307">תיקיה</translation>
 <translation id="3529024052484145543">לא מאובטח</translation>
@@ -301,6 +304,7 @@
 <translation id="5062321486222145940">‏התקן את Google Drive</translation>
 <translation id="5083464117946352670">גודל הקובץ אינו ידוע.</translation>
 <translation id="5094827893301452931">הציוץ בוצע.</translation>
+<translation id="5118764316110575523">כבוי</translation>
 <translation id="5127805178023152808">סנכרון כבוי</translation>
 <translation id="5132942445612118989">סנכרון הסיסמאות, ההיסטוריה ונתונים נוספים בכל המכשירים</translation>
 <translation id="5140288047769711648">‏Chrome ישמור את הסיסמה הזאת בשבילך. אין צורך לזכור אותה.</translation>
@@ -363,6 +367,7 @@
 <translation id="5979837087407522202">חיפוש בסיסמאות</translation>
 <translation id="5982717868370722439">הוסף נתונים קיימים אל <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">ביקרת לאחרונה</translation>
+<translation id="5988851877894965432">‏פתיחת כתובות URL ב-Chrome</translation>
 <translation id="6012140227487808125">מצפין…</translation>
 <translation id="6021332621416007159">פתח ב...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@
 <translation id="7961015016161918242">אף פעם</translation>
 <translation id="7971521879845308059">חסום חלונות קופצים</translation>
 <translation id="7982789257301363584">רשת</translation>
+<translation id="800361585186029508">‏פתיחת כתובות ה-URL שהוזנו ב-Google Chrome.</translation>
 <translation id="8007420562015504427">חיפוש במצב גלישה בסתר</translation>
 <translation id="8019783059653722575">אישור זה מאפשר לך לשמור ולהעלות תמונות.</translation>
 <translation id="802154636333426148">ההורדה נכשלה</translation>

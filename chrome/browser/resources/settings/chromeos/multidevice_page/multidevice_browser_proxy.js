@@ -2,23 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('settings');
-
-/**
- * An object containing messages for web permissisions origin
- * and the messages multidevice feature state.
- *
- * @typedef {{origin: string,
- *            enabled: boolean}}
- */
-settings.AndroidSmsInfo;
-
 cr.define('settings', function() {
+  /**
+   * An object containing messages for web permissisions origin
+   * and the messages multidevice feature state.
+   *
+   * @typedef {{origin: string,
+   *            enabled: boolean}}
+   */
+  let AndroidSmsInfo;
+
   /** @interface */
   class MultiDeviceBrowserProxy {
     showMultiDeviceSetupDialog() {}
 
-    /** @return {!Promise<!MultiDevicePageContentData>} */
+    /** @return {!Promise<!settings.MultiDevicePageContentData>} */
     getPageContentData() {}
 
     /**
@@ -132,7 +130,8 @@ cr.define('settings', function() {
   cr.addSingletonGetter(MultiDeviceBrowserProxyImpl);
 
   return {
-    MultiDeviceBrowserProxy: MultiDeviceBrowserProxy,
-    MultiDeviceBrowserProxyImpl: MultiDeviceBrowserProxyImpl,
+    AndroidSmsInfo,
+    MultiDeviceBrowserProxy,
+    MultiDeviceBrowserProxyImpl,
   };
 });

@@ -1699,6 +1699,11 @@ const char kPrivacySettingsRedesignDescription[] =
     "Redesign of the privacy settings card to make it more prominent and "
     "and easier to use.";
 
+const char kProfileCardName[] = "Profile Card";
+const char kProfileCardDescription[] =
+    "Allows users to open the profile card to see more informations about "
+    "the content creators.";
+
 const char kProminentDarkModeActiveTabTitleName[] =
     "Prominent Dark Mode Active Tab Titles";
 const char kProminentDarkModeActiveTabTitleDescription[] =

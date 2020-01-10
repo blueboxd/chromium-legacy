@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Telefonnummer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedladdningar har raderats</translation>
 <translation id="3822502789641063741">Rensa webbplatslagring?</translation>
+<translation id="3853625385350850937">Fortsätt genom att aktivera NFC på enheten</translation>
 <translation id="3859306556332390985">Sök framåt</translation>
 <translation id="388596076286380598">Kom åt artiklar, videor och annat innehåll från webbplatser som du gillar, även när du är offline eller har dålig anslutning.</translation>
 <translation id="3894427358181296146">Lägg till mapp</translation>
@@ -1049,6 +1050,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Väntar på föräldrauppgifter.</translation>
 <translation id="8922289737868596582">Ladda ned sidor via knappen Fler alternativ så att du kan använda dem offline</translation>
+<translation id="8926666909099850184">NFC är inte aktiverat på enheten. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Vill du ta bort din aktivitet i Chrome från Digitalt välmående?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Öppna i ett annat fönster</translation>

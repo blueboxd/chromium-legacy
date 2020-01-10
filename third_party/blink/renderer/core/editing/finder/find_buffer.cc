@@ -140,6 +140,7 @@ bool ShouldIgnoreContents(const Node& node) {
          IsA<HTMLStyleElement>(*element) || IsA<HTMLScriptElement>(*element) ||
          IsA<HTMLVideoElement>(*element) || IsA<HTMLAudioElement>(*element) ||
          (element->GetDisplayLockContext() &&
+          element->GetDisplayLockContext()->IsLocked() &&
           !element->GetDisplayLockContext()->IsActivatable(
               DisplayLockActivationReason::kFindInPage));
 }
@@ -267,7 +268,8 @@ FindBuffer::Results FindBuffer::FindMatches(const WebString& search_text,
 
 bool FindBuffer::PushScopedForcedUpdateIfNeeded(const Element& element) {
   if (auto* context = element.GetDisplayLockContext()) {
-    DCHECK(context->IsActivatable(DisplayLockActivationReason::kFindInPage));
+    DCHECK(!context->IsLocked() ||
+           context->IsActivatable(DisplayLockActivationReason::kFindInPage));
     scoped_forced_update_list_.push_back(context->GetScopedForcedUpdate());
     return true;
   }

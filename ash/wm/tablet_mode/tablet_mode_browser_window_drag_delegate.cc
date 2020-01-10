@@ -227,7 +227,7 @@ TabletModeBrowserWindowDragDelegate::~TabletModeBrowserWindowDragDelegate() =
     default;
 
 void TabletModeBrowserWindowDragDelegate::PrepareWindowDrag(
-    const gfx::Point& location_in_screen) {
+    const gfx::PointF& location_in_screen) {
   DCHECK(dragged_window_);
 
   WindowState* window_state = WindowState::Get(dragged_window_);
@@ -235,7 +235,7 @@ void TabletModeBrowserWindowDragDelegate::PrepareWindowDrag(
 }
 
 void TabletModeBrowserWindowDragDelegate::UpdateWindowDrag(
-    const gfx::Point& location_in_screen) {
+    const gfx::PointF& location_in_screen) {
   DCHECK(dragged_window_);
 
   // Update the source window if necessary.
@@ -244,7 +244,7 @@ void TabletModeBrowserWindowDragDelegate::UpdateWindowDrag(
 
 void TabletModeBrowserWindowDragDelegate::EndingWindowDrag(
     ToplevelWindowEventHandler::DragResult result,
-    const gfx::Point& location_in_screen) {
+    const gfx::PointF& location_in_screen) {
   if (result == ToplevelWindowEventHandler::DragResult::SUCCESS)
     WindowState::Get(dragged_window_)->OnCompleteDrag(location_in_screen);
   else
@@ -252,7 +252,7 @@ void TabletModeBrowserWindowDragDelegate::EndingWindowDrag(
 }
 
 void TabletModeBrowserWindowDragDelegate::EndedWindowDrag(
-    const gfx::Point& location_in_screen) {
+    const gfx::PointF& location_in_screen) {
   MergeBackToSourceWindowIfApplicable(location_in_screen);
 }
 
@@ -270,7 +270,7 @@ bool TabletModeBrowserWindowDragDelegate::ShouldOpenOverviewWhenDragStarts() {
 }
 
 void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
-    const gfx::Point& location_in_screen) {
+    const gfx::PointF& location_in_screen) {
   // Only do the scale if the source window is not the dragged window && the
   // source window is not in splitscreen && the source window is not in
   // overview.
@@ -327,7 +327,7 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
 }
 
 void TabletModeBrowserWindowDragDelegate::MergeBackToSourceWindowIfApplicable(
-    const gfx::Point& location_in_screen) {
+    const gfx::PointF& location_in_screen) {
   // No need to merge back if we're not in tab dragging process.
   if (!window_util::IsDraggingTabs(dragged_window_))
     return;

@@ -68,6 +68,10 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_BecamePersistentVideo,
                     int /* delegate_id, distinguishes instances */,
                     double /* is_persistent */)
 
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_NotifyPowerExperimentState,
+                    int /* delegate_id, distinguishes instances */,
+                    bool /* is experiment starting (true) or stopping? */)
+
 // ----------------------------------------------------------------------------
 // Messages from the renderer notifying the browser of playback state changes.
 // ----------------------------------------------------------------------------

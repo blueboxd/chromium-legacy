@@ -36,6 +36,7 @@ ShelfBubble::ShelfBubble(views::View* anchor,
           /* Don't pass the Shelf so the translucent color is always used. */
           nullptr,
           Shell::Get()->wallpaper_controller()) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   background_animator_.Init(ShelfBackgroundType::kDefaultBg);
   background_animator_.AddObserver(this);
 
@@ -63,10 +64,6 @@ void ShelfBubble::CreateBubble() {
   // Settings that should only be changed just after bubble creation.
   GetBubbleFrameView()->SetCornerRadius(border_radius_);
   GetBubbleFrameView()->SetBackgroundColor(color());
-}
-
-int ShelfBubble::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void ShelfBubble::UpdateShelfBackground(SkColor color) {

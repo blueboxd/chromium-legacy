@@ -7,6 +7,7 @@ import("//build/config/mac/rules.gni")
 group("mac") {
   deps = [
     ":updater_bundle",
+    ":updater_install_script",
     ":updater_setup",
   ]
 }
@@ -85,5 +86,14 @@ executable("updater_setup") {
   deps = [
     ":updater_bundle",
     ":updater_setup_sources",
+  ]
+}
+
+copy("updater_install_script") {
+  sources = [
+    "setup/.install.sh",
+  ]
+  outputs = [
+    "$root_build_dir/chrome/updater/.install.sh",
   ]
 }

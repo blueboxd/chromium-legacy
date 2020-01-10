@@ -104,7 +104,11 @@ void PrintUsage() {
           "    Sets the shard index to run to N (from 0 to TOTAL - 1).\n"
           "\n"
           "  --dont-use-job-objects\n"
-          "    Avoids using job objects in Windows.\n");
+          "    Avoids using job objects in Windows.\n"
+          "\n"
+          "  --test-launcher-print-temp-leaks\n"
+          "    Prints information about leaked files and/or directories in\n"
+          "    child process's temporary directories (Windows and macOS).\n");
   fflush(stdout);
 }
 

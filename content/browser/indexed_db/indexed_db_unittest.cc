@@ -16,6 +16,7 @@
 #include "base/time/default_clock.h"
 #include "components/services/storage/indexed_db/scopes/scopes_lock_manager.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom-test-utils.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_execution_context_connection_tracker.h"
@@ -125,7 +126,11 @@ class IndexedDBTest : public testing::Test {
           open_factory_origins.size(), base::BindLambdaForTesting([&]() {
             // All leveldb databases are closed, and they can be deleted.
             for (auto origin : context_->GetAllOrigins()) {
-              context_->DeleteForOrigin(origin);
+              bool success = false;
+              storage::mojom::IndexedDBControlAsyncWaiter waiter(
+                  context_.get());
+              waiter.DeleteForOrigin(origin, &success);
+              EXPECT_TRUE(success);
             }
             loop.Quit();
           }));
@@ -287,7 +292,10 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 
   RunPostedTasks();
 
-  context()->DeleteForOrigin(kTestOrigin);
+  bool success = false;
+  storage::mojom::IndexedDBControlAsyncWaiter waiter(context());
+  waiter.DeleteForOrigin(kTestOrigin, &success);
+  EXPECT_TRUE(success);
 
   EXPECT_FALSE(base::DirectoryExists(test_path));
 }
@@ -301,13 +309,16 @@ TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
   auto lock = LockForTesting(test_path);
   ASSERT_TRUE(lock);
 
+  bool success = false;
   base::RunLoop loop;
   context()->IDBTaskRunner()->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&]() {
-        context()->DeleteForOrigin(kTestOrigin);
+        storage::mojom::IndexedDBControlAsyncWaiter waiter(context());
+        waiter.DeleteForOrigin(kTestOrigin, &success);
         loop.Quit();
       }));
   loop.Run();
+  EXPECT_FALSE(success);
 
   EXPECT_TRUE(base::DirectoryExists(test_path));
 }

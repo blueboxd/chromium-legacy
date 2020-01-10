@@ -128,7 +128,7 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
 #endif  // defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||
         // defined(MEMORY_SANITIZER)
 
-#if BUILDFLAG(CLANG_COVERAGE)
+#if BUILDFLAG(CLANG_COVERAGE_INSIDE_SANDBOX)
   if (SyscallSets::IsPrctl(sysno)) {
     return Allow();
   }

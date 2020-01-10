@@ -1212,7 +1212,7 @@ TEST_P(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
       CreateDesktopWindowSnappedLeft();
   wm::ActivateWindow(dragged_window.get());
   ASSERT_TRUE(Shell::Get()->toplevel_window_event_handler()->AttemptToStartDrag(
-      dragged_window.get(), gfx::Point(), HTCAPTION,
+      dragged_window.get(), gfx::PointF(), HTCAPTION,
       ash::ToplevelWindowEventHandler::EndClosure()));
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewController::State::kLeftSnapped,
@@ -1254,7 +1254,7 @@ TEST_P(TabletModeControllerTest,
   wm::ActivateWindow(child.get());
   wm::ActivateWindow(dragged_window.get());
   ASSERT_TRUE(Shell::Get()->toplevel_window_event_handler()->AttemptToStartDrag(
-      dragged_window.get(), gfx::Point(), HTCAPTION,
+      dragged_window.get(), gfx::PointF(), HTCAPTION,
       ash::ToplevelWindowEventHandler::EndClosure()));
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewController::State::kLeftSnapped,
@@ -1449,6 +1449,25 @@ TEST_P(
   tablet_mode_controller()->SetEnabledForTest(true);
   // Make sure display mirroring triggers without any crashes.
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_P(TabletModeControllerTest,
+       StartTabletActiveLeftSnapOnPrimaryDisplayPreviousOnSecondaryDisplay) {
+  UpdateDisplay("800x600,800x600");
+  std::unique_ptr<aura::Window> window1 =
+      CreateDesktopWindowSnappedLeft(gfx::Rect(0, 0, 400, 400));
+  EXPECT_EQ(Shell::GetPrimaryRootWindow(), window1->GetRootWindow());
+  std::unique_ptr<aura::Window> window2 =
+      CreateTestWindow(gfx::Rect(800, 0, 400, 400));
+  EXPECT_NE(Shell::GetPrimaryRootWindow(), window2->GetRootWindow());
+  wm::ActivateWindow(window1.get());
+  tablet_mode_controller()->SetEnabledForTest(true);
+  // After display mirroring triggers, as the split view state will still be
+  // |SplitViewController::State::kLeftSnapped|, check for overview mode.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller()->state());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
 }
 
 // Test that tablet mode controller does not respond to the input device changes

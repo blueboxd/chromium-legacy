@@ -12,12 +12,12 @@
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/autofill/ios/form_util/form_activity_tab_helper.h"
 #include "components/security_state/ios/ssl_status_input_event_data.h"
-#import "ios/web/common/origin_util.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_user_data.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -65,7 +65,8 @@ InsecureInputTabHelper* InsecureInputTabHelper::GetOrCreateForWebState(
 }
 
 void InsecureInputTabHelper::DidEditFieldInInsecureContext() {
-  DCHECK(!web::IsOriginSecure(web_state_->GetLastCommittedURL()));
+  DCHECK(
+      !network::IsUrlPotentiallyTrustworthy(web_state_->GetLastCommittedURL()));
 
   security_state::SSLStatusInputEventData* input_events =
       GetOrCreateSSLStatusInputEventData(web_state_);
@@ -93,7 +94,7 @@ void InsecureInputTabHelper::FormActivityRegistered(
     const autofill::FormActivityParams& params) {
   DCHECK_EQ(web_state_, web_state);
   if (params.type == "input" &&
-      !web::IsOriginSecure(web_state->GetLastCommittedURL())) {
+      !network::IsUrlPotentiallyTrustworthy(web_state->GetLastCommittedURL())) {
     DidEditFieldInInsecureContext();
   }
 }
@@ -104,7 +105,7 @@ void InsecureInputTabHelper::DidFinishNavigation(
   DCHECK_EQ(web_state_, web_state);
   // Check if the navigation should clear insecure input event data (i.e., not a
   // same-document navigation).
-  if (!web::IsOriginSecure(web_state->GetLastCommittedURL()) &&
+  if (!network::IsUrlPotentiallyTrustworthy(web_state->GetLastCommittedURL()) &&
       navigation_context->HasCommitted() &&
       !navigation_context->IsSameDocument()) {
     security_state::SSLStatusInputEventData* input_events =

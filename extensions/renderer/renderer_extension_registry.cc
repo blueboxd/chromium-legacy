@@ -105,7 +105,7 @@ bool RendererExtensionRegistry::ExtensionBindingsAllowed(
 
 void RendererExtensionRegistry::SetWorkerActivationSequence(
     const scoped_refptr<const Extension>& extension,
-    int worker_activation_sequence) {
+    ActivationSequence worker_activation_sequence) {
   DCHECK(content::RenderThread::Get());
   DCHECK(Contains(extension->id()));
   DCHECK(BackgroundInfo::IsServiceWorkerBased(extension.get()));
@@ -114,7 +114,8 @@ void RendererExtensionRegistry::SetWorkerActivationSequence(
   worker_activation_sequences_[extension->id()] = worker_activation_sequence;
 }
 
-base::Optional<int> RendererExtensionRegistry::GetWorkerActivationSequence(
+base::Optional<ActivationSequence>
+RendererExtensionRegistry::GetWorkerActivationSequence(
     const ExtensionId& extension_id) const {
   base::AutoLock lock(lock_);
   auto iter = worker_activation_sequences_.find(extension_id);

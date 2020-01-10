@@ -107,8 +107,7 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
   void Destruct();
 
   void AddClient(mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
-                 int client_process_id,
-                 int frame_id,
+                 GlobalFrameRoutingId client_render_frame_host_id,
                  const blink::MessagePortChannel& port);
 
   void SetAppCacheHandle(
@@ -142,13 +141,11 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
   struct ClientInfo {
     ClientInfo(mojo::Remote<blink::mojom::SharedWorkerClient> client,
                int connection_request_id,
-               int client_process_id,
-               int frame_id);
+               GlobalFrameRoutingId render_frame_host_id);
     ~ClientInfo();
     mojo::Remote<blink::mojom::SharedWorkerClient> client;
     const int connection_request_id;
-    const int client_process_id;
-    const int frame_id;
+    const GlobalFrameRoutingId render_frame_host_id;
   };
 
   using ClientList = std::list<ClientInfo>;

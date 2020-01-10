@@ -13,7 +13,11 @@ source_set("player") {
   deps = [
     "//base",
     "//components/paint_preview/browser",
+    "//components/paint_preview/common",
+    "//components/paint_preview/common/proto",
+    "//components/paint_preview/public",
     "//components/services/paint_preview_compositor",
+    "//mojo/public/cpp/bindings",
     "//ui/gfx/geometry",
     "//url",
   ]

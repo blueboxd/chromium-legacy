@@ -317,7 +317,7 @@ core-dump by sending SIGABRT to the relevant process:
 
 ## Breakpad minidump files
 
-See [minidump_to_core.md](linux/minidump_to_core.md)
+See [minidump_to_core.md](minidump_to_core.md)
 
 ## Running Tests
 

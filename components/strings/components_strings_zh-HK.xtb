@@ -1342,7 +1342,7 @@
 <translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="7481312909269577407">向前</translation>
 <translation id="7485870689360869515">找不到任何數據。</translation>
-<translation id="7495290002932347110">由於您使用的網站或應用程式發生資料外洩，密碼已被洩露。Chrome 建議您檢查已儲存的密碼，並立即在 <ph name="ORIGIN" /> 上變更密碼。</translation>
+<translation id="7495290002932347110">由於您使用的網站或應用程式發生資料外洩，密碼已被洩露。Chrome 建議您檢查已儲存的密碼，並立即變更 <ph name="ORIGIN" /> 上的密碼。</translation>
 <translation id="7498234416455752244">繼續編輯</translation>
 <translation id="7508255263130623398">傳回的政策裝置識別碼為空白或與目前裝置識別碼不符</translation>
 <translation id="7508870219247277067">牛油果色</translation>

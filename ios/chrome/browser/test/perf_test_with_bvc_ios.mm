@@ -167,6 +167,10 @@ void PerfTestWithBVC::TearDown() {
     SpinRunLoop(.5);
   PerfTest::TearDown();
 
+  // Before destroying chrome_browser_state_ we need to make sure that no tasks
+  // are left on the ThreadPool since they might depend on it.
+  task_environment_.RunUntilIdle();
+
   // The profiles can be deallocated only after the BVC has been deallocated.
   chrome_browser_state_.reset();
 }

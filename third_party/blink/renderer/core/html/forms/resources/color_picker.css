@@ -16,12 +16,12 @@ color-picker {
   background: #FFFFFF;
   display: flex;
   flex-direction: column;
-  height: 304px;
+  height: 250px;
   width: 232px;
 }
 
 visual-color-picker {
-  height: 59%;
+  height: 71.5%;
   min-height: 0;
 }
 
@@ -165,31 +165,6 @@ channel-label {
   height: 24px;
   justify-content: center;
   width: 172px;
-}
-
-submission-controls {
-  align-items: center;
-  border-top: 1px solid #CECECE;
-  display: flex;
-  flex-direction: row;
-  height: 13%;
-  min-height: 0;
-}
-
-#submission-controls-padding {
-  height: 100%;
-  width: 84%;
-}
-
-submission-button {
-  padding: 3%;
-  text-align: center;
-  width: 8%;
-}
-
-submission-button:hover {
-  background-color: #F3F3F3;
-  border-radius: 2px;
 }
 
 @media (forced-colors: active) {

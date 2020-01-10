@@ -102,6 +102,7 @@ class NetworkStateListDetailedView::InfoBubble
              NetworkStateListDetailedView* detailed_view)
       : views::BubbleDialogDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
         detailed_view_(detailed_view) {
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
     set_margins(gfx::Insets(kBubbleMargin));
     SetArrow(views::BubbleBorder::NONE);
     set_shadow(views::BubbleBorder::NO_ASSETS);
@@ -137,9 +138,6 @@ class NetworkStateListDetailedView::InfoBubble
     if (detailed_view_)
       detailed_view_->ResetInfoBubble();
   }
-
-  // BubbleDialogDelegateView:
-  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override {

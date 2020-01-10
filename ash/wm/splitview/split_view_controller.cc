@@ -139,6 +139,22 @@ OverviewSession* GetOverviewSession() {
              : nullptr;
 }
 
+void RemoveSnappingWindowFromOverviewIfApplicable(
+    OverviewSession* overview_session,
+    aura::Window* window) {
+  if (!overview_session)
+    return;
+  OverviewItem* item = overview_session->GetOverviewItemForWindow(window);
+  if (!item)
+    return;
+  // Remove it from overview. The transform will be reset later after the window
+  // is snapped. Note the remaining windows in overview don't need to be
+  // repositioned in this case as they have been positioned to the right place
+  // during dragging.
+  item->RestoreWindow(/*reset_transform=*/false);
+  overview_session->RemoveItem(item);
+}
+
 }  // namespace
 
 // The window observer that observes the current tab-dragged window. When it's
@@ -359,10 +375,28 @@ void SplitViewController::SnapWindow(aura::Window* window,
   DCHECK_NE(snap_position, NONE);
   DCHECK(!is_resizing_);
   DCHECK(!IsDividerAnimating());
-  DCHECK_EQ(root_window_, window->GetRootWindow());
 
+  // Save the transformed bounds in preparation for the snapping animation.
   UpdateSnappingWindowTransformedBounds(window);
-  RemoveWindowFromOverviewIfApplicable(window);
+
+  OverviewSession* overview_session = GetOverviewSession();
+  // We can straightforwardly remove |window| from overview and then move it to
+  // |root_window_|, whereas if we move |window| to |root_window_| first, we
+  // will run into problems because |window| will be on the wrong overview grid.
+  RemoveSnappingWindowFromOverviewIfApplicable(overview_session, window);
+  if (root_window_ != window->GetRootWindow()) {
+    // Use |OverviewSession::set_ignore_window_hierarchy_changes| to prevent
+    // |OverviewSession::OnWindowHierarchyChanged| from ending overview as we
+    // move |window| to |root_window_|.
+    if (overview_session)
+      overview_session->set_ignore_window_hierarchy_changes(true);
+    window_util::MoveWindowToDisplay(window,
+                                     display::Screen::GetScreen()
+                                         ->GetDisplayNearestWindow(root_window_)
+                                         .id());
+    if (overview_session)
+      overview_session->set_ignore_window_hierarchy_changes(false);
+  }
 
   bool do_divider_spawn_animation = false;
   if (state_ == State::kNoSnap) {
@@ -423,7 +457,8 @@ void SplitViewController::SnapWindow(aura::Window* window,
   StartObserving(window);
 
   // Insert the previous snapped window to overview if overview is active.
-  if (previous_snapped_window && GetOverviewSession()) {
+  DCHECK_EQ(overview_session, GetOverviewSession());
+  if (previous_snapped_window && overview_session) {
     InsertWindowToOverview(previous_snapped_window);
     // Ensure that the close icon will fade in. This part is redundant for
     // dragging from overview, but necessary for dragging from the top. For
@@ -432,8 +467,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
     // item anyway, whereas for dragging from the top,
     // |OverviewItem::OnSelectorItemDragEnded| already was called on all
     // overview items and |previous_snapped_window| was not yet among them.
-    GetOverviewSession()
-        ->GetOverviewItemForWindow(previous_snapped_window)
+    overview_session->GetOverviewItemForWindow(previous_snapped_window)
         ->OnSelectorItemDragEnded(/*snap=*/true);
   }
 
@@ -644,7 +678,8 @@ void SplitViewController::StartResize(const gfx::Point& location_in_screen) {
     gfx::Point location_in_parent(location_in_screen);
     ::wm::ConvertPointFromScreen(window->parent(), &location_in_parent);
     int window_component = GetWindowComponentForResize(window);
-    window_state->CreateDragDetails(location_in_parent, window_component,
+    window_state->CreateDragDetails(gfx::PointF(location_in_parent),
+                                    window_component,
                                     ::wm::WINDOW_MOVE_SOURCE_TOUCH);
     window_state->OnDragStarted(window_component);
   }
@@ -1087,6 +1122,21 @@ void SplitViewController::OnOverviewModeEnding(
     return;
   EndSplitView();
   ShowAppCannotSnapToast();
+}
+
+void SplitViewController::OnDisplayRemoved(
+    const display::Display& old_display) {
+  // Display removal always triggers a window activation which ends overview,
+  // and therefore ends clamshell split view, before |OnDisplayRemoved| is
+  // called. In clamshell mode, |OverviewController::CanEndOverview| always
+  // returns true, meaning that overview is guaranteed to end successfully.
+  DCHECK(!InClamshellSplitViewMode());
+  // If we are in tablet split view with only one snapped window, make sure we
+  // are in overview (see https://crbug.com/1027179).
+  if (state_ == State::kLeftSnapped || state_ == State::kRightSnapped) {
+    Shell::Get()->overview_controller()->StartOverview(
+        OverviewSession::EnterExitOverviewType::kImmediateEnter);
+  }
 }
 
 void SplitViewController::OnDisplayMetricsChanged(
@@ -1712,31 +1762,6 @@ void SplitViewController::SetTransformWithAnimation(
   }
 }
 
-void SplitViewController::RemoveWindowFromOverviewIfApplicable(
-    aura::Window* window) {
-  DCHECK_EQ(root_window_, window->GetRootWindow());
-
-  if (!Shell::Get()->overview_controller()->InOverviewSession())
-    return;
-
-  OverviewSession* overview_session = GetOverviewSession();
-  OverviewGrid* current_grid =
-      overview_session->GetGridWithRootWindow(root_window_);
-  if (!current_grid)
-    return;
-
-  OverviewItem* item = current_grid->GetOverviewItemContaining(window);
-  if (!item)
-    return;
-
-  // Remove it from the grid. The transform will be reset later after the
-  // window is snapped. Note the remaining windows in overview don't need to be
-  // repositioned in this case as they have been positioned to the right place
-  // during dragging.
-  item->RestoreWindow(/*reset_transform=*/false);
-  overview_session->RemoveItem(item);
-}
-
 void SplitViewController::UpdateSnappingWindowTransformedBounds(
     aura::Window* window) {
   if (!window->layer()->GetTargetTransform().IsIdentity()) {
@@ -1755,8 +1780,8 @@ void SplitViewController::InsertWindowToOverview(aura::Window* window,
 void SplitViewController::FinishWindowResizing(aura::Window* window) {
   if (window != nullptr) {
     WindowState* window_state = WindowState::Get(window);
-    window_state->OnCompleteDrag(
-        GetEndDragLocationInScreen(window, previous_event_location_));
+    window_state->OnCompleteDrag(gfx::PointF(
+        GetEndDragLocationInScreen(window, previous_event_location_)));
     window_state->DeleteDragDetails();
   }
 }

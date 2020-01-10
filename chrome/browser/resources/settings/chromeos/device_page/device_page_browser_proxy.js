@@ -2,91 +2,86 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview A helper object used for testing the Device page. */
-cr.exportPath('settings');
-
-/**
- * @typedef {{
- *   id: string,
- *   is_dedicated_charger: boolean,
- *   description: string
- * }}
- */
-settings.PowerSource;
-
-/**
- * @typedef {{
- *   present: boolean,
- *   charging: boolean,
- *   calculating: boolean,
- *   percent: number,
- *   statusText: string,
- * }}
- */
-settings.BatteryStatus;
-
-/**
- * Mirrors chromeos::settings::PowerHandler::IdleBehavior.
- * @enum {number}
- */
-settings.IdleBehavior = {
-  DISPLAY_OFF_SLEEP: 0,
-  DISPLAY_OFF: 1,
-  DISPLAY_ON: 2,
-  OTHER: 3,
-};
-
-/**
- * Mirrors chromeos::PowerPolicyController::Action.
- * @enum {number}
- */
-settings.LidClosedBehavior = {
-  SUSPEND: 0,
-  STOP_SESSION: 1,
-  SHUT_DOWN: 2,
-  DO_NOTHING: 3,
-};
-
-/**
- * @typedef {{
- *   idleBehavior: settings.IdleBehavior,
- *   idleControlled: boolean,
- *   lidClosedBehavior: settings.LidClosedBehavior,
- *   lidClosedControlled: boolean,
- *   hasLid: boolean,
- * }}
- */
-settings.PowerManagementSettings;
-
-/**
- * A note app's availability for running as note handler app from lock screen.
- * Mirrors chromeos::NoteTakingLockScreenSupport.
- * @enum {number}
- */
-settings.NoteAppLockScreenSupport = {
-  NOT_SUPPORTED: 0,
-  NOT_ALLOWED_BY_POLICY: 1,
-  SUPPORTED: 2,
-  ENABLED: 3
-};
-
-/**
- * @typedef {{name:string,
- *            value:string,
- *            preferred:boolean,
- *            lockScreenSupport: settings.NoteAppLockScreenSupport}}
- */
-settings.NoteAppInfo;
-
-/**
- * @typedef {{
- *   label: string,
- *   uuid: string
- * }}
- */
-settings.ExternalStorage;
-
 cr.define('settings', function() {
+  /**
+   * @typedef {{
+   *   id: string,
+   *   is_dedicated_charger: boolean,
+   *   description: string
+   * }}
+   */
+  let PowerSource;
+
+  /**
+   * @typedef {{
+   *   present: boolean,
+   *   charging: boolean,
+   *   calculating: boolean,
+   *   percent: number,
+   *   statusText: string,
+   * }}
+   */
+  let BatteryStatus;
+
+  /**
+   * Mirrors chromeos::settings::PowerHandler::IdleBehavior.
+   * @enum {number}
+   */
+  const IdleBehavior = {
+    DISPLAY_OFF_SLEEP: 0,
+    DISPLAY_OFF: 1,
+    DISPLAY_ON: 2,
+    OTHER: 3,
+  };
+
+  /**
+   * Mirrors chromeos::PowerPolicyController::Action.
+   * @enum {number}
+   */
+  const LidClosedBehavior = {
+    SUSPEND: 0,
+    STOP_SESSION: 1,
+    SHUT_DOWN: 2,
+    DO_NOTHING: 3,
+  };
+
+  /**
+   * @typedef {{
+   *   idleBehavior: settings.IdleBehavior,
+   *   idleControlled: boolean,
+   *   lidClosedBehavior: settings.LidClosedBehavior,
+   *   lidClosedControlled: boolean,
+   *   hasLid: boolean,
+   * }}
+   */
+  let PowerManagementSettings;
+
+  /**
+   * A note app's availability for running as note handler app from lock screen.
+   * Mirrors chromeos::NoteTakingLockScreenSupport.
+   * @enum {number}
+   */
+  const NoteAppLockScreenSupport =
+      {NOT_SUPPORTED: 0, NOT_ALLOWED_BY_POLICY: 1, SUPPORTED: 2, ENABLED: 3};
+
+  /**
+   * @typedef {{
+   *   name:string,
+   *   value:string,
+   *   preferred:boolean,
+   *   lockScreenSupport: settings.NoteAppLockScreenSupport,
+   * }}
+   */
+  let NoteAppInfo;
+
+  /**
+   * @typedef {{
+   *   label: string,
+   *   uuid: string
+   * }}
+   */
+  let ExternalStorage;
+
   /** @interface */
   class DevicePageBrowserProxy {
     /** Initializes the mouse and touchpad handler. */
@@ -267,7 +262,15 @@ cr.define('settings', function() {
   cr.addSingletonGetter(DevicePageBrowserProxyImpl);
 
   return {
-    DevicePageBrowserProxy: DevicePageBrowserProxy,
-    DevicePageBrowserProxyImpl: DevicePageBrowserProxyImpl,
+    BatteryStatus,
+    DevicePageBrowserProxy,
+    DevicePageBrowserProxyImpl,
+    ExternalStorage,
+    IdleBehavior,
+    LidClosedBehavior,
+    NoteAppInfo,
+    NoteAppLockScreenSupport,
+    PowerManagementSettings,
+    PowerSource,
   };
 });

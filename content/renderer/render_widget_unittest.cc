@@ -175,7 +175,7 @@ class InteractiveRenderWidget : public RenderWidget {
                      blink::mojom::DisplayMode::kUndefined,
                      /*is_undead=*/false,
                      /*is_hidden=*/false,
-                     /*never_visible=*/false,
+                     /*never_composited=*/false,
                      mojo::NullReceiver()),
         always_overscroll_(false) {
     UnconditionalInit(base::NullCallback());

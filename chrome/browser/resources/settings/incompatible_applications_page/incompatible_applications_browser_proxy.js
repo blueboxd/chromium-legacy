@@ -2,37 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview A helper object used from the Incompatible Applications section
- * to interact with the browser.
- */
-
-cr.exportPath('settings');
-
-/**
- * All possible actions to take on an incompatible application.
- *
- * Must be kept in sync with BlacklistMessageType in
- * chrome/browser/win/conflicts/proto/module_list.proto
- * @readonly
- * @enum {number}
- */
-settings.ActionTypes = {
-  UNINSTALL: 0,
-  MORE_INFO: 1,
-  UPGRADE: 2,
-};
-
-/**
- * @typedef {{
- *   name: string,
- *   actionType: {settings.ActionTypes},
- *   actionUrl: string,
- * }}
- */
-settings.IncompatibleApplication;
-
 cr.define('settings', function() {
+  /**
+   * All possible actions to take on an incompatible application.
+   *
+   * Must be kept in sync with BlacklistMessageType in
+   * chrome/browser/win/conflicts/proto/module_list.proto
+   * @readonly
+   * @enum {number}
+   */
+  const ActionTypes = {
+    UNINSTALL: 0,
+    MORE_INFO: 1,
+    UPGRADE: 2,
+  };
+
+  /**
+   * @typedef {{
+   *   name: string,
+   *   actionType: {settings.ActionTypes},
+   *   actionUrl: string,
+   * }}
+   */
+  let IncompatibleApplication;
+
   /** @interface */
   class IncompatibleApplicationsBrowserProxy {
     /**
@@ -116,8 +109,9 @@ cr.define('settings', function() {
   cr.addSingletonGetter(IncompatibleApplicationsBrowserProxyImpl);
 
   return {
-    IncompatibleApplicationsBrowserProxy: IncompatibleApplicationsBrowserProxy,
-    IncompatibleApplicationsBrowserProxyImpl:
-        IncompatibleApplicationsBrowserProxyImpl,
+    ActionTypes,
+    IncompatibleApplication,
+    IncompatibleApplicationsBrowserProxy,
+    IncompatibleApplicationsBrowserProxyImpl,
   };
 });

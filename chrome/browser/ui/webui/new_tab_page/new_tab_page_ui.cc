@@ -58,11 +58,14 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource() {
       {"urlField", IDS_NTP_CUSTOM_LINKS_URL},
 
       // Customize button and dialog.
+      {"backgroundsMenuItem", IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_LABEL},
       {"cancelButton", IDS_CANCEL},
       {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
       {"customizeButton", IDS_NTP_CUSTOMIZE_BUTTON_LABEL},
       {"defaultThemeLabel", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
       {"doneButton", IDS_DONE},
+      {"shortcutsMenuItem", IDS_NTP_CUSTOMIZE_MENU_SHORTCUTS_LABEL},
+      {"themesMenuItem", IDS_NTP_CUSTOMIZE_MENU_COLOR_LABEL},
       {"thirdPartyThemeDescription", IDS_NTP_CUSTOMIZE_3PT_THEME_DESC},
       {"uninstallThirdPartyThemeButton", IDS_NTP_CUSTOMIZE_3PT_THEME_UNINSTALL},
   };

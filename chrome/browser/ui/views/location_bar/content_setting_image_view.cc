@@ -231,11 +231,10 @@ void ContentSettingImageView::OnWidgetDestroying(views::Widget* widget) {
 }
 
 void ContentSettingImageView::UpdateImage() {
-  SetImage(content_setting_image_model_
-               ->GetIcon(icon_color_ ? icon_color_.value()
-                                     : color_utils::DeriveDefaultIconColor(
-                                           GetForegroundColor()))
-               .AsImageSkia());
+  gfx::Image icon = content_setting_image_model_->GetIcon(icon_color_.value_or(
+      color_utils::DeriveDefaultIconColor(GetForegroundColor())));
+  if (!icon.IsEmpty())
+    SetImage(icon.AsImageSkia());
 }
 
 void ContentSettingImageView::AnimationEnded(const gfx::Animation* animation) {

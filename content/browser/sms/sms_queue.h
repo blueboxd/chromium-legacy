@@ -26,6 +26,7 @@ class CONTENT_EXPORT SmsQueue {
   Subscriber* Pop(const url::Origin& origin);
   void Remove(const url::Origin& origin, Subscriber* subscriber);
   bool HasSubscribers();
+  bool HasSubscriber(const url::Origin& origin, const Subscriber* subscriber);
 
  private:
   std::map<url::Origin, base::ObserverList<Subscriber>> subscribers_;

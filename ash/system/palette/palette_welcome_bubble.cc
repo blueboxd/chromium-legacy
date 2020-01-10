@@ -36,6 +36,7 @@ class PaletteWelcomeBubble::WelcomeBubbleView
  public:
   WelcomeBubbleView(views::View* anchor, views::BubbleBorder::Arrow arrow)
       : views::BubbleDialogDelegateView(anchor, arrow) {
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
     set_close_on_deactivate(true);
     SetCanActivate(false);
     set_accept_events(true);
@@ -67,8 +68,6 @@ class PaletteWelcomeBubble::WelcomeBubbleView
     label->SizeToFit(kBubbleContentLabelPreferredWidthDp);
     AddChildView(label);
   }
-
-  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
   // views::View:
   const char* GetClassName() const override { return "WelcomeBubbleView"; }

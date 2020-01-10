@@ -143,24 +143,27 @@ TEST_F(HidServiceTest, RequestDevice) {
 
   auto device_info = device::mojom::HidDeviceInfo::New();
   device_info->guid = kTestGuid;
-  hid_manager()->AddDevice(device_info.Clone());
+  std::vector<device::mojom::HidDeviceInfoPtr> device_infos;
+  device_infos.push_back(device_info.Clone());
+  hid_manager()->AddDevice(std::move(device_info));
 
   EXPECT_CALL(hid_delegate(), CanRequestDevicePermission)
       .WillOnce(testing::Return(true));
   EXPECT_CALL(hid_delegate(), RunChooserInternal)
-      .WillOnce(testing::Return(testing::ByMove(std::move(device_info))));
+      .WillOnce(testing::Return(testing::ByMove(std::move(device_infos))));
 
   base::RunLoop run_loop;
-  device::mojom::HidDeviceInfoPtr chosen_device;
+  std::vector<device::mojom::HidDeviceInfoPtr> chosen_devices;
   service->RequestDevice(
       std::vector<blink::mojom::HidDeviceFilterPtr>(),
       base::BindLambdaForTesting(
-          [&run_loop, &chosen_device](device::mojom::HidDeviceInfoPtr d) {
-            chosen_device = std::move(d);
+          [&run_loop,
+           &chosen_devices](std::vector<device::mojom::HidDeviceInfoPtr> d) {
+            chosen_devices = std::move(d);
             run_loop.Quit();
           }));
   run_loop.Run();
-  EXPECT_TRUE(chosen_device);
+  EXPECT_EQ(1u, chosen_devices.size());
 }
 
 TEST_F(HidServiceTest, OpenAndCloseHidConnection) {

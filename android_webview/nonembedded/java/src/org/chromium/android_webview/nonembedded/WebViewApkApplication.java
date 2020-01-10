@@ -14,6 +14,7 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
 import org.chromium.ui.base.ResourceBundle;
 
@@ -77,6 +78,7 @@ public class WebViewApkApplication extends Application {
             if (LibraryLoader.getInstance().isInitialized()) {
                 return true;
             }
+            LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_WEBVIEW);
             LibraryLoader.getInstance().loadNow();
         } catch (Throwable unused) {
             // Happens for WebView Stub. Throws NoClassDefFoundError because of no

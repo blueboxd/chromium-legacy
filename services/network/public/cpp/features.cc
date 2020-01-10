@@ -160,8 +160,8 @@ const base::Feature kDisableKeepaliveFetch{"DisableKeepaliveFetch",
 // When kOutOfBlinkFrameAncestors is enabled, the frame-ancestors
 // directive is parsed from the Content-Security-Policy header in the network
 // service and enforced in the browser.
-const base::Feature kOutOfBlinkFrameAncestors{
-    "OutOfBlinkFrameAncestors", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kOutOfBlinkFrameAncestors{"OutOfBlinkFrameAncestors",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool ShouldEnableOutOfBlinkCorsForTesting() {
   return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);

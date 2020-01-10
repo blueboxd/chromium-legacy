@@ -109,6 +109,10 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     public Context getContext() {
+        if (mWindowAndroid == null) {
+            return null;
+        }
+
         return mWindowAndroid.getContext().get();
     }
 

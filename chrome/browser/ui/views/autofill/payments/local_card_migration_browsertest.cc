@@ -84,6 +84,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/animating_layout_manager.h"
+#include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/test/widget_test.h"
 
 using base::Bucket;
@@ -503,15 +504,10 @@ class LocalCardMigrationBrowserTest
   void WaitForAnimationToComplete() {
     if (base::FeatureList::IsEnabled(
             features::kAutofillEnableToolbarStatusChip)) {
-      // Wait for animations to finish.
-      base::RunLoop loop;
-      static_cast<views::AnimatingLayoutManager*>(
+      views::test::WaitForAnimatingLayoutManager(
           BrowserView::GetBrowserViewForBrowser(browser())
               ->toolbar()
-              ->toolbar_account_icon_container()
-              ->GetLayoutManager())
-          ->PostOrQueueAction(loop.QuitClosure());
-      loop.Run();
+              ->toolbar_account_icon_container());
     }
   }
 

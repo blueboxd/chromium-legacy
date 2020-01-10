@@ -16,6 +16,7 @@
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "build/build_config.h"
@@ -63,7 +64,6 @@
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
 #include "base/android/path_utils.h"
-#include "components/crash/content/app/crashpad.h"
 #include "content/shell/android/shell_descriptors.h"
 #endif
 
@@ -71,9 +71,13 @@
 #include "content/public/browser/context_factory.h"
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
-#include "base/debug/leak_annotations.h"
+#if defined(OS_ANDROID)
 #include "components/crash/content/browser/crash_handler_host_linux.h"
+#endif
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#include "components/crash/content/app/crash_switches.h"
+#include "components/crash/content/app/crashpad.h"
 #include "content/public/common/content_descriptors.h"
 #endif
 
@@ -97,52 +101,12 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
   return crashpad::CrashHandlerHost::Get()->GetDeathSignalSocket();
 }
 #elif defined(OS_LINUX)
-breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
-    const std::string& process_type) {
-  base::FilePath dumps_path =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-          switches::kCrashDumpsDir);
-  {
-    ANNOTATE_SCOPED_MEMORY_LEAK;
-    breakpad::CrashHandlerHostLinux* crash_handler =
-        new breakpad::CrashHandlerHostLinux(
-            process_type, dumps_path, false);
-    crash_handler->StartUploaderThread();
-    return crash_handler;
-  }
-}
-
 int GetCrashSignalFD(const base::CommandLine& command_line) {
-  if (!breakpad::IsCrashReporterEnabled())
-    return -1;
-
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
-
-  if (process_type == switches::kRendererProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost(process_type);
-    return crash_handler->GetDeathSignalSocket();
-  }
-
-  if (process_type == switches::kPpapiPluginProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost(process_type);
-    return crash_handler->GetDeathSignalSocket();
-  }
-
-  if (process_type == switches::kGpuProcess) {
-    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
-    if (!crash_handler)
-      crash_handler = CreateCrashHandlerHost(process_type);
-    return crash_handler->GetDeathSignalSocket();
-  }
-
-  return -1;
+  int fd;
+  pid_t pid;
+  return crash_reporter::GetHandlerSocket(&fd, &pid) ? fd : -1;
 }
-#endif  // defined(OS_ANDROID)
+#endif
 
 const service_manager::Manifest& GetContentBrowserOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
@@ -255,6 +219,15 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
     command_line->AppendSwitch(switches::kEnableCrashReporter);
+#if defined(OS_LINUX)
+    int fd;
+    pid_t pid;
+    if (crash_reporter::GetHandlerSocket(&fd, &pid)) {
+      command_line->AppendSwitchASCII(
+          crash_reporter::switches::kCrashpadHandlerPid,
+          base::NumberToString(pid));
+    }
+#endif  // OS_LINUX
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kCrashDumpsDir)) {

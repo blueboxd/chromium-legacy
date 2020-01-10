@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
 #include "base/test/launcher/test_launcher.h"
+#include "base/test/test_switches.h"
 #include "base/time/time.h"
 #include "base/values.h"
 
@@ -166,6 +167,9 @@ bool TestResultsTracker::Init(const CommandLine& command_line) {
     return false;
   }
 
+  print_temp_leaks_ =
+      command_line.HasSwitch(switches::kTestLauncherPrintTempLeaks);
+
   if (!command_line.HasSwitch(kGTestOutputFlag))
     return true;
 
@@ -270,6 +274,13 @@ void TestResultsTracker::AddTestResult(const TestResult& result) {
   aggregate_test_result.test_results.push_back(result);
 }
 
+void TestResultsTracker::AddLeakedItems(
+    int count,
+    const std::vector<std::string>& test_names) {
+  DCHECK(count);
+  per_iteration_data_.back().leaked_temp_items.emplace_back(count, test_names);
+}
+
 void TestResultsTracker::GeneratePlaceholderIteration() {
   CHECK(thread_checker_.CalledOnValidThread());
 
@@ -316,6 +327,13 @@ void TestResultsTracker::PrintSummaryOfCurrentIteration() const {
              "had unknown result");
   PrintTests(tests_by_status[TestResult::TEST_NOT_RUN].begin(),
              tests_by_status[TestResult::TEST_NOT_RUN].end(), "not run");
+
+  if (print_temp_leaks_) {
+    for (const auto& leaking_tests :
+         per_iteration_data_.back().leaked_temp_items) {
+      PrintLeaks(leaking_tests.first, leaking_tests.second);
+    }
+  }
 }
 
 void TestResultsTracker::PrintSummaryOfAllIterations() const {
@@ -571,6 +589,16 @@ void TestResultsTracker::PrintTests(InputIterator first,
     fprintf(stdout, "    %s (%s:%d)\n", test_name.c_str(),
             location.file.c_str(), location.line);
   }
+  fflush(stdout);
+}
+
+void TestResultsTracker::PrintLeaks(
+    int count,
+    const std::vector<std::string>& test_names) const {
+  fprintf(stdout,
+          "ERROR: %d files and/or directories were left behind in the temporary"
+          " directory by one or more of these tests: %s\n",
+          count, JoinString(test_names, ":").c_str());
   fflush(stdout);
 }
 

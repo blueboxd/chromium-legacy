@@ -31,6 +31,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
+import org.chromium.base.compat.ApiHelperForQ;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
@@ -142,7 +143,7 @@ class PlatformNetworksManager {
             return;
         }
 
-        CellInfoDelegate.requestCellInfoUpdate(telephonyManager, (cellInfos) -> {
+        requestCellInfoUpdate(telephonyManager, (cellInfos) -> {
             PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                     () -> callback.onResult(getAllVisibleCellsFromCellInfo(cellInfos)));
         });
@@ -347,6 +348,15 @@ class PlatformNetworksManager {
     private static boolean hasLocationAndWifiPermission(Context context) {
         return hasLocationPermission(context)
                 && hasPermission(context, Manifest.permission.ACCESS_WIFI_STATE);
+    }
+
+    private static void requestCellInfoUpdate(
+            TelephonyManager telephonyManager, Callback<List<CellInfo>> callback) {
+        if (BuildInfo.isAtLeastQ()) {
+            ApiHelperForQ.requestCellInfoUpdate(telephonyManager, callback);
+            return;
+        }
+        callback.onResult(telephonyManager.getAllCellInfo());
     }
 
     /**

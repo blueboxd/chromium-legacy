@@ -453,7 +453,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4158704014418536539">Se distingue entre mayúsculas y minúsculas.</translation>
 <translation id="4159784952369912983">Morado</translation>
 <translation id="4161104397932142764">{COUNT,plural, =1{segundo}other{segundos}}</translation>
-<translation id="4161663686871496107">Ya puedes usar la síntesis de voz de ChromeVox</translation>
+<translation id="4161663686871496107">Ya puedes usar los mensajes de voz de ChromeVox</translation>
 <translation id="4173994908659439270">No hay ningún campo de texto editable posterior.</translation>
 <translation id="4176463684765177261">Inhabilitado</translation>
 <translation id="4187322598335821254">Desliza el dedo hacia arriba o hacia abajo para desplazarte de una línea a otra</translation>
@@ -843,6 +843,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="6865519907510167493">Error ortográfico</translation>
 <translation id="6871161210040114857">No se distingue entre mayúsculas y minúsculas.</translation>
 <translation id="6877435256196695200">No hay ningún gráfico posterior.</translation>
+<translation id="688976158310523235">Menú de búsqueda</translation>
 <translation id="6897341342232909480">Se desplaza a la izquierda</translation>
 <translation id="6901540140423170855">fecha</translation>
 <translation id="6910211073230771657">Eliminado</translation>
@@ -1208,6 +1209,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="9065283790526219006">más componente emergente</translation>
 <translation id="9066023754636984703">Pulsa la tecla de búsqueda + A, J para desplazarte a los detalles.</translation>
 <translation id="9067522039955793016">Salto de página</translation>
+<translation id="9074824103975499138">Buscar en menús de ChromeVox</translation>
 <translation id="9077213568694924680">eliminado de la selección</translation>
 <translation id="9077305471618729969">Verde mar claro</translation>
 <translation id="9082874451376019682">No hay ningún control deslizante anterior.</translation>

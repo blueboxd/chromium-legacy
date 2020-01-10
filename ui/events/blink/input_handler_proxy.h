@@ -61,8 +61,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
     return scroll_elasticity_controller_.get();
   }
 
-  void set_smooth_scroll_enabled(bool value) { smooth_scroll_enabled_ = value; }
-
   enum EventDisposition {
     DID_HANDLE,
     DID_NOT_HANDLE,
@@ -164,10 +162,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   void HandleOverscroll(const gfx::PointF& causal_event_viewport_point,
                         const cc::InputHandlerScrollResult& scroll_result);
 
-  // Whether to use a smooth scroll animation for this event.
-  bool ShouldAnimate(blink::WebGestureDevice device,
-                     bool has_precise_scroll_deltas) const;
-
   // Update the elastic overscroll controller with |gesture_event|.
   void HandleScrollElasticityOverscroll(
       const blink::WebGestureEvent& gesture_event,
@@ -203,8 +197,6 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   // Used to animate rubber-band over-scroll effect on Mac.
   std::unique_ptr<InputScrollElasticityController>
       scroll_elasticity_controller_;
-
-  bool smooth_scroll_enabled_;
 
   // The merged result of the last touch event with previous touch events.
   // This value will get returned for subsequent TouchMove events to allow

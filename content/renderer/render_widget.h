@@ -172,7 +172,7 @@ class CONTENT_EXPORT RenderWidget
                blink::mojom::DisplayMode display_mode,
                bool is_undead,
                bool hidden,
-               bool never_visible,
+               bool never_composited,
                mojo::PendingReceiver<mojom::Widget> widget_receiver);
 
   ~RenderWidget() override;
@@ -195,7 +195,7 @@ class CONTENT_EXPORT RenderWidget
       CompositorDependencies*,
       blink::mojom::DisplayMode display_mode,
       bool is_undead,
-      bool never_visible,
+      bool never_composited,
       mojo::PendingReceiver<mojom::Widget> widget_receiver);
   // Overrides the implementation of CreateForFrame() function below. Used by
   // web tests to return a partial fake of RenderWidget.
@@ -210,7 +210,7 @@ class CONTENT_EXPORT RenderWidget
       CompositorDependencies* compositor_deps,
       blink::mojom::DisplayMode display_mode,
       bool is_undead,
-      bool never_visible);
+      bool never_composited);
 
   // Creates a RenderWidget for a popup. This is separate from CreateForFrame()
   // because popups do not not need to be faked out.
@@ -222,7 +222,7 @@ class CONTENT_EXPORT RenderWidget
       CompositorDependencies* compositor_deps,
       blink::mojom::DisplayMode display_mode,
       bool hidden,
-      bool never_visible,
+      bool never_composited,
       mojo::PendingReceiver<mojom::Widget> widget_receiver);
 
   // Initialize a new RenderWidget for a popup. The |show_callback| is called
@@ -967,7 +967,7 @@ class CONTENT_EXPORT RenderWidget
   bool is_hidden_;
 
   // Indicates that we are never visible, so never produce graphical output.
-  const bool compositor_never_visible_;
+  const bool never_composited_;
 
   // Indicates whether tab-initiated fullscreen was granted.
   bool is_fullscreen_granted_ = false;

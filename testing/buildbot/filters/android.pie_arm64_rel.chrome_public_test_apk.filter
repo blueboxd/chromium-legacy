@@ -27,9 +27,7 @@
 -org.chromium.chrome.browser.ntp.NewTabPageTest.testRemoveMostVisitedItem
 -org.chromium.chrome.browser.ntp.RecentTabsPageTest.testRecentlyClosedTabs
 
-# crbug/1035956
--org.chromium.chrome.browser.payments.PaymentRequestNoShippingTest.testSaveNewCardAndNewBillingAddressAndPay
--org.chromium.chrome.browser.payments.PaymentRequestRemoveBillingAddressTest.testPayWithCard
+# crbug/1040088
 -org.chromium.chrome.browser.payments.PaymentRequestRetryTest.testRetryWithShippingAddressErrorsAndPayerErrors
 
 # crbug/707528

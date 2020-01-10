@@ -319,6 +319,7 @@ _CONFIG = [
             'url::.+',
 
             # Nested namespaces under the blink namespace
+            'bindings::.+',
             'canvas_heuristic_parameters::.+',
             'compositor_target_property::.+',
             'cors::.+',
@@ -749,6 +750,7 @@ _CONFIG = [
             'webrtc::EchoCanceller3Config',
             'webrtc::EchoCanceller3Factory',
             'webrtc::ExperimentalAgc',
+            'webrtc::ExperimentalNs',
             'webrtc::MediaStreamTrackInterface',
             'webrtc::ObserverInterface',
             'webrtc::StreamConfig',

@@ -50,10 +50,6 @@ test("components_unittests") {
   if (is_android || is_linux || is_mac || is_win) {
     data = [
       "test/data/",
-
-      # TODO(dpranke): Remove the next two lines after GN has rolled to 339778.
-      "$root_out_dir/components_tests_resources.pak",
-      "$root_out_dir/ui_test.pak",
     ]
   }
 
@@ -296,7 +292,7 @@ test("components_unittests") {
     data_deps = [
       ":components_tests_pak",
       "//third_party/mesa_headers",
-      "//ui/resources:ui_test_pak",
+      "//ui/resources:ui_test_pak_data",
     ]
   }  # iOS/!iOS
 
@@ -321,6 +317,7 @@ test("components_unittests") {
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
       "//components/invalidation/impl",
       "//components/invalidation/impl:java",
+      "//components/paint_preview/browser/android:java",
       "//components/paint_preview/player/android:unit_tests",
       "//components/policy/android:policy_java",
       "//components/signin/core/browser",
@@ -670,15 +667,13 @@ if (!is_ios && !is_fuchsia) {
 
     data_deps = [
       ":components_tests_pak",
-      "//ui/resources:ui_test_pak",
+      "//ui/resources:ui_test_pak_data",
 
       # Needed for isolate script to execute.
       "//testing:run_perf_test",
     ]
 
     data = [
-      "$root_out_dir/components_tests_resources.pak",
-      "$root_out_dir/ui_test.pak",
       "//components/subresource_filter/core/common/perftests/data/",
       "//third_party/subresource-filter-ruleset/data/",
     ]

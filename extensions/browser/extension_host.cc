@@ -438,7 +438,7 @@ bool ExtensionHost::CheckMediaAccessPermission(
       render_frame_host, security_origin, type, extension());
 }
 
-bool ExtensionHost::IsNeverVisible(content::WebContents* web_contents) {
+bool ExtensionHost::IsNeverComposited(content::WebContents* web_contents) {
   ViewType view_type = extensions::GetViewType(web_contents);
   return view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
 }

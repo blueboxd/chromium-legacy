@@ -167,6 +167,25 @@ void CastMediaNotificationItem::OnMediaStatusUpdated(
   session_controller_->OnMediaStatusUpdated(std::move(status));
 }
 
+void CastMediaNotificationItem::OnRouteUpdated(
+    const media_router::MediaRoute& route) {
+  DCHECK_EQ(route.media_route_id(), media_route_id_);
+  bool updated = false;
+  const base::string16 new_source_title =
+      base::UTF8ToUTF16(route.media_sink_name());
+  if (metadata_.source_title != new_source_title) {
+    metadata_.source_title = new_source_title;
+    updated = true;
+  }
+  const base::string16 new_artist = base::UTF8ToUTF16(route.description());
+  if (metadata_.artist != new_artist) {
+    metadata_.artist = new_artist;
+    updated = true;
+  }
+  if (updated && view_)
+    view_->UpdateWithMediaMetadata(metadata_);
+}
+
 mojo::PendingRemote<media_router::mojom::MediaStatusObserver>
 CastMediaNotificationItem::GetObserverPendingRemote() {
   return observer_receiver_.BindNewPipeAndPassRemote();

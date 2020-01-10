@@ -82,7 +82,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     kSwipeFromShelf,
     // Used only when it's desired to enter overview mode immediately without
     // animations. It's used when entering overview by dragging a window from
-    // from the top of the screen.
+    // the top of the screen or from the shelf. It's also used when entering
+    // overview to avoid the blatantly broken behaviors shown in the videos
+    // linked in https://crbug.com/1027179. This should not be used for exiting
+    // overview mode.
     kImmediateEnter,
     // Used only when it's desired to exit overview mode immediately without
     // animations. This is used when performing the desk switch animation when
@@ -318,6 +321,11 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   OverviewDelegate* delegate() { return delegate_; }
 
+  void set_ignore_window_hierarchy_changes(
+      bool ignore_window_hierarchy_changes) {
+    ignore_window_hierarchy_changes_ = ignore_window_hierarchy_changes;
+  }
+
   bool is_shutting_down() const { return is_shutting_down_; }
   void set_is_shutting_down(bool is_shutting_down) {
     is_shutting_down_ = is_shutting_down;
@@ -399,6 +407,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // used to prevent handling the resulting expected activation. This is
   // initially true until this is initialized.
   bool ignore_activations_ = true;
+
+  // True when performing operations that may cause window hierarchy changes.
+  // Used to prevent handling the resulting expected window hierarchy change.
+  bool ignore_window_hierarchy_changes_ = false;
 
   // True when overview mode is exiting.
   bool is_shutting_down_ = false;

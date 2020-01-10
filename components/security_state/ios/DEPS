@@ -3,4 +3,5 @@ include_rules = [
   "+components/security_state/core",
   "+ios/web/common",
   "+ios/web/public",
+  "+services/network/public/cpp",
 ]

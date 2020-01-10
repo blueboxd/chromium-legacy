@@ -30,10 +30,10 @@ class COMPONENT_EXPORT(NETWORK_CPP) ContentSecurityPolicy {
   // requesting |request_url|. The |request_url| is used for violation
   // reporting, as specified in
   // https://w3c.github.io/webappsec-csp/#report-violation.
-  bool Parse(const GURL& request_url, const net::HttpResponseHeaders& headers);
+  void Parse(const GURL& request_url, const net::HttpResponseHeaders& headers);
 
   // Parses a Content-Security-Policy |header|.
-  bool Parse(const GURL& base_url,
+  void Parse(const GURL& base_url,
              network::mojom::ContentSecurityPolicyType type,
              base::StringPiece header);
 

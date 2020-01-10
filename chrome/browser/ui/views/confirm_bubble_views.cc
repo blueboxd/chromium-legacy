@@ -119,13 +119,10 @@ void ConfirmBubbleViews::ButtonPressed(views::Button* sender,
   }
 }
 
-void ConfirmBubbleViews::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this && GetWidget()) {
-    GetWidget()->GetRootView()->GetViewAccessibility().OverrideDescribedBy(
-        label_);
-  }
-  DialogDelegateView::ViewHierarchyChanged(details);
+void ConfirmBubbleViews::AddedToWidget() {
+  GetWidget()->GetRootView()->GetViewAccessibility().OverrideDescribedBy(
+      label_);
+  DialogDelegateView::AddedToWidget();
 }
 
 namespace chrome {

@@ -60,7 +60,7 @@ if (enable_image_editor) {
 
 # Modules shipped in Monochrome (Android N+).
 monochrome_module_descs = chrome_modern_module_descs
-if (enable_arcore) {
+if (false) {  # AR DFM is currently disabled
   monochrome_module_descs += [ ar_module_desc ]
 }
 if (!disable_autofill_assistant_dfm) {

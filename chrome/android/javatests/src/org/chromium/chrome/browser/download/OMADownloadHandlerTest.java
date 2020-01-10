@@ -20,13 +20,14 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadQueryResult;
 import org.chromium.chrome.browser.download.OMADownloadHandler.OMAInfo;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -50,7 +51,6 @@ public class OMADownloadHandlerTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
-    private static final String PENDING_OMA_DOWNLOADS = "PendingOMADownloads";
     private static final String INSTALL_NOTIFY_URI = "http://test/test";
 
     private TestInfoBarController mTestInfoBarController;
@@ -322,11 +322,13 @@ public class OMADownloadHandlerTest {
         // Write a few pending downloads into shared preferences.
         Set<String> pendingOmaDownloads = new HashSet<>();
         pendingOmaDownloads.add(String.valueOf(downloadId1) + "," + INSTALL_NOTIFY_URI);
-        DownloadManagerService.storeDownloadInfo(ContextUtils.getAppSharedPreferences(),
-                PENDING_OMA_DOWNLOADS, pendingOmaDownloads, false /* forceCommit */);
+        DownloadManagerService.storeDownloadInfo(SharedPreferencesManager.getInstance(),
+                ChromePreferenceKeys.DOWNLOAD_PENDING_OMA_DOWNLOADS, pendingOmaDownloads,
+                false /* forceCommit */);
 
-        pendingOmaDownloads = DownloadManagerService.getStoredDownloadInfo(
-                ContextUtils.getAppSharedPreferences(), PENDING_OMA_DOWNLOADS);
+        pendingOmaDownloads =
+                DownloadManagerService.getStoredDownloadInfo(SharedPreferencesManager.getInstance(),
+                        ChromePreferenceKeys.DOWNLOAD_PENDING_OMA_DOWNLOADS);
         Assert.assertEquals(1, pendingOmaDownloads.size());
 
         omaHandler.clearPendingOMADownloads();
@@ -341,8 +343,9 @@ public class OMADownloadHandlerTest {
         });
 
         // The pending downloads set in the shared prefs should be empty now.
-        pendingOmaDownloads = DownloadManagerService.getStoredDownloadInfo(
-                ContextUtils.getAppSharedPreferences(), PENDING_OMA_DOWNLOADS);
+        pendingOmaDownloads =
+                DownloadManagerService.getStoredDownloadInfo(SharedPreferencesManager.getInstance(),
+                        ChromePreferenceKeys.DOWNLOAD_PENDING_OMA_DOWNLOADS);
         Assert.assertEquals(0, pendingOmaDownloads.size());
         Assert.assertEquals(omaHandler.mNofityURI, INSTALL_NOTIFY_URI);
 
@@ -387,7 +390,8 @@ public class OMADownloadHandlerTest {
             });
 
             Set<String> downloads = DownloadManagerService.getStoredDownloadInfo(
-                    ContextUtils.getAppSharedPreferences(), PENDING_OMA_DOWNLOADS);
+                    SharedPreferencesManager.getInstance(),
+                    ChromePreferenceKeys.DOWNLOAD_PENDING_OMA_DOWNLOADS);
             Assert.assertEquals(1, downloads.size());
             OMADownloadHandler.OMAEntry entry =
                     OMADownloadHandler.OMAEntry.parseOMAEntry((String) (downloads.toArray()[0]));

@@ -98,22 +98,6 @@ class StackingBarLabelButton : public views::LabelButton {
         TrayPopupInkDropStyle::FILL_BOUNDS, this, background_color_);
   }
 
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    SkScalar top_radius = SkIntToScalar(kUnifiedTrayCornerRadius);
-    SkRect bounds = gfx::RectToSkRect(GetContentsBounds());
-    SkPath path;
-
-    if (base::i18n::IsRTL()) {
-      SkScalar radii[8] = {top_radius, top_radius, 0, 0, 0, 0, 0, 0};
-      path.addRoundRect(bounds, radii);
-    } else {
-      SkScalar radii[8] = {0, 0, top_radius, top_radius, 0, 0, 0, 0};
-      path.addRoundRect(bounds, radii);
-    }
-
-    return std::make_unique<views::PathInkDropMask>(size(), path);
-  }
-
  private:
   SkColor background_color_ = gfx::kPlaceholderColor;
   UnifiedMessageCenterView* message_center_view_;
@@ -483,14 +467,8 @@ void StackedNotificationBar::OnPaint(gfx::Canvas* canvas) {
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
 
-  SkPath background_path;
-  SkScalar top_radius = SkIntToScalar(kUnifiedTrayCornerRadius);
-  SkScalar radii[8] = {top_radius, top_radius, top_radius, top_radius,
-                       0,          0,          0,          0};
-
   gfx::Rect bounds = GetLocalBounds();
-  background_path.addRoundRect(gfx::RectToSkRect(bounds), radii);
-  canvas->DrawPath(background_path, flags);
+  canvas->DrawRect(bounds, flags);
 
   // We draw a border here than use a views::Border so the ink drop highlight
   // of the clear all button overlays the border.

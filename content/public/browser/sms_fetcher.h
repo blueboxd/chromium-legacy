@@ -34,6 +34,7 @@ class SmsFetcher {
                            const std::string& sms) = 0;
   };
 
+  // Idempotent function that subscribes to incoming SMSes from SmsProvider.
   virtual void Subscribe(const url::Origin& origin, Subscriber* subscriber) = 0;
   virtual void Unsubscribe(const url::Origin& origin,
                            Subscriber* subscriber) = 0;

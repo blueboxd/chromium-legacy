@@ -5,75 +5,13 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html">
 <link rel="import" href="chrome://resources/cr_elements/md_select_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
-<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="cups_add_printer_dialog_elements.html">
 <link rel="import" href="cups_printer_dialog_util.html">
 <link rel="import" href="cups_printer_shared_css.html">
 <link rel="import" href="cups_printers_browser_proxy.html">
-
-<dom-module id="add-printer-discovery-dialog">
-  <template>
-    <style include="cr-shared-style cups-printer-shared">
-      add-printer-list {
-        max-height: 310px;
-        overflow-y: auto;
-        position: absolute;
-        width: 100%;
-      }
-
-      #searchSpinner {
-        position: absolute;
-        top: 80%;
-      }
-
-      #searchSpinner paper-spinner-lite {
-        --paper-spinner-stroke-width: 2px;
-        height: 15px;
-        margin-inline-end: 3px;
-        margin-inline-start: 20px;
-        width: 15px;
-      }
-    </style>
-    <add-printer-dialog>
-      <div slot="dialog-title">$i18n{addPrintersNearbyTitle}</div>
-      <div slot="dialog-body">
-        <add-printer-list printers="[[discoveredPrinters]]"
-            selected-printer="{{selectedPrinter}}">
-        </add-printer-list>
-        <div class="center" id="noPrinterMessage"
-            hidden="[[discoveredPrinters.length]]">
-           $i18n{noPrinterNearbyMessage}
-        </div>
-        <div id="searchSpinner" hidden="[[!discovering_]]">
-          <paper-spinner-lite active="[[discovering_]]"></paper-spinner-lite>
-          <span>$i18n{searchingNearbyPrinters}</span>
-        </div>
-      </div>
-      <div slot="dialog-buttons">
-        <div>  <!-- Left group -->
-          <cr-button id="manuallyAddPrinterButton"
-              on-click="switchToManualAddDialog_">
-            $i18n{manuallyAddPrinterButtonText}
-          </cr-button>
-        </div>
-        <div>  <!-- Right group -->
-          <cr-button class="cancel-button" on-click="onCancelTap_">
-            $i18n{cancel}
-          </cr-button>
-          <cr-button class="action-button" id="addPrinterButton"
-              disabled="[[!canAddPrinter_(selectedPrinter)]]"
-              on-click="switchToConfiguringDialog_">
-            $i18n{addPrinterButtonText}
-          </cr-button>
-        </div>
-      </div>
-    </add-printer-dialog>
-  </template>
-</dom-module>
 
 <dom-module id="add-printer-manually-dialog">
   <template>
@@ -127,16 +65,12 @@
         </div>
       </div>
       <div slot="dialog-buttons">
-        <div>  <!-- Left group -->
-          <cr-button on-click="switchToDiscoveryDialog_"
-              hidden="[[enableUpdatedUi]]">
-            $i18n{discoverPrintersButtonText}
-          </cr-button>
-        </div>
-        <div>  <!-- Right group -->
+        <div>
           <cr-button class="cancel-button" on-click="onCancelTap_">
             $i18n{cancel}
           </cr-button>
+        </div>
+        <div>
           <cr-button id="addPrinterButton" class="action-button"
               on-click="addPressed_"
               disabled="[[!canAddPrinter_(newPrinter.*,
@@ -230,52 +164,14 @@
   </template>
 </dom-module>
 
-<dom-module id="add-printer-configuring-dialog">
-  <template>
-    <style include="cups-printer-shared">
-      [slot='dialog-body'] {
-        padding-top: 140px;
-        text-align: center;
-      }
-    </style>
-    <add-printer-dialog>
-      <div slot="dialog-title">[[dialogTitle]]</div>
-      <div slot="dialog-body">
-        <paper-spinner-lite active></paper-spinner-lite>
-        <div id="configuringMessage"></div>
-      </div>
-      <div slot="dialog-buttons">
-        <cr-button class="cancel-button" on-click="onCloseConfiguringTap_">
-          $i18n{close}
-        </cr-button>
-      </div>
-    </add-printer-dialog>
-  </template>
-</dom-module>
-
 <dom-module id="settings-cups-add-printer-dialog">
   <template>
     <style include="settings-shared"></style>
 
-    <!-- Printer Discovery Dialog -->
-    <template is="dom-if" if="[[showDiscoveryDialog_]]" restamp>
-      <add-printer-discovery-dialog selected-printer="{{newPrinter}}">
-      </add-printer-discovery-dialog>
-    </template>
-
     <!-- Manually Add Printer Dialog -->
     <template is="dom-if" if="[[showManuallyAddDialog_]]" restamp>
-      <add-printer-manually-dialog new-printer="{{newPrinter}}"
-          enable-updated-ui="[[enableUpdatedUi]]">
+      <add-printer-manually-dialog new-printer="{{newPrinter}}">
       </add-printer-manually-dialog>
-    </template>
-
-    <!-- Configuring Printer Dialog -->
-    <template is="dom-if" if="[[showConfiguringDialog_]]" restamp>
-      <add-printer-configuring-dialog
-          printer-name="[[newPrinter.printerName]]"
-          dialog-title="[[configuringDialogTitle]]">
-      </add-printer-configuring-dialog>
     </template>
 
     <!-- Manufacturer and Model Dialog -->

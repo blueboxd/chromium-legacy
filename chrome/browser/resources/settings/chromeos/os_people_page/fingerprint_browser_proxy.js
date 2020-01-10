@@ -2,56 +2,54 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('settings');
-
-/**
- * @enum {number}
- * These values must be kept in sync with the values in
- * third_party/cros_system_api/dbus/service_constants.h.
- */
-settings.FingerprintResultType = {
-  SUCCESS: 0,
-  PARTIAL: 1,
-  INSUFFICIENT: 2,
-  SENSOR_DIRTY: 3,
-  TOO_SLOW: 4,
-  TOO_FAST: 5,
-  IMMOBILE: 6,
-};
-
-/**
- * An object describing a attempt from the fingerprint hardware. The structure
- * of this data must be kept in sync with C++ FingerprintHandler.
- * @typedef {{
- *   result: settings.FingerprintResultType,
- *   indexes: !Array<number>,
- * }}
- */
-settings.FingerprintAttempt;
-
-/**
- * An object describing a scan from the fingerprint hardware. The structure of
- * this data must be kept in sync with C++ FingerprintHandler.
- * @typedef {{
- *   result: settings.FingerprintResultType,
- *   isComplete: boolean,
- *   percentComplete: number,
- * }}
- */
-settings.FingerprintScan;
-
-/**
- * An object describing the necessary info to display on the fingerprint
- * settings. The structure of this data must be kept in sync with
- * C++ FingerprintHandler.
- * @typedef {{
- *   fingerprintsList: !Array<string>,
- *   isMaxed: boolean,
- * }}
- */
-settings.FingerprintInfo;
-
 cr.define('settings', function() {
+  /**
+   * @enum {number}
+   * These values must be kept in sync with the values in
+   * third_party/cros_system_api/dbus/service_constants.h.
+   */
+  const FingerprintResultType = {
+    SUCCESS: 0,
+    PARTIAL: 1,
+    INSUFFICIENT: 2,
+    SENSOR_DIRTY: 3,
+    TOO_SLOW: 4,
+    TOO_FAST: 5,
+    IMMOBILE: 6,
+  };
+
+  /**
+   * An object describing a attempt from the fingerprint hardware. The structure
+   * of this data must be kept in sync with C++ FingerprintHandler.
+   * @typedef {{
+   *   result: settings.FingerprintResultType,
+   *   indexes: !Array<number>,
+   * }}
+   */
+  let FingerprintAttempt;
+
+  /**
+   * An object describing a scan from the fingerprint hardware. The structure of
+   * this data must be kept in sync with C++ FingerprintHandler.
+   * @typedef {{
+   *   result: settings.FingerprintResultType,
+   *   isComplete: boolean,
+   *   percentComplete: number,
+   * }}
+   */
+  let FingerprintScan;
+
+  /**
+   * An object describing the necessary info to display on the fingerprint
+   * settings. The structure of this data must be kept in sync with
+   * C++ FingerprintHandler.
+   * @typedef {{
+   *   fingerprintsList: !Array<string>,
+   *   isMaxed: boolean,
+   * }}
+   */
+  let FingerprintInfo;
+
   /** @interface */
   class FingerprintBrowserProxy {
     /**
@@ -159,7 +157,11 @@ cr.define('settings', function() {
   cr.addSingletonGetter(FingerprintBrowserProxyImpl);
 
   return {
-    FingerprintBrowserProxy: FingerprintBrowserProxy,
-    FingerprintBrowserProxyImpl: FingerprintBrowserProxyImpl,
+    FingerprintAttempt,
+    FingerprintBrowserProxy,
+    FingerprintBrowserProxyImpl,
+    FingerprintInfo,
+    FingerprintResultType,
+    FingerprintScan,
   };
 });

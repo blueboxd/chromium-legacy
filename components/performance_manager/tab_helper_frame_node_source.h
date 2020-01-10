@@ -24,12 +24,14 @@ class TabHelperFrameNodeSource : public FrameNodeSource,
   ~TabHelperFrameNodeSource() override;
 
   // FrameNodeSource:
-  FrameNodeImpl* GetFrameNode(int render_process_id, int frame_id) override;
-  void SubscribeToFrameNode(int render_process_id,
-                            int frame_id,
-                            OnbeforeFrameNodeRemovedCallback
-                                on_before_frame_node_removed_callback) override;
-  void UnsubscribeFromFrameNode(int render_process_id, int frame_id) override;
+  FrameNodeImpl* GetFrameNode(
+      content::GlobalFrameRoutingId render_process_host_id) override;
+  void SubscribeToFrameNode(
+      content::GlobalFrameRoutingId render_process_host_id,
+      OnbeforeFrameNodeRemovedCallback on_before_frame_node_removed_callback)
+      override;
+  void UnsubscribeFromFrameNode(
+      content::GlobalFrameRoutingId render_process_host_id) override;
 
   // PerformanceManagerTabHelper::Observer:
   void OnBeforeFrameNodeRemoved(

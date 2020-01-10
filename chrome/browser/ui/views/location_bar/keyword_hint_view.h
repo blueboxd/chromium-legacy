@@ -44,8 +44,6 @@ class KeywordHintView : public views::Button {
   void OnThemeChanged() override;
 
  private:
-  // Creates a label for non-chip text.
-  views::Label* CreateLabel(SkColor text_color, SkColor background_color);
 
   Profile* profile_ = nullptr;
 

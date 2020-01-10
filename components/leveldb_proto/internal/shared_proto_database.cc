@@ -31,10 +31,6 @@ const char kSharedProtoDatabaseUmaName[] = "SharedDb";
 
 }  // namespace
 
-// static
-const base::TimeDelta SharedProtoDatabase::kDelayToClearObsoleteDatabase =
-    base::TimeDelta::FromSeconds(120);
-
 inline void RunInitStatusCallbackOnCallingSequence(
     SharedProtoDatabase::SharedClientInitCallback callback,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
@@ -435,6 +431,28 @@ void SharedProtoDatabase::OnDatabaseInit(bool create_if_missing,
   }
 
   ProcessInitRequests(status);
+
+  if (init_state_ == InitState::kSuccess) {
+    // Hold on to shared db until the remove operation is done or Shutdown()
+    // clears the task.
+    Callbacks::UpdateCallback keep_shared_db_alive =
+        base::BindOnce([](scoped_refptr<SharedProtoDatabase>, bool) {},
+                       base::WrapRefCounted<>(this));
+    delete_obsolete_task_.Reset(base::BindOnce(
+        &SharedProtoDatabase::DestroyObsoleteSharedProtoDatabaseClients, this,
+        std::move(keep_shared_db_alive)));
+    task_runner_->PostDelayedTask(FROM_HERE, delete_obsolete_task_.callback(),
+                                  delete_obsolete_delay_);
+  }
+}
+
+void SharedProtoDatabase::Shutdown() {
+  if (!task_runner_->RunsTasksInCurrentSequence()) {
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&SharedProtoDatabase::Shutdown, this));
+    return;
+  }
+  delete_obsolete_task_.Cancel();
 }
 
 void SharedProtoDatabase::OnUpdateCorruptionCountAtInit(bool success) {
@@ -528,6 +546,19 @@ SharedProtoDatabase::GetClientInternal(ProtoDbType db_type) {
   return base::WrapUnique(new SharedProtoDatabaseClient(
       std::make_unique<ProtoLevelDBWrapper>(task_runner_, db_.get()), db_type,
       this));
+}
+
+void SharedProtoDatabase::DestroyObsoleteSharedProtoDatabaseClients(
+    Callbacks::UpdateCallback done) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(on_task_runner_);
+  // Create a ProtoLevelDBWrapper just like we create for each client, for
+  // deleting data from obsolete clients. It is fine to use the same wrapper to
+  // clear data from all clients. This object will be destroyed after clearing
+  // data for all these clients.
+  auto db_wrapper =
+      std::make_unique<ProtoLevelDBWrapper>(task_runner_, db_.get());
+  SharedProtoDatabaseClient::DestroyObsoleteSharedProtoDatabaseClients(
+      std::move(db_wrapper), std::move(done));
 }
 
 LevelDB* SharedProtoDatabase::GetLevelDBForTesting() const {

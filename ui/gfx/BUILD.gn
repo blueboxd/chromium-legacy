@@ -779,7 +779,6 @@ test("gfx_unittests") {
       "transform_util_unittest.cc",
       "utf16_indexing_unittest.cc",
     ]
-    data += [ "$root_out_dir/ui_test.pak" ]
   }
 
   if (is_win) {
@@ -804,7 +803,6 @@ test("gfx_unittests") {
     "//ui/gfx/animation",
     "//ui/gfx/geometry",
     "//ui/gfx/range",
-    "//ui/resources:ui_test_pak",
   ]
 
   if (!is_ios) {
@@ -816,7 +814,7 @@ test("gfx_unittests") {
   }
 
   data_deps = [
-    "//ui/resources:ui_test_pak",
+    "//ui/resources:ui_test_pak_data",
   ]
 
   if (is_mac || is_ios) {

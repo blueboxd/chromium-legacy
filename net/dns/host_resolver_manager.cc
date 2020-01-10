@@ -774,7 +774,7 @@ class HostResolverManager::ProbeRequestImpl : public CancellableProbeRequest {
     DCHECK(resolver_);
     DCHECK(!needs_cancel_);
 
-    resolver_->ActivateDohProbes(context_);
+    resolver_->ActivateDohProbes(context_, false /* network_change */);
     needs_cancel_ = true;
     return ERR_IO_PENDING;
   }
@@ -2885,6 +2885,13 @@ void HostResolverManager::SetDnsConfigOverrides(DnsConfigOverrides overrides) {
     if (transactions_allowed_before) {
       UpdateJobsForChangedConfig();
     }
+
+    // Restart DoH probes with the new configuration.
+    if (url_request_context_for_probes_) {
+      doh_probe_runner_.reset();
+      ActivateDohProbes(url_request_context_for_probes_,
+                        false /* network_change */);
+    }
   }
 }
 
@@ -3718,6 +3725,17 @@ void HostResolverManager::OnConnectionTypeChanged(
       GetTimeDeltaForConnectionTypeFromFieldTrialOrDefault(
           "DnsUnresponsiveDelayMsByConnectionType",
           ProcTaskParams::kDnsDefaultUnresponsiveDelay, type);
+
+  // If there is an active DoH probe runner, it should be cancelled or restarted
+  // for the new connection.
+  if (url_request_context_for_probes_) {
+    if (type == NetworkChangeNotifier::CONNECTION_NONE) {
+      doh_probe_runner_.reset();
+    } else {
+      ActivateDohProbes(url_request_context_for_probes_,
+                        true /* network_change */);
+    }
+  }
 }
 
 void HostResolverManager::OnSystemDnsConfigChanged(
@@ -3733,10 +3751,18 @@ void HostResolverManager::OnSystemDnsConfigChanged(
   // Always invalidate cache, even if no change is seen.
   InvalidateCaches();
 
-  // Need to update jobs iff transactions were previously allowed because
-  // in-progress jobs may be running using a now-invalid configuration.
-  if (changed && transactions_allowed_before) {
-    UpdateJobsForChangedConfig();
+  if (changed) {
+    // Need to update jobs iff transactions were previously allowed because
+    // in-progress jobs may be running using a now-invalid configuration.
+    if (transactions_allowed_before)
+      UpdateJobsForChangedConfig();
+
+    // Restart DoH probes with the new configuration.
+    if (url_request_context_for_probes_) {
+      doh_probe_runner_.reset();
+      ActivateDohProbes(url_request_context_for_probes_,
+                        false /* network_change */);
+    }
   }
 }
 
@@ -3815,18 +3841,44 @@ void HostResolverManager::InvalidateCaches() {
 }
 
 void HostResolverManager::ActivateDohProbes(
-    URLRequestContext* url_request_context) {
+    URLRequestContext* url_request_context,
+    bool network_change) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(dns_client_);
+  DCHECK(url_request_context);
+  DCHECK(!url_request_context_for_probes_ ||
+         url_request_context_for_probes_ == url_request_context);
 
-  dns_client_->ActivateDohProbes(url_request_context);
+  url_request_context_for_probes_ = url_request_context;
+
+  if (!dns_client_->CanUseSecureDnsTransactions())
+    return;
+
+  // Don't bother running probes if there is no network connection.
+  if (NetworkChangeNotifier::GetConnectionType() ==
+      NetworkChangeNotifier::CONNECTION_NONE) {
+    return;
+  }
+
+  if (!doh_probe_runner_) {
+    doh_probe_runner_ =
+        dns_client_->GetTransactionFactory()->CreateDohProbeRunner(
+            url_request_context);
+  }
+
+  if (network_change)
+    doh_probe_runner_->RestartForNetworkChange();
+  else
+    doh_probe_runner_->Start();
 }
 
 void HostResolverManager::CancelDohProbes() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(dns_client_);
+  DCHECK(url_request_context_for_probes_);
 
-  dns_client_->CancelDohProbes();
+  url_request_context_for_probes_ = nullptr;
+  doh_probe_runner_.reset();
 }
 
 void HostResolverManager::RequestImpl::Cancel() {

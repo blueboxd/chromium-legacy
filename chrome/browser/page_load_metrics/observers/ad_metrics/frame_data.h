@@ -77,14 +77,6 @@ class FrameData {
     kMaxValue = kReceivedActivation,
   };
 
-  // The interactive states for the main page, which describe when the page
-  // has reached interactive state, or finished loading.
-  enum class InteractiveStatus {
-    kPreInteractive = 0,
-    kPostInteractive = 1,
-    kMaxValue = kPostInteractive,
-  };
-
   // High level categories of mime types for resources loaded by the frame.
   enum class ResourceMimeType {
     kJavascript = 0,
@@ -145,19 +137,15 @@ class FrameData {
   // Sets the display state of the frame and updates its visibility state.
   void SetDisplayState(bool is_display_none);
 
-  // Add the cpu |update| appropriately given the page |interactive| status.
-  void UpdateCpuUsage(base::TimeTicks update_time,
-                      base::TimeDelta update,
-                      InteractiveStatus interactive);
+  // Update CPU usage information with the timing |update| that was received at
+  // |update_time|.
+  void UpdateCpuUsage(base::TimeTicks update_time, base::TimeDelta update);
 
   // Returns whether the heavy ad intervention was triggered on this frame.
   // This intervention is triggered when the frame is considered heavy, has not
   // received user gesture, and the intervention feature is enabled. This
   // returns true the first time the criteria is met, and false afterwards.
   bool MaybeTriggerHeavyAdIntervention();
-
-  // Get the cpu usage for the appropriate interactive period.
-  base::TimeDelta GetInteractiveCpuUsage(InteractiveStatus status) const;
 
   // Get the cpu usage for the appropriate activation period.
   base::TimeDelta GetActivationCpuUsage(UserActivationStatus status) const;
@@ -275,12 +263,6 @@ class FrameData {
   // frame.
   size_t ad_bytes_by_mime_[static_cast<size_t>(ResourceMimeType::kMaxValue) +
                            1] = {0};
-
-  // Time spent by the frame in the cpu before and after interactive.
-  base::TimeDelta cpu_by_interactive_period_[static_cast<size_t>(
-                                                 InteractiveStatus::kMaxValue) +
-                                             1] = {base::TimeDelta(),
-                                                   base::TimeDelta()};
 
   // Time spent by the frame in the cpu before and after activation.
   base::TimeDelta cpu_by_activation_period_

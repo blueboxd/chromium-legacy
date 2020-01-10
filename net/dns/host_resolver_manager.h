@@ -42,6 +42,7 @@ namespace net {
 
 class AddressList;
 class DnsClient;
+class DnsProbeRunner;
 class HostPortPair;
 class IPAddress;
 class MDnsClient;
@@ -454,7 +455,8 @@ class NET_EXPORT HostResolverManager
 
   // Currently only allows one probe to be started at a time. Must be cancelled
   // before starting another.
-  void ActivateDohProbes(URLRequestContext* url_request_context);
+  void ActivateDohProbes(URLRequestContext* url_request_context,
+                         bool network_change);
   void CancelDohProbes();
 
   // Used for multicast DNS tasks. Created on first use using
@@ -475,6 +477,9 @@ class NET_EXPORT HostResolverManager
   ProcTaskParams proc_params_;
 
   NetLog* net_log_;
+
+  URLRequestContext* url_request_context_for_probes_ = nullptr;
+  std::unique_ptr<DnsProbeRunner> doh_probe_runner_;
 
   // If present, used by DnsTask and ServeFromHosts to resolve requests.
   std::unique_ptr<DnsClient> dns_client_;

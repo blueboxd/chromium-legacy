@@ -32,6 +32,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
     std::unique_ptr<TabModalConfirmDialogDelegate> delegate,
     content::WebContents* web_contents)
     : delegate_(std::move(delegate)) {
+  DialogDelegate::set_buttons(delegate_->GetDialogButtons());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    delegate_->GetAcceptButtonTitle());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
@@ -77,10 +78,6 @@ void TabModalConfirmDialogViews::CloseDialog() {
 void TabModalConfirmDialogViews::LinkClicked(views::Link* source,
                                              int event_flags) {
   delegate_->LinkClicked(ui::DispositionFromEventFlags(event_flags));
-}
-
-int TabModalConfirmDialogViews::GetDialogButtons() const {
-  return delegate_->GetDialogButtons();
 }
 
 base::string16 TabModalConfirmDialogViews::GetWindowTitle() const {

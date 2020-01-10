@@ -1236,6 +1236,9 @@ const IDNTestCase kIdnCases[] = {
     {"xn--mlca6ab.com", L"டபடப.com", kUnsafe},
     // Whole-script-confusable in Telugu:
     {"xn--brcaabbb.com", L"౧౦౧౦౧౦.com", kUnsafe},
+
+    // IDN domain matching an IDN top-domain (fóó.com)
+    {"xn--fo-5ja.com", L"fóo.com", kUnsafe},
 };
 
 namespace test {

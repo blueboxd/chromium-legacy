@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Números de telèfon</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> baixades suprimides</translation>
 <translation id="3822502789641063741">Esborrem emmagatz. lloc web?</translation>
+<translation id="3853625385350850937">Per continuar, activa l'NFC al dispositiu</translation>
 <translation id="3859306556332390985">Avança</translation>
 <translation id="388596076286380598">Accedeix a articles, vídeos i altres continguts dels llocs web que t'agraden encara que no tinguis connexió o que la connexió sigui deficient.</translation>
 <translation id="3894427358181296146">Afegeix una carpeta</translation>
@@ -1049,6 +1050,7 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="8912362522468806198">Compte de Google</translation>
 <translation id="8920114477895755567">S'està esperant la informació parental.</translation>
 <translation id="8922289737868596582">Baixa pàgines amb el botó Més opcions per utilitzar-les sense connexió</translation>
+<translation id="8926666909099850184">L'NFC està desactivada en aquest dispositiu. Activa-la a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Vols suprimir l'activitat de Chrome a Benestar digital?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Obre en una altra finestra</translation>

@@ -11,7 +11,7 @@
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
-#include "ios/chrome/browser/infobars/overlays/overlay_request_infobar_type_util.h"
+#include "ios/chrome/browser/infobars/overlays/overlay_request_infobar_util.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter_observer_bridge.h"

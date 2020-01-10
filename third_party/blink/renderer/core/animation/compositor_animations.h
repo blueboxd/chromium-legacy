@@ -113,7 +113,7 @@ class CORE_EXPORT CompositorAnimations {
       const Element&,
       int group,
       base::Optional<double> start_time,
-      double time_offset,
+      base::TimeDelta time_offset,
       const Timing&,
       const Animation*,
       CompositorAnimation&,
@@ -126,7 +126,7 @@ class CORE_EXPORT CompositorAnimations {
   static void PauseAnimationForTestingOnCompositor(const Element&,
                                                    const Animation&,
                                                    int id,
-                                                   double pause_time);
+                                                   base::TimeDelta pause_time);
 
   static void AttachCompositedLayers(Element&, CompositorAnimation*);
 
@@ -141,7 +141,7 @@ class CORE_EXPORT CompositorAnimations {
   };
 
   static bool ConvertTimingForCompositor(const Timing&,
-                                         double time_offset,
+                                         base::TimeDelta time_offset,
                                          CompositorTiming& out,
                                          double animation_playback_rate);
 
@@ -150,7 +150,7 @@ class CORE_EXPORT CompositorAnimations {
       const Timing&,
       int group,
       base::Optional<double> start_time,
-      double time_offset,
+      base::TimeDelta time_offset,
       const KeyframeEffectModelBase&,
       Vector<std::unique_ptr<CompositorKeyframeModel>>& animations,
       double animation_playback_rate);

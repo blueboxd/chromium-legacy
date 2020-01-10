@@ -184,14 +184,9 @@ if (!is_android && !is_mac) {
       "$root_out_dir/resources.pak",
     ]
     if (is_linux || is_win) {
-      data += [
-        "$root_out_dir/chrome_100_percent.pak",
-        "$root_out_dir/locales/en-US.pak",
-        "$root_out_dir/locales/fr.pak",
+      data_deps = [
+        "//chrome:packed_resources",
       ]
-      if (enable_hidpi) {
-        data += [ "$root_out_dir/chrome_200_percent.pak" ]
-      }
     }
 
     data_deps = []
@@ -344,6 +339,9 @@ if (!is_android && !is_mac) {
 
     # These files are used by the installer so we need a public dep.
     public_deps += [ ":packed_resources" ]
+
+    # The step's output are needed at runtime, so we also need a data_dep.
+    data_deps += [ ":packed_resources" ]
 
     # Only ChromeOS has precompiled Flash that needs to get copied to the output
     # directory. On other platforms, Flash is either component-updated only or
@@ -1212,7 +1210,6 @@ if (is_win) {
       ":chrome_framework_resources",
       ":chrome_framework_services",
       ":keystone_registration_framework",
-      ":packed_resources",
       ":swiftshader_library",
       ":widevine_cdm_library",
       "//chrome/browser/resources/media/mei_preload:component_bundle",

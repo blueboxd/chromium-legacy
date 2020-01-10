@@ -16,10 +16,10 @@
     [CallWith=ScriptState, NotEnumerable] readonly attribute Promise<void>
         ready;
 
-    [CallWith=ScriptState, NotEnumerable] Promise<void> abort(
+    [CallWith=ScriptState, RaisesException, NotEnumerable] Promise<void> abort(
         optional any reason);
-    [CallWith=ScriptState, NotEnumerable] Promise<void> close();
+    [CallWith=ScriptState, RaisesException, NotEnumerable] Promise<void> close();
     [CallWith=ScriptState, NotEnumerable] void releaseLock();
-    [CallWith=ScriptState, NotEnumerable] Promise<void> write(
+    [CallWith=ScriptState, RaisesException, NotEnumerable] Promise<void> write(
         optional any chunk);
 };

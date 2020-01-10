@@ -395,6 +395,7 @@ void IconLabelBubbleView::OnTouchUiChanged() {
 }
 
 void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
+  DCHECK(!image_skia.isNull());
   LabelButton::SetImage(STATE_NORMAL, image_skia);
 }
 

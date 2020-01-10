@@ -62,16 +62,16 @@ struct CC_EXPORT InputHandlerPointerResult {
 
 struct CC_EXPORT InputHandlerScrollResult {
   InputHandlerScrollResult();
-  // Did any layer scroll as a result this ScrollBy call?
+  // Did any layer scroll as a result this ScrollUpdate call?
   bool did_scroll;
-  // Was any of the scroll delta argument to this ScrollBy call not used?
+  // Was any of the scroll delta argument to this ScrollUpdate call not used?
   bool did_overscroll_root;
-  // The total overscroll that has been accumulated by all ScrollBy calls that
-  // have had overscroll since the last ScrollBegin call. This resets upon a
-  // ScrollBy with no overscroll.
+  // The total overscroll that has been accumulated by all ScrollUpdate calls
+  // that have had overscroll since the last ScrollBegin call. This resets upon
+  // a ScrollUpdate with no overscroll.
   gfx::Vector2dF accumulated_root_overscroll;
-  // The amount of the scroll delta argument to this ScrollBy call that was not
-  // used for scrolling.
+  // The amount of the scroll delta argument to this ScrollUpdate call that was
+  // not used for scrolling.
   gfx::Vector2dF unused_scroll_delta;
   // How the browser should handle the overscroll navigation based on the css
   // property scroll-boundary-behavior.
@@ -159,11 +159,13 @@ class CC_EXPORT InputHandler {
   // handler calls WillShutdown() on the client.
   virtual void BindToClient(InputHandlerClient* client) = 0;
 
-  // Selects a layer to be scrolled using the |scroll_state| start position.
-  // Returns SCROLL_STARTED if the layer at the coordinates can be scrolled,
-  // SCROLL_ON_MAIN_THREAD if the scroll event should instead be delegated to
-  // the main thread, or SCROLL_IGNORED if there is nothing to be scrolled at
-  // the given coordinates.
+  // Selects a ScrollNode to be "latched" for scrolling using the
+  // |scroll_state| start position. The selected node remains latched until the
+  // gesture is ended by a call to ScrollEnd.  Returns SCROLL_STARTED if a node
+  // at the coordinates can be scrolled and was latched, SCROLL_ON_MAIN_THREAD
+  // if the scroll event should instead be delegated to the main thread, or
+  // SCROLL_IGNORED if there is nothing to be scrolled at the given
+  // coordinates.
   virtual ScrollStatus ScrollBegin(ScrollState* scroll_state,
                                    ScrollInputType type) = 0;
 
@@ -172,25 +174,23 @@ class CC_EXPORT InputHandler {
   virtual ScrollStatus RootScrollBegin(ScrollState* scroll_state,
                                        ScrollInputType type) = 0;
 
-  // |delayed_by| is the delay that is taken into account when determining
-  // the duration of the animation. TODO(bokan): Should eventually be merged
-  // into ScrollBy. https://crbug.com/1016229.
-  virtual void ScrollAnimated(const gfx::Point& viewport_point,
-                              const gfx::Vector2dF& scroll_delta,
-                              base::TimeDelta delayed_by) = 0;
-
   // Scroll the layer selected by |ScrollBegin| by given |scroll_state| delta.
   // Internally, the delta is transformed to local layer's coordinate space for
-  // scrolls gestures that are direct manipulation (e.g. touch). If there is no
-  // room to move the layer in the requested direction, its first ancestor layer
-  // that can be scrolled will be moved instead. The return value's |did_scroll|
-  // field is set to false if no layer can be moved in the requested direction
-  // at all, and set to true if any layer is moved. If the scroll delta hits the
-  // root layer, and the layer can no longer move, the root overscroll
+  // scrolls gestures that are direct manipulation (e.g. touch). If the
+  // viewport is latched, and it can no longer scroll, the root overscroll
   // accumulated within this ScrollBegin() scope is reported in the return
   // value's |accumulated_overscroll| field. Should only be called if
   // ScrollBegin() returned SCROLL_STARTED.
-  virtual InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) = 0;
+  // |delayed_by| is the delay from the event that caused the scroll. This is
+  // taken into account when determining the duration of the animation if one
+  // is created.
+  virtual InputHandlerScrollResult ScrollUpdate(ScrollState* scroll_state,
+                                                ScrollInputType type,
+                                                base::TimeDelta delayed_by) = 0;
+
+  // Stop scrolling the selected layer. Should only be called if ScrollBegin()
+  // returned SCROLL_STARTED. Snap to a snap position if |should_snap| is true.
+  virtual void ScrollEnd(bool should_snap) = 0;
 
   virtual InputHandlerPointerResult MouseMoveAt(
       const gfx::Point& mouse_position) = 0;
@@ -201,10 +201,6 @@ class CC_EXPORT InputHandler {
   virtual InputHandlerPointerResult MouseUp(
       const gfx::PointF& mouse_position) = 0;
   virtual void MouseLeave() = 0;
-
-  // Stop scrolling the selected layer. Should only be called if ScrollBegin()
-  // returned SCROLL_STARTED. Snap to a snap position if |should_snap| is true.
-  virtual void ScrollEnd(bool should_snap) = 0;
 
   // Requests a callback to UpdateRootLayerStateForSynchronousInputHandler()
   // giving the current root scroll and page scale information.

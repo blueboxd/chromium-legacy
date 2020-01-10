@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -64,6 +65,10 @@ class SearchEngineTableViewControllerTest
   void SetUp() override {
     ChromeTableViewControllerTest::SetUp();
     TestChromeBrowserState::Builder test_cbs_builder;
+
+    ASSERT_TRUE(state_dir_.CreateUniqueTempDir());
+    test_cbs_builder.SetPath(state_dir_.GetPath());
+
     test_cbs_builder.AddTestingFactory(
         ios::TemplateURLServiceFactory::GetInstance(),
         ios::TemplateURLServiceFactory::GetDefaultFactory());
@@ -222,6 +227,11 @@ class SearchEngineTableViewControllerTest
     return base::test::ios::WaitUntilConditionOrTimeout(
         base::test::ios::kWaitForUIElementTimeout, condition);
   }
+
+  // A state directory that outlives |task_environment_| is needed because
+  // CreateHistoryService/CreateBookmarkModel use the directory to host
+  // databases. See https://crbug.com/546640 for more details.
+  base::ScopedTempDir state_dir_;
 
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;

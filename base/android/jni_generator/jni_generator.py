@@ -173,6 +173,7 @@ class CalledByNative(object):
     self.env_call = GetEnvCall(self.is_constructor, self.static,
                                self.return_type)
     self.static_cast = GetStaticCastForReturnType(self.return_type)
+    self.gen_test_method = kwargs.get('gen_test_method', False)
 
 
 class ConstantField(object):
@@ -670,7 +671,8 @@ RE_SCOPED_JNI_TYPES = re.compile('jobject|jclass|jstring|jthrowable|.*Array')
 
 # Regex to match a string like "@CalledByNative public void foo(int bar)".
 RE_CALLED_BY_NATIVE = re.compile(
-    r'@CalledByNative(?P<Unchecked>(?:Unchecked)?)(?:\("(?P<annotation>.*)"\))?'
+    r'@CalledByNative(?P<Unchecked>(?:Unchecked)?)(?P<JavaTest>(?:JavaTest)?)'
+    r'(?:\("(?P<annotation>.*)"\))?'
     r'(?:\s+@\w+(?:\(.*\))?)*'  # Ignore any other annotations.
     r'\s+(?P<prefix>('
     r'(private|protected|public|static|abstract|final|default|synchronized)'
@@ -721,7 +723,8 @@ def ExtractCalledByNatives(jni_params, contents, always_mangle):
             return_type=return_type,
             name=name,
             is_constructor=is_constructor,
-            params=JniParams.Parse(match.group('params')))
+            params=JniParams.Parse(match.group('params')),
+            gen_test_method='JavaTest' in match.group('JavaTest'))
     ]
   # Check for any @CalledByNative occurrences that weren't matched.
   unmatched_lines = re.sub(RE_CALLED_BY_NATIVE, '', contents).split('\n')
@@ -1122,6 +1125,9 @@ $CONSTANT_FIELDS\
 // Step 3: Method stubs.
 $METHOD_STUBS
 
+// Step 4: Generated test functions (optional).
+$TEST_METHODS
+
 #endif  // ${HEADER_GUARD}
 """)
     values = {
@@ -1132,6 +1138,7 @@ $METHOD_STUBS
         'METHOD_STUBS': self.GetMethodStubsString(),
         'HEADER_GUARD': self.header_guard,
         'INCLUDES': self.GetIncludesString(),
+        'TEST_METHODS': self.GetTestMethodsString(),
     }
     open_namespace = self.GetOpenNamespaceString()
     if open_namespace:
@@ -1173,6 +1180,17 @@ $METHOD_STUBS
         self.GetLazyCalledByNativeMethodStub(called_by_native)
         for called_by_native in self.called_by_natives
     ]
+
+  def GetTestMethodsString(self):
+    strings = []
+    for called_by_native in self.called_by_natives:
+      if not called_by_native.gen_test_method:
+        continue
+      strings += [self.GetTestMethodString(called_by_native)]
+    if strings:
+      strings.insert(0, "#define JAVA_TESTS(test_fixture, java_test_object)\\")
+    ret = '\n'.join(strings)
+    return ret[:-1]  # Drop trailing '\'.
 
   def GetIncludesString(self):
     if not self.options.includes:
@@ -1453,6 +1471,20 @@ ${PROFILING_LEAVING_NATIVE}\
     else:
       values['TRACE_EVENT'] = ''
     return RemoveIndentedEmptyLines(template.substitute(values))
+
+  def GetTestMethodString(self, called_by_native):
+    method_template = Template("""\
+  TEST_F(test_fixture, ${METHOD_ID_VAR_NAME_UPPERCASE}) { \\
+    JNIEnv* env = base::android::AttachCurrentThread(); \\
+    Java_${JAVA_CLASS_ONLY}_${METHOD_ID_VAR_NAME}(\\
+        env, java_test_object); \\
+  }\\""")
+    values = self.GetCalledByNativeValues(called_by_native)
+    method_name = values['METHOD_ID_VAR_NAME']
+    values['METHOD_ID_VAR_NAME_UPPERCASE'] = method_name[0].upper(
+    ) + method_name[1:]
+    return RemoveIndentedEmptyLines(method_template.substitute(values))
+
 
   def GetTraceEventForNameTemplate(self, name_template, values):
     name = Template(name_template).substitute(values)

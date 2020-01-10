@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom-forward.h"
-#include "content/public/browser/indexed_db_context.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -58,11 +57,6 @@ class BrowsingDataIndexedDBHelper
   void IndexedDBUsageInfoReceived(
       FetchCallback callback,
       std::vector<storage::mojom::IndexedDBStorageUsageInfoPtr> origins);
-
-  // Delete a single indexed database in the IndexedDB thread.
-  void DeleteIndexedDBInIndexedDBThread(
-      scoped_refptr<content::IndexedDBContext> context,
-      const GURL& origin);
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataIndexedDBHelper);
 };

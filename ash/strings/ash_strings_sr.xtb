@@ -46,6 +46,7 @@
 <translation id="1460620680449458626">Звук је искључен.</translation>
 <translation id="1467432559032391204">Улево</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1508507608940204251">Укључено</translation>
 <translation id="1516740043221086139">Режим Не узнемиравај је укључен.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Прегледајте подешавања обавештења. Обавештења су искључена за једну апликацију}one{Прегледајте подешавања обавештења. Обавештења су искључена за # апликацију}few{Прегледајте подешавања обавештења. Обавештења су искључена за # апликације}other{Прегледајте подешавања обавештења. Обавештења су искључена за # апликација}}</translation>
 <translation id="1525508553941733066">ОДБАЦИ</translation>
@@ -70,6 +71,7 @@
 <translation id="1836215606488044471">Помоћник (учитава се...)</translation>
 <translation id="1838895407229022812">Ноћно светло је искључено.</translation>
 <translation id="1850504506766569011">Wi-Fi је искључен.</translation>
+<translation id="1859889070386344428">Искључено</translation>
 <translation id="1864454756846565995">Уређај са USB прикључком типа C (задњи порт)</translation>
 <translation id="1882897271359938046">Пресликавање у <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Откључајте отиском прста</translation>
@@ -122,6 +124,7 @@
 <translation id="2501920221385095727">Лепљиви тастери</translation>
 <translation id="2509468283778169019">CAPS LOCK је укључен</translation>
 <translation id="2517825809102302935">Искључи вечерас</translation>
+<translation id="2519465031217098801">Укључено</translation>
 <translation id="2542089167727451762">Додирните слику профила</translation>
 <translation id="255671100581129685">Google помоћник није доступан у јавној сесији.</translation>
 <translation id="256712445991462162">монтирана лупа екрана</translation>
@@ -225,6 +228,7 @@
 <translation id="3901991538546252627">Повезивање са мрежом <ph name="NAME" /></translation>
 <translation id="394485226368336402">Подешавања звука</translation>
 <translation id="3962859241508114581">Претходна песма</translation>
+<translation id="3965097803111112935">Искључено</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
 <translation id="3977512764614765090">Батерија је на <ph name="PERCENTAGE" />% и пуни се.</translation>
 <translation id="3995138139523574647">Уређај са USB прикључком типа C (десни задњи порт)</translation>
@@ -307,6 +311,7 @@
 <translation id="5207949376430453814">Истакни курсор за текст</translation>
 <translation id="5222676887888702881">Одјави ме</translation>
 <translation id="523505283826916779">Подешавања приступачности</translation>
+<translation id="5250225880026334010">Искључено</translation>
 <translation id="5260676007519551770">Радна површина 4</translation>
 <translation id="5283198616748585639">Додај 1 мин</translation>
 <translation id="5286194356314741248">Скенирање</translation>
@@ -408,6 +413,7 @@
 <translation id="6650933572246256093">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Унесите ову шифру на том уређају: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6665545700722362599">Дозволите веб-сајтовима, апликацијама и додацима да користе услуге локације или микрофон, камеру или друге функције уређаја</translation>
+<translation id="6669268301501499730">Укључено</translation>
 <translation id="6670153871843998651">Радна површина 3</translation>
 <translation id="6691659475504239918">Тастер за претрагу + Shift + H</translation>
 <translation id="6696025732084565524">Треба да инсталирате важно ажурирање за одвојиву тастатуру</translation>

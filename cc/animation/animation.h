@@ -83,7 +83,7 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
       std::unique_ptr<KeyframeModel> keyframe_model,
       KeyframeEffectId keyframe_effect_id);
   void PauseKeyframeModelForKeyframeEffect(int keyframe_model_id,
-                                           double time_offset,
+                                           base::TimeDelta time_offset,
                                            KeyframeEffectId keyframe_effect_id);
   void RemoveKeyframeModelForKeyframeEffect(
       int keyframe_model_id,

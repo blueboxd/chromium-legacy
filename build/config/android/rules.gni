@@ -313,6 +313,9 @@ if (enable_java_templates) {
   #   enable_native_mocks: Allow native calls using
   #     org.chromium.base.annotations.NativeMethods to be mocked in tests
   #     (optional).
+  #   no_transitive_deps: Generate registration for only the Java source in the
+  #     specified target(s). This is useful for generating registration for
+  #     feature modules, without including base module dependencies.
   #
   # Example
   #   generate_jni_registration("chrome_jni_registration") {
@@ -349,10 +352,15 @@ if (enable_java_templates) {
             ".build_config"
         _rebased_build_config = rebase_path(_build_config, root_build_dir)
         inputs += [ _build_config ]
-        args += [
-          # This is a list of .sources files.
-          "--sources-files=@FileArg($_rebased_build_config:deps_info:jni:all_source)",
-        ]
+
+        if (defined(invoker.no_transitive_deps) && invoker.no_transitive_deps) {
+          args += [ "--sources-files=@FileArg($_rebased_build_config:deps_info:java_sources_file)" ]
+        } else {
+          args += [
+            # This is a list of .sources files.
+            "--sources-files=@FileArg($_rebased_build_config:deps_info:jni:all_source)",
+          ]
+        }
       }
 
       if (use_hashed_jni_names) {

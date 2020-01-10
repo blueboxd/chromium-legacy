@@ -763,21 +763,34 @@ public class PaymentRequestImpl
 
         // Log the various types of payment methods that were requested by the merchant.
         boolean requestedMethodGoogle = false;
+        // Not to record requestedMethodBasicCard because JourneyLogger ignore the case where the
+        // specified networks are unsupported. mMerchantSupportsAutofillPaymentInstruments better
+        // captures this group of interest than requestedMethodBasicCard.
         boolean requestedMethodOther = false;
         mURLPaymentMethodIdentifiersSupported = false;
         for (String methodName : mMethodData.keySet()) {
-            if (methodName.equals(MethodStrings.ANDROID_PAY)
-                    || methodName.equals(MethodStrings.GOOGLE_PAY)) {
-                mURLPaymentMethodIdentifiersSupported = true;
-                requestedMethodGoogle = true;
-            } else if (methodName.startsWith(UrlConstants.HTTPS_URL_PREFIX)) {
-                mURLPaymentMethodIdentifiersSupported = true;
-                // Any method that starts with https and is not Android pay or Google pay is in the
-                // "other" category.
-                requestedMethodOther = true;
+            switch (methodName) {
+                case MethodStrings.ANDROID_PAY:
+                case MethodStrings.GOOGLE_PAY:
+                    mURLPaymentMethodIdentifiersSupported = true;
+                    requestedMethodGoogle = true;
+                    break;
+                case MethodStrings.BASIC_CARD:
+                    // Not to record requestedMethodBasicCard because
+                    // mMerchantSupportsAutofillPaymentInstruments is used instead.
+                    break;
+                default:
+                    // "Other" includes https url, http url(when certifate check is bypassed) and
+                    // the unlisted methods defined in {@link MethodStrings}.
+                    requestedMethodOther = true;
+                    if (methodName.startsWith(UrlConstants.HTTPS_URL_PREFIX)
+                            || methodName.startsWith(UrlConstants.HTTP_URL_PREFIX)) {
+                        mURLPaymentMethodIdentifiersSupported = true;
+                    }
             }
         }
-        mJourneyLogger.setRequestedPaymentMethodTypes(mMerchantSupportsAutofillPaymentInstruments,
+        mJourneyLogger.setRequestedPaymentMethodTypes(
+                /*requestedBasicCard=*/mMerchantSupportsAutofillPaymentInstruments,
                 requestedMethodGoogle, requestedMethodOther);
     }
 

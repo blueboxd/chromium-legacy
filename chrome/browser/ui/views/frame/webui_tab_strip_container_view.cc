@@ -44,6 +44,7 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -352,6 +353,10 @@ TabStripUILayout WebUITabStripContainerView::GetLayout() {
   DCHECK(tab_contents_container_);
   return TabStripUILayout::CalculateForWebViewportSize(
       tab_contents_container_->size());
+}
+
+const ui::ThemeProvider* WebUITabStripContainerView::GetThemeProvider() {
+  return View::GetThemeProvider();
 }
 
 void WebUITabStripContainerView::AddedToWidget() {

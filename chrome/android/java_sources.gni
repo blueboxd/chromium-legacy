@@ -47,4 +47,9 @@ if (enable_arcore) {
     "java/src/org/chromium/chrome/browser/vr/ArDelegateImpl.java",
     "java/src/org/chromium/chrome/browser/vr/ArImmersiveOverlay.java",
   ]
+
+  # AR DFM is disabled - include the ArCoreShimImpl.java as well.
+  # This is not rolled into the above to facilitate re-enabling AR DFM if need arises.
+  chrome_java_sources +=
+      [ "java/src/org/chromium/chrome/browser/vr/ArCoreShimImpl.java" ]
 }

@@ -314,6 +314,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SetFrameDepth(unsigned int depth);
   void SetIntersectsViewport(bool intersects);
   void UpdatePriority();
+  // If there is no local main frame, then the RenderWidget in the renderer
+  // has been destroyed, and a new one will be created when a main frame
+  // exists again. This notifies that the renderer-side RenderWidget has been
+  // destroyed.
+  void DidDestroyRenderWidget();
 
   // Tells the renderer to die and optionally delete |this|.
   void ShutdownAndDestroyWidget(bool also_delete);

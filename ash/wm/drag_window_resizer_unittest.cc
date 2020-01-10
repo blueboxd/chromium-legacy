@@ -120,10 +120,10 @@ class DragWindowResizerTest : public AshTestBase {
   }
 
  protected:
-  gfx::Point CalculateDragPoint(const WindowResizer& resizer,
-                                int delta_x,
-                                int delta_y) const {
-    gfx::Point location = resizer.GetInitialLocation();
+  gfx::PointF CalculateDragPoint(const WindowResizer& resizer,
+                                 int delta_x,
+                                 int delta_y) const {
+    gfx::PointF location = resizer.GetInitialLocation();
     location.set_x(location.x() + delta_x);
     location.set_y(location.y() + delta_y);
     return location;
@@ -137,8 +137,8 @@ class DragWindowResizerTest : public AshTestBase {
       aura::Window* window,
       const gfx::Point& point_in_parent,
       int window_component) {
-    return CreateWindowResizer(window, point_in_parent, window_component,
-                               ::wm::WINDOW_MOVE_SOURCE_MOUSE)
+    return CreateWindowResizer(window, gfx::PointF(point_in_parent),
+                               window_component, ::wm::WINDOW_MOVE_SOURCE_MOUSE)
         .release();
   }
 

@@ -243,7 +243,7 @@ void ServiceWorkerTaskQueue::DidInitializeServiceWorkerContext(
 void ServiceWorkerTaskQueue::DidStartServiceWorkerContext(
     int render_process_id,
     const ExtensionId& extension_id,
-    int activation_sequence,
+    ActivationSequence activation_sequence,
     const GURL& service_worker_scope,
     int64_t service_worker_version_id,
     int thread_id) {
@@ -280,7 +280,7 @@ void ServiceWorkerTaskQueue::DidStartServiceWorkerContext(
 void ServiceWorkerTaskQueue::DidStopServiceWorkerContext(
     int render_process_id,
     const ExtensionId& extension_id,
-    int activation_sequence,
+    ActivationSequence activation_sequence,
     const GURL& service_worker_scope,
     int64_t service_worker_version_id,
     int thread_id) {
@@ -355,7 +355,7 @@ void ServiceWorkerTaskQueue::ActivateExtension(const Extension* extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const ExtensionId extension_id = extension->id();
-  ActivationSequence current_sequence = ++next_activation_sequence_;
+  ActivationSequence current_sequence(++next_activation_sequence_);
   activation_sequences_[extension_id] = current_sequence;
   SequencedContextId context_id(
       LazyContextId(browser_context_, extension_id, extension->url()),
@@ -577,8 +577,7 @@ bool ServiceWorkerTaskQueue::IsCurrentSequence(
   return current_sequence == sequence;
 }
 
-base::Optional<ServiceWorkerTaskQueue::ActivationSequence>
-ServiceWorkerTaskQueue::GetCurrentSequence(
+base::Optional<ActivationSequence> ServiceWorkerTaskQueue::GetCurrentSequence(
     const ExtensionId& extension_id) const {
   auto iter = activation_sequences_.find(extension_id);
   if (iter == activation_sequences_.end())

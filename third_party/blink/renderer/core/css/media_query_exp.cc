@@ -80,11 +80,9 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
            ident == CSSValueID::kRec2020;
   }
 
-  if (RuntimeEnabledFeatures::MediaQueryPrefersColorSchemeEnabled()) {
-    if (media_feature == media_feature_names::kPrefersColorSchemeMediaFeature) {
-      return ident == CSSValueID::kNoPreference || ident == CSSValueID::kDark ||
-             ident == CSSValueID::kLight;
-    }
+  if (media_feature == media_feature_names::kPrefersColorSchemeMediaFeature) {
+    return ident == CSSValueID::kNoPreference || ident == CSSValueID::kDark ||
+           ident == CSSValueID::kLight;
   }
 
   if (media_feature == media_feature_names::kPrefersReducedMotionMediaFeature)

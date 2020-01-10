@@ -162,8 +162,9 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // to this view.
   virtual SessionStorageNamespaceMap GetSessionStorageNamespaceMap();
 
-  // Returns true if the RenderViewHost will never be visible.
-  virtual bool IsNeverVisible();
+  // Returns true if RenderWidgets under this RenderViewHost will never be
+  // user-visible and thus never need to generate pixels for display.
+  virtual bool IsNeverComposited();
 
   // Returns the FrameTree the render view should use. Guaranteed to be constant
   // for the lifetime of the render view.

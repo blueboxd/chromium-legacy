@@ -20,7 +20,6 @@ class SessionAbortedDialog : public views::DialogDelegateView {
 
   // views::DialogDelegate overrides.
   bool Accept() override;
-  int GetDialogButtons() const override;
 
   // views::WidgetDelegate overrides.
   ui::ModalType GetModalType() const override;

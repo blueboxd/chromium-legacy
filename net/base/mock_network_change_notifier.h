@@ -51,6 +51,8 @@ class MockNetworkChangeNotifier : public NetworkChangeNotifier {
   // Delivers a CONNECTED notification to observers.
   void NotifyNetworkConnected(NetworkChangeNotifier::NetworkHandle network);
 
+  void SetConnectionTypeAndNotifyObservers(ConnectionType connection_type);
+
  private:
   // Create using MockNetworkChangeNotifier::Create().
   MockNetworkChangeNotifier(

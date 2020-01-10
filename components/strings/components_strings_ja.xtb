@@ -210,7 +210,7 @@
 <translation id="1914326953223720820">解凍サービス</translation>
 <translation id="1915697529809968049">CVC の代わりに Touch ID を使用しますか？</translation>
 <translation id="1916770123977586577">更新後の設定をこのサイトに適用するには、このページを再読み込みしてください</translation>
-<translation id="1917876262703816781">サイトまたはアプリでのデータ侵害により、パスワード情報が漏洩しました。<ph name="ORIGIN" /> のパスワードをすぐに変更することをおすすめします。</translation>
+<translation id="1917876262703816781">サイトまたはアプリでのデータ侵害により、パスワード情報が漏洩しました。<ph name="ORIGIN" /> のパスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="1919345977826869612">広告</translation>
 <translation id="1919367280705858090">特定のエラー メッセージに関する情報</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{なし}=1{1 件のサイト}other{# 件のサイト}}</translation>
@@ -897,7 +897,7 @@
 <translation id="5287240709317226393">Cookie を表示</translation>
 <translation id="5287456746628258573">このサイトでは古いセキュリティ設定を使用しています。このサイトにパスワードやクレジット カード番号などの情報を送信すると流出する恐れがあります。</translation>
 <translation id="5288108484102287882">ポリシー値の検証で警告が返されました</translation>
-<translation id="5295292838686006428">サイトまたはアプリでのデータ侵害により、パスワード情報が漏洩しました。保存したパスワードをすぐに確認することをおすすめします。</translation>
+<translation id="5295292838686006428">サイトまたはアプリでのデータ侵害により、パスワード情報が漏洩しました。保存したパスワードを今すぐ確認することをおすすめします。</translation>
 <translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
 <translation id="5300589172476337783">表示</translation>
 <translation id="5308380583665731573">接続</translation>

@@ -21,7 +21,7 @@ bool StubRenderWidgetHostOwnerDelegate::IsMainFrameActive() {
   return true;
 }
 
-bool StubRenderWidgetHostOwnerDelegate::IsNeverVisible() {
+bool StubRenderWidgetHostOwnerDelegate::IsNeverComposited() {
   return false;
 }
 

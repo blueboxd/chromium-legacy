@@ -43,7 +43,8 @@ TEST(TransferableStreamsTest, SmokeTest) {
   auto* writer = writable->getWriter(script_state, ASSERT_NO_EXCEPTION);
   auto* reader = readable->getReader(script_state, ASSERT_NO_EXCEPTION);
 
-  writer->write(script_state, ScriptValue::CreateNull(scope.GetIsolate()));
+  writer->write(script_state, ScriptValue::CreateNull(scope.GetIsolate()),
+                ASSERT_NO_EXCEPTION);
 
   class ExpectNullResponse : public ScriptFunction {
    public:
@@ -105,7 +106,7 @@ TEST(TransferableStreamsTest, SmokeTest) {
   };
 
   bool got_response = false;
-  reader->read(script_state)
+  reader->read(script_state, ASSERT_NO_EXCEPTION)
       .Then(ExpectNullResponse::Create(script_state, &got_response),
             ExpectNotReached::Create(script_state));
 

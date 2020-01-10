@@ -18,7 +18,7 @@ namespace sync_wifi {
 
 namespace {
 
-const char kDelimeter[] = "_";
+const char kDelimeter[] = "<||>";
 
 }  // namespace
 

@@ -262,7 +262,10 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
   if (initialize_waitable_event_) {
     initialize_waitable_event_->Wait();
     initialize_waitable_event_ = nullptr;
-
+    if (!characterization_.isValid()) {
+      DLOG(ERROR) << "Reshape failed.";
+      return nullptr;
+    }
     RecreateRootRecorder();
   }
 

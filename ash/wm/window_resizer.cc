@@ -146,11 +146,11 @@ aura::Window* WindowResizer::GetTarget() const {
 }
 
 gfx::Rect WindowResizer::CalculateBoundsForDrag(
-    const gfx::Point& passed_location) {
+    const gfx::PointF& passed_location) {
   if (!details().is_resizable)
     return details().initial_bounds_in_parent;
 
-  gfx::Point location = passed_location;
+  gfx::PointF location = passed_location;
   int delta_x = location.x() - details().initial_location_in_parent.x();
   int delta_y = location.y() - details().initial_location_in_parent.y();
 
@@ -233,9 +233,10 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     // the |work_area| above isn't good for this check since it is the work area
     // for the current display but the window can move to a different one.
     aura::Window* parent = GetTarget()->parent();
-    gfx::Point passed_location_in_screen(passed_location);
+    gfx::PointF passed_location_in_screen(passed_location);
     ::wm::ConvertPointToScreen(parent, &passed_location_in_screen);
-    gfx::Rect near_passed_location(passed_location_in_screen, gfx::Size());
+    gfx::Rect near_passed_location(
+        gfx::ToRoundedPoint(passed_location_in_screen), gfx::Size());
     // Use a pointer location (matching the logic in DragWindowResizer) to
     // calculate the target display after the drag.
     const display::Display& display =

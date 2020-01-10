@@ -56,7 +56,7 @@ constexpr double kMinVertVelocityForWindowMinimize = 1000;
 // mode.
 std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
     aura::Window* window,
-    const gfx::Point& point_in_parent,
+    const gfx::PointF& point_in_parent,
     int window_component,
     ::wm::WindowMoveSource source) {
   WindowState* window_state = WindowState::Get(window);
@@ -113,7 +113,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
 
 std::unique_ptr<WindowResizer> CreateWindowResizer(
     aura::Window* window,
-    const gfx::Point& point_in_parent,
+    const gfx::PointF& point_in_parent,
     int window_component,
     ::wm::WindowMoveSource source) {
   DCHECK(window);
@@ -413,7 +413,7 @@ WorkspaceWindowResizer* WorkspaceWindowResizer::Create(
   return new WorkspaceWindowResizer(window_state, attached_windows);
 }
 
-void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
+void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
                                   int event_flags) {
   last_mouse_location_ = location_in_parent;
 
@@ -451,13 +451,13 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
     if (!resizer)
       return;
   }
-  gfx::Point location_in_screen = location_in_parent;
+  gfx::PointF location_in_screen = location_in_parent;
   ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
   UpdateSnapPhantomWindow(location_in_screen, bounds);
 }
 
 void WorkspaceWindowResizer::CompleteDrag() {
-  gfx::Point last_mouse_location_in_screen = last_mouse_location_;
+  gfx::PointF last_mouse_location_in_screen = last_mouse_location_;
   ::wm::ConvertPointToScreen(GetTarget()->parent(),
                              &last_mouse_location_in_screen);
   window_state()->OnCompleteDrag(last_mouse_location_in_screen);
@@ -521,7 +521,7 @@ void WorkspaceWindowResizer::CompleteDrag() {
 }
 
 void WorkspaceWindowResizer::RevertDrag() {
-  gfx::Point last_mouse_location_in_screen = last_mouse_location_;
+  gfx::PointF last_mouse_location_in_screen = last_mouse_location_;
   ::wm::ConvertPointToScreen(GetTarget()->parent(),
                              &last_mouse_location_in_screen);
   window_state()->OnRevertDrag(last_mouse_location_in_screen);
@@ -896,7 +896,8 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(
 
 void WorkspaceWindowResizer::AdjustBoundsForMainWindow(int sticky_size,
                                                        gfx::Rect* bounds) {
-  gfx::Point last_mouse_location_in_screen = last_mouse_location_;
+  gfx::Point last_mouse_location_in_screen =
+      gfx::ToRoundedPoint(last_mouse_location_);
   ::wm::ConvertPointToScreen(GetTarget()->parent(),
                              &last_mouse_location_in_screen);
   display::Display display =
@@ -1019,7 +1020,7 @@ int WorkspaceWindowResizer::PrimaryAxisCoordinate(int x, int y) const {
 }
 
 void WorkspaceWindowResizer::UpdateSnapPhantomWindow(
-    const gfx::Point& location_in_screen,
+    const gfx::PointF& location_in_screen,
     const gfx::Rect& bounds) {
   if (!did_move_or_resize_ || details().window_component != HTCAPTION)
     return;
@@ -1087,7 +1088,7 @@ void WorkspaceWindowResizer::RestackWindows() {
 
 WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
     const display::Display& display,
-    const gfx::Point& location_in_screen) const {
+    const gfx::PointF& location_in_screen) const {
   gfx::Rect area = display.work_area();
   // Add tolerance for snapping near each display edge that is the same as the
   // corresponding work area edge.

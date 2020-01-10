@@ -410,7 +410,7 @@ void remote_surface_start_move(wl_client* client,
                                int32_t x,
                                int32_t y) {
   GetUserDataAs<ClientControlledShellSurface>(resource)->StartDrag(
-      HTCAPTION, gfx::Point(x, y));
+      HTCAPTION, gfx::PointF(x, y));
 }
 
 void remote_surface_set_can_maximize(wl_client* client, wl_resource* resource) {
@@ -462,7 +462,7 @@ void remote_surface_start_resize(wl_client* client,
                                  int32_t x,
                                  int32_t y) {
   GetUserDataAs<ClientControlledShellSurface>(resource)->StartDrag(
-      Component(direction), gfx::Point(x, y));
+      Component(direction), gfx::PointF(x, y));
 }
 
 void remote_surface_set_frame(wl_client* client,

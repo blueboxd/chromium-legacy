@@ -171,11 +171,11 @@ public class ExploreSitesPage extends BasicNativePage {
     /**
      * Create a new instance of the explore sites page.
      */
-    public ExploreSitesPage(ChromeActivity activity, NativePageHost host) {
+    public ExploreSitesPage(ChromeActivity activity, NativePageHost host, TabImpl tab) {
         super(host);
 
         mHost = host;
-        mTab = activity.getActivityTab();
+        mTab = tab;
 
         mTitle = activity.getString(R.string.explore_sites_title);
         mView = (HistoryNavigationLayout) activity.getLayoutInflater().inflate(

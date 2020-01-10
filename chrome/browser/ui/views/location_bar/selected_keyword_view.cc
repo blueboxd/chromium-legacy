@@ -34,16 +34,15 @@ SelectedKeywordView::SelectedKeywordView(LocationBarView* location_bar,
 
 SelectedKeywordView::~SelectedKeywordView() {}
 
-void SelectedKeywordView::SetCustomImage(const gfx::ImageSkia& image) {
-  IconLabelBubbleView::SetImage(image);
-  using_custom_image_ = true;
-}
-
-void SelectedKeywordView::ResetImage() {
-  IconLabelBubbleView::SetImage(gfx::CreateVectorIcon(
-      vector_icons::kSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      GetForegroundColor()));
-  using_custom_image_ = false;
+void SelectedKeywordView::SetCustomImage(const gfx::Image& image) {
+  using_custom_image_ = !image.IsEmpty();
+  if (using_custom_image_) {
+    IconLabelBubbleView::SetImage(image.AsImageSkia());
+  } else {
+    IconLabelBubbleView::SetImage(gfx::CreateVectorIcon(
+        vector_icons::kSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+        GetForegroundColor()));
+  }
 }
 
 void SelectedKeywordView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -67,7 +66,7 @@ gfx::Size SelectedKeywordView::GetMinimumSize() const {
 void SelectedKeywordView::OnThemeChanged() {
   IconLabelBubbleView::OnThemeChanged();
   if (!using_custom_image_)
-    ResetImage();
+    SetCustomImage(gfx::Image());
 }
 
 void SelectedKeywordView::SetKeyword(const base::string16& keyword) {

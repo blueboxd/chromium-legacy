@@ -24,7 +24,8 @@ enum class OpenXrInteractionProfileType {
   kKHRSimple = 1,
   kOculusTouch = 2,
   kValveIndex = 3,
-  kCount = 4,
+  kHTCVive = 4,
+  kCount = 5,
 };
 
 enum class OpenXrButtonType {
@@ -87,6 +88,7 @@ struct OpenXrControllerInteractionProfile {
 // Khronos simple controller.
 // Oculus touch controller.
 // Valve index controller.
+// HTC vive controller
 // Declare OpenXR input profile bindings for other runtimes when they become
 // available.
 constexpr const char* kMicrosoftMotionInputProfiles[] = {
@@ -99,6 +101,9 @@ constexpr const char* kOculusTouchInputProfiles[] = {
 
 constexpr const char* kValveIndexInputProfiles[] = {
     "valve-index", "generic-trigger-squeeze-touchpad-thumbstick"};
+
+constexpr const char* kHTCViveInputProfiles[] = {
+    "htc-vive", "generic-trigger-squeeze-touchpad"};
 
 constexpr OpenXrButtonPathMap kMicrosoftMotionControllerButtonPathMaps[] = {
     {OpenXrButtonType::kTrigger,
@@ -207,6 +212,21 @@ constexpr OpenXrButtonPathMap kValveIndexControllerButtonPathMaps[] = {
      2},
 };  // namespace device
 
+constexpr OpenXrButtonPathMap kHTCViveControllerButtonPathMaps[] = {
+    {OpenXrButtonType::kTrigger,
+     {
+         {OpenXrButtonActionType::kPress, "/input/trigger/click"},
+         {OpenXrButtonActionType::kValue, "/input/trigger/value"},
+     },
+     2},
+    {OpenXrButtonType::kSqueeze,
+     {{OpenXrButtonActionType::kPress, "/input/squeeze/click"}},
+     1},
+    {OpenXrButtonType::kTrackpad,
+     {{OpenXrButtonActionType::kPress, "/input/trackpad/click"},
+      {OpenXrButtonActionType::kTouch, "/input/trackpad/touch"}},
+     2}};
+
 constexpr OpenXrAxisPathMap kMicrosoftMotionControllerAxisPathMaps[] = {
     {OpenXrAxisType::kTrackpad, "/input/trackpad"},
     {OpenXrAxisType::kThumbstick, "/input/thumbstick"},
@@ -219,6 +239,10 @@ constexpr OpenXrAxisPathMap kOculusTouchControllerAxisPathMaps[] = {
 constexpr OpenXrAxisPathMap kValveIndexControllerAxisPathMaps[] = {
     {OpenXrAxisType::kTrackpad, "/input/trackpad"},
     {OpenXrAxisType::kThumbstick, "/input/thumbstick"},
+};
+
+constexpr OpenXrAxisPathMap kHTCViveControllerAxisPathMaps[] = {
+    {OpenXrAxisType::kTrackpad, "/input/trackpad"},
 };
 
 constexpr OpenXrControllerInteractionProfile
@@ -274,10 +298,24 @@ constexpr OpenXrControllerInteractionProfile kValveIndexInteractionProfile = {
     kValveIndexControllerAxisPathMaps,
     base::size(kValveIndexControllerAxisPathMaps)};
 
+constexpr OpenXrControllerInteractionProfile kHTCViveInteractionProfile = {
+    OpenXrInteractionProfileType::kHTCVive,
+    "/interaction_profiles/htc/vive_controller",
+    GamepadMapping::kXrStandard,
+    kHTCViveInputProfiles,
+    base::size(kHTCViveInputProfiles),
+    kHTCViveControllerButtonPathMaps,
+    base::size(kHTCViveControllerButtonPathMaps),
+    kHTCViveControllerButtonPathMaps,
+    base::size(kHTCViveControllerButtonPathMaps),
+    kHTCViveControllerAxisPathMaps,
+    base::size(kHTCViveControllerAxisPathMaps)};
+
 constexpr OpenXrControllerInteractionProfile
     kOpenXrControllerInteractionProfiles[] = {
         kMicrosoftMotionInteractionProfile, kKHRSimpleInteractionProfile,
-        kOculusTouchInteractionProfile, kValveIndexInteractionProfile};
+        kOculusTouchInteractionProfile, kValveIndexInteractionProfile,
+        kHTCViveInteractionProfile};
 
 }  // namespace device
 

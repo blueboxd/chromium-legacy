@@ -202,9 +202,14 @@ void UnifiedSystemTray::ExpandMessageCenter() {
     message_center_bubble_->ExpandMessageCenter();
 }
 
-void UnifiedSystemTray::EnsureQuickSettingsCollapsed() {
-  if (bubble_)
+void UnifiedSystemTray::EnsureQuickSettingsCollapsed(bool animate) {
+  if (!bubble_)
+    return;
+
+  if (animate)
     bubble_->EnsureCollapsed();
+  else
+    bubble_->CollapseWithoutAnimating();
 }
 
 void UnifiedSystemTray::EnsureBubbleExpanded() {
@@ -275,6 +280,10 @@ bool UnifiedSystemTray::FocusQuickSettings(bool reverse) {
     bubble_->FocusEntered(reverse);
 
   return true;
+}
+
+bool UnifiedSystemTray::IsQuickSettingsExplicitlyExpanded() const {
+  return model_->IsExplicitlyExpanded();
 }
 
 gfx::Rect UnifiedSystemTray::GetBubbleBoundsInScreen() const {

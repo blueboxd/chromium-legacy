@@ -10398,9 +10398,19 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_DEEP_SCANNING_DIALOG_TITLE" desc="Title shown in tab modal dialog while performing a deep scan of data to see if it complies with enterprise policies">
       Scanning
     </message>
-    <message name="IDS_DEEP_SCANNING_DIALOG_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of data to see if complies with enterprise policies">
-      Scanning files for sensitive data...
+    <message name="IDS_DEEP_SCANNING_DIALOG_UPLOAD_PENDING_MESSAGE" desc="Message shown in tab modal dialog while performing a deep scan of uploaded data to see if complies with enterprise policies">
+      Your organization is scanning this upload for security approval.
     </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_SUCCESS_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of data when it complies with enterprise policies">
+      Scan complete, everything's good to go.
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_UPLOAD_FAILURE_MESSAGE" desc="Message shown in tab modal dialog after performing a deep scan of uploaded data when it doesn't comply with enterprise security policies">
+      This upload violates your organization's security policies and can't be completed.
+    </message>
+    <message name="IDS_DEEP_SCANNING_DIALOG_CANCEL_UPLOAD_BUTTON" desc="Text shown in the cancel button of a tab modal dialog while performing a deep scan of data to see if it complies with enterprise policies">
+      Cancel upload
+    </message>
+
 
     <!-- Deep scanning open now dialog strings -->
     <message name="IDS_DEEP_SCANNING_DIALOG_OPEN_NOW_TITLE" desc="Title shown in tab modal dialog when the user attempts to open a download while deep scanning is in progress">

@@ -131,7 +131,6 @@ external/wpt/editing/run/underline.html?2001-last [ Failure ]
 external/wpt/encoding/streams/realms.window.html [ Failure ]
 external/wpt/encrypted-media/clearkey-check-encryption-scheme.https.html [ Failure ]
 external/wpt/event-timing/buffered-flag.html [ Timeout ]
-external/wpt/event-timing/crossiframe.html [ Failure ]
 external/wpt/event-timing/retrievability.html [ Timeout ]
 external/wpt/event-timing/retrieve-firstInput.html [ Failure ]
 external/wpt/event-timing/timingconditions.html [ Timeout ]
@@ -353,7 +352,6 @@ external/wpt/pointerevents/pointerlock/pointerevent_pointermove_on_chorded_mouse
 external/wpt/pointerlock/mouse_buttons_back_forward.html [ Timeout ]
 external/wpt/pointerlock/pointerlock_remove_target.html [ Timeout ]
 external/wpt/pointerlock/pointerlock_shadow.html [ Timeout ]
-external/wpt/portals/csp/frame-src.sub.html [ Timeout ]
 external/wpt/portals/htmlportalelement-event-handler-content-attributes.html [ Failure ]
 external/wpt/portals/portal-activate-data.html [ Timeout ]
 external/wpt/portals/portal-activate-event-constructor.html [ Failure ]
@@ -895,12 +893,15 @@ crbug.com/1030387 external/wpt/css/css-fonts/font-display/font-display-feature-p
 # Reftest with pixel diff. Fails locally. Pass on wpt.fyi
 crbug.com/1030388 external/wpt/css/CSS2/text/bidi-span-001.html [ Failure ]
 
-# Reftest with pixel diff. Flaky locally, not sure about wpt.fyi
+# Reftest with pixel diff. Flaky locally. Flaky on wpt.fyi
+external/wpt/css/css-layout-api/fallback-intrinsic-sizes/constructor-error.https.html [ Pass Failure ]
 external/wpt/web-animations/timing-model/animations/reverse-running-animation.html [ Pass Failure ]
 
 # Testharness test. Fail locally. Fail on wpt.fyi
-external/wpt/mathml/relations/html5-tree/tabindex-002.html [ Failure ]
 external/wpt/portals/portals-repeated-activate.html [ Failure ]
+
+# Testharness test. Fail locally. Timeout on wpt.fyi and waterfall.
+external/wpt/mathml/relations/html5-tree/tabindex-002.html [ Failure Timeout ]
 
 # WebXr tests fail because they need mojo stubs. crbug.com/1033611
 crbug.com/1033611 external/wpt/webxr/events_input_source_recreation.https.html [ Failure ]
@@ -984,8 +985,11 @@ crbug.com/1033611 external/wpt/webxr/xrWebGLLayer_viewports.https.html [ Failure
 
 # Testharness test. Timeout locally. Timeout on wpt.fyi
 external/wpt/event-timing/click-timing.html [ Timeout ]
+external/wpt/event-timing/crossiframe.html [ Timeout ]
 external/wpt/event-timing/toJSON.html [ Timeout ]
 external/wpt/portals/portals-set-src-after-activate.html [ Timeout ]
+external/wpt/portals/portals-focus.sub.html [ Timeout ]
+external/wpt/portals/predecessor-fires-unload.html [ Timeout ]
 external/wpt/sms/sms-iframe.https.html [ Timeout ]
 external/wpt/storage-access-api/hasStorageAccess.sub.window.html [ Timeout ]
 external/wpt/storage-access-api/requestStorageAccess.sub.window.html [ Timeout ]
@@ -1050,3 +1054,8 @@ external/wpt/referrer-policy/generic/subresource-test/script-messaging.html [ Fa
 external/wpt/referrer-policy/generic/subresource-test/worker-messaging.html [ Failure Timeout ]
 external/wpt/referrer-policy/generic/subresource-test/xhr-messaging.html [ Failure Timeout ]
 external/wpt/referrer-policy/generic/unsupported-csp-referrer-directive.html [ Failure Timeout ]
+
+# portals/csp/frame-src.sub.html crashes because of a race between cancelling a
+# speculative navigation in the browser, and committing the navigation in the
+# renderer.
+crbug.com/838348 external/wpt/portals/csp/frame-src.sub.html [ Pass Crash Timeout ]

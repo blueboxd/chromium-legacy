@@ -510,9 +510,10 @@ class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
     ])
 
 
-@benchmark.Info(emails=['eae@chromium.org'],
-                component='Blink>Layout',
-                documentation_url='https://bit.ly/blink-perf-benchmarks')
+@benchmark.Info(
+    emails=['ikilpatrick@chromium.org', 'kojii@chromium.org'],
+    component='Blink>Layout',
+    documentation_url='https://bit.ly/blink-perf-benchmarks')
 class BlinkPerfLayout(_BlinkPerfBenchmark):
   SUBDIR = 'layout'
   TAGS = _BlinkPerfBenchmark.TAGS + ['all']

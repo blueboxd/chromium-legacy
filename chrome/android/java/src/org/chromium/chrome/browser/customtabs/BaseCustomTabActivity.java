@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactor
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
+import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarColorController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.tab.Tab;
@@ -39,6 +40,7 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
     protected CustomTabToolbarCoordinator mToolbarCoordinator;
     protected CustomTabActivityNavigationController mNavigationController;
     protected CustomTabActivityTabProvider mTabProvider;
+    protected CustomTabToolbarColorController mToolbarColorController;
     protected CustomTabStatusBarColorProvider mStatusBarColorProvider;
     protected CustomTabActivityTabFactory mTabFactory;
 
@@ -67,6 +69,7 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
         mToolbarCoordinator = component.resolveToolbarCoordinator();
         mNavigationController = component.resolveNavigationController();
         mTabProvider = component.resolveTabProvider();
+        mToolbarColorController = component.resolveToolbarColorController();
         mStatusBarColorProvider = component.resolveCustomTabStatusBarColorProvider();
         mTabFactory = component.resolveTabFactory();
 
@@ -151,9 +154,8 @@ public abstract class BaseCustomTabActivity<C extends ChromeActivityComponent>
     }
 
     @Override
-    public int getBaseStatusBarColor(boolean activityHasTab) {
-        return mStatusBarColorProvider.getBaseStatusBarColor(
-                activityHasTab, super.getBaseStatusBarColor(activityHasTab));
+    public int getBaseStatusBarColor(Tab tab) {
+        return mStatusBarColorProvider.getBaseStatusBarColor(tab, super.getBaseStatusBarColor(tab));
     }
 
     @Override

@@ -253,7 +253,7 @@ const base::Feature kDecodeJpeg420ImagesToYUV{
 // Decodes lossy WebP images to YUV instead of RGBX and stores in this format
 // in the image decode cache. See crbug.com/900264 for details on the feature.
 const base::Feature kDecodeLossyWebPImagesToYUV{
-    "DecodeLossyWebPImagesToYUV", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DecodeLossyWebPImagesToYUV", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables cache-aware WebFonts loading. See https://crbug.com/570205.
 // The feature is disabled on Android for WebView API issue discussed at

@@ -68,7 +68,6 @@ component("web_engine_core") {
   deps = [
     ":mojom",
     ":switches",
-    ":web_engine_pak",
     "//base",
     "//base:base_static",
     "//base/util/memory_pressure",

@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
+#include "components/services/storage/public/mojom/indexed_db_control.mojom-test-utils.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
@@ -181,15 +182,20 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
         storage::GetHardCodedSettings(per_host_quota_kilobytes * KB));
   }
 
-  void DeleteForOrigin(const Origin& origin, Shell* browser = nullptr) {
+  bool DeleteForOrigin(const Origin& origin, Shell* browser = nullptr) {
     base::RunLoop loop;
-    IndexedDBContextImpl* context = GetContext();
-    context->IDBTaskRunner()->PostTask(FROM_HERE,
-                                       base::BindLambdaForTesting([&]() {
-                                         context->DeleteForOrigin(kFileOrigin);
-                                         loop.Quit();
-                                       }));
+    IndexedDBContextImpl* context = GetContext(browser);
+    bool result = false;
+    context->IDBTaskRunner()->PostTask(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          context->DeleteForOrigin(
+              origin, base::BindLambdaForTesting([&](bool success) {
+                result = success;
+                loop.Quit();
+              }));
+        }));
     loop.Run();
+    return result;
   }
 
   int64_t RequestUsage(const Origin& origin, Shell* browser = nullptr) {
@@ -685,14 +691,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginIncognito) {
 
   EXPECT_GT(RequestUsage(origin, browser), 5 * 1024);
 
-  IndexedDBContextImpl* context = GetContext(browser);
-  base::RunLoop loop;
-  context->IDBTaskRunner()->PostTask(FROM_HERE,
-                                     base::BindLambdaForTesting([&]() {
-                                       context->DeleteForOrigin(origin);
-                                       loop.Quit();
-                                     }));
-  loop.Run();
+  DeleteForOrigin(origin, browser);
 
   EXPECT_EQ(0, RequestUsage(origin, browser));
 }

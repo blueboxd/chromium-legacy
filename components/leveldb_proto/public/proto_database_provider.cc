@@ -28,7 +28,11 @@ ProtoDatabaseProvider::ProtoDatabaseProvider(const base::FilePath& profile_dir)
     : profile_dir_(profile_dir),
       client_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
-ProtoDatabaseProvider::~ProtoDatabaseProvider() = default;
+ProtoDatabaseProvider::~ProtoDatabaseProvider() {
+  base::AutoLock lock(get_db_lock_);
+  if (db_)
+    db_->Shutdown();
+}
 
 void ProtoDatabaseProvider::GetSharedDBInstance(
     GetSharedDBInstanceCallback callback,

@@ -70,6 +70,9 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Ensure the bubble is expanded.
   void EnsureExpanded();
 
+  // Set the state to collapsed without animation.
+  void CollapseWithoutAnimating();
+
   // Show audio settings detailed view.
   void ShowAudioDetailedView();
 
@@ -142,9 +145,6 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Set visibility of bubble frame border. Used for disabling the border during
   // animation.
   void SetFrameVisible(bool visible);
-
-  // Returns the insets for the bubble.
-  gfx::Insets GetInsets();
 
   // Controller of UnifiedSystemTrayView. As the view is owned by views
   // hierarchy, we have to own the controller here.

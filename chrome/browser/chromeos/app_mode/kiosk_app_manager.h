@@ -151,9 +151,6 @@ class KioskAppManager : public KioskAppManagerBase,
   // |app| is populated. Otherwise, return false.
   bool GetApp(const std::string& app_id, App* app) const;
 
-  // Gets whether the bailout shortcut is disabled.
-  bool GetDisableBailoutShortcut() const;
-
   // Clears locally cached Gdata.
   void ClearAppData(const std::string& app_id);
 

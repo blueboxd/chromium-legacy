@@ -219,7 +219,6 @@
         "chrome://cast/*",
         "chrome://cellular-setup/*",
         "chrome://discards/*",
-        "chrome://extensions-frame/*",  // TODO(dbeam): still needed?
         "chrome://extensions/*",
         "chrome://home/*",
         "chrome://chrome-signin/*",
@@ -262,7 +261,6 @@
     "contexts": ["webui"],
     "matches": [
       "chrome://extensions/*",
-      "chrome://extensions-frame/*",  // TODO(dbeam): still needed?
       "chrome://settings/*"
     ]
   }],
@@ -581,10 +579,7 @@
   }, {
     "channel": "stable",
     "contexts": ["webui"],
-    "matches": [
-      "chrome://extensions/*",
-      "chrome://extensions-frame/*"  // TODO(dbeam): still needed?
-    ]
+    "matches": ["chrome://extensions/*"]
   }],
   "types": {
     "internal": true,

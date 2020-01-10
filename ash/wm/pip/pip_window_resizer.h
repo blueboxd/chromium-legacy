@@ -11,7 +11,11 @@
 #include "ash/wm/window_resizer.h"
 #include "base/macros.h"
 #include "ui/display/display.h"
-#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/point_f.h"
+
+namespace gfx {
+class Rect;
+}
 
 namespace ash {
 
@@ -26,7 +30,7 @@ class ASH_EXPORT PipWindowResizer : public WindowResizer {
   ~PipWindowResizer() override;
 
   // WindowResizer:
-  void Drag(const gfx::Point& location_in_parent, int event_flags) override;
+  void Drag(const gfx::PointF& location_in_parent, int event_flags) override;
   void CompleteDrag() override;
   void RevertDrag() override;
   void FlingOrSwipe(ui::GestureEvent* event) override;
@@ -35,7 +39,7 @@ class ASH_EXPORT PipWindowResizer : public WindowResizer {
   WindowState* window_state() { return window_state_; }
   gfx::Rect ComputeFlungPosition();
 
-  gfx::Point last_location_in_screen_;
+  gfx::PointF last_location_in_screen_;
   int fling_velocity_x_ = 0;
   int fling_velocity_y_ = 0;
   float dismiss_fraction_ = 1.f;

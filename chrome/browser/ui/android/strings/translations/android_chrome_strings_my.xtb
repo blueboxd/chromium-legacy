@@ -366,6 +366,7 @@
 <translation id="381841723434055211">ဖုန်းနံပါတ်များ</translation>
 <translation id="3819178904835489326">ဒေါင်းလုဒ် <ph name="NUMBER_OF_DOWNLOADS" /> ခုကို ဖျက်လိုက်သည်</translation>
 <translation id="3822502789641063741">ဆိုက်နေရာကိုရှင်းမလား။</translation>
+<translation id="3853625385350850937">ရှေ့ဆက်ရန် သင့်စက်ပေါ်ရှိ NFC ကို ဖွင့်ပါ</translation>
 <translation id="3859306556332390985">အရှေ့သို့ ရစ်ရန်</translation>
 <translation id="388596076286380598">အော့ဖ်လိုင်းဖြစ်နေစဉ် သို့မဟုတ် လိုင်းမကောင်းသည့်အချိန်တွင်ပင် သင်ကြိုက်နှစ်သက်သည့် ဝဘ်ဆိုက်များမှ ဆောင်းပါး၊ ဗီဒီယိုနှင့် အခြားအကြောင်းအရာများကို ရယူလိုက်ပါ။</translation>
 <translation id="3894427358181296146">ဖိုလ်ဒါ ထည့်ရန်</translation>
@@ -1048,6 +1049,7 @@
 <translation id="8912362522468806198">Google အကောင့်</translation>
 <translation id="8920114477895755567">မိဘများ၏ အသေးစိတ်အား စောင့်ဆိုင်းနေသည်။</translation>
 <translation id="8922289737868596582">စာမျက်နှာများကို အော့ဖ်လိုင်းသုံးရန် 'နောက်ထပ်ရွေးချယ်စရာများ' ခလုတ်မှ ဒေါင်းလုဒ်လုပ်ပါ</translation>
+<translation id="8926666909099850184">ဤစက်အတွက် NFC ကို ပိတ်ထားသည်။ <ph name="BEGIN_LINK" />Android ဆက်တင်များ<ph name="END_LINK" /> ထဲတွင် ၎င်းကို ဖွင့်ပါ။</translation>
 <translation id="8937772741022875483">'ဒစ်ဂျစ်တယ် အာရောဂျံ' မှနေ၍ သင်၏ Chrome လုပ်ဆောင်ချက်ကို ‌ဖယ်ရှားလိုပါသလား။</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">အခြားဝင်းဒိုးတွင် ဖွင့်ရန်</translation>

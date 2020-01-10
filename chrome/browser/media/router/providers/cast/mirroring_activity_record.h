@@ -26,7 +26,6 @@
 namespace media_router {
 
 struct CastSinkExtraData;
-class CastActivityManagerBase;
 
 class MirroringActivityRecord : public ActivityRecord,
                                 public mirroring::mojom::SessionObserver,
@@ -41,8 +40,6 @@ class MirroringActivityRecord : public ActivityRecord,
                           int target_tab_id,
                           const CastSinkExtraData& cast_data,
                           mojom::MediaRouter* media_router,
-                          MediaSinkServiceBase* media_sink_service,
-                          CastActivityManagerBase* activity_manager,
                           OnStopCallback callback);
   ~MirroringActivityRecord() override;
 
@@ -55,30 +52,6 @@ class MirroringActivityRecord : public ActivityRecord,
   void Send(mirroring::mojom::CastMessagePtr message) override;
 
   // ActivityRecord implementation
-  cast_channel::Result SendAppMessageToReceiver(
-      const CastInternalMessage& cast_message) override;
-  base::Optional<int> SendMediaRequestToReceiver(
-      const CastInternalMessage& cast_message) override;
-  void SendSetVolumeRequestToReceiver(
-      const CastInternalMessage& cast_message,
-      cast_channel::ResultCallback callback) override;
-  void SendStopSessionMessageToReceiver(
-      const base::Optional<std::string>& client_id,
-      const std::string& hash_token,
-      mojom::MediaRouteProvider::TerminateRouteCallback callback) override;
-  void HandleLeaveSession(const std::string& client_id) override;
-  mojom::RoutePresentationConnectionPtr AddClient(const CastMediaSource& source,
-                                                  const url::Origin& origin,
-                                                  int tab_id) override;
-  void RemoveClient(const std::string& client_id) override;
-  void SendMessageToClient(
-      const std::string& client_id,
-      blink::mojom::PresentationConnectionMessagePtr message) override;
-  void SendMediaStatusToClients(const base::Value& media_status,
-                                base::Optional<int> request_id) override;
-  void ClosePresentationConnections(
-      blink::mojom::PresentationConnectionCloseReason close_reason) override;
-  void TerminatePresentationConnections() override;
   void OnAppMessage(const cast::channel::CastMessage& message) override;
   void OnInternalMessage(const cast_channel::InternalMessage& message) override;
 
@@ -113,8 +86,6 @@ class MirroringActivityRecord : public ActivityRecord,
 
   const int channel_id_;
   const MirroringType mirroring_type_;
-  MediaSinkServiceBase* const media_sink_service_;
-  CastActivityManagerBase* const activity_manager_;
   OnStopCallback on_stop_;
   base::WeakPtrFactory<MirroringActivityRecord> weak_ptr_factory_{this};
 };

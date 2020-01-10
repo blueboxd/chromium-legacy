@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/activation_sequence.h"
 #include "extensions/common/extension_id.h"
 
 class GURL;
@@ -56,12 +57,12 @@ class ExtensionServiceWorkerMessageFilter
                                            int64_t service_worker_version_id,
                                            int thread_id);
   void OnDidStartServiceWorkerContext(const ExtensionId& extension_id,
-                                      int activation_sequence,
+                                      ActivationSequence activation_sequence,
                                       const GURL& service_worker_scope,
                                       int64_t service_worker_version_id,
                                       int thread_id);
   void OnDidStopServiceWorkerContext(const ExtensionId& extension_id,
-                                     int activation_sequence,
+                                     ActivationSequence activation_sequence,
                                      const GURL& service_worker_scope,
                                      int64_t service_worker_version_id,
                                      int thread_id);

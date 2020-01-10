@@ -428,7 +428,8 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
 }
 
 void LocationBarView::OnKeywordFaviconFetched(const gfx::Image& icon) {
-  selected_keyword_view_->SetCustomImage(icon.AsImageSkia());
+  DCHECK(!icon.IsEmpty());
+  selected_keyword_view_->SetCustomImage(icon);
 }
 
 void LocationBarView::Layout() {
@@ -501,15 +502,14 @@ void LocationBarView::Layout() {
       const TemplateURL* template_url =
           TemplateURLServiceFactory::GetForProfile(profile_)
               ->GetTemplateURLForKeyword(keyword);
+      gfx::Image image;
       if (template_url &&
           (template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION)) {
-        gfx::Image image =
-            extensions::OmniboxAPI::Get(profile_)->GetOmniboxIcon(
-                template_url->GetExtensionId());
-        selected_keyword_view_->SetCustomImage(image.AsImageSkia());
+        image = extensions::OmniboxAPI::Get(profile_)->GetOmniboxIcon(
+            template_url->GetExtensionId());
       } else if (template_url && template_url->type() == TemplateURL::NORMAL &&
                  OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()) {
-        gfx::Image image =
+        image =
             omnibox_view()
                 ->model()
                 ->client()
@@ -517,13 +517,8 @@ void LocationBarView::Layout() {
                     template_url,
                     base::BindOnce(&LocationBarView::OnKeywordFaviconFetched,
                                    base::Unretained(this)));
-        if (!image.IsEmpty())
-          selected_keyword_view_->SetCustomImage(image.AsImageSkia());
-        else
-          selected_keyword_view_->ResetImage();
-      } else {
-        selected_keyword_view_->ResetImage();
       }
+      selected_keyword_view_->SetCustomImage(image);
     }
   } else if (location_icon_view_->ShouldShowText()) {
     leading_decorations.AddDecoration(vertical_padding, location_height, false,

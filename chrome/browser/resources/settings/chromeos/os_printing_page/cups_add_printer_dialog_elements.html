@@ -7,26 +7,6 @@
 <link rel="import" href="cups_printer_shared_css.html">
 <link rel="import" href="cups_printers_browser_proxy.html">
 
-<dom-module id="add-printer-list">
-  <template>
-    <style include="cups-printer-shared">
-      .list-item {
-        padding: 0 20px;
-      }
-    </style>
-    <div>
-      <array-selector id="arraySelector" items="[[printers]]"
-          selected="{{selectedPrinter}}">
-      </array-selector>
-      <template is="dom-repeat" items="[[printers]]" sort="sort_">
-        <button class="list-item" on-click="onSelect_">
-          [[item.printerName]]
-        </button>
-      </template>
-    </div>
-  </template>
-</dom-module>
-
 <dom-module id="add-printer-dialog">
   <template>
     <style include="settings-shared">

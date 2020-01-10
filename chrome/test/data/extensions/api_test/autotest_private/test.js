@@ -960,6 +960,24 @@ var splitviewLeftSnappedTests = [
   }
 ];
 
+var startStopTracingTests = [
+  function startStopTracing() {
+    chrome.autotestPrivate.startTracing({}, function() {
+      chrome.test.assertNoLastError();
+      chrome.autotestPrivate.stopTracing(function (trace) {
+        chrome.test.assertNoLastError();
+        chrome.test.assertTrue(trace.length > 0);
+        try {
+          chrome.test.assertTrue(JSON.parse(trace) instanceof Object);
+          chrome.test.succeed();
+        } catch (e) {
+          chrome.test.fail('stopTracing callback returned invalid JSON');
+        }
+      });
+    });
+  }
+]
+
 var test_suites = {
   'default': defaultTests,
   'arcEnabled': arcEnabledTests,
@@ -967,7 +985,8 @@ var test_suites = {
   'arcPerformanceTracing': arcPerformanceTracingTests,
   'overviewDefault': overviewTests,
   'overviewDrag': overviewDragTests,
-  'splitviewLeftSnapped': splitviewLeftSnappedTests
+  'splitviewLeftSnapped': splitviewLeftSnappedTests,
+  'startStopTracing': startStopTracingTests,
 };
 
 chrome.test.getConfig(function(config) {

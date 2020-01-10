@@ -26,9 +26,7 @@ class DisabledOverlayResponseSupport : public OverlayResponseSupport {
 
 OverlayResponseSupport::OverlayResponseSupport(
     const std::vector<const OverlayResponseSupport*>& supports)
-    : aggregated_support_(supports) {
-  DCHECK(aggregated_support_.size());
-}
+    : aggregated_support_(supports) {}
 
 OverlayResponseSupport::OverlayResponseSupport() = default;
 
@@ -36,9 +34,6 @@ OverlayResponseSupport::~OverlayResponseSupport() = default;
 
 bool OverlayResponseSupport::IsResponseSupported(
     OverlayResponse* response) const {
-  DCHECK(aggregated_support_.size())
-      << "Default implementation is only for aggregated support.  Subclasses "
-         "using the default constructor must implement IsResponseSupported().";
   for (const OverlayResponseSupport* support : aggregated_support_) {
     if (support->IsResponseSupported(response))
       return true;

@@ -163,7 +163,6 @@ void WidgetInputHandlerManager::InitInputHandler() {
   base::OnceClosure init_closure = base::BindOnce(
       &WidgetInputHandlerManager::InitOnInputHandlingThread, this,
       render_widget_->layer_tree_host()->GetInputHandler(),
-      render_widget_->compositor_deps()->IsScrollAnimatorEnabled(),
       sync_compositing);
   InputThreadTaskRunner()->PostTask(FROM_HERE, std::move(init_closure));
 }
@@ -515,7 +514,6 @@ void WidgetInputHandlerManager::OnDeferCommitsChanged(bool status) {
 
 void WidgetInputHandlerManager::InitOnInputHandlingThread(
     const base::WeakPtr<cc::InputHandler>& input_handler,
-    bool smooth_scroll_enabled,
     bool sync_compositing) {
   DCHECK(InputThreadTaskRunner()->BelongsToCurrentThread());
 
@@ -530,8 +528,6 @@ void WidgetInputHandlerManager::InitOnInputHandlingThread(
 
   input_handler_proxy_ = std::make_unique<ui::InputHandlerProxy>(
       input_handler.get(), this, force_input_handling_on_main);
-
-  input_handler_proxy_->set_smooth_scroll_enabled(smooth_scroll_enabled);
 
 #if defined(OS_ANDROID)
   if (sync_compositing) {

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.compositor;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -30,6 +31,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.compat.ApiHelperForN;
@@ -961,9 +963,10 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public int getBrowserControlsBackgroundColor() {
-        return mTabVisible == null ? Color.WHITE
-                                   : ToolbarColors.getToolbarSceneLayerBackground(mTabVisible);
+    public int getBrowserControlsBackgroundColor(Resources res) {
+        return mTabVisible == null
+                ? ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary)
+                : ToolbarColors.getToolbarSceneLayerBackground(mTabVisible);
     }
 
     @Override

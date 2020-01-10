@@ -187,7 +187,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual Color PlatformDefaultCompositionBackgroundColor() const {
     return kDefaultCompositionBackgroundColor;
   }
-  virtual void PlatformColorsDidChange();
+  void PlatformColorsDidChange();
   virtual void ColorSchemeDidChange();
 
   void SetCaretBlinkInterval(base::TimeDelta);

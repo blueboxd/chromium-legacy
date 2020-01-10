@@ -17,7 +17,6 @@
 <translation id="5073204694187207510">Сховати повноекранну сітку</translation>
 <translation id="5082793167783849073">Швидко порівнюйте сторінки, створивши групу. Щоб почати, натисніть і втримуйте посилання.</translation>
 <translation id="5580090775658607195">Згруповано стільки вкладок: <ph name="TAB_COUNT" /></translation>
-<translation id="5792534911093536736">Більше вкладок</translation>
 <translation id="58326064309361797">Перетягуйте вкладки, щоб групувати їх</translation>
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="6193448654517602979">Виберіть вкладки</translation>
@@ -29,6 +28,7 @@
 <translation id="7792771145871471484">Переглянути ці вкладки.</translation>
 <translation id="7885132941432959125">Перемістити вкладку праворуч</translation>
 <translation id="7966321538264951561">Закрити пропозицію.</translation>
+<translation id="814503310257431685">Переглянути все</translation>
 <translation id="8205266828577616993">Перемістити вкладку вгору</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Закрити <ph name="TABS_COUNT_ONE" /> вибрану вкладку}one{Закрити <ph name="TABS_COUNT_MANY" /> вибрану вкладку}few{Закрити <ph name="TABS_COUNT_MANY" /> вибрані вкладки}many{Закрити <ph name="TABS_COUNT_MANY" /> вибраних вкладок}other{Закрити <ph name="TABS_COUNT_MANY" /> вибраної вкладки}}</translation>
 <translation id="9150694013019234766">Переходьте між вкладками в групі вкладок унизу екрана</translation>

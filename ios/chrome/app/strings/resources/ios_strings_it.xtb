@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">Ricerca in incognito</translation>
 <translation id="277771892408211951">Seleziona lingua</translation>
 <translation id="2780046210906776326">Nessun account email</translation>
+<translation id="2781331604911854368">On</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Chiudi selettore di schede</translation>
 <translation id="2830972654601096923">Gestisci indirizzi…</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">Schede aperte</translation>
 <translation id="3277021493514034324">Indirizzo del sito copiato</translation>
 <translation id="3290875554372353449">Scegli un account</translation>
+<translation id="3311748811247479259">Off</translation>
 <translation id="3324193307694657476">Indirizzo 2</translation>
 <translation id="3329904751041170572">Connessione al server non riuscita.</translation>
 <translation id="3335947283844343239">Riapri scheda chiusa</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">Sincronizzazione delle schede...</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /> sui contenuti suggeriti</translation>
 <translation id="3494788280727468875">Conferma cancellazione dati di navigazione</translation>
+<translation id="35083190962747987">Apri ${url}</translation>
 <translation id="3519193562722059437">Apri una scheda per navigare sul Web.</translation>
 <translation id="3527085408025491307">Cartella</translation>
 <translation id="3529024052484145543">Non sicuro</translation>
@@ -301,6 +304,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="5062321486222145940">Installa Google Drive</translation>
 <translation id="5083464117946352670">Impossibile stabilire le dimensioni del file.</translation>
 <translation id="5094827893301452931">Tweet completato.</translation>
+<translation id="5118764316110575523">Off</translation>
 <translation id="5127805178023152808">La sincronizzazione è disattivata</translation>
 <translation id="5132942445612118989">Sincronizza le tue password, la tua cronologia e altro su tutti i tuoi dispositivi</translation>
 <translation id="5140288047769711648">Chrome memorizzerà la password. Non è necessario ricordarla.</translation>
@@ -363,6 +367,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="5979837087407522202">Cerca password</translation>
 <translation id="5982717868370722439">Aggiungi dati esistenti a <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">Visitati di recente</translation>
+<translation id="5988851877894965432">Apri URL in Chrome</translation>
 <translation id="6012140227487808125">Crittografia…</translation>
 <translation id="6021332621416007159">Apri in...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7961015016161918242">Mai</translation>
 <translation id="7971521879845308059">Blocca popup</translation>
 <translation id="7982789257301363584">Rete</translation>
+<translation id="800361585186029508">Consente di aprire gli URL inseriti in Google Chrome.</translation>
 <translation id="8007420562015504427">Ricerca in incognito</translation>
 <translation id="8019783059653722575">In questo modo puoi salvare e caricare foto.</translation>
 <translation id="802154636333426148">Download non riuscito</translation>

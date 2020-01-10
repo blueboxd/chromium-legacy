@@ -94,13 +94,13 @@ Blob journals are zero-or-more instances of the structure:
 ```
 {
   database_id (VarInt),
-  blobKey (VarInt)
+  blob_number (VarInt)
 }
 ```
 
 There is no length prefix; just read until you run out of data.
 
-If the blobKey is `DatabaseMetaDataKey::kAllBlobsKey`, the whole
+If the blob_number is `DatabaseMetaDataKey::kAllBlobsNumber`, the whole
 database should be deleted.
 
 ### BlobEntry (value)
@@ -110,7 +110,7 @@ A blob entry is zero-or-more instances of the structure:
 ```
 {
   is_file (Bool),
-  key (VarInt),
+  blob_number (VarInt),
   type (StringWithLength), // may be empty
   /*for Blobs only*/ size (VarInt),
   /*for Files only*/ filename (StringWithLength)

@@ -62,8 +62,7 @@ void RecordFinishReason(FinishReason finish_reason) {
 
 class FirstWebContentsProfiler : public content::WebContentsObserver {
  public:
-  FirstWebContentsProfiler(content::WebContents* web_contents,
-                           startup_metric_utils::WebContentsWorkload workload);
+  explicit FirstWebContentsProfiler(content::WebContents* web_contents);
 
  private:
   ~FirstWebContentsProfiler() override = default;
@@ -80,8 +79,6 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
   // Logs |finish_reason| to UMA and deletes this FirstWebContentsProfiler.
   void FinishedCollectingMetrics(FinishReason finish_reason);
 
-  const startup_metric_utils::WebContentsWorkload workload_;
-
   // The first NavigationHandle id observed by this.
   int64_t first_navigation_id_ = kInvalidNavigationId;
 
@@ -92,9 +89,8 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
 };
 
 FirstWebContentsProfiler::FirstWebContentsProfiler(
-    content::WebContents* web_contents,
-    startup_metric_utils::WebContentsWorkload workload)
-    : content::WebContentsObserver(web_contents), workload_(workload) {}
+    content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {}
 
 void FirstWebContentsProfiler::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
@@ -159,7 +155,7 @@ void FirstWebContentsProfiler::DidFinishNavigation(
   did_finish_first_navigation_ = true;
 
   startup_metric_utils::RecordFirstWebContentsMainNavigationStart(
-      navigation_handle->NavigationStart(), workload_);
+      navigation_handle->NavigationStart());
   startup_metric_utils::RecordFirstWebContentsMainNavigationFinished(
       base::TimeTicks::Now());
 }
@@ -205,8 +201,6 @@ void FirstWebContentsProfiler::FinishedCollectingMetrics(
 namespace metrics {
 
 void BeginFirstWebContentsProfiling() {
-  using startup_metric_utils::WebContentsWorkload;
-
   const BrowserList* browser_list = BrowserList::GetInstance();
 
   content::WebContents* visible_contents = nullptr;
@@ -229,14 +223,9 @@ void BeginFirstWebContentsProfiling() {
     return;
   }
 
-  const bool single_tab = browser_list->size() == 1 &&
-                          browser_list->get(0)->tab_strip_model()->count() == 1;
-
   // FirstWebContentsProfiler owns itself and is also bound to
   // |visible_contents|'s lifetime by observing WebContentsDestroyed().
-  new FirstWebContentsProfiler(visible_contents,
-                               single_tab ? WebContentsWorkload::SINGLE_TAB
-                                          : WebContentsWorkload::MULTI_TABS);
+  new FirstWebContentsProfiler(visible_contents);
 }
 
 }  // namespace metrics

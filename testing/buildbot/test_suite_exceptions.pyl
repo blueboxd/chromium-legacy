@@ -275,32 +275,6 @@
       },
     },
   },
-  'cast_shell_browsertests': {
-    'modifications': {
-      'Cast Audio Linux': {
-        'args': [
-          '--enable-local-file-accesses',
-          '--ozone-platform=headless',
-          '--no-sandbox',
-          '--test-launcher-jobs=1',
-        ],
-        'swarming': {
-          'can_use_on_swarming_builders': False,  # https://crbug.com/861753
-        },
-      },
-      'Cast Linux': {
-        'args': [
-          '--enable-local-file-accesses',
-          '--ozone-platform=headless',
-          '--no-sandbox',
-          '--test-launcher-jobs=1',
-        ],
-        'swarming': {
-          'can_use_on_swarming_builders': False,  # https://crbug.com/861753
-        },
-      },
-    },
-  },
   'cc_unittests': {
     'modifications': {
       'Linux TSan Tests': {
@@ -1340,7 +1314,9 @@
       'android-code-coverage-native',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-rel',
+      'android-marshmallow-x86-fyi-rel',
       'android-pie-arm64-rel',
+      'android-pie-x86-fyi-rel',
       'Android CFI',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
@@ -2158,6 +2134,13 @@
       'android-code-coverage-native', # https://crbug.com/1018431
     ],
     'modifications': {
+      # chromium.android.fyi
+      'Android WebView P FYI (rel)': {
+        'args': [
+          '--annotation',
+          'DisabledTest,FlakyTest' # Monitor status of disabled tests.
+        ],
+      },
       'Oreo Phone Tester': {
         # TODO(crbug.com/997362): Enable this once it's passing.
         # TODO(https://crbug.com/884413): Re-enable this once the tests are

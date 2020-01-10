@@ -56,6 +56,10 @@ class PerfTest : public BlockCleanupTest {
                                           base::TimeDelta* min_time,
                                           base::TimeDelta* max_time);
 
+ protected:
+  // The threads used for testing.
+  web::WebTaskEnvironment task_environment_;
+
  private:
   // Name for this group of perf tests.
   std::string testGroup_;
@@ -69,8 +73,6 @@ class PerfTest : public BlockCleanupTest {
   bool verbose_;
   // Sets number of times to repeat a test when ran with RepeatTimedRuns.
   int repeatCount_;
-  // The threads used for testing.
-  web::WebTaskEnvironment task_environment_;
   // The WebClient for testing purposes.
   web::ScopedTestingWebClient web_client_;
 };

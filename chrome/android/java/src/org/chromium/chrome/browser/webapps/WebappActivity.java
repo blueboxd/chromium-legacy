@@ -49,9 +49,7 @@ import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
@@ -352,6 +350,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         mTabObserverRegistrar = component.resolveTabObserverRegistrar();
         mDelegateFactory = component.resolveTabDelegateFactory();
 
+        mToolbarColorController.setUseTabThemeColor(true /* useTabThemeColor */);
         mStatusBarColorProvider.setUseTabThemeColor(true /* useTabThemeColor */);
 
         mNavigationController.setFinishHandler((reason) -> { handleFinishAndClose(); });
@@ -391,7 +390,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                 // Avoid situations where Android starts two Activities with the same data.
                 AndroidTaskUtils.finishOtherTasksWithData(getIntent().getData(), getTaskId());
             }
-            updateToolbarColor();
         }
         super.onResume();
     }
@@ -540,11 +538,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
             }
 
             @Override
-            public void onDidChangeThemeColor(Tab tab, int color) {
-                updateToolbarColor();
-            }
-
-            @Override
             public void onDidAttachInterstitialPage(Tab tab) {
                 int state = ApplicationStatus.getStateForActivity(WebappActivity.this);
                 if (state == ActivityState.PAUSED || state == ActivityState.STOPPED
@@ -594,23 +587,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
      */
     public @Nullable String getWebApkPackageName() {
         return null;
-    }
-
-    private void updateToolbarColor() {
-        if (getToolbarManager() == null) return;
-
-        Tab tab = getActivityTab();
-        int toolbarColor = getBaseStatusBarColor((tab != null) /* activityHasTab */);
-
-        if (toolbarColor == StatusBarColorController.DEFAULT_STATUS_BAR_COLOR) return;
-
-        // If the color is undefined, we use the color from the tab (if available).
-        if (toolbarColor == StatusBarColorController.UNDEFINED_STATUS_BAR_COLOR) {
-            toolbarColor = (tab != null) ? TabThemeColorHelper.getColor(tab)
-                                         : mIntentDataProvider.getToolbarColor();
-        }
-
-        getToolbarManager().onThemeColorChanged(toolbarColor, false);
     }
 
     @Override

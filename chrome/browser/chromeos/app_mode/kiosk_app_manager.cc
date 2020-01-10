@@ -516,16 +516,6 @@ bool KioskAppManager::GetApp(const std::string& app_id, App* app) const {
   return true;
 }
 
-bool KioskAppManager::GetDisableBailoutShortcut() const {
-  bool enable;
-  if (CrosSettings::Get()->GetBoolean(
-          kAccountsPrefDeviceLocalAccountAutoLoginBailoutEnabled, &enable)) {
-    return !enable;
-  }
-
-  return false;
-}
-
 void KioskAppManager::ClearAppData(const std::string& app_id) {
   KioskAppData* app_data = GetAppDataMutable(app_id);
   if (!app_data)

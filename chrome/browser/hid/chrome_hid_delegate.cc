@@ -28,7 +28,7 @@ std::unique_ptr<content::HidChooser> ChromeHidDelegate::RunChooser(
   Browser* browser = chrome::FindBrowserWithWebContents(
       content::WebContents::FromRenderFrameHost(frame));
   if (!browser) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(std::vector<device::mojom::HidDeviceInfoPtr>());
     return nullptr;
   }
 

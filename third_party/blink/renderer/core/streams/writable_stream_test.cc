@@ -86,7 +86,8 @@ underlying_sink)JS";
       transferred->getWriter(script_state, ASSERT_NO_EXCEPTION);
 
   auto* isolate = script_state->GetIsolate();
-  writer->write(script_state, ScriptValue(isolate, V8String(isolate, "a")));
+  writer->write(script_state, ScriptValue(isolate, V8String(isolate, "a")),
+                ASSERT_NO_EXCEPTION);
 
   // Run the message loop to allow messages to be delivered.
   test::RunPendingTasks();

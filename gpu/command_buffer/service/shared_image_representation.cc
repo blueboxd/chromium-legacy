@@ -34,6 +34,8 @@ SharedImageRepresentationGLTextureBase::BeginScopedAccess(
   if (!BeginAccess(mode))
     return nullptr;
 
+  UpdateClearedStateOnBeginAccess();
+
   constexpr GLenum kReadAccess = 0x8AF6;
   if (mode == kReadAccess)
     backing()->OnReadSucceeded();
@@ -59,6 +61,15 @@ void SharedImageRepresentationGLTexture::UpdateClearedStateOnEndAccess() {
   gfx::Rect cleared_rect = texture->GetLevelClearedRect(texture->target(), 0);
   if (cleared_rect != ClearedRect())
     SetClearedRect(cleared_rect);
+}
+
+void SharedImageRepresentationGLTexture::UpdateClearedStateOnBeginAccess() {
+  auto* texture = GetTexture();
+  // Operations outside of the gles2::Texture may have cleared or uncleared it.
+  // Make sure this state is reflected back in gles2::Texture.
+  gfx::Rect cleared_rect = ClearedRect();
+  if (cleared_rect != texture->GetLevelClearedRect(texture->target(), 0))
+    texture->SetLevelClearedRect(texture->target(), 0, cleared_rect);
 }
 
 gpu::TextureBase*

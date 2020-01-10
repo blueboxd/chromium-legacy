@@ -17,7 +17,6 @@
 <translation id="5073204694187207510">Slėpti viso ekrano tinklelį</translation>
 <translation id="5082793167783849073">Sparčiai palyginkite puslapius sukūrę grupę. Jei norite pradėti, palieskite ir palaikykite nuorodą.</translation>
 <translation id="5580090775658607195">Sugrupuota tiek skirtukų: <ph name="TAB_COUNT" /></translation>
-<translation id="5792534911093536736">Daugiau skirtukų</translation>
 <translation id="58326064309361797">Vilkite skirtukus, kad juos sugrupuotumėte</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
 <translation id="6193448654517602979">Pasirinkti skirtukus</translation>
@@ -29,6 +28,7 @@
 <translation id="7792771145871471484">Peržiūrėkite pasiūlymus.</translation>
 <translation id="7885132941432959125">Perkelti skirtuką į dešinę</translation>
 <translation id="7966321538264951561">Atsisakyti pasiūlymo.</translation>
+<translation id="814503310257431685">Rodyti visus</translation>
 <translation id="8205266828577616993">Perkelti skirtuką į viršų</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Uždaryti <ph name="TABS_COUNT_ONE" /> pasirinktą skirtuką}one{Uždaryti <ph name="TABS_COUNT_MANY" /> pasirinktą skirtuką}few{Uždaryti <ph name="TABS_COUNT_MANY" /> pasirinktus skirtukus}many{Uždaryti <ph name="TABS_COUNT_MANY" /> pasirinkto skirtuko}other{Uždaryti <ph name="TABS_COUNT_MANY" /> pasirinktų skirtukų}}</translation>
 <translation id="9150694013019234766">Skirtukus perjunkite skirtukų grupėje netoli ekrano apačios</translation>

@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -39,6 +40,10 @@ class BrowserViewControllerHelperTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
     TestChromeBrowserState::Builder test_cbs_builder;
+
+    ASSERT_TRUE(state_dir_.CreateUniqueTempDir());
+    test_cbs_builder.SetPath(state_dir_.GetPath());
+
     chrome_browser_state_ = test_cbs_builder.Build();
     chrome_browser_state_->CreateBookmarkModel(true);
     bookmarks::test::WaitForBookmarkModelToLoad(
@@ -50,6 +55,11 @@ class BrowserViewControllerHelperTest : public PlatformTest {
 
     helper_ = [[BrowserViewControllerHelper alloc] init];
   }
+
+  // A state directory that outlives |task_environment_| is needed because
+  // CreateHistoryService/CreateBookmarkModel use the directory to host
+  // databases. See https://crbug.com/546640 for more details.
+  base::ScopedTempDir state_dir_;
 
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;

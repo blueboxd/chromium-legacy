@@ -2160,13 +2160,18 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // TODO(https://crbug.com/759184): Verify CSP frame-ancestors in the browser
   // process. Currently, this is done by the renderer process, which commits an
   // empty document with success instead.
-  //  EXPECT_EQ(blocked_url, navigation_observer.last_committed_url());
-  //  EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE,
-  //            navigation_obsever.net_error_code());
   EXPECT_TRUE(navigation_observer.has_committed());
-  EXPECT_FALSE(navigation_observer.is_error());
-  EXPECT_EQ(GURL("data:,"), navigation_observer.last_committed_url());
-  EXPECT_EQ(net::Error::OK, navigation_observer.net_error_code());
+  if (base::FeatureList::IsEnabled(
+          network::features::kOutOfBlinkFrameAncestors)) {
+    EXPECT_TRUE(navigation_observer.is_error());
+    EXPECT_EQ(blocked_url, frame->GetLastCommittedURL());
+    EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE,
+              navigation_observer.net_error_code());
+  } else {
+    EXPECT_FALSE(navigation_observer.is_error());
+    EXPECT_EQ(GURL("data:,"), navigation_observer.last_committed_url());
+    EXPECT_EQ(net::Error::OK, navigation_observer.net_error_code());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,

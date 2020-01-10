@@ -136,7 +136,9 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTextureBase
  protected:
   friend class SharedImageRepresentationSkiaGL;
 
-  // Can be overridden to handle clear state tracking when GL access ends.
+  // Can be overridden to handle clear state tracking when GL access begins or
+  // ends.
+  virtual void UpdateClearedStateOnBeginAccess() {}
   virtual void UpdateClearedStateOnEndAccess() {}
 
   // TODO(ericrk): Make these pure virtual and ensure real implementations
@@ -159,6 +161,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexture
   gpu::TextureBase* GetTextureBase() override;
 
  protected:
+  void UpdateClearedStateOnBeginAccess() override;
   void UpdateClearedStateOnEndAccess() override;
 };
 

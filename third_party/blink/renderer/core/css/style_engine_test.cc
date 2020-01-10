@@ -1494,8 +1494,6 @@ TEST_F(StyleEngineTest, MediaQueriesChangeDefaultFontSize) {
 }
 
 TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
-  ScopedMediaQueryPrefersColorSchemeForTest feature_scope(true);
-
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
       body { color: red }
@@ -1521,8 +1519,6 @@ TEST_F(StyleEngineTest, MediaQueriesChangeColorScheme) {
 }
 
 TEST_F(StyleEngineTest, MediaQueriesChangeColorSchemeForcedDarkMode) {
-  ScopedMediaQueryPrefersColorSchemeForTest feature_scope(true);
-
   GetDocument().GetSettings()->SetForceDarkModeEnabled(true);
   ColorSchemeHelper color_scheme_helper;
   color_scheme_helper.SetPreferredColorScheme(GetDocument(),
@@ -1668,8 +1664,6 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
 }
 
 TEST_F(StyleEngineTest, MediaQueriesColorSchemeOverride) {
-  ScopedMediaQueryPrefersColorSchemeForTest feature_scope(true);
-
   EXPECT_EQ(PreferredColorScheme::kLight,
             Platform::Current()->ThemeEngine()->PreferredColorScheme());
 

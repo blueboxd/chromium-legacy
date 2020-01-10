@@ -681,15 +681,10 @@ gles2::Texture* SharedImageBackingAHB::GenGLTexture() {
   texture->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
   texture->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
 
-  // If the backing is already cleared, no need to clear it again.
-  gfx::Rect cleared_rect;
-  if (IsCleared())
-    cleared_rect = gfx::Rect(size());
-
   texture->SetLevelInfo(target, 0, egl_image->GetInternalFormat(),
                         size().width(), size().height(), 1, 0,
                         egl_image->GetDataFormat(), egl_image->GetDataType(),
-                        cleared_rect);
+                        ClearedRect());
   texture->SetLevelImage(target, 0, egl_image.get(), gles2::Texture::BOUND);
   texture->SetImmutable(true, false);
   api->glBindTextureFn(target, old_texture_binding);
@@ -887,7 +882,6 @@ std::unique_ptr<SharedImageBacking> SharedImageBackingFactoryAHB::MakeBacking(
     AHardwareBuffer_Desc hwb_info;
     base::AndroidHardwareBufferCompat::GetInstance().Describe(buffer,
                                                               &hwb_info);
-
     void* address = nullptr;
     if (int error = base::AndroidHardwareBufferCompat::GetInstance().Lock(
             buffer, AHARDWAREBUFFER_USAGE_CPU_WRITE_RARELY, -1, 0, &address)) {

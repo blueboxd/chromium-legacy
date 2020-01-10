@@ -13,16 +13,19 @@
 class SkBitmap;
 
 namespace paint_preview {
+class PaintPreviewBaseService;
 
 class PlayerCompositorDelegateAndroid : public PlayerCompositorDelegate {
  public:
   PlayerCompositorDelegateAndroid(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobject,
+      PaintPreviewBaseService* paint_preview_service,
       const base::android::JavaParamRef<jstring>& j_string_url);
 
-  void OnCompositorReady(const mojom::PaintPreviewBeginCompositeResponse&
-                             composite_response) override;
+  void OnCompositorReady(
+      mojom::PaintPreviewCompositor::Status status,
+      mojom::PaintPreviewBeginCompositeResponsePtr composite_response) override;
 
   // Called from Java when there is a request for a new bitmap. When the bitmap
   // is ready, it will be passed to j_bitmap_callback. In case of any failure,

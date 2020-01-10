@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/cancelable_callback.h"
 #include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/memory/ref_counted.h"
@@ -53,6 +54,12 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabase
       SharedDBMetadataProto::MigrationStatus migration_status,
       Callbacks::UpdateCallback callback);
 
+ protected:
+  SharedProtoDatabase(const std::string& client_db_id,
+                      const base::FilePath& db_dir);
+
+  virtual ~SharedProtoDatabase();
+
  private:
   friend class base::RefCountedThreadSafe<SharedProtoDatabase>;
   friend class ProtoDatabaseProvider;
@@ -61,6 +68,9 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabase
   friend class SharedProtoDatabaseTest;
   friend class SharedProtoDatabaseClientTest;
   friend class TestSharedProtoDatabase;
+  FRIEND_TEST_ALL_PREFIXES(SharedProtoDatabaseTest,
+                           CancelDeleteObsoleteClients);
+  FRIEND_TEST_ALL_PREFIXES(SharedProtoDatabaseTest, DeleteObsoleteClients);
 
   enum InitState {
     // Initialization hasn't been attempted.
@@ -93,11 +103,7 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabase
   // affecting startup or navigations.
   static const base::TimeDelta kDelayToClearObsoleteDatabase;
 
-  // Private since we only want to create a singleton of it.
-  SharedProtoDatabase(const std::string& client_db_id,
-                      const base::FilePath& db_dir);
-
-  virtual ~SharedProtoDatabase();
+  void Shutdown();
 
   void ProcessInitRequests(Enums::InitStatus status);
 
@@ -145,7 +151,15 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabase
       Callbacks::InitStatusCallback callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
 
+  // |done| will be called on |task_runner|.
+  virtual void DestroyObsoleteSharedProtoDatabaseClients(
+      Callbacks::UpdateCallback done);
+
   LevelDB* GetLevelDBForTesting() const;
+
+  void set_delete_obsolete_delay_for_testing(base::TimeDelta delay) {
+    delete_obsolete_delay_ = delay;
+  }
 
   scoped_refptr<base::SequencedTaskRunner> database_task_runner_for_testing()
       const {
@@ -174,6 +188,9 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabase
 
   base::queue<std::unique_ptr<InitRequest>> outstanding_init_requests_;
   bool create_if_missing_ = false;
+
+  base::TimeDelta delete_obsolete_delay_ = base::TimeDelta::FromSeconds(120);
+  base::CancelableOnceClosure delete_obsolete_task_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedProtoDatabase);
 };

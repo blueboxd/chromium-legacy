@@ -588,6 +588,47 @@ section.
 
 ---
 
+### Object Literal Extensions
+
+Convenient new ways for object property definition.
+
+**Usage Example:**
+
+```js
+// Computed property name
+const prop = 'foo';
+const o = {
+  [prop]: 'hey',
+  ['b' + 'ar']: 'there',
+};
+console.log(o);  // {foo: 'hey', bar: 'there'}
+
+// Shorthand property
+const foo = 1;
+const bar = 2;
+const o = {foo, bar};
+console.log(o);  // {foo: 1, bar: 2}
+
+// Method property
+const clearSky = {
+  // Basically the same as clouds: function() { return 0; }.
+  clouds() { return 0; },
+  color() { return 'blue'; },
+};
+console.log(clearSky.color());  // 'blue'
+console.log(clearSky.clouds());  // 0
+```
+
+**Documentation:** [link](https://tc39.github.io/ecma262/#sec-object-initialiser)
+[link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer)
+
+**Discussion Notes / Link to Thread:**
+https://groups.google.com/a/chromium.org/d/msg/chromium-dev/RqOdTlxuGVg/M7I0CTryDQAJ
+
+Note: clang-format has some issues formatting complex computed property names.
+
+---
+
 ## Banned Features
 
 The following features are banned for Chromium development.
@@ -650,44 +691,6 @@ hide(document.body, false);  // Not animated.
 
 **Documentation:** [link](https://tc39.github.io/ecma262/#sec-functiondeclarationinstantiation)
 [link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Default_parameters)
-
-**Discussion Notes / Link to Thread:**
-
----
-
-### Object Literal Extensions
-
-Convenient new ways for object property definition.
-
-**Usage Example:**
-
-```js
-// Computed property name
-const prop = 'foo';
-const o = {
-  [prop]: 'hey',
-  ['b' + 'ar']: 'there',
-};
-console.log(o);  // {foo: 'hey', bar: 'there'}
-
-// Shorthand property
-const foo = 1;
-const bar = 2;
-const o = {foo, bar};
-console.log(o);  // {foo: 1, bar: 2}
-
-// Method property
-const clearSky = {
-  // Basically the same as clouds: function() { return 0; }.
-  clouds() { return 0; },
-  color() { return 'blue'; },
-};
-console.log(clearSky.color());  // 'blue'
-console.log(clearSky.clouds());  // 0
-```
-
-**Documentation:** [link](https://tc39.github.io/ecma262/#sec-object-initialiser)
-[link](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer)
 
 **Discussion Notes / Link to Thread:**
 

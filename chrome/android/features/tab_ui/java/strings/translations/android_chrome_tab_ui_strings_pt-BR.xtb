@@ -17,7 +17,6 @@
 <translation id="5073204694187207510">Ocultar grade de tela cheia</translation>
 <translation id="5082793167783849073">Compare as páginas rapidamente criando um grupo. Para começar, toque em um link e mantenha-o pressionado.</translation>
 <translation id="5580090775658607195">Guias agrupadas: <ph name="TAB_COUNT" /></translation>
-<translation id="5792534911093536736">Mais guias</translation>
 <translation id="58326064309361797">Arraste as guias para agrupá-las</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6193448654517602979">Selecione as guias</translation>
@@ -29,6 +28,7 @@
 <translation id="7792771145871471484">Revisar as sugestões.</translation>
 <translation id="7885132941432959125">Mover guia para a direita</translation>
 <translation id="7966321538264951561">Dispensar as sugestões.</translation>
+<translation id="814503310257431685">Visualizar todos</translation>
 <translation id="8205266828577616993">Mover guia para cima</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Fechar <ph name="TABS_COUNT_ONE" /> guia selecionada}one{Fechar <ph name="TABS_COUNT_MANY" /> guia selecionada}other{Fechar <ph name="TABS_COUNT_MANY" /> guias selecionadas}}</translation>
 <translation id="9150694013019234766">Alterne entre as guias do seu grupo de guias perto da parte inferior da tela</translation>

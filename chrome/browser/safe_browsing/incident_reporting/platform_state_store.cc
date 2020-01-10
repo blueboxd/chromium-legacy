@@ -151,9 +151,6 @@ std::unique_ptr<base::DictionaryValue> Load(Profile* profile) {
       NOTREACHED();
       break;
   }
-  UMA_HISTOGRAM_ENUMERATION(
-      "SBIRS.PSSLoadResult", static_cast<uint32_t>(result),
-      static_cast<uint32_t>(PlatformStateStoreLoadResult::NUM_RESULTS));
   return value_dict;
 #else
   return nullptr;
@@ -164,7 +161,6 @@ void Store(Profile* profile, const base::DictionaryValue* incidents_sent) {
 #if defined(USE_PLATFORM_STATE_STORE)
   std::string data;
   SerializeIncidentsSent(incidents_sent, &data);
-  UMA_HISTOGRAM_COUNTS_1M("SBIRS.PSSDataStoreSize", data.size());
   WriteStoreData(profile, data);
 #endif
 }

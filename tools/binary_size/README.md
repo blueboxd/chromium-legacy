@@ -23,10 +23,7 @@ Per-Milestone Binary Size Breakdowns:
 ## Binary Size Trybot (android-binary-size)
 
  * Introduced October 2018 as a mandatory CQ bot.
- * Example builds: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android-binary-size
- * Provides size per-patch size analysis via `resource_sizes.py` and SuperSize.
- * Forces a `Binary-Size:` footer to be present for commits that are larger than
-   16KiB (autorollers exempted).
+ * Documented [here](/docs/speed/binary_size/android_binary_size_trybot.md).
 
 ## Binary Size Gerrit Plugin
 

@@ -275,7 +275,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void RequestSetBounds(const gfx::Rect& bounds) override;
   void SetBackgroundOpaque(bool opaque) override;
   bool IsMainFrameActive() override;
-  bool IsNeverVisible() override;
+  bool IsNeverComposited() override;
   WebPreferences GetWebkitPreferencesForWidget() override;
   FrameTreeNode* GetFocusedFrame() override;
 

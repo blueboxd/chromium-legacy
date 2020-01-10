@@ -2,43 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** 'add-printers-list' is the list of discovered printers. */
-Polymer({
-  is: 'add-printer-list',
-
-  properties: {
-    /** @type {!Array<!CupsPrinterInfo>} */
-    printers: {
-      type: Array,
-      notify: true,
-    },
-
-    /** @type {!CupsPrinterInfo} */
-    selectedPrinter: {
-      type: Object,
-      notify: true,
-    },
-  },
-
-  /**
-   * @param {{model:Object}} event
-   * @private
-   */
-  onSelect_: function(event) {
-    this.selectedPrinter = event.model.item;
-  },
-
-  /**
-   * @param {!CupsPrinterInfo} first
-   * @param {!CupsPrinterInfo} second
-   * @return {number} The result of the comparison.
-   * @private
-   */
-  sort_: function(first, second) {
-    return settings.printing.alphabeticalSort(first, second);
-  },
-});
-
 /** 'add-printer-dialog' is the template of the Add Printer dialog. */
 Polymer({
   is: 'add-printer-dialog',

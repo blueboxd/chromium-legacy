@@ -19,11 +19,16 @@ const kReportBytes = new Uint8Array([0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef]);
 // the newly created device, and returns the HidConnection fake.
 async function addAndOpenDevice(fake) {
   const deviceInfo = fake.makeDevice(kTestVendorId, kTestProductId);
-  const guid = fake.addDevice(deviceInfo);
-  fake.setSelectedDevice(guid);
+  const guid = deviceInfo.guid;
+  const key = fake.addDevice(deviceInfo);
+  fake.setSelectedDevice(key);
 
   await trustedClick();
-  const device = await navigator.hid.requestDevice({filters: []});
+  const devices = await navigator.hid.requestDevice({filters: []});
+  assert_true(devices instanceof Array);
+  assert_equals(devices.length, 1);
+
+  const device = devices[0];
   assert_true(device instanceof HIDDevice);
 
   await device.open();

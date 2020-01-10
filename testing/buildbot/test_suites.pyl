@@ -336,7 +336,17 @@
       'cast_base_unittests': {},
       'cast_crash_unittests': {},
       'cast_media_unittests': {},
-      'cast_shell_browsertests': {},
+      'cast_shell_browsertests': {
+        'args': [
+          '--enable-local-file-accesses',
+          '--ozone-platform=headless',
+          '--no-sandbox',
+          '--test-launcher-jobs=1',
+        ],
+        'swarming': {
+          'can_use_on_swarming_builders': False,  # https://crbug.com/861753
+        },
+      },
       'cast_shell_unittests': {},
     },
 
@@ -2100,7 +2110,7 @@
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
-          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer --use-gl=egl --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer --use-gl=egl --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode',
         ],
         'precommit_args': [
           # Gerrit issue ID

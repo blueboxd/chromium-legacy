@@ -42,4 +42,10 @@ bool SmsQueue::HasSubscribers() {
   return !subscribers_.empty();
 }
 
+bool SmsQueue::HasSubscriber(const url::Origin& origin,
+                             const Subscriber* subscriber) {
+  return (subscribers_.find(origin) != subscribers_.end()) &&
+         subscribers_[origin].HasObserver(subscriber);
+}
+
 }  // namespace content

@@ -424,16 +424,6 @@ class AdsPageLoadMetricsObserverTest
         ->NotifyAdSubframeDetected(render_frame_host);
   }
 
-  // Set the interactive status of the main frame.
-  void OnMainFrameInteractive(base::TimeDelta frame_interactive_offset) {
-    auto timing = page_load_metrics::mojom::PageLoadTimingPtr(base::in_place);
-    page_load_metrics::InitPageLoadTimingForTest(timing.get());
-    timing->interactive_timing->interactive =
-        base::Optional<base::TimeDelta>(frame_interactive_offset);
-    // Call directly since main frame timing updates may be delayed.
-    ads_observer_->OnPageInteractive(*timing);
-  }
-
   void OnCpuTimingUpdate(RenderFrameHost* render_frame_host,
                          base::TimeDelta cpu_time_spent) {
     page_load_metrics::mojom::CpuTiming cpu_timing(cpu_time_spent);
@@ -568,17 +558,19 @@ class AdsPageLoadMetricsObserverTest
                           int post_time) {
     int total_task_time = pre_task_time + post_task_time;
     int total_time = pre_time + post_time;
-    std::string suffix = type == "Activated" ? "Activation" : "Interactive";
     type = type.empty() ? "" : "." + type;
 
     CheckSpecificCpuHistogram(SuffixedHistogram(prefix + ".TotalUsage" + type),
                               total_task_time, total_time);
-    CheckSpecificCpuHistogram(
-        SuffixedHistogram(prefix + ".TotalUsage" + type + ".Pre" + suffix),
-        pre_task_time, pre_time);
-    CheckSpecificCpuHistogram(
-        SuffixedHistogram(prefix + ".TotalUsage" + type + ".Post" + suffix),
-        post_task_time, post_time);
+
+    if (type == "Activated") {
+      CheckSpecificCpuHistogram(
+          SuffixedHistogram(prefix + ".TotalUsage" + type + ".PreActivation"),
+          pre_task_time, pre_time);
+      CheckSpecificCpuHistogram(
+          SuffixedHistogram(prefix + ".TotalUsage" + type + ".PostActivation"),
+          post_task_time, post_time);
+    }
   }
 
  private:
@@ -1232,7 +1224,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, ZeroBytesNonZeroCpuFrame_Recorded) {
       SuffixedHistogram("Cpu.FullPage.TotalUsage"), 1000, 1);
 }
 
-TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsWindowed) {
+TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsWindowUnactivated) {
   OverrideVisibilityTrackerWithMockClock();
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
@@ -1341,7 +1333,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsWindowedActivated) {
       SuffixedHistogram("Cpu.FullPage.PeakWindowStartTime"), 12000, 1);
 }
 
-TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetrics) {
+TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsNoActivation) {
   OverrideVisibilityTrackerWithMockClock();
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
   RenderFrameHost* non_ad_frame =
@@ -1355,10 +1347,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetrics) {
   OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
   OnCpuTimingUpdate(non_ad_frame, base::TimeDelta::FromMilliseconds(500));
 
-  // Set the main frame as interactive after 2 seconds.
-  AdvancePageDuration(base::TimeDelta::FromMilliseconds(2000));
-  OnMainFrameInteractive(base::TimeDelta::FromMilliseconds(2000));
-
   // Do some more work on the ad frame.
   OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1000));
 
@@ -1366,7 +1354,7 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetrics) {
   OnCpuTimingUpdate(main_frame, base::TimeDelta::FromMilliseconds(500));
 
   // Navigate away after 4 seconds.
-  AdvancePageDuration(base::TimeDelta::FromMilliseconds(2000));
+  AdvancePageDuration(base::TimeDelta::FromMilliseconds(4000));
   NavigateFrame(kNonAdUrl, main_frame);
 
   // Check the cpu histograms.
@@ -1412,15 +1400,11 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
   OnCpuTimingUpdate(non_ad_frame, base::TimeDelta::FromMilliseconds(500));
 
-  // Set the main frame as interactive after 2 seconds.
-  AdvancePageDuration(base::TimeDelta::FromMilliseconds(2000));
-  OnMainFrameInteractive(base::TimeDelta::FromMilliseconds(2000));
-
   // Do some more work on the ad frame.
   OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1000));
 
   // Set the page as hidden after 3.5 seconds.
-  AdvancePageDuration(base::TimeDelta::FromMilliseconds(1500));
+  AdvancePageDuration(base::TimeDelta::FromMilliseconds(3500));
   OnHidden();
 
   // Do some more work on the main frame, shouldn't count to total.
@@ -1469,18 +1453,11 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsOnActivation) {
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 10);
 
   // Perform some updates on ad and non-ad frames.
-  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1000));
   OnCpuTimingUpdate(non_ad_frame, base::TimeDelta::FromMilliseconds(500));
 
-  // Set the main frame as interactive after 2 seconds.
-  AdvancePageDuration(base::TimeDelta::FromMilliseconds(2000));
-  OnMainFrameInteractive(base::TimeDelta::FromMilliseconds(2000));
-
-  // Do some more work on the ad frame.
-  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
-
-  // Set the frame as interactive after 2.5 seconds
-  AdvancePageDuration(base::TimeDelta::FromMilliseconds(500));
+  // Set the frame as activated after 2.5 seconds
+  AdvancePageDuration(base::TimeDelta::FromMilliseconds(2500));
   TriggerFirstUserActivation(ad_frame);
 
   // Do some more work on the main frame.
@@ -1538,21 +1515,11 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestNoReportingWhenAlwaysBackgrounded) {
   OnHidden();
 
   // Perform some updates on ad and non-ad frames.
-  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
-  OnCpuTimingUpdate(non_ad_frame, base::TimeDelta::FromMilliseconds(500));
-
-  // Set the main frame as interactive after 2 seconds.
-  AdvancePageDuration(base::TimeDelta::FromMilliseconds(2000));
-  OnMainFrameInteractive(base::TimeDelta::FromMilliseconds(2000));
-
-  // Do some more work on the ad frame.
-  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1000));
-
-  // Do some more work on the main frame.
-  OnCpuTimingUpdate(main_frame, base::TimeDelta::FromMilliseconds(500));
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1500));
+  OnCpuTimingUpdate(non_ad_frame, base::TimeDelta::FromMilliseconds(1000));
 
   // Navigate away after 4 seconds.
-  AdvancePageDuration(base::TimeDelta::FromMilliseconds(2000));
+  AdvancePageDuration(base::TimeDelta::FromMilliseconds(4000));
   NavigateFrame(kNonAdUrl, main_frame);
 
   // Ensure that all metrics are zero.
@@ -1585,45 +1552,6 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestNoReportingWhenAlwaysBackgrounded) {
       ukm::builders::AdFrameLoad::kTiming_PreActivationForegroundDurationName));
 }
 
-TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsNoInteractive) {
-  OverrideVisibilityTrackerWithMockClock();
-  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
-  RenderFrameHost* non_ad_frame =
-      CreateAndNavigateSubFrame(kNonAdUrl, main_frame);
-  RenderFrameHost* ad_frame = CreateAndNavigateSubFrame(kAdUrl, main_frame);
-
-  // Add some data to the ad frame so it get reported.
-  ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 10);
-
-  // Perform some updates on ad and non-ad frames.
-  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
-  OnCpuTimingUpdate(non_ad_frame, base::TimeDelta::FromMilliseconds(500));
-
-  // Navigate away after 2 seconds.
-  AdvancePageDuration(base::TimeDelta::FromMilliseconds(2000));
-  NavigateFrame(kNonAdUrl, main_frame);
-
-  // Check the cpu histograms.
-  CheckCpuHistograms("Cpu.FullPage", "", /*pre_tasks=*/500 + 500,
-                     /*pre_time=*/2000, /*post_tasks=*/0, /*post_time=*/0);
-  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Activated", 0, 0, 0, 0);
-  CheckCpuHistograms("Cpu.AdFrames.PerFrame", "Unactivated", /*pre_tasks=*/500,
-                     /*pre_time=*/2000, /*post_tasks=*/0, /*post_time=*/0);
-  histogram_tester().ExpectUniqueSample(
-      SuffixedHistogram("Cpu.AdFrames.Aggregate.TotalUsage"),
-      /*total_task_time=*/500, 1);
-
-  auto entries = test_ukm_recorder().GetEntriesByName(
-      ukm::builders::AdFrameLoad::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  test_ukm_recorder().ExpectEntryMetric(
-      entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 500);
-  test_ukm_recorder().ExpectEntryMetric(
-      entries.front(),
-      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName,
-      100 * 500 / 30000);
-}
-
 TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
   OverrideVisibilityTrackerWithMockClock();
   RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
@@ -1635,19 +1563,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
   ResourceDataUpdate(ad_frame, ResourceCached::kNotCached, 10);
 
   // Perform some updates on ad and non-ad frames.
-  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(500));
-
-  // Set interactive after 1 microsecond.
-  AdvancePageDuration(base::TimeDelta::FromMicroseconds(1));
-  OnMainFrameInteractive(base::TimeDelta::FromMicroseconds(1));
-
-  // Do some more work on the ad frame.
-  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1000));
-
-  // Do some more work on the main frame.
+  OnCpuTimingUpdate(ad_frame, base::TimeDelta::FromMilliseconds(1500));
   OnCpuTimingUpdate(non_ad_frame, base::TimeDelta::FromMilliseconds(500));
 
-  // Navigate away after 2 microseconds.
+  // Navigate away after 1 microsecond.
   AdvancePageDuration(base::TimeDelta::FromMicroseconds(1));
   NavigateFrame(kNonAdUrl, main_frame);
 

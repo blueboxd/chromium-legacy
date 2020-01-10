@@ -61,6 +61,7 @@ class AppCacheCacheTestHelper : public AppCacheStorage::Delegate {
 
  private:
   enum class State {
+    kIdle,
     kReadInfo,
     kReadData,
     kWriteInfo,
@@ -74,12 +75,12 @@ class AppCacheCacheTestHelper : public AppCacheStorage::Delegate {
   const GURL manifest_url_;
   AppCache* const cache_;
   CacheEntries cache_entries_;
-  base::OnceCallback<void(int)> post_write_callback_;
   State state_;
 
   // Used for writing cache info and data.
   CacheEntries::const_iterator write_it_;
   std::unique_ptr<AppCacheResponseWriter> response_writer_;
+  base::OnceCallback<void(int)> post_write_callback_;
 
   // Used for reading cache info and data.
   AppCache* read_cache_;

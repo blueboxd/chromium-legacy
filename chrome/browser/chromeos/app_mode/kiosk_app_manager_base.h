@@ -63,6 +63,9 @@ class KioskAppManagerBase : public KioskAppDataDelegate {
   void OnKioskAppDataChanged(const std::string& app_id) const override;
   void OnKioskAppDataLoadFailure(const std::string& app_id) const override;
 
+  // Gets whether the bailout shortcut is disabled.
+  bool GetDisableBailoutShortcut() const;
+
   bool current_app_was_auto_launched_with_zero_delay() const {
     return auto_launched_with_zero_delay_;
   }

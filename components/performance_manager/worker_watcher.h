@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/shared_worker_service.h"
 
 namespace content {
@@ -49,25 +50,23 @@ class WorkerWatcher : public content::SharedWorkerService::Observer {
                        const base::UnguessableToken& dev_tools_token) override;
   void OnBeforeWorkerTerminated(
       const content::SharedWorkerInstance& instance) override;
-  void OnClientAdded(const content::SharedWorkerInstance& instance,
-                     int client_process_id,
-                     int frame_id) override;
-  void OnClientRemoved(const content::SharedWorkerInstance& instance,
-                       int client_process_id,
-                       int frame_id) override;
+  void OnClientAdded(
+      const content::SharedWorkerInstance& instance,
+      content::GlobalFrameRoutingId render_frame_host_id) override;
+  void OnClientRemoved(
+      const content::SharedWorkerInstance& instance,
+      content::GlobalFrameRoutingId render_frame_host_id) override;
 
  private:
   friend class WorkerWatcherTest;
 
-  void OnBeforeFrameNodeRemoved(int render_process_id,
-                                int frame_id,
-                                FrameNodeImpl* frame_node);
+  void OnBeforeFrameNodeRemoved(
+      content::GlobalFrameRoutingId render_frame_host_id,
+      FrameNodeImpl* frame_node);
 
-  bool AddChildWorker(int render_process_id,
-                      int frame_id,
+  bool AddChildWorker(content::GlobalFrameRoutingId render_frame_host_id,
                       WorkerNodeImpl* child_worker_node);
-  bool RemoveChildWorker(int render_process_id,
-                         int frame_id,
+  bool RemoveChildWorker(content::GlobalFrameRoutingId render_frame_host_id,
                          WorkerNodeImpl* child_worker_node);
 
   // Helper function to retrieve an existing shared worker node.
@@ -97,15 +96,7 @@ class WorkerWatcher : public content::SharedWorkerService::Observer {
   // is used when a frame is torn down before the OnBeforeWorkerTerminated() is
   // received, to ensure the deletion of the worker nodes in the right order
   // (workers before frames).
-  struct FrameInfo {
-    int render_process_id;
-    int frame_id;
-  };
-
-  // Comparison operator to allow using FrameInfo as a key.
-  friend bool operator<(const FrameInfo& lhs, const FrameInfo& rhs);
-
-  base::flat_map<FrameInfo, base::flat_set<WorkerNodeImpl*>>
+  base::flat_map<content::GlobalFrameRoutingId, base::flat_set<WorkerNodeImpl*>>
       frame_node_child_workers_;
 
 #if DCHECK_IS_ON()

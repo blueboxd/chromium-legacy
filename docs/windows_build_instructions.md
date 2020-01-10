@@ -88,9 +88,7 @@ if your system PATH has a Python in it, you will be out of luck.
 
 Also, add a DEPOT_TOOLS_WIN_TOOLCHAIN system variable in the same way, and set
 it to 0. This tells depot_tools to use your locally installed version of Visual
-Studio (by default, depot_tools will try to use a google-internal version). If
-you want to build with Visual Studio 2017 instead of Visual Studio 2019 (the
-default) then set the GYP_MSVS_VERSION environment variable to 2017.
+Studio (by default, depot_tools will try to use a google-internal version).
 
 From a cmd.exe shell, run the command gclient (without arguments). On first
 run, gclient will install all the Windows-specific bits needed to work with
@@ -168,7 +166,8 @@ $ gn gen out/Default
   update the build files as needed.
 * You can replace `Default` with another name, but
   it should be a subdirectory of `out`.
-* For other build arguments, including release settings, see [GN build
+* For other build arguments, including release settings or using an alternate
+  version of Visual Studio, see [GN build
   configuration](https://www.chromium.org/developers/gn-build-configuration).
   The default will be a debug component build matching the current host
   operating system and CPU.

@@ -10,7 +10,7 @@ namespace extensions {
 
 ServiceWorkerData::ServiceWorkerData(
     int64_t service_worker_version_id,
-    int activation_sequence,
+    ActivationSequence activation_sequence,
     ScriptContext* context,
     std::unique_ptr<NativeExtensionBindingsSystem> bindings_system)
     : service_worker_version_id_(service_worker_version_id),

@@ -16,8 +16,8 @@ suite('NewTabPageCustomizeThemesFocusTest', () => {
   let testProxy;
 
   function queryThemeIcons() {
-    return customizeThemes.shadowRoot.querySelectorAll(
-        '#themesContainer ntp-theme-icon');
+    return Array.from(customizeThemes.shadowRoot.querySelectorAll(
+        '#themesContainer > :-webkit-any(div, ntp-theme-icon)'));
   }
 
   setup(async () => {

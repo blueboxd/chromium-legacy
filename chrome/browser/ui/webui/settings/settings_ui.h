@@ -8,14 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"  // nogncheck
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "ui/webui/mojo_web_ui_controller.h"
-#else
 #include "content/public/browser/web_ui_controller.h"
-#endif
 
 class Profile;
 
@@ -31,13 +24,7 @@ class PrefRegistrySyncable;
 namespace settings {
 
 // The WebUI handler for chrome://settings.
-class SettingsUI
-#if defined(OS_CHROMEOS)
-    : public ui::MojoWebUIController
-#else
-    : public content::WebUIController
-#endif
-{
+class SettingsUI : public content::WebUIController {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -51,17 +38,6 @@ class SettingsUI
       Profile* profile,
       content::WebUI* web_ui,
       content::WebUIDataSource* html_source);
-
-  // Initializes the WebUI message handlers for OS-specific settings.
-  static void InitOSWebUIHandlers(Profile* profile,
-                                  content::WebUI* web_ui,
-                                  content::WebUIDataSource* html_source);
-
-  // Instantiates implementor of the mojom::CrosNetworkConfig mojo interface
-  // passing the pending receiver that will be internally bound.
-  void BindInterface(
-      mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
-          receiver);
 #endif  // defined(OS_CHROMEOS)
 
  private:
@@ -69,10 +45,6 @@ class SettingsUI
       std::unique_ptr<content::WebUIMessageHandler> handler);
 
   WebuiLoadTimer webui_load_timer_;
-
-#if defined(OS_CHROMEOS)
-  WEB_UI_CONTROLLER_TYPE_DECL();
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(SettingsUI);
 };

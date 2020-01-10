@@ -183,8 +183,9 @@ void Desk::AddWindowToDesk(aura::Window* window) {
   windows_.push_back(window);
   // No need to refresh the mini_views if the destroyed window doesn't show up
   // there in the first place.
+  // The WorkspaceLayoutManager updates the backdrop for us.
   if (!window->GetProperty(kHideInDeskMiniViewKey))
-    NotifyContentChanged();
+    NotifyContentChanged(/*update_backdrops=*/false);
 }
 
 void Desk::RemoveWindowFromDesk(aura::Window* window) {
@@ -192,8 +193,9 @@ void Desk::RemoveWindowFromDesk(aura::Window* window) {
   base::Erase(windows_, window);
   // No need to refresh the mini_views if the destroyed window doesn't show up
   // there in the first place.
+  // The WorkspaceLayoutManager updates the backdrop for us.
   if (!window->GetProperty(kHideInDeskMiniViewKey))
-    NotifyContentChanged();
+    NotifyContentChanged(/*update_backdrops=*/false);
 }
 
 base::AutoReset<bool> Desk::GetScopedNotifyContentChangedDisabler() {
@@ -278,8 +280,8 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
     }
   }
 
-  NotifyContentChanged();
-  target_desk->NotifyContentChanged();
+  NotifyContentChanged(/*update_backdrops=*/true);
+  target_desk->NotifyContentChanged(/*update_backdrops=*/true);
 }
 
 void Desk::MoveWindowToDesk(aura::Window* window, Desk* target_desk) {
@@ -314,8 +316,8 @@ void Desk::MoveWindowToDesk(aura::Window* window, Desk* target_desk) {
       window_state->Unminimize();
   }
 
-  NotifyContentChanged();
-  target_desk->NotifyContentChanged();
+  NotifyContentChanged(/*update_backdrops=*/true);
+  target_desk->NotifyContentChanged(/*update_backdrops=*/true);
 }
 
 aura::Window* Desk::GetDeskContainerForRoot(aura::Window* root) const {
@@ -324,13 +326,15 @@ aura::Window* Desk::GetDeskContainerForRoot(aura::Window* root) const {
   return root->GetChildById(container_id_);
 }
 
-void Desk::NotifyContentChanged() {
+void Desk::NotifyContentChanged(bool update_backdrops) {
   if (!should_notify_content_changed_)
     return;
 
-  // Update the backdrop availability and visibility first before notifying
-  // observers.
-  UpdateDeskBackdrops();
+  // If requested, update the backdrop availability and visibility first before
+  // notifying observers, so that the mini_views update *after* the backdrops
+  // do.
+  if (update_backdrops)
+    UpdateDeskBackdrops();
 
   for (auto& observer : observers_)
     observer.OnContentChanged();

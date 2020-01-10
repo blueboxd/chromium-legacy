@@ -2107,6 +2107,8 @@ if (!is_android) {
         "../browser/chromeos/child_accounts/parent_access_code/parent_access_test_utils.h",
         "../browser/chromeos/child_accounts/screen_time_controller_browsertest.cc",
         "../browser/chromeos/child_accounts/time_limit_test_utils.cc",
+        "../browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.cc",
+        "../browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.h",
         "../browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer_browsertest.cc",
         "../browser/chromeos/chrome_content_browser_client_chromeos_part_browsertest.cc",
         "../browser/chromeos/customization/customization_document_browsertest.cc",

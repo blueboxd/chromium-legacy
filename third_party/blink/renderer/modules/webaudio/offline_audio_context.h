@@ -61,7 +61,7 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
 
   uint32_t length() const { return total_render_frames_; }
 
-  ScriptPromise startOfflineRendering(ScriptState*);
+  ScriptPromise startOfflineRendering(ScriptState*, ExceptionState&);
 
   ScriptPromise suspendContext(ScriptState*, double);
   ScriptPromise resumeContext(ScriptState*);

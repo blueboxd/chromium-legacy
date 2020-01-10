@@ -88,10 +88,18 @@ class ASH_EXPORT Desk {
 
   aura::Window* GetDeskContainerForRoot(aura::Window* root) const;
 
-  void NotifyContentChanged();
+  // Notifies observers that the desk's contents (list of application windows on
+  // the desk) have changed.
+  // If |update_backdrops| is true, the backdrops of all containers associated
+  // with this desk will be updated (even if overview is active).
+  // This is *only* needed if the WorkspaceLayoutManager won't take care of this
+  // for us in desk-modifying operations that happen within overview, such as
+  // removing desks (and move its windows out) or dragging a window and dropping
+  // in another desk.
+  void NotifyContentChanged(bool update_backdrops);
 
-  // Updates the backdrop availability and visibility on the containers (on all
-  // roots) associated with this desk.
+  // Update (even if overview is active) the backdrop availability and
+  // visibility on the containers (on all roots) associated with this desk.
   void UpdateDeskBackdrops();
 
  private:

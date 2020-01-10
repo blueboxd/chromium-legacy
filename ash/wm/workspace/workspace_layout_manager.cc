@@ -148,7 +148,7 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   UpdateShelfVisibility();
   UpdateFullscreenState();
 
-  backdrop_controller_->OnWindowAddedToLayout();
+  backdrop_controller_->OnWindowAddedToLayout(child);
   WindowPositioner::RearrangeVisibleWindowOnShow(child);
   if (Shell::Get()->screen_pinning_controller()->IsPinned())
     WindowState::Get(child)->DisableZOrdering(nullptr);
@@ -178,7 +178,7 @@ void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 void WorkspaceLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
   UpdateShelfVisibility();
   UpdateFullscreenState();
-  backdrop_controller_->OnWindowRemovedFromLayout();
+  backdrop_controller_->OnWindowRemovedFromLayout(child);
 }
 
 void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
@@ -194,7 +194,7 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
     WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
   UpdateFullscreenState();
   UpdateShelfVisibility();
-  backdrop_controller_->OnChildWindowVisibilityChanged();
+  backdrop_controller_->OnChildWindowVisibilityChanged(child);
 }
 
 void WorkspaceLayoutManager::SetChildBounds(aura::Window* child,
@@ -320,14 +320,14 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
         container->AddChild(window);
     }
   } else if (key == kBackdropWindowMode) {
-    backdrop_controller_->UpdateBackdrop();
+    backdrop_controller_->OnBackdropWindowModePropertyChanged(window);
   }
 }
 
 void WorkspaceLayoutManager::OnWindowStackingChanged(aura::Window* window) {
   UpdateShelfVisibility();
   UpdateFullscreenState();
-  backdrop_controller_->OnWindowStackingChanged();
+  backdrop_controller_->OnWindowStackingChanged(window);
 }
 
 void WorkspaceLayoutManager::OnWindowDestroying(aura::Window* window) {
@@ -386,7 +386,7 @@ void WorkspaceLayoutManager::OnPostWindowStateTypeChange(
   }
 
   UpdateShelfVisibility();
-  backdrop_controller_->OnPostWindowStateTypeChange();
+  backdrop_controller_->OnPostWindowStateTypeChange(window_state->window());
 }
 
 //////////////////////////////////////////////////////////////////////////////

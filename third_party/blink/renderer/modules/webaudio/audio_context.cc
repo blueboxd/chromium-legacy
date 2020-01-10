@@ -227,14 +227,14 @@ ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
   return promise;
 }
 
-ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
+ScriptPromise AudioContext::resumeContext(ScriptState* script_state,
+                                          ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
   if (IsContextClosed()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidAccessError,
-                          "cannot resume a closed AudioContext"));
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "cannot resume a closed AudioContext");
+    return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -322,15 +322,17 @@ AudioTimestamp* AudioContext::getOutputTimestamp(
   return result;
 }
 
-ScriptPromise AudioContext::closeContext(ScriptState* script_state) {
+ScriptPromise AudioContext::closeContext(ScriptState* script_state,
+                                         ExceptionState& exception_state) {
   if (IsContextClosed()) {
     // We've already closed the context previously, but it hasn't yet been
-    // resolved, so just create a new promise and reject it.
-    return ScriptPromise::RejectWithDOMException(
-        script_state, MakeGarbageCollected<DOMException>(
-                          DOMExceptionCode::kInvalidStateError,
-                          "Cannot close a context that is being closed or "
-                          "has already been closed."));
+    // resolved, so just throw a DOM exception to trigger a promise rejection
+    // and return an empty promise.
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot close a context that is being closed or has already been "
+        "closed.");
+    return ScriptPromise();
   }
 
   close_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

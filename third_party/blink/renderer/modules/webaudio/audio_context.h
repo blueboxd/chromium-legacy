@@ -48,11 +48,11 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   void ContextDestroyed(ExecutionContext*) final;
   bool HasPendingActivity() const override;
 
-  ScriptPromise closeContext(ScriptState*);
+  ScriptPromise closeContext(ScriptState*, ExceptionState&);
   bool IsContextClosed() const final;
 
   ScriptPromise suspendContext(ScriptState*);
-  ScriptPromise resumeContext(ScriptState*);
+  ScriptPromise resumeContext(ScriptState*, ExceptionState&);
 
   bool HasRealtimeConstraint() final { return true; }
 

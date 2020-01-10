@@ -781,14 +781,8 @@ void ShelfWidget::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void ShelfWidget::OnAccessibilityStatusChanged() {
-  // Only handles when the spoken feedback is disabled.
-  if (Shell::Get()->accessibility_controller()->spoken_feedback_enabled())
-    return;
-
-  if (!is_hotseat_forced_to_show_)
-    return;
-
-  is_hotseat_forced_to_show_ = false;
+  is_hotseat_forced_to_show_ =
+      Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
   shelf_layout_manager_->UpdateVisibilityState();
 }
 

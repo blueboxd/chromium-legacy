@@ -121,7 +121,6 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
-#include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
@@ -523,8 +522,8 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       chromeos::network_config::mojom::CrosNetworkConfig,
       chromeos::InternetConfigDialogUI, chromeos::InternetDetailDialogUI,
-      chromeos::NetworkUI, chromeos::OobeUI, chromeos::settings::OSSettingsUI,
-      settings::SettingsUI>(map);
+      chromeos::NetworkUI, chromeos::OobeUI, chromeos::settings::OSSettingsUI>(
+      map);
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \

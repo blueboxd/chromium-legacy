@@ -43,6 +43,8 @@
           file="icons/backgrounds.svg" type="BINDATA" compress="gzip" />
       <include name="IDR_NEW_TAB_PAGE_COLORS_ICON_SVG"
           file="icons/colors.svg" type="BINDATA" compress="gzip" />
+      <include name="IDR_NEW_TAB_PAGE_COLORIZE_ICON_SVG"
+          file="icons/colorize.svg" type="BINDATA" compress="gzip" />
     </includes>
     <structures>
       <structure name="IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_HTML"

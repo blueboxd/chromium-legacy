@@ -53,6 +53,9 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
   bool IsAffectedByForcedColors() const {
     return flags_ & kIsAffectedByForcedColors;
   }
+  bool IsValidForFirstLetter() const { return flags_ & kValidForFirstLetter; }
+  bool IsValidForCue() const { return flags_ & kValidForCue; }
+  bool IsValidForMarker() const { return flags_ & kValidForMarker; }
 
   bool IsRepeated() const { return repetition_separator_ != '\0'; }
   char RepetitionSeparator() const { return repetition_separator_; }
@@ -118,6 +121,12 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
     // Animation properties have this flag set. (I.e. longhands of the
     // 'animation' and 'transition' shorthands).
     kAnimation = 1 << 11,
+    // https://drafts.csswg.org/css-pseudo-4/#first-letter-styling
+    kValidForFirstLetter = 1 << 12,
+    // https://w3c.github.io/webvtt/#the-cue-pseudo-element
+    kValidForCue = 1 << 13,
+    // https://drafts.csswg.org/css-pseudo-4/#marker-pseudo
+    kValidForMarker = 1 << 14,
   };
 
   constexpr CSSProperty(CSSPropertyID property_id,

@@ -83,7 +83,8 @@ class ExternalCacheImpl : public ExternalCache,
   void OnExtensionDownloadFailed(const std::string& id,
                                  Error error,
                                  const PingResult& ping_result,
-                                 const std::set<int>& request_ids) override;
+                                 const std::set<int>& request_ids,
+                                 const FailureData& data) override;
   void OnExtensionDownloadFinished(const extensions::CRXFileInfo& file,
                                    bool file_ownership_passed,
                                    const GURL& download_url,

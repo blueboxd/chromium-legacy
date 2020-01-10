@@ -91,6 +91,10 @@ COMPONENT_EXPORT(CHROMEOS_NETWORK)
 extern const OncValueSignature kNetworkConfigurationListSignature;
 COMPONENT_EXPORT(CHROMEOS_NETWORK)
 extern const OncValueSignature kToplevelConfigurationSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kEAPSubjectAlternativeNameMatchListSignature;
+COMPONENT_EXPORT(CHROMEOS_NETWORK)
+extern const OncValueSignature kEAPSubjectAlternativeNameMatchSignature;
 
 // Derived "ONC with State" signatures.
 COMPONENT_EXPORT(CHROMEOS_NETWORK)

@@ -53,6 +53,9 @@ class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
   // when a notification gets activated.
   static bool VerifyNotificationData(NSDictionary* response) WARN_UNUSED_RESULT;
 
+  // Returns if alerts are supported on this machine.
+  static bool SupportsAlerts();
+
  private:
   // Cocoa class that receives callbacks from the NSUserNotificationCenter.
   base::scoped_nsobject<NotificationCenterDelegate> delegate_;

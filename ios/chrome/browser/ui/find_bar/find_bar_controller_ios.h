@@ -13,8 +13,8 @@
 
 @interface FindBarControllerIOS : NSObject
 
-// The dispatcher for sending browser commands.
-@property(nonatomic, weak) id<BrowserCommands> dispatcher;
+// The command handler for browser commands.
+@property(nonatomic, weak) id<BrowserCommands> commandHandler;
 // The view controller containing all the buttons and textfields that is common
 // between iPhone and iPad.
 @property(nonatomic, strong, readonly)

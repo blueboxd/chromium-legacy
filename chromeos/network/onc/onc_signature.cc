@@ -26,6 +26,9 @@ const OncValueSignature kCellularApnListSignature = {
     base::Value::Type::LIST, NULL, &kCellularApnSignature};
 const OncValueSignature kCellularFoundNetworkListSignature = {
     base::Value::Type::LIST, NULL, &kCellularFoundNetworkSignature};
+const OncValueSignature kEAPSubjectAlternativeNameMatchListSignature = {
+    base::Value::Type::LIST, nullptr,
+    &kEAPSubjectAlternativeNameMatchSignature};
 
 const OncFieldSignature issuer_subject_pattern_fields[] = {
     {::onc::client_cert::kCommonName, &kStringSignature},
@@ -62,6 +65,8 @@ const OncFieldSignature eap_fields[] = {
     {::onc::eap::kServerCARef, &kStringSignature},
     {::onc::eap::kServerCARefs, &kStringListSignature},
     {::onc::eap::kSubjectMatch, &kStringSignature},
+    {::onc::eap::kSubjectAlternativeNameMatch,
+     &kEAPSubjectAlternativeNameMatchListSignature},
     {::onc::eap::kTLSVersionMax, &kStringSignature},
     {::onc::eap::kUseProactiveKeyCaching, &kBoolSignature},
     {::onc::eap::kUseSystemCAs, &kBoolSignature},
@@ -391,6 +396,11 @@ const OncFieldSignature toplevel_configuration_fields[] = {
     {::onc::encrypted::kStretch, &kStringSignature},
     {NULL}};
 
+const OncFieldSignature eap_subject_alternative_name_match_fields[] = {
+    {::onc::eap_subject_alternative_name_match::kType, &kStringSignature},
+    {::onc::eap_subject_alternative_name_match::kValue, &kStringSignature},
+    {nullptr}};
+
 }  // namespace
 
 const OncValueSignature kRecommendedSignature = {base::Value::Type::LIST, NULL,
@@ -475,6 +485,9 @@ const OncValueSignature kCellularFoundNetworkSignature = {
     base::Value::Type::DICTIONARY, cellular_found_network_fields, NULL};
 const OncValueSignature kSIMLockStatusSignature = {
     base::Value::Type::DICTIONARY, sim_lock_status_fields, NULL};
+const OncValueSignature kEAPSubjectAlternativeNameMatchSignature = {
+    base::Value::Type::DICTIONARY, eap_subject_alternative_name_match_fields,
+    nullptr};
 
 const OncFieldSignature* GetFieldSignature(const OncValueSignature& signature,
                                            const std::string& onc_field_name) {

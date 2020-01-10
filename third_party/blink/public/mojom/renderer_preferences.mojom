@@ -40,7 +40,7 @@ struct RendererPreferences {
   // positions for glyphs.  Currently only used by Linux.
   bool use_subpixel_positioning = false;
 
-  // The color of the focus ring. Currently only used on Linux.
+  // The color of the focus ring.
   uint32 focus_ring_color = 0xFFE59700;
 
   // The colors used in selection text. Currently only used on Linux and Ash.

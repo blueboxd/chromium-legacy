@@ -53,7 +53,6 @@ extern const char kAccessControlRequestMethod[];
 COMPONENT_EXPORT(NETWORK_CPP)
 base::Optional<CorsErrorStatus> CheckAccess(
     const GURL& response_url,
-    const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::CredentialsMode credentials_mode,
@@ -92,12 +91,6 @@ base::Optional<CorsErrorStatus> CheckRedirectLocation(
     const base::Optional<url::Origin>& origin,
     bool cors_flag,
     bool tainted);
-
-// Performs the required CORS checks on the response to a preflight request.
-// Returns |kPreflightSuccess| if preflight response was successful.
-// TODO(toyoshim): Rename to CheckPreflightStatus.
-COMPONENT_EXPORT(NETWORK_CPP)
-base::Optional<mojom::CorsError> CheckPreflight(const int status_code);
 
 // Checks errors for the currently experimental "Access-Control-Allow-External:"
 // header. Shares error conditions with standard preflight checking.

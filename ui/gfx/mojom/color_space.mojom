@@ -80,5 +80,5 @@ struct ColorSpace {
   ColorSpaceMatrixID matrix;
   ColorSpaceRangeID range;
   array<float, 9> custom_primary_matrix;
-  array<float, 7> custom_transfer_params;
+  array<float, 7> transfer_params;
 };

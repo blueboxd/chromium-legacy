@@ -574,13 +574,13 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       config.profile == VP9PROFILE_PROFILE3 ||
       config.profile == H264PROFILE_HIGH10PROFILE) {
     // Input file has more than 8 bits per channel.
-    want_fp16_ = true;
+    use_fp16_ = true;
   }
 
   // Unfortunately, the profile is currently unreliable for
   // VP9 (https://crbug.com/592074) so also try to use fp16 if HDR is on.
   if (config.target_color_space.IsHDR()) {
-    want_fp16_ = true;
+    use_fp16_ = true;
   }
 
   // Not all versions of Windows 7 and later include Media Foundation DLLs.
@@ -823,7 +823,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
     RETURN_ON_FAILURE(angle_device_.Get(), "Failed to get d3d11 device", false);
 
     using_angle_device_ = true;
-    DCHECK(!want_fp16_);
+    DCHECK(!use_fp16_);
     angle_device_->GetImmediateContext(&d3d11_device_context_);
 
     hr = angle_device_.As(&video_device_);
@@ -892,8 +892,8 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   if (!checker.CheckOutputFormatSupport(DXGI_FORMAT_NV12))
     support_copy_nv12_textures_ = false;
 
-  support_fp16_ =
-      checker.CheckOutputFormatSupport(DXGI_FORMAT_R16G16B16A16_FLOAT);
+  if (!checker.CheckOutputFormatSupport(DXGI_FORMAT_R16G16B16A16_FLOAT))
+    use_fp16_ = false;
 
   // Enable multithreaded mode on the device. This ensures that accesses to
   // context are synchronized across threads. We have multiple threads
@@ -1388,19 +1388,18 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
   }
 
   if (!gl::GLSurfaceEGL::IsPixelFormatFloatSupported())
-    want_fp16_ = false;
+    use_fp16_ = false;
 
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
 
   while (true) {
-    std::vector<EGLint> config_attribs = {
-        EGL_BUFFER_SIZE,  32,
-        EGL_RED_SIZE,     ShouldUseFp16() ? 16 : 8,
-        EGL_GREEN_SIZE,   ShouldUseFp16() ? 16 : 8,
-        EGL_BLUE_SIZE,    ShouldUseFp16() ? 16 : 8,
-        EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
-        EGL_ALPHA_SIZE,   0};
-    if (ShouldUseFp16()) {
+    std::vector<EGLint> config_attribs = {EGL_BUFFER_SIZE,  32,
+                                          EGL_RED_SIZE,     use_fp16_ ? 16 : 8,
+                                          EGL_GREEN_SIZE,   use_fp16_ ? 16 : 8,
+                                          EGL_BLUE_SIZE,    use_fp16_ ? 16 : 8,
+                                          EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+                                          EGL_ALPHA_SIZE,   0};
+    if (use_fp16_) {
       config_attribs.push_back(EGL_COLOR_COMPONENT_TYPE_EXT);
       config_attribs.push_back(EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT);
     }
@@ -1420,7 +1419,7 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
           eglGetConfigAttrib(egl_display, configs[i], EGL_RED_SIZE, &red_bits);
           // Try to pick a configuration with the right number of bits rather
           // than one that just has enough bits.
-          if (red_bits == (ShouldUseFp16() ? 16 : 8)) {
+          if (red_bits == (use_fp16_ ? 16 : 8)) {
             egl_config_ = configs[i];
             break;
           }
@@ -1428,9 +1427,9 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
       }
 
       if (!num_configs) {
-        if (ShouldUseFp16()) {
-          // Try again, but without want_fp16_
-          want_fp16_ = false;
+        if (use_fp16_) {
+          // Try again, but without use_fp16_
+          use_fp16_ = false;
           continue;
         }
         return false;
@@ -1440,7 +1439,7 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
     break;
   }
 
-  if (ShouldUseFp16()) {
+  if (use_fp16_) {
     // TODO(hubbe): Share/copy P010/P016 textures.
     DisableSharedTextureSupport();
     support_copy_nv12_textures_ = false;
@@ -2761,7 +2760,7 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
 
   // If we're copying textures or just not using color space information, set
   // the same color space on input and output.
-  if ((!use_color_info_ && !ShouldUseFp16()) ||
+  if ((!use_color_info_ && !use_fp16_) ||
       GetPictureBufferMechanism() == PictureBufferMechanism::COPY_TO_NV12 ||
       GetPictureBufferMechanism() ==
           PictureBufferMechanism::DELAYED_COPY_TO_NV12) {
@@ -2812,8 +2811,7 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
     return true;
   }
 
-  if (ShouldUseFp16() && config_.target_color_space.IsHDR() &&
-      color_space.IsHDR()) {
+  if (use_fp16_ && config_.target_color_space.IsHDR() && color_space.IsHDR()) {
     // Note, we only use the SCRGBLinear output color space when the input is
     // PQ, because nvidia drivers will not convert G22 to G10 for some reason.
     dx11_converter_output_color_space_ = gfx::ColorSpace::CreateSCRGBLinear();
@@ -2986,7 +2984,7 @@ void DXVAVideoDecodeAccelerator::DisableSharedTextureSupport() {
 
 DXVAVideoDecodeAccelerator::PictureBufferMechanism
 DXVAVideoDecodeAccelerator::GetPictureBufferMechanism() const {
-  if (ShouldUseFp16())
+  if (use_fp16_)
     return PictureBufferMechanism::COPY_TO_RGB;
   if (support_share_nv12_textures_)
     return PictureBufferMechanism::BIND;
@@ -3011,10 +3009,6 @@ bool DXVAVideoDecodeAccelerator::ShouldUseANGLEDevice() const {
 }
 ID3D11Device* DXVAVideoDecodeAccelerator::D3D11Device() const {
   return ShouldUseANGLEDevice() ? angle_device_.Get() : d3d11_device_.Get();
-}
-
-bool DXVAVideoDecodeAccelerator::ShouldUseFp16() const {
-  return want_fp16_ && support_fp16_;
 }
 
 }  // namespace media

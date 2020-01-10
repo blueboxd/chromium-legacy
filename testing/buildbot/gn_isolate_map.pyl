@@ -482,7 +482,7 @@
     "args": [
       "--product=chrome_android",
       "--apk=apks/ChromePublic.apk",
-      "-vvvv",
+      "-vvv",
     ],
   },
   "chrome_sandbox": {
@@ -1554,7 +1554,7 @@
       "--product=android_webview",
       "--apk=apks/SystemWebView.apk",
       "--system-webview-shell=apks/SystemWebViewShell.apk",
-      "-vvvv",
+      "-vvv",
     ],
   },
   "telemetry_gpu_integration_test": {
@@ -1769,6 +1769,17 @@
   "weblayer_browsertests": {
     "label": "//weblayer/test:weblayer_browsertests",
     "type": "windowed_test_launcher",
+  },
+  "weblayer_shell_wpt": {
+    "label": "//weblayer/shell/android:weblayer_shell_wpt",
+    "type": "script",
+    "script": "//testing/scripts/run_android_wpt.py",
+    "args": [
+      "--product=android_weblayer",
+      "--weblayer-shell=apks/WebLayerShell.apk",
+      "--weblayer-support=apks/WebLayerSupport.apk",
+      "-vvv",
+    ],
   },
   "webview_cts_tests": {
     "args": [

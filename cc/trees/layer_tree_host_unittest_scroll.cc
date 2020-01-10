@@ -716,7 +716,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
         InputHandler::ScrollStatus status = impl->ScrollBegin(
             BeginState(scroll_point).get(), InputHandler::TOUCHSCREEN);
         EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
-        impl->ScrollBy(UpdateState(gfx::Point(), scroll_amount_).get());
+        impl->ScrollUpdate(UpdateState(gfx::Point(), scroll_amount_).get(),
+                           InputHandler::TOUCHSCREEN);
         auto* scrolling_node = impl->CurrentlyScrollingNode();
         CHECK(scrolling_node);
         impl->ScrollEnd();
@@ -741,7 +742,8 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
         InputHandler::ScrollStatus status = impl->ScrollBegin(
             BeginState(scroll_point).get(), InputHandler::WHEEL);
         EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
-        impl->ScrollBy(UpdateState(gfx::Point(), scroll_amount_).get());
+        impl->ScrollUpdate(UpdateState(gfx::Point(), scroll_amount_).get(),
+                           InputHandler::WHEEL);
         impl->ScrollEnd();
 
         // Check the scroll is applied as a delta.
@@ -1135,7 +1137,7 @@ void DoGestureScroll(LayerTreeHostImpl* host_impl,
   update_scroll_state_data.delta_y = offset.y();
   std::unique_ptr<ScrollState> update_scroll_state(
       new ScrollState(update_scroll_state_data));
-  host_impl->ScrollBy(update_scroll_state.get());
+  host_impl->ScrollUpdate(update_scroll_state.get(), InputHandler::TOUCHSCREEN);
 
   host_impl->ScrollEnd(true /* should_snap */);
 }

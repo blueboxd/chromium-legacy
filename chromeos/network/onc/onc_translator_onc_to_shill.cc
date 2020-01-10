@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -346,6 +347,23 @@ void LocalTranslator::TranslateEAP() {
                             ::onc::substitutes::kPasswordPlaceholderVerbatim) {
     shill_dictionary_->SetKey(shill::kEapUseLoginPasswordProperty,
                               base::Value(true));
+  }
+
+  // Set shill::kEapSubjectAlternativeNameMatchProperty to the serialized form
+  // of the subject alternative name match list of dictionaries.
+  const base::ListValue* subject_alternative_name_match;
+  if (onc_object_->GetList(::onc::eap::kSubjectAlternativeNameMatch,
+                           &subject_alternative_name_match)) {
+    base::Value serialized_dicts(base::Value::Type::LIST);
+    std::string serialized_dict;
+    JSONStringValueSerializer serializer(&serialized_dict);
+    for (const base::Value& v : subject_alternative_name_match->GetList()) {
+      if (serializer.Serialize(v)) {
+        serialized_dicts.Append(serialized_dict);
+      }
+    }
+    shill_dictionary_->SetKey(shill::kEapSubjectAlternativeNameMatchProperty,
+                              std::move(serialized_dicts));
   }
 
   CopyFieldsAccordingToSignature();

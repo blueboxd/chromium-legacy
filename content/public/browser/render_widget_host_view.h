@@ -228,10 +228,6 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual std::unique_ptr<viz::ClientFrameSinkVideoCapturer>
   CreateVideoCapturer() = 0;
 
-  // Informs the view that its associated render widget has frames to draw and
-  // wants to have BeginFrame messages sent to it.  This should only be called
-  // when the value has changed.  Views must initially default to false.
-  virtual void SetNeedsBeginFrames(bool needs_begin_frames) = 0;
   // This method returns the ScreenInfo used by the view to render. If the
   // information is not knowable (e.g, because the view is not attached to a
   // screen yet), then a default best-guess will be used.

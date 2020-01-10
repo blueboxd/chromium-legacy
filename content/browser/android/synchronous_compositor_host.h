@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/common/input/synchronous_compositor.mojom.h"
@@ -39,7 +40,8 @@ class SynchronousCompositorSyncCallBridge;
 struct SyncCompositorCommonRendererParams;
 
 class SynchronousCompositorHost : public SynchronousCompositor,
-                                  public mojom::SynchronousCompositorHost {
+                                  public mojom::SynchronousCompositorHost,
+                                  public viz::BeginFrameObserver {
  public:
   static std::unique_ptr<SynchronousCompositorHost> Create(
       RenderWidgetHostViewAndroid* rwhva,
@@ -68,10 +70,6 @@ class SynchronousCompositorHost : public SynchronousCompositor,
 
   ui::ViewAndroid::CopyViewCallback GetCopyViewCallback();
   void DidOverscroll(const ui::DidOverscrollParams& over_scroll_params);
-  void BeginFrame(ui::WindowAndroid* window_android,
-                  const viz::BeginFrameArgs& args,
-                  const viz::FrameTimingDetailsMap& timing_details);
-  void SetBeginFramePaused(bool paused);
 
   // Called by SynchronousCompositorSyncCallBridge.
   void UpdateFrameMetaData(uint32_t version,
@@ -84,14 +82,27 @@ class SynchronousCompositorHost : public SynchronousCompositor,
 
   RenderProcessHost* GetRenderProcessHost();
 
+  void StartObservingRootWindow(ui::WindowAndroid* window);
+  void StopObservingRootWindow();
+  void RequestOneBeginFrame();
+
   // mojom::SynchronousCompositorHost overrides.
   void LayerTreeFrameSinkCreated() override;
   void UpdateState(const SyncCompositorCommonRendererParams& params) override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
-  bool on_compute_scroll_called() { return on_compute_scroll_called_; }
+  // viz::BeginFrameObserver implementation.
+  void OnBeginFrame(const viz::BeginFrameArgs& args) override;
+  const viz::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
+  void OnBeginFrameSourcePausedChanged(bool paused) override;
+  bool WantsAnimateOnlyBeginFrames() const override;
 
  private:
+  enum BeginFrameRequestType {
+    BEGIN_FRAME = 1 << 0,
+    PERSISTENT_BEGIN_FRAME = 1 << 1
+  };
+
   class ScopedSendZeroMemory;
   struct SharedMemoryWithSize;
   friend class ScopedSetZeroMemory;
@@ -113,6 +124,12 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   bool IsReadyForSynchronousCall();
   void UpdateRootLayerStateOnClient();
   void UpdatePresentedFrameToken(uint32_t frame_token);
+
+  void SendBeginFramePaused();
+  void SendBeginFrame(viz::BeginFrameArgs args);
+  void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
+  void AddBeginFrameRequest(BeginFrameRequestType request);
+  void ClearBeginFrameRequest(BeginFrameRequestType request);
 
   RenderWidgetHostViewAndroid* const rwhva_;
   SynchronousCompositorClient* const client_;
@@ -163,6 +180,16 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   uint32_t last_frame_token_ = 0u;
 
   scoped_refptr<SynchronousCompositorSyncCallBridge> bridge_;
+
+  // Indicates whether and for what reason a request for begin frames has been
+  // issued. Used to control action dispatch at the next |OnBeginFrame()| call.
+  uint32_t outstanding_begin_frame_requests_ = 0;
+
+  // The begin frame source being observed.  Null if none.
+  viz::BeginFrameSource* begin_frame_source_ = nullptr;
+  viz::BeginFrameArgs last_begin_frame_args_;
+  ui::WindowAndroid* observed_root_window_ = nullptr;
+  viz::FrameTimingDetailsMap timing_details_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorHost);
 };

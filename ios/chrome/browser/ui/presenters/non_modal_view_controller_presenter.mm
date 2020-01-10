@@ -68,7 +68,10 @@ constexpr CGFloat kAnimationOutDuration = 0.1;
   auto completion = ^void(UIViewAnimatingPosition) {
     [weakSelf.presentedViewController
         didMoveToParentViewController:weakSelf.baseViewController];
-    [weakSelf.delegate containedPresenterDidPresent:weakSelf];
+    if ([weakSelf.delegate
+            respondsToSelector:@selector(containedPresenterDidPresent:)]) {
+      [weakSelf.delegate containedPresenterDidPresent:weakSelf];
+    }
   };
 
   if (animated) {
@@ -98,7 +101,10 @@ constexpr CGFloat kAnimationOutDuration = 0.1;
     [weakSelf.presentedViewController.view removeFromSuperview];
     [weakSelf.presentedViewController removeFromParentViewController];
     [weakSelf.containerView removeFromSuperview];
-    [weakSelf.delegate containedPresenterDidDismiss:weakSelf];
+    if ([weakSelf.delegate
+            respondsToSelector:@selector(containedPresenterDidDismiss:)]) {
+      [weakSelf.delegate containedPresenterDidDismiss:weakSelf];
+    }
   };
 
   if (animated) {

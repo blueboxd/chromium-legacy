@@ -34,6 +34,7 @@ from . import clang_format
 from .dictionary import generate_dictionaries
 from .interface import generate_interfaces
 from .path_manager import PathManager
+from .union import generate_unions
 
 
 def _setup_clang_format():

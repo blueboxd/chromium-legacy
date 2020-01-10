@@ -613,10 +613,14 @@ const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
 const base::Feature kWebAssemblyCodeGC{"WebAssemblyCodeGC",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable WebAssembly SIMD
+// Enable WebAssembly SIMD.
 // https://github.com/WebAssembly/Simd
 const base::Feature kWebAssemblySimd{"WebAssemblySimd",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable WebAssembly tiering (Liftoff -> TurboFan).
+const base::Feature kWebAssemblyTiering{"WebAssemblyTiering",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable WebAssembly threads.
 // https://github.com/WebAssembly/threads

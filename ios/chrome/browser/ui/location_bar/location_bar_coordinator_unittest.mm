@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/scoped_temp_dir.h"
 #include "components/omnibox/browser/test_location_bar_model.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -70,6 +71,10 @@ class LocationBarCoordinatorTest : public PlatformTest {
     PlatformTest::SetUp();
 
     TestChromeBrowserState::Builder test_cbs_builder;
+
+    ASSERT_TRUE(state_dir_.CreateUniqueTempDir());
+    test_cbs_builder.SetPath(state_dir_.GetPath());
+
     test_cbs_builder.AddTestingFactory(
         ios::TemplateURLServiceFactory::GetInstance(),
         ios::TemplateURLServiceFactory::GetDefaultFactory());
@@ -118,6 +123,11 @@ class LocationBarCoordinatorTest : public PlatformTest {
 
     PlatformTest::TearDown();
   }
+
+  // A state directory that outlives |task_environment_| is needed because
+  // CreateHistoryService/CreateBookmarkModel use the directory to host
+  // databases. See https://crbug.com/546640 for more details.
+  base::ScopedTempDir state_dir_;
 
   web::WebTaskEnvironment task_environment_;
   LocationBarCoordinator* coordinator_;

@@ -3250,6 +3250,23 @@
       },
     },
 
+    'weblayer_shell_wpt': {
+      'weblayer_shell_wpt': {
+        'swarming': {
+          'shards': 15,
+          'expiration': 18000,
+          'hard_timeout': 14400,
+          'cipd_packages': [
+            {
+              "cipd_package": 'chromium/chrome/test/chromedriver/cipd',
+              'location': 'chrome/test/chromedriver/cipd',
+              'revision': 'tLMjWvOcbQX4nMo5WnMsKWn0aaVludzuSX9yiVFUCoUC',
+            }
+          ]
+        },
+      },
+    },
+
     # TODO(crbug.com/888429): Port remaining WebRTC tests to swarming.
     'webrtc_chromium_baremetal_gtests': {
       # Run capture unittests as well since our bots have real webcams.
@@ -3565,6 +3582,7 @@
     'android_wpt_scripts': [
       'chrome_public_wpt',
       'system_webview_wpt',
+      'weblayer_shell_wpt',
     ],
 
     'bfcache_android_gtests': [

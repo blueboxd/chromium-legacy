@@ -637,8 +637,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool renderer_initialized() const { return renderer_initialized_; }
 
-  bool needs_begin_frames() const { return needs_begin_frames_; }
-
   base::WeakPtr<RenderWidgetHostImpl> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -671,9 +669,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   }
 
   bool HasGestureStopped() override;
-
-  // Begin frames related functionality is only used by Android WebView.
-  void SetNeedsBeginFrame(bool needs_begin_frame);
 
   // Signals that a frame with token |frame_token| was finished processing. If
   // there are any queued messages belonging to it, they will be processed.
@@ -713,7 +708,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void ProgressFlingIfNeeded(base::TimeTicks current_time);
   void StopFling();
-  void SetNeedsBeginFrameForFlingProgress();
 
   // The RenderWidgetHostImpl will keep showing the old page (for a while) after
   // navigation until the first frame of the new page arrives. This reduces
@@ -875,7 +869,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnUnlockMouse();
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
-  void OnSetNeedsBeginFrames(bool needs_begin_frames);
   void OnStartDragging(const DropData& drop_data,
                        blink::WebDragOperationsMask operations_allowed,
                        const SkBitmap& bitmap,
@@ -1199,15 +1192,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // RenderWidgetHostView::HasFocus in that in that the focus request may fail,
   // causing HasFocus to return false when is_focused_ is true.
   bool is_focused_ = false;
-
-  // Whether the view should send begin frame messages to its render widget.
-  // This is state that may arrive before the view has been set and that must be
-  // consistent with the state in the renderer, so this host handles it.
-  bool needs_begin_frames_ = false;
-
-  // This is used to make sure that when the fling controller sets
-  // needs_begin_frames_ it doesn't get overriden by the renderer.
-  bool browser_fling_needs_begin_frame_ = false;
 
   // This value indicates how long to wait before we consider a renderer hung.
   base::TimeDelta hung_renderer_delay_;

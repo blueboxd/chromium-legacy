@@ -8,12 +8,12 @@ FAIL Async-iterating an errored stream throws assert_equals: expected (string) "
 FAIL Async-iterating a closed stream never executes the loop body, but works fine promise_test: Unhandled rejection with value: object "TypeError: s is not async iterable"
 FAIL Async-iterating an empty but not closed/errored stream never executes the loop body and stalls the async function promise_test: Unhandled rejection with value: object "TypeError: s is not async iterable"
 FAIL Async-iterating a partially consumed stream promise_test: Unhandled rejection with value: object "TypeError: s is not async iterable"
-FAIL Cancellation behavior when throwing inside loop body; preventCancel = false assert_array_equals: cancel() should be called lengths differ, expected 3 got 0
-FAIL Cancellation behavior when throwing inside loop body; preventCancel = true assert_array_equals: cancel() should not be called lengths differ, expected 1 got 0
-FAIL Cancellation behavior when breaking inside loop body; preventCancel = false assert_array_equals: cancel() should be called lengths differ, expected 3 got 0
-FAIL Cancellation behavior when breaking inside loop body; preventCancel = true assert_array_equals: cancel() should not be called lengths differ, expected 1 got 0
-FAIL Cancellation behavior when returning inside loop body; preventCancel = false assert_array_equals: cancel() should be called lengths differ, expected 3 got 0
-FAIL Cancellation behavior when returning inside loop body; preventCancel = true assert_array_equals: cancel() should not be called lengths differ, expected 1 got 0
+FAIL Cancellation behavior when throwing inside loop body; preventCancel = false assert_array_equals: cancel() should be called lengths differ, expected array ["pull", "cancel", undefined] length 3, got [] length 0
+FAIL Cancellation behavior when throwing inside loop body; preventCancel = true assert_array_equals: cancel() should not be called lengths differ, expected array ["pull"] length 1, got [] length 0
+FAIL Cancellation behavior when breaking inside loop body; preventCancel = false assert_array_equals: cancel() should be called lengths differ, expected array ["pull", "cancel", undefined] length 3, got [] length 0
+FAIL Cancellation behavior when breaking inside loop body; preventCancel = true assert_array_equals: cancel() should not be called lengths differ, expected array ["pull"] length 1, got [] length 0
+FAIL Cancellation behavior when returning inside loop body; preventCancel = false assert_array_equals: cancel() should be called lengths differ, expected array ["pull", "cancel", undefined] length 3, got [] length 0
+FAIL Cancellation behavior when returning inside loop body; preventCancel = true assert_array_equals: cancel() should not be called lengths differ, expected array ["pull"] length 1, got [] length 0
 FAIL Cancellation behavior when manually calling return(); preventCancel = false promise_test: Unhandled rejection with value: object "TypeError: s.getIterator is not a function"
 FAIL Cancellation behavior when manually calling return(); preventCancel = true promise_test: Unhandled rejection with value: object "TypeError: s.getIterator is not a function"
 FAIL Calling return() twice rejects promise_test: Unhandled rejection with value: object "TypeError: s[Symbol.asyncIterator] is not a function"

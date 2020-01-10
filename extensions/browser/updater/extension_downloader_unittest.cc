@@ -298,7 +298,8 @@ TEST_F(ExtensionDownloaderTest, TestNoUpdatesManifestReports) {
       .WillOnce(Return(true));
   // TODO(burunduk) Also check error (second argument). By now we return
   // CRX_FETCH_FAILED, but probably we may want to make another one.
-  EXPECT_CALL(delegate, OnExtensionDownloadFailed(kTestExtensionId, _, _, _));
+  EXPECT_CALL(delegate,
+              OnExtensionDownloadFailed(kTestExtensionId, _, _, _, _));
 
   AddFetchDataToDownloader(&helper, std::move(fetch));
 

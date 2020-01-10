@@ -1261,7 +1261,8 @@
   };
 
   /**
-   * Tests checking the tabbing on jpeg files in Quick View.
+   * Tests the tab-index focus order when sending tab keys when an image file is
+   * shown in Quick View.
    */
   testcase.openQuickViewTabIndexImage = async () => {
     const caller = getCaller();
@@ -1280,7 +1281,7 @@
     // Open the file in Quick View.
     await openQuickView(appId, ENTRIES.smallJpeg.nameText);
 
-    // Prepare a list of tab-index queries.
+    // Prepare a list of tab-index focus queries.
     const tabQueries = [
       {'query': ['#quick-view', '[aria-label="Back"]:focus']},
       {'query': ['#quick-view', '[aria-label="Open"]:focus']},
@@ -1288,19 +1289,35 @@
       {'query': ['#quick-view', '[aria-label="Back"]:focus']},
     ];
 
-    // Hit tab key to focus on the element.
     for (const query of tabQueries) {
+      // Make the browser dispatch a tab key event to FilesApp.
       const result = await sendTestMessage(
           {name: 'dispatchTabKey', shift: query.shift || false});
       chrome.test.assertEq(
           result, 'tabKeyDispatched', 'Tab key dispatch failure');
 
-      // Wait until we get the focus on the element
+      // Wait until we get the focus on the element.
       await remoteCall.waitForElement(appId, query.query);
 
-      // Make sure the events are handled correctly.
+      // Ensure all events have been processed before continuing.
       chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
           'requestAnimationFrame', appId, []));
     }
+  };
+
+  /**
+   * Tests opening a broken JPEG doesn't display a broken image icon.
+   */
+  testcase.openQuickViewBrokenImage = async () => {
+    // Open Files app on Downloads containing ENTRIES.brokenJpeg.
+    const appId = await setupAndWaitUntilReady(
+        RootPath.DOWNLOADS, [ENTRIES.brokenJpeg], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.brokenJpeg.nameText);
+
+    // Check: the quick view should have the attribute 'load-error'.
+    const element =
+        await remoteCall.waitForElement(appId, '#quick-view[load-error]');
   };
 })();

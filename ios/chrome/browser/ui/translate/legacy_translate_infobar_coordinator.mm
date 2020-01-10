@@ -199,16 +199,6 @@
   }
 }
 
-#pragma mark - ContainedPresenterDelegate
-
-- (void)containedPresenterDidPresent:(id<ContainedPresenter>)presenter {
-  // noop.
-}
-
-- (void)containedPresenterDidDismiss:(id<ContainedPresenter>)presenter {
-  // noop.
-}
-
 #pragma mark - PopupMenuPresenterDelegate
 
 - (void)popupMenuPresenterWillDismiss:(PopupMenuPresenter*)presenter {

@@ -128,10 +128,8 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfFeature(features::kV8VmFuture, "--future");
   SetV8FlagIfNotFeature(features::kV8VmFuture, "--no-future");
 
-  SetV8FlagIfFeature(features::kWebAssemblyBaseline,
-                     "--liftoff --wasm-tier-up");
-  SetV8FlagIfNotFeature(features::kWebAssemblyBaseline,
-                        "--no-liftoff --no-wasm-tier-up");
+  SetV8FlagIfFeature(features::kWebAssemblyBaseline, "--liftoff");
+  SetV8FlagIfNotFeature(features::kWebAssemblyBaseline, "--no-liftoff");
 
   SetV8FlagIfFeature(features::kWebAssemblyCodeGC, "--wasm-code-gc");
   SetV8FlagIfNotFeature(features::kWebAssemblyCodeGC, "--no-wasm-code-gc");
@@ -155,6 +153,9 @@ RenderProcessImpl::RenderProcessImpl()
     SetV8FlagIfNotFeature(features::kSharedArrayBuffer,
                           "--no-harmony-sharedarraybuffer");
   }
+
+  SetV8FlagIfFeature(features::kWebAssemblyTiering, "--wasm-tier-up");
+  SetV8FlagIfNotFeature(features::kWebAssemblyTiering, "--no-wasm-tier-up");
 
   SetV8FlagIfNotFeature(features::kWebAssemblyTrapHandler,
                         "--no-wasm-trap-handler");

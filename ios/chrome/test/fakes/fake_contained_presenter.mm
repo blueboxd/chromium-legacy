@@ -40,7 +40,10 @@
   [self.presentedViewController willMoveToParentViewController:nil];
   [self.presentedViewController.view removeFromSuperview];
   [self.presentedViewController removeFromParentViewController];
-  [self.delegate containedPresenterDidDismiss:self];
+  if ([self.delegate
+          respondsToSelector:@selector(containedPresenterDidDismiss:)]) {
+    [self.delegate containedPresenterDidDismiss:self];
+  }
 }
 
 @end

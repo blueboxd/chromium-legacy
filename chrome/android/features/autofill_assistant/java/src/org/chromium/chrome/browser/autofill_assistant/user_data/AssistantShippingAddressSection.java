@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -125,21 +124,23 @@ public class AssistantShippingAddressSection
         return TextUtils.equals(optionA.getProfile().getGUID(), optionB.getProfile().getGUID());
     }
 
-    void onProfilesChanged(List<PersonalDataManager.AutofillProfile> profiles) {
+    /**
+     * The Chrome profiles have changed externally. This will rebuild the UI with the new/changed
+     * set of addresses derived from the profiles, while keeping the selected item if possible.
+     */
+    void onAddressesChanged(List<AutofillAddress> addresses) {
         if (mIgnoreProfileChangeNotifications) {
             return;
         }
-
         int selectedAddressIndex = -1;
-        List<AutofillAddress> addresses = new ArrayList<>();
-        for (int i = 0; i < profiles.size(); i++) {
-            AutofillAddress autofillAddress = new AutofillAddress(mContext, profiles.get(i));
-            if (mSelectedOption != null && areEqual(mSelectedOption, autofillAddress)) {
-                selectedAddressIndex = i;
+        if (mSelectedOption != null) {
+            for (int i = 0; i < addresses.size(); i++) {
+                if (areEqual(addresses.get(i), mSelectedOption)) {
+                    selectedAddressIndex = i;
+                    break;
+                }
             }
-            addresses.add(autofillAddress);
         }
-
         // Replace current set of items, keep selection if possible.
         setItems(addresses, selectedAddressIndex);
     }

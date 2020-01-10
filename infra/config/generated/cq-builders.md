@@ -227,8 +227,6 @@ builder.
   * [`//third_party/blink/renderer/core/paint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/)
   * [`//third_party/blink/renderer/core/svg/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/svg/)
   * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
-  * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint)
-  * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/)
 
 * [linux_chromium_dbg_ng](https://ci.chromium.org/p/chromium/builders/try/linux_chromium_dbg_ng) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux_chromium_dbg_ng)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux_chromium_dbg_ng))
 
@@ -241,8 +239,8 @@ builder.
   * [`//third_party/blink/renderer/core/paint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/)
   * [`//third_party/blink/renderer/core/svg/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/svg/)
   * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
-  * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint)
-  * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/)
+  * [`//third_party/blink/web_tests/FlagExpectations/composite-after-paint`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/FlagExpectations/composite-after-paint)
+  * [`//third_party/blink/web_tests/flag-specific/composite-after-paint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/composite-after-paint/)
 
 * [linux_layout_tests_layout_ng_disabled](https://ci.chromium.org/p/chromium/builders/try/linux_layout_tests_layout_ng_disabled) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux_layout_tests_layout_ng_disabled)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux_layout_tests_layout_ng_disabled))
 
@@ -253,7 +251,8 @@ builder.
   * [`//third_party/blink/renderer/core/svg/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/svg/)
   * [`//third_party/blink/renderer/platform/fonts/shaping/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/fonts/shaping/)
   * [`//third_party/blink/renderer/platform/graphics/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/graphics/)
-  * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/)
+  * [`//third_party/blink/web_tests/FlagExpectations/disable-layout-ng`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/FlagExpectations/disable-layout-ng)
+  * [`//third_party/blink/web_tests/flag-specific/disable-layout-ng/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/disable-layout-ng/)
 
 * [linux_optional_gpu_tests_rel](https://ci.chromium.org/p/chromium/builders/try/linux_optional_gpu_tests_rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux_optional_gpu_tests_rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux_optional_gpu_tests_rel))
 

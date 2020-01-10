@@ -335,7 +335,6 @@ size_t MediaStreamVideoSource::CountEncodedSinks() const {
 void MediaStreamVideoSource::UpdateNumEncodedSinks() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   size_t count = CountEncodedSinks();
-  DCHECK(SupportsEncodedOutput() || count == 0);
   if (count == 1) {
     OnEncodedSinkEnabled();
   } else if (count == 0) {

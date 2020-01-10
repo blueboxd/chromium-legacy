@@ -44,7 +44,8 @@ class EmptyTrustedVaultClient : public TrustedVaultClient {
   }
 
   void StoreKeys(const std::string& gaia_id,
-                 const std::vector<std::vector<uint8_t>>& keys) override {
+                 const std::vector<std::vector<uint8_t>>& keys,
+                 int last_key_version) override {
     // Never invoked by SyncServiceCrypto.
     NOTREACHED();
   }

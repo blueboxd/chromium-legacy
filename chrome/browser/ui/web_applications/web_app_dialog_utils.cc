@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -71,9 +72,14 @@ bool CanCreateWebApp(const Browser* browser) {
     return false;
   Profile* web_contents_profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  banners::AppBannerManager* app_banner_manager =
+      banners::AppBannerManager::FromWebContents(web_contents);
+  bool externally_installed =
+      app_banner_manager && app_banner_manager->IsExternallyInstalledWebApp();
 
   return AreWebAppsUserInstallable(web_contents_profile) &&
-         IsValidWebAppUrl(web_contents->GetLastCommittedURL());
+         IsValidWebAppUrl(web_contents->GetLastCommittedURL()) &&
+         !externally_installed;
 }
 
 bool CanPopOutWebApp(Profile* profile) {

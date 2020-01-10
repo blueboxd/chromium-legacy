@@ -161,15 +161,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Recycle V4L2 output buffer with |index|. Used as surface release callback.
   void ReuseOutputBuffer(V4L2ReadableBufferRef buffer);
 
-  // Queue a |dec_surface| to device for decoding.
-  void Enqueue(scoped_refptr<V4L2DecodeSurface> dec_surface);
-
   // Dequeue any V4L2 buffers available and process.
   void Dequeue();
-
-  // V4L2 QBUF helpers.
-  bool EnqueueInputRecord(V4L2DecodeSurface* dec_surface);
-  bool EnqueueOutputRecord(V4L2DecodeSurface* dec_surface);
 
   // Set input and output formats in hardware.
   bool SetupFormats();

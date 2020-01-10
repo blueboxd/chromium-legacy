@@ -107,6 +107,14 @@ component("ipc") {
   if (enable_ipc_fuzzer) {
     public_configs = [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
   }
+
+  if (!is_nacl && !is_ios) {
+    sources += [
+      "trace_ipc_message.cc",
+      "trace_ipc_message.h",
+    ]
+    public_deps += [ "//services/tracing/public/cpp" ]
+  }
 }
 
 component("message_support") {

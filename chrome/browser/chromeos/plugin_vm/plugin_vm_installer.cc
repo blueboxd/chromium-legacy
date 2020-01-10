@@ -51,7 +51,7 @@ bool PluginVmInstaller::IsProcessing() {
   return State::NOT_STARTED < state_ && state_ < State::CONFIGURED;
 }
 
-void PluginVmInstaller::StartDlcDownload() {
+void PluginVmInstaller::Start() {
   if (IsProcessing()) {
     LOG(ERROR) << "Download of a PluginVm image couldn't be started as"
                << " another PluginVm image is currently being processed "
@@ -69,39 +69,47 @@ void PluginVmInstaller::StartDlcDownload() {
     return;
   }
 
-  State prev_state = state_;
+  StartDlcDownload();
+}
+
+void PluginVmInstaller::Cancel() {
+  switch (state_) {
+    case State::DOWNLOADING_DLC:
+      CancelDlcDownload();
+      return;
+    case State::DOWNLOADING:
+      CancelDownload();
+      return;
+    case State::IMPORTING:
+      CancelImport();
+      return;
+    default:
+      LOG(ERROR) << "Tried to cancel installation from unexpected state "
+                 << GetStateName(state_);
+      return;
+  }
+}
+
+void PluginVmInstaller::StartDlcDownload() {
   state_ = State::DOWNLOADING_DLC;
   dlc_download_start_tick_ = base::TimeTicks::Now();
 
-  if (prev_state != State::DOWNLOAD_DLC_CANCELLED) {
-    chromeos::DlcserviceClient::Get()->Install(
-        dlc_module_list_,
-        base::BindOnce(&PluginVmInstaller::OnDlcDownloadCompleted,
-                       weak_ptr_factory_.GetWeakPtr()),
-        base::BindRepeating(&PluginVmInstaller::OnDlcDownloadProgressUpdated,
-                            weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  if (observer_)
-    observer_->OnDlcDownloadStarted();
+  chromeos::DlcserviceClient::Get()->Install(
+      dlc_module_list_,
+      base::BindOnce(&PluginVmInstaller::OnDlcDownloadCompleted,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&PluginVmInstaller::OnDlcDownloadProgressUpdated,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PluginVmInstaller::CancelDlcDownload() {
   state_ = State::DOWNLOAD_DLC_CANCELLED;
-
-  if (observer_)
-    observer_->OnDlcDownloadCancelled();
 }
 
 void PluginVmInstaller::StartDownload() {
-  if (state_ != State::DOWNLOADED_DLC) {
-    LOG(ERROR) << "Download of a PluginVm image couldn't be started as "
-               << "StartDlcDownload() was not called prior.";
-    OnDownloadFailed(FailureReason::DLC_DOWNLOAD_NOT_STARTED);
-    return;
-  }
-
+  DCHECK_EQ(state_, State::DOWNLOADING_DLC);
   state_ = State::DOWNLOADING;
+
   GURL url = GetPluginVmImageDownloadUrl();
   if (url.is_empty()) {
     OnDownloadFailed(FailureReason::INVALID_IMAGE_URL);
@@ -136,8 +144,9 @@ void PluginVmInstaller::CancelDownload() {
 }
 
 void PluginVmInstaller::OnDlcDownloadProgressUpdated(double progress) {
-  if (state_ != State::DOWNLOADING_DLC)
+  if (state_ == State::DOWNLOAD_DLC_CANCELLED)
     return;
+  DCHECK_EQ(state_, State::DOWNLOADING_DLC);
 
   if (observer_)
     observer_->OnDlcDownloadProgressUpdated(
@@ -147,27 +156,31 @@ void PluginVmInstaller::OnDlcDownloadProgressUpdated(double progress) {
 void PluginVmInstaller::OnDlcDownloadCompleted(
     const std::string& err,
     const dlcservice::DlcModuleList& dlc_module_list) {
-  if (state_ != State::DOWNLOADING_DLC)
+  if (state_ == State::DOWNLOAD_DLC_CANCELLED) {
+    if (observer_)
+      observer_->OnDlcDownloadCancelled();
+    state_ = State::NOT_STARTED;
     return;
+  }
+  DCHECK_EQ(state_, State::DOWNLOADING_DLC);
 
   // TODO(kimjae): Remove this check once PluginVM is converted to DLC.
   if (err == dlcservice::kErrorInvalidDlc) {
     LOG(ERROR) << "PluginVM DLC is probably not supported, skipping install.";
   } else if (err != dlcservice::kErrorNone) {
+    state_ = State::DOWNLOAD_DLC_FAILED;
     if (observer_)
       observer_->OnDownloadFailed(FailureReason::DLC_DOWNLOAD_FAILED);
     return;
   }
 
-  state_ = State::DOWNLOADED_DLC;
   if (observer_)
     observer_->OnDlcDownloadCompleted();
+  StartDownload();
 }
 
 void PluginVmInstaller::OnDownloadStarted() {
   download_start_tick_ = base::TimeTicks::Now();
-  if (observer_)
-    observer_->OnDownloadStarted();
 }
 
 void PluginVmInstaller::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
@@ -192,10 +205,10 @@ void PluginVmInstaller::OnDownloadCompleted(
     return;
   }
 
-  state_ = State::DOWNLOADED;
   if (observer_)
     observer_->OnDownloadCompleted();
   RecordPluginVmImageDownloadedSizeHistogram(info.bytes_downloaded);
+  StartImport();
 }
 
 void PluginVmInstaller::OnDownloadCancelled() {
@@ -228,14 +241,7 @@ void PluginVmInstaller::OnDownloadFailed(FailureReason reason) {
 }
 
 void PluginVmInstaller::StartImport() {
-  if (state_ != State::DOWNLOADED) {
-    LOG(ERROR) << "Importing of PluginVm image couldn't proceed as current "
-               << "state is " << GetStateName(state_) << " not "
-               << GetStateName(State::DOWNLOADED);
-    OnImported(FailureReason::LOGIC_ERROR);
-    return;
-  }
-
+  DCHECK_EQ(state_, State::DOWNLOADING);
   state_ = State::IMPORTING;
 
   VLOG(1) << "Starting PluginVm dispatcher service";
@@ -534,14 +540,10 @@ std::string PluginVmInstaller::GetStateName(State state) {
       return "DOWNLOADING_DLC";
     case State::DOWNLOAD_DLC_CANCELLED:
       return "DOWNLOAD_DLC_CANCELLED";
-    case State::DOWNLOADED_DLC:
-      return "DOWNLOADED_DLC";
     case State::DOWNLOADING:
       return "DOWNLOADING";
     case State::DOWNLOAD_CANCELLED:
       return "DOWNLOAD_CANCELLED";
-    case State::DOWNLOADED:
-      return "DOWNLOADED";
     case State::IMPORTING:
       return "IMPORTING";
     case State::IMPORT_CANCELLED:

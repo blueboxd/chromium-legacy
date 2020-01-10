@@ -114,13 +114,16 @@ void SyncEncryptionKeysExtension::SetSyncEncryptionKeys(gin::Arguments* args) {
   DCHECK(render_frame());
 
   // This function as exposed to the web has the following signature:
-  //   setSyncEncryptionKeys(callback, gaia_id, encryption_keys)
+  //   setSyncEncryptionKeys(callback, gaia_id, encryption_keys,
+  //                         last_key_version)
   //
   // Where:
   //   callback: Allows caller to get notified upon completion.
   //   gaia_id: String representing the user's server-provided ID.
   //   encryption_keys: Array where each element is an ArrayBuffer representing
   //                    an encryption key (binary blob).
+  //   last_key_version: Key version corresponding to the last key in
+  //                     |encryption_keys|.
 
   v8::HandleScope handle_scope(args->isolate());
 
@@ -151,6 +154,14 @@ void SyncEncryptionKeysExtension::SetSyncEncryptionKeys(gin::Arguments* args) {
     return;
   }
 
+  int last_key_version = 0;
+  if (!args->GetNext(&last_key_version)) {
+    DLOG(ERROR) << "No version provided";
+    // TODO(crbug.com/1032485): Be more strict here and issue an error if the
+    // version is not provided.
+    last_key_version = static_cast<int>(encryption_keys.size()) - 1;
+  }
+
   auto global_callback =
       std::make_unique<v8::Global<v8::Function>>(args->isolate(), callback);
 
@@ -159,7 +170,7 @@ void SyncEncryptionKeysExtension::SetSyncEncryptionKeys(gin::Arguments* args) {
   }
 
   remote_->SetEncryptionKeys(
-      EncryptionKeysAsBytes(encryption_keys), gaia_id,
+      gaia_id, EncryptionKeysAsBytes(encryption_keys), last_key_version,
       base::BindOnce(&SyncEncryptionKeysExtension::RunCompletionCallback,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(global_callback)));

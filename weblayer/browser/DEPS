@@ -10,6 +10,7 @@ include_rules = [
   "+components/autofill/core/common",
   "+components/crash/content/browser",
   "+components/embedder_support",
+  "+components/network_time",
   "+components/prefs",
   "+components/user_prefs",
   "+components/safe_browsing",

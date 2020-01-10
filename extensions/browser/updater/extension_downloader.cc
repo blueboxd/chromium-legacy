@@ -1142,9 +1142,14 @@ void ExtensionDownloader::OnExtensionLoadComplete(base::FilePath crx_path) {
       base::UmaHistogramSparse("Extensions.CrxFetchError", -net_error);
       delegate_->OnExtensionDownloadStageChanged(
           id, ExtensionDownloaderDelegate::Stage::FINISHED);
+      ExtensionDownloaderDelegate::FailureData failure_data(
+          -net_error,
+          response_code > 0 ? base::Optional<int>(response_code)
+                            : base::nullopt,
+          extensions_queue_.active_request_failure_count());
       delegate_->OnExtensionDownloadFailed(
           id, ExtensionDownloaderDelegate::Error::CRX_FETCH_FAILED, ping,
-          request_ids);
+          request_ids, failure_data);
     }
     ping_results_.erase(id);
     extensions_queue_.reset_active_request();
@@ -1171,7 +1176,9 @@ void ExtensionDownloader::NotifyExtensionsDownloadFailed(
     ExtensionDownloaderDelegate::Error error) {
   for (const auto& it : extension_ids) {
     const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[it];
-    delegate_->OnExtensionDownloadFailed(it, error, ping, request_ids);
+    delegate_->OnExtensionDownloadFailed(
+        it, error, ping, request_ids,
+        ExtensionDownloaderDelegate::FailureData());
     ping_results_.erase(it);
   }
 }

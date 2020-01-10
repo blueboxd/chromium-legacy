@@ -255,6 +255,22 @@ TEST_F(MediaStreamVideoTrackTest, SetEnabled) {
   sink.DisconnectFromTrack();
 }
 
+TEST_F(MediaStreamVideoTrackTest, SourceDetached) {
+  InitializeSource();
+  WebMediaStreamTrack track = CreateTrack();
+  MockMediaStreamVideoSink sink;
+  auto* video_track = MediaStreamVideoTrack::GetVideoTrack(track);
+  video_track->StopAndNotify(base::BindOnce([] {}));
+  sink.ConnectToTrack(track);
+  sink.ConnectEncodedToTrack(track);
+  video_track->SetEnabled(true);
+  video_track->SetEnabled(false);
+  WebMediaStreamTrack::Settings settings;
+  video_track->GetSettings(settings);
+  sink.DisconnectFromTrack();
+  sink.DisconnectEncodedFromTrack();
+}
+
 TEST_F(MediaStreamVideoTrackTest, SourceStopped) {
   InitializeSource();
   MockMediaStreamVideoSink sink;

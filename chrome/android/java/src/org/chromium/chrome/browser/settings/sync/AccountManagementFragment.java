@@ -72,6 +72,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
      * The key for an integer value in arguments bundle to
      * specify the correct GAIA service that has triggered the dialog.
      * If the argument is not set, GAIA_SERVICE_TYPE_NONE is used as the origin of the dialog.
+     * TODO(https://crbug.com/1038924): Set the TAG variables of this class to private
      */
     public static final String SHOW_GAIA_SERVICE_TYPE_EXTRA = "ShowGAIAServiceType";
 
@@ -212,11 +213,8 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
                     SigninUtils.logEvent(
                             ProfileAccountManagementMetrics.TOGGLE_SIGNOUT, mGaiaServiceType);
 
-                    SignOutDialogFragment signOutFragment = new SignOutDialogFragment();
-                    Bundle args = new Bundle();
-                    args.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, mGaiaServiceType);
-                    signOutFragment.setArguments(args);
-
+                    SignOutDialogFragment signOutFragment =
+                            SignOutDialogFragment.create(mGaiaServiceType);
                     signOutFragment.setTargetFragment(AccountManagementFragment.this, 0);
                     signOutFragment.show(getFragmentManager(), SIGN_OUT_DIALOG_TAG);
 
@@ -398,6 +396,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
 
     @Override
     public void onSignOutDialogDismissed(boolean signOutClicked) {
+        // TODO(https://crbug.com/1038924): Signout is recorded twice when cancelled
         if (!signOutClicked) {
             SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_CANCEL, mGaiaServiceType);
         }

@@ -7,14 +7,14 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  "(theme_painter|fallback_theme)\.cc": [
+  "(theme_painter|fallback_theme|object_painter_base)\.cc": [
     "+ui/native_theme/native_theme.h",
     "+ui/native_theme/native_theme_base.h",
   ],
   ".*test\.cc": [
     "+base/test/trace_event_analyzer.h",
   ],
-  "(paint_layer_scrollable_area|theme_painter|theme_painter_default)\.cc": [
+  "(object_painter_base|paint_layer_scrollable_area|theme_painter|theme_painter_default)\.cc": [
     "+ui/base/ui_base_features.h",
   ],
 }

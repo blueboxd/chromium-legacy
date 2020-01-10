@@ -19,6 +19,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -29,6 +30,10 @@ constexpr char kExtensionName2[] = "name2";
 constexpr char kExtensionUpdateUrl[] =
     "https://clients2.google.com/service/update2/crx";  // URL of Chrome Web
                                                         // Store backend.
+
+const int kFetchTries = 5;
+// HTTP_SUCCESS
+const int kResponseCode = 200;
 
 constexpr char kLoadTimeStats[] = "Extensions.ForceInstalledLoadTime";
 constexpr char kTimedOutStats[] = "Extensions.ForceInstalledTimedOutCount";
@@ -47,7 +52,10 @@ constexpr char kFailureCrxInstallErrorStats[] =
     "Extensions.ForceInstalledFailureCrxInstallError";
 constexpr char kTotalCountStats[] =
     "Extensions.ForceInstalledTotalCandidateCount";
-
+constexpr char kNetworkErrorCodeStats[] =
+    "Extensions.ForceInstalledNetworkErrorCode";
+constexpr char kHttpErrorCodeStats[] = "Extensions.ForceInstalledHttpErrorCode";
+constexpr char kFetchRetriesStats[] = "Extensions.ForceInstalledFetchTries";
 }  // namespace
 
 namespace extensions {
@@ -239,6 +247,26 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsAreDownloading) {
   histogram_tester_.ExpectUniqueSample(
       kTotalCountStats,
       prefs_->GetManagedPref(pref_names::kInstallForceList)->DictSize(), 1);
+}
+
+// Error Codes in case of CRX_FETCH_FAILED.
+TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionCrxFetchFailed) {
+  SetupForceList();
+  ExtensionDownloaderDelegate::FailureData data1(net::Error::OK, kResponseCode,
+                                                 kFetchTries);
+  ExtensionDownloaderDelegate::FailureData data2(
+      -net::Error::ERR_INVALID_ARGUMENT, kFetchTries);
+  installation_reporter_->ReportCrxFetchError(kExtensionId1, data1);
+  installation_reporter_->ReportCrxFetchError(kExtensionId2, data2);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(kNetworkErrorCodeStats, net::Error::OK,
+                                      1);
+  histogram_tester_.ExpectBucketCount(kHttpErrorCodeStats, kResponseCode, 1);
+  histogram_tester_.ExpectBucketCount(kNetworkErrorCodeStats,
+                                      -net::Error::ERR_INVALID_ARGUMENT, 1);
+  histogram_tester_.ExpectBucketCount(kFetchRetriesStats, kFetchTries, 2);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest, NoExtensionsConfigured) {

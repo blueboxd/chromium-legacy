@@ -407,6 +407,9 @@ void MediaStreamRemoteVideoSource::OnChanged(
 
 bool MediaStreamRemoteVideoSource::SupportsEncodedOutput() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!observer_ || !observer_->track()) {
+    return false;
+  }
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   return video_track->GetSource()->SupportsEncodedOutput();
@@ -414,6 +417,9 @@ bool MediaStreamRemoteVideoSource::SupportsEncodedOutput() const {
 
 void MediaStreamRemoteVideoSource::RequestRefreshFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!observer_ || !observer_->track()) {
+    return;
+  }
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   if (video_track->GetSource()) {
@@ -423,6 +429,9 @@ void MediaStreamRemoteVideoSource::RequestRefreshFrame() {
 
 void MediaStreamRemoteVideoSource::OnEncodedSinkEnabled() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!observer_ || !observer_->track()) {
+    return;
+  }
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       static_cast<webrtc::VideoTrackInterface*>(observer_->track().get()));
   video_track->GetSource()->AddEncodedSink(delegate_.get());
@@ -430,7 +439,7 @@ void MediaStreamRemoteVideoSource::OnEncodedSinkEnabled() {
 
 void MediaStreamRemoteVideoSource::OnEncodedSinkDisabled() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!observer_->track()) {
+  if (!observer_ || !observer_->track()) {
     return;
   }
   scoped_refptr<webrtc::VideoTrackInterface> video_track(

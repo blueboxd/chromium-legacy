@@ -1789,8 +1789,10 @@ void ProfileSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {
 
 void ProfileSyncService::AddTrustedVaultDecryptionKeysFromWeb(
     const std::string& gaia_id,
-    const std::vector<std::vector<uint8_t>>& keys) {
-  sync_client_->GetTrustedVaultClient()->StoreKeys(gaia_id, keys);
+    const std::vector<std::vector<uint8_t>>& keys,
+    int last_key_version) {
+  sync_client_->GetTrustedVaultClient()->StoreKeys(gaia_id, keys,
+                                                   last_key_version);
 }
 
 UserDemographicsResult ProfileSyncService::GetUserNoisedBirthYearAndGender(

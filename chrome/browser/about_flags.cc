@@ -1701,6 +1701,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webassembly-threads", flag_descriptions::kEnableWasmThreadsName,
      flag_descriptions::kEnableWasmThreadsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAssemblyThreads)},
+    {"enable-webassembly-tiering", flag_descriptions::kEnableWasmTieringName,
+     flag_descriptions::kEnableWasmTieringDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebAssemblyTiering)},
     {"shared-array-buffer", flag_descriptions::kEnableSharedArrayBufferName,
      flag_descriptions::kEnableSharedArrayBufferDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kSharedArrayBuffer)},
@@ -4833,6 +4836,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kProfileCardDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kProfileCard)},
 #endif  // defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+    {"sync-setup-friendly-settings",
+     flag_descriptions::kSyncSetupFriendlySettingsName,
+     flag_descriptions::kSyncSetupFriendlySettingsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSyncSetupFriendlySettings)},
+#endif  // !defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

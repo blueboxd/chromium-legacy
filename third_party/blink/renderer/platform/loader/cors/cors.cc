@@ -160,12 +160,11 @@ namespace cors {
 
 base::Optional<network::CorsErrorStatus> CheckAccess(
     const KURL& response_url,
-    const int response_status_code,
     const HTTPHeaderMap& response_header,
     network::mojom::CredentialsMode credentials_mode,
     const SecurityOrigin& origin) {
   return network::cors::CheckAccess(
-      response_url, response_status_code,
+      response_url,
       GetHeaderValue(response_header, http_names::kAccessControlAllowOrigin),
       GetHeaderValue(response_header,
                      http_names::kAccessControlAllowCredentials),
@@ -199,11 +198,6 @@ base::Optional<network::CorsErrorStatus> CheckRedirectLocation(
   // tainted flag.
   return network::cors::CheckRedirectLocation(
       url, request_mode, origin_to_pass, cors_flag == CorsFlag::Set, false);
-}
-
-base::Optional<network::mojom::CorsError> CheckPreflight(
-    const int preflight_response_status_code) {
-  return network::cors::CheckPreflight(preflight_response_status_code);
 }
 
 base::Optional<network::CorsErrorStatus> CheckExternalPreflight(

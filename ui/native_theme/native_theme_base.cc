@@ -112,20 +112,17 @@ constexpr SkColor kArrowDisabledColor[2] = {SK_ColorBLACK, SK_ColorWHITE};
 constexpr SkColor kButtonBorderColor[2] = {SK_ColorBLACK, SK_ColorWHITE};
 constexpr SkColor kProgressBackgroundColor[2] = {SK_ColorWHITE, SK_ColorBLACK};
 
-const int kCheckboxBorderRadius = 2;
 // The "dash" is 8x2 px by default (the checkbox is 13x13 px).
 const SkScalar kIndeterminateInsetWidthRatio = (13 - 8) / 2.0f / 13;
 const SkScalar kIndeterminateInsetHeightRatio = (13 - 2) / 2.0f / 13;
 const SkScalar kBorderWidth = 1.f;
 const SkScalar kSliderTrackHeight = 8.f;
-const SkScalar kSliderTrackBorderRadius = 40.f;
 const SkScalar kSliderThumbBorderWidth = 1.f;
 const SkScalar kSliderThumbBorderHoveredWidth = 1.f;
 // Default height for progress is 16px and the track is 8px.
 const SkScalar kTrackHeightRatio = 8.0f / 16;
 const SkScalar kMenuListArrowStrokeWidth = 2.f;
 const int kSliderThumbSize = 16;
-const int kInputBorderRadius = 2;
 
 // Get a color constant based on color-scheme
 SkColor GetColor(const SkColor colors[2],
@@ -211,6 +208,35 @@ gfx::Size NativeThemeBase::GetPartSize(Part part,
       break;
   }
   return gfx::Size();
+}
+
+float NativeThemeBase::GetBorderRadiusForPart(Part part,
+                                              float width,
+                                              float height,
+                                              float zoom) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    NOTREACHED() << "GetBorderRadiusForPart only supports FormControlsRefresh.";
+    return 0;
+  }
+
+  switch (part) {
+    case kCheckbox:
+      return 2.f * zoom;
+    case kPushButton:
+    case kTextField:
+      return 2.f;
+    case kRadio:
+      return std::max(width, height) * 0.5;
+    case kProgressBar:
+    case kSliderTrack:
+      // default border radius for progress and range is 40px.
+      return 40.f;
+    case kSliderThumb:
+      return std::max(width, height) * 0.5;
+    default:
+      break;
+  }
+  return 0;
 }
 
 void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
@@ -576,8 +602,8 @@ void NativeThemeBase::PaintCheckbox(cc::PaintCanvas* canvas,
                                     const ButtonExtraParams& button,
                                     ColorScheme color_scheme) const {
   if (features::IsFormControlsRefreshEnabled()) {
-    const float border_radius =
-        SkIntToScalar(kCheckboxBorderRadius) * button.zoom;
+    const float border_radius = GetBorderRadiusForPart(
+        kCheckbox, rect.width(), rect.height(), button.zoom);
     SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect, button, true,
                                              border_radius, color_scheme);
 
@@ -811,11 +837,10 @@ void NativeThemeBase::PaintRadio(cc::PaintCanvas* canvas,
   if (features::IsFormControlsRefreshEnabled()) {
     // Most of a radio button is the same as a checkbox, except the the rounded
     // square is a circle (i.e. border radius >= 100%).
-    const SkScalar radius = SkFloatToScalar(
-        static_cast<float>(std::max(rect.width(), rect.height())) * 0.5);
-
+    const float border_radius = GetBorderRadiusForPart(
+        kRadio, rect.width(), rect.height(), button.zoom);
     SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect, button, false,
-                                             radius, color_scheme);
+                                             border_radius, color_scheme);
     if (!skrect.isEmpty() && button.checked) {
       // Draw the dot.
       cc::PaintFlags flags;
@@ -826,7 +851,7 @@ void NativeThemeBase::PaintRadio(cc::PaintCanvas* canvas,
       skrect.inset(skrect.width() * 0.2, skrect.height() * 0.2);
       // Use drawRoundedRect instead of drawOval to be completely consistent
       // with the border in PaintCheckboxRadioNewCommon.
-      canvas->drawRoundRect(skrect, radius, radius, flags);
+      canvas->drawRoundRect(skrect, border_radius, border_radius, flags);
     }
     return;
   }
@@ -871,20 +896,20 @@ void NativeThemeBase::PaintButton(cc::PaintCanvas* canvas,
       return;
     }
 
+    float border_radius = GetBorderRadiusForPart(kPushButton, rect.width(),
+                                                 rect.height(), button.zoom);
     // Paint the background (is not visible behind the rounded corners).
     skrect.inset(kBorderWidth / 2, kBorderWidth / 2);
-    PaintLightenLayer(canvas, skrect, state, kInputBorderRadius, color_scheme);
+    PaintLightenLayer(canvas, skrect, state, border_radius, color_scheme);
     flags.setColor(ControlsFillColorForState(state, color_scheme));
-    canvas->drawRoundRect(skrect, kInputBorderRadius, kInputBorderRadius,
-                          flags);
+    canvas->drawRoundRect(skrect, border_radius, border_radius, flags);
 
     // Paint the border: 1px solid.
     if (button.has_border) {
       flags.setStyle(cc::PaintFlags::kStroke_Style);
       flags.setStrokeWidth(kBorderWidth);
       flags.setColor(ControlsBorderColorForState(state, color_scheme));
-      canvas->drawRoundRect(skrect, kInputBorderRadius, kInputBorderRadius,
-                            flags);
+      canvas->drawRoundRect(skrect, border_radius, border_radius, flags);
     }
     return;
   }
@@ -945,16 +970,17 @@ void NativeThemeBase::PaintTextField(cc::PaintCanvas* canvas,
                                      ColorScheme color_scheme) const {
   if (features::IsFormControlsRefreshEnabled()) {
     SkRect bounds = gfx::RectToSkRect(rect);
-    const SkScalar borderRadius = SkIntToScalar(kInputBorderRadius);
+    const SkScalar border_radius = GetBorderRadiusForPart(
+        kTextField, rect.width(), rect.height(), /*zoom level=*/1);
 
     // Paint the background (is not visible behind the rounded corners).
     bounds.inset(kBorderWidth / 2, kBorderWidth / 2);
     cc::PaintFlags fill_flags;
     fill_flags.setStyle(cc::PaintFlags::kFill_Style);
     if (text.background_color != 0) {
-      PaintLightenLayer(canvas, bounds, state, borderRadius, color_scheme);
+      PaintLightenLayer(canvas, bounds, state, border_radius, color_scheme);
       fill_flags.setColor(ControlsBackgroundColorForState(state, color_scheme));
-      canvas->drawRoundRect(bounds, borderRadius, borderRadius, fill_flags);
+      canvas->drawRoundRect(bounds, border_radius, border_radius, fill_flags);
     }
 
     // Paint the border: 1px solid.
@@ -962,7 +988,7 @@ void NativeThemeBase::PaintTextField(cc::PaintCanvas* canvas,
     stroke_flags.setColor(ControlsBorderColorForState(state, color_scheme));
     stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
     stroke_flags.setStrokeWidth(kBorderWidth);
-    canvas->drawRoundRect(bounds, borderRadius, borderRadius, stroke_flags);
+    canvas->drawRoundRect(bounds, border_radius, border_radius, stroke_flags);
     return;
   }
 
@@ -1116,13 +1142,13 @@ void NativeThemeBase::PaintSliderTrack(cc::PaintCanvas* canvas,
       track_rect.inset(0, 1);
     else
       track_rect.inset(1, 0);
-    canvas->drawRoundRect(track_rect, kSliderTrackBorderRadius,
-                          kSliderTrackBorderRadius, flags);
+    float border_radius = GetBorderRadiusForPart(kSliderTrack, rect.width(),
+                                                 rect.height(), slider.zoom);
+    canvas->drawRoundRect(track_rect, border_radius, border_radius, flags);
 
     // Clip the track to create rounded corners for the value bar.
     SkRRect rounded_rect;
-    rounded_rect.setRectXY(track_rect, kSliderTrackBorderRadius,
-                           kSliderTrackBorderRadius);
+    rounded_rect.setRectXY(track_rect, border_radius, border_radius);
     canvas->clipRRect(rounded_rect, SkClipOp::kIntersect, true);
 
     // Paint the value slider track.
@@ -1138,8 +1164,7 @@ void NativeThemeBase::PaintSliderTrack(cc::PaintCanvas* canvas,
       border_color = SkColorSetA(border_color, 0x80);
     flags.setColor(border_color);
     track_rect.inset(kBorderWidth / 2, kBorderWidth / 2);
-    canvas->drawRoundRect(track_rect, kSliderTrackBorderRadius,
-                          kSliderTrackBorderRadius, flags);
+    canvas->drawRoundRect(track_rect, border_radius, border_radius, flags);
     return;
   }
 
@@ -1166,8 +1191,8 @@ void NativeThemeBase::PaintSliderThumb(cc::PaintCanvas* canvas,
                                        const SliderExtraParams& slider,
                                        ColorScheme color_scheme) const {
   if (features::IsFormControlsRefreshEnabled()) {
-    const SkScalar radius = SkFloatToScalar(
-        static_cast<float>(std::max(rect.width(), rect.height())) * 0.5);
+    const float radius = GetBorderRadiusForPart(kSliderThumb, rect.width(),
+                                                rect.height(), slider.zoom);
     SkRect thumb_rect = gfx::RectToSkRect(rect);
 
     cc::PaintFlags flags;
@@ -1269,13 +1294,13 @@ void NativeThemeBase::PaintProgressBar(
     slider.vertical = false;
     float track_height = rect.height() * kTrackHeightRatio;
     SkRect track_rect = AlignSliderTrack(rect, slider, false, track_height);
-    canvas->drawRoundRect(track_rect, kSliderTrackBorderRadius,
-                          kSliderTrackBorderRadius, flags);
+    float border_radius = GetBorderRadiusForPart(
+        kProgressBar, rect.width(), rect.height(), /*zoom level=*/1);
+    canvas->drawRoundRect(track_rect, border_radius, border_radius, flags);
 
     // Clip the track to create rounded corners for the value bar.
     SkRRect rounded_rect;
-    rounded_rect.setRectXY(track_rect, kSliderTrackBorderRadius,
-                           kSliderTrackBorderRadius);
+    rounded_rect.setRectXY(track_rect, border_radius, border_radius);
     canvas->clipRRect(rounded_rect, SkClipOp::kIntersect, true);
 
     // Paint the progress value bar.
@@ -1292,8 +1317,7 @@ void NativeThemeBase::PaintProgressBar(
     if (progress_bar.determinate) {
       canvas->drawRect(value_rect, flags);
     } else {
-      canvas->drawRoundRect(value_rect, kSliderTrackBorderRadius,
-                            kSliderTrackBorderRadius, flags);
+      canvas->drawRoundRect(value_rect, border_radius, border_radius, flags);
     }
 
     // Paint the border.
@@ -1304,8 +1328,7 @@ void NativeThemeBase::PaintProgressBar(
       border_color = SkColorSetA(border_color, 0x80);
     flags.setColor(border_color);
     track_rect.inset(kBorderWidth / 2, kBorderWidth / 2);
-    canvas->drawRoundRect(track_rect, kSliderTrackBorderRadius,
-                          kSliderTrackBorderRadius, flags);
+    canvas->drawRoundRect(track_rect, border_radius, border_radius, flags);
     return;
   }
 

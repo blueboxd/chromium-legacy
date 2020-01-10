@@ -53,6 +53,10 @@ class AppRegistrar {
       const GURL& install_url) const;
 
   // Returns whether the AppRegistrar has an externally installed app with
+  // |app_id| from any |install_source|.
+  virtual bool HasExternalApp(const AppId& app_id) const;
+
+  // Returns whether the AppRegistrar has an externally installed app with
   // |app_id| from |install_source|.
   virtual bool HasExternalAppWithInstallSource(
       const AppId& app_id,

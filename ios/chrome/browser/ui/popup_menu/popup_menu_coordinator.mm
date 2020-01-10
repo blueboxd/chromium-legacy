@@ -173,10 +173,6 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   }
 }
 
-- (void)containedPresenterDidDismiss:(id<ContainedPresenter>)presenter {
-  // No-op.
-}
-
 #pragma mark - PopupMenuPresenterDelegate
 
 - (void)popupMenuPresenterWillDismiss:(PopupMenuPresenter*)presenter {

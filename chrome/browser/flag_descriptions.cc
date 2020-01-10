@@ -992,6 +992,11 @@ const char kEnableWasmThreadsDescription[] =
     "Enables support for the WebAssembly Threads proposal. Implies "
     "#shared-array-buffer and #enable-webassembly.";
 
+const char kEnableWasmTieringName[] = "WebAssembly tiering";
+const char kEnableWasmTieringDescription[] =
+    "Enables tiered compilation of WebAssembly (will tier up to TurboFan if "
+    "#enable-webassembly-baseline is enabled.";
+
 const char kEvDetailsInPageInfoName[] = "EV certificate details in Page Info.";
 const char kEvDetailsInPageInfoDescription[] =
     "Shows the EV certificate details in the Page Info bubble.";
@@ -3052,6 +3057,10 @@ const char kGoogleBrandedContextMenuName[] =
 const char kGoogleBrandedContextMenuDescription[] =
     "Shows a Google icon next to context menu items powered by Google "
     "services.";
+
+const char kSyncSetupFriendlySettingsName[] = "Sync setup friendly settings";
+const char kSyncSetupFriendlySettingsDescription[] =
+    "Enable the new sync setup friendly settings";
 
 #endif  // !defined(OS_ANDROID)
 

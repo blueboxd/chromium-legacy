@@ -123,16 +123,10 @@ bool IsNoCorsSafelistedHeaderNameLowerCase(const std::string& lower_name) {
 
 base::Optional<CorsErrorStatus> CheckAccessInternal(
     const GURL& response_url,
-    const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::CredentialsMode credentials_mode,
     const url::Origin& origin) {
-  // TODO(toyoshim): This response status code check should not be needed. We
-  // have another status code check after a CheckAccess() call if it is needed.
-  if (!response_status_code)
-    return CorsErrorStatus(mojom::CorsError::kInvalidResponse);
-
   if (allow_origin_header == kAsterisk) {
     // A wildcard Access-Control-Allow-Origin can not be used if credentials are
     // to be sent, even with Access-Control-Allow-Credentials set to true.
@@ -240,14 +234,13 @@ const char kAccessControlRequestMethod[] = "Access-Control-Request-Method";
 // See https://fetch.spec.whatwg.org/#cors-check.
 base::Optional<CorsErrorStatus> CheckAccess(
     const GURL& response_url,
-    const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::CredentialsMode credentials_mode,
     const url::Origin& origin) {
-  base::Optional<CorsErrorStatus> error_status = CheckAccessInternal(
-      response_url, response_status_code, allow_origin_header,
-      allow_credentials_header, credentials_mode, origin);
+  const auto error_status =
+      CheckAccessInternal(response_url, allow_origin_header,
+                          allow_credentials_header, credentials_mode, origin);
   ReportAccessCheckResultMetric(error_status ? AccessCheckResult::kNotPermitted
                                              : AccessCheckResult::kPermitted);
   if (error_status) {
@@ -285,47 +278,58 @@ base::Optional<CorsErrorStatus> CheckPreflightAccess(
     const base::Optional<std::string>& allow_credentials_header,
     mojom::CredentialsMode actual_credentials_mode,
     const url::Origin& origin) {
-  const auto error_status = CheckAccessInternal(
-      response_url, response_status_code, allow_origin_header,
-      allow_credentials_header, actual_credentials_mode, origin);
+  // Step 7 of https://fetch.spec.whatwg.org/#cors-preflight-fetch
+  auto error_status = CheckAccessInternal(response_url, allow_origin_header,
+                                          allow_credentials_header,
+                                          actual_credentials_mode, origin);
+  const bool has_ok_status = IsOkStatus(response_status_code);
+
   ReportAccessCheckResultMetric(
-      error_status ? AccessCheckResult::kNotPermittedInPreflight
-                   : AccessCheckResult::kPermittedInPreflight);
-  if (!error_status)
+      (error_status || !has_ok_status)
+          ? AccessCheckResult::kNotPermittedInPreflight
+          : AccessCheckResult::kPermittedInPreflight);
+
+  // Prefer using a preflight specific error code.
+  if (error_status) {
+    switch (error_status->cors_error) {
+      case mojom::CorsError::kWildcardOriginNotAllowed:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightWildcardOriginNotAllowed;
+        break;
+      case mojom::CorsError::kMissingAllowOriginHeader:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightMissingAllowOriginHeader;
+        break;
+      case mojom::CorsError::kMultipleAllowOriginValues:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightMultipleAllowOriginValues;
+        break;
+      case mojom::CorsError::kInvalidAllowOriginValue:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightInvalidAllowOriginValue;
+        break;
+      case mojom::CorsError::kAllowOriginMismatch:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightAllowOriginMismatch;
+        break;
+      case mojom::CorsError::kInvalidAllowCredentials:
+        error_status->cors_error =
+            mojom::CorsError::kPreflightInvalidAllowCredentials;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  } else if (!has_ok_status) {
+    error_status = base::make_optional<CorsErrorStatus>(
+        mojom::CorsError::kPreflightInvalidStatus);
+  } else {
     return base::nullopt;
-
-  // TODO(toyoshim): Remove following two lines when the status code check is
-  // removed from CheckAccess().
-  if (error_status->cors_error == mojom::CorsError::kInvalidResponse)
-    return error_status;
-
-  mojom::CorsError error = error_status->cors_error;
-  switch (error_status->cors_error) {
-    case mojom::CorsError::kWildcardOriginNotAllowed:
-      error = mojom::CorsError::kPreflightWildcardOriginNotAllowed;
-      break;
-    case mojom::CorsError::kMissingAllowOriginHeader:
-      error = mojom::CorsError::kPreflightMissingAllowOriginHeader;
-      break;
-    case mojom::CorsError::kMultipleAllowOriginValues:
-      error = mojom::CorsError::kPreflightMultipleAllowOriginValues;
-      break;
-    case mojom::CorsError::kInvalidAllowOriginValue:
-      error = mojom::CorsError::kPreflightInvalidAllowOriginValue;
-      break;
-    case mojom::CorsError::kAllowOriginMismatch:
-      error = mojom::CorsError::kPreflightAllowOriginMismatch;
-      break;
-    case mojom::CorsError::kInvalidAllowCredentials:
-      error = mojom::CorsError::kPreflightInvalidAllowCredentials;
-      break;
-    default:
-      NOTREACHED();
-      break;
   }
-  UMA_HISTOGRAM_ENUMERATION("Net.Cors.PreflightCheckError", error);
 
-  return CorsErrorStatus(error, error_status->failed_parameter);
+  UMA_HISTOGRAM_ENUMERATION("Net.Cors.PreflightCheckError",
+                            error_status->cors_error);
+  return error_status;
 }
 
 base::Optional<CorsErrorStatus> CheckRedirectLocation(
@@ -357,16 +361,6 @@ base::Optional<CorsErrorStatus> CheckRedirectLocation(
     return CorsErrorStatus(mojom::CorsError::kRedirectContainsCredentials);
 
   return base::nullopt;
-}
-
-base::Optional<mojom::CorsError> CheckPreflight(const int status_code) {
-  // CORS preflight with 3XX is considered network error in
-  // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch
-  // CORS Spec: http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0
-  // https://crbug.com/452394
-  if (IsOkStatus(status_code))
-    return base::nullopt;
-  return mojom::CorsError::kPreflightInvalidStatus;
 }
 
 // https://wicg.github.io/cors-rfc1918/#http-headerdef-access-control-allow-external

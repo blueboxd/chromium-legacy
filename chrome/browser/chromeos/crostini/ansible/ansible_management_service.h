@@ -52,7 +52,8 @@ class AnsibleManagementService : public KeyedService,
                                   int progress_percent) override;
 
   void OnApplyAnsiblePlaybookProgress(
-      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::Status status);
+      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::Status status,
+      const std::string& failure_details);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

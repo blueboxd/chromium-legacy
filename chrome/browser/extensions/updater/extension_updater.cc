@@ -415,7 +415,8 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
     const ExtensionId& id,
     Error error,
     const PingResult& ping,
-    const std::set<int>& request_ids) {
+    const std::set<int>& request_ids,
+    const FailureData& data) {
   DCHECK(alive_);
   InstallationReporter* installation_reporter =
       InstallationReporter::Get(profile_);
@@ -426,8 +427,7 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
           "Extensions.ExtensionUpdaterUpdateResults",
           ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR,
           ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
-      installation_reporter->ReportFailure(
-          id, InstallationReporter::FailureReason::CRX_FETCH_FAILED);
+      installation_reporter->ReportCrxFetchError(id, data);
       break;
     case Error::CRX_FETCH_URL_EMPTY:
       UMA_HISTOGRAM_ENUMERATION(

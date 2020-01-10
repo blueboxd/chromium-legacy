@@ -19,6 +19,13 @@ NativeTheme::ExtraParams::ExtraParams(const ExtraParams& other) {
   memcpy(this, &other, sizeof(*this));
 }
 
+float NativeTheme::GetBorderRadiusForPart(Part part,
+                                          float width,
+                                          float height,
+                                          float zoom) const {
+  return 0;
+}
+
 void NativeTheme::AddObserver(NativeThemeObserver* observer) {
   native_theme_observers_.AddObserver(observer);
 }

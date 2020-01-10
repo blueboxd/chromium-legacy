@@ -167,6 +167,9 @@ P2PSocketManager::P2PSocketManager(
 }
 
 P2PSocketManager::~P2PSocketManager() {
+  // Reset the P2PSocketManager receiver before dropping pending dns requests.
+  socket_manager_receiver_.reset();
+
   sockets_.clear();
   dns_requests_.clear();
 

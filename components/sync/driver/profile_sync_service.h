@@ -139,7 +139,8 @@ class ProfileSyncService : public SyncService,
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
   void AddTrustedVaultDecryptionKeysFromWeb(
       const std::string& gaia_id,
-      const std::vector<std::vector<uint8_t>>& keys) override;
+      const std::vector<std::vector<uint8_t>>& keys,
+      int last_key_version) override;
   UserDemographicsResult GetUserNoisedBirthYearAndGender(
       base::Time now) override;
   void AddObserver(SyncServiceObserver* observer) override;

@@ -252,14 +252,13 @@ void CorsURLLoader::OnReceiveResponse(mojom::URLResponseHeadPtr response_head) {
   DCHECK(forwarding_client_);
   DCHECK(!deferred_redirect_url_);
 
-  int response_status_code =
-      response_head->headers ? response_head->headers->response_code() : 0;
-
+  // See 10.7.4 of https://fetch.spec.whatwg.org/#http-network-or-cache-fetch
   const bool is_304_for_revalidation =
-      request_.is_revalidating && response_status_code == 304;
+      request_.is_revalidating && response_head->headers &&
+      response_head->headers->response_code() == 304;
   if (fetch_cors_flag_ && !is_304_for_revalidation) {
     const auto error_status = CheckAccess(
-        request_.url, response_status_code,
+        request_.url,
         GetHeaderString(*response_head,
                         header_names::kAccessControlAllowOrigin),
         GetHeaderString(*response_head,
@@ -296,7 +295,7 @@ void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
   // failure, then return a network error.
   if (fetch_cors_flag_ && IsCorsEnabledRequestMode(request_.mode)) {
     const auto error_status = CheckAccess(
-        request_.url, response_head->headers->response_code(),
+        request_.url,
         GetHeaderString(*response_head,
                         header_names::kAccessControlAllowOrigin),
         GetHeaderString(*response_head,

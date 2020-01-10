@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutButton INPUT",
-          "rect": [7, 7, 59, 24],
+          "rect": [6, 6, 61, 26],
           "reason": "subtree"
         },
         {
           "object": "LayoutButton INPUT",
-          "rect": [7, 7, 59, 24],
+          "rect": [6, 6, 61, 26],
           "reason": "chunk appeared"
         },
         {

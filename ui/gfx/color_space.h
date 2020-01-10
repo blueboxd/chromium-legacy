@@ -21,6 +21,11 @@
 // These forward declarations are used to give IPC code friend access to private
 // fields of gfx::ColorSpace for the purpose of serialization and
 // deserialization.
+namespace IPC {
+template <class P>
+struct ParamTraits;
+}  // namespace IPC
+
 namespace mojo {
 template <class T, class U>
 struct StructTraits;
@@ -92,7 +97,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
     IEC61966_2_1_HDR,
     // The same as LINEAR but is defined for all real values.
     LINEAR_HDR,
-    // A parametric transfer function defined by |custom_transfer_params_|.
+    // A parametric transfer function defined by |transfer_params_|.
     CUSTOM,
     LAST = CUSTOM,
   };
@@ -287,6 +292,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
  private:
   static void GetPrimaryMatrix(PrimaryID, skcms_Matrix3x3* to_XYZD50);
   static bool GetTransferFunction(TransferID, skcms_TransferFunction* fn);
+  static size_t TransferParamCount(TransferID);
 
   void SetCustomTransferFunction(const skcms_TransferFunction& fn);
   void SetCustomPrimaries(const skcms_Matrix3x3& to_XYZD50);
@@ -299,11 +305,14 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // Only used if primaries_ is PrimaryID::CUSTOM.
   float custom_primary_matrix_[9] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-  // Only used if transfer_ is TransferID::CUSTOM. This array consists of the A
-  // through G entries of the skcms_TransferFunction structure in alphabetical
-  // order.
-  float custom_transfer_params_[7] = {0, 0, 0, 0, 0, 0, 0};
+  // Parameters for the transfer function. The interpretation depends on
+  // |transfer_|. Only TransferParamCount() of these parameters are used, all
+  // others must be zero.
+  // - CUSTOM: Entries A through G of the skcms_TransferFunction structure in
+  //   alphabetical order.
+  float transfer_params_[7] = {0, 0, 0, 0, 0, 0, 0};
 
+  friend struct IPC::ParamTraits<gfx::ColorSpace>;
   friend struct mojo::StructTraits<gfx::mojom::ColorSpaceDataView,
                                    gfx::ColorSpace>;
 };

@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "NGPhysicalBoxFragment LayoutInline SPAN",
-          "rect": [7, 7, 102, 106],
+          "rect": [6, 6, 104, 108],
           "reason": "outline"
         },
         {
           "object": "NGPhysicalBoxFragment LayoutInline SPAN",
-          "rect": [7, 87, 102, 102],
+          "rect": [6, 86, 104, 104],
           "reason": "outline"
         },
         {

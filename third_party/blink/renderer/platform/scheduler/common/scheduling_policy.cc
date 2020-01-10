@@ -45,6 +45,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kRequestedBackForwardCacheBlockedSensors:
     case Feature::kRequestedBackgroundWorkPermission:
     case Feature::kWebLocks:
+    case Feature::kWakeLock:
       return true;
   }
 }

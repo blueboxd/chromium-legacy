@@ -15,6 +15,24 @@ ExtensionDownloaderDelegate::PingResult::PingResult() : did_ping(false) {
 ExtensionDownloaderDelegate::PingResult::~PingResult() {
 }
 
+ExtensionDownloaderDelegate::FailureData::FailureData()
+    : network_error_code(0), fetch_tries(0) {}
+ExtensionDownloaderDelegate::FailureData::FailureData(
+    const FailureData& other) = default;
+ExtensionDownloaderDelegate::FailureData::FailureData(const int net_error_code,
+                                                      const int fetch_attempts)
+    : network_error_code(net_error_code), fetch_tries(fetch_attempts) {}
+
+ExtensionDownloaderDelegate::FailureData::FailureData(
+    const int net_error_code,
+    const base::Optional<int> response,
+    const int fetch_attempts)
+    : network_error_code(net_error_code),
+      response_code(response),
+      fetch_tries(fetch_attempts) {}
+
+ExtensionDownloaderDelegate::FailureData::~FailureData() = default;
+
 ExtensionDownloaderDelegate::~ExtensionDownloaderDelegate() {
 }
 
@@ -30,7 +48,8 @@ void ExtensionDownloaderDelegate::OnExtensionDownloadFailed(
     const ExtensionId& id,
     Error error,
     const PingResult& ping_result,
-    const std::set<int>& request_id) {}
+    const std::set<int>& request_id,
+    const FailureData& data) {}
 
 void ExtensionDownloaderDelegate::OnExtensionDownloadRetryForTests() {}
 

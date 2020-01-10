@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -123,10 +124,7 @@ base::string16 CreateNotificationTitle(
 
 bool IsPersistentNotification(
     const message_center::Notification& notification) {
-  // TODO(crbug.com/1007418): Remove this and find a way to show alert style
-  // notifications in 10.15 and above. At least show them as banners until then
-  // as a temporary workaround.
-  if (base::mac::IsAtLeastOS10_15())
+  if (!NotificationPlatformBridgeMac::SupportsAlerts())
     return false;
 
   return notification.never_timeout() ||
@@ -174,6 +172,19 @@ base::string16 CreateNotificationContext(
 
   return etldplusone;
 }
+
+// Implements the version check to determine if alerts are supported. Do not
+// call this method directly as SysInfo::OperatingSystemVersionNumbers might be
+// an expensive call. Instead use NotificationPlatformBridgeMac::SupportsAlerts
+// which caches this value.
+bool SupportsAlertsImpl() {
+  int32_t major, minor, bugfix;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+  // Allow alerts on all versions except 10.15.0, 10.15.1 & 10.15.2.
+  // See crbug.com/1007418 for details.
+  return major != 10 || minor != 15 || bugfix > 2;
+}
+
 }  // namespace
 
 // A Cocoa class that represents the delegate of NSUserNotificationCenter and
@@ -460,6 +471,13 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
   }
 
   return true;
+}
+
+// static
+bool NotificationPlatformBridgeMac::SupportsAlerts() {
+  // Cache result as SysInfo::OperatingSystemVersionNumbers might be expensive.
+  static bool supports_alerts = SupportsAlertsImpl();
+  return supports_alerts;
 }
 
 // /////////////////////////////////////////////////////////////////////////////

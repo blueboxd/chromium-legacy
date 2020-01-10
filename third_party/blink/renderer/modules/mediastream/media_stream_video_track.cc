@@ -494,7 +494,8 @@ void MediaStreamVideoTrack::AddEncodedSink(WebMediaStreamSink* sink,
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   AddSinkInternal(&encoded_sinks_, sink);
   frame_deliverer_->AddEncodedCallback(sink, std::move(callback));
-  source_->UpdateNumEncodedSinks();
+  if (source_)
+    source_->UpdateNumEncodedSinks();
   UpdateSourceHasConsumers();
 }
 
@@ -514,7 +515,8 @@ void MediaStreamVideoTrack::RemoveEncodedSink(WebMediaStreamSink* sink) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   RemoveSinkInternal(&encoded_sinks_, sink);
   frame_deliverer_->RemoveEncodedCallback(sink);
-  source_->UpdateNumEncodedSinks();
+  if (source_)
+    source_->UpdateNumEncodedSinks();
   UpdateSourceHasConsumers();
 }
 
@@ -532,7 +534,8 @@ void MediaStreamVideoTrack::SetEnabled(bool enabled) {
   // need a new keyframe from the source as we may have dropped data making the
   // stream undecodable.
   bool maybe_await_key_frame = false;
-  if (enabled && source_->SupportsEncodedOutput() && !encoded_sinks_.empty()) {
+  if (enabled && source_ && source_->SupportsEncodedOutput() &&
+      !encoded_sinks_.empty()) {
     source_->RequestRefreshFrame();
     maybe_await_key_frame = true;
   }

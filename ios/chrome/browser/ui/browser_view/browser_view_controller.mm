@@ -129,6 +129,8 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/switch_to_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/text_zoom/text_zoom_coordinator.h"
+#import "ios/chrome/browser/ui/text_zoom/text_zoom_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator.h"
@@ -557,6 +559,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // Coordinator for find in page.
 @property(nonatomic, strong) FindBarCoordinator* findBarCoordinator;
+
+// Coordinator for text zoom.
+@property(nonatomic, strong) TextZoomCoordinator* textZoomCoordinator;
+
+@property(nonatomic, weak) ChromeCoordinator* nextToolbarCoordinator;
 
 @property(nonatomic, strong) BubblePresenter* bubblePresenter;
 
@@ -1011,7 +1018,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                                     .viewController.view
                                 headerBehaviour:Hideable]];
     }
-    if (self.toolbarAccessoryPresenter.backgroundView) {
+    if (self.toolbarAccessoryPresenter.isPresenting) {
       [results addObject:[HeaderDefinition
                              definitionWithView:self.toolbarAccessoryPresenter
                                                     .backgroundView
@@ -1269,7 +1276,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     auto* findHelper = FindTabHelper::FromWebState(webState);
     if (findHelper) {
       findHelper->StopFinding(^{
-        [self.findBarCoordinator hideFindBarWithAnimation:YES];
+        [self.findBarCoordinator stop];
       });
     }
   }
@@ -1667,7 +1674,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // updateToobar];
   if (ShouldShowCompactToolbar(previousTraitCollection) !=
       ShouldShowCompactToolbar()) {
-    [self.findBarCoordinator hideFindBarWithAnimation:NO];
+    [self.findBarCoordinator stop];
   }
 
   // Update the toolbar visibility.
@@ -2360,7 +2367,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   if (!self.inNewTabAnimation) {
     // Hide findbar.  |updateToolbar| will restore the findbar later.
-    [self.findBarCoordinator hideFindBarWithAnimation:NO];
+    [self.findBarCoordinator stop];
 
     // Make new content visible, resizing it first as the orientation may
     // have changed from the last time it was displayed.
@@ -2452,7 +2459,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   auto* findHelper = FindTabHelper::FromWebState(webState);
   if (findHelper && findHelper->IsFindUIActive()) {
-    [self.findBarCoordinator showFindBarAnimated:NO];
+    [self.findBarCoordinator start];
   }
 
   BOOL hideToolbar = NO;
@@ -4045,30 +4052,27 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!self.canShowFindBar)
     return;
 
-  if (!self.toolbarAccessoryPresenter) {
-    self.toolbarAccessoryPresenter =
-        [[ToolbarAccessoryPresenter alloc] initWithIsIncognito:_isOffTheRecord];
-    self.toolbarAccessoryPresenter.baseViewController = self;
+  if (self.toolbarAccessoryPresenter.isPresenting) {
+    self.nextToolbarCoordinator = self.findBarCoordinator;
+    [self hideTextZoom];
+    return;
   }
 
-  if (!self.findBarCoordinator) {
-    self.findBarCoordinator =
-        [[FindBarCoordinator alloc] initWithBaseViewController:self
-                                                       browser:self.browser];
-    self.findBarCoordinator.presenter = self.toolbarAccessoryPresenter;
-    self.findBarCoordinator.delegate = self;
-
-    [self.findBarCoordinator start];
-  }
-  [self.findBarCoordinator startFindInPage];
+  [self.findBarCoordinator start];
 }
 
 - (void)closeFindInPage {
   __weak BrowserViewController* weakSelf = self;
   if (self.currentWebState) {
-    FindTabHelper::FromWebState(self.currentWebState)->StopFinding(^{
-      [weakSelf.findBarCoordinator hideFindBarWithAnimation:YES];
-    });
+    FindTabHelper* findTabHelper =
+        FindTabHelper::FromWebState(self.currentWebState);
+    if (findTabHelper->IsFindUIActive()) {
+      findTabHelper->StopFinding(^{
+        [weakSelf.findBarCoordinator stop];
+      });
+    } else {
+      [self.findBarCoordinator stop];
+    }
   }
 }
 
@@ -4206,6 +4210,20 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
+- (void)showTextZoom {
+  if (self.toolbarAccessoryPresenter.isPresenting) {
+    self.nextToolbarCoordinator = self.textZoomCoordinator;
+    [self closeFindInPage];
+    return;
+  }
+
+  [self.textZoomCoordinator start];
+}
+
+- (void)hideTextZoom {
+  [self.textZoomCoordinator stop];
+}
+
 #pragma mark - BrowserCommands helpers
 
 // Reloads the original url of the last non-redirect item (including non-history
@@ -4261,7 +4279,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return;
 
   // Remove the find bar for now.
-  [self.findBarCoordinator hideFindBarWithAnimation:NO];
+  [self.findBarCoordinator stop];
 }
 
 - (void)webStateList:(WebStateList*)webStateList
@@ -4538,7 +4556,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   } else {
     // Hide UI accessories such as find bar and first visit overlays
     // for welcome page.
-    [self.findBarCoordinator hideFindBarWithAnimation:NO];
+    [self.findBarCoordinator stop];
     [self.infobarContainerCoordinator hideContainer:YES];
   }
 }
@@ -4717,6 +4735,59 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     (ChromeCoordinator*)toolbarAccessoryCoordinator {
   [self setFramesForHeaders:[self headerViews]
                    atOffset:[self currentHeaderOffset]];
+}
+
+- (void)toolbarAccessoryCoordinatorDidDismissUI:
+    (ChromeCoordinator*)coordinator {
+  if (self.nextToolbarCoordinator == self.findBarCoordinator) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [self showFindInPage];
+    });
+    self.nextToolbarCoordinator = nil;
+  } else if (self.nextToolbarCoordinator == self.textZoomCoordinator) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [self showTextZoom];
+    });
+    self.nextToolbarCoordinator = nil;
+  }
+}
+
+#pragma mark - Toolbar Accessory Methods
+
+- (ToolbarAccessoryPresenter*)toolbarAccessoryPresenter {
+  if (_toolbarAccessoryPresenter) {
+    return _toolbarAccessoryPresenter;
+  }
+
+  _toolbarAccessoryPresenter =
+      [[ToolbarAccessoryPresenter alloc] initWithIsIncognito:_isOffTheRecord];
+  _toolbarAccessoryPresenter.baseViewController = self;
+  return _toolbarAccessoryPresenter;
+}
+
+- (FindBarCoordinator*)findBarCoordinator {
+  if (_findBarCoordinator) {
+    return _findBarCoordinator;
+  }
+  _findBarCoordinator =
+      [[FindBarCoordinator alloc] initWithBaseViewController:self
+                                                     browser:self.browser];
+  _findBarCoordinator.presenter = self.toolbarAccessoryPresenter;
+  _findBarCoordinator.delegate = self;
+
+  return _findBarCoordinator;
+}
+
+- (TextZoomCoordinator*)textZoomCoordinator {
+  if (_textZoomCoordinator) {
+    return _textZoomCoordinator;
+  }
+  _textZoomCoordinator =
+      [[TextZoomCoordinator alloc] initWithBaseViewController:self
+                                                      browser:self.browser];
+  _textZoomCoordinator.presenter = self.toolbarAccessoryPresenter;
+  _textZoomCoordinator.delegate = self;
+  return _textZoomCoordinator;
 }
 
 #pragma mark - ManageAccountsDelegate

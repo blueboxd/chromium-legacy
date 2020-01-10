@@ -21,6 +21,7 @@
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ui_base_features.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/controls/textfield/textfield.h"
@@ -177,6 +178,10 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   if (local_state) {
     prefs->allow_cross_origin_auth_prompt =
         local_state->GetBoolean(prefs::kAllowCrossOriginAuthPrompt);
+  }
+
+  if (::features::IsFormControlsRefreshEnabled()) {
+    prefs->focus_ring_color = SkColorSetRGB(0x10, 0x10, 0x10);
   }
 }
 

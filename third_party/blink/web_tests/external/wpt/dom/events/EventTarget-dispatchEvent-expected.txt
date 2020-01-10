@@ -24,6 +24,6 @@ PASS If the event's initialized flag is not set, an InvalidStateError must be th
 PASS If the event's dispatch flag is set, an InvalidStateError must be thrown.
 PASS Exceptions from event listeners must not be propagated.
 PASS Event listeners added during dispatch should be called
-FAIL Capturing event listeners should be called before non-capturing ones assert_array_equals: property 1, expected 3 but got 2
+FAIL Capturing event listeners should be called before non-capturing ones assert_array_equals: expected property 1 to be 3 but got 2 (expected array [1, 3, 2] got [1, 2, 3])
 Harness: the test ran to completion.
 

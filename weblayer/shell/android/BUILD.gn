@@ -194,3 +194,15 @@ android_apk("weblayer_support_apk") {
 
   shared_libraries = [ "//weblayer:libweblayer" ]
 }
+group("weblayer_shell_wpt") {
+  testonly = true
+  data_deps = [
+    ":weblayer_shell_apk",
+    ":weblayer_support_apk",
+    "//build/android:test_runner_py",
+  ]
+  set_sources_assignment_filter([ "#*" ])
+  sources = read_file("//testing/scripts/run_android_wpt.pydeps", "list lines")
+  data = sources
+  data += [ "//third_party/blink/web_tests/external/" ]
+}

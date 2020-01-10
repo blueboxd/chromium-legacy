@@ -570,8 +570,7 @@ bool ThreadableLoader::RedirectReceived(
 
     if (cors_flag_) {
       if (const auto error_status = cors::CheckAccess(
-              original_url, redirect_response.HttpStatusCode(),
-              redirect_response.HttpHeaderFields(),
+              original_url, redirect_response.HttpHeaderFields(),
               new_request.GetCredentialsMode(), *GetSecurityOrigin())) {
         DispatchDidFail(ResourceError(original_url, *error_status));
         return false;
@@ -751,14 +750,6 @@ void ThreadableLoader::HandlePreflightResponse(
     return;
   }
 
-  base::Optional<network::mojom::CorsError> preflight_error =
-      cors::CheckPreflight(response.HttpStatusCode());
-  if (preflight_error) {
-    HandlePreflightFailure(response.CurrentRequestUrl(),
-                           network::CorsErrorStatus(*preflight_error));
-    return;
-  }
-
   base::Optional<network::CorsErrorStatus> error_status;
   if (actual_request_.IsExternalRequest()) {
     error_status = cors::CheckExternalPreflight(response.HttpHeaderFields());
@@ -860,8 +851,8 @@ void ThreadableLoader::ResponseReceived(Resource* resource,
 
   if (cors_flag_) {
     base::Optional<network::CorsErrorStatus> access_error = cors::CheckAccess(
-        response.CurrentRequestUrl(), response.HttpStatusCode(),
-        response.HttpHeaderFields(), credentials_mode_, *GetSecurityOrigin());
+        response.CurrentRequestUrl(), response.HttpHeaderFields(),
+        credentials_mode_, *GetSecurityOrigin());
     if (access_error) {
       ReportResponseReceived(resource->InspectorId(), response);
       DispatchDidFail(

@@ -156,6 +156,8 @@ class PeopleHandler : public SettingsPageUIHandler,
   void HandleShowSetupUI(const base::ListValue* args);
   void HandleAttemptUserExit(const base::ListValue* args);
   void HandleSyncPrefsDispatch(const base::ListValue* args);
+  void HandleGetIsHistoryRecordingEnabledAndCanBeUsed(
+      const base::ListValue* args);
 #if defined(OS_CHROMEOS)
   void HandleRequestPinLoginState(const base::ListValue* args);
 #endif
@@ -180,6 +182,10 @@ class PeopleHandler : public SettingsPageUIHandler,
 #if defined(OS_CHROMEOS)
   void OnPinLoginAvailable(bool is_available);
 #endif
+
+  void OnQueryHistoryRecordingCompletion(
+      const std::string& webui_callback_id,
+      const base::Optional<bool>& history_recording_enabled);
 
   void HandleGetStoredAccounts(const base::ListValue* args);
   void HandleStartSyncingWithEmail(const base::ListValue* args);
@@ -230,9 +236,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observer_{this};
 
-#if defined(OS_CHROMEOS)
   base::WeakPtrFactory<PeopleHandler> weak_factory_{this};
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(PeopleHandler);
 };

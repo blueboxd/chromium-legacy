@@ -151,9 +151,11 @@ class Location(object):
         # idl_parser produces paths based on the working directory, which may
         # not be the project root directory, e.g. "../../third_party/blink/...".
         # Canonicalize the paths heuristically.
-        index = filepath.find(self._blink_path_prefix)
-        if index >= 0:
-            filepath = filepath[index + 1:]
+        if filepath is not None:
+            index = filepath.find(self._blink_path_prefix)
+            if index >= 0:
+                filepath = filepath[index + 1:]
+
         self._filepath = filepath
         self._line_number = line_number
         self._position = position  # Position number in a file

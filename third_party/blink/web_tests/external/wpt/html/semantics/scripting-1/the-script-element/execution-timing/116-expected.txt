@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL scheduler: adding script to head of frameset document assert_array_equals: property 0, expected "document.body: <FRAMESET>" but got "document.body: <BODY>"
+FAIL scheduler: adding script to head of frameset document assert_array_equals: expected property 0 to be "document.body: <FRAMESET>" but got "document.body: <BODY>" (expected array ["document.body: <FRAMESET>"] got ["document.body: <BODY>"])
 Harness: the test ran to completion.
 

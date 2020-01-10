@@ -1140,7 +1140,7 @@ void BluetoothAdapterBlueZ::DiscoveringChanged(bool discovering) {
   // If the adapter stopped discovery due to a reason other than a request by
   // us, reset the count to 0.
   BLUETOOTH_LOG(EVENT) << "Discovering changed: " << discovering;
-  if (!discovering && NumDiscoverySessions() > 0) {
+  if (!discovering && NumScanningDiscoverySessions() > 0) {
     BLUETOOTH_LOG(DEBUG) << "Marking sessions as inactive.";
     MarkDiscoverySessionsAsInactive();
   }

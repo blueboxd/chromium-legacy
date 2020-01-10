@@ -33,12 +33,10 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   gfx::Size CalculatePreferredSize() const override;
 
   // plugin_vm::PluginVmImageDownload::Observer implementation.
-  void OnDlcDownloadStarted() override;
   void OnDlcDownloadProgressUpdated(double progress,
                                     base::TimeDelta elapsed_time) override;
   void OnDlcDownloadCompleted() override;
   void OnDlcDownloadCancelled() override;
-  void OnDownloadStarted() override;
   void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                  int64_t content_length,
                                  base::TimeDelta elapsed_time) override;
@@ -62,13 +60,12 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
 
  private:
   enum class State {
-    START_DLC_DOWNLOADING,  // PluginVm DLC downloading should be started.
-    DOWNLOADING_DLC,    // PluginVm DLC downloading and installing in progress.
-    START_DOWNLOADING,  // PluginVm image downloading should be started.
-    DOWNLOADING,        // PluginVm image downloading is in progress.
-    IMPORTING,          // Downloaded PluginVm image importing is in progress.
-    FINISHED,           // PluginVm environment setting has been finished.
-    ERROR,              // Something unexpected happened.
+    STARTING,         // View was just created, installation hasn't yet started
+    DOWNLOADING_DLC,  // PluginVm DLC downloading and installing in progress.
+    DOWNLOADING,      // PluginVm image downloading is in progress.
+    IMPORTING,        // Downloaded PluginVm image importing is in progress.
+    FINISHED,         // PluginVm environment setting has been finished.
+    ERROR,            // Something unexpected happened.
   };
 
   ~PluginVmInstallerView() override;
@@ -90,7 +87,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   void SetMessageLabel();
   void SetBigImage();
 
-  void StartPluginVmImageDownload();
+  void StartInstallation();
 
   Profile* profile_ = nullptr;
   plugin_vm::PluginVmInstaller* plugin_vm_installer_ = nullptr;
@@ -102,7 +99,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   views::ImageView* big_image_ = nullptr;
   base::TimeTicks setup_start_tick_;
 
-  State state_ = State::START_DOWNLOADING;
+  State state_ = State::STARTING;
   base::Optional<plugin_vm::PluginVmInstaller::FailureReason> reason_;
 
   base::OnceCallback<void(bool success)> finished_callback_for_testing_;

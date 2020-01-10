@@ -21,7 +21,6 @@ extern const base::Feature kDataReductionProxyPopulatePreviewsPageIDToPingback;
 extern const base::Feature kDataReductionProxyDisableProxyFailedWarmup;
 extern const base::Feature kDataReductionProxyServerExperiments;
 extern const base::Feature kDataReductionProxyAggressiveConfigFetch;
-extern const base::Feature kReportSaveDataSavings;
 
 }  // namespace features
 }  // namespace data_reduction_proxy

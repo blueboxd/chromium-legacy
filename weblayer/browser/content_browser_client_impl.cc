@@ -42,6 +42,7 @@
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/ssl_error_handler.h"
+#include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/browser/weblayer_browser_interface_binders.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
@@ -238,6 +239,16 @@ void ContentBrowserClientImpl::OnNetworkServiceCreated(
   network::mojom::CryptConfigPtr config = network::mojom::CryptConfig::New();
   content::GetNetworkService()->SetCryptConfig(std::move(config));
 #endif
+
+  // Create SystemNetworkContextManager if it has not been created yet. We need
+  // to set up global NetworkService state before anything else uses it and this
+  // is the first opportunity to initialize SystemNetworkContextManager with the
+  // NetworkService.
+  if (!SystemNetworkContextManager::HasInstance())
+    SystemNetworkContextManager::CreateInstance(GetUserAgent());
+
+  SystemNetworkContextManager::GetInstance()->OnNetworkServiceCreated(
+      network_service);
 }
 
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>

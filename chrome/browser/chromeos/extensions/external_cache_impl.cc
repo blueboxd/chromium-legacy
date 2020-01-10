@@ -195,9 +195,10 @@ void ExternalCacheImpl::Observe(int type,
 
 void ExternalCacheImpl::OnExtensionDownloadFailed(
     const std::string& id,
-    extensions::ExtensionDownloaderDelegate::Error error,
-    const extensions::ExtensionDownloaderDelegate::PingResult& ping_result,
-    const std::set<int>& request_ids) {
+    Error error,
+    const PingResult& ping_result,
+    const std::set<int>& request_ids,
+    const FailureData& data) {
   if (error == Error::NO_UPDATE_AVAILABLE) {
     if (!cached_extensions_->HasKey(id)) {
       LOG(ERROR) << "ExternalCacheImpl extension " << id

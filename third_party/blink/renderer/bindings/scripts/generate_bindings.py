@@ -49,6 +49,7 @@ def main():
     dispatch_table = {
         'dictionary': bind_gen.generate_dictionaries,
         'interface': bind_gen.generate_interfaces,
+        'union': bind_gen.generate_unions,
     }
 
     for task in tasks:

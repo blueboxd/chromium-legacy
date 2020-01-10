@@ -335,10 +335,19 @@ ONC_EXPORT extern const char kServerCAPEMs[];
 ONC_EXPORT extern const char kServerCARef[];
 ONC_EXPORT extern const char kServerCARefs[];
 ONC_EXPORT extern const char kSubjectMatch[];
+ONC_EXPORT extern const char kSubjectAlternativeNameMatch[];
 ONC_EXPORT extern const char kTLSVersionMax[];
 ONC_EXPORT extern const char kUseSystemCAs[];
 ONC_EXPORT extern const char kUseProactiveKeyCaching[];
 }  // namespace eap
+
+namespace eap_subject_alternative_name_match {
+ONC_EXPORT extern const char kType[];
+ONC_EXPORT extern const char kValue[];
+ONC_EXPORT extern const char kEMAIL[];
+ONC_EXPORT extern const char kDNS[];
+ONC_EXPORT extern const char kURI[];
+}  // namespace eap_subject_alternative_name_match
 
 namespace vpn {
 ONC_EXPORT extern const char kAutoConnect[];

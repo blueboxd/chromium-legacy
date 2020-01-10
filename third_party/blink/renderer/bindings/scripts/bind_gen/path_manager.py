@@ -76,10 +76,14 @@ class PathManager(object):
     def __init__(self, idl_definition):
         assert self._is_initialized, self._REQUIRE_INIT_MESSAGE
 
-        idl_path = PathManager.relpath_to_project_root(
-            posixpath.normpath(idl_definition.debug_info.location.filepath))
-        idl_basepath, _ = posixpath.splitext(idl_path)
-        self._idl_dir, self._idl_basename = posixpath.split(idl_basepath)
+        if isinstance(idl_definition, web_idl.Dictionary):
+            idl_path = PathManager.relpath_to_project_root(
+                posixpath.normpath(
+                    idl_definition.debug_info.location.filepath))
+            idl_basepath, _ = posixpath.splitext(idl_path)
+            self._idl_dir, _ = posixpath.split(idl_basepath)
+        else:
+            self._idl_dir = None
 
         components = sorted(idl_definition.components)  # "core" < "modules"
 
@@ -101,24 +105,8 @@ class PathManager(object):
         self._impl_dir = self._component_reldirs[self._impl_component]
         self._v8_bind_basename = name_style.file("v8",
                                                  idl_definition.identifier)
-
-        self._blink_dir = self._idl_dir
         self._blink_basename = name_style.file(
             blink_class_name(idl_definition))
-
-    @property
-    def idl_dir(self):
-        return self._idl_dir
-
-    def blink_path(self, filename=None, ext=None):
-        """
-        Returns a path to a Blink implementation file relative to the project
-        root directory, e.g. "third_party/blink/renderer/..."
-        """
-        return self._join(
-            dirpath=self._blink_dir,
-            filename=(filename or self._blink_basename),
-            ext=ext)
 
     @property
     def is_cross_components(self):
@@ -154,7 +142,11 @@ class PathManager(object):
 
     # TODO(crbug.com/1034398): Remove this API
     def dict_path(self, filename=None, ext=None):
-        return self.blink_path(filename, ext)
+        assert self._idl_dir is not None
+        return self._join(
+            dirpath=self._idl_dir,
+            filename=(filename or self._blink_basename),
+            ext=ext)
 
     @staticmethod
     def _join(dirpath, filename, ext=None):

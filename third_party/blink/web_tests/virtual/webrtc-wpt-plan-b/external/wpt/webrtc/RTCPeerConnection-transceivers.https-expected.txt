@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 FAIL addTrack: creates a transceiver for the sender assert_true: expected true got false
-FAIL addTrack: "transceiver == {sender,receiver}" assert_array_equals: pc.getTransceivers() equals [transceiver] lengths differ, expected 1 got 0
+FAIL addTrack: "transceiver == {sender,receiver}" assert_array_equals: pc.getTransceivers() equals [transceiver] lengths differ, expected array [null] length 1, got [] length 0
 FAIL addTrack: transceiver.sender is associated with the track promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'sender' of null"
 FAIL addTrack: transceiver.receiver has its own track promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'receiver' of null"
 FAIL addTrack: transceiver.receiver's track is muted promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'receiver' of null"
@@ -14,7 +14,7 @@ PASS setRemoteDescription(offer): ontrack fires with a track
 PASS setRemoteDescription(offer): ontrack's stream.id is the same as stream.id
 FAIL setRemoteDescription(offer): ontrack fires with a transceiver. assert_true: trackEvent.transceiver instanceof RTCRtpTransceiver expected true got false
 FAIL setRemoteDescription(offer): transceiver.mid is the same on both ends promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'mid' of null"
-FAIL setRemoteDescription(offer): "transceiver == {sender,receiver}" assert_array_equals: pc2.getTransceivers() equals [transceiver] lengths differ, expected 1 got 0
+FAIL setRemoteDescription(offer): "transceiver == {sender,receiver}" assert_array_equals: pc2.getTransceivers() equals [transceiver] lengths differ, expected array [null] length 1, got [] length 0
 FAIL setRemoteDescription(offer): transceiver.direction is recvonly promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'direction' of null"
 FAIL setRemoteDescription(offer): transceiver.currentDirection is null promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'currentDirection' of null"
 FAIL setRemoteDescription(offer): transceiver.stopped is false promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'stopped' of null"

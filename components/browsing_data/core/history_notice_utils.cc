@@ -57,16 +57,37 @@ void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
     const syncer::SyncService* sync_service,
     history::WebHistoryService* history_service,
     base::OnceCallback<void(bool)> callback) {
+  IsHistoryRecordingEnabledAndCanBeUsed(
+      sync_service, history_service,
+      base::BindOnce(
+          [](base::OnceCallback<void(bool)> callback,
+             const base::Optional<bool>& history_recording_enabled) {
+            std::move(callback).Run(history_recording_enabled.value_or(false));
+          },
+          std::move(callback)));
+}
+
+void IsHistoryRecordingEnabledAndCanBeUsed(
+    const syncer::SyncService* sync_service,
+    history::WebHistoryService* history_service,
+    base::OnceCallback<void(const base::Optional<bool>&)> callback) {
   if (!sync_service || !sync_service->IsSyncFeatureActive() ||
       !sync_service->GetActiveDataTypes().Has(
           syncer::HISTORY_DELETE_DIRECTIVES) ||
-      sync_service->GetUserSettings()->IsUsingSecondaryPassphrase() ||
       !history_service) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  if (sync_service->GetUserSettings()->IsUsingSecondaryPassphrase()) {
+    // The user has a custom passphrase. The data is encrypted and can not be
+    // used.
     std::move(callback).Run(false);
     return;
   }
+
   net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
-      net::DefinePartialNetworkTrafficAnnotation("history_notice_utils_notice",
+      net::DefinePartialNetworkTrafficAnnotation("history_recording_enabled",
                                                  "web_history_service", R"(
       semantics {
         description:
@@ -75,12 +96,12 @@ void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
           "use Google services' option enabled in the Activity controls of "
           "their Google account. This is done for users who sync their "
           "browsing history without a custom passphrase in order to show "
-          "information about history.google.com on the history page and in "
-          "the Clear Browsing Data dialog."
+          "information about history.google.com on the history page, "
+          "the settings sync setup page and in the Clear Browsing Data dialog."
         trigger:
           "This request is sent when user opens the history page or the "
-          "Clear Browsing Data dialog and history sync without a custom "
-          "passphrase is (re)enabled."
+          "settings sync setup page or the Clear Browsing Data dialog and "
+          "history sync without a custom passphrase is (re)enabled."
         data:
           "An OAuth2 token authenticating the user."
       }
@@ -114,6 +135,7 @@ void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
   // after processing both callbacks.
   MergeBooleanCallbacks* merger =
       new MergeBooleanCallbacks(2, std::move(callback));
+
   net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
       net::DefinePartialNetworkTrafficAnnotation("history_notice_utils_popup",
                                                  "web_history_service", R"(
@@ -138,8 +160,13 @@ void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
             }
           })");
   history_service->QueryWebAndAppActivity(
-      base::BindOnce(&MergeBooleanCallbacks::RunCallback,
-                     base::Unretained(merger)),
+      base::BindOnce(
+          [](base::OnceCallback<void(bool)> callback,
+             const base::Optional<bool>& history_recording_enabled) {
+            std::move(callback).Run(history_recording_enabled.value_or(false));
+          },
+          base::BindOnce(&MergeBooleanCallbacks::RunCallback,
+                         base::Unretained(merger))),
       partial_traffic_annotation);
   history_service->QueryOtherFormsOfBrowsingHistory(
       channel,

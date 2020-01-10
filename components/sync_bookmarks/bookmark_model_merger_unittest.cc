@@ -1146,6 +1146,69 @@ TEST(BookmarkModelMergerTest, ShouldReplaceBookmarkGUIDWithConflictingTypes) {
   EXPECT_FALSE(bookmark_bar_node->children()[1]->is_folder());
 }
 
+TEST(BookmarkModelMergerTest,
+     ShouldReplaceBookmarkGUIDWithConflictingTypesAndLocalChildren) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(switches::kMergeBookmarksUsingGUIDs);
+
+  const std::string kGuid = base::GenerateGUID();
+  const std::string kGuid2 = base::GenerateGUID();
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  // -------- The local model --------
+  // bookmark_bar
+  //  | - folder (kGuid)
+  //    | - bookmark (kGuid2)
+
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* folder = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0,
+      base::UTF8ToUTF16("Folder Title"), nullptr, kGuid);
+  const bookmarks::BookmarkNode* bookmark = bookmark_model->AddURL(
+      /*parent=*/folder, /*index=*/0, base::UTF8ToUTF16("Foo's title"),
+      GURL("http://foo.com"), nullptr, base::Time::Now(), kGuid2);
+  ASSERT_TRUE(folder);
+  ASSERT_TRUE(bookmark);
+  ASSERT_THAT(bookmark_bar_node->children(), ElementRawPointersAre(folder));
+  ASSERT_THAT(folder->children(), ElementRawPointersAre(bookmark));
+
+  // -------- The remote model --------
+  // bookmark_bar
+  //  | - bookmark (kGuid)
+
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/"Id", /*parent_id=*/kBookmarkBarId, "Bar's title",
+      "http://bar.com/",
+      /*is_folder=*/false,
+      /*unique_position=*/MakeRandomPosition(),
+      /*guid=*/kGuid));
+
+  Merge(std::move(updates), bookmark_model.get());
+
+  // -------- The merged model --------
+  // bookmark_bar
+  //  | - bookmark (kGuid)
+  //  | - folder ([new GUID])
+  //    | - bookmark (kGuid2)
+
+  // Conflicting node GUID should have been replaced.
+  ASSERT_EQ(bookmark_bar_node->children().size(), 2u);
+  EXPECT_EQ(bookmark_bar_node->children()[0]->guid(), kGuid);
+  EXPECT_NE(bookmark_bar_node->children()[1]->guid(), kGuid);
+  EXPECT_NE(bookmark_bar_node->children()[1]->guid(), kGuid2);
+  EXPECT_FALSE(bookmark_bar_node->children()[0]->is_folder());
+  EXPECT_TRUE(bookmark_bar_node->children()[1]->is_folder());
+  EXPECT_EQ(bookmark_bar_node->children()[1]->children().size(), 1u);
+  EXPECT_FALSE(bookmark_bar_node->children()[1]->children()[0]->is_folder());
+  EXPECT_EQ(bookmark_bar_node->children()[1]->children()[0]->guid(), kGuid2);
+}
+
 // Tests that the GUID-based matching algorithm handles well the case where a
 // local bookmark matches a remote bookmark that is orphan. In this case the
 // remote node should be ignored and the local bookmark included in the merged

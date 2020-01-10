@@ -74,7 +74,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/signin_interaction/public",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view/cells",
-    "//ios/chrome/browser/unified_consent",
     "//ios/chrome/common/colors",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",

@@ -13,6 +13,13 @@
       "ClientCertPKCS11Id": "1:123456abcdef",
       "SaveCredentials": true,
       "SubjectMatch": "my_subject",
+      "SubjectAlternativeNameMatch":[
+        {"Type": "EMAIL", "Value": "my_email_1"},
+        {"Type": "EMAIL", "Value": "my_email_2"},
+        {"Type": "EMAIL", "Value": "my;email"},
+        {"Type": "DNS", "Value": "my_dns"},
+        {"Type": "URI", "Value": "my_uri"}
+      ],
       "TLSVersionMax": "1.2",
       "UseSystemCAs": true
     }

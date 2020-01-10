@@ -113,7 +113,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   static const char kSecondAdapterPath[];
   static const char kSecondAdapterName[];
   static const char kSecondAdapterAddress[];
-
  private:
   // Property callback passed when we create Properties* structures.
   void OnPropertyChanged(const std::string& property_name);
@@ -121,6 +120,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   // Posts the delayed task represented by |callback| onto the current
   // message loop to be executed after |simulation_interval_ms_| milliseconds.
   void PostDelayedTask(base::OnceClosure callback);
+
+  // Utility function to update the discovering property.
+  void UpdateDiscoveringProperty(bool discovering);
 
   // List of observers interested in event notifications from us.
   base::ObserverList<Observer>::Unchecked observers_;
@@ -161,6 +163,10 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   std::map<uint32_t, BluetoothServiceRecordBlueZ> records_;
 
   uint32_t set_long_term_keys_call_count_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<FakeBluetoothAdapterClient> weak_ptr_factory_{this};
 };
 
 }  // namespace bluez

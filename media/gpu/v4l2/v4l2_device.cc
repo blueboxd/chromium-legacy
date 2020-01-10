@@ -29,7 +29,6 @@
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
-#include "media/gpu/v4l2/v4l2_decode_surface.h"
 #include "ui/gfx/native_pixmap_handle.h"
 
 #if defined(ARCH_CPU_ARMEL)
@@ -42,6 +41,13 @@
 #define REQUEST_DEVICE "/dev/media-dec0"
 
 namespace media {
+
+namespace {
+
+// Maximum number of requests that can be created.
+constexpr size_t kMaxNumRequests = 32;
+
+}  // namespace
 
 // Class used to store the state of a buffer that should persist between
 // reference creations. This includes:
@@ -312,6 +318,7 @@ class V4L2BufferRefBase {
  private:
   size_t BufferId() const { return v4l2_buffer_.index; }
 
+  friend class V4L2WritableBufferRef;
   // A weak pointer to the queue this buffer belongs to. Will remain valid as
   // long as the underlying V4L2 buffer is valid too.
   // This can only be accessed from the sequence protected by sequence_checker_.
@@ -464,9 +471,12 @@ enum v4l2_memory V4L2WritableBufferRef::Memory() const {
   return static_cast<enum v4l2_memory>(buffer_data_->v4l2_buffer_.memory);
 }
 
-bool V4L2WritableBufferRef::DoQueue() && {
+bool V4L2WritableBufferRef::DoQueue(V4L2RequestRef* request_ref) && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
+
+  if (request_ref && buffer_data_->queue_->SupportsRequests())
+      request_ref->SetQueueBuffer(&(buffer_data_->v4l2_buffer_));
 
   bool queued = buffer_data_->QueueBuffer();
 
@@ -476,7 +486,8 @@ bool V4L2WritableBufferRef::DoQueue() && {
   return queued;
 }
 
-bool V4L2WritableBufferRef::QueueMMap() && {
+bool V4L2WritableBufferRef::QueueMMap(
+    V4L2RequestRef* request_ref) && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
 
@@ -488,10 +499,12 @@ bool V4L2WritableBufferRef::QueueMMap() && {
     return false;
   }
 
-  return std::move(self).DoQueue();
+  return std::move(self).DoQueue(request_ref);
 }
 
-bool V4L2WritableBufferRef::QueueUserPtr(const std::vector<void*>& ptrs) && {
+bool V4L2WritableBufferRef::QueueUserPtr(
+    const std::vector<void*>& ptrs,
+    V4L2RequestRef* request_ref) && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
 
@@ -513,11 +526,12 @@ bool V4L2WritableBufferRef::QueueUserPtr(const std::vector<void*>& ptrs) && {
     self.buffer_data_->v4l2_buffer_.m.planes[i].m.userptr =
         reinterpret_cast<unsigned long>(ptrs[i]);
 
-  return std::move(self).DoQueue();
+  return std::move(self).DoQueue(request_ref);
 }
 
 bool V4L2WritableBufferRef::QueueDMABuf(
-    const std::vector<base::ScopedFD>& fds) && {
+    const std::vector<base::ScopedFD>& fds,
+    V4L2RequestRef* request_ref) && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
 
@@ -536,11 +550,12 @@ bool V4L2WritableBufferRef::QueueDMABuf(
   for (size_t i = 0; i < num_planes; i++)
     self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = fds[i].get();
 
-  return std::move(self).DoQueue();
+  return std::move(self).DoQueue(request_ref);
 }
 
 bool V4L2WritableBufferRef::QueueDMABuf(
-    const std::vector<gfx::NativePixmapPlane>& planes) && {
+    const std::vector<gfx::NativePixmapPlane>& planes,
+    V4L2RequestRef* request_ref) && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
 
@@ -559,7 +574,7 @@ bool V4L2WritableBufferRef::QueueDMABuf(
   for (size_t i = 0; i < num_planes; i++)
     self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = planes[i].fd.get();
 
-  return std::move(self).DoQueue();
+  return std::move(self).DoQueue(request_ref);
 }
 
 size_t V4L2WritableBufferRef::PlanesCount() const {
@@ -666,16 +681,18 @@ void V4L2WritableBufferRef::SetPlaneDataOffset(const size_t plane,
   buffer_data_->v4l2_buffer_.m.planes[plane].data_offset = data_offset;
 }
 
-void V4L2WritableBufferRef::PrepareQueueBuffer(
-    const V4L2DecodeSurface& surface) {
-  surface.PrepareQueueBuffer(&(buffer_data_->v4l2_buffer_));
-}
-
 size_t V4L2WritableBufferRef::BufferId() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
 
   return buffer_data_->v4l2_buffer_.index;
+}
+
+void V4L2WritableBufferRef::SetConfigStore(uint32_t config_store) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(buffer_data_);
+
+  buffer_data_->v4l2_buffer_.config_store = config_store;
 }
 
 V4L2ReadableBuffer::V4L2ReadableBuffer(const struct v4l2_buffer& v4l2_buffer,
@@ -797,6 +814,24 @@ V4L2Queue::V4L2Queue(scoped_refptr<V4L2Device> dev,
       destroy_cb_(std::move(destroy_cb)),
       weak_this_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Check if this queue support requests.
+  struct v4l2_requestbuffers reqbufs;
+  memset(&reqbufs, 0, sizeof(reqbufs));
+  reqbufs.count = 0;
+  reqbufs.type = type;
+  reqbufs.memory = V4L2_MEMORY_MMAP;
+  if (device_->Ioctl(VIDIOC_REQBUFS, &reqbufs) != 0) {
+    VPLOGF(1) << "Request support checks's VIDIOC_REQBUFS ioctl failed.";
+    return;
+  }
+
+  if (reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS) {
+    supports_requests_ = true;
+    VLOGF(1) << "Using request API.";
+  } else {
+    VLOGF(1) << "Using config store API.";
+  }
 }
 
 V4L2Queue::~V4L2Queue() {
@@ -1110,6 +1145,12 @@ size_t V4L2Queue::QueuedBuffersCount() const {
 #undef VDQLOGF
 #undef VPQLOGF
 #undef VQLOGF
+
+bool V4L2Queue::SupportsRequests() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  return supports_requests_;
+}
 
 // This class is used to expose V4L2Queue's constructor to this module. This is
 // to ensure that nobody else can create instances of it.
@@ -2059,30 +2100,32 @@ V4L2RequestRefBase::V4L2RequestRefBase(V4L2Request* request) {
 V4L2RequestRefBase::~V4L2RequestRefBase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (IsValid())
+  if (request_)
     request_->DecRefCounter();
 }
 
 bool V4L2RequestRef::SetCtrls(struct v4l2_ext_controls* ctrls) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(request_, nullptr);
 
   return request_->SetCtrls(ctrls);
 }
 
 bool V4L2RequestRef::SetQueueBuffer(struct v4l2_buffer* buffer) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(request_, nullptr);
 
   return request_->SetQueueBuffer(buffer);
 }
 
-V4L2SubmittedRequestRef V4L2RequestRef::Submit() && {
+base::Optional<V4L2SubmittedRequestRef> V4L2RequestRef::Submit() && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(request_, nullptr);
 
   V4L2RequestRef self(std::move(*this));
 
   if (!self.request_->Submit())
-    return V4L2SubmittedRequestRef(nullptr);
+    return base::nullopt;
 
   return V4L2SubmittedRequestRef(self.request_);
 }
@@ -2114,60 +2157,50 @@ base::Optional<base::ScopedFD> V4L2RequestsQueue::CreateRequestFD() {
   int ret = HANDLE_EINTR(
         ioctl(media_fd_.get(), MEDIA_IOC_REQUEST_ALLOC, &request_fd));
   if (ret < 0) {
-    VPLOGF(1) << "Failed to create request.";
+    VPLOGF(1) << "Failed to create request";
     return base::nullopt;
   }
 
   return base::ScopedFD(request_fd);
 }
 
-bool V4L2RequestsQueue::AllocateRequests(size_t nb_requests) {
+base::Optional<V4L2RequestRef> V4L2RequestsQueue::GetFreeRequest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Only positive number of requests are valid.
-  if (nb_requests < 1) {
-    VLOGF(1) << "Failed to create requests. Request number must be 1 or more";
-    return false;
-  }
-
-  // Returns if requests have been already allocated.
-  if (!free_requests_.empty()) {
-    VLOGF(1) << "Requests already allocated";
-    return false;
-  }
-
-  // Creates the number of requested requests.
-  for (size_t i = 0; i < nb_requests; i++) {
+  V4L2Request* request_ptr =
+      free_requests_.empty() ? nullptr : free_requests_.front();
+  if (request_ptr && request_ptr->IsCompleted()) {
+    // Previous request is already completed, just recycle it.
+    free_requests_.pop();
+  } else if (requests_.size() < kMaxNumRequests) {
+    // No request yet, or not completed, but we can allocate a new one.
     auto request_fd = CreateRequestFD();
-    if (request_fd.has_value()) {
-      // Not using std::make_unique because constructor is private.
-      std::unique_ptr<V4L2Request> request(
-          new V4L2Request(std::move(request_fd.value()), this));
-      free_requests_.push(request.get());
-      requests_.push_back(std::move(request));
-    } else {
-      requests_.clear();
-      VPLOGF(1) << "Failed to created number of requested requests.";
-      return false;
+    if (!request_fd.has_value()) {
+      VLOGF(1) << "Error while creating a new request FD!";
+      return base::nullopt;
     }
+    // Not using std::make_unique because constructor is private.
+    std::unique_ptr<V4L2Request> request(
+        new V4L2Request(std::move(*request_fd), this));
+    request_ptr = request.get();
+    requests_.push_back(std::move(request));
+    VLOGF(4) << "Allocated new request, total number: " << requests_.size();
+  } else {
+    // Request is not completed and we have reached the maximum number.
+    // Wait for it to complete.
+    VLOGF(1) << "Waiting for request completion. This probably means a "
+             << "request is blocking.";
+    if (!request_ptr->WaitForCompletion()) {
+      VLOG(1) << "Timeout while waiting for request to complete.";
+      return base::nullopt;
+    }
+    free_requests_.pop();
   }
 
-  return true;
-}
-
-V4L2RequestRef V4L2RequestsQueue::GetFreeRequest() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Gets a request in the front of the queue and checked is free to be used.
-  // If no request is available, still returns a request reference but the
-  // request will null which will make it marked invalid.
-  V4L2Request* request_ptr = nullptr;
-  if (!free_requests_.empty()) {
-    request_ptr = free_requests_.front();
-    if (request_ptr->WaitForCompletion() && request_ptr->Reset())
-      free_requests_.pop();
-    else
-      request_ptr = nullptr;
+  DCHECK(request_ptr);
+  if (!request_ptr->Reset()) {
+    VPLOGF(1) << "Failed to reset request";
+    return base::nullopt;
   }
 
   return V4L2RequestRef(request_ptr);

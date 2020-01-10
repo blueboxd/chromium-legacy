@@ -4598,8 +4598,14 @@ bool LayerTreeHostImpl::ShouldAnimateScroll(
           ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
 
 #if defined(OS_MACOSX)
-  // Mac does not smooth scroll wheel events (crbug.com/574283).
-  return type == InputHandler::SCROLLBAR ? !has_precise_scroll_deltas : false;
+  if (has_precise_scroll_deltas)
+    return false;
+
+  // Mac does not smooth scroll wheel events (crbug.com/574283). We allow tests
+  // to force it on.
+  return type == InputHandler::SCROLLBAR
+             ? true
+             : force_smooth_wheel_scrolling_for_testing_;
 #else
   return !has_precise_scroll_deltas;
 #endif

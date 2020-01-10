@@ -208,7 +208,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   void OnExtensionDownloadFailed(const ExtensionId& id,
                                  Error error,
                                  const PingResult& ping,
-                                 const std::set<int>& request_ids) override;
+                                 const std::set<int>& request_ids,
+                                 const FailureData& data) override;
   void OnExtensionDownloadFinished(const CRXFileInfo& file,
                                    bool file_ownership_passed,
                                    const GURL& download_url,

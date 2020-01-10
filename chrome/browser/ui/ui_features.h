@@ -54,6 +54,8 @@ extern const base::Feature kWebUITabStrip;
 
 extern const base::Feature kWebUITabStripDemoOptions;
 
+extern const base::Feature kSyncSetupFriendlySettings;
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kHiddenNetworkWarning;
 #endif  // defined(OS_CHROMEOS)

@@ -1017,9 +1017,8 @@ void CanvasRenderingContext2D::DrawFocusRing(const Path& path) {
 
   SkColor color = LayoutTheme::GetTheme().FocusRingColor().Rgb();
   const int kFocusRingWidth = 5;
-
   DrawPlatformFocusRing(path.GetSkPath(), DrawingCanvas(), color,
-                        kFocusRingWidth);
+                        /*width=*/kFocusRingWidth, /*radius=*/kFocusRingWidth);
 
   // We need to add focusRingWidth to dirtyRect.
   StrokeData stroke_data;

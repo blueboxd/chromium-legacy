@@ -35,7 +35,6 @@ namespace cors {
 // be removed.
 PLATFORM_EXPORT base::Optional<network::CorsErrorStatus> CheckAccess(
     const KURL&,
-    const int response_status_code,
     const HTTPHeaderMap&,
     network::mojom::CredentialsMode,
     const SecurityOrigin&);
@@ -52,9 +51,6 @@ PLATFORM_EXPORT base::Optional<network::CorsErrorStatus> CheckRedirectLocation(
     network::mojom::RequestMode,
     const SecurityOrigin*,
     CorsFlag);
-
-PLATFORM_EXPORT base::Optional<network::mojom::CorsError> CheckPreflight(
-    const int preflight_response_status_code);
 
 PLATFORM_EXPORT base::Optional<network::CorsErrorStatus> CheckExternalPreflight(
     const HTTPHeaderMap&);

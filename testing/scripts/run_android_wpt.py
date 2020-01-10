@@ -65,6 +65,10 @@ WEBLAYER_SUPPORT_PKG = 'org.chromium.weblayer.support'
 HOST_RESOLVER_ARGS = ['--host-resolver-rules=MAP nonexistent.*.test ~NOTFOUND,'
                       ' MAP *.test 127.0.0.1']
 
+# WebLayer has popup protection enabled by default that prevents
+# chromedriver from opening test windows.
+DISABLE_POPUP_ARGS = ['--disable-popup-blocking']
+
 # Browsers on debug and eng devices read command-line-flags from special files
 # during startup.
 FLAGS_FILE_MAP = {'android_weblayer': 'weblayer-command-line',
@@ -342,6 +346,8 @@ def main():
 
   flags_file = FLAGS_FILE_MAP[adapter.options.product]
   all_flags = HOST_RESOLVER_ARGS + adapter.pass_through_binary_args
+  if adapter.options.product == 'android_weblayer':
+    all_flags += DISABLE_POPUP_ARGS
   logger.info('Setting flags in ' + flags_file + ' to: ' + str(all_flags))
   flags = flag_changer.CustomCommandLineFlags(device, flags_file, all_flags)
 

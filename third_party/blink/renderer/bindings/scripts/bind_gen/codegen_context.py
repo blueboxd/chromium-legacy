@@ -4,6 +4,8 @@
 
 import copy
 
+import web_idl
+
 from . import name_style
 from .codegen_format import NonRenderable
 from .path_manager import PathManager
@@ -169,7 +171,7 @@ class CodeGenContext(object):
     @property
     def idl_location(self):
         idl_def = self.member_like or self.idl_definition
-        if idl_def:
+        if idl_def and not isinstance(idl_def, web_idl.Union):
             location = idl_def.debug_info.location
             text = PathManager.relpath_to_project_root(location.filepath)
             if location.line_number is not None:

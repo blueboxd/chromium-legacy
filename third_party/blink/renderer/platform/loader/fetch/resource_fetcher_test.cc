@@ -107,6 +107,21 @@ const FetchClientSettingsObjectSnapshot& CreateFetchClientSettingsObject(
       FetchClientSettingsObject::InsecureNavigationsSet());
 }
 
+class PartialResourceRequest {
+ public:
+  PartialResourceRequest() : PartialResourceRequest(ResourceRequest()) {}
+  PartialResourceRequest(const ResourceRequest& request)
+      : is_ad_resource_(request.IsAdResource()),
+        priority_(request.Priority()) {}
+
+  bool IsAdResource() const { return is_ad_resource_; }
+  ResourceLoadPriority Priority() const { return priority_; }
+
+ private:
+  bool is_ad_resource_;
+  ResourceLoadPriority priority_;
+};
+
 }  // namespace
 
 class ResourceFetcherTest : public testing::Test {
@@ -123,7 +138,7 @@ class ResourceFetcherTest : public testing::Test {
                          const ResourceResponse& redirect_response,
                          ResourceType,
                          const FetchInitiatorInfo&) override {
-      request_ = request;
+      request_ = PartialResourceRequest(request);
     }
     void DidChangePriority(uint64_t identifier,
                            ResourceLoadPriority,
@@ -149,12 +164,12 @@ class ResourceFetcherTest : public testing::Test {
                         int64_t encoded_data_length,
                         IsInternalRequest is_internal_request) override {}
 
-    const base::Optional<ResourceRequest>& GetLastRequest() const {
+    const base::Optional<PartialResourceRequest>& GetLastRequest() const {
       return request_;
     }
 
    private:
-    base::Optional<ResourceRequest> request_;
+    base::Optional<PartialResourceRequest> request_;
   };
 
  protected:
@@ -261,7 +276,8 @@ TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
   Resource* new_resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
 
   EXPECT_EQ(resource, new_resource);
-  base::Optional<ResourceRequest> new_request = observer->GetLastRequest();
+  base::Optional<PartialResourceRequest> new_request =
+      observer->GetLastRequest();
   EXPECT_TRUE(new_request.has_value());
   EXPECT_TRUE(new_request.value().IsAdResource());
 }
@@ -976,7 +992,8 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   EXPECT_TRUE(GetMemoryCache()->Contains(resource));
   static_cast<scheduler::FakeTaskRunner*>(fetcher->GetTaskRunner().get())
       ->RunUntilIdle();
-  base::Optional<ResourceRequest> swr_request = observer->GetLastRequest();
+  base::Optional<PartialResourceRequest> swr_request =
+      observer->GetLastRequest();
   ASSERT_TRUE(swr_request.has_value());
   EXPECT_EQ(ResourceLoadPriority::kVeryLow, swr_request->Priority());
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();

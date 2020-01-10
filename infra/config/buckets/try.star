@@ -401,8 +401,6 @@ blink_builder(
             '.+/[+]/third_party/blink/renderer/core/paint/.+',
             '.+/[+]/third_party/blink/renderer/core/svg/.+',
             '.+/[+]/third_party/blink/renderer/platform/graphics/.+',
-            '.+/[+]/third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint',
-            '.+/[+]/third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/.+',
         ],
     ),
 )
@@ -1215,8 +1213,8 @@ linux_builder(
             '.+/[+]/third_party/blink/renderer/core/paint/.+',
             '.+/[+]/third_party/blink/renderer/core/svg/.+',
             '.+/[+]/third_party/blink/renderer/platform/graphics/.+',
-            '.+/[+]/third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint',
-            '.+/[+]/third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/.+',
+            '.+/[+]/third_party/blink/web_tests/FlagExpectations/composite-after-paint',
+            '.+/[+]/third_party/blink/web_tests/flag-specific/composite-after-paint/.+',
         ],
     ),
 )
@@ -1231,7 +1229,8 @@ linux_builder(
             '.+/[+]/third_party/blink/renderer/core/svg/.+',
             '.+/[+]/third_party/blink/renderer/platform/fonts/shaping/.+',
             '.+/[+]/third_party/blink/renderer/platform/graphics/.+',
-            '.+/[+]/third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/.+',
+            '.+/[+]/third_party/blink/web_tests/FlagExpectations/disable-layout-ng',
+            '.+/[+]/third_party/blink/web_tests/flag-specific/disable-layout-ng/.+',
         ],
     ),
 )

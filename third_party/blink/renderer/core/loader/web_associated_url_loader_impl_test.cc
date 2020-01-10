@@ -387,36 +387,6 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlFailure) {
   EXPECT_FALSE(did_receive_response_);
 }
 
-// Test an unsuccessful cross-origin load using CORS.
-TEST_F(WebAssociatedURLLoaderTest,
-       CrossOriginWithAccessControlFailureBadStatusCode) {
-  // This is cross-origin since the frame was loaded from www.test.com.
-  KURL url =
-      ToKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
-  WebURLRequest request(url);
-  request.SetMode(network::mojom::RequestMode::kCors);
-  request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
-
-  expected_response_ = WebURLResponse();
-  expected_response_.SetMimeType("text/html");
-  expected_response_.SetHttpStatusCode(0);
-  expected_response_.AddHttpHeaderField("access-control-allow-origin", "*");
-  RegisterMockedURLLoadWithCustomResponse(url, expected_response_,
-                                          frame_file_path_);
-
-  WebAssociatedURLLoaderOptions options;
-  expected_loader_ = CreateAssociatedURLLoader(options);
-  EXPECT_TRUE(expected_loader_);
-  expected_loader_->LoadAsynchronously(request, this);
-
-  // Failure should not be reported synchronously.
-  EXPECT_FALSE(did_fail_);
-  // The loader needs to receive the response, before doing the CORS check.
-  ServeRequests();
-  EXPECT_TRUE(did_fail_);
-  EXPECT_FALSE(did_receive_response_);
-}
-
 // Test a same-origin URL redirect and load.
 TEST_F(WebAssociatedURLLoaderTest, RedirectSuccess) {
   KURL url = ToKURL("http://www.test.com/RedirectSuccess.html");

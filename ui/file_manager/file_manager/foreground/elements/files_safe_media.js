@@ -10,7 +10,7 @@ const FILES_APP_ORIGIN = 'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
  * files-safe-media-tap-outside events are fired depending on the position
  * of the tap.
  */
-var FilesSafeMedia = Polymer({
+const FilesSafeMedia = Polymer({
   is: 'files-safe-media',
 
   properties: {
@@ -107,6 +107,8 @@ var FilesSafeMedia = Polymer({
         if (this.webview_) {
           this.webview_.removeAttribute('loaded');
         }
+      } else if (event.data === 'content-decode-failed') {
+        this.fire('files-safe-media-load-error');
       }
     });
   }

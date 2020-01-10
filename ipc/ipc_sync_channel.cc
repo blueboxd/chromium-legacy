@@ -21,11 +21,16 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "ipc/ipc_channel_factory.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_sync_message.h"
 #include "mojo/public/cpp/bindings/sync_event_watcher.h"
+
+#if !defined(OS_NACL) && !BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
+#include "ipc/trace_ipc_message.h"
+#endif
 
 using base::WaitableEvent;
 
@@ -609,6 +614,8 @@ bool SyncChannel::Send(Message* message) {
   Logging::GetInstance()->GetMessageText(
       message->type(), &name, message, nullptr);
   TRACE_EVENT1("ipc", "SyncChannel::Send", "name", name);
+#elif !defined(OS_NACL)
+  TRACE_IPC_MESSAGE_SEND("ipc", "SyncChannel::Send", message);
 #else
   TRACE_EVENT2("ipc", "SyncChannel::Send",
                "class", IPC_MESSAGE_ID_CLASS(message->type()),

@@ -347,10 +347,6 @@ BookmarkModelMerger::FindGuidMatchesOrReassignLocal(
     bookmarks::BookmarkModel* bookmark_model) {
   DCHECK(bookmark_model);
 
-  if (!base::FeatureList::IsEnabled(switches::kMergeBookmarksUsingGUIDs)) {
-    return {};
-  }
-
   // Build a temporary lookup table for remote GUIDs.
   std::unordered_map<std::string, const RemoteTreeNode*>
       guid_to_remote_node_map;
@@ -362,6 +358,9 @@ BookmarkModelMerger::FindGuidMatchesOrReassignLocal(
   // Iterate through all local bookmarks to find matches by GUID.
   std::unordered_map<std::string, BookmarkModelMerger::GuidMatch>
       guid_to_match_map;
+  // Because ReplaceBookmarkNodeGUID() cannot be used while iterating the local
+  // bookmark model, a temporary list is constructed first to reassign later.
+  std::vector<const bookmarks::BookmarkNode*> nodes_to_replace_guid;
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
       bookmark_model->root_node());
   while (iterator.has_next()) {
@@ -388,16 +387,25 @@ BookmarkModelMerger::FindGuidMatchesOrReassignLocal(
 
     if (node->is_folder() != remote_entity.is_folder ||
         (node->is_url() &&
-         node->url() != remote_entity.specifics.bookmark().url())) {
+         node->url() != remote_entity.specifics.bookmark().url()) ||
+        !base::FeatureList::IsEnabled(switches::kMergeBookmarksUsingGUIDs)) {
       // If local node and its remote node match are conflicting in node type or
-      // URL, replace local GUID with a random GUID.
+      // URL, replace local GUID with a random GUID. The logic is applied
+      // unconditionally if kMergeBookmarksUsingGUIDs is disabled, since no
+      // GUID-based matches take place and GUIDs need to be reassigned to avoid
+      // collisions (they will be reassigned once again if there is a semantic
+      // match).
       // TODO(crbug.com/978430): Local GUIDs should also be reassigned if they
       // match a remote originator_client_item_id.
-      ReplaceBookmarkNodeGUID(node, base::GenerateGUID(), bookmark_model);
+      nodes_to_replace_guid.push_back(node);
       continue;
     }
 
     guid_to_match_map.emplace(node->guid(), GuidMatch{node, remote_node});
+  }
+
+  for (const bookmarks::BookmarkNode* node : nodes_to_replace_guid) {
+    ReplaceBookmarkNodeGUID(node, base::GenerateGUID(), bookmark_model);
   }
 
   return guid_to_match_map;
@@ -593,10 +601,12 @@ void BookmarkModelMerger::ProcessLocalCreation(
   const bookmarks::BookmarkNode* node = parent->children()[index].get();
   DCHECK(!FindMatchingRemoteNodeByGUID(node));
   DCHECK(base::IsValidGUID(node->guid()));
-  const std::string sync_id =
-      base::FeatureList::IsEnabled(switches::kMergeBookmarksUsingGUIDs)
-          ? node->guid()
-          : base::GenerateGUID();
+
+  // The node's GUID cannot run into collisions because
+  // FindGuidMatchesOrReassignLocal() takes care of reassigning local GUIDs if
+  // they won't actually be merged with the remote bookmark with the same GUID
+  // (e.g. incompatible types).
+  const std::string sync_id = node->guid();
   const int64_t server_version = syncer::kUncommittedVersion;
   const base::Time creation_time = base::Time::Now();
   const std::string& suffix = syncer::GenerateSyncableBookmarkHash(

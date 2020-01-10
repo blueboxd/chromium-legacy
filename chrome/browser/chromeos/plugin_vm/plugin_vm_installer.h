@@ -32,14 +32,6 @@ class PluginVmDriveImageDownloadService;
 // including downloading this image from url specified by the user policy,
 // and importing the downloaded image archive using concierge D-Bus services.
 //
-// Only one PluginVm image at a time is allowed to be processed.
-// Methods StartDownload() and StartImport() should be
-// called in this order. Image processing might be interrupted by
-// calling the corresponding cancel methods. If one of the methods mentioned is
-// called not in the correct order or before the previous state is finished then
-// associated fail method will be called by the installer and image processing
-// will be interrupted.
-//
 // This class uses one of two different objects for handling file downloads. If
 // the image is hosted on Drive, a PluginVmDriveImageDownloadService object is
 // used due to the need for using the Drive API. In all other cases, the
@@ -50,7 +42,7 @@ class PluginVmInstaller : public KeyedService,
   // FailureReasons values can be shown to the user. Do not reorder or renumber
   // these values without careful consideration.
   enum class FailureReason {
-    LOGIC_ERROR = 0,
+    // LOGIC_ERROR = 0,
     SIGNAL_NOT_CONNECTED = 1,
     OPERATION_IN_PROGRESS = 2,
     NOT_ALLOWED = 3,
@@ -67,19 +59,17 @@ class PluginVmInstaller : public KeyedService,
     INVALID_IMPORT_RESPONSE = 14,
     IMAGE_IMPORT_FAILED = 15,
     DLC_DOWNLOAD_FAILED = 16,
-    DLC_DOWNLOAD_NOT_STARTED = 17,
+    // DLC_DOWNLOAD_NOT_STARTED = 17,
   };
 
   // Observer class for the PluginVm image related events.
   class Observer {
    public:
     virtual ~Observer() = default;
-    virtual void OnDlcDownloadStarted() = 0;
     virtual void OnDlcDownloadProgressUpdated(double progress,
                                               base::TimeDelta elapsed_time) = 0;
     virtual void OnDlcDownloadCompleted() = 0;
     virtual void OnDlcDownloadCancelled() = 0;
-    virtual void OnDownloadStarted() = 0;
     virtual void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                            int64_t content_length,
                                            base::TimeDelta elapsed_time) = 0;
@@ -98,26 +88,10 @@ class PluginVmInstaller : public KeyedService,
   // Returns true if installer is processing a PluginVm image at the moment.
   bool IsProcessing();
 
-  // Initiates the PluginVM DLC download, should always be called before
-  // |StartDownload()|, which initiates the PluginVM image download.
-  void StartDlcDownload();
-  // DLC(s) cannot be currently cancelled when initiated, so this will cause
-  // progress and completed install callbacks to be blocked to the observer if
-  // there is an install taking place.
-  void CancelDlcDownload();
-
-  void StartDownload();
-  // Cancels the download of PluginVm image finishing the image processing.
-  // Downloaded PluginVm image archive is being deleted.
-  void CancelDownload();
-
-  // Proceed with importing (unzipping and registering) of the VM image.
-  // Should be called when download of PluginVm image is successfully completed.
-  // If called in other cases - importing is not started and
-  // OnImported(false /* success */) is called.
-  void StartImport();
-  // Makes a call to concierge to cancel the import.
-  void CancelImport();
+  // Start the installation. Progress updates will be sent to the observer.
+  void Start();
+  // Cancel the installation.
+  void Cancel();
 
   void SetObserver(Observer* observer);
   void RemoveObserver();
@@ -155,16 +129,30 @@ class PluginVmInstaller : public KeyedService,
   std::string GetCurrentDownloadGuidForTesting();
 
  private:
+  void StartDlcDownload();
+  void StartDownload();
+  void StartImport();
+
+  // DLC(s) cannot be currently cancelled when initiated, so this will cause
+  // progress and completed install callbacks to be blocked to the observer if
+  // there is an install taking place.
+  void CancelDlcDownload();
+  // Cancels the download of PluginVm image finishing the image processing.
+  // Downloaded PluginVm image archive is being deleted.
+  void CancelDownload();
+  // Makes a call to concierge to cancel the import.
+  void CancelImport();
+
   enum class State {
     NOT_STARTED,
     DOWNLOADING_DLC,
     DOWNLOAD_DLC_CANCELLED,
-    DOWNLOADED_DLC,
     DOWNLOADING,
     DOWNLOAD_CANCELLED,
-    DOWNLOADED,
     IMPORTING,
     IMPORT_CANCELLED,
+    // TODO(timloh): We treat these all the same as NOT_STARTED. Consider
+    // merging these together.
     CONFIGURED,
     DOWNLOAD_DLC_FAILED,
     DOWNLOAD_FAILED,

@@ -87,7 +87,10 @@ NSTimeInterval kAnimationDuration = 0.2;
     [self.baseViewController.view layoutIfNeeded];
   };
   auto completion = ^(BOOL finished) {
-    [self.delegate containedPresenterDidPresent:self];
+    if ([self.delegate
+            respondsToSelector:@selector(containedPresenterDidPresent:)]) {
+      [self.delegate containedPresenterDidPresent:self];
+    }
   };
 
   if (animated) {
@@ -116,7 +119,10 @@ NSTimeInterval kAnimationDuration = 0.2;
   };
   auto completion = ^(BOOL finished) {
     [self cleanUpAfterDismissal];
-    [self.delegate containedPresenterDidDismiss:self];
+    if ([self.delegate
+            respondsToSelector:@selector(containedPresenterDidDismiss:)]) {
+      [self.delegate containedPresenterDidDismiss:self];
+    }
   };
 
   if (animated) {

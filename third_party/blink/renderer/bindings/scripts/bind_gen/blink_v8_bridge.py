@@ -47,6 +47,7 @@ def blink_type_info(idl_type):
       member_t: The type of a member variable.  E.g. T => Member<T>
       ref_t: The type of a local variable that references to an already-existing
           value.  E.g. String => String&
+      const_ref_t: A const-qualified reference type.
       value_t: The type of a variable that behaves as a value.  E.g. String =>
           String
       is_nullable: True if the Blink implementation type can represent IDL null
@@ -59,6 +60,7 @@ def blink_type_info(idl_type):
                      typename,
                      member_fmt="{}",
                      ref_fmt="{}",
+                     const_ref_fmt="{}",
                      value_fmt="{}",
                      is_nullable=False):
             self.member_t = member_fmt.format(typename)
@@ -87,14 +89,19 @@ def blink_type_info(idl_type):
         }
         return TypeInfo(cxx_type[real_type.keyword_typename])
 
-    if real_type.is_string:
-        return TypeInfo("String", ref_fmt="{}&", is_nullable=True)
+    if real_type.is_string or real_type.is_enumeration:
+        return TypeInfo(
+            "String",
+            ref_fmt="{}&",
+            const_ref_fmt="const {}&",
+            is_nullable=True)
 
     if real_type.is_buffer_source_type:
         return TypeInfo(
             'DOM{}'.format(real_type.keyword_typename),
             member_fmt="Member<{}>",
             ref_fmt="{}*",
+            const_ref_fmt="const {}*",
             value_fmt="{}*",
             is_nullable=True)
 
@@ -102,7 +109,11 @@ def blink_type_info(idl_type):
         assert False, "Blink does not support/accept IDL symbol type."
 
     if real_type.is_any or real_type.is_object:
-        return TypeInfo("ScriptValue", ref_fmt="{}&", is_nullable=True)
+        return TypeInfo(
+            "ScriptValue",
+            ref_fmt="{}&",
+            const_ref_fmt="const {}&",
+            is_nullable=True)
 
     if real_type.is_void:
         assert False, "Blink does not support/accept IDL void type."
@@ -113,6 +124,7 @@ def blink_type_info(idl_type):
             blink_impl_type,
             member_fmt="Member<{}>",
             ref_fmt="{}*",
+            const_ref_fmt="const {}*",
             value_fmt="{}*",
             is_nullable=True)
 
@@ -120,7 +132,9 @@ def blink_type_info(idl_type):
             or real_type.is_variadic):
         element_type = blink_type_info(real_type.element_type)
         return TypeInfo(
-            "VectorOf<{}>".format(element_type.value_t), ref_fmt="{}&")
+            "VectorOf<{}>".format(element_type.value_t),
+            ref_fmt="{}&",
+            const_ref_fmt="const {}&")
 
     if real_type.is_record:
         key_type = blink_type_info(real_type.key_type)
@@ -128,25 +142,29 @@ def blink_type_info(idl_type):
         return TypeInfo(
             "VectorOfPairs<{}, {}>".format(key_type.value_t,
                                            value_type.value_t),
-            ref_fmt="{}&")
+            ref_fmt="{}&",
+            const_ref_fmt="const {}&")
 
     if real_type.is_promise:
-        return TypeInfo("ScriptPromise", ref_fmt="{}&")
+        return TypeInfo(
+            "ScriptPromise", ref_fmt="{}&", const_ref_fmt="const {}&")
 
     if real_type.is_union:
-        def_obj = real_type.union_definition_object
-        blink_impl_type = blink_class_name(def_obj)
+        blink_impl_type = blink_class_name(real_type.union_definition_object)
         return TypeInfo(
             blink_impl_type,
             ref_fmt="{}&",
-            is_nullable=def_obj.does_include_nullable_type)
+            const_ref_fmt="const {}&",
+            is_nullable=True)
 
     if real_type.is_nullable:
         inner_type = blink_type_info(real_type.inner_type)
         if inner_type.is_nullable:
             return inner_type
         return TypeInfo(
-            "base::Optional<{}>".format(inner_type.value_t), ref_fmt="{}&")
+            "base::Optional<{}>".format(inner_type.value_t),
+            ref_fmt="{}&",
+            const_ref_fmt="const {}&")
 
     assert False, "Unknown type: {}".format(idl_type.syntactic_form)
 
@@ -157,9 +175,12 @@ def native_value_tag(idl_type):
 
     real_type = idl_type.unwrap(typedef=True)
 
-    if (real_type.is_boolean or real_type.is_numeric or real_type.is_string
-            or real_type.is_any or real_type.is_object):
+    if (real_type.is_boolean or real_type.is_numeric or real_type.is_any
+            or real_type.is_object):
         return "IDL{}".format(real_type.type_name)
+
+    if real_type.unwrap(nullable=True).is_string:
+        return "IDL{}V2".format(real_type.type_name)
 
     if real_type.is_symbol:
         assert False, "Blink does not support/accept IDL symbol type."
@@ -187,6 +208,8 @@ def native_value_tag(idl_type):
 
     if real_type.is_nullable:
         return "IDLNullable<{}>".format(native_value_tag(real_type.inner_type))
+
+    assert False
 
 
 def make_default_value_expr(idl_type, default_value):
@@ -220,6 +243,9 @@ def make_default_value_expr(idl_type, default_value):
         elif type_info.value_t == "ScriptValue":
             initializer = None  # ScriptValue::IsEmpty() by default
             assignment_value = "ScriptValue()"
+        elif idl_type.unwrap().is_union:
+            initializer = None  # <union_type>::IsNull() by default
+            assignment_value = "{}()".format(type_info.value_t)
         else:
             assert not type_info.is_nullable
             initializer = None  # !base::Optional::has_value() by default

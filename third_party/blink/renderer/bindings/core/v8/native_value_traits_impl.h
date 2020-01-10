@@ -341,6 +341,140 @@ struct NativeValueTraits<IDLUSVStringBase<Mode>>
   static String NullValue() { return String(); }
 };
 
+// Strings for the new bindings generator
+
+namespace bindings {
+
+// ToBlinkString implements AtomicString- and String-specific conversions from
+// v8::String.  NativeValueTraitsStringAdapter helps select the best conversion.
+//
+// Example:
+//   void F(const AtomicString& s);
+//   void G(const String& s);
+//
+//   const NativeValueTraitsStringAdapter& x = ...;
+//   F(x);  // ToBlinkString<AtomicString> is used.
+//   G(x);  // ToBlinkString<String> is used.
+class NativeValueTraitsStringAdapter {
+ public:
+  NativeValueTraitsStringAdapter() = default;
+  NativeValueTraitsStringAdapter(const NativeValueTraitsStringAdapter&) =
+      default;
+  NativeValueTraitsStringAdapter(NativeValueTraitsStringAdapter&&) = default;
+  NativeValueTraitsStringAdapter(v8::Local<v8::String> value)
+      : v8_string_(value) {}
+  NativeValueTraitsStringAdapter(const String& value) : wtf_string_(value) {}
+  NativeValueTraitsStringAdapter(int32_t value)
+      : wtf_string_(ToBlinkString(value)) {}
+
+  NativeValueTraitsStringAdapter& operator=(
+      const NativeValueTraitsStringAdapter&) = default;
+  NativeValueTraitsStringAdapter& operator=(NativeValueTraitsStringAdapter&&) =
+      default;
+
+  operator String() const { return ToString<String>(); }
+  operator AtomicString() const { return ToString<AtomicString>(); }
+
+ private:
+  template <class StringType>
+  StringType ToString() const {
+    if (LIKELY(!v8_string_.IsEmpty()))
+      return ToBlinkString<StringType>(v8_string_, kExternalize);
+    return StringType(wtf_string_);
+  }
+
+  v8::Local<v8::String> v8_string_;
+  String wtf_string_;
+};
+
+}  // namespace bindings
+
+template <bindings::NativeValueTraitsStringConv mode>
+struct NativeValueTraits<IDLByteStringBaseV2<mode>>
+    : public NativeValueTraitsBase<IDLByteStringBaseV2<mode>> {
+  // http://heycam.github.io/webidl/#es-ByteString
+  static bindings::NativeValueTraitsStringAdapter NativeValue(
+      v8::Isolate* isolate,
+      v8::Local<v8::Value> value,
+      ExceptionState& exception_state) {
+    if (value->IsString() and value.As<v8::String>()->ContainsOnlyOneByte())
+      return bindings::NativeValueTraitsStringAdapter(value.As<v8::String>());
+    if (value->IsInt32()) {
+      return bindings::NativeValueTraitsStringAdapter(
+          value.As<v8::Int32>()->Value());
+    }
+
+    if (mode == bindings::NativeValueTraitsStringConv::kNullable) {
+      if (value->IsNullOrUndefined())
+        return bindings::NativeValueTraitsStringAdapter();
+    }
+
+    v8::TryCatch try_catch(isolate);
+    v8::Local<v8::String> v8_string;
+    if (!value->ToString(isolate->GetCurrentContext()).ToLocal(&v8_string)) {
+      exception_state.RethrowV8Exception(try_catch.Exception());
+      return bindings::NativeValueTraitsStringAdapter();
+    }
+    if (!v8_string->ContainsOnlyOneByte()) {
+      exception_state.ThrowTypeError(
+          "String contains non ISO-8859-1 code point.");
+      return bindings::NativeValueTraitsStringAdapter();
+    }
+    return bindings::NativeValueTraitsStringAdapter(v8_string);
+  }
+};
+
+template <bindings::NativeValueTraitsStringConv mode>
+struct NativeValueTraits<IDLStringBaseV2<mode>>
+    : public NativeValueTraitsBase<IDLStringBaseV2<mode>> {
+  // https://heycam.github.io/webidl/#es-DOMString
+  static bindings::NativeValueTraitsStringAdapter NativeValue(
+      v8::Isolate* isolate,
+      v8::Local<v8::Value> value,
+      ExceptionState& exception_state) {
+    if (value->IsString())
+      return bindings::NativeValueTraitsStringAdapter(value.As<v8::String>());
+    if (value->IsInt32()) {
+      return bindings::NativeValueTraitsStringAdapter(
+          value.As<v8::Int32>()->Value());
+    }
+
+    if (mode == bindings::NativeValueTraitsStringConv::kNullable) {
+      if (value->IsNullOrUndefined())
+        return bindings::NativeValueTraitsStringAdapter();
+    }
+    if (mode ==
+        bindings::NativeValueTraitsStringConv::kTreatNullAsEmptyString) {
+      if (value->IsNull())
+        return bindings::NativeValueTraitsStringAdapter(g_empty_string);
+    }
+
+    v8::TryCatch try_catch(isolate);
+    v8::Local<v8::String> v8_string;
+    if (!value->ToString(isolate->GetCurrentContext()).ToLocal(&v8_string)) {
+      exception_state.RethrowV8Exception(try_catch.Exception());
+      return bindings::NativeValueTraitsStringAdapter();
+    }
+    return bindings::NativeValueTraitsStringAdapter(v8_string);
+  }
+};
+
+template <bindings::NativeValueTraitsStringConv mode>
+struct NativeValueTraits<IDLUSVStringBaseV2<mode>>
+    : public NativeValueTraitsBase<IDLUSVStringBaseV2<mode>> {
+  // http://heycam.github.io/webidl/#es-USVString
+  static String NativeValue(v8::Isolate* isolate,
+                            v8::Local<v8::Value> value,
+                            ExceptionState& exception_state) {
+    String string = NativeValueTraits<IDLStringBaseV2<mode>>::NativeValue(
+        isolate, value, exception_state);
+    if (exception_state.HadException())
+      return String();
+
+    return ReplaceUnmatchedSurrogates(string);
+  }
+};
+
 // Floats and doubles
 template <>
 struct CORE_EXPORT NativeValueTraits<IDLDouble>

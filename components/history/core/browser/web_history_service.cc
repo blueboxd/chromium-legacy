@@ -629,17 +629,17 @@ void WebHistoryService::QueryWebAndAppActivityCompletionCallback(
   pending_web_and_app_activity_requests_.erase(request);
 
   std::unique_ptr<base::DictionaryValue> response_value;
-  bool web_and_app_activity_enabled = false;
-
   if (success) {
     response_value = ReadResponse(request);
-    if (response_value) {
-      response_value->GetBoolean(
-          "history_recording_enabled", &web_and_app_activity_enabled);
+    bool web_and_app_activity_enabled = false;
+    if (response_value &&
+        response_value->GetBoolean("history_recording_enabled",
+                                   &web_and_app_activity_enabled)) {
+      std::move(callback).Run(web_and_app_activity_enabled);
+      return;
     }
   }
-
-  std::move(callback).Run(web_and_app_activity_enabled);
+  std::move(callback).Run(base::nullopt);
 }
 
 void WebHistoryService::QueryOtherFormsOfBrowsingHistoryCompletionCallback(

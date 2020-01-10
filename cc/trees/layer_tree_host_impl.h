@@ -258,13 +258,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   LayerTreeHostImpl& operator=(const LayerTreeHostImpl&) = delete;
 
-  // TODO(bokan): Replace calls in unit tests to ScrollUpdate and make these
-  // private.
-  void ScrollAnimated(const gfx::Point& viewport_point,
-                      const gfx::Vector2dF& scroll_delta,
-                      base::TimeDelta delayed_by = base::TimeDelta());
-  InputHandlerScrollResult ScrollBy(ScrollState* scroll_state);
-
   // InputHandler implementation
   void BindToClient(InputHandlerClient* client) override;
   InputHandler::ScrollStatus ScrollBegin(
@@ -451,6 +444,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   // Resets all of the trees to an empty state.
   void ResetTreesForTesting();
+
+  void set_force_smooth_wheel_scrolling_for_testing(bool enabled) {
+    force_smooth_wheel_scrolling_for_testing_ = enabled;
+  }
 
   size_t SourceAnimationFrameNumberForTesting() const;
 
@@ -874,6 +871,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                                      const gfx::Vector2dF& delta,
                                      base::TimeDelta delayed_by,
                                      base::Optional<float> autoscroll_velocity);
+  void ScrollAnimated(const gfx::Point& viewport_point,
+                      const gfx::Vector2dF& scroll_delta,
+                      base::TimeDelta delayed_by = base::TimeDelta());
+  InputHandlerScrollResult ScrollBy(ScrollState* scroll_state);
 
   void CleanUpTileManagerResources();
   void CreateTileManagerResources();
@@ -1293,6 +1294,11 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // animation completion. ScrollEnd will get called once the animation is
   // over.
   bool deferred_scroll_end_ = false;
+
+  // TODO(bokan): Mac doesn't yet have smooth scrolling for wheel; however, to
+  // allow consistency in tests we use this bit to override that decision.
+  // https://crbug.com/574283.
+  bool force_smooth_wheel_scrolling_for_testing_ = false;
 
   // PaintWorklet painting is controlled from the LayerTreeHostImpl, dispatched
   // to the worklet thread via |paint_worklet_painter_|.

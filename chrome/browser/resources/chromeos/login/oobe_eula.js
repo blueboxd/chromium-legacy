@@ -172,6 +172,7 @@ Polymer({
    * @private
    */
   onUsageStatsHelpLinkClicked_: function(e) {
+    this.$['learn-more'].focus();
     chrome.send('eulaOnLearnMore');
     e.stopPropagation();
   },

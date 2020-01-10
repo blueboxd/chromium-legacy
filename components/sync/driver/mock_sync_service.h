@@ -57,9 +57,10 @@ class MockSyncService : public SyncService {
   MOCK_METHOD1(TriggerRefresh, void(const ModelTypeSet& types));
   MOCK_METHOD1(DataTypePreconditionChanged, void(syncer::ModelType type));
   MOCK_METHOD1(SetInvalidationsForSessionsEnabled, void(bool enabled));
-  MOCK_METHOD2(AddTrustedVaultDecryptionKeysFromWeb,
+  MOCK_METHOD3(AddTrustedVaultDecryptionKeysFromWeb,
                void(const std::string& gaia_id,
-                    const std::vector<std::vector<uint8_t>>& keys));
+                    const std::vector<std::vector<uint8_t>>& keys,
+                    int last_key_version));
   MOCK_METHOD1(GetUserNoisedBirthYearAndGender,
                UserDemographicsResult(base::Time now));
 

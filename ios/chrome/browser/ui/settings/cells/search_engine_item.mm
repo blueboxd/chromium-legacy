@@ -54,9 +54,11 @@
   if (self.enabled) {
     cell.contentView.alpha = 1.0;
     cell.userInteractionEnabled = YES;
+    cell.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
   } else {
     cell.contentView.alpha = 0.4;
     cell.userInteractionEnabled = NO;
+    cell.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }
 
   if (styler.cellTitleColor) {

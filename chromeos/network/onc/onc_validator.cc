@@ -157,6 +157,8 @@ std::unique_ptr<base::DictionaryValue> Validator::MapObject(
       valid = ValidateProxyLocation(repaired.get());
     } else if (&signature == &kEAPSignature) {
       valid = ValidateEAP(repaired.get());
+    } else if (&signature == &kEAPSubjectAlternativeNameMatchSignature) {
+      valid = ValidateSubjectAlternativeNameMatch(repaired.get());
     } else if (&signature == &kCertificateSignature) {
       valid = ValidateCertificate(repaired.get());
     } else if (&signature == &kScopeSignature) {
@@ -1072,6 +1074,26 @@ bool Validator::ValidateEAP(base::DictionaryValue* result) {
     return false;
 
   bool all_required_exist = RequireField(*result, ::onc::eap::kOuter);
+
+  return !error_on_missing_field_ || all_required_exist;
+}
+
+bool Validator::ValidateSubjectAlternativeNameMatch(
+    base::DictionaryValue* result) {
+  const std::vector<const char*> valid_types = {
+      ::onc::eap_subject_alternative_name_match::kEMAIL,
+      ::onc::eap_subject_alternative_name_match::kDNS,
+      ::onc::eap_subject_alternative_name_match::kURI};
+
+  if (FieldExistsAndHasNoValidValue(
+          *result, ::onc::eap_subject_alternative_name_match::kType,
+          valid_types)) {
+    return false;
+  }
+
+  bool all_required_exist =
+      RequireField(*result, ::onc::eap_subject_alternative_name_match::kType) &&
+      RequireField(*result, ::onc::eap_subject_alternative_name_match::kValue);
 
   return !error_on_missing_field_ || all_required_exist;
 }

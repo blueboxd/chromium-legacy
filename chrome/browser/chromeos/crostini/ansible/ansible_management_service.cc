@@ -179,13 +179,15 @@ void AnsibleManagementService::OnApplyAnsiblePlaybook(
 }
 
 void AnsibleManagementService::OnApplyAnsiblePlaybookProgress(
-    vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::Status status) {
+    vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::Status status,
+    const std::string& failure_details) {
   switch (status) {
     case vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::SUCCEEDED:
       OnConfigurationFinished(true);
       break;
     case vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::FAILED:
-      LOG(ERROR) << "Ansible playbook application has failed";
+      LOG(ERROR) << "Ansible playbook application has failed with reason:\n"
+                 << failure_details;
       OnConfigurationFinished(false);
       break;
     case vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::IN_PROGRESS:

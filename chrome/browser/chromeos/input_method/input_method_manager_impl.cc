@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <algorithm>  // std::find
+#include <cstdint>
 #include <memory>
 #include <set>
 #include <sstream>
@@ -1348,9 +1349,9 @@ void InputMethodManagerImpl::OverrideKeyboardKeyset(
   // the frontend will reload.
   auto ts_start = overridden_ref.find("&ts=");
   std::string ts_tag =
-      base::StringPrintf("&ts=%ld", base::Time::NowFromSystemTime()
-                                        .ToDeltaSinceWindowsEpoch()
-                                        .InMicroseconds());
+      base::StringPrintf("&ts=%" PRId64, base::Time::NowFromSystemTime()
+                                             .ToDeltaSinceWindowsEpoch()
+                                             .InMicroseconds());
   if (ts_start == std::string::npos) {
     overridden_ref += ts_tag;
   } else {

@@ -762,8 +762,7 @@ bool V4L2MjpegDecodeAccelerator::DequeueSourceChangeEvent() {
   if (device_->Ioctl(VIDIOC_DQEVENT, &ev) == 0) {
     if (ev.type == V4L2_EVENT_SOURCE_CHANGE) {
       VLOGF(2) << ": got source change event: " << ev.u.src_change.changes;
-      if (ev.u.src_change.changes &
-          (V4L2_EVENT_SRC_CH_RESOLUTION | V4L2_EVENT_SRC_CH_PIXELFORMAT)) {
+      if (ev.u.src_change.changes & V4L2_EVENT_SRC_CH_RESOLUTION) {
         return true;
       }
       VLOGF(1) << "unexpected source change event.";

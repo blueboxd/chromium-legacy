@@ -227,7 +227,7 @@ RTCIceCandidatePlatform* ConvertToRTCIceCandidatePlatform(
       UseCounter::Count(context,
                         WebFeature::kRTCIceCandidateDefaultSdpMLineIndex);
     }
-    return RTCIceCandidatePlatform::Create(
+    return MakeGarbageCollected<RTCIceCandidatePlatform>(
         ice_candidate_init->candidate(), ice_candidate_init->sdpMid(),
         sdp_m_line_index, ice_candidate_init->usernameFragment());
   }

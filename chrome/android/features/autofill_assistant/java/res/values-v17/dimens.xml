@@ -9,8 +9,8 @@
     <dimen name="autofill_assistant_poodle_size">32dp</dimen>
     <dimen name="autofill_assistant_profile_size">32dp</dimen>
     <dimen name="autofill_assistant_info_box_spacing">16dp</dimen>
-    <dimen name="autofill_assistant_poodle_view_size">32dp</dimen>
-    <dimen name="autofill_assistant_header_horizontal_spacing">24dp</dimen>
+    <dimen name="autofill_assistant_poodle_view_size">48dp</dimen>
+    <dimen name="autofill_assistant_header_horizontal_spacing">16dp</dimen>
     <dimen name="autofill_assistant_header_text_vertical_spacing">8dp</dimen>
     <!-- The padding should match autofill_assistant_minimum_touch_target_size -
          autofill_assistant_profile_size * 2. -->

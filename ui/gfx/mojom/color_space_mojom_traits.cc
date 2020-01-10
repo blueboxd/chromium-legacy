@@ -26,8 +26,8 @@ bool StructTraits<gfx::mojom::ColorSpaceDataView, gfx::ColorSpace>::Read(
       return false;
   }
   {
-    base::span<float> matrix(out->custom_transfer_params_);
-    if (!input.ReadCustomTransferParams(&matrix))
+    base::span<float> matrix(out->transfer_params_);
+    if (!input.ReadTransferParams(&matrix))
       return false;
   }
   return true;

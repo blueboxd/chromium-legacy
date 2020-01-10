@@ -62,6 +62,10 @@ void TrustedVaultClientAndroid::MarkKeysAsStaleCompleted(JNIEnv* env,
   std::move(cb).Run(!!result);
 }
 
+void TrustedVaultClientAndroid::NotifyKeysChanged(JNIEnv* env) {
+  observer_list_.Notify();
+}
+
 std::unique_ptr<TrustedVaultClientAndroid::Subscription>
 TrustedVaultClientAndroid::AddKeysChangedObserver(
     const base::RepeatingClosure& cb) {
@@ -93,7 +97,8 @@ void TrustedVaultClientAndroid::FetchKeys(
 
 void TrustedVaultClientAndroid::StoreKeys(
     const std::string& gaia_id,
-    const std::vector<std::vector<uint8_t>>& keys) {
+    const std::vector<std::vector<uint8_t>>& keys,
+    int last_key_version) {
   // Not supported on Android, where keys are fetched outside the browser.
   NOTREACHED();
 }

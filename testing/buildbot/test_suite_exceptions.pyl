@@ -310,11 +310,6 @@
       'android-code-coverage-native', # https://crbug.com/1018780
     ],
     'modifications': {
-      'Android N5X Swarm': {
-        # TODO(crbug.com/731759): Enable this once we're confident that it
-        # passes.
-        'experiment_percentage': 100,
-      },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'shards': 20,

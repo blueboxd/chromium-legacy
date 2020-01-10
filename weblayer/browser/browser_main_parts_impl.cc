@@ -22,6 +22,7 @@
 #include "services/service_manager/embedder/result_codes.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/webui/web_ui_controller_factory.h"
 #include "weblayer/public/main.h"
 
@@ -87,6 +88,8 @@ void BrowserMainPartsImpl::PreMainMessageLoopStart() {
 }
 
 int BrowserMainPartsImpl::PreEarlyInitialization() {
+  browser_process_ = std::make_unique<BrowserProcess>();
+
 #if defined(USE_X11)
   ui::SetDefaultX11ErrorHandlers();
 #endif

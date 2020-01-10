@@ -43,6 +43,7 @@ bind_gen/interface.py
 bind_gen/mako_renderer.py
 bind_gen/name_style.py
 bind_gen/path_manager.py
+bind_gen/union.py
 generate_bindings.py
 web_idl/__init__.py
 web_idl/argument.py

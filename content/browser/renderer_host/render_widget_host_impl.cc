@@ -442,12 +442,6 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
     view_ = view->GetWeakPtr();
     if (!create_frame_sink_callback_.is_null())
       std::move(create_frame_sink_callback_).Run(view_->GetFrameSinkId());
-
-    // Views start out not needing begin frames, so only update its state if the
-    // value has changed. |needs_begin_frames_| should only ever be true for
-    // Android WebView since begin frames are handled by viz everywhere else.
-    if (needs_begin_frames_)
-      view_->SetNeedsBeginFrames(needs_begin_frames_);
   } else {
     view_.reset();
   }
@@ -2611,10 +2605,6 @@ void RenderWidgetHostImpl::DidStartScrollingViewport() {
   if (view_)
     view_->set_is_currently_scrolling_viewport(true);
 }
-void RenderWidgetHostImpl::SetNeedsBeginFrameForFlingProgress() {
-  browser_fling_needs_begin_frame_ = true;
-  SetNeedsBeginFrame(true);
-}
 
 void RenderWidgetHostImpl::AddPendingUserActivation(
     const WebInputEvent& event) {
@@ -2921,15 +2911,6 @@ bool RenderWidgetHostImpl::HasGestureStopped() {
   return true;
 }
 
-void RenderWidgetHostImpl::SetNeedsBeginFrame(bool needs_begin_frames) {
-  if (needs_begin_frames_ == needs_begin_frames)
-    return;
-
-  needs_begin_frames_ = needs_begin_frames || browser_fling_needs_begin_frame_;
-  if (view_)
-    view_->SetNeedsBeginFrames(needs_begin_frames_);
-}
-
 void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {
   // In this case the RenderWidgetHostImpl is still here because it's the top
   // level RenderWidgetHostImpl, but the renderer's RenderWidget no longer
@@ -3008,7 +2989,6 @@ void RenderWidgetHostImpl::SetWidget(
 }
 
 void RenderWidgetHostImpl::ProgressFlingIfNeeded(TimeTicks current_time) {
-  browser_fling_needs_begin_frame_ = false;
   fling_scheduler_->ProgressFlingOnBeginFrameIfneeded(current_time);
 }
 

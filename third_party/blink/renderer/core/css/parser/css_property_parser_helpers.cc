@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -1601,7 +1602,7 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
     return nullptr;
   }
 
-  cssvalue::CSSGradientValue* result = cssvalue::CSSConicGradientValue::Create(
+  auto* result = MakeGarbageCollected<cssvalue::CSSConicGradientValue>(
       center_x, center_y, from_angle, repeating);
   return ConsumeGradientColorStops(args, context, result,
                                    ConsumeGradientAngleOrPercent)

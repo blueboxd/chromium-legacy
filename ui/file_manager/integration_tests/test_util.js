@@ -608,6 +608,17 @@ const ENTRIES = {
     typeText: 'JPEG image'
   }),
 
+  brokenJpeg: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'broken.jpg',
+    targetPath: 'broken.jpg',
+    mimeType: 'image/jpeg',
+    lastModifiedTime: 'Jan 18, 2038, 1:02 AM',
+    nameText: 'broken.jpg',
+    sizeText: '1 byte',
+    typeText: 'JPEG image'
+  }),
+
   exifImage: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'exif.jpg',

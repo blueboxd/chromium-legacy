@@ -17,6 +17,10 @@ class BookmarkNode;
 class ManagedBookmarkService;
 }  // namespace bookmarks
 
+namespace base {
+class ScopedTempDir;
+}  // namespace base
+
 class TestChromeBrowserState;
 
 // Provides common bookmark testing infrastructure.
@@ -34,6 +38,11 @@ class BookmarkIOSUnitTest : public PlatformTest {
       const bookmarks::BookmarkNode* parent,
       NSString* title);
   void ChangeTitle(NSString* title, const bookmarks::BookmarkNode* node);
+
+  // A state directory that outlives |task_environment_| is needed because
+  // CreateHistoryService/CreateBookmarkModel use the directory to host
+  // databases. See https://crbug.com/546640 for more details.
+  std::unique_ptr<base::ScopedTempDir> state_dir_;
 
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;

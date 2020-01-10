@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
@@ -118,6 +119,9 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "showParentalControls",
       chromeos::settings::ShouldShowParentalControls(profile));
+  html_source->AddBoolean(
+      "syncSetupFriendlySettings",
+      base::FeatureList::IsEnabled(::features::kSyncSetupFriendlySettings));
 
   AddSettingsPageUIHandler(
       std::make_unique<::settings::AccessibilityMainHandler>());

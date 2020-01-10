@@ -28,7 +28,7 @@ public class SignOutDialogFragment extends DialogFragment implements
     /**
      * The extra key used to specify the GAIA service that triggered this dialog.
      */
-    public static final String SHOW_GAIA_SERVICE_TYPE_EXTRA = "ShowGAIAServiceType";
+    private static final String SHOW_GAIA_SERVICE_TYPE_EXTRA = "ShowGAIAServiceType";
 
     /**
      * Receives updates when the user clicks "Sign out" or dismisses the dialog.
@@ -57,6 +57,14 @@ public class SignOutDialogFragment extends DialogFragment implements
      * The GAIA service that's prompted this dialog.
      */
     private @GAIAServiceType int mGaiaServiceType = GAIAServiceType.GAIA_SERVICE_TYPE_NONE;
+
+    public static SignOutDialogFragment create(@GAIAServiceType int gaiaServiceType) {
+        SignOutDialogFragment signOutFragment = new SignOutDialogFragment();
+        Bundle args = new Bundle();
+        args.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, gaiaServiceType);
+        signOutFragment.setArguments(args);
+        return signOutFragment;
+    }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {

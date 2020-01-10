@@ -19,7 +19,8 @@ window.onload = function() {
   } else {
     chrome.setSyncEncryptionKeys(() => { document.title = "OK"; },
                                  location.search.substring(1),
-                                 [asciiToArrayBuffer(location.hash.substring(1))]);
+                                 [asciiToArrayBuffer(location.hash.substring(1))],
+                                 /*last_key_version=*/7);
   }
 }
 </script>

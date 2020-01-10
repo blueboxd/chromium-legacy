@@ -162,7 +162,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     if (network::cors::ShouldCheckCors(request.url, request.request_initiator,
                                        request.mode)) {
       const auto error_status = network::cors::CheckAccess(
-          request.url, response_->headers->response_code(),
+          request.url,
           GetHeaderString(
               *response_,
               network::cors::header_names::kAccessControlAllowOrigin),

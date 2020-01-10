@@ -55,7 +55,11 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             "--no-capture-stdio",
             "--no-manifest-download",
             "--no-pause-after-test",
-            "--no-fail-on-unexpected",
+            # Setting --no-fail-on-unexpected makes the return code of wpt 0
+            # even if there were test failures. The CQ doesn't like this since
+            # it uses the exit code to determine which shards to retry (ie:
+            # those that had non-zero exit codes).
+            #"--no-fail-on-unexpected",
             "--metadata",
             WPT_METADATA_DIR,
             # By specifying metadata above, WPT will try to find manifest in the

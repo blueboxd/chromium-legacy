@@ -161,3 +161,4 @@ crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/perform_actions/key_spec
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/new_session/default_values.py>>test_desired [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_screenshot/user_prompts.py>>test_dismiss_and_notify[capabilities0-alert] [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/user_prompts.py>>test_ignore[capabilities0-alert] [ Failure ]
+crbug.com/1023255 [ Linux ] external/wpt/webdriver/tests/take_element_screenshot/iframe.py>>test_frame_element [ Failure Pass ]

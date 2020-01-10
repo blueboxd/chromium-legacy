@@ -24,36 +24,48 @@
 @interface FindBarCoordinator () <FindInPageResponseDelegate,
                                   ContainedPresenterDelegate>
 
+// Command handler for |BrowserCommand|s.
+@property(nonatomic, readonly) id<BrowserCommands> browserCommandHandler;
+
 @end
 
 @implementation FindBarCoordinator
 
 - (void)start {
-  self.findBarController = [[FindBarControllerIOS alloc]
-      initWithIncognito:self.browserState->IsOffTheRecord()];
+  if (!self.findBarController) {
+    self.findBarController = [[FindBarControllerIOS alloc]
+        initWithIncognito:self.browserState->IsOffTheRecord()];
 
+    self.findBarController.commandHandler = self.browserCommandHandler;
+  }
   self.presenter.delegate = self;
 
-  self.findBarController.dispatcher =
-      static_cast<id<BrowserCommands>>(self.browser->GetCommandDispatcher());
-}
-
-- (void)startFindInPage {
   DCHECK(self.currentWebState);
   FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
-  DCHECK(!helper->IsFindUIActive());
-  helper->SetResponseDelegate(self);
-  helper->SetFindUIActive(true);
-
-  [self showFindBarAnimated:YES shouldFocus:YES];
+  // If the FindUI is already active, just reshow it.
+  if (helper->IsFindUIActive()) {
+    [self showAnimated:NO shouldFocus:[self.findBarController isFocused]];
+  } else {
+    DCHECK(!helper->IsFindUIActive());
+    helper->SetResponseDelegate(self);
+    helper->SetFindUIActive(true);
+    [self showAnimated:YES shouldFocus:YES];
+  }
 }
 
-- (void)showFindBarAnimated:(BOOL)animated {
-  [self showFindBarAnimated:animated
-                shouldFocus:[self.findBarController isFocused]];
+- (void)stop {
+  if (!self.presenter.isPresenting) {
+    return;
+  }
+  FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
+  // If the FindUI is still active, the dismiss should be unanimated, because
+  // the UI will be brought back later.
+  BOOL animated = helper && !helper->IsFindUIActive();
+  [self.findBarController findBarViewWillHide];
+  [self.presenter dismissAnimated:animated];
 }
 
-- (void)showFindBarAnimated:(BOOL)animated shouldFocus:(BOOL)shouldFocus {
+- (void)showAnimated:(BOOL)animated shouldFocus:(BOOL)shouldFocus {
   self.presenter.presentedViewController =
       self.findBarController.findBarViewController;
 
@@ -77,11 +89,6 @@
                       focusTextfield:shouldFocus];
 }
 
-- (void)hideFindBarWithAnimation:(BOOL)animated {
-  [self.findBarController findBarViewWillHide];
-  [self.presenter dismissAnimated:animated];
-}
-
 - (void)defocusFindBar {
   FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
   if (helper && helper->IsFindUIActive()) {
@@ -98,7 +105,7 @@
 }
 
 - (void)findDidStop {
-  [self hideFindBarWithAnimation:YES];
+  [self.browserCommandHandler closeFindInPage];
 }
 
 #pragma mark - ContainedPresenterDelegate
@@ -109,6 +116,7 @@
 
 - (void)containedPresenterDidDismiss:(id<ContainedPresenter>)presenter {
   [self.findBarController findBarViewDidHide];
+  [self.delegate toolbarAccessoryCoordinatorDidDismissUI:self];
 }
 
 #pragma mark - Private
@@ -117,6 +125,11 @@
   return self.browser->GetWebStateList()
              ? self.browser->GetWebStateList()->GetActiveWebState()
              : nullptr;
+}
+
+- (id<BrowserCommands>)browserCommandHandler {
+  return HandlerForProtocol(self.browser->GetCommandDispatcher(),
+                            BrowserCommands);
 }
 
 @end

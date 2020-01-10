@@ -751,6 +751,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   int NumDiscoverySessions() const;
 
+  // Number of DiscoverySessions with the status of SCANNING.
+  int NumScanningDiscoverySessions() const;
+
   // UI thread task runner.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 

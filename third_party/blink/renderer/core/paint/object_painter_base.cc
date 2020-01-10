@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/object_painter_base.h"
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/paint/box_border_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
@@ -12,6 +13,8 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace blink {
 
@@ -486,6 +489,46 @@ void DrawSolidBoxSide(GraphicsContext& graphics_context,
   FillQuad(graphics_context, quad, color, antialias);
 }
 
+float GetFocusRingBorderRadius(const ComputedStyle& style) {
+  // Default style is border-radius equal to outline width.
+  float border_radius = style.GetOutlineStrokeWidthForFocusRing();
+
+  if (::features::IsFormControlsRefreshEnabled() && !style.HasAuthorBorder() &&
+      style.HasEffectiveAppearance()) {
+    // For the elements that have not been styled and that have an appearance,
+    // the focus ring should use the same border radius as the one used for
+    // drawing the element.
+    base::Optional<ui::NativeTheme::Part> part;
+    switch (style.EffectiveAppearance()) {
+      case kCheckboxPart:
+        part = ui::NativeTheme::kCheckbox;
+        break;
+      case kRadioPart:
+        part = ui::NativeTheme::kRadio;
+        break;
+      case kPushButtonPart:
+      case kSquareButtonPart:
+      case kButtonPart:
+        part = ui::NativeTheme::kPushButton;
+        break;
+      case kTextFieldPart:
+      case kTextAreaPart:
+      case kSearchFieldPart:
+        part = ui::NativeTheme::kTextField;
+        break;
+      default:
+        break;
+    }
+    if (part) {
+      return ui::NativeTheme::GetInstanceForWeb()->GetBorderRadiusForPart(
+          part.value(), style.Width().GetFloatValue(),
+          style.Height().GetFloatValue(), style.EffectiveZoom());
+    }
+  }
+
+  return border_radius;
+}
+
 }  // anonymous namespace
 
 void ObjectPainterBase::PaintOutlineRects(
@@ -498,9 +541,16 @@ void ObjectPainterBase::PaintOutlineRects(
 
   Color color = style.VisitedDependentColor(GetCSSPropertyOutlineColor());
   if (style.OutlineStyleIsAuto()) {
+    // Logic in draw focus ring is dependent on whether the border is large
+    // enough to have an inset outline. Use the smallest border edge for that
+    // test.
+    float min_border_width =
+        std::min(std::min(style.BorderTopWidth(), style.BorderBottomWidth()),
+                 std::min(style.BorderLeftWidth(), style.BorderRightWidth()));
+    float border_radius = GetFocusRingBorderRadius(style);
     paint_info.context.DrawFocusRing(
         pixel_snapped_outline_rects, style.GetOutlineStrokeWidthForFocusRing(),
-        style.OutlineOffset(), color,
+        style.OutlineOffset(), border_radius, min_border_width, color,
         LayoutTheme::GetTheme().IsFocusRingOutset());
     return;
   }

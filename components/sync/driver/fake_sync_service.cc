@@ -165,7 +165,8 @@ void FakeSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
 void FakeSyncService::AddTrustedVaultDecryptionKeysFromWeb(
     const std::string& gaia_id,
-    const std::vector<std::vector<uint8_t>>& keys) {}
+    const std::vector<std::vector<uint8_t>>& keys,
+    int last_key_version) {}
 
 UserDemographicsResult FakeSyncService::GetUserNoisedBirthYearAndGender(
     base::Time now) {

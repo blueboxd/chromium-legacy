@@ -193,6 +193,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
+#include "ipc/trace_ipc_message.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
 #include "media/capture/capture_switches.h"
@@ -3370,9 +3371,7 @@ bool RenderProcessHostImpl::FastShutdownIfPossible(size_t page_count,
 }
 
 bool RenderProcessHostImpl::Send(IPC::Message* msg) {
-  TRACE_EVENT2("renderer_host", "RenderProcessHostImpl::Send", "class",
-               IPC_MESSAGE_ID_CLASS(msg->type()), "line",
-               IPC_MESSAGE_ID_LINE(msg->type()));
+  TRACE_IPC_MESSAGE_SEND("renderer_host", "RenderProcessHostImpl::Send", msg);
 
   std::unique_ptr<IPC::Message> message(msg);
 

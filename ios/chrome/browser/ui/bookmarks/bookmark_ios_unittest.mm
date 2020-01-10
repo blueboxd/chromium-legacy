@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
+#include <memory>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -23,6 +25,11 @@ BookmarkIOSUnitTest::~BookmarkIOSUnitTest() {}
 void BookmarkIOSUnitTest::SetUp() {
   // Get a BookmarkModel from the test ChromeBrowserState.
   TestChromeBrowserState::Builder test_cbs_builder;
+
+  state_dir_ = std::make_unique<base::ScopedTempDir>();
+  ASSERT_TRUE(state_dir_->CreateUniqueTempDir());
+  test_cbs_builder.SetPath(state_dir_->GetPath());
+
   chrome_browser_state_ = test_cbs_builder.Build();
   chrome_browser_state_->CreateBookmarkModel(true);
 

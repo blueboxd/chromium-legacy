@@ -218,7 +218,8 @@ IN_PROC_BROWSER_TEST_F(CrostiniAnsibleSoftwareConfigViewBrowserTest,
   EXPECT_NE(nullptr, ActiveView());
 
   ansible_management_service()->OnApplyAnsiblePlaybookProgress(
-      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::SUCCEEDED);
+      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::SUCCEEDED,
+      /*failure_details=*/"");
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(HasNoView());
@@ -257,7 +258,8 @@ IN_PROC_BROWSER_TEST_F(CrostiniAnsibleSoftwareConfigViewBrowserTest,
   EXPECT_NE(nullptr, ActiveView());
 
   ansible_management_service()->OnApplyAnsiblePlaybookProgress(
-      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::FAILED);
+      vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::FAILED,
+      /*failure_details=*/"");
   base::RunLoop().RunUntilIdle();
 
   EXPECT_NE(nullptr, ActiveView());

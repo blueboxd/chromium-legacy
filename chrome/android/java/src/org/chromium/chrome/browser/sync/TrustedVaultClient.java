@@ -105,9 +105,6 @@ public class TrustedVaultClient {
      * Displays a UI that allows the user to reauthenticate and retrieve the sync encryption keys.
      */
     public void displayKeyRetrievalDialog(Context context) {
-        // TODO(crbug.com/1012659): Before starting the intent, one last attempt
-        // should be made to read the currently-available keys.
-
         Intent intent = createKeyRetrievalIntent();
         if (intent == null) return;
 
@@ -126,6 +123,16 @@ public class TrustedVaultClient {
     @Nullable
     public Intent createKeyRetrievalIntent() {
         return mBackend.createKeyRetrievalIntent();
+    }
+
+    /**
+     * Notifies all registered native clients (in practice, exactly one) that keys in the backend
+     * may have changed, which usually leads to refetching the keys from the backend.
+     */
+    public void notifyKeysChanged() {
+        for (long nativeTrustedVaultClientAndroid : mNativeTrustedVaultClientAndroidSet) {
+            TrustedVaultClientJni.get().notifyKeysChanged(nativeTrustedVaultClientAndroid);
+        }
     }
 
     /**
@@ -207,5 +214,6 @@ public class TrustedVaultClient {
     interface Natives {
         void fetchKeysCompleted(long nativeTrustedVaultClientAndroid, String gaiaId, byte[][] keys);
         void markKeysAsStaleCompleted(long nativeTrustedVaultClientAndroid, boolean result);
+        void notifyKeysChanged(long nativeTrustedVaultClientAndroid);
     }
 }

@@ -19,10 +19,17 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
       'sendSyncPrefsChanged',
       'startSignIn',
       'startSyncingWithEmail',
+      'queryIsHistoryRecordingEnabled',
     ]);
 
     /** @private {number} */
     this.impressionCount_ = 0;
+
+    /** @type {!HistoryRecordingEnabled} */
+    this.historyRecordingEnabled_ = {
+      requestSucceeded: true,
+      historyRecordingEnabled: true
+    };
 
     /** @type {!settings.PageStatus} */
     this.encryptionResponse = settings.PageStatus.CONFIGURE;
@@ -100,5 +107,18 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
   /** @override */
   sendSyncPrefsChanged() {
     this.methodCalled('sendSyncPrefsChanged');
+  }
+
+  /**
+   * @param {!HistoryRecordingEnabled} historyRecordingEnabled
+   */
+  setHistoryRecordingEnabled(historyRecordingEnabled) {
+    this.historyRecordingEnabled_ = historyRecordingEnabled;
+  }
+
+  /** @override */
+  queryIsHistoryRecordingEnabled() {
+    this.methodCalled('queryIsHistoryRecordingEnabled');
+    return Promise.resolve(this.historyRecordingEnabled_);
   }
 }

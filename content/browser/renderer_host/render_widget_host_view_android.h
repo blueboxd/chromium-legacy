@@ -21,9 +21,6 @@
 #include "base/process/process.h"
 #include "base/time/time.h"
 #include "cc/trees/render_frame_metadata.h"
-#include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/quads/selection.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
@@ -31,7 +28,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_export.h"
-#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/delegated_frame_host_android.h"
 #include "ui/android/view_android.h"
@@ -75,8 +71,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public ui::GestureProviderClient,
       public ui::TouchSelectionControllerClient,
       public ui::ViewAndroidObserver,
-      public ui::WindowAndroidObserver,
-      public viz::BeginFrameObserver {
+      public ui::WindowAndroidObserver {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               gfx::NativeView parent_native_view);
@@ -163,7 +158,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
   void OnDidNavigateMainFrameToNewPage() override;
-  void SetNeedsBeginFrames(bool needs_begin_frames) override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
   viz::FrameSinkId GetRootFrameSinkId() override;
   viz::SurfaceId GetCurrentSurfaceId() const override;
@@ -231,17 +225,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnDragUpdate(const gfx::PointF& position) override;
   std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
   void DidScroll() override;
-
-  // Used by DelegatedFrameHostClientAndroid.
-  void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
-  void DidPresentCompositorFrames(
-      const viz::FrameTimingDetailsMap& timing_details);
-
-  // viz::BeginFrameObserver implementation.
-  void OnBeginFrame(const viz::BeginFrameArgs& args) override;
-  const viz::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
-  void OnBeginFrameSourcePausedChanged(bool paused) override;
-  bool WantsAnimateOnlyBeginFrames() const override;
 
   // Non-virtual methods
   void UpdateNativeViewTree(gfx::NativeView parent_native_view);
@@ -378,6 +361,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
     return delegated_frame_host_.get();
   }
 
+  void SetNeedsBeginFrameForFlingProgress();
+
  protected:
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;
@@ -431,16 +416,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void EvictDelegatedContent();
   void OnLostResources();
 
-  enum BeginFrameRequestType {
-    BEGIN_FRAME = 1 << 0,
-    PERSISTENT_BEGIN_FRAME = 1 << 1
-  };
-  void AddBeginFrameRequest(BeginFrameRequestType request);
-  void ClearBeginFrameRequest(BeginFrameRequestType request);
   void StartObservingRootWindow();
   void StopObservingRootWindow();
-  void SendBeginFramePaused();
-  void SendBeginFrame(viz::BeginFrameArgs args);
   bool Animate(base::TimeTicks frame_time);
   void RequestDisallowInterceptTouchEvent();
 
@@ -461,15 +438,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetTextHandlesHiddenInternal();
 
   void OnUpdateScopedSelectionHandles();
-
-  // The begin frame source being observed.  Null if none.
-  viz::BeginFrameSource* begin_frame_source_;
-  viz::BeginFrameArgs last_begin_frame_args_;
-  bool begin_frame_paused_ = false;
-
-  // Indicates whether and for what reason a request for begin frames has been
-  // issued. Used to control action dispatch at the next |OnBeginFrame()| call.
-  uint32_t outstanding_begin_frame_requests_;
 
   bool is_showing_;
 
@@ -562,8 +530,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool is_first_navigation_ = true;
   // If true, then the next allocated surface should be embedded.
   bool navigation_while_hidden_ = false;
-
-  viz::FrameTimingDetailsMap timing_details_;
 
   // Tracks whether we are in SynchronousCopyContents to avoid repeated calls
   // into DevTools capture logic.

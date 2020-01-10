@@ -11,5 +11,6 @@ interface SyncEncryptionKeysExtension {
   // Provides sync encryption keys to the browser process. Returns true if no
   // further encryption keys are needed (which includes the case, among others,
   // of encryption keys not being needed even prior to this call).
-  SetEncryptionKeys(array<array<uint8>> encryption_keys, string gaia_id) => ();
+  SetEncryptionKeys(string gaia_id, array<array<uint8>> encryption_keys,
+                    int32 last_key_version) => ();
 };

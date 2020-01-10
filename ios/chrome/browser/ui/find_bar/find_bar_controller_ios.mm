@@ -89,7 +89,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
                 action:@selector(editingChanged)
       forControlEvents:UIControlEventEditingChanged];
   [_findBarViewController.findBarView.nextButton
-             addTarget:self.dispatcher
+             addTarget:self.commandHandler
                 action:@selector(findNextStringInPage)
       forControlEvents:UIControlEventTouchUpInside];
   [_findBarViewController.findBarView.nextButton
@@ -97,7 +97,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
                 action:@selector(hideKeyboard:)
       forControlEvents:UIControlEventTouchUpInside];
   [_findBarViewController.findBarView.previousButton
-             addTarget:self.dispatcher
+             addTarget:self.commandHandler
                 action:@selector(findPreviousStringInPage)
       forControlEvents:UIControlEventTouchUpInside];
   [_findBarViewController.findBarView.previousButton
@@ -105,7 +105,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
                 action:@selector(hideKeyboard:)
       forControlEvents:UIControlEventTouchUpInside];
   [_findBarViewController.findBarView.closeButton
-             addTarget:self.dispatcher
+             addTarget:self.commandHandler
                 action:@selector(closeFindInPage)
       forControlEvents:UIControlEventTouchUpInside];
 
@@ -203,7 +203,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
   [self.delayTimer invalidate];
   NSUInteger length = [[self searchTerm] length];
   if (length == 0) {
-    [self.dispatcher searchFindInPage];
+    [self.commandHandler searchFindInPage];
     return;
   }
 
@@ -214,7 +214,7 @@ const NSTimeInterval kSearchShortDelay = 0.100;
       (length > kSearchDelayChars) ? kSearchShortDelay : kSearchLongDelay;
   self.delayTimer =
       [NSTimer scheduledTimerWithTimeInterval:delay
-                                       target:self.dispatcher
+                                       target:self.commandHandler
                                      selector:@selector(searchFindInPage)
                                      userInfo:nil
                                       repeats:NO];

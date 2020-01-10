@@ -80,6 +80,44 @@ using IDLUSVStringOrNull =
 using IDLStringTreatNullAsEmptyString =
     IDLStringBase<V8StringResourceMode::kTreatNullAsEmptyString>;
 
+// Strings for the new bindings generator
+
+namespace bindings {
+
+enum class NativeValueTraitsStringConv {
+  kDefault,
+  kNullable,
+  kTreatNullAsEmptyString,
+};
+
+}  // namespace bindings
+
+// ByteString
+template <bindings::NativeValueTraitsStringConv mode>
+struct IDLByteStringBaseV2 final : public IDLBaseHelper<String> {};
+using IDLByteStringV2 =
+    IDLByteStringBaseV2<bindings::NativeValueTraitsStringConv::kDefault>;
+using IDLByteStringOrNullV2 =
+    IDLByteStringBaseV2<bindings::NativeValueTraitsStringConv::kNullable>;
+
+// DOMString
+template <bindings::NativeValueTraitsStringConv mode>
+struct IDLStringBaseV2 final : public IDLBaseHelper<String> {};
+using IDLStringV2 =
+    IDLStringBaseV2<bindings::NativeValueTraitsStringConv::kDefault>;
+using IDLStringOrNullV2 =
+    IDLStringBaseV2<bindings::NativeValueTraitsStringConv::kNullable>;
+using IDLStringTreatNullAsEmptyStringV2 = IDLStringBaseV2<
+    bindings::NativeValueTraitsStringConv::kTreatNullAsEmptyString>;
+
+// USVString
+template <bindings::NativeValueTraitsStringConv mode>
+struct IDLUSVStringBaseV2 final : public IDLBaseHelper<String> {};
+using IDLUSVStringV2 =
+    IDLUSVStringBaseV2<bindings::NativeValueTraitsStringConv::kDefault>;
+using IDLUSVStringOrNullV2 =
+    IDLUSVStringBaseV2<bindings::NativeValueTraitsStringConv::kNullable>;
+
 // Double
 struct IDLDouble final : public IDLBaseHelper<double> {};
 struct IDLUnrestrictedDouble final : public IDLBaseHelper<double> {};

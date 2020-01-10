@@ -47,6 +47,7 @@ namespace {
 
 using ::testing::_;
 using ::testing::AtLeast;
+using ::testing::Invoke;
 
 const char kProfileName[] = "p1";
 const char kUrl[] = "http://example.com";
@@ -69,14 +70,12 @@ const int kDownloadedPluginVmImageSizeInMb = 123456789u / (1024 * 1024);
 
 class MockObserver : public PluginVmInstaller::Observer {
  public:
-  MOCK_METHOD0(OnDlcDownloadStarted, void());
   MOCK_METHOD2(OnDlcDownloadProgressUpdated,
                void(double progress, base::TimeDelta elapsed_time));
   MOCK_METHOD0(OnDlcDownloadCompleted, void());
   MOCK_METHOD0(OnDlcDownloadCancelled, void());
   MOCK_METHOD1(OnDlcDownloadFailed,
                void(plugin_vm::PluginVmInstaller::FailureReason));
-  MOCK_METHOD0(OnDownloadStarted, void());
   MOCK_METHOD3(OnDownloadProgressUpdated,
                void(uint64_t bytes_downloaded,
                     int64_t content_length,
@@ -162,9 +161,19 @@ class PluginVmInstallerTestBase : public testing::Test {
     // Sets new PluginVmImage pref for this test.
     SetPluginVmImagePref(kUrl, kHash);
 
+    fake_downloaded_plugin_vm_image_archive_ = CreateZipFile();
     installer_ = PluginVmInstallerFactory::GetForProfile(profile_.get());
     observer_ = std::make_unique<MockObserver>();
     installer_->SetObserver(observer_.get());
+
+    // These actions are required to make the RunUntil* functions work, so tests
+    // probably shouldn't override them.
+    ON_CALL(*observer_, OnDlcDownloadCompleted())
+        .WillByDefault(
+            Invoke(this, &PluginVmInstallerTestBase::OnDlcDownloadCompleted));
+    ON_CALL(*observer_, OnDownloadCompleted())
+        .WillByDefault(
+            Invoke(this, &PluginVmInstallerTestBase::OnDownloadCompleted));
 
     fake_concierge_client_ = static_cast<chromeos::FakeConciergeClient*>(
         chromeos::DBusThreadManager::Get()->GetConciergeClient());
@@ -192,20 +201,40 @@ class PluginVmInstallerTestBase : public testing::Test {
     plugin_vm_image->SetKey("hash", base::Value(hash));
   }
 
-  void ProcessImageUntilImporting() {
-    installer_->StartDlcDownload();
-    task_environment_.RunUntilIdle();
-    installer_->StartDownload();
-    task_environment_.RunUntilIdle();
+  base::FilePath CreateZipFile() {
+    base::FilePath zip_file_path =
+        profile_->GetPath().AppendASCII(kPluginVmImageFile);
+    base::WriteFile(zip_file_path, kContent, strlen(kContent));
+    return zip_file_path;
   }
 
-  void ProcessImageUntilConfigured() {
-    ProcessImageUntilImporting();
+  // Helper functions for starting and progressing the installer.
 
-    // Faking downloaded file for testing.
-    installer_->SetDownloadedPluginVmImageArchiveForTesting(
-        fake_downloaded_plugin_vm_image_archive_);
-    installer_->StartImport();
+  void RunUntilDownloading() {
+    base::RunLoop run_loop;
+    dlc_download_completed_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  void StartAndRunUntilDownloading() {
+    installer_->Start();
+    RunUntilDownloading();
+  }
+
+  void RunUntilImporting() {
+    base::RunLoop run_loop;
+    download_completed_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  void StartAndRunUntilImporting() {
+    installer_->Start();
+    RunUntilImporting();
+  }
+
+  // Tests using this should EXPECT_CALL on the relevant completion callback.
+  void StartAndRunToCompletion() {
+    installer_->Start();
     task_environment_.RunUntilIdle();
   }
 
@@ -213,8 +242,12 @@ class PluginVmInstallerTestBase : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<PluginVmTestHelper> plugin_vm_test_helper_;
   PluginVmInstaller* installer_;
-  std::unique_ptr<MockObserver> observer_;
   base::FilePath fake_downloaded_plugin_vm_image_archive_;
+  std::unique_ptr<MockObserver> observer_;
+
+  base::OnceClosure dlc_download_completed_closure_;
+  base::OnceClosure download_completed_closure_;
+
   // Owned by chromeos::DBusThreadManager
   chromeos::FakeConciergeClient* fake_concierge_client_;
   chromeos::FakeDlcserviceClient* fake_dlcservice_client_;
@@ -229,6 +262,18 @@ class PluginVmInstallerTestBase : public testing::Test {
     RegisterUserProfilePrefs(pref_service->registry());
     profile_builder.SetPrefService(std::move(pref_service));
     profile_ = profile_builder.Build();
+  }
+
+  void OnDlcDownloadCompleted() {
+    if (dlc_download_completed_closure_)
+      std::move(dlc_download_completed_closure_).Run();
+  }
+
+  void OnDownloadCompleted() {
+    installer_->SetDownloadedPluginVmImageArchiveForTesting(
+        fake_downloaded_plugin_vm_image_archive_);
+    if (download_completed_closure_)
+      std::move(download_completed_closure_).Run();
   }
 
   base::ScopedTempDir profiles_dir_;
@@ -252,7 +297,6 @@ class PluginVmInstallerDownloadServiceTest : public PluginVmInstallerTestBase {
     download_service_->set_client(client_.get());
     installer_->SetDownloadServiceForTesting(download_service_.get());
     histogram_tester_ = std::make_unique<base::HistogramTester>();
-    fake_downloaded_plugin_vm_image_archive_ = CreateZipFile();
   }
 
   void TearDown() override {
@@ -261,13 +305,6 @@ class PluginVmInstallerDownloadServiceTest : public PluginVmInstallerTestBase {
     histogram_tester_.reset();
     download_service_.reset();
     client_.reset();
-  }
-
-  base::FilePath CreateZipFile() {
-    base::FilePath zip_file_path =
-        profile_->GetPath().AppendASCII(kPluginVmImageFile);
-    base::WriteFile(zip_file_path, kContent, strlen(kContent));
-    return zip_file_path;
   }
 
   std::unique_ptr<download::test::TestDownloadService> download_service_;
@@ -338,15 +375,12 @@ class PluginVmInstallerDriveTest : public PluginVmInstallerTestBase {
 TEST_F(PluginVmInstallerDownloadServiceTest, DownloadPluginVmImageParamsTest) {
   SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
 
-  EXPECT_CALL(*observer_, OnDlcDownloadStarted());
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnDownloadCompleted());
   EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _));
   EXPECT_CALL(*observer_, OnImported());
 
-  installer_->StartDlcDownload();
-  task_environment_.RunUntilIdle();
-  installer_->StartDownload();
+  StartAndRunUntilDownloading();
 
   std::string guid = installer_->GetCurrentDownloadGuidForTesting();
   base::Optional<download::DownloadParams> params =
@@ -358,36 +392,21 @@ TEST_F(PluginVmInstallerDownloadServiceTest, DownloadPluginVmImageParamsTest) {
 
   // Finishing image processing.
   task_environment_.RunUntilIdle();
-  // Faking downloaded file for testing.
-  installer_->SetDownloadedPluginVmImageArchiveForTesting(
-      fake_downloaded_plugin_vm_image_archive_);
-  installer_->StartImport();
-  task_environment_.RunUntilIdle();
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest, OnlyOneImageIsProcessedTest) {
   SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
 
-  EXPECT_CALL(*observer_, OnDlcDownloadStarted());
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnDownloadCompleted());
   EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _));
   EXPECT_CALL(*observer_, OnImported());
 
-  installer_->StartDlcDownload();
-  task_environment_.RunUntilIdle();
-  installer_->StartDownload();
+  StartAndRunUntilDownloading();
 
   EXPECT_TRUE(installer_->IsProcessing());
 
-  task_environment_.RunUntilIdle();
-  // Faking downloaded file for testing.
-  installer_->SetDownloadedPluginVmImageArchiveForTesting(
-      fake_downloaded_plugin_vm_image_archive_);
-
-  EXPECT_TRUE(installer_->IsProcessing());
-
-  installer_->StartImport();
+  RunUntilImporting();
 
   EXPECT_TRUE(installer_->IsProcessing());
 
@@ -407,13 +426,13 @@ TEST_F(PluginVmInstallerDownloadServiceTest,
   EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _)).Times(2);
   EXPECT_CALL(*observer_, OnImported()).Times(2);
 
-  ProcessImageUntilConfigured();
+  StartAndRunToCompletion();
 
   EXPECT_FALSE(installer_->IsProcessing());
 
   // As it is deleted after successful importing.
   fake_downloaded_plugin_vm_image_archive_ = CreateZipFile();
-  ProcessImageUntilConfigured();
+  StartAndRunToCompletion();
 
   histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
                                         kDownloadedPluginVmImageSizeInMb, 2);
@@ -426,22 +445,19 @@ TEST_F(PluginVmInstallerDownloadServiceTest,
   EXPECT_CALL(*observer_,
               OnDownloadFailed(
                   PluginVmInstaller::FailureReason::DOWNLOAD_FAILED_ABORTED));
-  EXPECT_CALL(*observer_, OnDlcDownloadStarted()).Times(2);
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(2);
   EXPECT_CALL(*observer_, OnDownloadCompleted());
   EXPECT_CALL(*observer_, OnImportProgressUpdated(50.0, _));
   EXPECT_CALL(*observer_, OnImported());
 
-  installer_->StartDlcDownload();
-  task_environment_.RunUntilIdle();
-  installer_->StartDownload();
+  StartAndRunUntilDownloading();
   std::string guid = installer_->GetCurrentDownloadGuidForTesting();
   download_service_->SetFailedDownload(guid, false);
   task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(installer_->IsProcessing());
 
-  ProcessImageUntilConfigured();
+  StartAndRunToCompletion();
 
   histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
                                         kDownloadedPluginVmImageSizeInMb, 1);
@@ -449,10 +465,11 @@ TEST_F(PluginVmInstallerDownloadServiceTest,
 
 TEST_F(PluginVmInstallerDownloadServiceTest, CancelledDownloadTest) {
   EXPECT_CALL(*observer_, OnDownloadCompleted()).Times(0);
+  EXPECT_CALL(*observer_, OnDownloadFailed(_)).Times(0);
   EXPECT_CALL(*observer_, OnDownloadCancelled());
 
-  installer_->StartDownload();
-  installer_->CancelDownload();
+  StartAndRunUntilDownloading();
+  installer_->Cancel();
   task_environment_.RunUntilIdle();
   // Finishing image processing as it should really happen.
   installer_->OnDownloadCancelled();
@@ -468,10 +485,8 @@ TEST_F(PluginVmInstallerDownloadServiceTest, ImportNonExistingImageTest) {
       *observer_,
       OnImportFailed(PluginVmInstaller::FailureReason::COULD_NOT_OPEN_IMAGE));
 
-  ProcessImageUntilImporting();
-  // Should fail as fake downloaded file isn't set.
-  installer_->StartImport();
-  task_environment_.RunUntilIdle();
+  fake_downloaded_plugin_vm_image_archive_ = base::FilePath();
+  StartAndRunToCompletion();
 
   histogram_tester_->ExpectUniqueSample(kPluginVmImageDownloadedSizeHistogram,
                                         kDownloadedPluginVmImageSizeInMb, 1);
@@ -483,15 +498,12 @@ TEST_F(PluginVmInstallerDownloadServiceTest, CancelledImportTest) {
                                             true /* success */);
 
   EXPECT_CALL(*observer_, OnDownloadCompleted());
+  EXPECT_CALL(*observer_, OnImported()).Times(0);
+  EXPECT_CALL(*observer_, OnImportFailed(_)).Times(0);
   EXPECT_CALL(*observer_, OnImportCancelled());
 
-  ProcessImageUntilImporting();
-
-  // Faking downloaded file for testing.
-  installer_->SetDownloadedPluginVmImageArchiveForTesting(
-      fake_downloaded_plugin_vm_image_archive_);
-  installer_->StartImport();
-  installer_->CancelImport();
+  StartAndRunUntilImporting();
+  installer_->Cancel();
   task_environment_.RunUntilIdle();
 }
 
@@ -500,9 +512,8 @@ TEST_F(PluginVmInstallerDownloadServiceTest, EmptyPluginVmImageUrlTest) {
   EXPECT_CALL(
       *observer_,
       OnDownloadFailed(PluginVmInstaller::FailureReason::INVALID_IMAGE_URL));
-  EXPECT_CALL(*observer_, OnDlcDownloadStarted());
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
-  ProcessImageUntilImporting();
+  StartAndRunToCompletion();
 
   histogram_tester_->ExpectTotalCount(kPluginVmImageDownloadedSizeHistogram, 0);
 }
@@ -514,63 +525,52 @@ TEST_F(PluginVmInstallerDownloadServiceTest, VerifyDownloadTest) {
   EXPECT_FALSE(installer_->VerifyDownload(std::string()));
 }
 
-TEST_F(PluginVmInstallerDownloadServiceTest,
-       CannotStartDownloadIfDlcDownloadNotRun) {
-  EXPECT_CALL(*observer_,
-              OnDownloadFailed(
-                  PluginVmInstaller::FailureReason::DLC_DOWNLOAD_NOT_STARTED));
-  EXPECT_CALL(*observer_, OnDownloadCompleted()).Times(0);
-  installer_->StartDownload();
-  task_environment_.RunUntilIdle();
-}
-
-TEST_F(PluginVmInstallerDownloadServiceTest,
-       CannotStartDlcDownloadIfPluginVmGetsDisabled) {
+TEST_F(PluginVmInstallerDownloadServiceTest, CannotStartIfPluginVmIsDisabled) {
   profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
       chromeos::kPluginVmAllowed, false);
   EXPECT_CALL(*observer_,
               OnDownloadFailed(PluginVmInstaller::FailureReason::NOT_ALLOWED));
   EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(0);
-  installer_->StartDlcDownload();
+  installer_->Start();
   task_environment_.RunUntilIdle();
 }
 
 TEST_F(PluginVmInstallerDriveTest, InvalidDriveUrlTest) {
   SetPluginVmImagePref(kDriveUrl2, kHash);
 
-  EXPECT_CALL(*observer_, OnDownloadStarted());
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(
       *observer_,
       OnDownloadFailed(PluginVmInstaller::FailureReason::INVALID_IMAGE_URL));
-  ProcessImageUntilImporting();
+  StartAndRunToCompletion();
 }
 
 TEST_F(PluginVmInstallerDriveTest, NoConnectionDriveTest) {
   SetPluginVmImagePref(kDriveUrl, kHash);
   fake_drive_service_->set_offline(true);
 
-  EXPECT_CALL(*observer_, OnDownloadStarted());
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_,
               OnDownloadFailed(
                   PluginVmInstaller::FailureReason::DOWNLOAD_FAILED_NETWORK));
-  ProcessImageUntilImporting();
+  StartAndRunToCompletion();
 }
 
 TEST_F(PluginVmInstallerDriveTest, WrongHashDriveTest) {
   SetPluginVmImagePref(kDriveUrl, kHash2);
 
-  EXPECT_CALL(*observer_, OnDownloadStarted());
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnDownloadFailed(
                               PluginVmInstaller::FailureReason::HASH_MISMATCH));
 
-  ProcessImageUntilImporting();
+  StartAndRunToCompletion();
 }
 
 TEST_F(PluginVmInstallerDriveTest, DriveDownloadFailedAfterStartingTest) {
   SetPluginVmImagePref(kDriveUrl, kHash);
   SimpleFakeDriveService* fake_drive_service = SetUpSimpleFakeDriveService();
 
-  EXPECT_CALL(*observer_, OnDownloadStarted());
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnDownloadProgressUpdated(5, 100, _));
   EXPECT_CALL(*observer_, OnDownloadProgressUpdated(10, 100, _));
   EXPECT_CALL(*observer_,
@@ -578,10 +578,7 @@ TEST_F(PluginVmInstallerDriveTest, DriveDownloadFailedAfterStartingTest) {
                   PluginVmInstaller::FailureReason::DOWNLOAD_FAILED_NETWORK));
   EXPECT_CALL(*observer_, OnDownloadCompleted()).Times(0);
 
-  installer_->StartDlcDownload();
-  task_environment_.RunUntilIdle();
-  installer_->StartDownload();
-  task_environment_.RunUntilIdle();
+  StartAndRunToCompletion();
 
   fake_drive_service->RunGetContentCallback(
       google_apis::HTTP_SUCCESS, std::make_unique<std::string>("Part1"));
@@ -597,19 +594,16 @@ TEST_F(PluginVmInstallerDriveTest, CancelledDriveDownloadTest) {
   SetPluginVmImagePref(kDriveUrl, kHash);
   SimpleFakeDriveService* fake_drive_service = SetUpSimpleFakeDriveService();
 
-  EXPECT_CALL(*observer_, OnDownloadStarted());
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnDownloadProgressUpdated(5, 100, _));
   EXPECT_CALL(*observer_, OnDownloadCompleted()).Times(0);
 
-  installer_->StartDlcDownload();
-  task_environment_.RunUntilIdle();
-  installer_->StartDownload();
-  task_environment_.RunUntilIdle();
+  StartAndRunToCompletion();
 
   fake_drive_service->RunGetContentCallback(
       google_apis::HTTP_SUCCESS, std::make_unique<std::string>("Part1"));
   fake_drive_service->RunProgressCallback(5, 100);
-  installer_->CancelDownload();
+  installer_->Cancel();
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(fake_drive_service->cancel_callback_called());
 }
@@ -617,13 +611,13 @@ TEST_F(PluginVmInstallerDriveTest, CancelledDriveDownloadTest) {
 TEST_F(PluginVmInstallerDriveTest, SuccessfulDriveDownloadTest) {
   SetPluginVmImagePref(kDriveUrl, kHash);
 
-  EXPECT_CALL(*observer_, OnDownloadStarted());
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted());
   EXPECT_CALL(*observer_, OnDownloadCompleted());
   EXPECT_CALL(*observer_,
               OnDownloadProgressUpdated(_, std::strlen(kContent), _))
       .Times(AtLeast(1));
 
-  ProcessImageUntilImporting();
+  StartAndRunToCompletion();
 }
 
 }  // namespace plugin_vm

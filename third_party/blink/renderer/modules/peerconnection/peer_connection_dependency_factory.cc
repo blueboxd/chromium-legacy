@@ -118,8 +118,8 @@ PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
           create_p2p_socket_dispatcher ? new P2PSocketDispatcher() : nullptr),
       signaling_thread_(nullptr),
       worker_thread_(nullptr),
-      chrome_signaling_thread_("Chrome_libJingle_Signaling"),
-      chrome_worker_thread_("Chrome_libJingle_WorkerThread") {
+      chrome_signaling_thread_("WebRTC_Signaling"),
+      chrome_worker_thread_("WebRTC_Worker") {
   TryScheduleStunProbeTrial();
 }
 

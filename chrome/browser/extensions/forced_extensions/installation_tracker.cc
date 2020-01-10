@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
@@ -15,6 +16,7 @@
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/common/extension_urls.h"
 
@@ -224,6 +226,23 @@ void InstallationTracker::ReportResults() {
               "Extensions.OffStore_ForceInstalledFailureReason2",
               failure_reason);
         }
+
+        // In case of CRX_FETCH_FAILURE, report the network error code, HTTP
+        // error code and number of fetch tries made.
+        if (failure_reason ==
+            InstallationReporter::FailureReason::CRX_FETCH_FAILED) {
+          base::UmaHistogramSparse("Extensions.ForceInstalledNetworkErrorCode",
+                                   installation.network_error_code.value());
+
+          if (installation.response_code) {
+            base::UmaHistogramSparse("Extensions.ForceInstalledHttpErrorCode",
+                                     installation.response_code.value());
+          }
+          UMA_HISTOGRAM_EXACT_LINEAR("Extensions.ForceInstalledFetchTries",
+                                     installation.fetch_tries.value(),
+                                     ExtensionDownloader::kMaxRetries);
+        }
+
         VLOG(2) << "Forced extension " << extension_id
                 << " failed to install with data="
                 << InstallationReporter::GetFormattedInstallationData(

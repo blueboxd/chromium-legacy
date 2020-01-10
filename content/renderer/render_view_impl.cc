@@ -148,6 +148,7 @@
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -1921,6 +1922,11 @@ void RenderViewImpl::OnSetRendererPrefs(
       webview()->MainFrameWidget()->ThemeChanged();
   }
 #endif
+
+  if (features::IsFormControlsRefreshEnabled() &&
+      renderer_prefs.use_custom_colors) {
+    blink::SetFocusRingColor(renderer_prefs.focus_ring_color);
+  }
 
   if (webview() &&
       old_accept_languages != renderer_preferences_.accept_languages) {

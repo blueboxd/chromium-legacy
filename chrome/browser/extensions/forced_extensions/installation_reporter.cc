@@ -88,15 +88,23 @@ void InstallationReporter::ReportDownloadingCacheStatus(
   }
 }
 
+void InstallationReporter::ReportCrxFetchError(
+    const ExtensionId& id,
+    const ExtensionDownloaderDelegate::FailureData& failure_data) {
+  InstallationData& data = installation_data_map_[id];
+  data.failure_reason = FailureReason::CRX_FETCH_FAILED;
+  data.network_error_code = failure_data.network_error_code;
+  data.response_code = failure_data.response_code;
+  data.fetch_tries = failure_data.fetch_tries;
+  NotifyObserversOfFailure(id, FailureReason::CRX_FETCH_FAILED, data);
+}
+
 void InstallationReporter::ReportFailure(const ExtensionId& id,
                                          FailureReason reason) {
   DCHECK_NE(reason, FailureReason::UNKNOWN);
   InstallationData& data = installation_data_map_[id];
   data.failure_reason = reason;
-  for (auto& observer : observers_) {
-    observer.OnExtensionInstallationFailed(id, reason);
-    observer.OnExtensionDataChangedForTesting(id, browser_context_, data);
-  }
+  NotifyObserversOfFailure(id, reason, data);
 }
 
 void InstallationReporter::ReportCrxInstallError(
@@ -132,6 +140,16 @@ void InstallationReporter::AddObserver(Observer* observer) {
 
 void InstallationReporter::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void InstallationReporter::NotifyObserversOfFailure(
+    const ExtensionId& id,
+    FailureReason reason,
+    const InstallationData& data) {
+  for (auto& observer : observers_) {
+    observer.OnExtensionInstallationFailed(id, reason);
+    observer.OnExtensionDataChangedForTesting(id, browser_context_, data);
+  }
 }
 
 }  //  namespace extensions

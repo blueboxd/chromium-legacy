@@ -44,21 +44,12 @@ class PLATFORM_EXPORT RTCIceCandidatePlatform final
   // Creates a new RTCIceCandidatePlatform using |candidate|, |sdp_mid| and
   // |sdp_m_line_index|. If |sdp_m_line_index| is negative, it is
   // considered as having no value.
-  static RTCIceCandidatePlatform* Create(String candidate,
-                                         String sdp_mid,
-                                         int sdp_m_line_index);
-
-  // Creates a new RTCIceCandidatePlatform using |candidate|, |sdp_mid|,
-  // |sdp_m_line_index|, and |username_fragment|.
-  static RTCIceCandidatePlatform* Create(
-      String candidate,
-      String sdp_mid,
-      base::Optional<uint16_t> sdp_m_line_index,
-      String username_fragment);
-
   RTCIceCandidatePlatform(String candidate,
                           String sdp_mid,
                           base::Optional<uint16_t> sdp_m_line_index);
+
+  // Creates a new RTCIceCandidatePlatform using |candidate|, |sdp_mid|,
+  // |sdp_m_line_index|, and |username_fragment|.
   RTCIceCandidatePlatform(String candidate,
                           String sdp_mid,
                           base::Optional<uint16_t> sdp_m_line_index,

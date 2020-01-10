@@ -385,9 +385,8 @@ struct StructTraits<gfx::mojom::ColorSpaceDataView, gfx::ColorSpace> {
     return input.custom_primary_matrix_;
   }
 
-  static base::span<const float> custom_transfer_params(
-      const gfx::ColorSpace& input) {
-    return input.custom_transfer_params_;
+  static base::span<const float> transfer_params(const gfx::ColorSpace& input) {
+    return input.transfer_params_;
   }
 
   static bool Read(gfx::mojom::ColorSpaceDataView data, gfx::ColorSpace* out);

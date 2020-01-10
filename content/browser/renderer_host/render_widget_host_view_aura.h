@@ -107,7 +107,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool IsMouseLocked() override;
   gfx::Size GetVisibleViewportSize() override;
   void SetInsets(const gfx::Insets& insets) override;
-  void SetNeedsBeginFrames(bool needs_begin_frames) override {}
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
 

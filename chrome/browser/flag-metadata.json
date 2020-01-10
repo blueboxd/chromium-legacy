@@ -2090,6 +2090,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "enable-webassembly-tiering",
+    "owners": [ "clemensb", "wasm-team@google.com" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "enable-webgl-draft-extensions",
     "owners": [ "webgl-team@google.com" ],
     // This flag is the only way for end users to test upcoming WebGL
@@ -3391,6 +3396,11 @@
     "name": "SupervisedUserCommittedInterstitials",
     "owners": [ "carlosil" ],
     "expiry_milestone": 77
+  },
+  {
+    "name": "sync-setup-friendly-settings",
+    "owners": ["msalama"],
+    "expiry_milestone": 84
   },
   {
     "name": "sync-wifi-configurations",

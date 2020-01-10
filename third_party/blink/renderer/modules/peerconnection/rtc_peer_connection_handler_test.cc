@@ -787,8 +787,8 @@ TEST_F(RTCPeerConnectionHandlerTest, setConfigurationError) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {
-  RTCIceCandidatePlatform* candidate =
-      RTCIceCandidatePlatform::Create(kDummySdp, "sdpMid", 1);
+  auto* candidate =
+      MakeGarbageCollected<RTCIceCandidatePlatform>(kDummySdp, "sdpMid", 1);
 
   EXPECT_CALL(*mock_tracker_.get(),
               TrackAddIceCandidate(pc_handler_.get(), candidate,

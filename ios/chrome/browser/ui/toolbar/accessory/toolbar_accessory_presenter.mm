@@ -36,6 +36,9 @@ const CGFloat kAnimationDuration = 0.15;
 
 @interface ToolbarAccessoryPresenter ()
 
+// The |presenting| public property redefined as readwrite.
+@property(nonatomic, assign, readwrite, getter=isPresenting) BOOL presenting;
+
 // The view that acts as the background for |presentedView|, redefined as
 // readwrite. This is especially important on iPhone, as this view that holds
 // everything around the safe area.
@@ -66,6 +69,7 @@ const CGFloat kAnimationDuration = 0.15;
 }
 
 - (void)prepareForPresentation {
+  self.presenting = YES;
   self.backgroundView = [self createBackgroundView];
   [self.baseViewController addChildViewController:self.presentedViewController];
   [self.baseViewController.view addSubview:self.backgroundView];
@@ -75,29 +79,39 @@ const CGFloat kAnimationDuration = 0.15;
   } else {
     [self prepareForPresentationOnIPad];
   }
-
-  // Force initial layout before the animation.
-  [self.baseViewController.view layoutIfNeeded];
 }
 
 - (void)presentAnimated:(BOOL)animated {
+  if (animated) {
+    // Force initial layout before the animation.
+    [self.baseViewController.view layoutIfNeeded];
+  }
+
   if (ShouldShowCompactToolbar()) {
     [self setupFinalConstraintsOnIPhone];
   } else {
     [self setupFinalConstraintsOnIPad];
   }
 
-  CGFloat duration = animated ? kAnimationDuration : 0;
   __weak __typeof(self) weakSelf = self;
-  [UIView animateWithDuration:duration
-      animations:^() {
-        [self.backgroundView layoutIfNeeded];
-      }
-      completion:^(BOOL finished) {
-        [weakSelf.presentedViewController
-            didMoveToParentViewController:weakSelf.baseViewController];
-        [weakSelf.delegate containedPresenterDidPresent:weakSelf];
-      }];
+  auto completion = ^void(BOOL) {
+    [weakSelf.presentedViewController
+        didMoveToParentViewController:weakSelf.baseViewController];
+    if ([weakSelf.delegate
+            respondsToSelector:@selector(containedPresenterDidPresent:)]) {
+      [weakSelf.delegate containedPresenterDidPresent:weakSelf];
+    }
+  };
+
+  if (animated) {
+    [UIView animateWithDuration:kAnimationDuration
+                     animations:^() {
+                       [self.baseViewController.view layoutIfNeeded];
+                     }
+                     completion:completion];
+  } else {
+    completion(YES);
+  }
 }
 
 - (void)dismissAnimated:(BOOL)animated {
@@ -108,8 +122,13 @@ const CGFloat kAnimationDuration = 0.15;
     [weakSelf.presentedViewController.view removeFromSuperview];
     [weakSelf.presentedViewController removeFromParentViewController];
     [weakSelf.backgroundView removeFromSuperview];
-    [weakSelf.delegate containedPresenterDidDismiss:weakSelf];
+    if ([weakSelf.delegate
+            respondsToSelector:@selector(containedPresenterDidDismiss:)]) {
+      [weakSelf.delegate containedPresenterDidDismiss:weakSelf];
+    }
     weakSelf.backgroundView = nil;
+    weakSelf.presenting = NO;
+    [weakSelf.delegate containedPresenterDidDismiss:weakSelf];
   };
   if (animated) {
     void (^animation)();

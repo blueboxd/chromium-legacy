@@ -23,8 +23,8 @@
 
 namespace {
 // Side (w or h) length for the leading image view.
-const CGFloat kImageViewSizeUIRefresh = 28.0;
-const CGFloat kImageViewCornerRadiusUIRefresh = 7.0;
+const CGFloat kImageViewSize = 28.0;
+const CGFloat kImageViewCornerRadius = 7.0;
 const CGFloat kTrailingButtonTrailingMargin = 4;
 const CGFloat kTrailingButtonSize = 48.0;
 const CGFloat kLeadingPaddingIpad = 183;
@@ -94,7 +94,7 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
     _imageView.userInteractionEnabled = NO;
     _imageView.contentMode = UIViewContentModeCenter;
 
-    _imageView.layer.cornerRadius = kImageViewCornerRadiusUIRefresh;
+    _imageView.layer.cornerRadius = kImageViewCornerRadius;
     _imageView.backgroundColor = UIColor.clearColor;
     _imageView.tintColor = color::DarkModeDynamicColor(
         [UIColor colorNamed:@"omnibox_suggestion_icon_color"], _incognito,
@@ -119,7 +119,7 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
 }
 
 - (void)layoutAccessoryViews {
-  CGFloat imageViewSize = kImageViewSizeUIRefresh;
+  CGFloat imageViewSize = kImageViewSize;
   LayoutRect imageViewLayout = LayoutRectMake(
       ([self showsLeadingIcons] && IsCompactTablet())
           ? kLeadingPaddingIpadCompact
@@ -141,7 +141,7 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
   _imageView.image = image;
 
   // Adjust the vertical position based on the current size of the row.
-  CGFloat imageViewSize = kImageViewSizeUIRefresh;
+  CGFloat imageViewSize = kImageViewSize;
   CGRect frame = _imageView.frame;
   frame.origin.y = floor((_rowHeight - imageViewSize) / 2);
   _imageView.frame = frame;

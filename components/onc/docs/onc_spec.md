@@ -1264,6 +1264,11 @@ type exists to configure the authentication.
     * WiFi only. A substring which a remote RADIUS service certificate subject
       name must contain in order to connect.
 
+* **SubjectAlternativeNameMatch**
+	* (optional) - [array of AlternativeSubjectName](#AlternativeSubjectName-type)
+	* WiFi only. A list of alternative subject names to be matched against the
+    alternative subject name of an authentication server certificate.
+
 * **TLSVersionMax**
     * (optional) - **string**
     * Sets the maximum TLS protocol version used by the OS for EAP.
@@ -1293,6 +1298,19 @@ type exists to configure the authentication.
   * At most one of **ServerCARefs** and **ServerCARef**
     can be set.
 ---
+
+### AlternativeSubjectName type
+
+* **Type**
+	* (required) - **string**
+	* Type of the alternative subject name.
+	* Allowed values are:
+		* *EMAIL*
+		* *DNS*
+		* *URI*
+* **Value**
+	 * (required) - **string**
+	 * Value of the alternative subject name.
 
 ## Cellular Networks
 

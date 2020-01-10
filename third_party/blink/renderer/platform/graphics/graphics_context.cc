@@ -58,6 +58,7 @@
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -370,6 +371,10 @@ void GraphicsContext::CompositeRecord(sk_sp<PaintRecord> record,
 namespace {
 
 int AdjustedFocusRingOffset(int offset, int width, bool is_outset) {
+  if (::features::IsFormControlsRefreshEnabled()) {
+    return 0;
+  }
+
 #if defined(OS_MACOSX)
   return offset + 2;
 #else
@@ -387,29 +392,37 @@ int GraphicsContext::FocusRingOutsetExtent(int offset,
   // Unlike normal outlines (whole width is outside of the offset), focus
   // rings can be drawn with the center of the path aligned with the offset, so
   // only half of the width is outside of the offset.
+  if (::features::IsFormControlsRefreshEnabled()) {
+    // For FormControlsRefresh 2/3 of the width is outside of the offset.
+    return AdjustedFocusRingOffset(offset, width, is_outset) +
+           std::ceil(width / 3.f) * 2;
+  }
+
   return AdjustedFocusRingOffset(offset, width, is_outset) + (width + 1) / 2;
 }
 
 void GraphicsContext::DrawFocusRingPath(const SkPath& path,
                                         const Color& color,
-                                        float width) {
+                                        float width,
+                                        float border_radius) {
   DrawPlatformFocusRing(
       path, canvas_,
       dark_mode_filter_
           .InvertColorIfNeeded(color, DarkModeFilter::ElementRole::kBackground)
           .Rgb(),
-      width);
+      width, border_radius);
 }
 
 void GraphicsContext::DrawFocusRingRect(const SkRect& rect,
                                         const Color& color,
-                                        float width) {
+                                        float width,
+                                        float border_radius) {
   DrawPlatformFocusRing(
       rect, canvas_,
       dark_mode_filter_
           .InvertColorIfNeeded(color, DarkModeFilter::ElementRole::kBackground)
           .Rgb(),
-      width);
+      width, border_radius);
 }
 
 void GraphicsContext::DrawFocusRing(const Path& focus_ring_path,
@@ -420,12 +433,14 @@ void GraphicsContext::DrawFocusRing(const Path& focus_ring_path,
   if (ContextDisabled())
     return;
 
-  DrawFocusRingPath(focus_ring_path.GetSkPath(), color, width);
+  DrawFocusRingPath(focus_ring_path.GetSkPath(), color, /*width=*/width,
+                    /*radius=*/width);
 }
 
 void GraphicsContext::DrawFocusRingInternal(const Vector<IntRect>& rects,
                                             float width,
                                             int offset,
+                                            float border_radius,
                                             const Color& color,
                                             bool is_outset) {
   if (ContextDisabled())
@@ -436,7 +451,11 @@ void GraphicsContext::DrawFocusRingInternal(const Vector<IntRect>& rects,
     return;
 
   SkRegion focus_ring_region;
-  offset = AdjustedFocusRingOffset(offset, std::ceil(width), is_outset);
+  if (!::features::IsFormControlsRefreshEnabled()) {
+    // For FormControlsRefresh the offset is already adjusted by
+    // GraphicsContext::DrawFocusRing.
+    offset = AdjustedFocusRingOffset(offset, std::ceil(width), is_outset);
+  }
   for (unsigned i = 0; i < rect_count; i++) {
     SkIRect r = rects[i];
     if (r.isEmpty())
@@ -449,12 +468,12 @@ void GraphicsContext::DrawFocusRingInternal(const Vector<IntRect>& rects,
     return;
 
   if (focus_ring_region.isRect()) {
-    DrawFocusRingRect(SkRect::Make(focus_ring_region.getBounds()), color,
-                      width);
+    DrawFocusRingRect(SkRect::Make(focus_ring_region.getBounds()), color, width,
+                      border_radius);
   } else {
     SkPath path;
     if (focus_ring_region.getBoundaryPath(&path))
-      DrawFocusRingPath(path, color, width);
+      DrawFocusRingPath(path, color, width, border_radius);
   }
 }
 
@@ -478,22 +497,46 @@ bool ShouldDrawInnerFocusRingForContrast(bool is_outset,
 void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
                                     float width,
                                     int offset,
+                                    float border_radius,
+                                    float min_border_width,
                                     const Color& color,
                                     bool is_outset) {
-  // If a focus ring is outset and the color is dark, it may be hard to see on
-  // dark backgrounds. In this case, we'll actually draw two focus rings, the
-  // outset focus ring with a white inner ring for contrast.
-  if (ShouldDrawInnerFocusRingForContrast(is_outset, width, color)) {
-    int contrast_offset = static_cast<int>(std::floor(width * 0.5));
-    // We create a 1px gap for the contrast ring. The contrast ring is drawn
-    // first, and we overdraw by a pixel to ensure no gaps or AA artifacts.
-    DrawFocusRingInternal(rects, contrast_offset, offset, SK_ColorWHITE,
-                          is_outset);
-    DrawFocusRingInternal(rects, width - contrast_offset,
-                          offset + contrast_offset, color, is_outset);
+  if (::features::IsFormControlsRefreshEnabled()) {
+    // The focus ring is made of two borders which have a 2:1 ratio.
+    const float first_border_width = (width / 3) * 2;
+    const float second_border_width = width - first_border_width;
 
+    offset = AdjustedFocusRingOffset(offset, std::ceil(width), is_outset);
+    // How much space the focus ring would like to take from the actual border.
+    const float inside_border_width = 1;
+    if (min_border_width >= inside_border_width) {
+      offset -= inside_border_width;
+    }
+    // The white ring is drawn first, and we overdraw to ensure no gaps or AA
+    // artifacts.
+    DrawFocusRingInternal(rects, first_border_width,
+                          offset + std::ceil(second_border_width),
+                          border_radius, SK_ColorWHITE, is_outset);
+    DrawFocusRingInternal(rects, first_border_width, offset, border_radius,
+                          color, is_outset);
   } else {
-    DrawFocusRingInternal(rects, width, offset, color, is_outset);
+    // If a focus ring is outset and the color is dark, it may be hard to see on
+    // dark backgrounds. In this case, we'll actually draw two focus rings, the
+    // outset focus ring with a white inner ring for contrast.
+    if (ShouldDrawInnerFocusRingForContrast(is_outset, width, color)) {
+      int contrast_offset = static_cast<int>(std::floor(width * 0.5));
+      // We create a 1px gap for the contrast ring. The contrast ring is drawn
+      // first, and we overdraw by a pixel to ensure no gaps or AA artifacts.
+      DrawFocusRingInternal(rects, contrast_offset, offset, border_radius,
+                            SK_ColorWHITE, is_outset);
+      DrawFocusRingInternal(rects, width - contrast_offset,
+                            offset + contrast_offset, border_radius, color,
+                            is_outset);
+
+    } else {
+      DrawFocusRingInternal(rects, width, offset, border_radius, color,
+                            is_outset);
+    }
   }
 }
 

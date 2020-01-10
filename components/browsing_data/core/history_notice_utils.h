@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
 
 namespace history {
 class WebHistoryService;
@@ -22,6 +23,21 @@ enum class Channel;
 }
 
 namespace browsing_data {
+
+// Whether history recording is enabled and can be used to provide personalized
+// experience. The prior is true if all the following is true:
+// - User is syncing and sync history is on.
+// - Data is not encrypted with custom passphrase.
+// - User has enabled 'Include Chrome browsing history and activity from
+//   websites and apps that use Google services' in the |Web and App Activity|
+//   of their Google Account.
+// The response is returned in |callback|. The response is base::nullopt if the
+// sWAA bit could not be retrieved (i.e. the history service has not been
+// created yet).
+void IsHistoryRecordingEnabledAndCanBeUsed(
+    const syncer::SyncService* sync_service,
+    history::WebHistoryService* history_service,
+    base::OnceCallback<void(const base::Optional<bool>&)> callback);
 
 // Whether the Clear Browsing Data UI should show a notice about the existence
 // of other forms of browsing history stored in user's account. The response

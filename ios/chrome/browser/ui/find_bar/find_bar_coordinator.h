@@ -25,15 +25,6 @@
 // make the transition easier.
 @property(nonatomic, strong) FindBarControllerIOS* findBarController;
 
-// Starts the Find In Page process.
-- (void)startFindInPage;
-
-// Shows the Find Bar UI.
-- (void)showFindBarAnimated:(BOOL)animated;
-
-// Hides the Find Bar UI.
-- (void)hideFindBarWithAnimation:(BOOL)animated;
-
 // Defocuses the Find Bar text field.
 - (void)defocusFindBar;
 

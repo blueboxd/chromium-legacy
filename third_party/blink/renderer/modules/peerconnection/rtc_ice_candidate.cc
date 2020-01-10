@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate_init.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
@@ -64,9 +65,10 @@ RTCIceCandidate* RTCIceCandidate::Create(
                       WebFeature::kRTCIceCandidateDefaultSdpMLineIndex);
   }
 
-  return MakeGarbageCollected<RTCIceCandidate>(RTCIceCandidatePlatform::Create(
-      candidate_init->candidate(), sdp_mid, std::move(sdp_m_line_index),
-      candidate_init->usernameFragment()));
+  return MakeGarbageCollected<RTCIceCandidate>(
+      MakeGarbageCollected<RTCIceCandidatePlatform>(
+          candidate_init->candidate(), sdp_mid, std::move(sdp_m_line_index),
+          candidate_init->usernameFragment()));
 }
 
 RTCIceCandidate* RTCIceCandidate::Create(

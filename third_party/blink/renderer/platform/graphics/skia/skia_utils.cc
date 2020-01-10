@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
 #include "third_party/skia/include/third_party/skcms/skcms.h"
+#include "ui/base/ui_base_features.h"
 
 #include <algorithm>
 #include <cmath>
@@ -374,7 +375,8 @@ template <typename PrimitiveType>
 void DrawPlatformFocusRing(const PrimitiveType& primitive,
                            cc::PaintCanvas* canvas,
                            SkColor color,
-                           float width) {
+                           float width,
+                           float border_radius) {
   PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setStyle(PaintFlags::kStroke_Style);
@@ -388,6 +390,11 @@ void DrawPlatformFocusRing(const PrimitiveType& primitive,
   const float corner_radius = width;
 #endif
 
+  if (::features::IsFormControlsRefreshEnabled()) {
+    DrawFocusRingPrimitive(primitive, canvas, flags, border_radius);
+    return;
+  }
+
   DrawFocusRingPrimitive(primitive, canvas, flags, corner_radius);
 
 #if defined(OS_MACOSX)
@@ -398,14 +405,18 @@ void DrawPlatformFocusRing(const PrimitiveType& primitive,
 #endif
 }
 
-template void PLATFORM_EXPORT DrawPlatformFocusRing<SkRect>(const SkRect&,
-                                                            cc::PaintCanvas*,
-                                                            SkColor,
-                                                            float width);
-template void PLATFORM_EXPORT DrawPlatformFocusRing<SkPath>(const SkPath&,
-                                                            cc::PaintCanvas*,
-                                                            SkColor,
-                                                            float width);
+template void PLATFORM_EXPORT
+DrawPlatformFocusRing<SkRect>(const SkRect&,
+                              cc::PaintCanvas*,
+                              SkColor,
+                              float width,
+                              float border_radius);
+template void PLATFORM_EXPORT
+DrawPlatformFocusRing<SkPath>(const SkPath&,
+                              cc::PaintCanvas*,
+                              SkColor,
+                              float width,
+                              float border_radius);
 
 sk_sp<SkData> TryAllocateSkData(size_t size) {
   void* buffer = WTF::Partitions::BufferPartition()->AllocFlags(

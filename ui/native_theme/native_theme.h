@@ -278,6 +278,11 @@ class NATIVE_THEME_EXPORT NativeTheme {
                                 State state,
                                 const ExtraParams& extra) const = 0;
 
+  virtual float GetBorderRadiusForPart(Part part,
+                                       float width,
+                                       float height,
+                                       float zoom) const;
+
   // Paint the part to the canvas.
   virtual void Paint(
       cc::PaintCanvas* canvas,

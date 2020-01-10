@@ -12,6 +12,9 @@
 - (void)setHeadersForToolbarAccessoryCoordinator:
     (ChromeCoordinator*)toolbarAccessoryCoordinator;
 
+- (void)toolbarAccessoryCoordinatorDidDismissUI:
+    (ChromeCoordinator*)toolbarAccessoryCoordinator;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_ACCESSORY_TOOLBAR_ACCESSORY_COORDINATOR_DELEGATE_H_

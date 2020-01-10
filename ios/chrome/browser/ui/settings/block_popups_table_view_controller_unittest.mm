@@ -115,7 +115,8 @@ TEST_F(BlockPopupsTableViewControllerTest, TestOneAllowedItem) {
   EXPECT_EQ(2, NumberOfSections());
   EXPECT_EQ(1, NumberOfItemsInSection(1));
   CheckSectionHeaderWithId(IDS_IOS_POPUPS_ALLOWED, 1);
-  CheckTextCellText(base::SysUTF8ToNSString(kAllowedPattern), 1, 0);
+  CheckTextCellTextAndDetailText(base::SysUTF8ToNSString(kAllowedPattern), nil,
+                                 1, 0);
   EXPECT_TRUE([controller() navigationItem].rightBarButtonItem);
 }
 

@@ -305,14 +305,6 @@ class CSSRadialGradientValue final : public CSSGradientValue {
 
 class CSSConicGradientValue final : public CSSGradientValue {
  public:
-  static CSSConicGradientValue* Create(const CSSValue* x,
-                                       const CSSValue* y,
-                                       const CSSPrimitiveValue* from_angle,
-                                       CSSGradientRepeat repeat) {
-    return MakeGarbageCollected<CSSConicGradientValue>(x, y, from_angle,
-                                                       repeat);
-  }
-
   CSSConicGradientValue(const CSSValue* x,
                         const CSSValue* y,
                         const CSSPrimitiveValue* from_angle,

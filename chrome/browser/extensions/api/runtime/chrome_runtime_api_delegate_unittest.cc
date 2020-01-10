@@ -118,7 +118,8 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
                 base::Unretained(delegate), id,
                 ExtensionDownloaderDelegate::Error::NO_UPDATE_AVAILABLE,
                 ExtensionDownloaderDelegate::PingResult(),
-                fetch_data->request_ids()));
+                fetch_data->request_ids(),
+                ExtensionDownloaderDelegate::FailureData()));
         continue;
       }
       auto update = updates_.find(id);

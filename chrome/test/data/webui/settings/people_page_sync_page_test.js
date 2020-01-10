@@ -9,6 +9,18 @@ cr.define('settings_people_page_sync_page', function() {
     let encryptWithGoogle = null;
     let encryptWithPassphrase = null;
 
+    suiteSetup(function() {
+      loadTimeData.overrideValues({
+        syncSetupFriendlySettings: true,
+        sWAAOn: 'On',
+        sWAAOff: 'Off',
+        sWAAOnHint: 'sWAAOnHint',
+        sWAAOffHint: 'sWAAOffHint',
+        historySyncOffHint: 'historySyncOffHint',
+        dataEncryptedHint: 'dataEncryptedHint'
+      });
+    });
+
     setup(function() {
       browserProxy = new TestSyncBrowserProxy();
       settings.SyncBrowserProxyImpl.instance_ = browserProxy;
@@ -506,6 +518,85 @@ cr.define('settings_people_page_sync_page', function() {
       syncPage.syncStatus = {supervisedUser: true};
       Polymer.dom.flush();
       assertTrue(dashboardLink.hidden);
+    });
+
+    test('sWAA', async function() {
+      function verifyResults(hidden, sWAA, sWAAHint, hideActivityControlsUrl) {
+        const sWAAText = syncPage.$$('#history-usage-state .secondary');
+        const historyUsageHint = syncPage.$$('#history-usage-hint');
+        assertEquals(sWAAText.hidden, hidden);
+        assertEquals(historyUsageHint.hidden, hidden);
+        assertEquals(
+            syncPage.$$('#history-usage-row')
+                .querySelector('.icon-external')
+                .hidden,
+            hideActivityControlsUrl);
+
+        if (!hidden) {
+          assertEquals(sWAAText.textContent.trim(), sWAA);
+          assertEquals(historyUsageHint.textContent.trim(), sWAAHint);
+        }
+      }
+
+      /** @param {Object=} syncPrefOverrides */
+      function setSyncPrefs(syncPrefOverrides = {}) {
+        const defaults = sync_test_util.getSyncAllPrefs();
+        const syncPrefs = Object.assign({}, defaults, syncPrefOverrides);
+        cr.webUIListenerCallback('sync-prefs-changed', syncPrefs);
+        Polymer.dom.flush();
+      }
+
+      const syncSection = syncPage.$$('#sync-section');
+      assertTrue(syncSection.hidden);
+      syncPage.syncStatus = {
+        signedIn: true,
+        disabled: false,
+        hasError: false,
+        statusAction: settings.StatusAction.NO_ACTION,
+      };
+      Polymer.dom.flush();
+      assertFalse(syncSection.hidden);
+      await browserProxy.whenCalled('queryIsHistoryRecordingEnabled');
+      verifyResults(
+          /*hidden=*/ false, 'On', 'sWAAOnHint',
+          /*hideActivityControlsUrl=*/ false);
+
+      // Data encrypted with custom passphrase.
+      setSyncPrefs({encryptAllData: true});
+      verifyResults(
+          /*hidden=*/ false, 'Off', 'dataEncryptedHint',
+          /*hideActivityControlsUrl=*/ true);
+
+      // sWAA off.
+      browserProxy.setHistoryRecordingEnabled({
+        requestSucceeded: true,
+        historyRecordingEnabled: /*hideActivityControlsUrl=*/ false
+      });
+      setSyncPrefs();
+      await browserProxy.whenCalled('queryIsHistoryRecordingEnabled');
+      verifyResults(
+          /*hidden=*/ false, 'Off', 'sWAAOffHint',
+          /*hideActivityControlsUrl=*/ false);
+
+      // Turn history sync off.
+      setSyncPrefs({syncAllDataTypes: false, typedUrlsSynced: false});
+      verifyResults(
+          /*hidden=*/ false, 'Off', 'historySyncOffHint',
+          /*hideActivityControlsUrl=*/ true);
+
+      // Verify hint is updated.
+      setSyncPrefs({encryptAllData: true});
+      verifyResults(
+          /*hidden=*/ false, 'Off', 'dataEncryptedHint',
+          /*hideActivityControlsUrl=*/ true);
+
+      // Failed to fetch |historyRecordingEnabled|.
+      browserProxy.setHistoryRecordingEnabled(
+          {requestSucceeded: false, historyRecordingEnabled: false});
+      setSyncPrefs();
+      await browserProxy.whenCalled('queryIsHistoryRecordingEnabled');
+      verifyResults(
+          /*hidden=*/ true, '', '', /*hideActivityControlsUrl=*/ false);
     });
 
     // ##################################

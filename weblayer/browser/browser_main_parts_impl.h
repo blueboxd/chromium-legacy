@@ -14,6 +14,7 @@
 #include "content/public/common/main_function_params.h"
 
 namespace weblayer {
+class BrowserProcess;
 struct MainParams;
 
 class BrowserMainPartsImpl : public content::BrowserMainParts {
@@ -32,6 +33,8 @@ class BrowserMainPartsImpl : public content::BrowserMainParts {
 
  private:
   MainParams* params_;
+
+  std::unique_ptr<BrowserProcess> browser_process_;
 
   // For running weblayer_browsertests.
   const content::MainFunctionParams main_function_params_;

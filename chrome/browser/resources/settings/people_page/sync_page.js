@@ -15,6 +15,18 @@ const RadioButtonNames = {
 };
 
 /**
+ * All possible states for the sWAA bit.
+ * @enum {string}
+ */
+const sWAAState = {
+  NOT_FETCHED: 'not-fetched',
+  FETCHING: 'fetching',
+  FAILED: 'failed',
+  ON: 'On',
+  OFF: 'Off',
+};
+
+/**
  * @fileoverview
  * 'settings-sync-page' is the settings page containing sync settings.
  */
@@ -24,6 +36,7 @@ Polymer({
   behaviors: [
     WebUIListenerBehavior,
     settings.RouteObserverBehavior,
+    I18nBehavior,
   ],
 
   properties: {
@@ -149,10 +162,53 @@ Polymer({
       computed: 'computeDisableEncryptionOptions_(' +
           'syncPrefs, syncStatus)',
     },
+
+    /**
+     * If sync page friendly settings is enabled.
+     * @private
+     */
+    syncSetupFriendlySettings_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.valueExists('syncSetupFriendlySettings') &&
+            loadTimeData.getBoolean('syncSetupFriendlySettings');
+      }
+    },
+
+    /**
+     * Whether history is not synced or data is encrypted.
+     * @private
+     */
+    historyNotSyncedOrEncrypted_: {
+      type: Boolean,
+      computed: 'computeHistoryNotSyncedOrEncrypted_(' +
+          'syncPrefs.encryptAllData, syncPrefs.typedUrlsSynced)',
+    },
+
+    /** @private */
+    hideActivityControlsUrl_: {
+      type: Boolean,
+      computed: 'computeHideActivityControlsUrl_(historyNotSyncedOrEncrypted_)',
+    },
+
+    /** @private */
+    sWAA_: {
+      type: String,
+      value: sWAAState.NOT_FETCHED,
+    },
   },
+
+  observers: ['fetchSWAA_(syncSectionDisabled_, historyNotSyncedOrEncrypted_)'],
 
   /** @private {?settings.SyncBrowserProxy} */
   browserProxy_: null,
+
+  /**
+   * The visibility changed callback is used to refetch the |sWAA_| bit when
+   * the page is foregrounded.
+   * @private {?Function}
+   */
+  visibilityChangedCallback_: null,
 
   /**
    * The beforeunload callback is used to show the 'Leave site' dialog. This
@@ -252,6 +308,113 @@ Polymer({
   },
 
   /**
+   * @return {boolean} Returns true if History sync is off or data is encrypted.
+   * @private
+   */
+  computeHistoryNotSyncedOrEncrypted_: function() {
+    return !!(this.syncPrefs) &&
+        (!this.syncPrefs.typedUrlsSynced || this.syncPrefs.encryptAllData);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeHideActivityControlsUrl_: function() {
+    return !!this.syncSetupFriendlySettings_ &&
+        !!this.historyNotSyncedOrEncrypted_;
+  },
+
+
+  /**
+   * Compute and fetch the sWAA bit for sync users. sWAA is 'OFF' if sync
+   * history is off or data is encrypted with custom passphrase. Otherwise,
+   * a query to |Web and App Activity| is needed.
+   * @private
+   */
+  fetchSWAA_: function() {
+    if (settings.getCurrentRoute() !== settings.routes.SYNC) {
+      return;
+    }
+
+    if (!this.syncSetupFriendlySettings_) {
+      return;
+    }
+
+    if (!this.syncPrefs || this.syncPrefs.encryptAllData === undefined ||
+        this.syncPrefs.typedUrlsSynced === undefined) {
+      return;
+    }
+
+    if (this.syncSectionDisabled_) {
+      this.sWAA_ = sWAAState.NOT_FETCHED;
+      return;
+    }
+
+    if (this.historyNotSyncedOrEncrypted_) {
+      this.sWAA_ = sWAAState.OFF;
+      return;
+    }
+
+    if (this.sWAA_ === sWAAState.FETCHING) {
+      return;
+    }
+
+    this.sWAA_ = sWAAState.FETCHING;
+    const updateSWAA = historyRecordingEnabled => {
+      this.sWAA_ = historyRecordingEnabled.requestSucceeded ?
+          (historyRecordingEnabled.historyRecordingEnabled ? sWAAState.ON :
+                                                             sWAAState.OFF) :
+          sWAAState.FAILED;
+    };
+    this.browserProxy_.queryIsHistoryRecordingEnabled().then(updateSWAA);
+  },
+
+  /**
+   * Refetch sWAA when the page is forgrounded, to guarantee the value shown is
+   * most up-to-date.
+   * @private
+   */
+  visibilityHandler_: function() {
+    if (document.visibilityState === 'visible') {
+      this.fetchSWAA_();
+    }
+  },
+
+  /**
+   * Return hint to explain the sWAA state. It is displayed as secondary text in
+   * the history usage row.
+   * @private
+   */
+  getHistoryUsageHint_: function() {
+    if (this.sWAA_ === sWAAState.ON) {
+      return this.i18n('sWAAOnHint');
+    }
+
+    if (this.sWAA_ === sWAAState.OFF) {
+      if (this.syncPrefs.encryptAllData) {
+        return this.i18n('dataEncryptedHint');
+      }
+
+      if (!this.syncPrefs.typedUrlsSynced) {
+        return this.i18n('historySyncOffHint');
+      }
+      return this.i18n('sWAAOffHint');
+    }
+    return '';
+  },
+
+  /**
+   * @private
+   */
+  getSWAAStateText_: function() {
+    if (!this.isSWAAFetched_()) {
+      return '';
+    }
+    return this.i18n(this.sWAA_ === sWAAState.ON ? 'sWAAOn' : 'sWAAOff');
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
@@ -334,10 +497,27 @@ Polymer({
     return expectedPageStatus == this.pageStatus_;
   },
 
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isSWAAFetching_: function() {
+    return this.sWAA_ === sWAAState.FETCHING;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isSWAAFetched_: function() {
+    return this.sWAA_ === sWAAState.ON || this.sWAA_ === sWAAState.OFF;
+  },
+
   /** @private */
   onNavigateToPage_: function() {
     assert(settings.getCurrentRoute() == settings.routes.SYNC);
-
+    this.sWAA_ = sWAAState.NOT_FETCHED;
+    this.fetchSWAA_();
     if (this.beforeunloadCallback_) {
       return;
     }
@@ -364,6 +544,11 @@ Polymer({
 
     this.unloadCallback_ = this.onNavigateAwayFromPage_.bind(this);
     window.addEventListener('unload', this.unloadCallback_);
+
+    this.visibilityChangedCallback_ = this.visibilityHandler_.bind(this);
+    window.addEventListener('focus', this.visibilityChangedCallback_);
+    document.addEventListener(
+        'visibilitychange', this.visibilityChangedCallback_);
   },
 
   /** @private */
@@ -385,6 +570,13 @@ Polymer({
       window.removeEventListener('unload', this.unloadCallback_);
       this.unloadCallback_ = null;
     }
+
+    if (this.visibilityChangedCallback_) {
+      window.removeEventListener('focus', this.visibilityChangedCallback_);
+      document.removeEventListener(
+          'visibilitychange', this.visibilityChangedCallback_);
+      this.visibilityChangedCallback_ = null;
+    }
   },
 
   /**
@@ -402,6 +594,10 @@ Polymer({
         !this.syncPrefs.encryptAllDataAllowed ||
         (this.syncStatus && this.syncStatus.supervisedUser)) {
       this.creatingNewPassphrase_ = false;
+    }
+
+    if (this.sWAA_ === sWAAState.FAILED) {
+      this.fetchSWAA_();
     }
   },
 

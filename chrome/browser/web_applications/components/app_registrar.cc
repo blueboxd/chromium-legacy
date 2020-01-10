@@ -83,6 +83,11 @@ base::Optional<AppId> AppRegistrar::LookupExternalAppId(
       .LookupAppId(install_url);
 }
 
+bool AppRegistrar::HasExternalApp(const AppId& app_id) const {
+  return ExternallyInstalledWebAppPrefs::HasAppId(profile()->GetPrefs(),
+                                                  app_id);
+}
+
 bool AppRegistrar::HasExternalAppWithInstallSource(
     const AppId& app_id,
     ExternalInstallSource install_source) const {

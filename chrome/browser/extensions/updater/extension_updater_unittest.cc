@@ -1155,7 +1155,7 @@ class ExtensionUpdaterTest : public testing::Test {
           delegate,
           OnExtensionDownloadFailed(
               "1111", ExtensionDownloaderDelegate::Error::MANIFEST_FETCH_FAILED,
-              _, _))
+              _, _, _))
           .WillOnce(InvokeWithoutArgs(&delegate,
                                       &MockExtensionDownloaderDelegate::Quit));
       delegate.Wait();
@@ -1174,7 +1174,7 @@ class ExtensionUpdaterTest : public testing::Test {
           delegate,
           OnExtensionDownloadFailed(
               "2222", ExtensionDownloaderDelegate::Error::MANIFEST_INVALID, _,
-              _))
+              _, _))
           .WillOnce(InvokeWithoutArgs(&delegate,
                                       &MockExtensionDownloaderDelegate::Quit));
       delegate.Wait();
@@ -1205,7 +1205,7 @@ class ExtensionUpdaterTest : public testing::Test {
           delegate,
           OnExtensionDownloadFailed(
               "3333", ExtensionDownloaderDelegate::Error::NO_UPDATE_AVAILABLE,
-              _, _))
+              _, _, _))
           .WillOnce(InvokeWithoutArgs(&delegate,
                                       &MockExtensionDownloaderDelegate::Quit));
       delegate.Wait();
@@ -1269,7 +1269,7 @@ class ExtensionUpdaterTest : public testing::Test {
         delegate,
         OnExtensionDownloadFailed(
             "1111", ExtensionDownloaderDelegate::Error::MANIFEST_FETCH_FAILED,
-            _, _));
+            _, _, _));
     helper.test_url_loader_factory().SetInterceptor(base::BindLambdaForTesting(
         [&](const network::ResourceRequest& request) {
           EXPECT_TRUE(request.load_flags == kExpectedLoadFlags);
@@ -1302,7 +1302,7 @@ class ExtensionUpdaterTest : public testing::Test {
         delegate,
         OnExtensionDownloadFailed(
             "1111", ExtensionDownloaderDelegate::Error::MANIFEST_FETCH_FAILED,
-            _, _));
+            _, _, _));
 
     // The first fetch will fail, and require retrying.
     {
@@ -1393,7 +1393,7 @@ class ExtensionUpdaterTest : public testing::Test {
     }
 
     if (fail) {
-      EXPECT_CALL(delegate, OnExtensionDownloadFailed(id, _, _, requests))
+      EXPECT_CALL(delegate, OnExtensionDownloadFailed(id, _, _, requests, _))
           .WillOnce(DoAll(
               InvokeWithoutArgs(&delegate,
                                 &MockExtensionDownloaderDelegate::Quit),
@@ -1625,7 +1625,7 @@ class ExtensionUpdaterTest : public testing::Test {
         EXPECT_TRUE(updater.downloader_->extension_loader_);
         helper.test_url_loader_factory().AddResponse(
             fetch.url.spec(), std::string(), net::HTTP_UNAUTHORIZED);
-        EXPECT_CALL(delegate, OnExtensionDownloadFailed(_, _, _, _))
+        EXPECT_CALL(delegate, OnExtensionDownloadFailed(_, _, _, _, _))
             .WillOnce(InvokeWithoutArgs(
                 &delegate, &MockExtensionDownloaderDelegate::Quit));
         delegate.Wait();

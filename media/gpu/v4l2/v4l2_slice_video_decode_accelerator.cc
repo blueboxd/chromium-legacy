@@ -617,10 +617,6 @@ bool V4L2SliceVideoDecodeAccelerator::CreateInputBuffers() {
     requests_queue_ = device_->GetRequestsQueue();
     if (requests_queue_ == nullptr)
       return false;
-
-    if (!requests_queue_->AllocateRequests(
-            input_queue_->AllocatedBuffersCount()))
-      return false;
   }
 
   return true;
@@ -777,25 +773,6 @@ void V4L2SliceVideoDecodeAccelerator::ServiceDeviceTask(bool event) {
   Dequeue();
 }
 
-void V4L2SliceVideoDecodeAccelerator::Enqueue(
-    scoped_refptr<V4L2DecodeSurface> dec_surface) {
-  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-
-  if (!EnqueueInputRecord(dec_surface.get())) {
-    VLOGF(1) << "Failed queueing an input buffer";
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
-  }
-
-  if (!EnqueueOutputRecord(dec_surface.get())) {
-    VLOGF(1) << "Failed queueing an output buffer";
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
-  }
-
-  surfaces_at_device_.push(dec_surface);
-}
-
 void V4L2SliceVideoDecodeAccelerator::Dequeue() {
   DVLOGF(4);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
@@ -913,60 +890,6 @@ void V4L2SliceVideoDecodeAccelerator::ReuseOutputBuffer(
   decoded_buffer_map_.erase(buffer->BufferId());
 
   ScheduleDecodeBufferTaskIfNeeded();
-}
-
-bool V4L2SliceVideoDecodeAccelerator::EnqueueInputRecord(
-    V4L2DecodeSurface* dec_surface) {
-  DVLOGF(4);
-  DCHECK_NE(dec_surface, nullptr);
-
-  // Enqueue an input (VIDEO_OUTPUT) buffer for an input video frame.
-  V4L2WritableBufferRef input_buffer = std::move(dec_surface->input_buffer());
-  const int index = input_buffer.BufferId();
-  input_buffer.PrepareQueueBuffer(*dec_surface);
-  if (!std::move(input_buffer).QueueMMap()) {
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return false;
-  }
-
-  DVLOGF(4) << "Enqueued input=" << index
-            << " count: " << input_queue_->QueuedBuffersCount();
-
-  return true;
-}
-
-bool V4L2SliceVideoDecodeAccelerator::EnqueueOutputRecord(
-    V4L2DecodeSurface* dec_surface) {
-  DVLOGF(4);
-
-  // Enqueue an output (VIDEO_CAPTURE) buffer.
-  V4L2WritableBufferRef output_buffer = std::move(dec_surface->output_buffer());
-  size_t index = output_buffer.BufferId();
-  OutputRecord& output_record = output_buffer_map_[index];
-  DCHECK_NE(output_record.picture_id, -1);
-
-  bool ret = false;
-  switch (output_buffer.Memory()) {
-    case V4L2_MEMORY_MMAP:
-      ret = std::move(output_buffer).QueueMMap();
-      break;
-    case V4L2_MEMORY_DMABUF:
-      ret = std::move(output_buffer)
-                .QueueDMABuf(output_record.output_frame->DmabufFds());
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  if (!ret) {
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return false;
-  }
-
-  DVLOGF(4) << "Enqueued output=" << index
-            << " count: " << output_queue_->QueuedBuffersCount();
-
-  return true;
 }
 
 bool V4L2SliceVideoDecodeAccelerator::StartDevicePoll() {
@@ -1948,12 +1871,12 @@ void V4L2SliceVideoDecodeAccelerator::DecodeSurface(
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
   DVLOGF(3) << "Submitting decode for surface: " << dec_surface->ToString();
-  Enqueue(dec_surface);
-
   if (!dec_surface->Submit()) {
     VLOGF(1) << "Error while submitting frame for decoding!";
     NOTIFY_ERROR(PLATFORM_FAILURE);
   }
+
+  surfaces_at_device_.push(dec_surface);
 }
 
 void V4L2SliceVideoDecodeAccelerator::SurfaceReady(
@@ -2082,19 +2005,25 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
 
   scoped_refptr<V4L2DecodeSurface> dec_surface;
 
+  size_t index = output_buffer->BufferId();
+  OutputRecord& output_record = output_buffer_map_[index];
+  DCHECK_NE(output_record.picture_id, -1);
+
   if (supports_requests_) {
     // Get a free request from the queue for a new surface.
-    V4L2RequestRef request_ref = requests_queue_->GetFreeRequest();
-    if (!request_ref.IsValid()) {
+    base::Optional<V4L2RequestRef> request_ref =
+        requests_queue_->GetFreeRequest();
+    if (!request_ref) {
       NOTIFY_ERROR(PLATFORM_FAILURE);
       return nullptr;
     }
-    dec_surface = new V4L2RequestDecodeSurface(std::move(*input_buffer),
-                                               std::move(*output_buffer),
-                                               nullptr, std::move(request_ref));
+    dec_surface = new V4L2RequestDecodeSurface(
+        std::move(*input_buffer), std::move(*output_buffer),
+        output_record.output_frame, std::move(*request_ref));
   } else {
-    dec_surface = new V4L2ConfigStoreDecodeSurface(
-        std::move(*input_buffer), std::move(*output_buffer), nullptr);
+    dec_surface = new V4L2ConfigStoreDecodeSurface(std::move(*input_buffer),
+                                                   std::move(*output_buffer),
+                                                   output_record.output_frame);
   }
 
   DVLOGF(4) << "Created surface " << input << " -> " << output;

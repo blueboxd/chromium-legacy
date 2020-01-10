@@ -7,24 +7,20 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-  <!-- Horizontal spacing is 24dp, on end it's 16dp from LinearLayout + 8dp
-       from ChromeImageView. -->
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:minHeight="56dp"
       android:orientation="horizontal"
       android:paddingStart="@dimen/autofill_assistant_header_horizontal_spacing"
-      android:paddingEnd="16dp">
-    <!-- Move poodle down the same space as profile icon. -->
+      android:paddingEnd="@dimen/autofill_assistant_header_horizontal_spacing">
     <LinearLayout
         android:id="@+id/poodle_wrapper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="@dimen/autofill_assistant_profile_icon_padding"/>
-    <!-- 16dp on start, 24dp on end which are 16dp from the TextView + 8dp from
-         ChromeImageView. -->
+        android:orientation="horizontal"/>
+    <!-- 16dp on start which are 8dp from the TextView + 8dp from the poodle. -->
+    <!-- 24dp on end which are 16dp from the TextView + 8dp from the ChromeImageView. -->
     <!-- 14dp on top (as margin, to prevent overlap with toolbar) visual alignment. -->
     <TextView
         android:id="@+id/status_message"
@@ -32,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1.0"
         android:gravity="center_vertical"
-        android:paddingStart="16dp"
+        android:paddingStart="8dp"
         android:paddingEnd="16dp"
         android:layout_marginTop="14dp"
         android:layout_marginBottom="@dimen/autofill_assistant_header_text_vertical_spacing"

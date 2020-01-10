@@ -2650,6 +2650,10 @@ crbug.com/1035582 [ Linux ] fast/forms/select/listbox-overlay-scrollbar.html [ S
 crbug.com/1035582 external/wpt/css/css-pseudo/spelling-error-003-manual.html [ Skip ]
 crbug.com/1035582 external/wpt/css/css-transforms/transform-input-015.html [ Skip ]
 
+# Focus ring related
+crbug.com/1035582 fast/forms/text/input-appearance-autocomplete-very-long-value.html [ Skip ]
+crbug.com/1035582 virtual/text-antialias/selection/mixed-directionality-selection.html [ Skip ]
+
 # ======
 # ====== End of rebaselines for crbug.com/1035582 ======
 # ======
@@ -3069,11 +3073,6 @@ crbug.com/400841 media/video-canvas-draw.html [ Failure ]
 crbug.com/400841 virtual/audio-service/media/video-canvas-draw.html [ Failure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ Failure ]
 crbug.com/400829 virtual/audio-service/media/stable/video-object-fit-stable.html [ Failure ]
-
-# These contain faulty expectations. https://chromium-review.googlesource.com/c/v8/v8/+/1350790 should fix the
-# faulty return values but to allow landing that patch, the tests have to be deactivated in the meanwhile.
-crbug.com/924308 http/tests/devtools/console/console-dir-es6.js [ Pass Failure ]
-crbug.com/924308 http/tests/devtools/console/console-format-es6-2.js [ Pass Failure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/441553 virtual/stable/web-animations-api/* [ Skip ]
@@ -3697,6 +3696,7 @@ crbug.com/626703 [ Linux ] external/wpt/service-workers/service-worker/ready.htt
 crbug.com/626703 [ Mac ] external/wpt/service-workers/service-worker/ready.https.window.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/service-workers/service-worker/ready.https.window.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-pan-x-css_touch.html [ Timeout ]
+crbug.com/1040874 [ Mac ] external/wpt/pointerevents/pointerevent_pointercapture_in_frame.html [ Pass Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-anchor-transform-box-fill-box-003.html [ Failure ]
@@ -7111,7 +7111,7 @@ crbug.com/1034492 http/tests/devtools/unit/filtered-list-widget-providers.js [ P
 crbug.com/1034492 http/tests/devtools/unit/soft-drop-down.js [ Pass Failure ]
 
 # Sheriff 2019-12-17
-crbug.com/1034789 [ Mac10.13 ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
+crbug.com/1034789 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
 crbug.com/1034789 [ Mac10.13 ] virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Timeout ]
 crbug.com/1034789 [ Mac10.13 ] external/wpt/pointerevents/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
 crbug.com/1034839 css3/filters/effect-reference-image.html [ Pass Failure ]
@@ -7241,3 +7241,6 @@ crbug.com/1040270 http/tests/devtools/elements/styles-1/disable-property-working
 
 # Temporarily disabled to land Animations accessibility changes in DevTools
 crbug.com/963183 http/tests/devtools/animation/animation-timeline.js [ Pass Failure ]
+
+# Broken in https://chromium-review.googlesource.com/c/chromium/src/+/1636716
+crbug.com/963183 http/tests/devtools/sources/debugger-breakpoints/disable-breakpoints.js [ Pass Failure ]

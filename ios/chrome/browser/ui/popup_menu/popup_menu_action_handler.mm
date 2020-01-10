@@ -110,6 +110,7 @@ using base::UserMetricsAction;
       break;
     case PopupMenuActionTextZoom:
       RecordAction(UserMetricsAction("MobileMenuTextZoom"));
+      [self.dispatcher showTextZoom];
       break;
 #if !defined(NDEBUG)
     case PopupMenuActionViewSource:

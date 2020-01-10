@@ -369,6 +369,40 @@
           "shards": 15
         },
         "test_target": "//android_webview/test:system_webview_wpt"
+      },
+      {
+        "args": [
+          "--disable-features=OutOfBlinkCors"
+        ],
+        "isolate_name": "weblayer_shell_wpt",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "weblayer_shell_wpt",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "chromium/chrome/test/chromedriver/cipd",
+              "location": "chrome/test/chromedriver/cipd",
+              "revision": "tLMjWvOcbQX4nMo5WnMsKWn0aaVludzuSX9yiVFUCoUC"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "expiration": 18000,
+          "hard_timeout": 14400,
+          "shards": 15
+        },
+        "test_target": "//weblayer/shell/android:weblayer_shell_wpt"
       }
     ]
   },
@@ -486,6 +520,37 @@
           "shards": 15
         },
         "test_target": "//android_webview/test:system_webview_wpt"
+      },
+      {
+        "isolate_name": "weblayer_shell_wpt",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "weblayer_shell_wpt",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "chromium/chrome/test/chromedriver/cipd",
+              "location": "chrome/test/chromedriver/cipd",
+              "revision": "tLMjWvOcbQX4nMo5WnMsKWn0aaVludzuSX9yiVFUCoUC"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "expiration": 18000,
+          "hard_timeout": 14400,
+          "shards": 15
+        },
+        "test_target": "//weblayer/shell/android:weblayer_shell_wpt"
       }
     ]
   },

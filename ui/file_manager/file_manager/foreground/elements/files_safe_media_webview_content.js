@@ -40,12 +40,10 @@ window.onload = () => {
         content.src = event.data.src;
         content.decode()
             .then(() => {
-              content.removeAttribute('generic-thumbnail');
               document.body.appendChild(content);
             })
             .catch(() => {
-              content.setAttribute('generic-thumbnail', 'image');
-              document.body.appendChild(content);
+              contentDecodeFailed();
             });
         break;
       default:
@@ -66,6 +64,10 @@ window.onload = () => {
 
   function contentChanged(src) {
     sendMessage(src ? 'webview-loaded' : 'webview-cleared');
+  }
+
+  function contentDecodeFailed() {
+    sendMessage('content-decode-failed');
   }
 
   function sendMessage(message) {

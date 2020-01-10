@@ -133,10 +133,10 @@ TEST_F(FileBasedTrustedVaultClientTest, ShouldStoreKeys) {
   const std::vector<uint8_t> kKey3 = {2, 3, 4};
   const std::vector<uint8_t> kKey4 = {3, 4};
 
-  client_.StoreKeys(kGaiaId1, {kKey1});
-  client_.StoreKeys(kGaiaId2, {kKey2});
+  client_.StoreKeys(kGaiaId1, {kKey1}, /*last_key_version=*/7);
+  client_.StoreKeys(kGaiaId2, {kKey2}, /*last_key_version=*/8);
   // Keys for |kGaiaId2| overriden, so |kKey2| should be lost.
-  client_.StoreKeys(kGaiaId2, {kKey3, kKey4});
+  client_.StoreKeys(kGaiaId2, {kKey3, kKey4}, /*last_key_version=*/9);
 
   // Wait until the last write completes.
   WaitForFlush();
@@ -151,8 +151,10 @@ TEST_F(FileBasedTrustedVaultClientTest, ShouldStoreKeys) {
   EXPECT_TRUE(proto.ParseFromString(decrypted_content));
   ASSERT_THAT(proto.user_size(), Eq(2));
   EXPECT_THAT(proto.user(0).key(), ElementsAre(KeyMaterialEq(kKey1)));
+  EXPECT_THAT(proto.user(0).last_key_version(), Eq(7));
   EXPECT_THAT(proto.user(1).key(),
               ElementsAre(KeyMaterialEq(kKey3), KeyMaterialEq(kKey4)));
+  EXPECT_THAT(proto.user(1).last_key_version(), Eq(9));
 }
 
 TEST_F(FileBasedTrustedVaultClientTest, ShouldFetchPreviouslyStoredKeys) {
@@ -162,8 +164,8 @@ TEST_F(FileBasedTrustedVaultClientTest, ShouldFetchPreviouslyStoredKeys) {
   const std::vector<uint8_t> kKey2 = {1, 2, 3, 4};
   const std::vector<uint8_t> kKey3 = {2, 3, 4};
 
-  client_.StoreKeys(kGaiaId1, {kKey1});
-  client_.StoreKeys(kGaiaId2, {kKey2, kKey3});
+  client_.StoreKeys(kGaiaId1, {kKey1}, /*last_key_version=*/0);
+  client_.StoreKeys(kGaiaId2, {kKey2, kKey3}, /*last_key_version=*/1);
 
   // Wait until the last write completes.
   WaitForFlush();

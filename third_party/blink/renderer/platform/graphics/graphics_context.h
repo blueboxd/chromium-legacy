@@ -371,6 +371,8 @@ class PLATFORM_EXPORT GraphicsContext {
   void DrawFocusRing(const Vector<IntRect>&,
                      float width,
                      int offset,
+                     float border_radius,
+                     float min_border_width,
                      const Color&,
                      bool is_outset);
   void DrawFocusRing(const Path&, float width, int offset, const Color&);
@@ -462,12 +464,19 @@ class PLATFORM_EXPORT GraphicsContext {
   void RestoreLayer();
 
   // Helpers for drawing a focus ring (drawFocusRing)
-  void DrawFocusRingPath(const SkPath&, const Color&, float width);
-  void DrawFocusRingRect(const SkRect&, const Color&, float width);
+  void DrawFocusRingPath(const SkPath&,
+                         const Color&,
+                         float width,
+                         float border_radius);
+  void DrawFocusRingRect(const SkRect&,
+                         const Color&,
+                         float width,
+                         float border_radius);
 
   void DrawFocusRingInternal(const Vector<IntRect>&,
                              float width,
                              int offset,
+                             float border_radius,
                              const Color&,
                              bool is_outset);
 

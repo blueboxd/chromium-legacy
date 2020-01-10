@@ -141,7 +141,10 @@ const CGFloat kDamping = 0.85;
             CGAffineTransformIdentity;
       }
       withCompletion:^(BOOL finished) {
-        [self.delegate containedPresenterDidPresent:self];
+        if ([self.delegate
+                respondsToSelector:@selector(containedPresenterDidPresent:)]) {
+          [self.delegate containedPresenterDidPresent:self];
+        }
       }];
 }
 
@@ -153,7 +156,10 @@ const CGFloat kDamping = 0.85;
     [self.popupViewController.view removeFromSuperview];
     [self.popupViewController removeFromParentViewController];
     self.popupViewController = nil;
-    [self.delegate containedPresenterDidDismiss:self];
+    if ([self.delegate
+            respondsToSelector:@selector(containedPresenterDidDismiss:)]) {
+      [self.delegate containedPresenterDidDismiss:self];
+    }
   };
   if (animated) {
     [self

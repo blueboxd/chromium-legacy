@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event_init.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/webrtc/api/ice_transport_factory.h"
@@ -53,7 +54,7 @@ base::Optional<cricket::Candidate> ConvertToCricketIceCandidate(
 }
 
 RTCIceCandidate* ConvertToRtcIceCandidate(const cricket::Candidate& candidate) {
-  return RTCIceCandidate::Create(RTCIceCandidatePlatform::Create(
+  return RTCIceCandidate::Create(MakeGarbageCollected<RTCIceCandidatePlatform>(
       String::FromUTF8(webrtc::SdpSerializeCandidate(candidate)), "", 0));
 }
 

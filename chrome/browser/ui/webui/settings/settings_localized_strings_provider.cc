@@ -26,6 +26,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/management_ui.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -2231,13 +2232,29 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"passphraseConfirmationPlaceholder",
      IDS_SETTINGS_PASSPHRASE_CONFIRMATION_PLACEHOLDER},
     {"submitPassphraseButton", IDS_SETTINGS_SUBMIT_PASSPHRASE},
-    {"personalizeGoogleServicesTitle",
-     IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE},
     {"existingPassphraseTitle", IDS_SETTINGS_EXISTING_PASSPHRASE_TITLE},
     {"enablePaymentsIntegrationCheckboxLabel",
      IDS_AUTOFILL_ENABLE_PAYMENTS_INTEGRATION_CHECKBOX_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+  if (base::FeatureList::IsEnabled(features::kSyncSetupFriendlySettings)) {
+    static constexpr webui::LocalizedString
+        kSyncSetupFriendlySettingsStrings[] = {
+            {"personalizeGoogleServicesTitle",
+             IDS_SETTINGS_USE_HISTORY_TO_PERSONALIZE_GOOGLE_SERVICES_TITLE},
+            {"sWAAOn", IDS_SETTINGS_SWAA_ON},
+            {"sWAAOff", IDS_SETTINGS_SWAA_OFF},
+            {"sWAAOnHint", IDS_SETTINGS_SWAA_ON_HINT},
+            {"dataEncryptedHint", IDS_SETTINGS_DATA_ENCRYPTED_HINT},
+            {"historySyncOffHint", IDS_SETTINGS_HISTORY_SYNC_OFF_HINT},
+            {"sWAAOffHint", IDS_SETTINGS_SWAA_OFF_HINT},
+        };
+    AddLocalizedStringsBulk(html_source, kSyncSetupFriendlySettingsStrings);
+  } else {
+    html_source->AddLocalizedString(
+        "personalizeGoogleServicesTitle",
+        IDS_SETTINGS_PERSONALIZE_GOOGLE_SERVICES_TITLE);
+  }
 #if defined(OS_CHROMEOS)
   AddFingerprintStrings(html_source);
 #endif  // OS_CHROMEOS

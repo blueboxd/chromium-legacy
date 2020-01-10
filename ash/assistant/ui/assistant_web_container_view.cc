@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -83,6 +84,12 @@ void AssistantWebContainerView::InitLayout() {
 
   views::Widget* widget = new views::Widget;
   widget->Init(std::move(params));
+
+  // TODO(b/146351046): Temporary workaround for an a11y bug b/144765770.
+  // Should be removed once we have moved off of the Content Service
+  // (tracked in b/146351046).
+  widget->client_view()->SetFocusBehavior(FocusBehavior::ALWAYS);
+  widget->client_view()->RequestFocus();
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBackground(views::CreateSolidBackground(SK_ColorWHITE));

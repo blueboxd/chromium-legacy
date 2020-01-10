@@ -397,8 +397,6 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   bool ShouldUseANGLEDevice() const;
   ID3D11Device* D3D11Device() const;
 
-  bool ShouldUseFp16() const;
-
   // To expose client callbacks from VideoDecodeAccelerator.
   VideoDecodeAccelerator::Client* client_;
 
@@ -558,11 +556,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Supports copying NV12 textures on the main thread to use in ANGLE.
   bool support_delayed_copy_nv12_textures_;
 
-  // Supports copying video to FP16 scRGB textures.
-  bool support_fp16_ = false;
-
-  // Copy video to FP16 scRGB textures if supported.
-  bool want_fp16_ = false;
+  // Copy video to FP16 scRGB textures.
+  bool use_fp16_ = false;
 
   // When converting YUV to RGB, make sure we tell the blitter about the input
   // color space so that it can convert it correctly.

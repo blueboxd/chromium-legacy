@@ -142,6 +142,25 @@ class ExtensionDownloaderDelegate {
     base::Time day_start;
   };
 
+  // Contains the error codes when Force installed extension fail to install
+  // with error CRX_FETCH_FAILED.
+  struct FailureData {
+    FailureData();
+    FailureData(const FailureData& other);
+    FailureData(const int net_error_code, const int fetch_attempts);
+    FailureData(const int net_error_code,
+                const base::Optional<int> response,
+                const int fetch_attempts);
+    ~FailureData();
+
+    // Network error code in case of CRX_FETCH_FAILED.
+    const int network_error_code;
+    // Response code in case of CRX_FETCH_FAILED.
+    const base::Optional<int> response_code;
+    // Number of fetch attempts made in case of CRX_FETCH_FAILED.
+    const int fetch_tries;
+  };
+
   // A callback that is called to indicate if ExtensionDownloader should ignore
   // the cached entry and download a new .crx file.
   typedef base::Callback<void(bool should_download)> InstallCallback;
@@ -176,7 +195,8 @@ class ExtensionDownloaderDelegate {
   virtual void OnExtensionDownloadFailed(const ExtensionId& id,
                                          Error error,
                                          const PingResult& ping_result,
-                                         const std::set<int>& request_ids);
+                                         const std::set<int>& request_ids,
+                                         const FailureData& data);
 
   // Invoked if the extension had an update available and its crx was
   // successfully downloaded to |path|. |ownership_passed| is true if delegate

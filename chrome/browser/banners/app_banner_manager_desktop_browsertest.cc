@@ -24,7 +24,9 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -88,7 +90,8 @@ class FakeAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
     AppBannerManager::UpdateState(state);
 
     if (state == AppBannerManager::State::PENDING_ENGAGEMENT ||
-        state == AppBannerManager::State::PENDING_PROMPT) {
+        state == AppBannerManager::State::PENDING_PROMPT ||
+        state == AppBannerManager::State::COMPLETE) {
       OnFinished();
     }
   }
@@ -314,4 +317,30 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
 
   tester.ExpectUniqueSample(banners::kInstallDisplayModeHistogram,
                             blink::mojom::DisplayMode::kFullscreen, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerDesktopBrowserTest,
+                       PolicyAppInstalled_NoPrompt) {
+  FakeAppBannerManagerDesktop* manager =
+      FakeAppBannerManagerDesktop::CreateForWebContents(
+          browser()->tab_strip_model()->GetActiveWebContents());
+
+  web_app::ExternalInstallOptions options =
+      web_app::CreateInstallOptions(GetBannerURL());
+  options.install_source = web_app::ExternalInstallSource::kExternalPolicy;
+  options.user_display_mode = web_app::DisplayMode::kBrowser;
+  web_app::PendingAppManagerInstall(browser()->profile(), options);
+
+  {
+    base::RunLoop run_loop;
+    manager->PrepareDone(run_loop.QuitClosure());
+
+    ui_test_utils::NavigateToURL(browser(), GetBannerURL());
+    run_loop.Run();
+    EXPECT_EQ(State::COMPLETE, manager->state());
+  }
+
+  EXPECT_EQ(banners::AppBannerManager::InstallableWebAppCheckResult::kNo,
+            manager->GetInstallableWebAppCheckResultForTesting());
+  EXPECT_FALSE(manager->IsPromptAvailableForTesting());
 }

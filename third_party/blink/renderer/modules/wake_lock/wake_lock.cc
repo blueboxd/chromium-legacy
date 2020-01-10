@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -30,7 +31,11 @@ WakeLock::WakeLock(Document& document)
       managers_{MakeGarbageCollected<WakeLockManager>(&document,
                                                       WakeLockType::kScreen),
                 MakeGarbageCollected<WakeLockManager>(&document,
-                                                      WakeLockType::kSystem)} {}
+                                                      WakeLockType::kSystem)} {
+  document.GetScheduler()->RegisterStickyFeature(
+      SchedulingPolicy::Feature::kWakeLock,
+      {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+}
 
 WakeLock::WakeLock(DedicatedWorkerGlobalScope& worker_scope)
     : ContextLifecycleObserver(&worker_scope),

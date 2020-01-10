@@ -39,6 +39,9 @@ class AppBannerManagerDesktop
   // purposes only.
   static void DisableTriggeringForTesting();
 
+  // AppBannerManager overrides.
+  bool IsExternallyInstalledWebApp() override;
+
  protected:
   explicit AppBannerManagerDesktop(content::WebContents* web_contents);
 

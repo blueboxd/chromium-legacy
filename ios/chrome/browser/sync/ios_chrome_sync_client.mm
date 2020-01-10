@@ -115,7 +115,7 @@ IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
           /*account_password_store=*/nullptr,
           ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state_));
 
-  // TODO(crbug.com/1012660): Instantiate a specific client for ios.
+  // TODO(crbug.com/1019685): Instantiate a specific client for ios.
   trusted_vault_client_ = std::make_unique<syncer::FileBasedTrustedVaultClient>(
       browser_state_->GetStatePath().Append(kTrustedVaultFilename));
 }

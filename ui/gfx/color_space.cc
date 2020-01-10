@@ -170,15 +170,24 @@ void ColorSpace::SetCustomTransferFunction(const skcms_TransferFunction& fn) {
       return;
     }
   }
-
-  custom_transfer_params_[0] = fn.a;
-  custom_transfer_params_[1] = fn.b;
-  custom_transfer_params_[2] = fn.c;
-  custom_transfer_params_[3] = fn.d;
-  custom_transfer_params_[4] = fn.e;
-  custom_transfer_params_[5] = fn.f;
-  custom_transfer_params_[6] = fn.g;
+  transfer_params_[0] = fn.a;
+  transfer_params_[1] = fn.b;
+  transfer_params_[2] = fn.c;
+  transfer_params_[3] = fn.d;
+  transfer_params_[4] = fn.e;
+  transfer_params_[5] = fn.f;
+  transfer_params_[6] = fn.g;
   transfer_ = TransferID::CUSTOM;
+}
+
+// static
+size_t ColorSpace::TransferParamCount(TransferID transfer) {
+  switch (transfer) {
+    case TransferID::CUSTOM:
+      return 7;
+    default:
+      return 0;
+  }
 }
 
 // static
@@ -197,9 +206,9 @@ bool ColorSpace::operator==(const ColorSpace& other) const {
       return false;
     }
   }
-  if (transfer_ == TransferID::CUSTOM) {
-    if (memcmp(custom_transfer_params_, other.custom_transfer_params_,
-               sizeof(custom_transfer_params_))) {
+  if (size_t param_count = TransferParamCount(transfer_)) {
+    if (memcmp(transfer_params_, other.transfer_params_,
+               param_count * sizeof(float))) {
       return false;
     }
   }
@@ -250,10 +259,9 @@ bool ColorSpace::operator<(const ColorSpace& other) const {
     if (primary_result > 0)
       return false;
   }
-  if (transfer_ == TransferID::CUSTOM) {
-    int transfer_result =
-        memcmp(custom_transfer_params_, other.custom_transfer_params_,
-               sizeof(custom_transfer_params_));
+  if (size_t param_count = TransferParamCount(transfer_)) {
+    int transfer_result = memcmp(transfer_params_, other.transfer_params_,
+                                 param_count * sizeof(float));
     if (transfer_result < 0)
       return true;
     if (transfer_result > 0)
@@ -274,9 +282,10 @@ size_t ColorSpace::GetHash() const {
     result ^= params[4];
     result ^= params[8];
   }
-  if (transfer_ == TransferID::CUSTOM) {
+  {
+    // Note that |transfer_params_| must be zero when they are unused.
     const uint32_t* params =
-        reinterpret_cast<const uint32_t*>(custom_transfer_params_);
+        reinterpret_cast<const uint32_t*>(transfer_params_);
     result ^= params[3];
     result ^= params[6];
   }
@@ -799,13 +808,13 @@ bool ColorSpace::GetTransferFunction(TransferID transfer,
 
 bool ColorSpace::GetTransferFunction(skcms_TransferFunction* fn) const {
   if (transfer_ == TransferID::CUSTOM) {
-    fn->a = custom_transfer_params_[0];
-    fn->b = custom_transfer_params_[1];
-    fn->c = custom_transfer_params_[2];
-    fn->d = custom_transfer_params_[3];
-    fn->e = custom_transfer_params_[4];
-    fn->f = custom_transfer_params_[5];
-    fn->g = custom_transfer_params_[6];
+    fn->a = transfer_params_[0];
+    fn->b = transfer_params_[1];
+    fn->c = transfer_params_[2];
+    fn->d = transfer_params_[3];
+    fn->e = transfer_params_[4];
+    fn->f = transfer_params_[5];
+    fn->g = transfer_params_[6];
     return true;
   } else {
     return GetTransferFunction(transfer_, fn);

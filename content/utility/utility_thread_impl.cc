@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
+#include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/public/utility/content_utility_client.h"
@@ -43,8 +44,13 @@ class ServiceBinderImpl {
     // was running in the process.
     static auto* service_name_crash_key = base::debug::AllocateCrashKeyString(
         "service-name", base::debug::CrashKeySize::Size32);
-    base::debug::SetCrashKeyString(service_name_crash_key,
-                                   receiver->interface_name().value());
+    const std::string& service_name = receiver->interface_name().value();
+    base::debug::SetCrashKeyString(service_name_crash_key, service_name);
+
+    // Traces should also indicate the service name.
+    auto* trace_log = base::trace_event::TraceLog::GetInstance();
+    if (trace_log->IsProcessNameEmpty())
+      trace_log->set_process_name("Service: " + service_name);
 
     // We watch for and terminate on PEER_CLOSED, but we also terminate if the
     // watcher is cancelled (meaning the local endpoint was closed rather than

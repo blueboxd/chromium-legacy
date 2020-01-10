@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker.h"
 
 #include <utility>
+
 #include "base/feature_list.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
@@ -41,57 +42,12 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
-
-namespace {
-
-// Indicates whether the origin of worker top-level script's request URL is
-// same-origin as the parent execution context's origin or not.
-// This is used for UMA and thus the existing values should not be changed.
-enum class WorkerTopLevelScriptOriginType {
-  kSameOrigin = 0,
-  kDataUrl = 1,
-
-  // Cross-origin worker request URL (e.g. https://example.com/worker.js)
-  // from an chrome-extension: page.
-  kCrossOriginFromExtension = 2,
-
-  // Cross-origin worker request URL from a non chrome-extension: page.
-  // There are no known cases for this, and we investigate whether there are
-  // really no occurrences.
-  kCrossOriginOthers = 3,
-
-  kMaxValue = kCrossOriginOthers
-};
-
-void CountTopLevelScriptRequestUrlOriginType(
-    const SecurityOrigin& context_origin,
-    const KURL& request_url) {
-  WorkerTopLevelScriptOriginType origin_type;
-  if (request_url.ProtocolIsData()) {
-    origin_type = WorkerTopLevelScriptOriginType::kDataUrl;
-  } else if (context_origin.IsSameOriginWith(
-                 SecurityOrigin::Create(request_url).get())) {
-    origin_type = WorkerTopLevelScriptOriginType::kSameOrigin;
-  } else if (context_origin.Protocol() == "chrome-extension") {
-    // Note: using "chrome-extension" scheme check here is a layering
-    // violation. Do not use this except for UMA purpose.
-    origin_type = WorkerTopLevelScriptOriginType::kCrossOriginFromExtension;
-  } else {
-    origin_type = WorkerTopLevelScriptOriginType::kCrossOriginOthers;
-  }
-  UMA_HISTOGRAM_ENUMERATION(
-      "Worker.TopLevelScript.OriginType.RequestUrl.DedicatedWorker",
-      origin_type);
-}
-
-}  // namespace
 
 DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
                                          const String& url,
@@ -386,9 +342,6 @@ void DedicatedWorker::OnFinished() {
   } else if (classic_script_loader_->Failed()) {
     context_proxy_->DidFailToFetchScript();
   } else {
-    CountTopLevelScriptRequestUrlOriginType(
-        *GetExecutionContext()->GetSecurityOrigin(), script_request_url_);
-
     network::mojom::ReferrerPolicy referrer_policy =
         network::mojom::ReferrerPolicy::kDefault;
     if (!classic_script_loader_->GetReferrerPolicy().IsNull()) {

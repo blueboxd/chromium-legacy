@@ -188,7 +188,31 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
   track->RemoveSink(&sink);
 }
 
-TEST_F(MediaStreamRemoteVideoSourceTest, RemoteTrackStop) {
+TEST_F(MediaStreamRemoteVideoSourceTest,
+       SourceTerminationWithEncodedSinkAdded) {
+  std::unique_ptr<blink::MediaStreamVideoTrack> track(CreateTrack());
+  blink::MockMediaStreamVideoSink sink;
+  track->AddEncodedSink(&sink, sink.GetDeliverEncodedVideoFrameCB());
+  source()->OnSourceTerminated();
+  track->RemoveEncodedSink(&sink);
+}
+
+TEST_F(MediaStreamRemoteVideoSourceTest,
+       SourceTerminationBeforeEncodedSinkAdded) {
+  std::unique_ptr<blink::MediaStreamVideoTrack> track(CreateTrack());
+  blink::MockMediaStreamVideoSink sink;
+  source()->OnSourceTerminated();
+  track->AddEncodedSink(&sink, sink.GetDeliverEncodedVideoFrameCB());
+  track->RemoveEncodedSink(&sink);
+}
+
+TEST_F(MediaStreamRemoteVideoSourceTest,
+       SourceTerminationBeforeRequestRefreshFrame) {
+  source()->OnSourceTerminated();
+  source()->RequestRefreshFrame();
+}
+
+TEST_F(MediaStreamRemoteVideoSourceTest, SurvivesSourceTermination) {
   std::unique_ptr<blink::MediaStreamVideoTrack> track(CreateTrack());
 
   blink::MockMediaStreamVideoSink sink;

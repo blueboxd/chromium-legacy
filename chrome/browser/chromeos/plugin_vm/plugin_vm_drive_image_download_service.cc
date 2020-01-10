@@ -102,7 +102,7 @@ plugin_vm::PluginVmInstaller::FailureReason ConvertToFailureReason(
       NOTREACHED();
       // This is only used to avoid compiler warnings, it is
       // not actually reachable.
-      return FailureReason::LOGIC_ERROR;
+      return FailureReason::DOWNLOAD_FAILED_UNKNOWN;
   }
 }
 }  // namespace

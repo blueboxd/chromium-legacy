@@ -371,9 +371,12 @@ class SyncService : public KeyedService {
 
   // Processes trusted vault encryption keys retrieved from the web. Unused and
   // ignored on platforms where keys are retrieved by other means.
+  // |last_key_version| represents the key version of the last element in
+  // |keys| (unused if empty).
   virtual void AddTrustedVaultDecryptionKeysFromWeb(
       const std::string& gaia_id,
-      const std::vector<std::vector<uint8_t>>& keys) = 0;
+      const std::vector<std::vector<uint8_t>>& keys,
+      int last_key_version) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // USER DEMOGRAPHICS

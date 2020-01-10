@@ -46,6 +46,8 @@ namespace banners {
 // whether the site is already installed (and on Android, divert the flow to a
 // native app banner if requested). The second call completes the checking for a
 // web app banner (checking manifest validity, service worker, and icon).
+//
+// TODO(https://crbug.com/930612): Refactor this into several simpler classes.
 class AppBannerManager : public content::WebContentsObserver,
                          public blink::mojom::AppBannerService,
                          public SiteEngagementObserver {
@@ -121,13 +123,18 @@ class AppBannerManager : public content::WebContentsObserver,
   static void SetTotalEngagementToTrigger(double engagement);
 
   // TODO(https://crbug.com/930612): Move |GetInstallableAppName| and
-  // |IsWebContentsInstallable| out into a more general purpose installability
-  // check class.
+  // |IsExternallyInstalledWebApp| out into a more general purpose
+  // installability check class.
 
   // Returns the app name if the current page is installable, otherwise returns
   // the empty string.
   static base::string16 GetInstallableWebAppName(
       content::WebContents* web_contents);
+
+  // Returns whether the page that would currently be installed by the
+  // "Install PWA" or "Create Shortcut" actions would replace an installed app
+  // with an External install source. Returns false if unknown.
+  virtual bool IsExternallyInstalledWebApp();
 
   // Returns whether installability checks satisfy promotion requirements
   // (e.g. having a service worker fetch event) or have passed previously within
@@ -216,7 +223,7 @@ class AppBannerManager : public content::WebContentsObserver,
   virtual bool IsWebAppConsideredInstalled();
 
   // Returns whether the installed web app at the current page can be
-  // reinstalled over the top of the existing installation.
+  // overwritten with a new app install for the current page.
   virtual bool ShouldAllowWebAppReplacementInstall();
 
   // Callback invoked by the InstallableManager once it has fetched the page's

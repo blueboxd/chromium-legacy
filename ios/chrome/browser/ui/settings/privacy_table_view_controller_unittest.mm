@@ -107,8 +107,8 @@ TEST_F(PrivacyTableViewControllerTest, TestModel) {
 
   // Sections[1].
   EXPECT_EQ(1, NumberOfItemsInSection(1));
-  CheckTextCellText(l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE),
-                    1, 0);
+  CheckTextCellTextAndDetailText(
+      l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE), nil, 1, 0);
 }
 
 }  // namespace

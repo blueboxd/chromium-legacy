@@ -134,9 +134,8 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
     base::Optional<CorsErrorStatus>* detected_error_status) {
   DCHECK(detected_error_status);
 
-  const int response_code = head.headers ? head.headers->response_code() : 0;
   *detected_error_status = CheckPreflightAccess(
-      final_url, response_code,
+      final_url, head.headers ? head.headers->response_code() : 0,
       GetHeaderString(head.headers, header_names::kAccessControlAllowOrigin),
       GetHeaderString(head.headers,
                       header_names::kAccessControlAllowCredentials),
@@ -145,13 +144,6 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
   if (*detected_error_status)
     return nullptr;
 
-  base::Optional<mojom::CorsError> error;
-  error = CheckPreflight(response_code);
-  if (error) {
-    *detected_error_status = CorsErrorStatus(*error);
-    return nullptr;
-  }
-
   if (original_request.is_external_request) {
     *detected_error_status = CheckExternalPreflight(GetHeaderString(
         head.headers, header_names::kAccessControlAllowExternal));
@@ -159,6 +151,7 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
       return nullptr;
   }
 
+  base::Optional<mojom::CorsError> error;
   auto result = PreflightResult::Create(
       original_request.credentials_mode,
       GetHeaderString(head.headers, header_names::kAccessControlAllowMethods),

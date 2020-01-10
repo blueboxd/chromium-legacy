@@ -294,6 +294,10 @@ bool AppBannerManager::ShouldBypassEngagementChecks() const {
       switches::kBypassAppBannerEngagementChecks);
 }
 
+bool AppBannerManager::IsExternallyInstalledWebApp() {
+  return false;
+}
+
 bool AppBannerManager::IsWebAppConsideredInstalled() {
   return false;
 }

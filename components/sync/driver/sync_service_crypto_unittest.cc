@@ -101,7 +101,8 @@ class TestTrustedVaultClient : public TrustedVaultClient {
   }
 
   void StoreKeys(const std::string& gaia_id,
-                 const std::vector<std::vector<uint8_t>>& keys) override {
+                 const std::vector<std::vector<uint8_t>>& keys,
+                 int last_key_version) override {
     gaia_id_to_keys_[gaia_id] = keys;
     observer_list_.Notify();
   }
@@ -194,7 +195,8 @@ TEST_F(SyncServiceCryptoTest,
   // engine (i.e. before SetSyncEngine()).
   crypto_.OnTrustedVaultKeyRequired();
 
-  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kFetchedKeys);
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kFetchedKeys,
+                                  /*last_key_version=*/0);
 
   // Trusted vault keys should be fetched only after the engine initialization
   // is completed.
@@ -233,7 +235,8 @@ TEST_F(SyncServiceCryptoTest,
   EXPECT_CALL(reconfigure_cb_, Run(_)).Times(0);
   ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
-  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kFetchedKeys);
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kFetchedKeys,
+                                  /*last_key_version=*/0);
 
   // Mimic the engine determining that trusted vault keys are required.
   crypto_.SetSyncEngine(kSyncingAccount, &engine_);
@@ -298,7 +301,8 @@ TEST_F(SyncServiceCryptoTest, ShouldReadInvalidTrustedVaultKeysFromClient) {
 
   ASSERT_FALSE(crypto_.IsTrustedVaultKeyRequired());
 
-  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kFetchedKeys);
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kFetchedKeys,
+                                  /*last_key_version=*/0);
 
   // Mimic the engine determining that trusted vault keys are required.
   crypto_.SetSyncEngine(kSyncingAccount, &engine_);
@@ -339,7 +343,8 @@ TEST_F(SyncServiceCryptoTest, ShouldRefetchTrustedVaultKeysWhenChangeObserved) {
   const std::vector<std::vector<uint8_t>> kNewKeys = {{0, 1, 2, 3, 4},
                                                       {2, 3, 4, 5}};
 
-  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kInitialKeys);
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kInitialKeys,
+                                  /*last_key_version=*/0);
 
   // The engine replies with OnTrustedVaultKeyAccepted() only if |kNewKeys| are
   // provided.
@@ -364,7 +369,8 @@ TEST_F(SyncServiceCryptoTest, ShouldRefetchTrustedVaultKeysWhenChangeObserved) {
 
   // Mimic keys being added to the vault, which triggers a notification to
   // observers (namely |crypto_|), leading to a second fetch.
-  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kNewKeys);
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kNewKeys,
+                                  /*last_key_version=*/1);
   EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(2));
   EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
   EXPECT_TRUE(trusted_vault_client_.CompleteFetchKeysRequest());
@@ -382,7 +388,8 @@ TEST_F(SyncServiceCryptoTest,
   const std::vector<std::vector<uint8_t>> kNewKeys = {{0, 1, 2, 3, 4},
                                                       {2, 3, 4, 5}};
 
-  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kInitialKeys);
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kInitialKeys,
+                                  /*last_key_version=*/0);
 
   // The engine replies with OnTrustedVaultKeyAccepted() only if |kNewKeys| are
   // provided.
@@ -404,7 +411,8 @@ TEST_F(SyncServiceCryptoTest,
 
   // While there is an ongoing fetch, mimic keys being added to the vault, which
   // triggers a notification to observers (namely |crypto_|).
-  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kNewKeys);
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kNewKeys,
+                                  /*last_key_version=*/1);
 
   // Because there's already an ongoing fetch, a second one should not have been
   // triggered yet and should be deferred instead.
@@ -437,7 +445,8 @@ TEST_F(
   const std::vector<std::vector<uint8_t>> kLatestKeys = {
       {0, 1, 2, 3, 4}, {2, 3, 4, 5}, {3, 4}};
 
-  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kInitialKeys);
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kInitialKeys,
+                                  /*last_key_version=*/0);
 
   // The engine replies with OnTrustedVaultKeyAccepted() only if |kLatestKeys|
   // are provided.
@@ -461,12 +470,14 @@ TEST_F(
 
   // Mimic keys being added to the vault, which triggers a notification to
   // observers (namely |crypto_|), leading to a second fetch.
-  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kIntermediateKeys);
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kIntermediateKeys,
+                                  /*last_key_version=*/1);
   EXPECT_THAT(trusted_vault_client_.fetch_count(), Eq(2));
 
   // While the second fetch is ongoing, mimic more keys being added to the
   // vault, which triggers a notification to observers (namely |crypto_|).
-  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kLatestKeys);
+  trusted_vault_client_.StoreKeys(kSyncingAccount.gaia, kLatestKeys,
+                                  /*last_key_version=*/2);
 
   // Because there's already an ongoing fetch, a third one should not have been
   // triggered yet and should be deferred instead.

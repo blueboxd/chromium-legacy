@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/case_map.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -2180,6 +2181,10 @@ int ComputedStyle::OutlineOutsetExtent() const {
 }
 
 float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {
+  if (::features::IsFormControlsRefreshEnabled() && OutlineStyleIsAuto()) {
+    return std::max(EffectiveZoom(), 3.f);
+  }
+
 #if defined(OS_MACOSX)
   return OutlineWidth();
 #else

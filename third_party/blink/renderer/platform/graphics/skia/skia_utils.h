@@ -144,7 +144,8 @@ template <typename PrimitiveType>
 void DrawPlatformFocusRing(const PrimitiveType&,
                            cc::PaintCanvas*,
                            SkColor,
-                           float width);
+                           float width,
+                           float border_radius);
 
 // TODO(fmalita): remove in favor of direct SrcRectConstraint use.
 inline cc::PaintCanvas::SrcRectConstraint

@@ -13,11 +13,11 @@ PASS ReadableStream teeing: erroring a teed stream should error both branches
 PASS ReadableStream teeing: closing the original should immediately close the branches
 PASS ReadableStream teeing: erroring the original should immediately error the branches
 PASS ReadableStreamTee should not use a modified ReadableStream constructor from the global object
-FAIL ReadableStreamTee should not pull more chunks than can fit in the branch queue assert_array_equals: pull should only be called once lengths differ, expected 1 got 2
+FAIL ReadableStreamTee should not pull more chunks than can fit in the branch queue assert_array_equals: pull should only be called once lengths differ, expected array ["pull"] length 1, got ["pull", "pull"] length 2
 PASS ReadableStreamTee should only pull enough to fill the emptiest queue
 PASS ReadableStreamTee should not pull when original is already errored
-FAIL ReadableStreamTee stops pulling when original stream errors while branch 1 is reading assert_array_equals: pull should be called once lengths differ, expected 1 got 2
-FAIL ReadableStreamTee stops pulling when original stream errors while branch 2 is reading assert_array_equals: pull should be called once lengths differ, expected 1 got 2
-FAIL ReadableStreamTee stops pulling when original stream errors while both branches are reading assert_array_equals: pull should be called once lengths differ, expected 1 got 2
+FAIL ReadableStreamTee stops pulling when original stream errors while branch 1 is reading assert_array_equals: pull should be called once lengths differ, expected array ["pull"] length 1, got ["pull", "pull"] length 2
+FAIL ReadableStreamTee stops pulling when original stream errors while branch 2 is reading assert_array_equals: pull should be called once lengths differ, expected array ["pull"] length 1, got ["pull", "pull"] length 2
+FAIL ReadableStreamTee stops pulling when original stream errors while both branches are reading assert_array_equals: pull should be called once lengths differ, expected array ["pull"] length 1, got ["pull", "pull"] length 2
 Harness: the test ran to completion.
 

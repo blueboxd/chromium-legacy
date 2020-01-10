@@ -54,6 +54,18 @@ def check_property_parameters(property_to_check):
     if property_to_check['alias_for']:
         assert not property_to_check['is_internal'], \
             'Internal aliases is not supported'
+    if property_to_check['valid_for_first_letter']:
+        assert not property_to_check['longhands'], \
+            'Shorthand %s should not be marked as valid_for_first_letter' % \
+            property_to_check['name']
+    if property_to_check['valid_for_cue']:
+        assert not property_to_check['longhands'], \
+            'Shorthand %s should not be marked as valid_for_cue' % \
+            property_to_check['name']
+    if property_to_check['valid_for_marker']:
+        assert not property_to_check['longhands'], \
+            'Shorthand %s should not be marked as valid_for_marker' % \
+            property_to_check['name']
 
 
 class CSSProperties(object):

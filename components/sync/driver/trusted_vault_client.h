@@ -56,7 +56,8 @@ class TrustedVaultClient {
   // keys, so callers may not assume that later calls to FetchKeys() would
   // necessarily return the keys passed here.
   virtual void StoreKeys(const std::string& gaia_id,
-                         const std::vector<std::vector<uint8_t>>& keys) = 0;
+                         const std::vector<std::vector<uint8_t>>& keys,
+                         int last_key_version) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TrustedVaultClient);

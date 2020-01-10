@@ -25,8 +25,6 @@ class MODULES_EXPORT PaymentManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PaymentManager* Create(ServiceWorkerRegistration*);
-
   explicit PaymentManager(ServiceWorkerRegistration*);
 
   PaymentInstruments* instruments();

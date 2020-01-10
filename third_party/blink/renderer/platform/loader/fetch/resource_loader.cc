@@ -756,9 +756,9 @@ bool ResourceLoader::WillFollowRedirect(
               new_url, request_mode, origin.get(),
               GetCorsFlag() ? CorsFlag::Set : CorsFlag::Unset);
       if (!cors_error && GetCorsFlag()) {
-        cors_error = cors::CheckAccess(
-            new_url, redirect_response.HttpStatusCode(),
-            redirect_response.HttpHeaderFields(), credentials_mode, *origin);
+        cors_error =
+            cors::CheckAccess(new_url, redirect_response.HttpHeaderFields(),
+                              credentials_mode, *origin);
       }
       if (cors_error) {
         HandleError(
@@ -1021,9 +1021,8 @@ void ResourceLoader::DidReceiveResponseInternal(
       !(resource_->IsCacheValidator() && response.HttpStatusCode() == 304)) {
     if (GetCorsFlag()) {
       base::Optional<network::CorsErrorStatus> cors_error = cors::CheckAccess(
-          response.CurrentRequestUrl(), response.HttpStatusCode(),
-          response.HttpHeaderFields(), initial_request.GetCredentialsMode(),
-          *resource_->GetOrigin());
+          response.CurrentRequestUrl(), response.HttpHeaderFields(),
+          initial_request.GetCredentialsMode(), *resource_->GetOrigin());
       if (cors_error) {
         HandleError(ResourceError(response.CurrentRequestUrl(), *cors_error));
         return;

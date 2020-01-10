@@ -56,13 +56,10 @@ class V4L2DecodeSurface : public base::RefCounted<V4L2DecodeSurface> {
   // Update the passed v4l2_ext_controls structure to add the request or
   // config store information.
   virtual void PrepareSetCtrls(struct v4l2_ext_controls* ctrls) const = 0;
-  // Update the passed v4l2_buffer structure to add the request or
-  // config store information.
-  virtual void PrepareQueueBuffer(struct v4l2_buffer* buffer) const = 0;
   // Return the ID to use in order to reference this frame.
   virtual uint64_t GetReferenceID() const = 0;
-  // Submit the request corresponding to this surface once all controls have
-  // been set and all buffers queued.
+  // Set controls, queue buffers and submit the request corresponding to this
+  // surface.
   virtual bool Submit() = 0;
 
   bool decoded() const { return decoded_; }
@@ -124,7 +121,6 @@ class V4L2ConfigStoreDecodeSurface : public V4L2DecodeSurface {
         config_store_(this->input_buffer().BufferId() + 1) {}
 
   void PrepareSetCtrls(struct v4l2_ext_controls* ctrls) const override;
-  void PrepareQueueBuffer(struct v4l2_buffer* buffer) const override;
   uint64_t GetReferenceID() const override;
   bool Submit() override;
 
@@ -151,7 +147,6 @@ class V4L2RequestDecodeSurface : public V4L2DecodeSurface {
         request_ref_(std::move(request_ref)) {}
 
   void PrepareSetCtrls(struct v4l2_ext_controls* ctrls) const override;
-  void PrepareQueueBuffer(struct v4l2_buffer* buffer) const override;
   uint64_t GetReferenceID() const override;
   bool Submit() override;
 

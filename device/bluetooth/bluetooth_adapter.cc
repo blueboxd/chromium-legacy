@@ -328,6 +328,18 @@ int BluetoothAdapter::NumDiscoverySessions() const {
   return discovery_sessions_.size();
 }
 
+int BluetoothAdapter::NumScanningDiscoverySessions() const {
+  int count = 0;
+  for (auto* session : discovery_sessions_) {
+    if (session->status() ==
+        BluetoothDiscoverySession::SessionStatus::SCANNING) {
+      ++count;
+    }
+  }
+
+  return count;
+}
+
 void BluetoothAdapter::NotifyGattServicesDiscovered(BluetoothDevice* device) {
   DCHECK(device->GetAdapter() == this);
 
@@ -460,6 +472,11 @@ void BluetoothAdapter::OnDiscoveryChangeComplete(
     return;
   }
 
+  // Inform BluetoothDiscoverySession that updates being processed have
+  // completed.
+  for (auto* session : discovery_sessions_)
+    session->StartingSessionsScanning();
+
   current_discovery_filter_.CopyFrom(filter_being_set_);
 
   auto callbacks_awaiting_response = std::move(callbacks_awaiting_response_);
@@ -516,6 +533,11 @@ void BluetoothAdapter::ProcessDiscoveryQueue() {
 
     return;
   }
+
+  // Inform BluetoothDiscoverySession that any updates they have made are being
+  // processed.
+  for (auto* session : discovery_sessions_)
+    session->PendingSessionsStarting();
 
   auto result_callback = base::BindOnce(
       &BluetoothAdapter::OnDiscoveryChangeComplete, GetWeakPtr());

@@ -13,7 +13,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
@@ -21,6 +20,7 @@
 #include "gpu/ipc/common/gpu_watchdog_timeout.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_sync_message.h"
+#include "ipc/trace_ipc_message.h"
 #include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 #include "url/gurl.h"
 
@@ -53,9 +53,7 @@ GpuChannelHost::GpuChannelHost(int channel_id,
 }
 
 bool GpuChannelHost::Send(IPC::Message* msg) {
-  TRACE_EVENT2("ipc", "GpuChannelHost::Send", "class",
-               IPC_MESSAGE_ID_CLASS(msg->type()), "line",
-               IPC_MESSAGE_ID_LINE(msg->type()));
+  TRACE_IPC_MESSAGE_SEND("ipc", "GpuChannelHost::Send", msg);
 
   auto message = base::WrapUnique(msg);
 

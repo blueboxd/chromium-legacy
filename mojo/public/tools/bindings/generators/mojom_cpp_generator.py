@@ -710,6 +710,7 @@ class Generator(generator.Generator):
   def _GetCppWrapperParamTypeNew(self, kind):
     cpp_wrapper_type = self._GetCppWrapperType(kind)
     return (cpp_wrapper_type if self._ShouldPassParamByValue(kind)
+                                 or mojom.IsArrayKind(kind)
                              else "const %s&" % cpp_wrapper_type)
 
   def _GetCppFieldType(self, kind):

@@ -115,7 +115,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void ShowDefinitionForSelection() override;
   void SpeakSelection() override;
   void GetScreenInfo(ScreenInfo* screen_info) override;
-  void SetNeedsBeginFrames(bool needs_begin_frames) override {}
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 
   // Implementation of RenderWidgetHostViewBase.

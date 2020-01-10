@@ -120,9 +120,6 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   // Setup the format of V4L2 output buffer, and allocate new buffer set.
   void ChangeResolution();
 
-  // Check whether request api is supported or not.
-  bool CheckRequestAPISupport();
-
   // Returns whether |profile| is supported by a v4l2 stateless decoder driver.
   bool IsSupportedProfile(VideoCodecProfile profile);
 
@@ -167,8 +164,6 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
 
   // VideoCodecProfiles supported by a v4l2 stateless decoder driver.
   std::vector<VideoCodecProfile> supported_profiles_;
-  // Set to true during Initialize() if the codec driver supports request API.
-  bool supports_requests_ = false;
 
   // Reference to request queue to get free requests.
   V4L2RequestsQueue* requests_queue_;

@@ -178,7 +178,6 @@ fyi_goma_rbe_canary_builder(
 fyi_goma_rbe_canary_builder(
     name = 'Mac Builder (dbg) Goma RBE Canary (clobber)',
     cores = 4,
-    goma_backend = None,
     goma_jobs = goma.jobs.J80,
     os = os.MAC_DEFAULT,
 )
@@ -222,7 +221,6 @@ fyi_goma_rbe_canary_builder(
 fyi_goma_rbe_canary_builder(
     name = 'mac-archive-rel-goma-rbe-canary',
     cores = 4,
-    goma_backend = None,
     goma_jobs = goma.jobs.J80,
     os = os.MAC_DEFAULT,
 )
@@ -358,7 +356,6 @@ fyi_goma_rbe_latest_client_builder(
 fyi_goma_rbe_latest_client_builder(
     name = 'Mac Builder (dbg) Goma RBE Latest Client (clobber)',
     cores = 4,
-    goma_backend = None,
     goma_jobs = goma.jobs.J80,
     os = os.MAC_DEFAULT,
 )
@@ -416,7 +413,6 @@ fyi_goma_rbe_latest_client_builder(
 fyi_goma_rbe_latest_client_builder(
     name = 'mac-archive-rel-goma-rbe-latest',
     cores = 4,
-    goma_backend = None,
     goma_jobs = goma.jobs.J80,
     os = os.MAC_DEFAULT,
 )

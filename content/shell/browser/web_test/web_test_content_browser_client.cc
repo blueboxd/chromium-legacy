@@ -34,6 +34,7 @@
 #include "content/shell/browser/web_test/web_test_browser_context.h"
 #include "content/shell/browser/web_test/web_test_browser_main_parts.h"
 #include "content/shell/browser/web_test/web_test_message_filter.h"
+#include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/browser/web_test/web_test_tts_controller_delegate.h"
 #include "content/shell/browser/web_test/web_test_tts_platform.h"
 #include "content/shell/common/web_test/web_test_switches.h"
@@ -178,6 +179,12 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
           &WebTestContentBrowserClient::BindClientHintsControllerDelegate,
           base::Unretained(this)),
       ui_task_runner);
+
+  registry->AddInterface(
+      base::BindRepeating(
+          &WebTestContentBrowserClient::BindPermissionAutomation,
+          base::Unretained(this)),
+      ui_task_runner);
 }
 
 void WebTestContentBrowserClient::BindClipboardHostForRequest(
@@ -200,6 +207,12 @@ void WebTestContentBrowserClient::BindClientHintsControllerDelegate(
       browser_context()->GetClientHintsControllerDelegate();
   DCHECK(delegate);
   delegate->Bind(std::move(receiver));
+}
+
+void WebTestContentBrowserClient::BindPermissionAutomation(
+    mojo::PendingReceiver<blink::test::mojom::PermissionAutomation> receiver) {
+  GetWebTestBrowserContext()->GetWebTestPermissionManager()->Bind(
+      std::move(receiver));
 }
 
 void WebTestContentBrowserClient::OverrideWebkitPrefs(

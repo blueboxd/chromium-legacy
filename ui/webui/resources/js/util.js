@@ -330,7 +330,7 @@
 if (!('key' in KeyboardEvent.prototype)) {
   Object.defineProperty(KeyboardEvent.prototype, 'key', {
     /** @this {KeyboardEvent} */
-    get: function() {
+    get() {
       // 0-9
       if (this.keyCode >= 0x30 && this.keyCode <= 0x39) {
         return String.fromCharCode(this.keyCode);

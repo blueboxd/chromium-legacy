@@ -44,6 +44,9 @@
   <include name="IDR_WEBUI_IMAGES_ICON_VISIBILITY_OFF"
            file="images/icon_visibility_off.svg" type="BINDATA"
            compress="gzip" />
+  <include name="IDR_WEBUI_IMAGES_ICON_COPY_CONTENT"
+           file="images/icon_copy_content.svg" type="BINDATA"
+           compress="gzip" />
   <include name="IDR_WEBUI_IMAGES_OPEN_IN_NEW"
            file="images/open_in_new.svg" type="BINDATA" compress="gzip" />
 </grit-part>

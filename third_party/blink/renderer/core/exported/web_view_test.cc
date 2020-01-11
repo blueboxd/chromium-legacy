@@ -2391,9 +2391,10 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       main_frame_local->Loader().GetDocumentLoader()->GetHistoryItem();
 
   // Click an anchor
-  main_frame_local->Loader().StartNavigation(FrameLoadRequest(
+  FrameLoadRequest request_a(
       main_frame_local->GetDocument(),
-      ResourceRequest(main_frame_local->GetDocument()->CompleteURL("#a"))));
+      ResourceRequest(main_frame_local->GetDocument()->CompleteURL("#a")));
+  main_frame_local->Loader().StartNavigation(request_a);
   Persistent<HistoryItem> item2 =
       main_frame_local->Loader().GetDocumentLoader()->GetHistoryItem();
 
@@ -2411,9 +2412,10 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       WebWidget::LifecycleUpdateReason::kTest);
 
   // Click a different anchor
-  main_frame_local->Loader().StartNavigation(FrameLoadRequest(
+  FrameLoadRequest request_b(
       main_frame_local->GetDocument(),
-      ResourceRequest(main_frame_local->GetDocument()->CompleteURL("#b"))));
+      ResourceRequest(main_frame_local->GetDocument()->CompleteURL("#b")));
+  main_frame_local->Loader().StartNavigation(request_b);
   Persistent<HistoryItem> item3 =
       main_frame_local->Loader().GetDocumentLoader()->GetHistoryItem();
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(

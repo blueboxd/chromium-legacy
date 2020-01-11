@@ -47,10 +47,6 @@ void CreditCardFormEventLogger::OnDidSelectCardSuggestion(
   }
 }
 
-void CreditCardFormEventLogger::SetBankNameAvailable() {
-  has_logged_bank_name_available_ = true;
-}
-
 void CreditCardFormEventLogger::OnDidFillSuggestion(
     const CreditCard& credit_card,
     const FormStructure& form,
@@ -79,14 +75,8 @@ void CreditCardFormEventLogger::OnDidFillSuggestion(
         record_type == CreditCard::MASKED_SERVER_CARD;
     if (record_type == CreditCard::MASKED_SERVER_CARD) {
       Log(FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_FILLED_ONCE, form);
-      if (has_logged_bank_name_available_) {
-        Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE);
-      }
     } else if (record_type == CreditCard::FULL_SERVER_CARD) {
       Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_ONCE, form);
-      if (has_logged_bank_name_available_) {
-        Log(FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE);
-      }
     } else {
       Log(FORM_EVENT_LOCAL_SUGGESTION_FILLED_ONCE, form);
     }
@@ -142,9 +132,6 @@ void CreditCardFormEventLogger::LogUkmInteractedWithForm(
 }
 
 void CreditCardFormEventLogger::OnSuggestionsShownOnce() {
-  if (has_logged_bank_name_available_) {
-    Log(FORM_EVENT_SUGGESTIONS_SHOWN_WITH_BANK_NAME_AVAILABLE_ONCE);
-  }
 }
 
 void CreditCardFormEventLogger::OnSuggestionsShownSubmittedOnce(
@@ -165,12 +152,6 @@ void CreditCardFormEventLogger::OnLog(const std::string& name,
     base::UmaHistogramEnumeration(name + ".OnNonsecurePage", event,
                                   NUM_FORM_EVENTS);
   }
-}
-
-void CreditCardFormEventLogger::Log(BankNameDisplayedFormEvent event) const {
-  DCHECK_LT(event, BANK_NAME_NUM_FORM_EVENTS);
-  const std::string name("Autofill.FormEvents.CreditCard.BankNameDisplayed");
-  base::UmaHistogramEnumeration(name, event, BANK_NAME_NUM_FORM_EVENTS);
 }
 
 FormEvent CreditCardFormEventLogger::GetCardNumberStatusFormEvent(

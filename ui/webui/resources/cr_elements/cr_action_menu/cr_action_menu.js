@@ -175,7 +175,7 @@ Polymer({
   },
 
   /** override */
-  detached: function() {
+  detached() {
     this.removeListeners_();
   },
 
@@ -183,12 +183,12 @@ Polymer({
    * Exposing internal <dialog> elements for tests.
    * @return {!HTMLDialogElement}
    */
-  getDialog: function() {
+  getDialog() {
     return /** @type {!HTMLDialogElement} */ (this.$.dialog);
   },
 
   /** @private */
-  removeListeners_: function() {
+  removeListeners_() {
     window.removeEventListener('resize', this.boundClose_);
     window.removeEventListener('popstate', this.boundClose_);
     if (this.contentObserver_) {
@@ -206,7 +206,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onNativeDialogClose_: function(e) {
+  onNativeDialogClose_(e) {
     // Ignore any 'close' events not fired directly by the <dialog> element.
     if (e.target !== this.$.dialog) {
       return;
@@ -225,7 +225,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onClick_: function(e) {
+  onClick_(e) {
     if (e.target == this) {
       this.close();
       e.stopPropagation();
@@ -236,7 +236,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyDown_: function(e) {
+  onKeyDown_(e) {
     e.stopPropagation();
     if (e.key == 'Tab' || e.key == 'Escape') {
       this.close();
@@ -287,7 +287,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onMouseover_: function(e) {
+  onMouseover_(e) {
     const query = '.dropdown-item:not([disabled])';
     const item = e.composedPath().find(el => el.matches && el.matches(query));
     (item || this.$.wrapper).focus();
@@ -299,7 +299,7 @@ Polymer({
    * @param {boolean} next
    * @private
    */
-  updateFocus_: function(options, focusedIndex, next) {
+  updateFocus_(options, focusedIndex, next) {
     const numOptions = options.length;
     assert(numOptions > 0);
     let index;
@@ -312,7 +312,7 @@ Polymer({
     options[index].focus();
   },
 
-  close: function() {
+  close() {
     // Removing 'resize' and 'popstate' listeners when dialog is closed.
     this.removeListeners_();
     this.$.dialog.close();
@@ -331,7 +331,7 @@ Polymer({
    * @param {!Element} anchorElement
    * @param {ShowAtConfig=} opt_config
    */
-  showAt: function(anchorElement, opt_config) {
+  showAt(anchorElement, opt_config) {
     this.anchorElement_ = anchorElement;
     // Scroll the anchor element into view so that the bounding rect will be
     // accurate for where the menu should be shown.
@@ -389,7 +389,7 @@ Polymer({
    *
    * @param {!ShowAtPositionConfig} config
    */
-  showAtPosition: function(config) {
+  showAtPosition(config) {
     // Save the scroll position of the viewport.
     const doc = document.scrollingElement;
     const scrollLeft = doc.scrollLeft;
@@ -421,7 +421,7 @@ Polymer({
   },
 
   /** @private */
-  resetStyle_: function() {
+  resetStyle_() {
     this.$.dialog.style.left = '';
     this.$.dialog.style.right = '';
     this.$.dialog.style.top = '0';
@@ -433,7 +433,7 @@ Polymer({
    * @param {!ShowAtPositionConfig} config
    * @private
    */
-  positionDialog_: function(config) {
+  positionDialog_(config) {
     this.lastConfig_ = config;
     const c = Object.assign(getDefaultShowConfig(), config);
 
@@ -469,7 +469,7 @@ Polymer({
   /**
    * @private
    */
-  addListeners_: function() {
+  addListeners_() {
     this.boundClose_ = this.boundClose_ || function() {
       if (this.$.dialog.open) {
         this.close();

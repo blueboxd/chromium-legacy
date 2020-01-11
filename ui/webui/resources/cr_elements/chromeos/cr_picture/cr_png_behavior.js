@@ -136,7 +136,7 @@ const CrPngBehavior = {
    * @param {!Array<string>} images The data URLs for each image.
    * @return {string} A data URL for an animated PNG image.
    */
-  convertImageSequenceToPng: function(images) {
+  convertImageSequenceToPng(images) {
     const png =
         /** @type {!CrPngState} */ ({frames: 0, sequences: 0, chunks: []});
 
@@ -218,7 +218,7 @@ const CrPngBehavior = {
    * @param {string} url An btoa encoded data URL for a PNG image.
    * @return {boolean} True if data URL is an animated PNG image.
    */
-  isEncodedPngDataUrlAnimated: function(url) {
+  isEncodedPngDataUrlAnimated(url) {
     const decoded = atob(url.substr('data:image/png;base64,'.length));
     return decoded.substr(37, 4) == 'acTL';
   },
@@ -230,7 +230,7 @@ const CrPngBehavior = {
    * @return {number} The value read.
    * @private
    */
-  readUInt32_: function(buffer, offset) {
+  readUInt32_(buffer, offset) {
     return (buffer[offset + 0] << 24) + (buffer[offset + 1] << 16) +
         (buffer[offset + 2] << 8) + (buffer[offset + 3] << 0);
   },
@@ -243,7 +243,7 @@ const CrPngBehavior = {
    * @return {string} The value read.
    * @private
    */
-  readString_: function(buffer, offset, length) {
+  readString_(buffer, offset, length) {
     let str = '';
     for (let i = 0; i < length; i++) {
       str += String.fromCharCode(buffer[offset + i]);
@@ -258,7 +258,7 @@ const CrPngBehavior = {
    * @param {number} offset Offset in buffer to write bytes at.
    * @private
    */
-  writeBytes_: function(buffer, bytes, offset) {
+  writeBytes_(buffer, bytes, offset) {
     for (let i = 0; i < bytes.length; i++) {
       buffer[offset + i] = bytes[i] & 0xFF;
     }
@@ -271,7 +271,7 @@ const CrPngBehavior = {
    * @param {number} offset Offset in buffer to write UInt8 at.
    * @private
    */
-  writeUInt8_: function(buffer, u8, offset) {
+  writeUInt8_(buffer, u8, offset) {
     buffer[offset] = u8 & 0xFF;
   },
 
@@ -282,7 +282,7 @@ const CrPngBehavior = {
    * @param {number} offset Offset in buffer to write UInt16 at.
    * @private
    */
-  writeUInt16_: function(buffer, u16, offset) {
+  writeUInt16_(buffer, u16, offset) {
     buffer[offset + 0] = (u16 >> 8) & 0xFF;
     buffer[offset + 1] = (u16 >> 0) & 0xFF;
   },
@@ -294,7 +294,7 @@ const CrPngBehavior = {
    * @param {number} offset Offset in buffer to write UInt32 at.
    * @private
    */
-  writeUInt32_: function(buffer, u32, offset) {
+  writeUInt32_(buffer, u32, offset) {
     buffer[offset + 0] = (u32 >> 24) & 0xFF;
     buffer[offset + 1] = (u32 >> 16) & 0xFF;
     buffer[offset + 2] = (u32 >> 8) & 0xFF;
@@ -308,7 +308,7 @@ const CrPngBehavior = {
    * @param {number} offset Offset in buffer to write string at.
    * @private
    */
-  writeString_: function(buffer, string, offset) {
+  writeString_(buffer, string, offset) {
     for (let i = 0; i < string.length; i++) {
       buffer[offset + i] = string.charCodeAt(i);
     }
@@ -321,7 +321,7 @@ const CrPngBehavior = {
    * @param {number} offset Offset in buffer to write FourCC code at.
    * @private
    */
-  writeFourCC_: function(buffer, fourcc, offset) {
+  writeFourCC_(buffer, fourcc, offset) {
     buffer[offset + 0] = fourcc.charCodeAt(0);
     buffer[offset + 1] = fourcc.charCodeAt(1);
     buffer[offset + 2] = fourcc.charCodeAt(2);
@@ -336,7 +336,7 @@ const CrPngBehavior = {
    * @return {number} The computed CRC.
    * @private
    */
-  getCRC_: function(buffer, start, end) {
+  getCRC_(buffer, start, end) {
     let crc = 0xFFFFFFFF;
     for (let i = start; i < end; i++) {
       const crcTableIndex = (crc ^ (buffer[i])) & 0xFF;
@@ -351,7 +351,7 @@ const CrPngBehavior = {
    * @param {!CrPngState} png PNG object to add frame to.
    * @private
    */
-  appendFrameFromDataURL_: function(dataURL, png) {
+  appendFrameFromDataURL_(dataURL, png) {
     /** Convert data URL to Uint8Array. */
     const byteString = atob(dataURL.split(',')[1]);
     const bytes = new Uint8Array(byteString.length);

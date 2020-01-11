@@ -33,7 +33,7 @@ Polymer({
      */
     customItems: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -56,7 +56,7 @@ Polymer({
      */
     networkStateList_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -85,13 +85,13 @@ Polymer({
   networkConfig_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
                               .getMojoServiceRemote();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.refreshNetworks();
 
     const INTERVAL_MS = 10 * 1000;
@@ -103,7 +103,7 @@ Polymer({
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     if (this.scanIntervalId_ !== null) {
       window.clearInterval(this.scanIntervalId_);
     }
@@ -112,14 +112,14 @@ Polymer({
   /**
    * Returns network list object for testing.
    */
-  getNetworkListForTest: function() {
+  getNetworkListForTest() {
     return this.$.networkList.$$('#networkList');
   },
 
   /**
    * Returns network list item object for testing.
    */
-  getNetworkListItemByNameForTest: function(name) {
+  getNetworkListItemByNameForTest(name) {
     const networkList = this.$.networkList.$$('#networkList');
     assert(networkList);
     for (const network of networkList.children) {
@@ -131,17 +131,17 @@ Polymer({
     return null;
   },
 
-  focus: function() {
+  focus() {
     this.$.networkList.focus();
   },
 
   /** CrosNetworkConfigObserver impl */
-  onNetworkStateListChanged: function() {
+  onNetworkStateListChanged() {
     this.refreshNetworks();
   },
 
   /** CrosNetworkConfigObserver impl */
-  onDeviceStateListChanged: function() {
+  onDeviceStateListChanged() {
     this.refreshNetworks();
   },
 
@@ -149,7 +149,7 @@ Polymer({
    * Requests the device and network states. May be called externally to force a
    * refresh and list update (e.g. when the element is shown).
    */
-  refreshNetworks: function() {
+  refreshNetworks() {
     this.networkConfig_.getDeviceStateList().then(response => {
       this.onGetDeviceStates_(response.result);
     });
@@ -159,7 +159,7 @@ Polymer({
    * Returns default network if it is present.
    * @return {!OncMojo.NetworkStateProperties|undefined}
    */
-  getDefaultNetwork: function() {
+  getDefaultNetwork() {
     let defaultNetwork;
     for (let i = 0; i < this.networkStateList_.length; ++i) {
       const state = this.networkStateList_[i];
@@ -184,7 +184,7 @@ Polymer({
    * @param {string} guid of network.
    * @return {!OncMojo.NetworkStateProperties|undefined}
    */
-  getNetwork: function(guid) {
+  getNetwork(guid) {
     return this.networkStateList_.find(function(network) {
       return network.guid == guid;
     });
@@ -194,7 +194,7 @@ Polymer({
    * @param {!Array<!OncMojo.DeviceStateProperties>} deviceStates
    * @private
    */
-  onGetDeviceStates_: function(deviceStates) {
+  onGetDeviceStates_(deviceStates) {
     this.isScanOngoing_ =
         deviceStates.some((deviceState) => !!deviceState.scanning);
 
@@ -213,7 +213,7 @@ Polymer({
    * @param {!Array<!OncMojo.NetworkStateProperties>} networkStates
    * @private
    */
-  onGetNetworkStateList_: function(deviceStates, networkStates) {
+  onGetNetworkStateList_(deviceStates, networkStates) {
     this.cellularDeviceState_ = deviceStates.find(function(device) {
       return device.type == mojom.NetworkType.kCellular;
     });
@@ -246,7 +246,7 @@ Polymer({
    * @param {!Array<!OncMojo.NetworkStateProperties>} networkStates
    * @private
    */
-  ensureCellularNetwork_: function(networkStates) {
+  ensureCellularNetwork_(networkStates) {
     if (networkStates.find(function(network) {
           return network.type == mojom.NetworkType.kCellular;
         })) {
@@ -279,7 +279,7 @@ Polymer({
    * @param {!{target: HTMLElement, detail: !OncMojo.NetworkStateProperties}} e
    * @private
    */
-  onNetworkListItemSelected_: function(e) {
+  onNetworkListItemSelected_(e) {
     const state = e.detail;
     e.target.blur();
 

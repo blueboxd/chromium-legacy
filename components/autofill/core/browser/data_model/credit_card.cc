@@ -576,10 +576,6 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
   if (comparison != 0)
     return comparison;
 
-  comparison = bank_name_.compare(credit_card.bank_name_);
-  if (comparison != 0)
-    return comparison;
-
   if (static_cast<int>(server_status_) <
       static_cast<int>(credit_card.server_status_))
     return -1;
@@ -735,7 +731,7 @@ const std::pair<base::string16, base::string16> CreditCard::LabelPieces()
   if (number().empty())
     return std::make_pair(name_on_card_, base::string16());
 
-  base::string16 obfuscated_cc_number = NetworkOrBankNameAndLastFourDigits();
+  base::string16 obfuscated_cc_number = NetworkAndLastFourDigits();
   // No expiration date set.
   if (!expiration_month_ || !expiration_year_)
     return std::make_pair(obfuscated_cc_number, base::string16());
@@ -779,30 +775,12 @@ base::string16 CreditCard::NetworkAndLastFourDigits() const {
                          : network + ASCIIToUTF16("  ") + obfuscated_string;
 }
 
-base::string16 CreditCard::BankNameAndLastFourDigits() const {
-  const base::string16 digits = LastFourDigits();
-  // TODO(crbug.com/734197): truncate bank name.
-  if (digits.empty())
-    return ASCIIToUTF16(bank_name_);
-
-  const base::string16 obfuscated_string =
-      internal::GetObfuscatedStringForCardDigits(digits);
-  return bank_name_.empty() ? obfuscated_string
-                            : ASCIIToUTF16(bank_name_) + ASCIIToUTF16("  ") +
-                                  obfuscated_string;
-}
-
-base::string16 CreditCard::NetworkOrBankNameAndLastFourDigits() const {
-  return bank_name_.empty() ? NetworkAndLastFourDigits()
-                            : BankNameAndLastFourDigits();
-}
-
 base::string16
 CreditCard::NetworkOrBankNameLastFourDigitsAndDescriptiveExpiration(
     const std::string& app_locale) const {
   return l10n_util::GetStringFUTF16(
       IDS_AUTOFILL_CREDIT_CARD_TWO_LINE_LABEL_FROM_NAME,
-      NetworkOrBankNameAndLastFourDigits(),
+      NetworkAndLastFourDigits(),
       GetInfo(AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale));
 }
 
@@ -874,7 +852,7 @@ base::string16 CreditCard::GetInfoImpl(const AutofillType& type,
     // Web pages should never actually be filled by a masked server card,
     // but this function is used at the preview stage.
     if (record_type() == MASKED_SERVER_CARD)
-      return NetworkOrBankNameAndLastFourDigits();
+      return NetworkAndLastFourDigits();
 
     return StripSeparators(number_);
   }

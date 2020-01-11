@@ -34,6 +34,10 @@ enum CommandId {
   CROSTINI_USE_LOW_DENSITY = 10,
   CROSTINI_USE_HIGH_DENSITY = 11,
 
+  // Allow reordering of shelf items with the keyboard. Only used for shelf.
+  SWAP_WITH_NEXT = 12,
+  SWAP_WITH_PREVIOUS = 13,
+
   // Used by AppContextMenu.
   LAUNCH_NEW = 100,
   TOGGLE_PIN = 101,

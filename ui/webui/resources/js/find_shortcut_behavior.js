@@ -83,19 +83,19 @@
    */
   findShortcutListenOnAttach: true,
 
-  attached: function() {
+  attached() {
     if (this.findShortcutListenOnAttach) {
       this.becomeActiveFindShortcutListener();
     }
   },
 
-  detached: function() {
+  detached() {
     if (this.findShortcutListenOnAttach) {
       this.removeSelfAsFindShortcutListener();
     }
   },
 
-  becomeActiveFindShortcutListener: function() {
+  becomeActiveFindShortcutListener() {
     const listeners = FindShortcutManager.listeners;
     assert(!listeners.includes(this), 'Already listening for find shortcuts.');
     listeners.push(this);
@@ -106,11 +106,11 @@
    * @param {boolean} modalContextOpen
    * @return {boolean}
    */
-  handleFindShortcut: function(modalContextOpen) {
+  handleFindShortcut(modalContextOpen) {
     assertNotReached();
   },
 
-  removeSelfAsFindShortcutListener: function() {
+  removeSelfAsFindShortcutListener() {
     const listeners = FindShortcutManager.listeners;
     const index = listeners.indexOf(this);
     assert(listeners.includes(this), 'Find shortcut listener not found.');
@@ -118,7 +118,7 @@
   },
 
   /** @return {boolean} */
-  searchInputHasFocus: function() {
+  searchInputHasFocus() {
     assertNotReached();
   },
 };

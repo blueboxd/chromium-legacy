@@ -250,10 +250,6 @@ class CreditCard : public AutofillDataModel {
   base::string16 ObfuscatedLastFourDigits() const;
   // A label for this card formatted as 'IssuerNetwork - ****2345'.
   base::string16 NetworkAndLastFourDigits() const;
-  // A label for this card formatted as 'BankName' - ****2345' if bank name
-  // experiment turned on and bank name available; otherwise, formatted as
-  // 'IssuerNetwork - ****2345'.
-  base::string16 NetworkOrBankNameAndLastFourDigits() const;
   // A label for this card formatted as
   // 'BankName/Netowrk' - ****2345, expires on MM/YY' if bank name
   // experiment turned on and bank name available; otherwise, formatted as
@@ -301,9 +297,6 @@ class CreditCard : public AutofillDataModel {
   // The issuer network of the card to fill in to the page, e.g. 'Mastercard'.
   base::string16 NetworkForFill() const;
 
-  // A label for this card formatted as 'BankName - 2345'.
-  base::string16 BankNameAndLastFourDigits() const;
-
   // Sets the name_on_card_ value based on the saved name parts.
   void SetNameOnCardFromSeparateParts();
 
@@ -322,6 +315,7 @@ class CreditCard : public AutofillDataModel {
   // below.
   std::string network_;
 
+  // bank_name is no longer actively used but remains for legacy reasons.
   // The issuer bank name of the card.
   std::string bank_name_;
 

@@ -56,12 +56,12 @@ Polymer({
   lastSelected_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.isRtl_ = this.matches(':host-context([dir=rtl]) cr-tabs');
   },
 
   /** @private */
-  onMouseDown_: function() {
+  onMouseDown_() {
     this.classList.remove('keyboard-focus');
   },
 
@@ -69,7 +69,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyDown_: function(e) {
+  onKeyDown_(e) {
     this.classList.add('keyboard-focus');
     const count = this.tabNames.length;
     let newSelection;
@@ -90,7 +90,7 @@ Polymer({
   },
 
   /** @private */
-  onSelectionBarTransitionEnd_: function() {
+  onSelectionBarTransitionEnd_() {
     this.$.selectionBar.classList.replace('expand', 'contract');
     const tab = this.$$(`.tab:nth-of-type(${this.selected + 1})`);
     if (!tab) {
@@ -104,7 +104,7 @@ Polymer({
    * @param {!{model: !{index: number}}} _
    * @private
    */
-  onTabClick_: function({model: {index}}) {
+  onTabClick_({model: {index}}) {
     this.selected = index;
   },
 
@@ -113,7 +113,7 @@ Polymer({
    * @param {number} width
    * @private
    */
-  updateSelectionBar_: function(left, width) {
+  updateSelectionBar_(left, width) {
     const containerWidth = this.offsetWidth;
     const leftPercent = 100 * left / containerWidth;
     const widthRatio = width / containerWidth;
@@ -136,7 +136,7 @@ Polymer({
   },
 
   /** @private */
-  updateUi_: function() {
+  updateUi_() {
     const tabs = this.shadowRoot.querySelectorAll('.tab');
     // Tabs are not rendered yet by dom-repeat. Skip this update since
     // dom-repeat will fire a dom-change event when it is ready.

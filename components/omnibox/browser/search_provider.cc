@@ -468,10 +468,12 @@ void SearchProvider::ClearAllResults() {
 void SearchProvider::UpdateMatchContentsClass(
     const base::string16& input_text,
     SearchSuggestionParser::Results* results) {
+  const base::string16& trimmed_input =
+      base::CollapseWhitespace(input_text, false);
   for (auto& suggest_result : results->suggest_results)
-    suggest_result.ClassifyMatchContents(false, input_text);
+    suggest_result.ClassifyMatchContents(false, trimmed_input);
   for (auto& navigation_result : results->navigation_results)
-    navigation_result.CalculateAndClassifyMatchContents(false, input_text);
+    navigation_result.CalculateAndClassifyMatchContents(false, trimmed_input);
 }
 
 void SearchProvider::SortResults(bool is_keyword,

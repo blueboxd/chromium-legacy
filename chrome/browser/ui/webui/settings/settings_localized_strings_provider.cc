@@ -61,6 +61,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "components/version_ui/version_ui_constants.h"
 #include "components/zoom/page_zoom_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -500,6 +501,18 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
     {"aboutUpdateWarningMessage",
      IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_MESSAGE},
     {"aboutUpdateWarningTitle", IDS_SETTINGS_ABOUT_PAGE_UPDATE_WARNING_TITLE},
+
+    // Detailed build information
+    {version_ui::kApplicationLabel, IDS_PRODUCT_NAME},
+    {version_ui::kPlatform, IDS_PLATFORM_LABEL},
+    {version_ui::kFirmwareVersion, IDS_VERSION_UI_FIRMWARE_VERSION},
+    {version_ui::kARC, IDS_ARC_LABEL},
+    {"aboutBuildDetailsCopyTooltipLabel",
+     IDS_OS_SETTINGS_ABOUT_PAGE_BUILD_DETAILS_COPY_TOOLTIP_LABEL},
+    {"aboutIsArcStatusTitle", IDS_OS_SETTINGS_ABOUT_ARC_STATUS_TITLE},
+    {"aboutIsDeveloperModeTitle", IDS_OS_SETTINGS_ABOUT_DEVELOPER_MODE},
+    {"isEnterpriseManagedTitle",
+     IDS_OS_SETTINGS_ABOUT_PAGE_ENTERPRISE_ENNROLLED_TITLE},
 #endif  // defined(OS_CHROMEOS)
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
@@ -927,8 +940,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kDeviceStrings[] = {
       {"devicePageTitle", IDS_SETTINGS_DEVICE_TITLE},
       {"scrollLabel", IDS_SETTINGS_SCROLL_LABEL},
-      {"traditionalScrollLabel", IDS_SETTINGS_TRADITIONAL_SCROLL_LABEL},
-      {"naturalScrollLabel", IDS_SETTINGS_NATURAL_SCROLL_LABEL},
+      {"touchPadScrollLabel", IDS_OS_SETTINGS_TOUCHPAD_REVERSE_SCROLL_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kDeviceStrings);
 

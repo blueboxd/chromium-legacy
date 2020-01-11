@@ -33,7 +33,7 @@ ArcShelfContextMenu::ArcShelfContextMenu(ChromeLauncherController* controller,
 ArcShelfContextMenu::~ArcShelfContextMenu() = default;
 
 void ArcShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
-  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
+  auto menu_model = GetBaseMenuModel();
   const ArcAppListPrefs* arc_list_prefs =
       ArcAppListPrefs::Get(controller()->profile());
   DCHECK(arc_list_prefs);

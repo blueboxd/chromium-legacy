@@ -61,12 +61,12 @@ Polymer({
     this.$.icon.noink = value;
   },
 
-  focus: function() {
+  focus() {
     this.$.icon.focus();
   },
 
   /** @private */
-  onAltChange_: function() {
+  onAltChange_() {
     if (this.alt) {
       this.$.icon.removeAttribute('aria-labelledby');
       this.$.icon.setAttribute('aria-label', this.alt);
@@ -77,7 +77,7 @@ Polymer({
   },
 
   /** @private */
-  onExpandedChange_: function() {
+  onExpandedChange_() {
     this.$.icon.ironIcon = this.expanded ? 'cr:expand-less' : 'cr:expand-more';
   },
 
@@ -85,7 +85,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  toggleExpand_: function(event) {
+  toggleExpand_(event) {
     // Prevent |click| event from bubbling. It can cause parents of this
     // elements to erroneously re-toggle this control.
     event.stopPropagation();
@@ -97,7 +97,7 @@ Polymer({
   },
 
   /** @private */
-  updateAriaExpanded_: function() {
+  updateAriaExpanded_() {
     if (this.disabled) {
       this.$.icon.removeAttribute('aria-expanded');
     } else {

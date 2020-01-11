@@ -87,6 +87,7 @@
         hidden$="[[!matches_(proxy_.type.activeValue, 'Manual')]]">
       <div hidden$="[[!useSameProxy_]]" class="layout vertical">
         <network-proxy-input
+            id="sameProxyInput"
             on-proxy-input-change="onProxyInputChange_"
             editable="[[isEditable_('manual.httpProxy.host', managedProperties,
                 editable, useSharedProxies)]]"
@@ -96,6 +97,7 @@
       </div>
       <div hidden$="[[useSameProxy_]]" class="layout vertical">
         <network-proxy-input
+          id="httpProxyInput"
             on-proxy-input-change="onProxyInputChange_"
             editable="[[isEditable_('manual.httpProxy.host', managedProperties,
                 editable, useSharedProxies)]]"
@@ -103,6 +105,7 @@
             label="[[i18n('networkProxyHttp')]]">
         </network-proxy-input>
         <network-proxy-input
+            id="secureHttpProxyInput"
             on-proxy-input-change="onProxyInputChange_"
             editable="[[isEditable_('manual.secureHttpProxy.host',
                 managedProperties, editable, useSharedProxies)]]"
@@ -110,6 +113,7 @@
             label="[[i18n('networkProxyShttp')]]">
         </network-proxy-input>
         <network-proxy-input
+            id="socksProxyInput"
             on-proxy-input-change="onProxyInputChange_"
             editable="[[isEditable_('manual.socks.host', managedProperties,
                 editable, useSharedProxies)]]"

@@ -111,13 +111,6 @@ std::vector<CreditCard*> CreditCardAccessManager::GetCreditCardsToSuggest() {
       personal_data_manager_->GetCreditCardsToSuggest(
           client_->AreServerCardsSupported());
 
-  for (const CreditCard* credit_card : cards_to_suggest) {
-    if (form_event_logger_ && !credit_card->bank_name().empty()) {
-      form_event_logger_->SetBankNameAvailable();
-      break;
-    }
-  }
-
   return cards_to_suggest;
 }
 
@@ -155,7 +148,7 @@ bool CreditCardAccessManager::GetDeletionConfirmationText(
     return false;
 
   if (title)
-    title->assign(card->NetworkOrBankNameAndLastFourDigits());
+    title->assign(card->NetworkAndLastFourDigits());
   if (body) {
     body->assign(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DELETE_CREDIT_CARD_SUGGESTION_CONFIRMATION_BODY));

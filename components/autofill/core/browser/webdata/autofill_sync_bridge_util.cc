@@ -127,7 +127,6 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
   result.SetExpirationMonth(card.exp_month());
   result.SetExpirationYear(card.exp_year());
   result.set_billing_address_id(card.billing_address_id());
-  result.set_bank_name(card.bank_name());
   return result;
 }
 
@@ -269,7 +268,6 @@ void SetAutofillWalletSpecificsFromServerCard(
   wallet_card->set_exp_month(card.expiration_month());
   wallet_card->set_exp_year(card.expiration_year());
   wallet_card->set_card_class(WalletCardClassFromCardType(card.card_type()));
-  wallet_card->set_bank_name(card.bank_name());
 }
 
 void SetAutofillWalletSpecificsFromPaymentsCustomerData(

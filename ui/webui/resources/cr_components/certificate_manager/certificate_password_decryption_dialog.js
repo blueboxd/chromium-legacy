@@ -23,23 +23,23 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ =
         certificate_manager.CertificatesBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     /** @type {!CrDialogElement} */ (this.$.dialog).close();
   },
 
   /** @private */
-  onOkTap_: function() {
+  onOkTap_() {
     this.browserProxy_.importPersonalCertificatePasswordSelected(this.password_)
         .then(
             () => {

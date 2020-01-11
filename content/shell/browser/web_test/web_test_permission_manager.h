@@ -12,16 +12,11 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/permission_controller_delegate.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
-#include "third_party/blink/public/mojom/permissions/permission.mojom.h"
-#include "third_party/blink/public/mojom/permissions/permission_automation.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
 
-class WebTestPermissionManager
-    : public PermissionControllerDelegate,
-      public blink::test::mojom::PermissionAutomation {
+class WebTestPermissionManager : public PermissionControllerDelegate {
  public:
   WebTestPermissionManager();
   ~WebTestPermissionManager() override;
@@ -66,17 +61,6 @@ class WebTestPermissionManager
                      const GURL& embedding_url);
   void ResetPermissions();
 
-  // blink::test::mojom::PermissionAutomation
-  void SetPermission(
-      blink::mojom::PermissionDescriptorPtr descriptor,
-      blink::mojom::PermissionStatus status,
-      const GURL& url,
-      const GURL& embedding_url,
-      blink::test::mojom::PermissionAutomation::SetPermissionCallback) override;
-
-  void Bind(
-      mojo::PendingReceiver<blink::test::mojom::PermissionAutomation> receiver);
-
  private:
   // Representation of a permission for the WebTestPermissionManager.
   struct PermissionDescription {
@@ -116,8 +100,6 @@ class WebTestPermissionManager
 
   // List of subscribers currently listening to permission changes.
   SubscriptionsMap subscriptions_;
-
-  mojo::ReceiverSet<blink::test::mojom::PermissionAutomation> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestPermissionManager);
 };

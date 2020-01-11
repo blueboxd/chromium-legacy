@@ -18,13 +18,10 @@ async_test(function(test) {
             swRegistration = serviceWorkerRegistration;
             return wait_for_state(test, swRegistration.installing, 'activated');
         })
-        .then(async function() {
+        .then(function() {
             // If running manually, grant permission when prompted.
-            if (window.internals) {
-                await window.internals.setPermission(
-                    {name: 'push', userVisibleOnly: true}, 'granted',
-                    location.origin, location.origin);
-            }
+            if (window.testRunner)
+                testRunner.setPermission('push-messaging', 'granted', location.origin, location.origin);
             return swRegistration.pushManager.subscribe({ userVisibleOnly: true });
         })
         .then(function(pushSubscription) {

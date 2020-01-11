@@ -70,7 +70,7 @@ Polymer({
     /** @private {!Array<string>}*/
     discoveredShares_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -84,7 +84,7 @@ Polymer({
     /** @private */
     isActiveDirectory_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isActiveDirectoryUser');
       },
     },
@@ -92,7 +92,7 @@ Polymer({
     /** @private */
     authenticationMethod_: {
       type: String,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isActiveDirectoryUser') ?
             SmbAuthMethod.KERBEROS :
             SmbAuthMethod.CREDENTIALS;
@@ -119,12 +119,12 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ = smb_shares.SmbBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.browserProxy_.startDiscovery();
     this.$.dialog.showModal();
 
@@ -133,12 +133,12 @@ Polymer({
   },
 
   /** @private */
-  cancel_: function() {
+  cancel_() {
     this.$.dialog.cancel();
   },
 
   /** @private */
-  onAddButtonTap_: function() {
+  onAddButtonTap_() {
     this.resetErrorState_();
     this.inProgress_ = true;
     this.browserProxy_
@@ -157,7 +157,7 @@ Polymer({
    * @param {string} oldValue
    * @private
    */
-  onURLChanged_: function(newValue, oldValue) {
+  onURLChanged_(newValue, oldValue) {
     this.resetErrorState_();
     const parts = this.mountUrl_.split('\\');
     this.mountName_ = parts[parts.length - 1];
@@ -167,7 +167,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  canAddShare_: function() {
+  canAddShare_() {
     return !!this.mountUrl_ && !this.inProgress_ && this.isShareUrlValid_();
   },
 
@@ -177,7 +177,7 @@ Polymer({
    * @param {boolean} done Whether share discovery has finished.
    * @private
    */
-  onSharesFound_: function(newSharesDiscovered, done) {
+  onSharesFound_(newSharesDiscovered, done) {
     this.discoveredShares_ = this.discoveredShares_.concat(newSharesDiscovered);
     this.discoveryActive_ = !done;
   },
@@ -186,7 +186,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowCredentialUI_: function() {
+  shouldShowCredentialUI_() {
     return this.authenticationMethod_ == SmbAuthMethod.CREDENTIALS;
   },
 
@@ -194,7 +194,7 @@ Polymer({
    * @param {SmbMountResult} result
    * @private
    */
-  onAddShare_: function(result) {
+  onAddShare_(result) {
     this.inProgress_ = false;
 
     // Success case. Close dialog.
@@ -240,7 +240,7 @@ Polymer({
   },
 
   /** @private */
-  resetErrorState_: function() {
+  resetErrorState_() {
     this.currentMountError_ = MountErrorType.NO_ERROR;
     this.$.address.errorMessage = '';
     this.$.password.errorMessage = '';
@@ -251,7 +251,7 @@ Polymer({
    * @param {string} errorMessage
    * @private
    */
-  setCredentialError_: function(errorMessage) {
+  setCredentialError_(errorMessage) {
     this.$.password.errorMessage = errorMessage;
     this.currentMountError_ = MountErrorType.CREDENTIAL_ERROR;
   },
@@ -260,7 +260,7 @@ Polymer({
    * @param {string} errorMessage
    * @private
    */
-  setGeneralError_: function(errorMessage) {
+  setGeneralError_(errorMessage) {
     this.generalErrorText_ = errorMessage;
     this.currentMountError_ = MountErrorType.GENERAL_ERROR;
   },
@@ -269,7 +269,7 @@ Polymer({
    * @param {string} errorMessage
    * @private
    */
-  setPathError_: function(errorMessage) {
+  setPathError_(errorMessage) {
     this.$.address.errorMessage = errorMessage;
     this.currentMountError_ = MountErrorType.PATH_ERROR;
   },
@@ -278,7 +278,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowCredentialError_: function() {
+  shouldShowCredentialError_() {
     return this.currentMountError_ == MountErrorType.CREDENTIAL_ERROR;
   },
 
@@ -286,7 +286,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowGeneralError_: function() {
+  shouldShowGeneralError_() {
     return this.currentMountError_ == MountErrorType.GENERAL_ERROR;
   },
 
@@ -294,7 +294,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowPathError_: function() {
+  shouldShowPathError_() {
     return this.currentMountError_ == MountErrorType.PATH_ERROR;
   },
 
@@ -302,7 +302,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isShareUrlValid_: function() {
+  isShareUrlValid_() {
     if (!this.mountUrl_ || this.shouldShowPathError_()) {
       return false;
     }

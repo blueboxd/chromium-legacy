@@ -11,13 +11,17 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/icc_profile.h"
+#include "ui/gfx/skia_color_space_util.h"
 #include "ui/gfx/test/icc_profiles.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {
 
-// Allowed error in most test.
-const float kEpsilon = 1.5f / 255.f;
+// Allowed pixel error.
+const float kPixelEpsilon = 1.5f / 255.f;
+
+// Allowed math error.
+const float kMathEpsilon = 0.001f;
 
 // Internal functions, exposted for testing.
 GFX_EXPORT Transform GetTransferMatrix(ColorSpace::MatrixID id);
@@ -90,15 +94,15 @@ TEST(SimpleColorSpace, BT709toSRGB) {
 
   ColorTransform::TriStim tmp(16.0f / 255.0f, 0.5f, 0.5f);
   t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 0.0f, 0.001f);
-  EXPECT_NEAR(tmp.y(), 0.0f, 0.001f);
-  EXPECT_NEAR(tmp.z(), 0.0f, 0.001f);
+  EXPECT_NEAR(tmp.x(), 0.0f, kMathEpsilon);
+  EXPECT_NEAR(tmp.y(), 0.0f, kMathEpsilon);
+  EXPECT_NEAR(tmp.z(), 0.0f, kMathEpsilon);
 
   tmp = ColorTransform::TriStim(235.0f / 255.0f, 0.5f, 0.5f);
   t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 1.0f, 0.001f);
-  EXPECT_NEAR(tmp.y(), 1.0f, 0.001f);
-  EXPECT_NEAR(tmp.z(), 1.0f, 0.001f);
+  EXPECT_NEAR(tmp.x(), 1.0f, kMathEpsilon);
+  EXPECT_NEAR(tmp.y(), 1.0f, kMathEpsilon);
+  EXPECT_NEAR(tmp.z(), 1.0f, kMathEpsilon);
 
   // Test a blue color
   tmp = ColorTransform::TriStim(128.0f / 255.0f, 240.0f / 255.0f, 0.5f);
@@ -119,15 +123,15 @@ TEST(SimpleColorSpace, BT2020CLtoBT2020RGB) {
 
   ColorTransform::TriStim tmp(16.0f / 255.0f, 0.5f, 0.5f);
   t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 0.0f, 0.001f);
-  EXPECT_NEAR(tmp.y(), 0.0f, 0.001f);
-  EXPECT_NEAR(tmp.z(), 0.0f, 0.001f);
+  EXPECT_NEAR(tmp.x(), 0.0f, kMathEpsilon);
+  EXPECT_NEAR(tmp.y(), 0.0f, kMathEpsilon);
+  EXPECT_NEAR(tmp.z(), 0.0f, kMathEpsilon);
 
   tmp = ColorTransform::TriStim(235.0f / 255.0f, 0.5f, 0.5f);
   t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 1.0f, 0.001f);
-  EXPECT_NEAR(tmp.y(), 1.0f, 0.001f);
-  EXPECT_NEAR(tmp.z(), 1.0f, 0.001f);
+  EXPECT_NEAR(tmp.x(), 1.0f, kMathEpsilon);
+  EXPECT_NEAR(tmp.y(), 1.0f, kMathEpsilon);
+  EXPECT_NEAR(tmp.z(), 1.0f, kMathEpsilon);
 
   // Test a blue color
   tmp = ColorTransform::TriStim(128.0f / 255.0f, 240.0f / 255.0f, 0.5f);
@@ -185,7 +189,7 @@ TEST(SimpleColorSpace, TransferFnCancel) {
 }
 
 TEST(SimpleColorSpace, SRGBFromICCAndNotICC) {
-  float kEpsilon = 0.001f;
+  float kPixelEpsilon = kMathEpsilon;
   ColorTransform::TriStim value_fromicc;
   ColorTransform::TriStim value_default;
 
@@ -210,9 +214,9 @@ TEST(SimpleColorSpace, SRGBFromICCAndNotICC) {
   EXPECT_EQ(toxyzd50_default->NumberOfStepsForTesting(), 2u);
   toxyzd50_default->Transform(&value_default, 1);
 
-  EXPECT_NEAR(value_fromicc.x(), value_default.x(), kEpsilon);
-  EXPECT_NEAR(value_fromicc.y(), value_default.y(), kEpsilon);
-  EXPECT_NEAR(value_fromicc.z(), value_default.z(), kEpsilon);
+  EXPECT_NEAR(value_fromicc.x(), value_default.x(), kPixelEpsilon);
+  EXPECT_NEAR(value_fromicc.y(), value_default.y(), kPixelEpsilon);
+  EXPECT_NEAR(value_fromicc.z(), value_default.z(), kPixelEpsilon);
 
   value_fromicc = value_default = ColorTransform::TriStim(0.1f, 0.5f, 0.9f);
 
@@ -226,9 +230,9 @@ TEST(SimpleColorSpace, SRGBFromICCAndNotICC) {
           xyzd50, srgb_default, ColorTransform::Intent::INTENT_ABSOLUTE));
   fromxyzd50_default->Transform(&value_default, 1);
 
-  EXPECT_NEAR(value_fromicc.x(), value_default.x(), kEpsilon);
-  EXPECT_NEAR(value_fromicc.y(), value_default.y(), kEpsilon);
-  EXPECT_NEAR(value_fromicc.z(), value_default.z(), kEpsilon);
+  EXPECT_NEAR(value_fromicc.x(), value_default.x(), kPixelEpsilon);
+  EXPECT_NEAR(value_fromicc.y(), value_default.y(), kPixelEpsilon);
+  EXPECT_NEAR(value_fromicc.z(), value_default.z(), kPixelEpsilon);
 }
 
 TEST(SimpleColorSpace, BT709toSRGBICC) {
@@ -240,15 +244,15 @@ TEST(SimpleColorSpace, BT709toSRGBICC) {
 
   ColorTransform::TriStim tmp(16.0f / 255.0f, 0.5f, 0.5f);
   t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 0.0f, 0.001f);
-  EXPECT_NEAR(tmp.y(), 0.0f, 0.001f);
-  EXPECT_NEAR(tmp.z(), 0.0f, 0.001f);
+  EXPECT_NEAR(tmp.x(), 0.0f, kMathEpsilon);
+  EXPECT_NEAR(tmp.y(), 0.0f, kMathEpsilon);
+  EXPECT_NEAR(tmp.z(), 0.0f, kMathEpsilon);
 
   tmp = ColorTransform::TriStim(235.0f / 255.0f, 0.5f, 0.5f);
   t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 1.0f, 0.001f);
-  EXPECT_NEAR(tmp.y(), 1.0f, 0.001f);
-  EXPECT_NEAR(tmp.z(), 1.0f, 0.001f);
+  EXPECT_NEAR(tmp.x(), 1.0f, kMathEpsilon);
+  EXPECT_NEAR(tmp.y(), 1.0f, kMathEpsilon);
+  EXPECT_NEAR(tmp.z(), 1.0f, kMathEpsilon);
 
   // Test a blue color
   tmp = ColorTransform::TriStim(128.0f / 255.0f, 240.0f / 255.0f, 0.5f);
@@ -258,7 +262,7 @@ TEST(SimpleColorSpace, BT709toSRGBICC) {
 }
 
 TEST(SimpleColorSpace, ICCProfileOnlyXYZ) {
-  const float kEpsilon = 2.5f / 255.f;
+  const float kPixelEpsilon = 2.5f / 255.f;
   ICCProfile icc_profile = ICCProfileForTestingNoAnalyticTrFn();
   ColorSpace icc_space = icc_profile.GetColorSpace();
   ColorSpace xyzd50 = ColorSpace::CreateXYZD50();
@@ -274,9 +278,12 @@ TEST(SimpleColorSpace, ICCProfileOnlyXYZ) {
           icc_space, xyzd50, ColorTransform::Intent::INTENT_ABSOLUTE));
   EXPECT_EQ(icc_to_xyzd50->NumberOfStepsForTesting(), 2u);
   icc_to_xyzd50->Transform(&transformed_value, 1);
-  EXPECT_NEAR(transformed_value.x(), expected_transformed_value.x(), kEpsilon);
-  EXPECT_NEAR(transformed_value.y(), expected_transformed_value.y(), kEpsilon);
-  EXPECT_NEAR(transformed_value.z(), expected_transformed_value.z(), kEpsilon);
+  EXPECT_NEAR(transformed_value.x(), expected_transformed_value.x(),
+              kPixelEpsilon);
+  EXPECT_NEAR(transformed_value.y(), expected_transformed_value.y(),
+              kPixelEpsilon);
+  EXPECT_NEAR(transformed_value.z(), expected_transformed_value.z(),
+              kPixelEpsilon);
 
   // Two steps should be needed, matrix and transfer fn.
   std::unique_ptr<ColorTransform> xyzd50_to_icc(
@@ -284,13 +291,13 @@ TEST(SimpleColorSpace, ICCProfileOnlyXYZ) {
           xyzd50, icc_space, ColorTransform::Intent::INTENT_ABSOLUTE));
   EXPECT_EQ(xyzd50_to_icc->NumberOfStepsForTesting(), 2u);
   xyzd50_to_icc->Transform(&transformed_value, 1);
-  EXPECT_NEAR(input_value.x(), transformed_value.x(), kEpsilon);
-  EXPECT_NEAR(input_value.y(), transformed_value.y(), kEpsilon);
-  EXPECT_NEAR(input_value.z(), transformed_value.z(), kEpsilon);
+  EXPECT_NEAR(input_value.x(), transformed_value.x(), kPixelEpsilon);
+  EXPECT_NEAR(input_value.y(), transformed_value.y(), kPixelEpsilon);
+  EXPECT_NEAR(input_value.z(), transformed_value.z(), kPixelEpsilon);
 }
 
 TEST(SimpleColorSpace, ICCProfileOnlyColorSpin) {
-  const float kEpsilon = 3.0f / 255.f;
+  const float kPixelEpsilon = 3.0f / 255.f;
   ICCProfile icc_profile = ICCProfileForTestingNoAnalyticTrFn();
   ColorSpace icc_space = icc_profile.GetColorSpace();
   ColorSpace colorspin = ICCProfileForTestingColorSpin().GetColorSpace();
@@ -306,9 +313,12 @@ TEST(SimpleColorSpace, ICCProfileOnlyColorSpin) {
           icc_space, colorspin, ColorTransform::Intent::INTENT_PERCEPTUAL));
   EXPECT_EQ(icc_to_colorspin->NumberOfStepsForTesting(), 3u);
   icc_to_colorspin->Transform(&transformed_value, 1);
-  EXPECT_NEAR(transformed_value.x(), expected_transformed_value.x(), kEpsilon);
-  EXPECT_NEAR(transformed_value.y(), expected_transformed_value.y(), kEpsilon);
-  EXPECT_NEAR(transformed_value.z(), expected_transformed_value.z(), kEpsilon);
+  EXPECT_NEAR(transformed_value.x(), expected_transformed_value.x(),
+              kPixelEpsilon);
+  EXPECT_NEAR(transformed_value.y(), expected_transformed_value.y(),
+              kPixelEpsilon);
+  EXPECT_NEAR(transformed_value.z(), expected_transformed_value.z(),
+              kPixelEpsilon);
 
   transformed_value = expected_transformed_value;
   std::unique_ptr<ColorTransform> colorspin_to_icc(
@@ -317,9 +327,9 @@ TEST(SimpleColorSpace, ICCProfileOnlyColorSpin) {
   EXPECT_EQ(colorspin_to_icc->NumberOfStepsForTesting(), 3u);
   transformed_value = expected_transformed_value;
   colorspin_to_icc->Transform(&transformed_value, 1);
-  EXPECT_NEAR(input_value.x(), transformed_value.x(), kEpsilon);
-  EXPECT_NEAR(input_value.y(), transformed_value.y(), kEpsilon);
-  EXPECT_NEAR(input_value.z(), transformed_value.z(), kEpsilon);
+  EXPECT_NEAR(input_value.x(), transformed_value.x(), kPixelEpsilon);
+  EXPECT_NEAR(input_value.y(), transformed_value.y(), kPixelEpsilon);
+  EXPECT_NEAR(input_value.z(), transformed_value.z(), kPixelEpsilon);
 }
 
 TEST(SimpleColorSpace, GetColorSpace) {
@@ -332,27 +342,27 @@ TEST(SimpleColorSpace, GetColorSpace) {
 
   ColorTransform::TriStim tmp(1.0f, 1.0f, 1.0f);
   t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 1.0f, kEpsilon);
-  EXPECT_NEAR(tmp.y(), 1.0f, kEpsilon);
-  EXPECT_NEAR(tmp.z(), 1.0f, kEpsilon);
+  EXPECT_NEAR(tmp.x(), 1.0f, kPixelEpsilon);
+  EXPECT_NEAR(tmp.y(), 1.0f, kPixelEpsilon);
+  EXPECT_NEAR(tmp.z(), 1.0f, kPixelEpsilon);
 
   tmp = ColorTransform::TriStim(1.0f, 0.0f, 0.0f);
   t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 1.0f, kEpsilon);
-  EXPECT_NEAR(tmp.y(), 0.0f, kEpsilon);
-  EXPECT_NEAR(tmp.z(), 0.0f, kEpsilon);
+  EXPECT_NEAR(tmp.x(), 1.0f, kPixelEpsilon);
+  EXPECT_NEAR(tmp.y(), 0.0f, kPixelEpsilon);
+  EXPECT_NEAR(tmp.z(), 0.0f, kPixelEpsilon);
 
   tmp = ColorTransform::TriStim(0.0f, 1.0f, 0.0f);
   t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 0.0f, kEpsilon);
-  EXPECT_NEAR(tmp.y(), 1.0f, kEpsilon);
-  EXPECT_NEAR(tmp.z(), 0.0f, kEpsilon);
+  EXPECT_NEAR(tmp.x(), 0.0f, kPixelEpsilon);
+  EXPECT_NEAR(tmp.y(), 1.0f, kPixelEpsilon);
+  EXPECT_NEAR(tmp.z(), 0.0f, kPixelEpsilon);
 
   tmp = ColorTransform::TriStim(0.0f, 0.0f, 1.0f);
   t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 0.0f, kEpsilon);
-  EXPECT_NEAR(tmp.y(), 0.0f, kEpsilon);
-  EXPECT_NEAR(tmp.z(), 1.0f, kEpsilon);
+  EXPECT_NEAR(tmp.x(), 0.0f, kPixelEpsilon);
+  EXPECT_NEAR(tmp.y(), 0.0f, kPixelEpsilon);
+  EXPECT_NEAR(tmp.z(), 1.0f, kPixelEpsilon);
 }
 
 TEST(SimpleColorSpace, Scale) {
@@ -363,9 +373,9 @@ TEST(SimpleColorSpace, Scale) {
 
   ColorTransform::TriStim tmp(1.0f, 1.0f, 1.0f);
   t->Transform(&tmp, 1);
-  EXPECT_NEAR(tmp.x(), 0.735356983052449f, kEpsilon);
-  EXPECT_NEAR(tmp.y(), 0.735356983052449f, kEpsilon);
-  EXPECT_NEAR(tmp.z(), 0.735356983052449f, kEpsilon);
+  EXPECT_NEAR(tmp.x(), 0.735356983052449f, kPixelEpsilon);
+  EXPECT_NEAR(tmp.y(), 0.735356983052449f, kPixelEpsilon);
+  EXPECT_NEAR(tmp.z(), 0.735356983052449f, kPixelEpsilon);
 }
 
 TEST(SimpleColorSpace, ToUndefined) {
@@ -554,7 +564,7 @@ TEST_P(TransferTest, basicTest) {
     ColorTransform::TriStim tristim(x, x, x);
     to_linear->Transform(&tristim, 1);
     from_linear->Transform(&tristim, 1);
-    EXPECT_NEAR(x, tristim.x(), 0.001f);
+    EXPECT_NEAR(x, tristim.x(), kMathEpsilon);
   }
 }
 
@@ -615,7 +625,7 @@ TEST_P(ExtendedTransferTest, extendedTest) {
     ColorTransform::TriStim tristim(x, x, x);
     to_linear->Transform(&tristim, 1);
     from_linear->Transform(&tristim, 1);
-    EXPECT_NEAR(x, tristim.x(), 0.001f);
+    EXPECT_NEAR(x, tristim.x(), kMathEpsilon);
   }
 }
 
@@ -649,9 +659,9 @@ TEST_P(ColorSpaceTest, testNullTransform) {
       ColorTransform::NewColorTransform(color_space_, color_space_, intent_));
   ColorTransform::TriStim tristim(0.4f, 0.5f, 0.6f);
   t->Transform(&tristim, 1);
-  EXPECT_NEAR(tristim.x(), 0.4f, 0.001f);
-  EXPECT_NEAR(tristim.y(), 0.5f, 0.001f);
-  EXPECT_NEAR(tristim.z(), 0.6f, 0.001f);
+  EXPECT_NEAR(tristim.x(), 0.4f, kMathEpsilon);
+  EXPECT_NEAR(tristim.y(), 0.5f, kMathEpsilon);
+  EXPECT_NEAR(tristim.z(), 0.6f, kMathEpsilon);
 }
 
 TEST_P(ColorSpaceTest, toXYZandBack) {
@@ -662,9 +672,9 @@ TEST_P(ColorSpaceTest, toXYZandBack) {
   ColorTransform::TriStim tristim(0.4f, 0.5f, 0.6f);
   t1->Transform(&tristim, 1);
   t2->Transform(&tristim, 1);
-  EXPECT_NEAR(tristim.x(), 0.4f, 0.001f);
-  EXPECT_NEAR(tristim.y(), 0.5f, 0.001f);
-  EXPECT_NEAR(tristim.z(), 0.6f, 0.001f);
+  EXPECT_NEAR(tristim.x(), 0.4f, kMathEpsilon);
+  EXPECT_NEAR(tristim.y(), 0.5f, kMathEpsilon);
+  EXPECT_NEAR(tristim.z(), 0.6f, kMathEpsilon);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -693,4 +703,106 @@ INSTANTIATE_TEST_SUITE_P(
                      testing::ValuesIn(all_matrices),
                      testing::ValuesIn(all_ranges),
                      testing::ValuesIn(intents)));
+
+TEST(ColorSpaceTest, ExtendedSRGBScale) {
+  ColorSpace space_unscaled = ColorSpace::CreateSRGB();
+  float scale = 3.14;
+  skcms_TransferFunction scaled_trfn =
+      SkTransferFnScaled(*skcms_sRGB_TransferFunction(), scale);
+  ColorSpace space_scaled(ColorSpace::PrimaryID::BT709,
+                          ColorSpace::TransferID::CUSTOM_HDR,
+                          ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL,
+                          nullptr, &scaled_trfn);
+  ColorSpace space_target(ColorSpace::PrimaryID::BT709,
+                          ColorSpace::TransferID::LINEAR,
+                          ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
+
+  std::unique_ptr<ColorTransform> xform_scaled(
+      ColorTransform::NewColorTransform(
+          space_scaled, space_target, ColorTransform::Intent::INTENT_ABSOLUTE));
+  std::unique_ptr<ColorTransform> xform_unscaled(
+      ColorTransform::NewColorTransform(
+          space_unscaled, space_target,
+          ColorTransform::Intent::INTENT_ABSOLUTE));
+
+  // Make sure that we're testing something in the linear (0.001) and nonlinear
+  // (the rest) segments of the function.
+  ColorTransform::TriStim val_scaled(0.001, 0.5, 0.7);
+  ColorTransform::TriStim val_unscaled = val_scaled;
+
+  xform_scaled->Transform(&val_scaled, 1);
+  xform_unscaled->Transform(&val_unscaled, 1);
+
+  EXPECT_NEAR(val_scaled.x() / val_unscaled.x(), scale, kMathEpsilon);
+  EXPECT_NEAR(val_scaled.y() / val_unscaled.y(), scale, kMathEpsilon);
+  EXPECT_NEAR(val_scaled.z() / val_unscaled.z(), scale, kMathEpsilon);
+}
+
+TEST(ColorSpaceTest, PQSDRWhiteLevel) {
+  // The PQ function maps |pq_encoded_nits| to |nits|. We mangle it a bit with
+  // the SDR white level.
+  float pq_encoded_nits[] = {
+      0.485857f,
+      0.508078f,
+      0.579133f,
+  };
+  float nits[] = {80.f, 100.f, 200.f};
+
+  for (size_t i = 0; i < 4; ++i) {
+    // We'll set the SDR white level to the values in |nits| and also the
+    // default.
+    ColorSpace hdr10 =
+        i < 3 ? ColorSpace::CreateHDR10(nits[i]) : ColorSpace::CreateHDR10();
+    float white_level = 0;
+    EXPECT_TRUE(hdr10.GetPQSDRWhiteLevel(&white_level));
+    if (i < 3)
+      EXPECT_EQ(white_level, nits[i]);
+    else
+      EXPECT_EQ(white_level, ColorSpace::kDefaultSDRWhiteLevel);
+
+    // Transform to the same color space, but with the LINEAR_HDR transfer
+    // function.
+    ColorSpace target(ColorSpace::PrimaryID::BT2020,
+                      ColorSpace::TransferID::LINEAR_HDR,
+                      ColorSpace::MatrixID::RGB, ColorSpace::RangeID::FULL);
+    std::unique_ptr<ColorTransform> xform(ColorTransform::NewColorTransform(
+        hdr10, target, ColorTransform::Intent::INTENT_ABSOLUTE));
+
+    // Do the transform to the values in |pq_encoded_nits|.
+    ColorTransform::TriStim val(pq_encoded_nits[0], pq_encoded_nits[1],
+                                pq_encoded_nits[2]);
+    xform->Transform(&val, 1);
+
+    // The white level should be mapped to 1.
+    switch (i) {
+      case 0:
+        EXPECT_NEAR(val.x(), 1.f, kMathEpsilon);
+        break;
+      case 1:
+        EXPECT_NEAR(val.y(), 1.f, kMathEpsilon);
+        break;
+      case 2:
+        EXPECT_NEAR(val.z(), 1.f, kMathEpsilon);
+        break;
+      case 3:
+        // Check that the default white level is 80 nits. This will change to
+        // 100 nits in the future.
+        EXPECT_NEAR(val.x(), 1.f, kMathEpsilon);
+        break;
+    }
+
+    // The nit ratios should be preserved by the transform.
+    EXPECT_NEAR(val.y() / val.x(), nits[1] / nits[0], kMathEpsilon);
+    EXPECT_NEAR(val.z() / val.x(), nits[2] / nits[0], kMathEpsilon);
+
+    // Test the inverse transform.
+    std::unique_ptr<ColorTransform> xform_inv(ColorTransform::NewColorTransform(
+        target, hdr10, ColorTransform::Intent::INTENT_ABSOLUTE));
+    xform_inv->Transform(&val, 1);
+    EXPECT_NEAR(val.x(), pq_encoded_nits[0], kMathEpsilon);
+    EXPECT_NEAR(val.y(), pq_encoded_nits[1], kMathEpsilon);
+    EXPECT_NEAR(val.z(), pq_encoded_nits[2], kMathEpsilon);
+  }
+}
+
 }  // namespace gfx

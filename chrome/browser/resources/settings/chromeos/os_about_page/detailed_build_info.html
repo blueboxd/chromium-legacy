@@ -60,9 +60,26 @@
           localized-string="[[eolMessageWithMonthAndYear]]">
       </settings-localized-link>
     </div>
-    <cr-link-row class="hr" label="$i18n{aboutBuildDetailsTitle}"
-        on-click="onBuildDetailsTap_" external>
-    </cr-link-row>
+    <div id="buildDetailsLinkContainer" class="settings-box">
+      <div class="start" id="aboutBuildDetailsTitle">
+        $i18n{aboutBuildDetailsTitle}
+      </div>
+      <cr-icon-button id="copyBuildDetailsButton" class="icon-copy-content"
+          aria-labelledby="copyBuildDetailsButtonToolTip"
+          on-click="onCopyBuildDetailsToClipBoardTap_"
+          disabled="[[!copyToClipBoardEnabled_(versionInfo_, channelInfo_)]]">
+      </cr-icon-button>
+      <paper-tooltip id="copyBuildDetailsButtonToolTip"
+          for="copyBuildDetailsButton"
+          position="bottom" fit-to-visible-bounds>
+        $i18n{aboutBuildDetailsCopyTooltipLabel}
+      </paper-tooltip>
+      <div class="separator"></div>
+      <cr-icon-button on-click="onVisitBuildDetailsPageTap_"
+          aria-labelledby="aboutBuildDetailsTitle"
+          class="icon-external">
+      </cr-icon-button>
+    </div>
     <div class="hr"></div>
   </template>
   <script src="detailed_build_info.js"></script>

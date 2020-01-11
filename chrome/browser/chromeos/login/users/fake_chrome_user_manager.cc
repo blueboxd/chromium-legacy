@@ -186,19 +186,18 @@ bool FakeChromeUserManager::AreEphemeralUsersEnabled() const {
   return fake_ephemeral_users_enabled_;
 }
 
-void FakeChromeUserManager::LoginUser(const AccountId& account_id) {
+void FakeChromeUserManager::LoginUser(const AccountId& account_id,
+                                      bool set_profile_created_flag) {
   UserLoggedIn(
       account_id,
       ProfileHelper::GetUserIdHashByUserIdForTesting(account_id.GetUserEmail()),
       false /* browser_restart */, false /* is_child */);
 
+  if (!set_profile_created_flag)
+    return;
+
   // NOTE: This does not match production. See function comment.
-  for (auto* user : users_) {
-    if (user->GetAccountId() == account_id) {
-      user->SetProfileIsCreated();
-      break;
-    }
-  }
+  SimulateUserProfileLoad(account_id);
 }
 
 MultiProfileUserController*
@@ -633,6 +632,16 @@ bool FakeChromeUserManager::IsUserAllowed(
 void FakeChromeUserManager::CreateLocalState() {
   local_state_ = std::make_unique<TestingPrefServiceSimple>();
   user_manager::known_user::RegisterPrefs(local_state_->registry());
+}
+
+void FakeChromeUserManager::SimulateUserProfileLoad(
+    const AccountId& account_id) {
+  for (auto* user : users_) {
+    if (user->GetAccountId() == account_id) {
+      user->SetProfileIsCreated();
+      break;
+    }
+  }
 }
 
 PrefService* FakeChromeUserManager::GetLocalState() const {

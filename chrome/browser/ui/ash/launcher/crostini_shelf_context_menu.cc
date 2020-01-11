@@ -53,7 +53,7 @@ CrostiniShelfContextMenu::CrostiniShelfContextMenu(
 CrostiniShelfContextMenu::~CrostiniShelfContextMenu() = default;
 
 void CrostiniShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
-  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
+  auto menu_model = GetBaseMenuModel();
   const crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(
           controller()->profile());

@@ -10,7 +10,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.os.Looper;
 import android.util.Pair;
 
 import org.junit.Assert;
@@ -18,10 +17,8 @@ import org.junit.Assert;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.TimeoutTimer;
+import org.chromium.chrome.browser.UnitTestUtils;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
-import org.chromium.content_public.browser.test.NestedSystemMessageHandler;
-import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
 
@@ -31,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Ensure that the InstalledAppProvider returns the correct apps. */
@@ -331,17 +327,7 @@ public class InstalledAppProviderTest {
                         called.set(true);
                     }
                 });
-        pollUiThread(() -> called.get());
-    }
-
-    private static void pollUiThread(final Callable<Boolean> criteria) throws Exception {
-        boolean isSatisfied = criteria.call();
-        TimeoutTimer timer = new TimeoutTimer(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        while (!isSatisfied && !timer.isTimedOut()) {
-            NestedSystemMessageHandler.runSingleNestedLooperTask(Looper.myQueue());
-            isSatisfied = criteria.call();
-        }
-        Assert.assertTrue(isSatisfied);
+        UnitTestUtils.pollUiThread(() -> called.get());
     }
 
     @CalledByNative

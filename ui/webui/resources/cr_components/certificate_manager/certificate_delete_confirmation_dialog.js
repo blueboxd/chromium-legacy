@@ -23,13 +23,13 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ =
         certificate_manager.CertificatesBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
   },
 
@@ -37,7 +37,7 @@ Polymer({
    * @private
    * @return {string}
    */
-  getTitleText_: function() {
+  getTitleText_() {
     /**
      * @param {string} localizedMessageId
      * @return {string}
@@ -62,7 +62,7 @@ Polymer({
    * @private
    * @return {string}
    */
-  getDescriptionText_: function() {
+  getDescriptionText_() {
     const getString = loadTimeData.getString.bind(loadTimeData);
     switch (this.certificateType) {
       case CertificateType.PERSONAL:
@@ -78,12 +78,12 @@ Polymer({
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     /** @type {!CrDialogElement} */ (this.$.dialog).close();
   },
 
   /** @private */
-  onOkTap_: function() {
+  onOkTap_() {
     this.browserProxy_.deleteCertificate(this.model.id)
         .then(
             () => {

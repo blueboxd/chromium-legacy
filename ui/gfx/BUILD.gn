@@ -795,6 +795,7 @@ test("gfx_unittests") {
     "//base",
     "//base/test:test_support",
     "//skia",
+    "//skia:skcms",
     "//testing/gtest",
     "//third_party/icu:icuuc",
     "//third_party/libpng",

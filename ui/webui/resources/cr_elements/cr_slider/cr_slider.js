@@ -191,7 +191,7 @@ cr.define('cr_slider', function() {
     draggingEventTracker_: null,
 
     /** @override */
-    attached: function() {
+    attached() {
       this.isRtl_ = window.getComputedStyle(this)['direction'] === 'rtl';
       this.deltaKeyMap_ = new Map([
         ['ArrowDown', -1],
@@ -208,7 +208,7 @@ cr.define('cr_slider', function() {
      * @return {boolean}
      * @private
      */
-    computeDisabled_: function() {
+    computeDisabled_() {
       return this.disabled || this.ticks.length == 1;
     },
 
@@ -221,7 +221,7 @@ cr.define('cr_slider', function() {
      *     create |markerCount| number of markers.
      * @private
      */
-    getMarkers_: function() {
+    getMarkers_() {
       return new Array(Math.max(0, this.markerCount - 1));
     },
 
@@ -230,7 +230,7 @@ cr.define('cr_slider', function() {
      * @return {string}
      * @private
      */
-    getMarkerClass_: function(index) {
+    getMarkerClass_(index) {
       const currentStep = (this.markerCount - 1) * this.getRatio();
       return index < currentStep ? 'active-marker' : 'inactive-marker';
     },
@@ -242,7 +242,7 @@ cr.define('cr_slider', function() {
      * and label location.
      * @return {number}
      */
-    getRatio: function() {
+    getRatio() {
       return (this.value - this.min) / (this.max - this.min);
     },
 
@@ -251,7 +251,7 @@ cr.define('cr_slider', function() {
      * @param {number} pointerId
      * @private
      */
-    stopDragging_: function(pointerId) {
+    stopDragging_(pointerId) {
       this.draggingEventTracker_.removeAll();
       this.releasePointerCapture(pointerId);
       this.dragging = false;
@@ -259,19 +259,19 @@ cr.define('cr_slider', function() {
     },
 
     /** @private */
-    hideRipple_: function() {
+    hideRipple_() {
       this.getRipple().clear();
       this.showLabel_ = false;
     },
 
     /** @private */
-    showRipple_: function() {
+    showRipple_() {
       this.getRipple().showAndHoldDown();
       this.showLabel_ = true;
     },
 
     /** @private */
-    onDisabledChanged_: function() {
+    onDisabledChanged_() {
       this.setAttribute('tabindex', this.disabled_ ? -1 : 0);
       this.blur();
     },
@@ -280,7 +280,7 @@ cr.define('cr_slider', function() {
      * @param {!Event} event
      * @private
      */
-    onKeyDown_: function(event) {
+    onKeyDown_(event) {
       if (this.disabled_ || this.noKeybindings) {
         return;
       }
@@ -316,7 +316,7 @@ cr.define('cr_slider', function() {
      * @param {!Event} event
      * @private
      */
-    onKeyUp_: function(event) {
+    onKeyUp_(event) {
       if (event.key == 'Home' || event.key == 'End' ||
           this.deltaKeyMap_.has(event.key)) {
         setTimeout(() => {
@@ -331,7 +331,7 @@ cr.define('cr_slider', function() {
      * @param {!PointerEvent} event
      * @private
      */
-    onPointerDown_: function(event) {
+    onPointerDown_(event) {
       if (this.disabled_ ||
           event.buttons != 1 && event.pointerType == 'mouse') {
         return;
@@ -371,7 +371,7 @@ cr.define('cr_slider', function() {
     },
 
     /** @private */
-    onTicksChanged_: function() {
+    onTicksChanged_() {
       if (this.ticks.length > 1) {
         this.snaps = true;
         this.max = this.ticks.length - 1;
@@ -383,12 +383,12 @@ cr.define('cr_slider', function() {
     },
 
     /** @private */
-    onTransitionEnd_: function() {
+    onTransitionEnd_() {
       this.transiting_ = false;
     },
 
     /** @private */
-    onValueMinMaxChange_: function() {
+    onValueMinMaxChange_() {
       if (this.value == undefined || this.min == undefined ||
           this.max == undefined) {
         return;
@@ -397,7 +397,7 @@ cr.define('cr_slider', function() {
     },
 
     /** @private */
-    updateUi_: function() {
+    updateUi_() {
       const percent = `${this.getRatio() * 100}%`;
       this.$.bar.style.width = percent;
       this.$.knobAndLabel.style.marginInlineStart = percent;
@@ -426,7 +426,7 @@ cr.define('cr_slider', function() {
      * @return {boolean}
      * @private
      */
-    updateValue_: function(value) {
+    updateValue_(value) {
       this.$.container.hidden = false;
       if (this.snaps) {
         // Skip update if |value| has not passed the next value .8 units away.
@@ -448,7 +448,7 @@ cr.define('cr_slider', function() {
      * @param {number} clientX
      * @private
      */
-    updateValueFromClientX_: function(clientX) {
+    updateValueFromClientX_(clientX) {
       const rect = this.$.container.getBoundingClientRect();
       let ratio = (clientX - rect.left) / rect.width;
       if (this.isRtl_) {
@@ -459,7 +459,7 @@ cr.define('cr_slider', function() {
       }
     },
 
-    _createRipple: function() {
+    _createRipple() {
       this._rippleContainer = this.$.knob;
       const ripple = Polymer.PaperRippleBehavior._createRipple();
       ripple.id = 'ink';

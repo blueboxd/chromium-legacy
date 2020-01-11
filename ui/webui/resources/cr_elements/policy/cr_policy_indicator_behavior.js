@@ -81,7 +81,7 @@ const CrPolicyIndicatorBehavior = {
    * @return {boolean} True if the indicator should be shown.
    * @private
    */
-  getIndicatorVisible_: function(type) {
+  getIndicatorVisible_(type) {
     return type != CrPolicyIndicatorType.NONE;
   },
 
@@ -90,7 +90,7 @@ const CrPolicyIndicatorBehavior = {
    * @return {string} The iron-icon icon name.
    * @private
    */
-  getIndicatorIcon_: function(type) {
+  getIndicatorIcon_(type) {
     switch (type) {
       case CrPolicyIndicatorType.EXTENSION:
         return 'cr:extension';
@@ -120,7 +120,7 @@ const CrPolicyIndicatorBehavior = {
    *     value matches the recommended value.
    * @return {string} The tooltip text for |type|.
    */
-  getIndicatorTooltip: function(type, name, opt_matches) {
+  getIndicatorTooltip(type, name, opt_matches) {
     if (!CrPolicyStrings) {
       return '';
     }  // Tooltips may not be defined, e.g. in OOBE.

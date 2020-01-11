@@ -18,19 +18,15 @@ import static org.mockito.Mockito.when;
 
 import android.text.TextUtils;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.CalledByNativeJavaTest;
 import org.chromium.base.task.TaskRunner;
-import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.UnitTestUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -41,11 +37,11 @@ import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabRestoreDetails
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Unit tests for the tab persistent store logic.
  */
-@RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
 public class TabPersistentStoreUnitTest {
     @Mock
     private TabPersistencePolicy mPersistencePolicy;
@@ -68,8 +64,11 @@ public class TabPersistentStoreUnitTest {
 
     private TabPersistentStore mPersistentStore;
 
-    @Before
-    public void beforeTest() {
+    @CalledByNative
+    private TabPersistentStoreUnitTest() {}
+
+    @CalledByNative
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
 
         when(mTabModelSelector.getModel(false)).thenReturn(mNormalTabModel);
@@ -84,13 +83,15 @@ public class TabPersistentStoreUnitTest {
         when(mPersistencePolicy.performInitialization(any(TaskRunner.class))).thenReturn(false);
     }
 
-    @After
-    public void afterTest() {
-        Robolectric.flushBackgroundThreadScheduler();
-        Robolectric.flushForegroundThreadScheduler();
+    @CalledByNative
+    public void tearDown() throws Exception {
+        // Flush pending PersistentStore tasks.
+        final AtomicBoolean flushed = new AtomicBoolean(false);
+        mPersistentStore.getTaskRunnerForTests().postTask(() -> { flushed.set(true); });
+        UnitTestUtils.pollUiThread(() -> flushed.get());
     }
 
-    @Test
+    @CalledByNativeJavaTest
     @Feature("TabPersistentStore")
     public void testNtpSaveBehavior() {
         when(mNormalTabModel.index()).thenReturn(TabList.INVALID_TAB_INDEX);
@@ -141,7 +142,7 @@ public class TabPersistentStoreUnitTest {
         assertTrue(mPersistentStore.isTabPendingSave(ntpWithAllTheNavsTab));
     }
 
-    @Test
+    @CalledByNativeJavaTest
     @Feature("TabPersistentStore")
     public void testNotActiveEmptyNtpIgnoredDuringRestore() {
         mPersistentStore = new TabPersistentStore(
@@ -155,7 +156,7 @@ public class TabPersistentStoreUnitTest {
         verifyZeroInteractions(mNormalTabCreator);
     }
 
-    @Test
+    @CalledByNativeJavaTest
     @Feature("TabPersistentStore")
     public void testActiveEmptyNtpNotIgnoredDuringRestore() {
         when(mTabModelSelector.isIncognitoSelected()).thenReturn(false);
@@ -180,7 +181,7 @@ public class TabPersistentStoreUnitTest {
                         eq(TabLaunchType.FROM_RESTORE), (Tab) isNull());
     }
 
-    @Test
+    @CalledByNativeJavaTest
     @Feature("TabPersistentStore")
     public void testNtpFromMergeWithNoStateNotIgnoredDuringMerge() {
         when(mTabModelSelector.isIncognitoSelected()).thenReturn(false);
@@ -211,7 +212,7 @@ public class TabPersistentStoreUnitTest {
                         eq(TabLaunchType.FROM_RESTORE), (Tab) isNull());
     }
 
-    @Test
+    @CalledByNativeJavaTest
     @Feature("TabPersistentStore")
     public void testNtpWithStateNotIgnoredDuringRestore() {
         mPersistentStore = new TabPersistentStore(
@@ -226,7 +227,7 @@ public class TabPersistentStoreUnitTest {
         verify(mNormalTabCreator).createFrozenTab(eq(ntpState), eq(1), anyInt());
     }
 
-    @Test
+    @CalledByNativeJavaTest
     @Feature("TabPersistentStore")
     public void testActiveEmptyIncognitoNtpNotIgnoredDuringRestore() {
         when(mTabModelSelector.isIncognitoSelected()).thenReturn(true);
@@ -251,7 +252,7 @@ public class TabPersistentStoreUnitTest {
                         eq(TabLaunchType.FROM_RESTORE), (Tab) isNull());
     }
 
-    @Test
+    @CalledByNativeJavaTest
     @Feature("TabPersistentStore")
     public void testNotActiveIncognitoNtpIgnoredDuringRestore() {
         mPersistentStore = new TabPersistentStore(
@@ -265,7 +266,7 @@ public class TabPersistentStoreUnitTest {
         verifyZeroInteractions(mIncognitoTabCreator);
     }
 
-    @Test
+    @CalledByNativeJavaTest
     @Feature("TabPersistentStore")
     public void testActiveEmptyIncognitoNtpIgnoredDuringRestoreIfIncognitoLoadingIsDisabled() {
         mPersistentStore = new TabPersistentStore(

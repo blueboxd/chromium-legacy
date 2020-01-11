@@ -28,7 +28,7 @@ Polymer({
      */
     fields: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -46,7 +46,7 @@ Polymer({
      */
     editFieldTypes: {
       type: Object,
-      value: function() {
+      value() {
         return {};
       },
     },
@@ -65,7 +65,7 @@ Polymer({
    * @param {!Event} event The input change event.
    * @private
    */
-  onValueChange_: function(event) {
+  onValueChange_(event) {
     if (!this.propertyDict) {
       return;
     }
@@ -91,7 +91,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getOncKey_: function(key, opt_prefix) {
+  getOncKey_(key, opt_prefix) {
     if (opt_prefix) {
       key = opt_prefix + key.charAt(0).toUpperCase() + key.slice(1);
     }
@@ -136,7 +136,7 @@ Polymer({
    * @return {string} The text to display for the property label.
    * @private
    */
-  getPropertyLabel_: function(key) {
+  getPropertyLabel_(key) {
     const oncKey = this.getOncKey_(key, this.prefix);
     if (this.i18nExists(oncKey)) {
       return this.i18n(oncKey);
@@ -157,7 +157,7 @@ Polymer({
    * @return {!Object} A filter used by dom-repeat.
    * @private
    */
-  computeFilter_: function() {
+  computeFilter_() {
     return key => {
       if (this.editFieldTypes.hasOwnProperty(key)) {
         return true;
@@ -172,7 +172,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isPropertyEditable_: function(key) {
+  isPropertyEditable_(key) {
     if (!this.propertyDict) {
       return false;
     }
@@ -192,7 +192,7 @@ Polymer({
    * @return {boolean} True if the edit type for the key is a valid type.
    * @private
    */
-  isEditType_: function(key) {
+  isEditType_(key) {
     const editType = this.editFieldTypes[key];
     return editType == 'String' || editType == 'StringArray' ||
         editType == 'Password';
@@ -203,7 +203,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isEditable_: function(key) {
+  isEditable_(key) {
     return this.isEditType_(key) && this.isPropertyEditable_(key);
   },
 
@@ -212,7 +212,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showEditable_: function(key) {
+  showEditable_(key) {
     return this.isEditable_(key);
   },
 
@@ -221,7 +221,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getEditInputType_: function(key) {
+  getEditInputType_(key) {
     return this.editFieldTypes[key] == 'Password' ? 'password' : 'text';
   },
 
@@ -230,7 +230,7 @@ Polymer({
    * @return {!OncMojo.ManagedProperty|undefined}
    * @private
    */
-  getProperty_: function(key) {
+  getProperty_(key) {
     if (!this.propertyDict) {
       return undefined;
     }
@@ -247,7 +247,7 @@ Polymer({
    * @return {*} The managed property dictionary associated with |key|.
    * @private
    */
-  getIndicatorProperty_: function(key) {
+  getIndicatorProperty_(key) {
     if (!this.propertyDict) {
       return undefined;
     }
@@ -275,7 +275,7 @@ Polymer({
    * @return {string} The text to display for the property value.
    * @private
    */
-  getPropertyValue_: function(key) {
+  getPropertyValue_(key) {
     let value = this.getProperty_(key);
     if (value === undefined || value === null) {
       return '';
@@ -345,7 +345,7 @@ Polymer({
    * @return {string} The text to display for the property value. If the key
    *     does not correspond to a custom property, an empty string is returned.
    */
-  getCustomPropertyValue_: function(key, value) {
+  getCustomPropertyValue_(key, value) {
     if (key == 'tether.batteryPercentage') {
       assert(typeof value == 'number');
       return this.i18n('OncTether-BatteryPercentage_Value', value.toString());

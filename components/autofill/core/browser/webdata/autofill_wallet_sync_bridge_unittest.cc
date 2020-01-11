@@ -830,8 +830,6 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletAddressData) {
 TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   // Create a card to be synced from the server.
   CreditCard card = test::GetMaskedServerCard();
-  // Add this value type as it is not added by default but should be synced.
-  card.set_bank_name("The Bank");
   AutofillWalletSpecifics card_specifics;
   SetAutofillWalletSpecificsFromServerCard(card, &card_specifics);
 
@@ -856,7 +854,6 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   EXPECT_EQ(card.expiration_year(), cards[0]->expiration_year());
   EXPECT_EQ(card.billing_address_id(), cards[0]->billing_address_id());
   EXPECT_EQ(card.card_type(), cards[0]->card_type());
-  EXPECT_EQ(card.bank_name(), cards[0]->bank_name());
 
   // Also make sure that those types are not empty, to exercice all the code
   // paths.
@@ -865,7 +862,6 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   EXPECT_NE(0, card.expiration_month());
   EXPECT_NE(0, card.expiration_year());
   EXPECT_NE(CreditCard::CARD_TYPE_UNKNOWN, card.card_type());
-  EXPECT_FALSE(card.bank_name().empty());
 }
 
 // Test that all field values for a cloud token data sent from the server are

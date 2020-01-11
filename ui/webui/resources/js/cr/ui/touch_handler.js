@@ -345,7 +345,7 @@ cr.define('cr.ui', function() {
      * @param {boolean=} opt_mouse True if the TouchHandler should generate
      *      events for mouse input (in addition to touch input).
      */
-    enable: function(opt_capture, opt_mouse) {
+    enable(opt_capture, opt_mouse) {
       const capture = !!opt_capture;
 
       // Just listen to start events for now. When a touch is occuring we'll
@@ -366,7 +366,7 @@ cr.define('cr.ui', function() {
     /**
      * Stop listening to all events.
      */
-    disable: function() {
+    disable() {
       this.stopTouching_();
       this.events_.removeAll();
     },
@@ -380,7 +380,7 @@ cr.define('cr.ui', function() {
      * @return {Function} The wrapping callback.
      * @private
      */
-    mouseToTouchCallback_: function(callback) {
+    mouseToTouchCallback_(callback) {
       return function(e) {
         // Note that there may be synthesizes mouse events caused by touch
         // events (a mouseDown after a touch-click).  We leave it up to the
@@ -410,7 +410,7 @@ cr.define('cr.ui', function() {
      * Begin tracking the touchable element, it is eligible for dragging.
      * @private
      */
-    beginTracking_: function() {
+    beginTracking_() {
       this.tracking_ = true;
     },
 
@@ -418,7 +418,7 @@ cr.define('cr.ui', function() {
      * Stop tracking the touchable element, it is no longer dragging.
      * @private
      */
-    endTracking_: function() {
+    endTracking_() {
       this.tracking_ = false;
       this.dragging_ = false;
       this.totalMoveY_ = 0;
@@ -429,7 +429,7 @@ cr.define('cr.ui', function() {
      * Reset the touchable element as if we never saw the touchStart
      * Doesn't dispatch any end events - be careful of existing listeners.
      */
-    cancelTouch: function() {
+    cancelTouch() {
       this.stopTouching_();
       this.endTracking_();
       // If clients needed to be aware of this, we could fire a cancel event
@@ -440,7 +440,7 @@ cr.define('cr.ui', function() {
      * Record that touching has stopped
      * @private
      */
-    stopTouching_: function() {
+    stopTouching_() {
       // Mark as no longer being touched
       this.activeTouch_ = undefined;
 
@@ -463,7 +463,7 @@ cr.define('cr.ui', function() {
      * @param {!TouchEvent} e The touchstart event.
      * @private
      */
-    onStart_: function(e) {
+    onStart_(e) {
       // Only process single touches.  If there is already a touch happening, or
       // two simultaneous touches then just ignore them.
       if (e.touches.length > 1) {
@@ -543,7 +543,7 @@ cr.define('cr.ui', function() {
      * @return {!Touch|undefined} The touch matching our active ID if any.
      * @private
      */
-    findActiveTouch_: function(touches) {
+    findActiveTouch_(touches) {
       assert(this.activeTouch_ !== undefined, 'Expecting an active touch');
       // A TouchList isn't actually an array, so we shouldn't use
       // Array.prototype.filter/some, etc.
@@ -560,7 +560,7 @@ cr.define('cr.ui', function() {
      * @param {!TouchEvent} e The touchmove event.
      * @private
      */
-    onMove_: function(e) {
+    onMove_(e) {
       if (!this.tracking_) {
         return;
       }
@@ -644,8 +644,7 @@ cr.define('cr.ui', function() {
      * @param {number} recentMove The x or y component of the most recent move.
      * @private
      */
-    removeTouchesInWrongDirection_: function(
-        recentTouches, lastMove, recentMove) {
+    removeTouchesInWrongDirection_(recentTouches, lastMove, recentMove) {
       if (lastMove && recentMove && recentTouches.length > 2 &&
           (lastMove > 0 ^ recentMove > 0)) {
         recentTouches.splice(0, recentTouches.length - 2);
@@ -661,7 +660,7 @@ cr.define('cr.ui', function() {
      * @param {number} recentTime The time of the most recent event.
      * @private
      */
-    removeOldTouches_: function(recentTouches, recentTime) {
+    removeOldTouches_(recentTouches, recentTime) {
       while (recentTouches.length &&
                  recentTime - recentTouches[1] >
                      TouchHandler.MAX_TRACKING_TIME_ ||
@@ -675,7 +674,7 @@ cr.define('cr.ui', function() {
      * @param {!TouchEvent} e The touchend event.
      * @private
      */
-    onEnd_: function(e) {
+    onEnd_(e) {
       const that = this;
       assert(this.activeTouch_ !== undefined, 'Expect to already be touching');
 
@@ -740,7 +739,7 @@ cr.define('cr.ui', function() {
      * recent time stamp.
      * @return {Object} The x and y velocity.
      */
-    getEndVelocity: function() {
+    getEndVelocity() {
       // Note that we could move velocity to just be an end-event parameter.
       let velocityX = this.recentTouchesX_.length ?
           (this.endTouchX_ - this.recentTouchesX_[0]) /
@@ -765,7 +764,7 @@ cr.define('cr.ui', function() {
      * @return {number} The corrected velocity.
      * @private
      */
-    correctVelocity_: function(velocity) {
+    correctVelocity_(velocity) {
       let absVelocity = Math.abs(velocity);
 
       // We add to recent touches for each touchstart and touchmove. If we have
@@ -784,7 +783,7 @@ cr.define('cr.ui', function() {
      * Handler when an element has been pressed for a long time
      * @private
      */
-    onLongPress_: function() {
+    onLongPress_() {
       // Swallow any click that occurs on this element without an intervening
       // touch start event.  This simple click-busting technique should be
       // sufficient here since a real click should have a touchstart first.
@@ -805,7 +804,7 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The click event.
      * @private
      */
-    onClick_: function(e) {
+    onClick_(e) {
       if (this.swallowNextClick_) {
         e.preventDefault();
         e.stopPropagation();
@@ -821,8 +820,7 @@ cr.define('cr.ui', function() {
      *         the event.
      * @private
      */
-    dispatchEvent_: function(eventType, touch) {
-
+    dispatchEvent_(eventType, touch) {
       // Determine which element was touched.  For mouse events, this is always
       // the event/touch target.  But for touch events, the target is always the
       // target of the touchstart (and it's unlikely we can change this
@@ -852,7 +850,7 @@ cr.define('cr.ui', function() {
      *         the event.
      * @private
      */
-    dispatchEventXY_: function(eventType, touchedElement, clientX, clientY) {
+    dispatchEventXY_(eventType, touchedElement, clientX, clientY) {
       const isDrag =
           (eventType == TouchHandler.EventType.DRAG_START ||
            eventType == TouchHandler.EventType.DRAG_MOVE ||

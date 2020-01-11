@@ -142,7 +142,7 @@ cr.define('cr.ui', function() {
      * @param {?number} index
      * @return {?string}
      */
-    computeId_: function(index) {
+    computeId_(index) {
       return index !== undefined ? `frb${index}` : undefined;
     },
 
@@ -151,7 +151,7 @@ cr.define('cr.ui', function() {
      * @param {number} newIndex
      * @param {number} oldIndex
      */
-    focusRowIndexChanged: function(newIndex, oldIndex) {
+    focusRowIndexChanged(newIndex, oldIndex) {
       // focusRowIndex is 0-based where aria-rowindex is 1-based.
       this.setAttribute('aria-rowindex', newIndex + 1);
 
@@ -169,7 +169,7 @@ cr.define('cr.ui', function() {
     controlObservers_: [],
 
     /** @override */
-    attached: function() {
+    attached() {
       this.classList.add('no-outline');
 
       Polymer.RenderStatus.afterNextRender(this, function() {
@@ -189,7 +189,7 @@ cr.define('cr.ui', function() {
     },
 
     /** @override */
-    detached: function() {
+    detached() {
       this.unlisten(this, 'focus', 'onFocus_');
       this.unlisten(this, 'dom-change', 'addItems_');
       this.unlisten(this, 'mousedown', 'onMouseDown_');
@@ -204,12 +204,12 @@ cr.define('cr.ui', function() {
     },
 
     /** @return {!cr.ui.FocusRow} */
-    getFocusRow: function() {
+    getFocusRow() {
       return assert(this.row_);
     },
 
     /** @private */
-    updateFirstControl_: function() {
+    updateFirstControl_() {
       const newFirstControl = this.row_.getFirstFocusable();
       if (newFirstControl === this.firstControl_) {
         return;
@@ -227,7 +227,7 @@ cr.define('cr.ui', function() {
     },
 
     /** @private */
-    removeObservers_: function() {
+    removeObservers_() {
       if (this.controlObservers_.length > 0) {
         this.controlObservers_.forEach(observer => {
           observer.disconnect();
@@ -237,7 +237,7 @@ cr.define('cr.ui', function() {
     },
 
     /** @private */
-    addItems_: function() {
+    addItems_() {
       this.ironListTabIndexChanged_();
       if (this.row_) {
         this.removeObservers_();
@@ -260,7 +260,7 @@ cr.define('cr.ui', function() {
      * @return {!MutationObserver}
      * @private
      */
-    createObserver_: function() {
+    createObserver_() {
       return new MutationObserver(mutations => {
         const mutation = mutations[0];
         if (mutation.attributeName === 'style' && mutation.oldValue) {
@@ -289,7 +289,7 @@ cr.define('cr.ui', function() {
      * @param {!Element} control
      * @private
      */
-    addMutationObservers_: function(control) {
+    addMutationObservers_(control) {
       let current = control;
       while (current && current != this.root) {
         const currentObserver = this.createObserver_();
@@ -308,7 +308,7 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The focus event
      * @private
      */
-    onFocus_: function(e) {
+    onFocus_(e) {
       if (this.mouseFocused_) {
         this.mouseFocused_ = false;  // Consume and reset flag.
         return;
@@ -334,14 +334,14 @@ cr.define('cr.ui', function() {
     },
 
     /** @param {!KeyboardEvent} e */
-    onFirstControlKeydown_: function(e) {
+    onFirstControlKeydown_(e) {
       if (e.shiftKey && e.key === 'Tab') {
         this.focus();
       }
     },
 
     /** @private */
-    ironListTabIndexChanged_: function() {
+    ironListTabIndexChanged_() {
       if (this.row_) {
         this.row_.makeActive(this.ironListTabIndex == 0);
       }
@@ -354,7 +354,7 @@ cr.define('cr.ui', function() {
     },
 
     /** @private */
-    onMouseDown_: function() {
+    onMouseDown_() {
       this.mouseFocused_ = true;  // Set flag to not do any control-focusing.
     },
 
@@ -362,7 +362,7 @@ cr.define('cr.ui', function() {
      * @param {!Event} e
      * @private
      */
-    onBlur_: function(e) {
+    onBlur_(e) {
       this.mouseFocused_ = false;  // Reset flag since it's not active anymore.
 
       const node =

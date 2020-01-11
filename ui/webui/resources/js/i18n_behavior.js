@@ -35,7 +35,7 @@
    * @return {string} A translated, substituted string.
    * @private
    */
-  i18nRaw_: function(id, var_args) {
+  i18nRaw_(id, var_args) {
     return arguments.length == 1 ?
         loadTimeData.getString(id) :
         loadTimeData.getStringF.apply(loadTimeData, arguments);
@@ -51,7 +51,7 @@
    *     to $9 in the string.
    * @return {string} A translated, sanitized, substituted string.
    */
-  i18n: function(id, var_args) {
+  i18n(id, var_args) {
     const rawString = this.i18nRaw_.apply(this, arguments);
     return parseHtmlSubset('<b>' + rawString + '</b>').firstChild.textContent;
   },
@@ -65,7 +65,7 @@
    * @param {SanitizeInnerHtmlOpts=} opts
    * @return {string}
    */
-  i18nAdvanced: function(id, opts) {
+  i18nAdvanced(id, opts) {
     opts = opts || {};
     const args = [id].concat(opts.substitutions || []);
     const rawString = this.i18nRaw_.apply(this, args);
@@ -81,7 +81,7 @@
    *     in the string.
    * @return {string} A translated, sanitized, substituted string.
    */
-  i18nDynamic: function(locale, id, var_args) {
+  i18nDynamic(locale, id, var_args) {
     return this.i18n.apply(this, Array.prototype.slice.call(arguments, 1));
   },
 
@@ -96,7 +96,7 @@
    *     list of localized strings.
    * @return {string} A translated, sanitized, substituted string.
    */
-  i18nRecursive: function(locale, id, var_args) {
+  i18nRecursive(locale, id, var_args) {
     let args = Array.prototype.slice.call(arguments, 2);
     if (args.length > 0) {
       // Try to replace IDs with localized values.
@@ -113,7 +113,7 @@
    * @param {string} id
    * @return {boolean}
    */
-  i18nExists: function(id) {
+  i18nExists(id) {
     return loadTimeData.valueExists(id);
   },
 
@@ -122,7 +122,7 @@
    * any data bindings to i18nDynamic(locale, ...).
    * @suppress {checkTypes}
    */
-  i18nUpdateLocale: function() {
+  i18nUpdateLocale() {
     // Force reload.
     this.locale = undefined;
     this.locale = loadTimeData.getString('language');

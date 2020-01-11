@@ -21,8 +21,7 @@ NSString* GetCreditCardName(const CreditCard& credit_card,
 }
 
 NSString* GetCreditCardObfuscatedNumber(const CreditCard& credit_card) {
-  return base::SysUTF16ToNSString(
-      credit_card.NetworkOrBankNameAndLastFourDigits());
+  return base::SysUTF16ToNSString(credit_card.NetworkAndLastFourDigits());
 }
 
 NSDateComponents* GetCreditCardExpirationDate(const CreditCard& credit_card) {

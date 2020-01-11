@@ -21,12 +21,12 @@ Polymer({
   },
 
   /** @return {!CrInputElement} */
-  getSearchInput: function() {
+  getSearchInput() {
     return /** @type {!CrInputElement} */ (this.$.searchInput);
   },
 
   /** @private */
-  onTapClear_: function() {
+  onTapClear_() {
     this.setValue('');
     setTimeout(() => {
       this.$.searchInput.focus();

@@ -13,7 +13,7 @@ const NetworkListenerBehavior = {
   observer_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.observer_ =
         new chromeos.networkConfig.mojom.CrosNetworkConfigObserverReceiver(
             this);
@@ -28,16 +28,16 @@ const NetworkListenerBehavior = {
    * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
    *     activeNetworks
    */
-  onActiveNetworksChanged: function(activeNetworks) {},
+  onActiveNetworksChanged(activeNetworks) {},
 
   /** @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network */
-  onNetworkStateChanged: function(network) {},
+  onNetworkStateChanged(network) {},
 
-  onNetworkStateListChanged: function() {},
+  onNetworkStateListChanged() {},
 
-  onDeviceStateListChanged: function() {},
+  onDeviceStateListChanged() {},
 
-  onVpnProvidersChanged: function() {},
+  onVpnProvidersChanged() {},
 
-  onNetworkCertificatesChanged: function() {},
+  onNetworkCertificatesChanged() {},
 };

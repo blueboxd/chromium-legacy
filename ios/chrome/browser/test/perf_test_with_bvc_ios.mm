@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
+#include "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -102,26 +103,24 @@ void PerfTestWithBVC::SetUp() {
       [[SessionServiceIOS sharedService] loadSessionFromDirectory:state_path];
   DCHECK_EQ(session.sessionWindows.count, 1u);
 
+  browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
+                                           &web_state_list_);
+  otr_browser_ = std::make_unique<TestBrowser>(
+      chrome_browser_state_->GetOffTheRecordChromeBrowserState(),
+      &otr_web_state_list_);
+  SessionRestorationBrowserAgent::CreateForBrowser(
+      browser_.get(), [SessionServiceIOS sharedService]);
+  SessionRestorationBrowserAgent::CreateForBrowser(
+      otr_browser_.get(), [SessionServiceIOS sharedService]);
+
   // Tab models. The off-the-record (OTR) tab model is required for the stack
   // view controller, which is created in OpenStackView().
-  tab_model_ =
-      [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
-                                  browserState:chrome_browser_state_.get()
-                                  webStateList:&web_state_list_];
+  tab_model_ = [[TabModel alloc] initWithBrowser:browser_.get()];
   [tab_model_ restoreSessionWindow:session.sessionWindows[0]
                  forInitialRestore:YES];
-  otr_tab_model_ = [[TabModel alloc]
-      initWithSessionService:[SessionServiceIOS sharedService]
-                browserState:chrome_browser_state_
-                                 ->GetOffTheRecordChromeBrowserState()
-                webStateList:&otr_web_state_list_];
+  otr_tab_model_ = [[TabModel alloc] initWithBrowser:otr_browser_.get()];
   [otr_tab_model_ restoreSessionWindow:session.sessionWindows[0]
                      forInitialRestore:YES];
-
-  browser_ =
-      std::make_unique<TestBrowser>(chrome_browser_state_.get(), tab_model_);
-  otr_browser_ = std::make_unique<TestBrowser>(
-      incognito_chrome_browser_state_.get(), otr_tab_model_);
 
   command_dispatcher_ = [[CommandDispatcher alloc] init];
   // Create the browser view controller with its testing factory.

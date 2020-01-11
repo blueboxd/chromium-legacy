@@ -55,14 +55,14 @@ Polymer({
   ],
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener(
         'multidevice_setup.initializeSetupFlow',
         this.initializeSetupFlow_.bind(this));
   },
 
   /** @private */
-  initializeSetupFlow_: function() {
+  initializeSetupFlow_() {
     // The "Learn More" links are inside a grdp string, so we cannot actually
     // add an onclick handler directly to the html. Instead, grab the two and
     // manaully add onclick handlers.
@@ -81,7 +81,7 @@ Polymer({
    * @return {string} The cancel button text ID, dependent on OOBE vs. non-OOBE.
    * @private
    */
-  getCancelButtonTextId_: function(delegate) {
+  getCancelButtonTextId_(delegate) {
     return this.delegate.getStartSetupCancelButtonTextId();
   },
 
@@ -106,7 +106,7 @@ Polymer({
    * @return {boolean} True if there are more than one potential host devices.
    * @private
    */
-  doesDeviceListHaveMultipleElements_: function(devices) {
+  doesDeviceListHaveMultipleElements_(devices) {
     return devices.length > 1;
   },
 
@@ -115,7 +115,7 @@ Polymer({
    * @return {boolean} True if there is exactly one potential host device.
    * @private
    */
-  doesDeviceListHaveOneElement_: function(devices) {
+  doesDeviceListHaveOneElement_(devices) {
     return devices.length == 1;
   },
 
@@ -125,7 +125,7 @@ Polymer({
    *     Returns an empty string otherwise.
    * @private
    */
-  getFirstDeviceNameInList_: function(devices) {
+  getFirstDeviceNameInList_(devices) {
     return devices[0] ? this.devices[0].remoteDevice.deviceName : '';
   },
 
@@ -134,7 +134,7 @@ Polymer({
    * @return {string} The classes to bind to the device name option.
    * @private
    */
-  getDeviceOptionClass_: function(connectivityStatus) {
+  getDeviceOptionClass_(connectivityStatus) {
     return connectivityStatus ==
             chromeos.deviceSync.mojom.ConnectivityStatus.kOffline ?
         'offline-device-name' :
@@ -146,7 +146,7 @@ Polymer({
    * @return {string} Name of the device, with connectivity status information.
    * @private
    */
-  getDeviceNameWithConnectivityStatus_: function(device) {
+  getDeviceNameWithConnectivityStatus_(device) {
     return device.connectivityStatus ==
             chromeos.deviceSync.mojom.ConnectivityStatus.kOffline ?
         this.i18n(
@@ -156,14 +156,14 @@ Polymer({
   },
 
   /** @private */
-  devicesChanged_: function() {
+  devicesChanged_() {
     if (this.devices.length > 0) {
       this.selectedDeviceId = this.devices[0].remoteDevice.deviceId;
     }
   },
 
   /** @private */
-  onDeviceDropdownSelectionChanged_: function() {
+  onDeviceDropdownSelectionChanged_() {
     this.selectedDeviceId = this.$.deviceDropdown.value;
   },
 
@@ -176,7 +176,7 @@ Polymer({
    * @param {string} textId The loadTimeData ID of the string to be translated.
    * @private
    */
-  i18nAdvancedDynamic_: function(locale, textId) {
+  i18nAdvancedDynamic_(locale, textId) {
     return this.i18nAdvanced(textId);
   },
 });

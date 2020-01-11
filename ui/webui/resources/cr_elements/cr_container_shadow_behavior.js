@@ -56,13 +56,13 @@
   sides_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.dropShadows_ = new Map();
     this.intersectionProbes_ = new Map();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     const hasBottomShadow = this.$.container.hasAttribute('show-bottom-shadow');
     this.sides_ = hasBottomShadow ?
         [CrContainerShadowSide.TOP, CrContainerShadowSide.BOTTOM] :
@@ -93,7 +93,7 @@
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.enableShadowBehavior(false);
   },
 
@@ -101,7 +101,7 @@
    * @return {!IntersectionObserver}
    * @private
    */
-  getIntersectionObserver_: function() {
+  getIntersectionObserver_() {
     const callback = entries => {
       // In some rare cases, there could be more than one entry per observed
       // element, in which case the last entry's result stands.
@@ -128,7 +128,7 @@
    *     function does nothing if the behavior is already in the requested
    *     state.
    */
-  enableShadowBehavior: function(enable) {
+  enableShadowBehavior(enable) {
     // Behavior is already enabled/disabled. Return early.
     if (enable === !!this.intersectionObserver_) {
       return;
@@ -158,7 +158,7 @@
    * Shows the shadows. The shadow behavior must be disabled before calling this
    * method, otherwise the intersection observer might show the shadows again.
    */
-  showDropShadows: function() {
+  showDropShadows() {
     assert(!this.intersectionObserver_);
     assert(this.sides_);
     for (const side of this.sides_) {

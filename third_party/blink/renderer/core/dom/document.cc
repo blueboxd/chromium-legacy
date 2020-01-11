@@ -8354,9 +8354,8 @@ void Document::NavigateLocalAdsFrames() {
        child = child->Tree().TraverseNext(frame_)) {
     if (auto* child_local_frame = DynamicTo<LocalFrame>(child)) {
       if (child_local_frame->IsAdSubframe()) {
-        child_local_frame->Navigate(
-            FrameLoadRequest(this, ResourceRequest(BlankURL())),
-            WebFrameLoadType::kStandard);
+        FrameLoadRequest request(this, ResourceRequest(BlankURL()));
+        child_local_frame->Navigate(request, WebFrameLoadType::kStandard);
       }
     }
     // TODO(yuzus): Once AdsTracker for remote frames is implemented and OOPIF

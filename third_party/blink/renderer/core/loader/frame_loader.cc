@@ -608,16 +608,14 @@ DetermineRequestDestinationFromNavigationType(
   return network::mojom::RequestDestination::kDocument;
 }
 
-void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
+void FrameLoader::StartNavigation(FrameLoadRequest& request,
                                   WebFrameLoadType frame_load_type) {
   CHECK(!IsBackForwardLoadType(frame_load_type));
-  DCHECK(passed_request.GetTriggeringEventInfo() !=
-         TriggeringEventInfo::kUnknown);
+  DCHECK(request.GetTriggeringEventInfo() != TriggeringEventInfo::kUnknown);
   DCHECK(frame_->GetDocument());
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
     element->CancelPendingLazyLoad();
 
-  FrameLoadRequest request(passed_request);
   ResourceRequest& resource_request = request.GetResourceRequest();
   const KURL& url = resource_request.Url();
   Document* origin_document = request.OriginDocument();

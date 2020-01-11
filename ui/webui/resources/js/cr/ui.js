@@ -49,7 +49,7 @@ cr.define('cr.ui', function() {
    * var List = cr.ui.define('list');
    * List.prototype = {
    *   __proto__: HTMLUListElement.prototype,
-   *   decorate: function() {
+   *   decorate() {
    *     ...
    *   },
    *   ...

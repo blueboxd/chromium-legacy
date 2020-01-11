@@ -24,6 +24,9 @@ SkTransferFnEvalUnclamped(const skcms_TransferFunction& fn, float x);
 skcms_TransferFunction COLOR_SPACE_EXPORT
 SkTransferFnInverse(const skcms_TransferFunction& fn);
 
+skcms_TransferFunction COLOR_SPACE_EXPORT
+SkTransferFnScaled(const skcms_TransferFunction& fn, float scale);
+
 bool COLOR_SPACE_EXPORT
 SkTransferFnsApproximatelyCancel(const skcms_TransferFunction& a,
                                  const skcms_TransferFunction& b);

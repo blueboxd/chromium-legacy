@@ -90,7 +90,7 @@ cr.define('cr.ui', function() {
     /**
      * Initialization function for the cr.ui framework.
      */
-    decorate: function() {
+    decorate() {
       this.className = 'bubble';
       this.innerHTML = '<div class="bubble-content"></div>' +
           '<div class="bubble-shadow"></div>' +
@@ -164,7 +164,7 @@ cr.define('cr.ui', function() {
      * the bubble should either be repositioned by calling this function or
      * hidden so that it does not point to a nonsensical location on the page.
      */
-    reposition: function() {
+    reposition() {
       const documentWidth = document.documentElement.clientWidth;
       const documentHeight = document.documentElement.clientHeight;
       const anchor = this.anchorNode_.getBoundingClientRect();
@@ -249,7 +249,7 @@ cr.define('cr.ui', function() {
     /**
      * Show the bubble.
      */
-    show: function() {
+    show() {
       if (!this.hidden) {
         return;
       }
@@ -267,7 +267,7 @@ cr.define('cr.ui', function() {
     /**
      * Hide the bubble.
      */
-    hide: function() {
+    hide() {
       if (this.hidden) {
         return;
       }
@@ -281,7 +281,7 @@ cr.define('cr.ui', function() {
      * Handle keyboard events, dismissing the bubble if necessary.
      * @param {Event} event The event.
      */
-    handleEvent: function(event) {
+    handleEvent(event) {
       // Close the bubble when the user presses <Esc>.
       if (event.type == 'keydown' && event.keyCode == 27) {
         this.hide();
@@ -294,7 +294,7 @@ cr.define('cr.ui', function() {
      * Attach the bubble to the document's DOM.
      * @private
      */
-    attachToDOM_: function() {
+    attachToDOM_() {
       document.body.appendChild(this);
     },
 
@@ -308,7 +308,7 @@ cr.define('cr.ui', function() {
      * location).
      * @private
      */
-    updateArrowPosition_: function(visible, atTop, tipOffset) {
+    updateArrowPosition_(visible, atTop, tipOffset) {
       const bubbleArrow = this.querySelector('.bubble-arrow');
       bubbleArrow.hidden = !visible;
       if (!visible) {
@@ -342,7 +342,7 @@ cr.define('cr.ui', function() {
     /**
      * Initialization function for the cr.ui framework.
      */
-    decorate: function() {
+    decorate() {
       BubbleBase.prototype.decorate.call(this);
 
       const close = document.createElement('div');
@@ -390,7 +390,7 @@ cr.define('cr.ui', function() {
     /**
      * Show the bubble.
      */
-    show: function() {
+    show() {
       if (!this.hidden) {
         return;
       }
@@ -408,7 +408,7 @@ cr.define('cr.ui', function() {
      * TODO(vitalyp): remove suppression when the extern
      * Node.prototype.contains() will be fixed.
      */
-    handleEvent: function(event) {
+    handleEvent(event) {
       BubbleBase.prototype.handleEvent.call(this, event);
 
       if (event.type == 'mousedown') {
@@ -442,7 +442,7 @@ cr.define('cr.ui', function() {
     /**
      * Initialization function for the cr.ui framework.
      */
-    decorate: function() {
+    decorate() {
       BubbleBase.prototype.decorate.call(this);
       this.classList.add('auto-close-bubble');
     },
@@ -465,7 +465,7 @@ cr.define('cr.ui', function() {
     /**
      * Show the bubble.
      */
-    show: function() {
+    show() {
       if (!this.hidden) {
         return;
       }
@@ -484,7 +484,7 @@ cr.define('cr.ui', function() {
     /**
      * Hide the bubble.
      */
-    hide: function() {
+    hide() {
       BubbleBase.prototype.hide.call(this);
       this.domSibling_.showingBubble = false;
     },
@@ -498,7 +498,7 @@ cr.define('cr.ui', function() {
      * TODO(vitalyp): remove suppression when the extern
      * Node.prototype.contains() will be fixed.
      */
-    handleEvent: function(event) {
+    handleEvent(event) {
       BubbleBase.prototype.handleEvent.call(this, event);
 
       let target;
@@ -540,7 +540,7 @@ cr.define('cr.ui', function() {
      * target element in the document's tab order.
      * @private
      */
-    attachToDOM_: function() {
+    attachToDOM_() {
       const parent = this.domSibling_.parentNode;
       parent.insertBefore(this, this.domSibling_.nextSibling);
     },

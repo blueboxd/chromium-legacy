@@ -11,8 +11,6 @@ source_set("elements") {
     "fade_truncating_label.mm",
     "gray_highlight_button.h",
     "gray_highlight_button.mm",
-    "selector_coordinator.h",
-    "selector_coordinator.mm",
     "selector_picker_presentation_controller.h",
     "selector_picker_presentation_controller.mm",
     "selector_picker_view_controller.h",
@@ -26,6 +24,20 @@ source_set("elements") {
     "windowed_container_view.mm",
   ]
   deps = [
+    "//base",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
+  ]
+}
+
+source_set("selector_coordinator") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "selector_coordinator.h",
+    "selector_coordinator.mm",
+  ]
+  deps = [
+    ":elements",
     "//base",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
@@ -48,6 +60,7 @@ source_set("unit_tests") {
   deps = [
     ":elements",
     ":elements_internal",
+    ":selector_coordinator",
     "//base",
     "//base/test:test_support",
     "//ios/chrome/test:test_support",

@@ -57,7 +57,7 @@ Polymer({
    * @return {!Promise}
    * @private
    */
-  exit_: function(element, animation) {
+  exit_(element, animation) {
     const animationFunction = viewAnimations.get(animation);
     assert(animationFunction);
 
@@ -78,7 +78,7 @@ Polymer({
    * @return {!Promise}
    * @private
    */
-  enter_: function(view, animation) {
+  enter_(view, animation) {
     const animationFunction = viewAnimations.get(animation);
     assert(animationFunction);
 
@@ -99,7 +99,7 @@ Polymer({
    * @param {string=} exitAnimation
    * @return {!Promise}
    */
-  switchView: function(newViewId, enterAnimation, exitAnimation) {
+  switchView(newViewId, enterAnimation, exitAnimation) {
     const previousView = this.querySelector('.active');
     const newView = assert(this.querySelector('#' + newViewId));
 

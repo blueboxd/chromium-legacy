@@ -23,9 +23,9 @@ Polymer({
     },
 
     /**
-    * Flag used for formatting ripples on circle shaped cr-buttons.
-    * @private
-    */
+     * Flag used for formatting ripples on circle shaped cr-buttons.
+     * @private
+     */
     circleRipple: {
       type: Boolean,
       value: false,
@@ -50,13 +50,13 @@ Polymer({
   timeoutIds_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     cr.ui.FocusOutlineManager.forDocument(document);
     this.timeoutIds_ = new Set();
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     this.timeoutIds_.forEach(clearTimeout);
     this.timeoutIds_.clear();
   },
@@ -66,7 +66,7 @@ Polymer({
    * @param {number=} delay
    * @private
    */
-  setTimeout_: function(fn, delay) {
+  setTimeout_(fn, delay) {
     if (!this.isConnected) {
       return;
     }
@@ -82,7 +82,7 @@ Polymer({
    * @param {boolean} oldValue
    * @private
    */
-  disabledChanged_: function(newValue, oldValue) {
+  disabledChanged_(newValue, oldValue) {
     if (!newValue && oldValue == undefined) {
       return;
     }
@@ -97,7 +97,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onClick_: function(e) {
+  onClick_(e) {
     if (this.disabled) {
       e.stopImmediatePropagation();
     }
@@ -107,7 +107,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyDown_: function(e) {
+  onKeyDown_(e) {
     if (e.key != ' ' && e.key != 'Enter') {
       return;
     }
@@ -132,7 +132,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyUp_: function(e) {
+  onKeyUp_(e) {
     if (e.key != ' ' && e.key != 'Enter') {
       return;
     }
@@ -147,7 +147,7 @@ Polymer({
   },
 
   /** @private */
-  onPointerDown_: function() {
+  onPointerDown_() {
     this.ensureRipple();
   },
 
@@ -158,14 +158,14 @@ Polymer({
    *     longer uses tap event at least with addEventListener().
    * @private
    */
-  onTap_: function() {},
+  onTap_() {},
 
   /**
    * Customize the element's ripple. Overriding the '_createRipple' function
    * from PaperRippleBehavior.
    * @return {PaperRippleElement}
    */
-  _createRipple: function() {
+  _createRipple() {
     const ripple = Polymer.PaperRippleBehavior._createRipple();
 
     if (this.circleRipple) {

@@ -480,15 +480,11 @@ cr.define('device_page_tests', function() {
      * @param {!HTMLElement} pointersPage
      * @param {boolean} expected
      */
-    function expectNaturalScrollValue(pointersPage, expected) {
-      const naturalScrollOff = pointersPage.$$('cr-radio-button[name="false"]');
-      const naturalScrollOn = pointersPage.$$('cr-radio-button[name="true"]');
-      assertTrue(!!naturalScrollOff);
-      assertTrue(!!naturalScrollOn);
-
-      expectEquals(!expected, naturalScrollOff.checked);
-      expectEquals(expected, naturalScrollOn.checked);
-      expectEquals(
+    function expectReverseScrollValue(pointersPage, expected) {
+      const reverseScrollToggle =
+          pointersPage.$$('#enableReverseScrollingToggle');
+      assertEquals(expected, reverseScrollToggle.checked);
+      expectNotEquals(
           expected, devicePage.prefs.settings.touchpad.natural_scroll.value);
     }
 
@@ -585,52 +581,32 @@ cr.define('device_page_tests', function() {
       });
 
       test('link doesn\'t activate control', function() {
-        expectNaturalScrollValue(pointersPage, false);
+        expectReverseScrollValue(pointersPage, true);
 
         // Tapping the link shouldn't enable the radio button.
-        const naturalScrollOff =
-            pointersPage.$$('cr-radio-button[name="false"]');
-        const naturalScrollOn = pointersPage.$$('cr-radio-button[name="true"]');
-        const a = naturalScrollOn.querySelector('settings-localized-link')
-                      .$.container.querySelector('a');
-
+        const reverseScrollLabel =
+            pointersPage.$$('#enableReverseScrollingLabel');
+        const a = reverseScrollLabel.$.container.querySelector('a');
+        expectTrue(!!a);
         // Prevent actually opening a link, which would block test.
         a.removeAttribute('href');
-
         a.click();
-        expectNaturalScrollValue(pointersPage, false);
+        expectReverseScrollValue(pointersPage, true);
 
-        naturalScrollOn.click();
-        expectNaturalScrollValue(pointersPage, true);
+        // Check specifically clicking toggle changes pref.
+        const reverseScrollToggle =
+            pointersPage.$$('#enableReverseScrollingToggle');
+        reverseScrollToggle.click();
+        expectReverseScrollValue(pointersPage, false);
         devicePage.set('prefs.settings.touchpad.natural_scroll.value', false);
-        expectNaturalScrollValue(pointersPage, false);
+        expectReverseScrollValue(pointersPage, true);
 
-        /**
-         * MockInteraction's pressEnter does not sufficiently set all key-event
-         * properties.
-         * @param {!HTMLElement} element
-         * @param {string} keyCode
-         * @param {string} keyName
-         */
-        function triggerKeyEvents(element, keyCode, keyName) {
-          ['keydown', 'keypress', 'keyup'].forEach(event => {
-            MockInteractions.keyEventOn(
-                element, event, keyCode, undefined, keyName);
-          });
-        }
-
-        // Enter on the link shouldn't enable the radio button either.
-        triggerKeyEvents(a, 'Enter', 'Enter');
-        test_util.flushTasks();
-        expectNaturalScrollValue(pointersPage, false);
-
-        pointersPage.$$('settings-radio-group').selected = '';
-        const falseRadio = pointersPage.$$('cr-radio-button[name="false"]');
-        assertTrue(!!falseRadio);
-        assertFalse(falseRadio.checked);
-        triggerKeyEvents(naturalScrollOff, 'Space', ' ');
-        test_util.flushTasks();
-        expectNaturalScrollValue(pointersPage, false);
+        // Check specifically clicking the row changes pref.
+        const reverseScrollSettings = pointersPage.$$('#reverseScrollRow');
+        reverseScrollToggle.click();
+        expectReverseScrollValue(pointersPage, false);
+        devicePage.set('prefs.settings.touchpad.natural_scroll.value', false);
+        expectReverseScrollValue(pointersPage, true);
       });
     });
 

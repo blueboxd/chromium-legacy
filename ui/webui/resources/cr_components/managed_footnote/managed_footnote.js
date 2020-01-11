@@ -27,7 +27,7 @@ Polymer({
     isManaged_: {
       reflectToAttribute: true,
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.getBoolean('isManaged');
       },
     },
@@ -44,7 +44,7 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addWebUIListener('is-managed-changed', managed => {
       loadTimeData.overrideValues({isManaged: managed});
       this.isManaged_ = managed;
@@ -55,7 +55,7 @@ Polymer({
    * @return {string} Message to display to the user.
    * @private
    */
-  getManagementString_: function() {
+  getManagementString_() {
     // <if expr="chromeos">
     if (this.showDeviceInfo) {
       return this.i18nAdvanced('deviceManagedByOrg');

@@ -66,7 +66,7 @@ cr.define('cr.ui', function() {
     /**
      * Initializes the element.
      */
-    decorate: function() {
+    decorate() {
       this.addEventListener(
           'mousedown', this.handleMouseDown_.bind(this), true);
       this.addEventListener(
@@ -89,7 +89,7 @@ cr.define('cr.ui', function() {
      *                         started the drag.
      * @param {boolean} isTouchEvent True if the drag started by touch event.
      */
-    startDrag: function(clientX, isTouchEvent) {
+    startDrag(clientX, isTouchEvent) {
       if (this.handlers_) {
         console.log('Concurent drags');
         this.endDrag_();
@@ -128,7 +128,7 @@ cr.define('cr.ui', function() {
      * and calls splitter drag end handler.
      * @private
      */
-    endDrag_: function() {
+    endDrag_() {
       const doc = this.ownerDocument;
       for (const eventType in this.handlers_) {
         doc.removeEventListener(eventType, this.handlers_[eventType], true);
@@ -141,7 +141,7 @@ cr.define('cr.ui', function() {
      * @return {Element}
      * @private
      */
-    getResizeTarget_: function() {
+    getResizeTarget_() {
       return this.resizeNextElement_ ? this.nextElementSibling :
                                        this.previousElementSibling;
     },
@@ -152,7 +152,7 @@ cr.define('cr.ui', function() {
      * @return {number}
      * @private
      */
-    calcDeltaX_: function(deltaX) {
+    calcDeltaX_(deltaX) {
       return this.resizeNextElement_ ? -deltaX : deltaX;
     },
 
@@ -161,7 +161,7 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The mouse event.
      * @private
      */
-    handleMouseDown_: function(e) {
+    handleMouseDown_(e) {
       e = /** @type {!MouseEvent} */ (e);
       if (e.button) {
         return;
@@ -176,7 +176,7 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The touch event.
      * @private
      */
-    handleTouchStart_: function(e) {
+    handleTouchStart_(e) {
       e = /** @type {!TouchEvent} */ (e);
       if (e.touches.length == 1) {
         this.startDrag(e.touches[0].clientX, true);
@@ -190,7 +190,7 @@ cr.define('cr.ui', function() {
      * @param {!MouseEvent} e The mouse event.
      * @private
      */
-    handleMouseMove_: function(e) {
+    handleMouseMove_(e) {
       this.handleMove_(e.clientX);
     },
 
@@ -198,7 +198,7 @@ cr.define('cr.ui', function() {
      * Handles the touch move event.
      * @param {!TouchEvent} e The touch event.
      */
-    handleTouchMove_: function(e) {
+    handleTouchMove_(e) {
       if (e.touches.length == 1) {
         this.handleMove_(e.touches[0].clientX);
       }
@@ -210,7 +210,7 @@ cr.define('cr.ui', function() {
      * @param {number} clientX X position of the mouse or touch event.
      * @private
      */
-    handleMove_: function(clientX) {
+    handleMove_(clientX) {
       const rtl =
           this.ownerDocument.defaultView.getComputedStyle(this).direction ==
           'rtl';
@@ -224,7 +224,7 @@ cr.define('cr.ui', function() {
      * @param {!MouseEvent} e The mouse event.
      * @private
      */
-    handleMouseUp_: function(e) {
+    handleMouseUp_(e) {
       this.endDrag_();
     },
 
@@ -232,7 +232,7 @@ cr.define('cr.ui', function() {
      * Handles start of the splitter dragging. Saves current width of the
      * element being resized.
      */
-    handleSplitterDragStart: function() {
+    handleSplitterDragStart() {
       // Use the computed width style as the base so that we can ignore what
       // box sizing the element has. Add the difference between offset and
       // client widths to account for any scrollbars.
@@ -249,7 +249,7 @@ cr.define('cr.ui', function() {
      * Handles splitter moves. Updates width of the element being resized.
      * @param {number} deltaX The change of splitter horizontal position.
      */
-    handleSplitterDragMove: function(deltaX) {
+    handleSplitterDragMove(deltaX) {
       const targetElement = this.getResizeTarget_();
       const newWidth = this.startWidth_ + this.calcDeltaX_(deltaX);
       targetElement.style.width = newWidth + 'px';
@@ -260,7 +260,7 @@ cr.define('cr.ui', function() {
      * Handles end of the splitter dragging. This fires a 'resize' event if the
      * size changed.
      */
-    handleSplitterDragEnd: function() {
+    handleSplitterDragEnd() {
       // Check if the size changed.
       const targetElement = this.getResizeTarget_();
       const doc = targetElement.ownerDocument;

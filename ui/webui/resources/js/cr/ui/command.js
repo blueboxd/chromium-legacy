@@ -29,7 +29,7 @@ cr.define('cr.ui', function() {
     /**
      * Initializes the command.
      */
-    decorate: function() {
+    decorate() {
       CommandManager.init(assert(this.ownerDocument));
 
       if (this.hasAttribute('shortcut')) {
@@ -43,7 +43,7 @@ cr.define('cr.ui', function() {
      * If the command is {@code disabled} this does nothing.
      * @param {HTMLElement=} opt_element Optional element to dispatch event on.
      */
-    execute: function(opt_element) {
+    execute(opt_element) {
       if (this.disabled) {
         return;
       }
@@ -61,7 +61,7 @@ cr.define('cr.ui', function() {
      * command can be executed or not.
      * @param {Node=} opt_node Node for which to actuate command state.
      */
-    canExecuteChange: function(opt_node) {
+    canExecuteChange(opt_node) {
       dispatchCanExecuteEvent(
           this, opt_node || this.ownerDocument.activeElement);
     },
@@ -103,7 +103,7 @@ cr.define('cr.ui', function() {
      * @param {!Event} e The key event object.
      * @return {boolean} Whether it matched or not.
      */
-    matchesEvent: function(e) {
+    matchesEvent(e) {
       if (!this.keyboardShortcuts_) {
         return false;
       }
@@ -189,7 +189,7 @@ cr.define('cr.ui', function() {
      * @suppress {checkTypes}
      * TODO(vitalyp): remove the suppression.
      */
-    handleFocus_: function(e) {
+    handleFocus_(e) {
       const target = e.target;
 
       // Ignore focus on a menu button or command item.
@@ -209,7 +209,7 @@ cr.define('cr.ui', function() {
      * Handles the keydown event and routes it to the right command.
      * @param {!Event} e The keydown event.
      */
-    handleKeyDown_: function(e) {
+    handleKeyDown_(e) {
       const target = e.target;
       const commands = Array.prototype.slice.call(
           target.ownerDocument.querySelectorAll('command'));

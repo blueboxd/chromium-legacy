@@ -16,9 +16,6 @@
             "dawn_perf_tests": {
                 "path": "dawn_perf_tests"
             },
-            "performance_browser_tests": {
-                "path": "performance_browser_tests"
-            },
             "net_perftests": {
                 "path": "net_perftests"
             },

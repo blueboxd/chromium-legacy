@@ -136,7 +136,7 @@ Polymer({
      */
     serverCaCerts_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -150,7 +150,7 @@ Polymer({
      */
     userCerts_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -343,19 +343,19 @@ Polymer({
   networkConfig_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
                               .getMojoServiceRemote();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.networkConfig_.getGlobalPolicy().then(response => {
       this.globalPolicy_ = response.result;
     });
   },
 
-  init: function() {
+  init() {
     this.mojoType_ = undefined;
     this.vpnType_ = undefined;
     this.managedProperties_ = null;
@@ -396,17 +396,17 @@ Polymer({
     this.updateIsConfigured_();
   },
 
-  save: function() {
+  save() {
     this.saveAndConnect_(false /* connect */);
   },
 
-  connect: function() {
+  connect() {
     this.saveAndConnect_(true /* connect */);
   },
 
 
   /** @private */
-  focusPassphrase_: function() {
+  focusPassphrase_() {
     const passphraseInput = this.$$('#wifi-passphrase');
     if (passphraseInput) {
       passphraseInput.focus();
@@ -417,7 +417,7 @@ Polymer({
    * @param {boolean} connect If true, connect after save.
    * @private
    */
-  saveAndConnect_: function(connect) {
+  saveAndConnect_(connect) {
     if (!this.managedProperties_ || this.propertiesSent_) {
       return;
     }
@@ -446,7 +446,7 @@ Polymer({
   },
 
   /** @private */
-  focusFirstInput_: function() {
+  focusFirstInput_() {
     Polymer.dom.flush();
     const e = this.$$(
         'network-config-input:not([readonly]),' +
@@ -458,7 +458,7 @@ Polymer({
   },
 
   /** @private */
-  onEnterPressedInInput_: function() {
+  onEnterPressedInInput_() {
     if (!this.isConfigured_) {
       return;
     }
@@ -471,7 +471,7 @@ Polymer({
   },
 
   /** @private */
-  close_: function() {
+  close_() {
     this.guid = '';
     this.type = '';
     this.securityType_ = undefined;
@@ -482,12 +482,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasGuid_: function() {
+  hasGuid_() {
     return !!this.guid;
   },
 
   /** NetworkListenerBehavior override */
-  onNetworkCertificatesChanged: function() {
+  onNetworkCertificatesChanged() {
     this.networkConfig_.getNetworkCertificates().then(response => {
       const isOpenVpn = !!this.configProperties_.typeConfig.vpn &&
           this.configProperties_.typeConfig.vpn.type == mojom.VpnType.kOpenVPN;
@@ -537,7 +537,7 @@ Polymer({
    * @return {!chromeos.networkConfig.mojom.NetworkCertificate}
    * @private
    */
-  getDefaultCert_: function(type, desc, hash) {
+  getDefaultCert_(type, desc, hash) {
     return {
       type: type,
       hash: hash,
@@ -556,7 +556,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getActiveBoolean_: function(property) {
+  getActiveBoolean_(property) {
     if (!property) {
       return false;
     }
@@ -568,7 +568,7 @@ Polymer({
    * @return {!Array<string>|undefined}
    * @private
    */
-  getActiveStringList_: function(property) {
+  getActiveStringList_(property) {
     if (!property) {
       return undefined;
     }
@@ -579,7 +579,7 @@ Polymer({
    * @param {?mojom.ManagedProperties} managedProperties
    * @private
    */
-  getManagedPropertiesCallback_: function(managedProperties) {
+  getManagedPropertiesCallback_(managedProperties) {
     if (!managedProperties) {
       // The network no longer exists; close the page.
       console.error('Network no longer exists: ' + this.guid);
@@ -628,7 +628,7 @@ Polymer({
   },
 
   /** @private */
-  setShareNetwork_: function() {
+  setShareNetwork_() {
     if (this.mojoType_ === undefined || !this.managedProperties_ ||
         !this.securityType_ === undefined) {
       return;
@@ -657,7 +657,7 @@ Polymer({
   },
 
   /** @private */
-  onShareChanged_: function(event) {
+  onShareChanged_(event) {
     this.updateSelectedCerts_();
   },
 
@@ -666,7 +666,7 @@ Polymer({
    * @return {!mojom.EAPConfigProperties}
    * @private
    */
-  getEAPConfigProperties_: function(eap) {
+  getEAPConfigProperties_(eap) {
     return {
       anonymousIdentity: OncMojo.getActiveString(eap.anonymousIdentity),
       clientCertType: OncMojo.getActiveString(eap.clientCertType),
@@ -687,7 +687,7 @@ Polymer({
    * @return {!mojom.IPSecConfigProperties}
    * @private
    */
-  getIPSecConfigProperties_: function(ipSec) {
+  getIPSecConfigProperties_(ipSec) {
     return {
       authenticationType:
           OncMojo.getActiveString(ipSec.authenticationType) || 'PSK',
@@ -707,7 +707,7 @@ Polymer({
    * @return {!mojom.L2TPConfigProperties}
    * @private
    */
-  getL2TPConfigProperties_: function(l2tp) {
+  getL2TPConfigProperties_(l2tp) {
     return {
       lcpEchoDisabled: this.getActiveBoolean_(l2tp.lcpEchoDisabled),
       password: OncMojo.getActiveString(l2tp.password),
@@ -721,7 +721,7 @@ Polymer({
    * @return {!mojom.OpenVPNConfigProperties}
    * @private
    */
-  getOpenVPNConfigProperties_: function(openVpn) {
+  getOpenVPNConfigProperties_(openVpn) {
     return {
       clientCertPkcs11Id: OncMojo.getActiveString(openVpn.clientCertPkcs11Id),
       clientCertType: OncMojo.getActiveString(openVpn.clientCertType),
@@ -743,7 +743,7 @@ Polymer({
    * are set, and again for existing networks when the properties are received.
    * @private
    */
-  updateConfigProperties_: function() {
+  updateConfigProperties_() {
     if (this.mojoType_ === undefined || !this.managedProperties_) {
       return;
     }
@@ -827,7 +827,7 @@ Polymer({
    * |securityType_| changes.
    * @private
    */
-  updateSecurity_: function() {
+  updateSecurity_() {
     if (this.securityType_ === undefined || !this.configProperties_) {
       return;
     }
@@ -852,7 +852,7 @@ Polymer({
    * the eap.outer property changes.
    * @private
    */
-  updateEapOuter_: function() {
+  updateEapOuter_() {
     const eap = this.eapProperties_;
     if (!eap || !eap.outer) {
       return;
@@ -868,7 +868,7 @@ Polymer({
   },
 
   /** @private */
-  updateEapCerts_: function() {
+  updateEapCerts_() {
     // EAP is used for all configurable types except VPN.
     if (this.mojoType_ == mojom.NetworkType.kVPN) {
       return;
@@ -881,7 +881,7 @@ Polymer({
   },
 
   /** @private */
-  updateShowEap_: function() {
+  updateShowEap_() {
     if (!this.eapProperties_ ||
         this.securityType_ == mojom.SecurityType.kNone) {
       this.showEap_ = null;
@@ -913,7 +913,7 @@ Polymer({
    * @return {?mojom.EAPConfigProperties}
    * @private
    */
-  getEap_: function(properties, opt_create) {
+  getEap_(properties, opt_create) {
     let eap;
     if (properties.typeConfig.wifi) {
       eap = properties.typeConfig.wifi.eap;
@@ -933,7 +933,7 @@ Polymer({
    * @param {!mojom.EAPConfigProperties|undefined} eapProperties
    * @private
    */
-  setEap_: function(eapProperties) {
+  setEap_(eapProperties) {
     switch (this.mojoType_) {
       case mojom.NetworkType.kWiFi:
         this.configProperties_.typeConfig.wifi.eap = eapProperties;
@@ -950,7 +950,7 @@ Polymer({
    * @return {?mojom.ManagedEAPProperties}
    * @private
    */
-  getManagedEap_: function(managedProperties) {
+  getManagedEap_(managedProperties) {
     let managedEap;
     switch (managedProperties.type) {
       case mojom.NetworkType.kWiFi:
@@ -968,7 +968,7 @@ Polymer({
    * @return {!VPNConfigType}
    * @private
    */
-  getVpnTypeFromProperties_: function(properties) {
+  getVpnTypeFromProperties_(properties) {
     const vpn = properties.typeConfig.vpn;
     assert(vpn);
     if (vpn.type == mojom.VpnType.kL2TPIPsec) {
@@ -980,7 +980,7 @@ Polymer({
   },
 
   /** @private */
-  updateVpnType_: function() {
+  updateVpnType_() {
     if (this.configProperties_ === undefined) {
       return;
     }
@@ -1040,7 +1040,7 @@ Polymer({
   },
 
   /** @private */
-  updateVpnIPsecCerts_: function() {
+  updateVpnIPsecCerts_() {
     if (this.vpnType_ != VPNConfigType.L2TP_IPSEC_CERT) {
       return;
     }
@@ -1052,7 +1052,7 @@ Polymer({
   },
 
   /** @private */
-  updateOpenVPNCerts_: function() {
+  updateOpenVPNCerts_() {
     if (this.vpnType_ != VPNConfigType.OPEN_VPN) {
       return;
     }
@@ -1064,7 +1064,7 @@ Polymer({
   },
 
   /** @private */
-  updateCertError_: function() {
+  updateCertError_() {
     // If |this.error| was set to something other than a cert error, do not
     // change it.
     /** @const */ const noCertsError = 'networkErrorNoUserCertificate';
@@ -1102,7 +1102,7 @@ Polymer({
    * @param {string|undefined} certId
    * @private
    */
-  setSelectedCerts_: function(pem, certId) {
+  setSelectedCerts_(pem, certId) {
     if (pem) {
       const serverCa = this.serverCaCerts_.find(function(cert) {
         return cert.pemOrId == pem;
@@ -1134,7 +1134,7 @@ Polymer({
    * @private
    * @return {!chromeos.networkConfig.mojom.NetworkCertificate|undefined}
    */
-  findCert_: function(certs, hash) {
+  findCert_(certs, hash) {
     if (!hash) {
       return undefined;
     }
@@ -1149,7 +1149,7 @@ Polymer({
    * correct default value.
    * @private
    */
-  updateSelectedCerts_: function() {
+  updateSelectedCerts_() {
     if (!this.serverCaCerts_.length || !this.userCerts_.length) {
       return;
     }
@@ -1204,7 +1204,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getIsConfigured_: function() {
+  getIsConfigured_() {
     if (this.securityType_ === undefined || !this.configProperties_) {
       return false;
     }
@@ -1232,7 +1232,7 @@ Polymer({
   },
 
   /** @private */
-  updateIsConfigured_: function() {
+  updateIsConfigured_() {
     this.isConfigured_ = this.getIsConfigured_();
   },
 
@@ -1241,17 +1241,17 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isWiFi_: function(networkType) {
+  isWiFi_(networkType) {
     return networkType == mojom.NetworkType.kWiFi;
   },
 
   /** @private */
-  setEnableSave_: function() {
+  setEnableSave_() {
     this.enableSave = this.isConfigured_ && !!this.managedProperties_;
   },
 
   /** @private */
-  setEnableConnect_: function() {
+  setEnableConnect_() {
     this.enableConnect = this.isConfigured_ && !this.propertiesSent_;
   },
 
@@ -1260,7 +1260,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  securityIsVisible_: function(networkType) {
+  securityIsVisible_(networkType) {
     return networkType == mojom.NetworkType.kWiFi ||
         networkType == mojom.NetworkType.kEthernet;
   },
@@ -1269,7 +1269,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  securityIsEnabled_: function() {
+  securityIsEnabled_() {
     // WiFi Security type cannot be changed once configured.
     return !this.guid || this.mojoType_ == mojom.NetworkType.kEthernet;
   },
@@ -1278,7 +1278,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shareIsVisible_: function() {
+  shareIsVisible_() {
     if (!this.managedProperties_) {
       return false;
     }
@@ -1290,7 +1290,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shareIsEnabled_: function() {
+  shareIsEnabled_() {
     if (!this.managedProperties_) {
       return false;
     }
@@ -1311,7 +1311,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  configCanAutoConnect_: function() {
+  configCanAutoConnect_() {
     // Only WiFi can choose whether or not to autoConnect.
     return loadTimeData.getBoolean('showHiddenNetworkWarning') &&
         this.mojoType_ == mojom.NetworkType.kWiFi;
@@ -1321,7 +1321,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  autoConnectDisabled_: function() {
+  autoConnectDisabled_() {
     return this.isAutoConnectEnforcedByPolicy_();
   },
 
@@ -1329,7 +1329,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isAutoConnectEnforcedByPolicy_: function() {
+  isAutoConnectEnforcedByPolicy_() {
     return !!this.globalPolicy_ &&
         !!this.globalPolicy_.allowOnlyPolicyNetworksToAutoconnect;
   },
@@ -1338,7 +1338,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showHiddenNetworkWarning_: function() {
+  showHiddenNetworkWarning_() {
     Polymer.dom.flush();
     return loadTimeData.getBoolean('showHiddenNetworkWarning') &&
         this.autoConnect_ && !this.hasGuid_();
@@ -1347,7 +1347,7 @@ Polymer({
   /**
    * @private
    */
-  updateHiddenNetworkWarning_: function() {
+  updateHiddenNetworkWarning_() {
     this.hiddenNetworkWarning_ = this.showHiddenNetworkWarning_();
   },
 
@@ -1355,7 +1355,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  selectedUserCertHashIsValid_: function() {
+  selectedUserCertHashIsValid_() {
     return !!this.selectedUserCertHash_ &&
         this.selectedUserCertHash_ != NO_CERTS_HASH;
   },
@@ -1364,7 +1364,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  eapIsConfigured_: function() {
+  eapIsConfigured_() {
     if (!this.configProperties_) {
       return false;
     }
@@ -1394,7 +1394,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  vpnIsConfigured_: function() {
+  vpnIsConfigured_() {
     const vpn = this.configProperties_.typeConfig.vpn;
     if (!this.configProperties_.name || !vpn || !vpn.host) {
       return false;
@@ -1415,7 +1415,7 @@ Polymer({
   },
 
   /** @private */
-  getPropertiesToSet_: function() {
+  getPropertiesToSet_() {
     const propertiesToSet =
         /** @type{!mojom.ConfigProperties}*/ (
             Object.assign({}, this.configProperties_));
@@ -1452,7 +1452,7 @@ Polymer({
    * @return {!Array<string>}
    * @private
    */
-  getServerCaPems_: function() {
+  getServerCaPems_() {
     const caHash = this.selectedServerCaHash_ || '';
     if (!caHash || caHash == DO_NOT_CHECK_HASH || caHash == DEFAULT_HASH) {
       return [];
@@ -1465,7 +1465,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getUserCertPkcs11Id_: function() {
+  getUserCertPkcs11Id_() {
     const userCertHash = this.selectedUserCertHash_ || '';
     if (!this.selectedUserCertHashIsValid_() ||
         userCertHash == NO_USER_CERT_HASH) {
@@ -1479,7 +1479,7 @@ Polymer({
    * @param {!mojom.EAPConfigProperties} eap
    * @private
    */
-  setEapProperties_: function(eap) {
+  setEapProperties_(eap) {
     eap.useSystemCas = this.selectedServerCaHash_ == DEFAULT_HASH;
 
     eap.serverCaPems = this.getServerCaPems_();
@@ -1493,7 +1493,7 @@ Polymer({
    * @param {!mojom.ConfigProperties} propertiesToSet
    * @private
    */
-  setOpenVPNProperties_: function(propertiesToSet) {
+  setOpenVPNProperties_(propertiesToSet) {
     const openVpn = propertiesToSet.typeConfig.vpn.openVpn;
     assert(!!openVpn);
 
@@ -1520,7 +1520,7 @@ Polymer({
    * @param {!mojom.ConfigProperties} propertiesToSet
    * @private
    */
-  setVpnIPsecProperties_: function(propertiesToSet) {
+  setVpnIPsecProperties_(propertiesToSet) {
     const vpn = propertiesToSet.typeConfig.vpn;
     assert(vpn.ipSec);
     assert(vpn.l2tp);
@@ -1539,7 +1539,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getRuntimeError_: function() {
+  getRuntimeError_() {
     return (chrome.runtime.lastError && chrome.runtime.lastError.message) || '';
   },
 
@@ -1549,7 +1549,7 @@ Polymer({
    * @param {boolean} connect If true, connect after save.
    * @private
    */
-  setPropertiesCallback_: function(success, errorMessage, connect) {
+  setPropertiesCallback_(success, errorMessage, connect) {
     if (!success) {
       console.error(
           'Unable to set properties for: ' + this.guid +
@@ -1576,7 +1576,7 @@ Polymer({
    * @param {boolean} connect If true, connect after save.
    * @private
    */
-  createNetworkCallback_: function(guid, errorMessage, connect) {
+  createNetworkCallback_(guid, errorMessage, connect) {
     if (!guid) {
       console.error(
           'Unable to configure network: ' + guid + ' Error: ' + errorMessage);
@@ -1597,7 +1597,7 @@ Polymer({
    * @param {string} guid
    * @private
    */
-  startConnect_: function(guid) {
+  startConnect_(guid) {
     this.networkConfig_.startConnect(guid).then(response => {
       const result = response.result;
       if (result == mojom.StartConnectResult.kSuccess ||
@@ -1623,7 +1623,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeConfigRequiresPassphrase_: function(mojoType, securityType) {
+  computeConfigRequiresPassphrase_(mojoType, securityType) {
     // Note: 'Passphrase' is only used by WiFi; Ethernet uses EAP.Password.
     return mojoType == mojom.NetworkType.kWiFi &&
         (securityType == mojom.SecurityType.kWepPsk ||
@@ -1635,7 +1635,7 @@ Polymer({
    * @return {!Array<string>}
    * @private
    */
-  getEapInnerItems_: function(outer) {
+  getEapInnerItems_(outer) {
     if (outer == 'PEAP') {
       return this.eapInnerItemsPeap_;
     }
@@ -1649,7 +1649,7 @@ Polymer({
    * @param {string|undefined} error
    * @private
    */
-  setError_: function(error) {
+  setError_(error) {
     this.error = error || '';
   },
 
@@ -1659,7 +1659,7 @@ Polymer({
    * @return {mojom.ManagedString|undefined}
    * @private
    */
-  getManagedSecurity_: function(managedProperties) {
+  getManagedSecurity_(managedProperties) {
     const policySource =
         OncMojo.getEnforcedPolicySourceFromOncSource(managedProperties.source);
     if (policySource == mojom.PolicySource.kNone) {
@@ -1689,7 +1689,7 @@ Polymer({
    * @return {!mojom.ManagedBoolean|undefined}
    * @private
    */
-  getManagedVpnSaveCredentials_: function(managedProperties) {
+  getManagedVpnSaveCredentials_(managedProperties) {
     const vpn = managedProperties.typeProperties.vpn;
     switch (vpn.type) {
       case mojom.VpnType.kOpenVPN:
@@ -1706,7 +1706,7 @@ Polymer({
    * @return {!mojom.ManagedStringList|undefined}
    * @private
    */
-  getManagedVpnServerCaRefs_: function(managedProperties) {
+  getManagedVpnServerCaRefs_(managedProperties) {
     const vpn = managedProperties.typeProperties.vpn;
     switch (vpn.type) {
       case mojom.VpnType.kOpenVPN:
@@ -1723,7 +1723,7 @@ Polymer({
    * @return {!mojom.ManagedString|undefined}
    * @private
    */
-  getManagedVpnClientCertType_: function(managedProperties) {
+  getManagedVpnClientCertType_(managedProperties) {
     const vpn = managedProperties.typeProperties.vpn;
     switch (vpn.type) {
       case mojom.VpnType.kOpenVPN:

@@ -37,22 +37,22 @@ Polymer({
   },
 
   /** @private */
-  onForwardButtonClicked_: function() {
+  onForwardButtonClicked_() {
     this.fire('forward-navigation-requested');
   },
 
   /** @private */
-  onCancelButtonClicked_: function() {
+  onCancelButtonClicked_() {
     this.fire('cancel-requested');
   },
 
   /** @private */
-  onBackwardButtonClicked_: function() {
+  onBackwardButtonClicked_() {
     this.fire('backward-navigation-requested');
   },
 
   /** @private */
-  onShouldShowShadowChange_: function() {
+  onShouldShowShadowChange_() {
     this.$.shadow.hidden = !!this.shouldShowShadow;
   },
 });

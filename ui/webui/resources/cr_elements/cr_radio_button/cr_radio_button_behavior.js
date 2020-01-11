@@ -64,12 +64,12 @@ const CrRadioButtonBehaviorImpl = {
     up: 'hideRipple_',
   },
 
-  focus: function() {
+  focus() {
     this.$.button.focus();
   },
 
   /** @private */
-  onFocusableChanged_: function() {
+  onFocusableChanged_() {
     const links = this.querySelectorAll('a');
     links.forEach((link) => {
       // Remove the tab stop on any links when the row is unchecked. Since the
@@ -79,12 +79,12 @@ const CrRadioButtonBehaviorImpl = {
   },
 
   /** @private */
-  onFocus_: function() {
+  onFocus_() {
     this.getRipple().showAndHoldDown();
   },
 
   /** @private */
-  hideRipple_: function() {
+  hideRipple_() {
     this.getRipple().clear();
   },
 
@@ -92,7 +92,7 @@ const CrRadioButtonBehaviorImpl = {
    * @return {string}
    * @private
    */
-  getAriaChecked_: function() {
+  getAriaChecked_() {
     return this.checked ? 'true' : 'false';
   },
 
@@ -100,7 +100,7 @@ const CrRadioButtonBehaviorImpl = {
    * @return {string}
    * @private
    */
-  getAriaDisabled_: function() {
+  getAriaDisabled_() {
     return this.disabled ? 'true' : 'false';
   },
 
@@ -108,7 +108,7 @@ const CrRadioButtonBehaviorImpl = {
    * @return {number}
    * @private
    */
-  getTabIndex_: function() {
+  getTabIndex_() {
     return this.focusable ? 0 : -1;
   },
 
@@ -121,14 +121,14 @@ const CrRadioButtonBehaviorImpl = {
    * @param {!Event} e
    * @private
    */
-  onInputKeydown_: function(e) {
+  onInputKeydown_(e) {
     if (e.shiftKey && e.key === 'Tab') {
       this.focus();
     }
   },
 
   // customize the element's ripple
-  _createRipple: function() {
+  _createRipple() {
     this._rippleContainer = this.$$('.disc-wrapper');
     const ripple = Polymer.PaperRippleBehavior._createRipple();
     ripple.id = 'ink';

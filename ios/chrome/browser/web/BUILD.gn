@@ -17,8 +17,6 @@ source_set("web") {
     "image_fetch_tab_helper.mm",
     "load_timing_tab_helper.h",
     "load_timing_tab_helper.mm",
-    "page_placeholder_tab_helper.h",
-    "page_placeholder_tab_helper.mm",
     "repost_form_tab_helper.h",
     "repost_form_tab_helper.mm",
     "sad_tab_tab_helper.h",
@@ -30,6 +28,7 @@ source_set("web") {
   ]
   deps = [
     ":feature_flags",
+    ":page_placeholder",
     ":tab_helper_delegates",
     "//base",
     "//components/error_page/common",
@@ -59,6 +58,23 @@ source_set("web") {
   ]
   public_deps = [
     ":tab_id_tab_helper",
+  ]
+}
+
+source_set("page_placeholder") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "page_placeholder_tab_helper.h",
+    "page_placeholder_tab_helper.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/snapshots",
+    "//ios/chrome/browser/ui/elements",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/ui_util",
+    "//ios/net",
+    "//ios/web",
   ]
 }
 
@@ -103,6 +119,7 @@ source_set("unit_tests") {
   deps = [
     ":accessibility",
     ":image_fetch",
+    ":page_placeholder",
     ":tab_helper_delegates",
     ":test_support",
     ":web",

@@ -22,17 +22,6 @@ namespace autofill {
 
 class CreditCardFormEventLogger : public FormEventLoggerBase {
  public:
-  // Form Events for autofill with bank name available for display.
-  enum BankNameDisplayedFormEvent {
-    // A dropdown with suggestions was shown and at least one suggestion has a
-    // bank name. Logged at most once per page load.
-    FORM_EVENT_SUGGESTIONS_SHOWN_WITH_BANK_NAME_AVAILABLE_ONCE = 0,
-    // A server suggestion was used to fill the form and at least one suggestion
-    // has a bank name. Logged at most once per page load.
-    FORM_EVENT_SERVER_SUGGESTION_FILLED_WITH_BANK_NAME_AVAILABLE_ONCE,
-    BANK_NAME_NUM_FORM_EVENTS,
-  };
-
   CreditCardFormEventLogger(
       bool is_in_main_frame,
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
@@ -48,8 +37,6 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   void OnDidSelectCardSuggestion(const CreditCard& credit_card,
                                  const FormStructure& form,
                                  AutofillSyncSigninState sync_state);
-
-  void SetBankNameAvailable();
 
   // In case of masked cards, caller must make sure this gets called before
   // the card is upgraded to a full card.
@@ -78,11 +65,9 @@ class CreditCardFormEventLogger : public FormEventLoggerBase {
   using FormEventLoggerBase::Log;
 
  private:
-  void Log(BankNameDisplayedFormEvent event) const;
   FormEvent GetCardNumberStatusFormEvent(const CreditCard& credit_card);
 
   bool is_context_secure_ = false;
-  bool has_logged_bank_name_available_ = false;
   bool has_logged_masked_server_card_suggestion_selected_ = false;
   bool logged_suggestion_filled_was_masked_server_card_ = false;
 

@@ -28,11 +28,10 @@ BrowserImpl::BrowserImpl(ios::ChromeBrowserState* browser_state)
   web_state_list_delegate_ = std::make_unique<BrowserWebStateListDelegate>();
   web_state_list_ =
       std::make_unique<WebStateList>(web_state_list_delegate_.get());
+}
 
-  tab_model_ =
-      [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
-                                  browserState:browser_state_
-                                  webStateList:web_state_list_.get()];
+void BrowserImpl::CreateTabModel() {
+  tab_model_ = [[TabModel alloc] initWithBrowser:this];
 }
 
 BrowserImpl::BrowserImpl(ios::ChromeBrowserState* browser_state,
@@ -78,8 +77,9 @@ void BrowserImpl::RemoveObserver(BrowserObserver* observer) {
 // static
 std::unique_ptr<Browser> Browser::Create(
     ios::ChromeBrowserState* browser_state) {
-  std::unique_ptr<Browser> browser =
+  std::unique_ptr<BrowserImpl> browser =
       std::make_unique<BrowserImpl>(browser_state);
   AttachBrowserAgents(browser.get());
+  browser->CreateTabModel();
   return browser;
 }

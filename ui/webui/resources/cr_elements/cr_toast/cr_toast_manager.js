@@ -39,17 +39,17 @@ cr.define('cr.toastManager', () => {
     },
 
     /** @override */
-    attached: function() {
+    attached() {
       setInstance(this);
     },
 
     /** @override */
-    detached: function() {
+    detached() {
       setInstance(null);
     },
 
     /** @param {string} label The label to display inside the toast. */
-    show: function(label) {
+    show(label) {
       this.$.content.textContent = label;
       this.showInternal_();
     },
@@ -58,7 +58,7 @@ cr.define('cr.toastManager', () => {
      * Shows the toast, making certain text fragments collapsible.
      * @param {!Array<!{value: string, collapsible: boolean}>} pieces
      */
-    showForStringPieces: function(pieces) {
+    showForStringPieces(pieces) {
       const content = this.$.content;
       content.textContent = '';
       pieces.forEach(function(p) {
@@ -79,7 +79,7 @@ cr.define('cr.toastManager', () => {
     },
 
     /** @private */
-    showInternal_: function() {
+    showInternal_() {
       Polymer.IronA11yAnnouncer.requestAvailability();
       this.fire('iron-announce', {
         text: this.$.content.textContent,
@@ -87,7 +87,7 @@ cr.define('cr.toastManager', () => {
       this.$.toast.show();
     },
 
-    hide: function() {
+    hide() {
       this.$.toast.hide();
     },
   });

@@ -14,9 +14,10 @@ class TestAboutPageBrowserProxy extends TestBrowserProxy {
 
     if (cr.isChromeOS) {
       methodNames.push(
-          'getChannelInfo', 'getRegulatoryInfo', 'checkInternetConnection',
-          'getEnabledReleaseNotes', 'getEndOfLifeInfo', 'launchReleaseNotes',
-          'openOsHelpPage', 'refreshTPMFirmwareUpdateStatus', 'setChannel');
+          'getChannelInfo', 'getVersionInfo', 'getRegulatoryInfo',
+          'checkInternetConnection', 'getEnabledReleaseNotes',
+          'getEndOfLifeInfo', 'launchReleaseNotes', 'openOsHelpPage',
+          'refreshTPMFirmwareUpdateStatus', 'setChannel');
     }
 
     if (cr.isMac) {
@@ -29,6 +30,13 @@ class TestAboutPageBrowserProxy extends TestBrowserProxy {
     this.updateStatus_ = UpdateStatus.UPDATED;
 
     if (cr.isChromeOS) {
+      /** @private {!VersionInfo} */
+      this.versionInfo_ = {
+        arcVersion: '',
+        osFirmware: '',
+        osVersion: '',
+      };
+
       /** @private {!ChannelInfo} */
       this.channelInfo_ = {
         currentChannel: BrowserChannel.BETA,
@@ -98,6 +106,10 @@ if (cr.isMac) {
 }
 
 if (cr.isChromeOS) {
+  /** @param {!VersionInfo} */
+  TestAboutPageBrowserProxy.prototype.setVersionInfo = function(versionInfo) {
+    this.versionInfo_ = versionInfo;
+  };
 
   /** @param {boolean} canChangeChannel */
   TestAboutPageBrowserProxy.prototype.setCanChangeChannel = function(
@@ -136,6 +148,12 @@ if (cr.isChromeOS) {
   TestAboutPageBrowserProxy.prototype.setInternetConnection = function(
       hasInternetConnection) {
     this.hasInternetConnection_ = hasInternetConnection;
+  };
+
+  /** @override */
+  TestAboutPageBrowserProxy.prototype.getVersionInfo = function() {
+    this.methodCalled('getVersionInfo');
+    return Promise.resolve(this.versionInfo_);
   };
 
   /** @override */

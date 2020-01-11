@@ -9,10 +9,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
-#import "ios/chrome/browser/sessions/session_restoration_agent.h"
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #include "ios/chrome/browser/sessions/session_restoration_observer.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
@@ -56,9 +58,9 @@ class TestRestorationObserver : public SessionRestorationObserver {
   int restored_web_states_count_ = -1;
 };
 
-class SessionRestorationAgentTest : public PlatformTest {
+class SessionRestorationBrowserAgentTest : public PlatformTest {
  public:
-  SessionRestorationAgentTest()
+  SessionRestorationBrowserAgentTest()
       : web_state_list_delegate_(
             std::make_unique<BrowserWebStateListDelegate>()),
         web_state_list_(
@@ -69,20 +71,23 @@ class SessionRestorationAgentTest : public PlatformTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
 
+    browser_ = std::make_unique<TestBrowser>(chrome_browser_state_.get(),
+                                             web_state_list_.get());
     // Web usage is disabled during these tests.
     web_usage_enabler_ =
         WebStateListWebUsageEnablerFactory::GetInstance()->GetForBrowserState(
             chrome_browser_state_.get());
+    test_session_service_ = [[TestSessionService alloc] init];
     web_usage_enabler_->SetWebUsageEnabled(false);
 
     web_usage_enabler_->SetWebStateList(web_state_list_.get());
-    test_session_service_ = [[TestSessionService alloc] init];
-    session_restoration_agent_ = std::make_unique<SessionRestorationAgent>(
-        test_session_service_, web_state_list_.get(),
-        chrome_browser_state_.get());
+    SessionRestorationBrowserAgent::CreateForBrowser(browser_.get(),
+                                                     test_session_service_);
+    session_restoration_agent_ =
+        SessionRestorationBrowserAgent::FromBrowser(browser_.get());
   }
 
-  ~SessionRestorationAgentTest() override = default;
+  ~SessionRestorationBrowserAgentTest() override = default;
 
   void TearDown() override {
     web_usage_enabler_->SetWebStateList(nullptr);
@@ -137,11 +142,12 @@ class SessionRestorationAgentTest : public PlatformTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   WebStateListWebUsageEnabler* web_usage_enabler_;
   TestSessionService* test_session_service_;
-  std::unique_ptr<SessionRestorationAgent> session_restoration_agent_;
+  SessionRestorationBrowserAgent* session_restoration_agent_;
+  std::unique_ptr<Browser> browser_;
 };
 
 // Tests that restoring a session works correctly on empty WebStateList.
-TEST_F(SessionRestorationAgentTest, RestoreSessionOnEmptyWebStateList) {
+TEST_F(SessionRestorationBrowserAgentTest, RestoreSessionOnEmptyWebStateList) {
   SessionWindowIOS* window(
       CreateSessionWindow(/*sessions_count=*/5, /*selected_index=*/1));
   session_restoration_agent_->RestoreSessionWindow(window);
@@ -152,7 +158,8 @@ TEST_F(SessionRestorationAgentTest, RestoreSessionOnEmptyWebStateList) {
 }
 
 // Tests that restoring a session works correctly on non empty WebStatelist.
-TEST_F(SessionRestorationAgentTest, RestoreSessionWithNonEmptyWebStateList) {
+TEST_F(SessionRestorationBrowserAgentTest,
+       RestoreSessionWithNonEmptyWebStateList) {
   web::WebState* web_state = InsertNewWebState(
       GURL(kURL1), /*parent=*/nullptr, /*index=*/0, /*background=*/false);
 
@@ -171,7 +178,7 @@ TEST_F(SessionRestorationAgentTest, RestoreSessionWithNonEmptyWebStateList) {
 
 // Tests that saving a non-empty session, then saving an empty session, then
 // restoring, restores zero web states, and not the non-empty session.
-TEST_F(SessionRestorationAgentTest, SaveAndRestoreEmptySession) {
+TEST_F(SessionRestorationBrowserAgentTest, SaveAndRestoreEmptySession) {
   InsertNewWebState(GURL(kURL1), /*parent=*/nullptr, /*index=*/0,
                     /*background=*/false);
 
@@ -199,7 +206,7 @@ TEST_F(SessionRestorationAgentTest, SaveAndRestoreEmptySession) {
 
 // Tests that saving a session with web states, then clearing the WebStatelist
 // and then restoring the session will restore the web states correctly.
-TEST_F(SessionRestorationAgentTest, SaveAndRestoreSession) {
+TEST_F(SessionRestorationBrowserAgentTest, SaveAndRestoreSession) {
   web::WebState* web_state = InsertNewWebState(
       GURL(kURL1), /*parent=*/nullptr, /*index=*/0, /*background=*/false);
   InsertNewWebState(GURL(kURL1), web_state, /*index=*/1, /*background=*/false);
@@ -234,7 +241,7 @@ TEST_F(SessionRestorationAgentTest, SaveAndRestoreSession) {
 
 // Tests that SessionRestorationObserver methods are called when sessions is
 // restored.
-TEST_F(SessionRestorationAgentTest, ObserverCalledWithRestore) {
+TEST_F(SessionRestorationBrowserAgentTest, ObserverCalledWithRestore) {
   InsertNewWebState(GURL(kURL1), /*parent=*/nullptr, /*index=*/0,
                     /*background=*/false);
 

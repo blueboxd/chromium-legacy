@@ -17,12 +17,12 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
   },
 
   /** @private */
-  onOkTap_: function() {
+  onOkTap_() {
     /** @type {!CrDialogElement} */ (this.$.dialog).close();
   },
 
@@ -31,7 +31,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getCertificateErrorText_: function(importError) {
+  getCertificateErrorText_(importError) {
     return loadTimeData.getStringF(
         'certificateImportErrorFormat', importError.name, importError.error);
   },

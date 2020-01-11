@@ -25,7 +25,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTitle_: function(showError) {
+  getTitle_(showError) {
     return showError ? this.i18n('finalPageErrorTitle') :
                        this.i18n('finalPageTitle');
   },
@@ -35,7 +35,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getMessage_: function(showError) {
+  getMessage_(showError) {
     return showError ? this.i18n('finalPageErrorMessage') :
                        this.i18n('finalPageMessage');
   },
@@ -45,7 +45,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getPageBodyClass_: function(showError) {
+  getPageBodyClass_(showError) {
     return showError ? 'error' : '';
   },
 });

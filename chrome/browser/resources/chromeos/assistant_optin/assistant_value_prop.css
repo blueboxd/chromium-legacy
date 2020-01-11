@@ -37,12 +37,6 @@
   height: 20px;
 }
 
-.oobe-popup {
-  border-radius: 8px;
-  box-shadow: unset;
-  max-width: 512px;
-}
-
 #overlay-text {
   box-sizing: border-box;
   font-size: 13px;
@@ -64,16 +58,6 @@
 
 #overlay-close-button {
   margin-inline-end: 0;
-}
-
-#close-button-text {
-  padding: 0 16px 0 16px;
-}
-
-.button-strip {
-  display: flex;
-  justify-content: flex-end;
-  margin: 16px;
 }
 
 oobe-text-button[disabled] {

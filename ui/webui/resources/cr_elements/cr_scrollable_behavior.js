@@ -40,7 +40,7 @@ const CrScrollableBehavior = {
   /** @private {number|null} */
   intervalId_: null,
 
-  ready: function() {
+  ready() {
     const readyAsync = () => {
       this.requestUpdateScroll();
 
@@ -61,7 +61,7 @@ const CrScrollableBehavior = {
     readyAsync();
   },
 
-  detached: function() {
+  detached() {
     if (this.intervalId_ !== null) {
       clearInterval(this.intervalId_);
     }
@@ -72,7 +72,7 @@ const CrScrollableBehavior = {
    * This ensures that the <iron-list> contents of dynamically sized
    * containers are resized correctly.
    */
-  updateScrollableContents: function() {
+  updateScrollableContents() {
     if (this.intervalId_ !== null) {
       return;
     }  // notifyResize is already in progress.
@@ -126,7 +126,7 @@ const CrScrollableBehavior = {
    * Called from ready() and updateScrollableContents(). May also be called
    * directly when the contents change (e.g. when not using iron-list).
    */
-  requestUpdateScroll: function() {
+  requestUpdateScroll() {
     requestAnimationFrame(function() {
       const scrollableElements = this.root.querySelectorAll('[scrollable]');
       for (let i = 0; i < scrollableElements.length; i++) {
@@ -136,7 +136,7 @@ const CrScrollableBehavior = {
   },
 
   /** @param {!IronListElement} list */
-  saveScroll: function(list) {
+  saveScroll(list) {
     // Store a FIFO of saved scroll positions so that multiple updates in a
     // frame are applied correctly. Specifically we need to track when '0' is
     // saved (but not apply it), and still handle patterns like [30, 0, 32].
@@ -145,7 +145,7 @@ const CrScrollableBehavior = {
   },
 
   /** @param {!IronListElement} list */
-  restoreScroll: function(list) {
+  restoreScroll(list) {
     this.async(function() {
       const scrollTop = list.savedScrollTops.shift();
       // Ignore scrollTop of 0 in case it was intermittent (we do not need to
@@ -161,7 +161,7 @@ const CrScrollableBehavior = {
    * @param {!Event} event
    * @private
    */
-  updateScrollEvent_: function(event) {
+  updateScrollEvent_(event) {
     const scrollable = /** @type {!HTMLElement} */ (event.target);
     this.updateScroll_(scrollable);
   },
@@ -172,7 +172,7 @@ const CrScrollableBehavior = {
    * @param {!HTMLElement} scrollable
    * @private
    */
-  updateScroll_: function(scrollable) {
+  updateScroll_(scrollable) {
     scrollable.classList.toggle(
         'can-scroll', scrollable.clientHeight < scrollable.scrollHeight);
     scrollable.classList.toggle('is-scrolled', scrollable.scrollTop > 0);

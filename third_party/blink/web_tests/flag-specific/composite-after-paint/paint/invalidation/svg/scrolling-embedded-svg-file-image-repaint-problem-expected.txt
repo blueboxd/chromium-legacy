@@ -18,7 +18,7 @@
         },
         {
           "object": "NGPhysicalBoxFragment LayoutInline A",
-          "rect": [383, 971, 42, 21],
+          "rect": [382, 970, 44, 23],
           "reason": "appeared"
         },
         {

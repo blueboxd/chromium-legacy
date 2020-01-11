@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -102,6 +102,8 @@ c_sources = [
   "libdav1d/src/ipred.h",
   "libdav1d/src/ipred_prepare.h",
   "libdav1d/src/itx.h",
+  "libdav1d/src/itx_1d.c",
+  "libdav1d/src/itx_1d.h",
   "libdav1d/src/levels.h",
   "libdav1d/src/lf_apply.h",
   "libdav1d/src/lf_mask.c",

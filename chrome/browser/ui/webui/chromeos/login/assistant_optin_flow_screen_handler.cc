@@ -66,15 +66,13 @@ void AssistantOptInFlowScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("locale", g_browser_process->GetApplicationLocale());
   builder->Add("assistantLogo", IDS_ASSISTANT_LOGO);
-  builder->Add("assistantOptinLoading", IDS_ASSISTANT_VALUE_PROP_LOADING);
+  builder->Add("assistantOptinLoading", IDS_ASSISTANT_OPT_IN_LOADING);
   builder->Add("assistantOptinLoadErrorTitle",
-               IDS_ASSISTANT_VALUE_PROP_LOAD_ERROR_TITLE);
+               IDS_ASSISTANT_OPT_IN_LOAD_ERROR_TITLE);
   builder->Add("assistantOptinLoadErrorMessage",
-               IDS_ASSISTANT_VALUE_PROP_LOAD_ERROR_MESSAGE);
-  builder->Add("assistantOptinSkipButton",
-               IDS_ASSISTANT_VALUE_PROP_SKIP_BUTTON);
-  builder->Add("assistantOptinRetryButton",
-               IDS_ASSISTANT_VALUE_PROP_RETRY_BUTTON);
+               IDS_ASSISTANT_OPT_IN_LOAD_ERROR_MESSAGE);
+  builder->Add("assistantOptinSkipButton", IDS_ASSISTANT_OPT_IN_SKIP_BUTTON);
+  builder->Add("assistantOptinRetryButton", IDS_ASSISTANT_OPT_IN_RETRY_BUTTON);
   builder->Add("assistantUserImage", IDS_ASSISTANT_OOBE_USER_IMAGE);
   builder->Add("assistantVoiceMatchTitle", IDS_ASSISTANT_VOICE_MATCH_TITLE);
   builder->Add("assistantVoiceMatchMessage", IDS_ASSISTANT_VOICE_MATCH_MESSAGE);

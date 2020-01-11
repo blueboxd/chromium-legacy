@@ -39,7 +39,7 @@ Polymer({
      */
     value: {
       type: Object,
-      value: function() {
+      value() {
         return {
           host: OncMojo.createManagedString(''),
           port: OncMojo.createManagedInt(80),
@@ -49,7 +49,7 @@ Polymer({
     },
   },
 
-  focus: function() {
+  focus() {
     this.$$('cr-input').focus();
   },
 
@@ -57,7 +57,7 @@ Polymer({
    * Event triggered when an input value changes.
    * @private
    */
-  onValueChange_: function() {
+  onValueChange_() {
     let port = parseInt(this.value.port.activeValue, 10);
     if (isNaN(port)) {
       port = 80;

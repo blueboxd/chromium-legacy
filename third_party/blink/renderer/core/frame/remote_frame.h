@@ -42,7 +42,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   // Frame overrides:
   void Trace(blink::Visitor*) override;
-  void Navigate(const FrameLoadRequest&, WebFrameLoadType) override;
+  void Navigate(FrameLoadRequest&, WebFrameLoadType) override;
   const RemoteSecurityContext* GetSecurityContext() const override;
   bool DetachDocument() override;
   void CheckCompleted() override;

@@ -528,6 +528,7 @@ cr.define('settings_about_page', function() {
         await Promise.all([
           browserProxy.whenCalled('pageReady'),
           browserProxy.whenCalled('getChannelInfo'),
+          browserProxy.whenCalled('getVersionInfo'),
         ]);
       });
 
@@ -555,6 +556,37 @@ cr.define('settings_about_page', function() {
 
       test('ChangeChannel_Disabled', function() {
         return checkChangeChannelButton(false);
+      });
+
+      async function checkCopyBuildDetailsButton() {
+        page = document.createElement('settings-detailed-build-info');
+        document.body.appendChild(page);
+        const copyBuildDetailsButton = page.$$('cr-icon-button');
+        await browserProxy.whenCalled('getVersionInfo');
+        await browserProxy.whenCalled('getChannelInfo');
+
+        const expectedClipBoardText =
+            `${loadTimeData.getString('application_label')}: ` +
+            `${loadTimeData.getString('aboutBrowserVersion')}\n` +
+            `Platform: ${browserProxy.versionInfo_.osVersion}\n` +
+            `Channel: ${browserProxy.channelInfo_.targetChannel}\n` +
+            `Firmware Version: ${browserProxy.versionInfo_.osFirmware}\n` +
+            `ARC Enabled: ${loadTimeData.getBoolean('aboutIsArcEnabled')}\n` +
+            `ARC: ${browserProxy.versionInfo_.arcVersion}\n` +
+            `Enterprise Enrolled: ` +
+            `${loadTimeData.getBoolean('aboutEnterpriseManaged')}\n` +
+            `Developer Mode: ` +
+            `${loadTimeData.getBoolean('aboutIsDeveloperMode')}`;
+
+        assertTrue(!!copyBuildDetailsButton);
+        await navigator.clipboard.readText().then(text => assertFalse(!!text));
+        copyBuildDetailsButton.click();
+        await navigator.clipboard.readText().then(
+            text => assertEquals(text, expectedClipBoardText));
+      }
+
+      test('CheckCopyBuildDetails', function() {
+        checkCopyBuildDetailsButton();
       });
     });
   }

@@ -356,6 +356,8 @@ def _process_dom_module(js_file, html_file):
 
     line = line.replace(EXPORT_LINE_REGEX, 'export')
 
+    # TODO(crbug.com/1028829): remove this line when cr.exportPath() is removed
+    # from --chrome_pass.
     if line.startswith('cr.exportPath('):
       line = ''
 

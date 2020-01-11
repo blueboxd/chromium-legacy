@@ -219,15 +219,16 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
 
   Image* displayed_image() { return output_device_->displayed_image_.get(); }
 
-  base::circular_deque<SkiaOutputDeviceBufferQueue::InFlightFrame>&
-  in_flight_frames() {
-    return output_device_->in_flight_frames_;
+  base::circular_deque<std::unique_ptr<
+      SkiaOutputDeviceBufferQueue::CancelableSwapCompletionCallback>>&
+  swap_completion_callbacks() {
+    return output_device_->swap_completion_callbacks_;
   }
 
   const gpu::MemoryTracker& memory_tracker() { return *memory_tracker_; }
 
   int CountBuffers() {
-    int n = available_images().size() + in_flight_frames().size();
+    int n = available_images().size() + swap_completion_callbacks().size();
 
     if (displayed_image())
       n++;
@@ -240,8 +241,6 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
     std::set<Image*> images;
     for (const auto& image : available_images())
       images.insert(image.get());
-    for (const auto& frame : in_flight_frames())
-      images.insert(frame.image.get());
 
     if (displayed_image())
       images.insert(displayed_image());
@@ -249,7 +248,8 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
     if (current_image())
       images.insert(current_image());
 
-    EXPECT_EQ(images.size(), (size_t)CountBuffers());
+    EXPECT_EQ(images.size() + swap_completion_callbacks().size(),
+              (size_t)CountBuffers());
   }
 
   Image* GetCurrentImage() {
@@ -310,24 +310,24 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckDoubleBuffering) {
   EXPECT_NE(current_image(), nullptr);
   EXPECT_FALSE(displayed_image());
   SwapBuffers();
-  EXPECT_EQ(1U, in_flight_frames().size());
+  EXPECT_EQ(1U, swap_completion_callbacks().size());
   PageFlipComplete();
-  EXPECT_EQ(0U, in_flight_frames().size());
+  EXPECT_EQ(0U, swap_completion_callbacks().size());
   EXPECT_TRUE(displayed_image());
   EXPECT_NE(GetCurrentImage(), nullptr);
   EXPECT_NE(0U, memory_tracker().GetSize());
   EXPECT_EQ(2, CountBuffers());
   CheckUnique();
   EXPECT_NE(current_image(), nullptr);
-  EXPECT_EQ(0U, in_flight_frames().size());
+  EXPECT_EQ(0U, swap_completion_callbacks().size());
   EXPECT_TRUE(displayed_image());
   SwapBuffers();
   CheckUnique();
-  EXPECT_EQ(1U, in_flight_frames().size());
+  EXPECT_EQ(1U, swap_completion_callbacks().size());
   EXPECT_TRUE(displayed_image());
   PageFlipComplete();
   CheckUnique();
-  EXPECT_EQ(0U, in_flight_frames().size());
+  EXPECT_EQ(0U, swap_completion_callbacks().size());
   EXPECT_EQ(1U, available_images().size());
   EXPECT_TRUE(displayed_image());
   EXPECT_NE(GetCurrentImage(), nullptr);
@@ -354,20 +354,20 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckTripleBuffering) {
   EXPECT_NE(0U, memory_tracker().GetSize());
   EXPECT_EQ(2, CountBuffers());
   CheckUnique();
-  EXPECT_EQ(1U, in_flight_frames().size());
+  EXPECT_EQ(1U, swap_completion_callbacks().size());
   EXPECT_TRUE(displayed_image());
   EXPECT_NE(GetCurrentImage(), nullptr);
   EXPECT_NE(0U, memory_tracker().GetSize());
   EXPECT_EQ(3, CountBuffers());
   CheckUnique();
   EXPECT_NE(current_image(), nullptr);
-  EXPECT_EQ(1U, in_flight_frames().size());
+  EXPECT_EQ(1U, swap_completion_callbacks().size());
   EXPECT_TRUE(displayed_image());
   PageFlipComplete();
   EXPECT_EQ(3, CountBuffers());
   CheckUnique();
   EXPECT_NE(current_image(), nullptr);
-  EXPECT_EQ(0U, in_flight_frames().size());
+  EXPECT_EQ(0U, swap_completion_callbacks().size());
   EXPECT_TRUE(displayed_image());
   EXPECT_EQ(1U, available_images().size());
 }
@@ -393,21 +393,21 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckEmptySwap) {
   EXPECT_NE(new_image, nullptr);
   EXPECT_NE(image, new_image);
 
-  EXPECT_EQ(1U, in_flight_frames().size());
+  EXPECT_EQ(1U, swap_completion_callbacks().size());
   PageFlipComplete();
 
   // Test swapbuffers without calling BeginPaint/EndPaint (i.e without
   // GetCurrentImage)
   SwapBuffers();
-  EXPECT_EQ(1U, in_flight_frames().size());
+  EXPECT_EQ(1U, swap_completion_callbacks().size());
   PageFlipComplete();
-  EXPECT_EQ(0U, in_flight_frames().size());
+  EXPECT_EQ(0U, swap_completion_callbacks().size());
 
   EXPECT_EQ(current_image(), nullptr);
   SwapBuffers();
-  EXPECT_EQ(1U, in_flight_frames().size());
+  EXPECT_EQ(1U, swap_completion_callbacks().size());
   PageFlipComplete();
-  EXPECT_EQ(0U, in_flight_frames().size());
+  EXPECT_EQ(0U, swap_completion_callbacks().size());
 }
 
 TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckCorrectBufferOrdering) {
@@ -427,9 +427,10 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, CheckCorrectBufferOrdering) {
 
   for (size_t i = 0; i < kSwapCount; ++i) {
     EXPECT_NE(GetCurrentImage(), nullptr);
+    auto* next_image = current_image();
     SwapBuffers();
-    EXPECT_EQ(1U, in_flight_frames().size());
-    auto* next_image = in_flight_frames().front().image.get();
+    EXPECT_EQ(current_image(), nullptr);
+    EXPECT_EQ(1U, swap_completion_callbacks().size());
     PageFlipComplete();
     EXPECT_EQ(displayed_image(), next_image);
   }
@@ -452,7 +453,8 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, ReshapeWithInFlightSurfaces) {
 
   output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false,
                           gfx::OVERLAY_TRANSFORM_NONE);
-  EXPECT_EQ(1u, in_flight_frames().size());
+  // swap completion callbacks is cleared.
+  EXPECT_EQ(0u, swap_completion_callbacks().size());
 
   PageFlipComplete();
   EXPECT_FALSE(displayed_image());

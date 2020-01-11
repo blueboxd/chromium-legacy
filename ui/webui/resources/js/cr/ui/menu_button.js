@@ -37,7 +37,7 @@ cr.define('cr.ui', function() {
     /**
      * Initializes the menu button.
      */
-    decorate: function() {
+    decorate() {
       // Listen to the touch events on the document so that we can handle it
       // before cancelled by other UI components.
       this.ownerDocument.addEventListener('touchstart', this);
@@ -97,7 +97,7 @@ cr.define('cr.ui', function() {
      * @return {boolean}
      * @private
      */
-    shouldDismissMenu_: function(e) {
+    shouldDismissMenu_(e) {
       // The menu is dismissed when clicking outside the menu.
       // The button is excluded here because it should toggle show/hide the
       // menu and handled separately.
@@ -109,7 +109,7 @@ cr.define('cr.ui', function() {
      * Handles event callbacks.
      * @param {Event} e The event object.
      */
-    handleEvent: function(e) {
+    handleEvent(e) {
       if (!this.menu) {
         return;
       }
@@ -214,7 +214,7 @@ cr.define('cr.ui', function() {
      * @param {{x: number, y: number}=} opt_mousePos The position of the mouse
      *     when shown (in screen coordinates).
      */
-    showMenu: function(shouldSetFocus, opt_mousePos) {
+    showMenu(shouldSetFocus, opt_mousePos) {
       this.hideMenu();
 
       this.menu.updateCommands(this);
@@ -253,7 +253,7 @@ cr.define('cr.ui', function() {
      * @param {cr.ui.HideType=} opt_hideType Type of hide.
      *     default: cr.ui.HideType.INSTANT.
      */
-    hideMenu: function(opt_hideType) {
+    hideMenu(opt_hideType) {
       this.hideMenuInternal_(true, opt_hideType);
     },
 
@@ -263,7 +263,7 @@ cr.define('cr.ui', function() {
      * @param {cr.ui.HideType=} opt_hideType Type of hide.
      *     default: cr.ui.HideType.INSTANT.
      */
-    hideMenuWithoutTakingFocus_: function(opt_hideType) {
+    hideMenuWithoutTakingFocus_(opt_hideType) {
       this.hideMenuInternal_(false, opt_hideType);
     },
 
@@ -274,7 +274,7 @@ cr.define('cr.ui', function() {
      * @param {cr.ui.HideType=} opt_hideType Type of hide.
      *     default: cr.ui.HideType.INSTANT.
      */
-    hideMenuInternal_: function(shouldTakeFocus, opt_hideType) {
+    hideMenuInternal_(shouldTakeFocus, opt_hideType) {
       if (!this.isMenuShown()) {
         return;
       }
@@ -305,7 +305,7 @@ cr.define('cr.ui', function() {
     /**
      * Whether the menu is shown.
      */
-    isMenuShown: function() {
+    isMenuShown() {
       return this.hasAttribute('menu-shown');
     },
 
@@ -314,7 +314,7 @@ cr.define('cr.ui', function() {
      * advanced positioning logic to ensure the menu fits in the viewport.
      * @private
      */
-    positionMenu_: function() {
+    positionMenu_() {
       positionPopupAroundElement(
           this, this.menu, this.anchorType, this.invertLeftRight);
     },
@@ -322,7 +322,7 @@ cr.define('cr.ui', function() {
     /**
      * Handles the keydown event for the menu button.
      */
-    handleKeyDown: function(e) {
+    handleKeyDown(e) {
       switch (e.key) {
         case 'ArrowDown':
         case 'ArrowUp':

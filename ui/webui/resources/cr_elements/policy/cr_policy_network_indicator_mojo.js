@@ -38,7 +38,7 @@ Polymer({
   observers: ['propertyChanged_(property.*)'],
 
   /** @private */
-  propertyChanged_: function() {
+  propertyChanged_() {
     const property = this.property;
     if (property === null || property === undefined ||
         !this.isControlled(property)) {
@@ -70,7 +70,7 @@ Polymer({
    * @return {string} The tooltip text for |type|.
    * @private
    */
-  getNetworkIndicatorTooltip_: function() {
+  getNetworkIndicatorTooltip_() {
     if (this.property === undefined) {
       return '';
     }

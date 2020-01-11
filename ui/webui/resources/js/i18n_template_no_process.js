@@ -44,7 +44,7 @@ var i18nTemplate = (function() {
      * @param {!LoadTimeData} data The data source to draw from.
      * @param {!Set<ProcessingRoot>} visited
      */
-    'i18n-content': function(element, key, data, visited) {
+    'i18n-content'(element, key, data, visited) {
       element.textContent = data.getString(key);
     },
 
@@ -60,7 +60,7 @@ var i18nTemplate = (function() {
      * @param {!LoadTimeData} data The data source to draw from.
      * @param {!Set<ProcessingRoot>} visited
      */
-    'i18n-values': function(element, attributeAndKeys, data, visited) {
+    'i18n-values'(element, attributeAndKeys, data, visited) {
       const parts = attributeAndKeys.replace(/\s/g, '').split(/;/);
       parts.forEach(function(part) {
         if (!part) {

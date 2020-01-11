@@ -62,7 +62,7 @@ Polymer({
    * Tells the camera to take a photo; the camera will fire a 'photo-taken'
    * event when the photo is completed.
    */
-  takePhoto: function() {
+  takePhoto() {
     const camera = /** @type {?CrCameraElement} */ (this.$$('#camera'));
     if (camera) {
       camera.takePhoto();
@@ -70,7 +70,7 @@ Polymer({
   },
 
   /** Tells the pane to focus the main action button. */
-  focusActionButton: function() {
+  focusActionButton() {
     if (this.showDiscard_()) {
       this.$.discardImage.focus();
     } else if (this.cameraActive_) {
@@ -82,13 +82,13 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getCameraActive_: function() {
+  getCameraActive_() {
     return this.cameraPresent &&
         this.imageType == CrPicture.SelectionTypes.CAMERA;
   },
 
   /** @private */
-  cameraActiveChanged_: function() {
+  cameraActiveChanged_() {
     const camera = /** @type {?CrCameraElement} */ (this.$$('#camera'));
     if (!camera) {
       return;
@@ -101,7 +101,7 @@ Polymer({
   },
 
   /** @private */
-  imageSrcChanged_: function() {
+  imageSrcChanged_() {
     /**
      * If current image URL is an object URL created below then revoke it to
      * prevent this code from using more than one object URL per document.
@@ -136,7 +136,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showImagePreview_: function() {
+  showImagePreview_() {
     return !this.cameraActive_ && !!this.imageSrc;
   },
 
@@ -144,12 +144,12 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showDiscard_: function() {
+  showDiscard_() {
     return this.imageType == CrPicture.SelectionTypes.OLD;
   },
 
   /** @private */
-  onTapDiscardImage_: function() {
+  onTapDiscardImage_() {
     this.fire('discard-image');
   },
 
@@ -159,7 +159,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getImgSrc_: function(url) {
+  getImgSrc_(url) {
     // Always use 2x user image for preview.
     if (url.startsWith('chrome://theme')) {
       return url + '@2x';

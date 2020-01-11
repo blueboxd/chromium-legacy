@@ -74,12 +74,11 @@ void RemoteFrame::Trace(blink::Visitor* visitor) {
   Frame::Trace(visitor);
 }
 
-void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
+void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
                            WebFrameLoadType frame_load_type) {
   if (!navigation_rate_limiter().CanProceed())
     return;
 
-  FrameLoadRequest frame_request(passed_request);
   frame_request.SetFrameType(
       IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
                     : network::mojom::RequestContextFrameType::kNested);
@@ -129,10 +128,9 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
         frame->GetSecurityContext() &&
         frame->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kDownloads);
     initiator_frame_is_ad = frame->IsAdSubframe();
-    if (passed_request.ClientRedirectReason() !=
-        ClientNavigationReason::kNone) {
+    if (frame_request.ClientRedirectReason() != ClientNavigationReason::kNone) {
       probe::FrameRequestedNavigation(frame, this, url,
-                                      passed_request.ClientRedirectReason());
+                                      frame_request.ClientRedirectReason());
     }
   }
 

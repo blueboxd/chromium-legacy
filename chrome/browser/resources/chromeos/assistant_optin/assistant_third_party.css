@@ -11,10 +11,6 @@
   padding-top: 24px;
 }
 
-.oobe-popup {
-  max-width: 640px;
-}
-
 #webview-container {
   box-sizing: border-box;
   padding: 16px;
@@ -38,14 +34,4 @@
 
 #overlay-close-button {
   margin-inline-end: 0;
-}
-
-#close-button-text {
-  padding: 0 16px 0 16px;
-}
-
-.button-strip {
-  display: flex;
-  justify-content: flex-end;
-  margin: 16px;
 }

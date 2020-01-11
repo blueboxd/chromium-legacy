@@ -429,9 +429,9 @@ class MEDIA_GPU_EXPORT V4L2RequestRef : public V4L2RequestRefBase {
   V4L2RequestRef(V4L2RequestRef&& req_ref) :
     V4L2RequestRefBase(std::move(req_ref)) {}
   // Apply controls to the request.
-  bool SetCtrls(struct v4l2_ext_controls* ctrls) const;
+  bool ApplyCtrls(struct v4l2_ext_controls* ctrls) const;
   // Apply buffer to the request.
-  bool SetQueueBuffer(struct v4l2_buffer* buffer) const;
+  bool ApplyQueueBuffer(struct v4l2_buffer* buffer) const;
   // Submits the request to the driver.
   base::Optional<V4L2SubmittedRequestRef> Submit() &&;
 

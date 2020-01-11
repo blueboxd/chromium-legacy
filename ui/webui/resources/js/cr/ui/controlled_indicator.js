@@ -27,7 +27,7 @@ cr.define('cr.ui', function() {
     /**
      * Decorates the base element to show the proper icon.
      */
-    decorate: function() {
+    decorate() {
       cr.ui.BubbleButton.prototype.decorate.call(this);
       this.classList.add('controlled-setting-indicator');
     },
@@ -36,7 +36,7 @@ cr.define('cr.ui', function() {
      * Shows an informational bubble displaying |content|.
      * @param {HTMLDivElement} content The content of the bubble.
      */
-    showBubble: function(content) {
+    showBubble(content) {
       this.hideBubble();
 
       bubble = new cr.ui.AutoCloseBubble;
@@ -50,7 +50,7 @@ cr.define('cr.ui', function() {
     /**
      * Hides the currently visible bubble, if any.
      */
-    hideBubble: function() {
+    hideBubble() {
       if (bubble) {
         bubble.hide();
       }
@@ -64,7 +64,7 @@ cr.define('cr.ui', function() {
      * implementation does not set any strings.
      * @return {Object}
      */
-    getDefaultStrings: function() {
+    getDefaultStrings() {
       return {};
     },
 
@@ -72,7 +72,7 @@ cr.define('cr.ui', function() {
      * Returns the text shown in the bubble.
      * @return {string}
      */
-    getBubbleText: function() {
+    getBubbleText() {
       const defaultStrings = this.getDefaultStrings();
       let text = defaultStrings[this.controlledBy];
 
@@ -89,7 +89,7 @@ cr.define('cr.ui', function() {
      * Returns the DOM tree for a showing the message |text|.
      * @param {string} text to be shown in the bubble.
      */
-    createDomTree: function(text) {
+    createDomTree(text) {
       const content = document.createElement('div');
       content.textContent = text;
       return content;
@@ -99,7 +99,7 @@ cr.define('cr.ui', function() {
      * Open or close a bubble with further information about the pref.
      * @override
      */
-    toggleBubble: function() {
+    toggleBubble() {
       if (this.showingBubble) {
         this.hideBubble();
       } else {

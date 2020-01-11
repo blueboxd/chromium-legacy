@@ -41,6 +41,22 @@ skcms_TransferFunction SkTransferFnInverse(const skcms_TransferFunction& fn) {
   return fn_inv;
 }
 
+skcms_TransferFunction SkTransferFnScaled(const skcms_TransferFunction& fn,
+                                          float scale) {
+  if (scale == 1.f)
+    return fn;
+  float scale_to_g_inv = std::pow(scale, 1.f / fn.g);
+  skcms_TransferFunction fn_scaled = {0};
+  fn_scaled.a = fn.a * scale_to_g_inv;
+  fn_scaled.b = fn.b * scale_to_g_inv;
+  fn_scaled.c = fn.c * scale;
+  fn_scaled.d = fn.d;
+  fn_scaled.e = fn.e * scale;
+  fn_scaled.f = fn.f * scale;
+  fn_scaled.g = fn.g;
+  return fn_scaled;
+}
+
 bool SkTransferFnsApproximatelyCancel(const skcms_TransferFunction& a,
                                       const skcms_TransferFunction& b) {
   const float kStep = 1.f / 8.f;

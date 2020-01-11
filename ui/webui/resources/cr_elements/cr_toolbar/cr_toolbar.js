@@ -69,22 +69,22 @@ Polymer({
   ],
 
   /** @return {!CrToolbarSearchFieldElement} */
-  getSearchField: function() {
+  getSearchField() {
     return /** @type {!CrToolbarSearchFieldElement} */ (this.$.search);
   },
 
   /** @private */
-  onClosePromoTap_: function() {
+  onClosePromoTap_() {
     this.fire('cr-toolbar-menu-promo-close');
   },
 
   /** @private */
-  onMenuTap_: function() {
+  onMenuTap_() {
     this.fire('cr-toolbar-menu-tap');
   },
 
   /** @private */
-  possiblyShowMenuPromo_: function() {
+  possiblyShowMenuPromo_() {
     Polymer.RenderStatus.afterNextRender(this, function() {
       if (this.showMenu && this.showMenuPromo && !this.showingSearch_) {
         // The call to animate can have 2 methods of passing the keyframes,
@@ -107,7 +107,7 @@ Polymer({
    * @param {boolean} showMenuPromo
    * @return {string} The title if the menu promo isn't showing, else "".
    */
-  titleIfNotShowMenuPromo_: function(title, showMenuPromo) {
+  titleIfNotShowMenuPromo_(title, showMenuPromo) {
     return showMenuPromo ? '' : title;
   },
 });

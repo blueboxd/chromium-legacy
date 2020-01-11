@@ -6,6 +6,7 @@
 <link rel="import" href="../../controls/settings_radio_group.html">
 <link rel="import" href="../../controls/settings_slider.html">
 <link rel="import" href="../../controls/settings_toggle_button.html">
+<link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="device_page_browser_proxy.html">
 
@@ -25,6 +26,11 @@
       .subsection > .settings-box  {
         padding-inline-end: 0;
         padding-inline-start: 0;
+      }
+
+      #enableReverseScrollingToggle {
+        border-top: none;
+        padding-inline-end: 0;
       }
     </style>
     <div id="mouse" hidden$="[[!hasMouse]]">
@@ -75,6 +81,21 @@
             pref="{{prefs.settings.touchpad.enable_tap_dragging}}"
             label="$i18n{tapDraggingLabel}">
         </settings-toggle-button>
+        <div class="settings-box" id="reverseScrollRow"
+             on-click="onReverseScrollRowClicked_">
+          <div class="start settings-box-text">
+            <settings-localized-link
+                on-click="onLearnMoreLinkClicked_"
+                id="enableReverseScrollingLabel"
+                localized-string="$i18n{touchPadScrollLabel}"
+                link-url="$i18n{naturalScrollLearnMoreLink}">
+            </settings-localized-link>
+          </div>
+          <cr-toggle id="enableReverseScrollingToggle"
+              checked="{{!prefs.settings.touchpad.natural_scroll.value}}"
+              aria-labelledby="enableReverseScrollingLabel">
+          </cr-toggle>
+        </div>
         <template is="dom-if" if="[[allowDisableAcceleration_]]">
           <settings-toggle-button id="touchpadAcceleration"
               pref="{{prefs.settings.touchpad.acceleration}}"
@@ -92,21 +113,6 @@
                 label-min="$i18n{pointerSlow}"
                 label-max="$i18n{pointerFast}">
             </settings-slider>
-        </div>
-        <div class="settings-box">$i18n{scrollLabel}</div>
-        <div class="list-frame">
-          <settings-radio-group
-              pref="{{prefs.settings.touchpad.natural_scroll}}"
-              group-aria-label="$i18n{scrollLabel}">
-            <cr-radio-button name="false" label="$i18n{traditionalScrollLabel}">
-            </cr-radio-button>
-            <cr-radio-button name="true">
-              <settings-localized-link
-                  localized-string="$i18n{naturalScrollLabel}"
-                  link-url="$i18n{naturalScrollLearnMoreLink}">
-              </settings-localized-link>
-            </cr-radio-button>
-          </settings-radio-group>
         </div>
       </div>
     </div>

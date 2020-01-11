@@ -74,7 +74,7 @@ Polymer({
    * @return {string} The name of the svg icon image to show.
    * @private
    */
-  getIconClass_: function() {
+  getIconClass_() {
     // NOTE: computeAriaLabel_() follows a very similar logic structure and both
     // functions should be updated together.
 
@@ -122,7 +122,7 @@ Polymer({
    * @return {string} A localized accessibility label for the icon.
    * @private
    */
-  computeAriaLabel_: function(locale, networkState) {
+  computeAriaLabel_(locale, networkState) {
     // NOTE: getIconClass_() follows a very similar logic structure and both
     // functions should be updated together.
 
@@ -197,7 +197,7 @@ Polymer({
    * corresponding to |strength|.
    * @private
    */
-  strengthToIndex_: function(strength) {
+  strengthToIndex_(strength) {
     if (strength <= 0) {
       return 0;
     }
@@ -215,7 +215,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showTechnology_: function() {
+  showTechnology_() {
     return this.getTechnology_() != '' && this.showTechnologyBadge;
   },
 
@@ -223,7 +223,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTechnology_: function() {
+  getTechnology_() {
     if (!this.networkState) {
       return '';
     }
@@ -243,7 +243,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getTechnologyId_: function(networkTechnology) {
+  getTechnologyId_(networkTechnology) {
     switch (networkTechnology) {
       case 'CDMA1XRTT':
         return 'badge-1x';
@@ -272,7 +272,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showSecure_: function() {
+  showSecure_() {
     if (!this.networkState) {
       return false;
     }

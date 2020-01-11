@@ -32,7 +32,7 @@ Polymer({
     },
   },
 
-  focus: function() {
+  focus() {
     this.$$('cr-input').focus();
   },
 
@@ -40,7 +40,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onKeypress_: function(event) {
+  onKeypress_(event) {
     if (event.key != 'Enter') {
       return;
     }

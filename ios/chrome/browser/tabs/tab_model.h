@@ -8,19 +8,14 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#include <memory>
-
 #import "ios/chrome/browser/sessions/session_window_restoring.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 
-#include "ui/base/page_transition_types.h"
-
-class GURL;
 @class SessionServiceIOS;
-@class SessionWindowIOS;
 class TabModelSyncedWindowDelegate;
 class TabUsageRecorder;
 class WebStateList;
+class Browser;
 
 namespace ios {
 class ChromeBrowserState;
@@ -58,15 +53,10 @@ class ChromeBrowserState;
 // YES if there is a session restoration in progress.
 @property(nonatomic, readonly, getter=isRestoringSession) BOOL restoringSession;
 
-// Initializes tabs from a restored session. |-setCurrentTab| needs to be called
-// in order to display the views associated with the tabs. Waits until the views
-// are ready. |browserState| cannot be nil. |service| cannot be nil; this class
-// creates intermediate SessionWindowIOS objects which must be consumed by a
-// session service before they are deallocated.
-- (instancetype)initWithSessionService:(SessionServiceIOS*)service
-                          browserState:(ios::ChromeBrowserState*)browserState
-                          webStateList:(WebStateList*)webStateList
-    NS_DESIGNATED_INITIALIZER;
+// Initializes tabs from existing browser object. |-setCurrentTab| needs to be
+// called in order to display the views associated with the tabs. Waits until
+// the views are ready.
+- (instancetype)initWithBrowser:(Browser*)browser;
 
 - (instancetype)init NS_UNAVAILABLE;
 

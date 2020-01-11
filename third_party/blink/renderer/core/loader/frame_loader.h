@@ -93,7 +93,7 @@ class CORE_EXPORT FrameLoader final {
   // For reloads, an appropriate WebFrameLoadType should be given. Otherwise,
   // kStandard should be used (and the final WebFrameLoadType
   // will be computed).
-  void StartNavigation(const FrameLoadRequest&,
+  void StartNavigation(FrameLoadRequest&,
                        WebFrameLoadType = WebFrameLoadType::kStandard);
 
   // Called when the browser process has asked this renderer process to commit

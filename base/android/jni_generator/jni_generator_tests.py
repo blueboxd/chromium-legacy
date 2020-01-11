@@ -826,6 +826,9 @@ scooby doo
       @CalledByNativeJavaTest
       public void testOtherFoo() {}
 
+      @CalledByNativeJavaTest
+      public void testLongNameActionServiceModelProducerDelegateProxyObserverMediatorFactoryConsumerImplForTesting() {}
+
       class MyInnerClass {
         @CalledByNativeJavaTest("MyInnerClass")
         public void testInnerFoo() {}
@@ -868,6 +871,20 @@ scooby doo
             static=False,
             name='testOtherFoo',
             method_id_var_name='testOtherFoo',
+            java_class_name='',
+            params=[],
+            env_call=('Void', ''),
+            unchecked=False,
+            gen_test_method=True,
+        ),
+        CalledByNative(
+            return_type='void',
+            system_class=False,
+            static=False,
+            name=
+            'testLongNameActionServiceModelProducerDelegateProxyObserverMediatorFactoryConsumerImplForTesting',
+            method_id_var_name=
+            'testLongNameActionServiceModelProducerDelegateProxyObserverMediatorFactoryConsumerImplForTesting',
             java_class_name='',
             params=[],
             env_call=('Void', ''),

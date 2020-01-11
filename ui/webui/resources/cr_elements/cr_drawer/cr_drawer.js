@@ -44,7 +44,7 @@ Polymer({
   },
 
   /** Toggles the drawer open and close. */
-  toggle: function() {
+  toggle() {
     if (this.open) {
       this.cancel();
     } else {
@@ -53,7 +53,7 @@ Polymer({
   },
 
   /** Shows drawer and slides it into view. */
-  openDrawer: function() {
+  openDrawer() {
     if (this.open) {
       return;
     }
@@ -71,7 +71,7 @@ Polymer({
    * cancel.
    * @param {boolean} cancel
    */
-  dismiss_: function(cancel) {
+  dismiss_(cancel) {
     if (!this.open) {
       return;
     }
@@ -81,16 +81,16 @@ Polymer({
     });
   },
 
-  cancel: function() {
+  cancel() {
     this.dismiss_(true);
   },
 
-  close: function() {
+  close() {
     this.dismiss_(false);
   },
 
   /** @return {boolean} */
-  wasCanceled: function() {
+  wasCanceled() {
     return !this.open && this.$.dialog.returnValue == 'canceled';
   },
 
@@ -99,7 +99,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onIconTap_: function(event) {
+  onIconTap_(event) {
     this.cancel();
   },
 
@@ -109,7 +109,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onContainerTap_: function(event) {
+  onContainerTap_(event) {
     event.stopPropagation();
   },
 
@@ -117,7 +117,7 @@ Polymer({
    * Close the dialog when tapped outside the container.
    * @private
    */
-  onDialogTap_: function() {
+  onDialogTap_() {
     this.cancel();
   },
 
@@ -126,7 +126,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onDialogCancel_: function(event) {
+  onDialogCancel_(event) {
     event.preventDefault();
     this.cancel();
   },
@@ -135,7 +135,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onDialogClose_: function(event) {
+  onDialogClose_(event) {
     // TODO(dpapad): This is necessary to make the code work both for Polymer 1
     // and Polymer 2. Remove once migration to Polymer 2 is completed.
     event.stopPropagation();

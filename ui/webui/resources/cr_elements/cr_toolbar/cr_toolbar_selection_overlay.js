@@ -48,17 +48,17 @@ Polymer({
   },
 
   /** @private */
-  onClearSelectionClick_: function() {
+  onClearSelectionClick_() {
     this.fire('clear-selected-items');
   },
 
   /** @private */
-  onDeleteClick_: function() {
+  onDeleteClick_() {
     this.fire('delete-selected-items');
   },
 
   /** @private */
-  updateSelectionLabel_: function() {
+  updateSelectionLabel_() {
     // Do this update in a microtask to ensure |show| and |selectionLabel|
     // are both updated.
     this.debounce('updateSelectionLabel_', () => {
@@ -68,7 +68,7 @@ Polymer({
   },
 
   /** @private */
-  onShowChanged_: function() {
+  onShowChanged_() {
     if (this.show) {
       this.hasShown_ = true;
     }

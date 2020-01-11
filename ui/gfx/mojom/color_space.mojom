@@ -49,7 +49,8 @@ enum ColorSpaceTransferID {
   ARIB_STD_B67,
   IEC61966_2_1_HDR,
   LINEAR_HDR,
-  CUSTOM
+  CUSTOM,
+  CUSTOM_HDR
 };
 
 enum ColorSpaceMatrixID {

@@ -79,6 +79,7 @@ void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
 }
 
 void OmniboxTabSwitchButton::OnThemeChanged() {
+  views::MdTextButton::OnThemeChanged();
   SetBgColorOverride(GetOmniboxColor(GetThemeProvider(),
                                      OmniboxPart::RESULTS_BACKGROUND,
                                      OmniboxPartState::NORMAL));

@@ -92,7 +92,7 @@ Polymer({
   },
 
   /** @private */
-  hideRipple_: function() {
+  hideRipple_() {
     if (this.hasRipple()) {
       this.getRipple().clear();
       this.rippleShowing_ = false;
@@ -100,7 +100,7 @@ Polymer({
   },
 
   /** @private */
-  showRipple_: function() {
+  showRipple_() {
     if (!this.noink && !this.disabled) {
       this.getRipple().showAndHoldDown();
       this.rippleShowing_ = true;
@@ -112,7 +112,7 @@ Polymer({
    * @param {boolean} oldValue
    * @private
    */
-  disabledChanged_: function(newValue, oldValue) {
+  disabledChanged_(newValue, oldValue) {
     if (!newValue && oldValue == undefined) {
       return;
     }
@@ -127,14 +127,14 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onClick_: function(e) {
+  onClick_(e) {
     if (this.disabled) {
       e.stopImmediatePropagation();
     }
   },
 
   /** @private */
-  onIronIconChanged_: function() {
+  onIronIconChanged_() {
     this.shadowRoot.querySelectorAll('iron-icon').forEach(el => el.remove());
     if (!this.ironIcon) {
       return;
@@ -159,7 +159,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyDown_: function(e) {
+  onKeyDown_(e) {
     if (e.key != ' ' && e.key != 'Enter') {
       return;
     }
@@ -179,7 +179,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyUp_: function(e) {
+  onKeyUp_(e) {
     if (e.key == ' ' || e.key == 'Enter') {
       e.preventDefault();
       e.stopPropagation();
@@ -191,7 +191,7 @@ Polymer({
   },
 
   // customize the element's ripple
-  _createRipple: function() {
+  _createRipple() {
     this._rippleContainer = this.$.icon;
     const ripple = Polymer.PaperRippleBehavior._createRipple();
     ripple.id = 'ink';

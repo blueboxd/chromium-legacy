@@ -25,6 +25,8 @@ class ShelfContextMenu : public ui::SimpleMenuModel::Delegate {
       const ash::ShelfItem* item,
       int64_t display_id);
 
+  std::unique_ptr<ui::SimpleMenuModel> GetBaseMenuModel();
+
   using GetMenuModelCallback =
       base::OnceCallback<void(std::unique_ptr<ui::SimpleMenuModel>)>;
   virtual void GetMenuModel(GetMenuModelCallback callback) = 0;

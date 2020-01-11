@@ -167,13 +167,13 @@ Polymer({
   carrierPortalHandler_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.mojoInterfaceProvider_ =
         cellular_setup.MojoInterfaceProviderImpl.getInstance();
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.state_ = cellularSetup.State.STARTING_ACTIVATION;
   },
 
@@ -213,7 +213,7 @@ Polymer({
   },
 
   /** @private */
-  updateShowError_: function() {
+  updateShowError_() {
     switch (this.state_) {
       case cellularSetup.State.TIMEOUT_START_ACTIVATION:
       case cellularSetup.State.TIMEOUT_PORTAL_LOAD:
@@ -228,7 +228,7 @@ Polymer({
   },
 
   /** @private */
-  updateSelectedPage_: function() {
+  updateSelectedPage_() {
     switch (this.state_) {
       case cellularSetup.State.IDLE:
       case cellularSetup.State.STARTING_ACTIVATION:
@@ -254,7 +254,7 @@ Polymer({
   },
 
   /** @private */
-  handleStateChange_: function() {
+  handleStateChange_() {
     // Since the state has changed, the previous state did not time out, so
     // clear any active timeout.
     this.clearTimer_();
@@ -273,7 +273,7 @@ Polymer({
   },
 
   /** @private */
-  onTimeout_: function() {
+  onTimeout_() {
     // The activation attempt failed, so close the connection to the service.
     this.closeActivationConnection_();
 
@@ -294,7 +294,7 @@ Polymer({
   },
 
   /** @private */
-  startActivation_: function() {
+  startActivation_() {
     assert(!this.activationDelegateReceiver_);
     this.activationDelegateReceiver_ =
         new chromeos.cellularSetup.mojom.ActivationDelegateReceiver(
@@ -318,7 +318,7 @@ Polymer({
   },
 
   /** @private */
-  closeActivationConnection_: function() {
+  closeActivationConnection_() {
     assert(!!this.activationDelegateReceiver_);
     this.activationDelegateReceiver_.$.close();
     this.activationDelegateReceiver_ = null;
@@ -327,7 +327,7 @@ Polymer({
   },
 
   /** @private */
-  clearTimer_: function() {
+  clearTimer_() {
     if (this.currentTimeoutId_) {
       clearTimeout(this.currentTimeoutId_);
     }
@@ -335,7 +335,7 @@ Polymer({
   },
 
   /** @private */
-  onCarrierPortalLoaded_: function() {
+  onCarrierPortalLoaded_() {
     this.state_ = cellularSetup.State.WAITING_FOR_USER_PAYMENT;
     this.carrierPortalHandler_.onCarrierPortalStatusChange(
         chromeos.cellularSetup.mojom.CarrierPortalStatus
@@ -346,24 +346,24 @@ Polymer({
    * @param {!CustomEvent<boolean>} event
    * @private
    */
-  onCarrierPortalResult_: function(event) {
+  onCarrierPortalResult_(event) {
     const success = event.detail;
     this.state_ = success ? cellularSetup.State.ACTIVATION_SUCCESS :
                             cellularSetup.State.ACTIVATION_FAILURE;
   },
 
   /** @private */
-  onBackwardNavRequested_: function() {
+  onBackwardNavRequested_() {
     // TODO(azeemarshad): Add back navigation.
   },
 
   /** @private */
-  onRetryRequested_: function() {
+  onRetryRequested_() {
     // TODO(azeemarshad): Add try again logic.
   },
 
   /** @private */
-  onCompleteFlowRequested__: function() {
+  onCompleteFlowRequested__() {
     // TODO(azeemarshad): Add completion logic.
   },
 });

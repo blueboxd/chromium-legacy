@@ -5,6 +5,12 @@
 //build/android/pylib/__init__.py
 //build/android/pylib/constants/__init__.py
 //build/android/pylib/constants/host_paths.py
+//build/android/pylib/local/__init__.py
+//build/android/pylib/local/emulator/__init__.py
+//build/android/pylib/local/emulator/avd.py
+//build/android/pylib/local/emulator/ini.py
+//build/android/pylib/local/emulator/proto/__init__.py
+//build/android/pylib/local/emulator/proto/avd_pb2.py
 //build/android/pylib/utils/__init__.py
 //build/android/pylib/utils/test_filter.py
 //third_party/catapult/common/py_utils/py_utils/__init__.py

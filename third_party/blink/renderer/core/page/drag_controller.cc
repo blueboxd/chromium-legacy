@@ -300,8 +300,8 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
       // the drag as the initiator of the navigation below.
       resource_request.SetRequestorOrigin(SecurityOrigin::CreateUniqueOpaque());
 
-      page_->MainFrame()->Navigate(FrameLoadRequest(nullptr, resource_request),
-                                   WebFrameLoadType::kStandard);
+      FrameLoadRequest request(nullptr, resource_request);
+      page_->MainFrame()->Navigate(request, WebFrameLoadType::kStandard);
     }
 
     // TODO(bokan): This case happens when we end a URL drag inside a guest

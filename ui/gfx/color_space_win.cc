@@ -123,6 +123,7 @@ DXVA2_ExtendedFormat ColorSpaceWin::GetExtendedFormat(
     case gfx::ColorSpace::TransferID::GAMMA18:
     case gfx::ColorSpace::TransferID::GAMMA24:
     case gfx::ColorSpace::TransferID::CUSTOM:
+    case gfx::ColorSpace::TransferID::CUSTOM_HDR:
     case gfx::ColorSpace::TransferID::INVALID:
       // Not handled
       break;
@@ -214,10 +215,6 @@ DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
 
 DXGI_FORMAT ColorSpaceWin::GetDXGIFormat(const gfx::ColorSpace& color_space,
                                          bool needs_alpha) {
-  // Extended linear color spaces use half-float.
-  if (color_space.GetTransferID() == gfx::ColorSpace::TransferID::LINEAR_HDR)
-    return DXGI_FORMAT_R16G16B16A16_FLOAT;
-
   // The PQ transfer function needs 10 bits. If we need an alpha channel, then
   // we will need to bump to 16 bits.
   if (color_space.GetTransferID() == gfx::ColorSpace::TransferID::SMPTEST2084) {
@@ -226,6 +223,10 @@ DXGI_FORMAT ColorSpaceWin::GetDXGIFormat(const gfx::ColorSpace& color_space,
     else
       return DXGI_FORMAT_R10G10B10A2_UNORM;
   }
+
+  // Non-PQ HDR color spaces use half-float.
+  if (color_space.IsHDR())
+    return DXGI_FORMAT_R16G16B16A16_FLOAT;
 
   // For now just give everything else 8 bits. We will want to use 10 or 16 bits
   // for BT2020 gamuts.

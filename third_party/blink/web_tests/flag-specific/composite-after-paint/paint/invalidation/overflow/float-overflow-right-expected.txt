@@ -308,6 +308,16 @@
         },
         {
           "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [701, 255, 40, 10],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
+          "rect": [701, 249, 40, 10],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow (floating) DIV",
           "rect": [701, 216, 40, 10],
           "reason": "geometry"
         },
@@ -397,16 +407,6 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [671, 255, 40, 10],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow (floating) DIV",
-          "rect": [671, 249, 40, 10],
-          "reason": "geometry"
-        },
-        {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
           "rect": [701, 543, 32, 20],
           "reason": "geometry"
@@ -418,22 +418,22 @@
         },
         {
           "object": "InlineTextBox 'x'",
+          "rect": [725, 257, 16, 17],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'x'",
+          "rect": [725, 251, 16, 17],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'x'",
           "rect": [725, 218, 16, 17],
           "reason": "geometry"
         },
         {
           "object": "InlineTextBox 'x'",
           "rect": [725, 212, 16, 17],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'x'",
-          "rect": [695, 257, 16, 17],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox 'x'",
-          "rect": [695, 251, 16, 17],
           "reason": "geometry"
         },
         {

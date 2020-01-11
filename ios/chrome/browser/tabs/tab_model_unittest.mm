@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
+#include "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
@@ -81,11 +82,16 @@ class TabModelTest : public PlatformTest {
     session_window_ = [[SessionWindowIOS alloc] init];
 
     TabInsertionBrowserAgent::CreateForBrowser(browser_.get());
-    agent_ = TabInsertionBrowserAgent::FromBrowser(browser_.get());
 
-    // Create tab model with just a dummy session service so the async state
-    // saving doesn't trigger unless actually wanted.
-    SetTabModel(CreateTabModel([[TestSessionService alloc] init], nil));
+    agent_ = TabInsertionBrowserAgent::FromBrowser(browser_.get());
+    session_service_ = [[TestSessionService alloc] init];
+    // Create session restoration agent with just a dummy session
+    // service so the async state saving doesn't trigger unless actually
+    // wanted.
+
+    SessionRestorationBrowserAgent::CreateForBrowser(browser_.get(),
+                                                     session_service_);
+    SetTabModel(CreateTabModel(nil));
   }
 
   ~TabModelTest() override = default;
@@ -108,12 +114,8 @@ class TabModelTest : public PlatformTest {
     web_usage_enabler_->SetWebStateList(web_state_list_.get());
   }
 
-  TabModel* CreateTabModel(SessionServiceIOS* session_service,
-                           SessionWindowIOS* session_window) {
-    TabModel* tab_model([[TabModel alloc]
-        initWithSessionService:session_service
-                  browserState:chrome_browser_state_.get()
-                  webStateList:web_state_list_.get()]);
+  TabModel* CreateTabModel(SessionWindowIOS* session_window) {
+    TabModel* tab_model([[TabModel alloc] initWithBrowser:browser_.get()]);
     [tab_model restoreSessionWindow:session_window forInitialRestore:YES];
     [tab_model setPrimary:YES];
     return tab_model;
@@ -156,6 +158,7 @@ class TabModelTest : public PlatformTest {
   SessionWindowIOS* session_window_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   TabInsertionBrowserAgent* agent_;
+  TestSessionService* session_service_;
   WebStateListWebUsageEnabler* web_usage_enabler_;
   TabModel* tab_model_;
 };
@@ -394,31 +397,25 @@ TEST_F(TabModelTest, InsertWithSessionController) {
 // Test that saving a non-empty session, then saving an empty session, then
 // restoring, restores zero tabs, and not the non-empty session.
 TEST_F(TabModelTest, RestorePersistedSessionAfterEmpty) {
-  // Reset the TabModel with a custom SessionServiceIOS (to control whether
-  // data is saved to disk).
-  TestSessionService* test_session_service = [[TestSessionService alloc] init];
-  SetTabModel(CreateTabModel(test_session_service, nil));
-
   agent_->InsertWebState(Params(GURL(kURL1)),
                          /*parent=*/nil,
                          /*opened_by_dom=*/false,
                          /*index=*/0,
                          /*in_background=*/false);
-  [test_session_service setPerformIO:YES];
+  [session_service_ setPerformIO:YES];
   [tab_model_ saveSessionImmediately:YES];
-  [test_session_service setPerformIO:NO];
+  [session_service_ setPerformIO:NO];
 
   // Session should be saved, now remove the tab.
   [tab_model_ closeTabAtIndex:0];
-  [test_session_service setPerformIO:YES];
+  [session_service_ setPerformIO:YES];
   [tab_model_ saveSessionImmediately:YES];
-  [test_session_service setPerformIO:NO];
+  [session_service_ setPerformIO:NO];
 
   // Restore, expect that there are no sessions.
   NSString* state_path = base::SysUTF8ToNSString(
       chrome_browser_state_->GetStatePath().AsUTF8Unsafe());
-  SessionIOS* session =
-      [test_session_service loadSessionFromDirectory:state_path];
+  SessionIOS* session = [session_service_ loadSessionFromDirectory:state_path];
   ASSERT_EQ(1u, session.sessionWindows.count);
   SessionWindowIOS* session_window = session.sessionWindows[0];
   [tab_model_ restoreSessionWindow:session_window forInitialRestore:NO];
@@ -427,11 +424,6 @@ TEST_F(TabModelTest, RestorePersistedSessionAfterEmpty) {
 }
 
 TEST_F(TabModelTest, DISABLED_PersistSelectionChange) {
-  // Reset the TabModel with a custom SessionServiceIOS (to control whether
-  // data is saved to disk).
-  TestSessionService* test_session_service = [[TestSessionService alloc] init];
-  SetTabModel(CreateTabModel(test_session_service, nil));
-
   agent_->InsertWebState(Params(GURL(kURL1)),
                          /*parent=*/nil,
                          /*opened_by_dom=*/false,
@@ -453,19 +445,18 @@ TEST_F(TabModelTest, DISABLED_PersistSelectionChange) {
   web_state_list_->ActivateWebStateAt(1);
   // Force state to flush to disk on the main thread so it can be immediately
   // tested below.
-  [test_session_service setPerformIO:YES];
+  [session_service_ setPerformIO:YES];
   [tab_model_ saveSessionImmediately:YES];
-  [test_session_service setPerformIO:NO];
+  [session_service_ setPerformIO:NO];
 
   NSString* state_path = base::SysUTF8ToNSString(
       chrome_browser_state_->GetStatePath().AsUTF8Unsafe());
-  SessionIOS* session =
-      [test_session_service loadSessionFromDirectory:state_path];
+  SessionIOS* session = [session_service_ loadSessionFromDirectory:state_path];
   ASSERT_EQ(1u, session.sessionWindows.count);
   SessionWindowIOS* session_window = session.sessionWindows[0];
 
   // Create tab model from saved session.
-  SetTabModel(CreateTabModel(test_session_service, session_window));
+  SetTabModel(CreateTabModel(session_window));
 
   ASSERT_EQ(3, web_state_list_->count());
 

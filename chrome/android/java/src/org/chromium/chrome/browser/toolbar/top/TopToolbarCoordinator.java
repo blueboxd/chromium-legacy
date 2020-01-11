@@ -233,6 +233,8 @@ public class TopToolbarCoordinator implements Toolbar {
 
     @Override
     public void updateTabSwitcherToolbarState(boolean requestToShow) {
+        // TODO(https://crbug.com/1041123): Investigate whether isInOverviewAndShowingOmnibox check
+        // is needed.
         if (mStartSurfaceToolbarCoordinator == null
                 || mToolbarLayout.getToolbarDataProvider() == null
                 || !mToolbarLayout.getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {

@@ -19,7 +19,7 @@ Polymer({
      */
     networks: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -30,7 +30,7 @@ Polymer({
      */
     customItems: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -63,7 +63,7 @@ Polymer({
      */
     listItems_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -76,13 +76,13 @@ Polymer({
   /** @private {boolean} */
   focusRequested_: false,
 
-  focus: function() {
+  focus() {
     this.focusRequested_ = true;
     this.focusFirstItem_();
   },
 
   /** @private */
-  updateListItems_: function() {
+  updateListItems_() {
     this.saveScroll(this.$.networkList);
     const beforeNetworks = this.customItems.filter(function(item) {
       return item.showBeforeNetworksList == true;
@@ -101,7 +101,7 @@ Polymer({
   },
 
   /** @private */
-  focusFirstItem_: function() {
+  focusFirstItem_() {
     // Select the first network-list-item if there is one.
     const item = this.$$('network-list-item');
     if (!item) {
@@ -116,7 +116,7 @@ Polymer({
    * tap (requires selection-enabled) or keyboard selection.
    * @private
    */
-  selectedItemChanged_: function() {
+  selectedItemChanged_() {
     if (this.selectedItem) {
       this.onItemAction_(this.selectedItem);
     }
@@ -126,7 +126,7 @@ Polymer({
    * @param {!NetworkList.NetworkListItemType} item
    * @private
    */
-  onItemAction_: function(item) {
+  onItemAction_(item) {
     if (item.hasOwnProperty('customItemName')) {
       this.fire('custom-item-selected', item);
     } else {

@@ -41,7 +41,7 @@ cr.define('cr.ui', function() {
     /**
      * Called when an element is decorated as a list item.
      */
-    decorate: function() {
+    decorate() {
       this.setAttribute('role', 'listitem');
       if (!this.id) {
         this.id = 'listitem-' + ListItem.nextUniqueIdSuffix_++;
@@ -51,7 +51,7 @@ cr.define('cr.ui', function() {
     /**
      * Called when the selection state of this element changes.
      */
-    selectionChanged: function() {},
+    selectionChanged() {},
   };
 
   /**

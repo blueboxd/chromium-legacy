@@ -331,6 +331,8 @@ testScript();
     with open(out_file, "r") as file:
       self.assertEquals(file.read(), expected_output)
 
+  # TODO(crbug.com/1028829): remove this when cr.exportPath() is removed from
+  # --chrome_pass.
   def testExportPath(self):
     self._runCompilerTestExpectSuccess(self._CR_DEFINE_DEFINITION +
         "cr.exportPath('a.b.c');");

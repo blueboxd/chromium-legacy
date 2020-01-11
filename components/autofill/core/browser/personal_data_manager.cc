@@ -2007,7 +2007,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
       // Otherwise the label is the card number, or if that is empty the
       // cardholder name. The label should never repeat the value.
       if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
-        suggestion->value = credit_card->NetworkOrBankNameAndLastFourDigits();
+        suggestion->value = credit_card->NetworkAndLastFourDigits();
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
         suggestion->label = credit_card->GetInfo(
@@ -2029,7 +2029,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
         suggestion->label =
             base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)
                 ? credit_card->ObfuscatedLastFourDigits()
-                : credit_card->NetworkOrBankNameAndLastFourDigits();
+                : credit_card->NetworkAndLastFourDigits();
 #elif defined(OS_IOS)
         // E.g. "••••1234"".
         suggestion->label = credit_card->ObfuscatedLastFourDigits();

@@ -125,7 +125,7 @@ Polymer({
   updateTimerId_: undefined,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.scale_ = this.circleRadius / DEFAULT_CANVAS_CIRCLE_RADIUS;
     this.updateImages_();
   },
@@ -139,7 +139,7 @@ Polymer({
    *     in the format rgba(r',g',b',a'). r', g', b' are values from [0-255]
    *     and a' is a value from [0-1].
    */
-  drawArc: function(startAngle, endAngle, color) {
+  drawArc(startAngle, endAngle, color) {
     const c = this.$.canvas;
     const ctx = c.getContext('2d');
 
@@ -154,7 +154,7 @@ Polymer({
    * Draws a circle on the canvas element around the center with radius
    * |circleRadius| and color |CANVAS_CIRCLE_BACKGROUND_COLOR|.
    */
-  drawBackgroundCircle: function() {
+  drawBackgroundCircle() {
     this.drawArc(0, 2 * Math.PI, this.canvasCircleBackgroundColor_);
   },
 
@@ -168,7 +168,7 @@ Polymer({
    *                 angle of the arc we want to draw.
    * @param {boolean} isComplete Indicate whether enrollment is complete.
    */
-  setProgress: function(prevPercentComplete, currPercentComplete, isComplete) {
+  setProgress(prevPercentComplete, currPercentComplete, isComplete) {
     if (this.isComplete_) {
       return;
     }
@@ -229,7 +229,7 @@ Polymer({
    * Cleans up any pending animation update created by setInterval().
    * @private
    */
-  cancelAnimations_: function() {
+  cancelAnimations_() {
     if (this.progressAnimationIntervalId_) {
       clearInterval(this.progressAnimationIntervalId_);
       this.progressAnimationIntervalId_ = undefined;
@@ -244,7 +244,7 @@ Polymer({
    * Show animation for enrollment completion.
    * @private
    */
-  animateScanComplete_: function() {
+  animateScanComplete_() {
     this.$.checkmarkDiv.hidden = false;
     this.$.enrollmentDone.hidden = false;
     this.$.scanningAnimation.hidden = true;
@@ -255,7 +255,7 @@ Polymer({
    * Show animation for enrollment in progress.
    * @private
    */
-  animateScanProgress_: function() {
+  animateScanProgress_() {
     this.$.enrollmentDone.hidden = false;
     this.$.enrollmentDone.style.opacity = 0.3;
     this.$.scanningAnimation.hidden = true;
@@ -270,7 +270,7 @@ Polymer({
    * Clear the canvas of any renderings.
    * @private
    */
-  clearCanvas_: function() {
+  clearCanvas_() {
     const c = this.$.canvas;
     const ctx = c.getContext('2d');
     ctx.clearRect(0, 0, c.width, c.height);
@@ -279,7 +279,7 @@ Polymer({
   /**
    * Reset the element to initial state, when the enrollment just starts.
    */
-  reset: function() {
+  reset() {
     this.cancelAnimations_();
     this.clearCanvas_();
     this.isComplete_ = false;
@@ -293,7 +293,7 @@ Polymer({
    * Update the size and position of the animation images.
    * @private
    */
-  updateImages_: function() {
+  updateImages_() {
     this.resizeAndCenterIcon_(this.$.scanningAnimation);
     this.resizeAndCenterIcon_(this.$.enrollmentDone);
     this.resizeCheckMark_(this.$.checkmarkAnimation);
@@ -305,7 +305,7 @@ Polymer({
    * @param {!HTMLElement} target
    * @private
    */
-  resizeAndCenterIcon_: function(target) {
+  resizeAndCenterIcon_(target) {
     // Resize icon based on the default width/height and scale.
     target.style.width = ICON_WIDTH * this.scale_ + 'px';
     target.style.height = ICON_HEIGHT * this.scale_ + 'px';
@@ -323,7 +323,7 @@ Polymer({
    * @param {!HTMLElement} target
    * @private
    */
-  resizeCheckMark_: function(target) {
+  resizeCheckMark_(target) {
     // Resize checkmark based on the default size and scale.
     target.style.width = CHECK_MARK_SIZE * this.scale_ + 'px';
     target.style.height = CHECK_MARK_SIZE * this.scale_ + 'px';
@@ -339,7 +339,7 @@ Polymer({
   },
 
   /** @public */
-  isComplete: function() {
+  isComplete() {
     return this.isComplete_;
   },
 });

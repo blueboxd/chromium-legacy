@@ -49,21 +49,21 @@ Polymer({
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.removeAttribute('unresolved');
   },
 
-  focus: function() {
+  focus() {
     this.$.checkbox.focus();
   },
 
   /** @return {!Element} */
-  getFocusableElement: function() {
+  getFocusableElement() {
     return this.$.checkbox;
   },
 
   /** @private */
-  checkedChanged_: function() {
+  checkedChanged_() {
     this.$.checkbox.setAttribute(
         'aria-checked', this.checked ? 'true' : 'false');
   },
@@ -73,7 +73,7 @@ Polymer({
    * @param {boolean} previous
    * @private
    */
-  disabledChanged_: function(current, previous) {
+  disabledChanged_(current, previous) {
     if (previous === undefined && !this.disabled) {
       return;
     }
@@ -84,12 +84,12 @@ Polymer({
   },
 
   /** @private */
-  showRipple_: function() {
+  showRipple_() {
     this.getRipple().showAndHoldDown();
   },
 
   /** @private */
-  hideRipple_: function() {
+  hideRipple_() {
     this.getRipple().clear();
   },
 
@@ -97,7 +97,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onClick_: function(e) {
+  onClick_(e) {
     if (this.disabled || e.target.tagName == 'A') {
       return;
     }
@@ -115,7 +115,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyDown_: function(e) {
+  onKeyDown_(e) {
     if (e.key != ' ' && e.key != 'Enter') {
       return;
     }
@@ -135,7 +135,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyUp_: function(e) {
+  onKeyUp_(e) {
     if (e.key == ' ' || e.key == 'Enter') {
       e.preventDefault();
       e.stopPropagation();
@@ -147,13 +147,13 @@ Polymer({
   },
 
   /** @private */
-  onTabIndexChanged_: function() {
+  onTabIndexChanged_() {
     // :host shouldn't have a tabindex because it's set on #checkbox.
     this.removeAttribute('tabindex');
   },
 
   // customize the element's ripple
-  _createRipple: function() {
+  _createRipple() {
     this._rippleContainer = this.$.checkbox;
     const ripple = Polymer.PaperRippleBehavior._createRipple();
     ripple.id = 'ink';

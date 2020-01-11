@@ -79,7 +79,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   virtual bool IsLocalFrame() const = 0;
   virtual bool IsRemoteFrame() const = 0;
 
-  virtual void Navigate(const FrameLoadRequest&, WebFrameLoadType) = 0;
+  virtual void Navigate(FrameLoadRequest&, WebFrameLoadType) = 0;
 
   void Detach(FrameDetachType);
   void DisconnectOwnerElement();

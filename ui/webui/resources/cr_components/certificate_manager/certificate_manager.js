@@ -20,7 +20,7 @@ Polymer({
     /** @type {!Array<!CertificatesOrgGroup>} */
     personalCerts: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -28,7 +28,7 @@ Polymer({
     /** @type {!Array<!CertificatesOrgGroup>} */
     serverCerts: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -36,7 +36,7 @@ Polymer({
     /** @type {!Array<!CertificatesOrgGroup>} */
     caCerts: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -44,7 +44,7 @@ Polymer({
     /** @type {!Array<!CertificatesOrgGroup>} */
     otherCerts: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -120,7 +120,7 @@ Polymer({
     /** @private */
     isKiosk_: {
       type: Boolean,
-      value: function() {
+      value() {
         return loadTimeData.valueExists('isKiosk') &&
             loadTimeData.getBoolean('isKiosk');
       },
@@ -134,7 +134,7 @@ Polymer({
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.addWebUIListener('certificates-changed', this.set.bind(this));
     this.addWebUIListener(
         'client-import-allowed-changed',
@@ -146,12 +146,12 @@ Polymer({
   },
 
   /** @private */
-  setClientImportAllowed: function(allowed) {
+  setClientImportAllowed(allowed) {
     this.clientImportAllowed = allowed;
   },
 
   /** @private */
-  setCAImportAllowed: function(allowed) {
+  setCAImportAllowed(allowed) {
     this.caImportAllowed = allowed;
   },
 
@@ -161,12 +161,12 @@ Polymer({
    * @return {boolean} Whether to show tab at |tabIndex|.
    * @private
    */
-  isTabSelected_: function(selectedIndex, tabIndex) {
+  isTabSelected_(selectedIndex, tabIndex) {
     return selectedIndex == tabIndex;
   },
 
   /** @override */
-  ready: function() {
+  ready() {
     this.addEventListener(CertificateActionEvent, event => {
       this.dialogModel_ = event.detail.subnode;
       this.dialogModelCertificateType_ = event.detail.certificateType;
@@ -225,7 +225,7 @@ Polymer({
    *     the error).
    * @private
    */
-  openDialog_: function(dialogTagName, domIfBooleanName, anchor) {
+  openDialog_(dialogTagName, domIfBooleanName, anchor) {
     if (anchor) {
       this.activeDialogAnchor_ = anchor;
     }
@@ -243,7 +243,7 @@ Polymer({
    * @return {!Array<string>}
    * @private
    */
-  computeTabNames_: function() {
+  computeTabNames_() {
     return [
       loadTimeData.getString('certificateManagerYourCertificates'),
       ...(this.isKiosk_ ?

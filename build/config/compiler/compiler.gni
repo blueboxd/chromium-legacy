@@ -289,15 +289,3 @@ assert(ignore_elf32_limitations || !is_android || target_os == "chromeos" ||
            "due to 4GiB file size limit, see https://crbug.com/648948. " +
            "If you really want to try this out, " +
            "set ignore_elf32_limitations=true.")
-
-# This variable is true if the current toolchain is either the default
-# toolchain, or, on Android, the secondary ABI toolchain. In other words, it's
-# a toolchain that generates targets for the product, as opposed to the host
-# OS. It can be used in situations where we wish to avoid doing work on the
-# host toolchain, but we don't want to break Android's secondary ABI.
-# Ie. "current_toolchain == default_toolchain" is not a good way to infer
-# "not the host toolchain".
-is_a_target_toolchain =
-    current_toolchain == default_toolchain ||
-    (is_android && defined(android_secondary_abi_toolchain) &&
-     current_toolchain == android_secondary_abi_toolchain)

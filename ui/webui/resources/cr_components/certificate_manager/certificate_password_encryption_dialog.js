@@ -32,23 +32,23 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ =
         certificate_manager.CertificatesBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     /** @type {!CrDialogElement} */ (this.$.dialog).close();
   },
 
   /** @private */
-  onOkTap_: function() {
+  onOkTap_() {
     this.browserProxy_.exportPersonalCertificatePasswordSelected(this.password_)
         .then(
             () => {
@@ -61,7 +61,7 @@ Polymer({
   },
 
   /** @private */
-  validate_: function() {
+  validate_() {
     const isValid =
         this.password_ != '' && this.password_ == this.confirmPassword_;
     this.$.ok.disabled = !isValid;

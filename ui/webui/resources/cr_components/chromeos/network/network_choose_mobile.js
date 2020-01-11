@@ -43,7 +43,7 @@ Polymer({
      */
     mobileNetworkList_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       }
     },
@@ -56,7 +56,7 @@ Polymer({
   networkConfig_: null,
 
   /** @override */
-  attached: function() {
+  attached() {
     this.scanRequested_ = false;
   },
 
@@ -77,7 +77,7 @@ Polymer({
    * Polymer managedProperties changed method.
    * @private
    */
-  managedPropertiesChanged_: function() {
+  managedPropertiesChanged_() {
     const cellular = this.managedProperties.typeProperties.cellular;
     this.mobileNetworkList_ = cellular.foundNetworks || [];
     if (!this.mobileNetworkList_.length) {
@@ -102,7 +102,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getMobileNetworkIsDisabled_: function(foundNetwork) {
+  getMobileNetworkIsDisabled_(foundNetwork) {
     return foundNetwork.status != 'available' &&
         foundNetwork.status != 'current';
   },
@@ -112,7 +112,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getEnableScanButton_: function(properties) {
+  getEnableScanButton_(properties) {
     return properties.connectionState ==
         chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected &&
         !!this.deviceState && !this.deviceState.scanning;
@@ -123,7 +123,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getEnableSelectNetwork_: function(properties) {
+  getEnableSelectNetwork_(properties) {
     return (
         !!this.deviceState && !this.deviceState.scanning &&
         properties.connectionState ==
@@ -137,7 +137,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSecondaryText_: function(properties) {
+  getSecondaryText_(properties) {
     if (!properties) {
       return '';
     }
@@ -159,7 +159,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getName_: function(foundNetwork) {
+  getName_(foundNetwork) {
     return foundNetwork.longName || foundNetwork.shortName ||
         foundNetwork.networkId;
   },
@@ -170,7 +170,7 @@ Polymer({
    * Cellular.FoundNetworks changes).
    * @private
    */
-  onScanTap_: function() {
+  onScanTap_() {
     this.scanRequested_ = true;
 
     this.getNetworkConfig_().requestNetworkScan(
@@ -181,7 +181,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onChange_: function(event) {
+  onChange_(event) {
     const target = /** @type {!HTMLSelectElement} */ (event.target);
     if (!target.value || target.value == 'none') {
       return;

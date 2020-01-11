@@ -50,6 +50,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -414,7 +415,7 @@ void UserCloudPolicyManagerChromeOS::
   StartRefreshSchedulerIfReady();
 
   // Start the report scheduler to periodically upload usage data to DM server.
-  StartReportSchedulerIfReady();
+  StartReportSchedulerIfReady(true /* enable_delayed_creation */);
 }
 
 void UserCloudPolicyManagerChromeOS::OnPolicyFetched(
@@ -504,6 +505,22 @@ void UserCloudPolicyManagerChromeOS::OnClientError(
 void UserCloudPolicyManagerChromeOS::OnComponentCloudPolicyUpdated() {
   CloudPolicyManager::OnComponentCloudPolicyUpdated();
   StartRefreshSchedulerIfReady();
+}
+
+void UserCloudPolicyManagerChromeOS::OnUserProfileLoaded(
+    const AccountId& account_id) {
+  if (!user_manager::UserManager::Get())
+    return;
+
+  const user_manager::User* primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+
+  if (!primary_user || primary_user->GetAccountId() != account_id ||
+      !primary_user->is_profile_created())
+    return;
+
+  session_manager::SessionManager::Get()->RemoveObserver(this);
+  StartReportSchedulerIfReady(false /* enable_delayed_creation */);
 }
 
 void UserCloudPolicyManagerChromeOS::OnStoreLoaded(
@@ -675,9 +692,6 @@ void UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete(
   UMA_HISTOGRAM_MEDIUM_TIMES(kUMAInitialFetchDelayTotal,
                              now - time_init_started_);
   CancelWaitForPolicyFetch(success);
-
-  if (success)
-    StartReportSchedulerIfReady();
 }
 
 void UserCloudPolicyManagerChromeOS::OnPolicyRefreshTimeout() {
@@ -741,12 +755,32 @@ void UserCloudPolicyManagerChromeOS::StartRefreshSchedulerIfReady() {
                                 policy_prefs::kUserPolicyRefreshRate);
 }
 
-void UserCloudPolicyManagerChromeOS::StartReportSchedulerIfReady() {
+void UserCloudPolicyManagerChromeOS::StartReportSchedulerIfReady(
+    bool enable_delayed_creation) {
   if (!base::FeatureList::IsEnabled(features::kEnterpriseReportingInChromeOS))
     return;
 
   if (!client() || !client()->is_registered())
     return;
+
+  if (!user_manager::UserManager::Get())
+    return;
+
+  const user_manager::User* primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+
+  if (!primary_user)
+    return;
+
+  // SessionManager uses another thread to load profiles. If the operation
+  // doesn't finish, the creation of |report_scheduler_| will be delayed and
+  // relies on SessionManagerObserver methods to monitor the progress.
+  if (enable_delayed_creation && !primary_user->is_profile_created()) {
+    session_manager::SessionManager::Get()->AddObserver(this);
+    VLOG(0) << "Report scheduler is delayed to create because the primary "
+               "user profile hasn't been loaded. This is a designed behavior.";
+    return;
+  }
 
   report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(
       client(), std::make_unique<enterprise_reporting::RequestTimer>(),

@@ -514,8 +514,8 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     }
   }
 
-  child_frame->Loader().StartNavigation(
-      FrameLoadRequest(&GetDocument(), request), child_load_type);
+  FrameLoadRequest frame_load_request(&GetDocument(), request);
+  child_frame->Loader().StartNavigation(frame_load_request, child_load_type);
 
   return true;
 }

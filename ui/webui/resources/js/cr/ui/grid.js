@@ -36,7 +36,7 @@ cr.define('cr.ui', function() {
     /**
      * Called when an element is decorated as a grid item.
      */
-    decorate: function() {
+    decorate() {
       ListItem.prototype.decorate.apply(this, arguments);
       this.textContent = this.dataItem;
     }
@@ -87,7 +87,7 @@ cr.define('cr.ui', function() {
      *     and width of the items.
      * @private
      */
-    getColumnCount_: function() {
+    getColumnCount_() {
       // Size comes here with margin already collapsed.
       const size = this.getDefaultItemSize_();
 
@@ -133,7 +133,7 @@ cr.define('cr.ui', function() {
      * Measure and cache client width and height with and without scrollbar.
      * Must be updated when offsetWidth and/or offsetHeight changed.
      */
-    updateMetrics_: function() {
+    updateMetrics_() {
       // Check changings that may affect number of columns.
       const offsetWidth = this.offsetWidth;
       const offsetHeight = this.offsetHeight;
@@ -203,7 +203,7 @@ cr.define('cr.ui', function() {
      *     into account lead item. May vary in the case of multiple columns.
      * @override
      */
-    getItemTop: function(index) {
+    getItemTop(index) {
       return Math.floor(index / this.columns) * this.getDefaultItemHeight_();
     },
 
@@ -213,7 +213,7 @@ cr.define('cr.ui', function() {
      *     of multiple columns.
      * @override
      */
-    getItemRow: function(index) {
+    getItemRow(index) {
       return Math.floor(index / this.columns);
     },
 
@@ -222,7 +222,7 @@ cr.define('cr.ui', function() {
      * @return {number} The index of the first item in the row.
      * @override
      */
-    getFirstItemInRow: function(row) {
+    getFirstItemInRow(row) {
       return row * this.columns;
     },
 
@@ -233,7 +233,7 @@ cr.define('cr.ui', function() {
      *     controller.
      * @override
      */
-    createSelectionController: function(sm) {
+    createSelectionController(sm) {
       return new GridSelectionController(sm, this);
     },
 
@@ -245,7 +245,7 @@ cr.define('cr.ui', function() {
      *     first item in view port, The number of items, The item past the last.
      * @override
      */
-    getItemsInViewPort: function(scrollTop, clientHeight) {
+    getItemsInViewPort(scrollTop, clientHeight) {
       const itemHeight = this.getDefaultItemHeight_();
       const firstIndex =
           this.autoExpands ? 0 : this.getIndexForListOffset_(scrollTop);
@@ -267,7 +267,7 @@ cr.define('cr.ui', function() {
      * @param {number} lastIndex The index of last item, exclusively.
      * @override
      */
-    mergeItems: function(firstIndex, lastIndex) {
+    mergeItems(firstIndex, lastIndex) {
       List.prototype.mergeItems.call(this, firstIndex, lastIndex);
 
       const afterFiller = this.afterFiller_;
@@ -315,7 +315,7 @@ cr.define('cr.ui', function() {
      * @return {number} The height of after filler.
      * @override
      */
-    getAfterFillerHeight: function(lastIndex) {
+    getAfterFillerHeight(lastIndex) {
       const columns = this.columns;
       const itemHeight = this.getDefaultItemHeight_();
       // We calculate the row of last item, and the row of last shown item.
@@ -330,13 +330,13 @@ cr.define('cr.ui', function() {
      * @param {Node} child Child of the list.
      * @return {boolean} True if a list item.
      */
-    isItem: function(child) {
+    isItem(child) {
       // Non-items are before-, afterFiller and spacers added in mergeItems.
       return child.nodeType == Node.ELEMENT_NODE &&
           !child.classList.contains('spacer');
     },
 
-    redraw: function() {
+    redraw() {
       this.updateMetrics_();
       const itemCount = this.dataModel ? this.dataModel.length : 0;
       if (this.lastItemCount_ != itemCount) {
@@ -373,7 +373,7 @@ cr.define('cr.ui', function() {
      * user who is relying on spoken feedback to flatten it.
      * @return {boolean} True if accessibility is enabled.
      */
-    isAccessibilityEnabled: function() {
+    isAccessibilityEnabled() {
       return window.cvox && window.cvox.Api &&
           window.cvox.Api.isChromeVoxActive &&
           window.cvox.Api.isChromeVoxActive();
@@ -385,7 +385,7 @@ cr.define('cr.ui', function() {
      * @return {number} The index below or -1 if not found.
      * @override
      */
-    getIndexBelow: function(index) {
+    getIndexBelow(index) {
       if (this.isAccessibilityEnabled()) {
         return this.getIndexAfter(index);
       }
@@ -403,7 +403,7 @@ cr.define('cr.ui', function() {
      * @return {number} The index below or -1 if not found.
      * @override
      */
-    getIndexAbove: function(index) {
+    getIndexAbove(index) {
       if (this.isAccessibilityEnabled()) {
         return this.getIndexBefore(index);
       }
@@ -420,7 +420,7 @@ cr.define('cr.ui', function() {
      * @return {number} The index before or -1 if not found.
      * @override
      */
-    getIndexBefore: function(index) {
+    getIndexBefore(index) {
       return index - 1;
     },
 
@@ -430,7 +430,7 @@ cr.define('cr.ui', function() {
      * @return {number} The index after or -1 if not found.
      * @override
      */
-    getIndexAfter: function(index) {
+    getIndexAfter(index) {
       if (index == this.getLastIndex()) {
         return -1;
       }

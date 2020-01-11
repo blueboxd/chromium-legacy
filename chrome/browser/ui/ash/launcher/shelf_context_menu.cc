@@ -12,6 +12,7 @@
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -52,9 +53,8 @@ std::unique_ptr<ShelfContextMenu> ShelfContextMenu::Create(
   DCHECK(item);
   DCHECK(!item->id.IsNull());
   // Create an ArcShelfContextMenu if the item is an ARC app.
-  if (arc::IsArcItem(controller->profile(), item->id.app_id)) {
+  if (arc::IsArcItem(controller->profile(), item->id.app_id))
     return std::make_unique<ArcShelfContextMenu>(controller, item, display_id);
-  }
 
   // Use CrostiniShelfContextMenu for crostini apps and Terminal System App.
   crostini::CrostiniRegistryService* crostini_registry_service =
@@ -88,6 +88,18 @@ ShelfContextMenu::ShelfContextMenu(ChromeLauncherController* controller,
 
 ShelfContextMenu::~ShelfContextMenu() = default;
 
+std::unique_ptr<ui::SimpleMenuModel> ShelfContextMenu::GetBaseMenuModel() {
+  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
+  // TODO(manucornet): Don't add 'swap with next' on the last item, or 'swap
+  // with previous' on the first one. For now, these options appear, but
+  // selecting them is a no-op.
+  AddContextMenuOption(menu_model.get(), ash::SWAP_WITH_NEXT,
+                       IDS_SHELF_CONTEXT_MENU_SWAP_WITH_NEXT);
+  AddContextMenuOption(menu_model.get(), ash::SWAP_WITH_PREVIOUS,
+                       IDS_SHELF_CONTEXT_MENU_SWAP_WITH_PREVIOUS);
+  return menu_model;
+}
+
 bool ShelfContextMenu::IsCommandIdChecked(int command_id) const {
   DCHECK(command_id < ash::COMMAND_ID_COUNT);
   return false;
@@ -100,6 +112,13 @@ bool ShelfContextMenu::IsCommandIdEnabled(int command_id) const {
            (item_.type == ash::TYPE_PINNED_APP || item_.type == ash::TYPE_APP);
   }
 
+  if (command_id == ash::SWAP_WITH_NEXT ||
+      command_id == ash::SWAP_WITH_PREVIOUS) {
+    // Only show commands to reorder shelf items when ChromeVox is enabled.
+    return chromeos::AccessibilityManager::Get() &&
+           chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled();
+  }
+
   DCHECK(command_id < ash::COMMAND_ID_COUNT);
   return true;
 }
@@ -107,7 +126,15 @@ bool ShelfContextMenu::IsCommandIdEnabled(int command_id) const {
 void ShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
   ash::ShelfModel::ScopedUserTriggeredMutation user_triggered(
       controller_->shelf_model());
+  ash::ShelfModel* model = controller_->shelf_model();
+  const int item_index = model->ItemIndexByID(item_.id);
   switch (static_cast<ash::CommandId>(command_id)) {
+    case ash::SWAP_WITH_NEXT:
+      model->Swap(item_index, /*with_next=*/true);
+      break;
+    case ash::SWAP_WITH_PREVIOUS:
+      model->Swap(item_index, /*with_next=*/false);
+      break;
     case ash::MENU_OPEN_NEW:
       // Use a copy of the id to avoid crashes, as this menu's owner will be
       // destroyed if LaunchApp replaces the ShelfItemDelegate instance.
@@ -117,7 +144,7 @@ void ShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case ash::MENU_CLOSE:
       if (item_.type == ash::TYPE_DIALOG) {
         ash::ShelfItemDelegate* item_delegate =
-            controller_->shelf_model()->GetShelfItemDelegate(item_.id);
+            model->GetShelfItemDelegate(item_.id);
         DCHECK(item_delegate);
         item_delegate->Close();
       } else {
@@ -171,6 +198,8 @@ bool ShelfContextMenu::ExecuteCommonCommand(int command_id, int event_flags) {
     case ash::MENU_OPEN_NEW:
     case ash::MENU_CLOSE:
     case ash::MENU_PIN:
+    case ash::SWAP_WITH_NEXT:
+    case ash::SWAP_WITH_PREVIOUS:
     case ash::UNINSTALL:
       ShelfContextMenu::ExecuteCommand(command_id, event_flags);
       return true;
@@ -248,6 +277,9 @@ const gfx::VectorIcon& ShelfContextMenu::GetCommandIdVectorIcon(
       return views::kLinuxHighDensityIcon;
     case ash::CROSTINI_USE_LOW_DENSITY:
       return views::kLinuxLowDensityIcon;
+    case ash::SWAP_WITH_NEXT:
+    case ash::SWAP_WITH_PREVIOUS:
+      return gfx::kNoneIcon;
     case ash::LAUNCH_APP_SHORTCUT_FIRST:
     case ash::LAUNCH_APP_SHORTCUT_LAST:
     case ash::COMMAND_ID_COUNT:

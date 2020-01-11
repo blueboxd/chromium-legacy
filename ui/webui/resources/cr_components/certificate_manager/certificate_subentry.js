@@ -23,7 +23,7 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  created: function() {
+  created() {
     this.browserProxy_ =
         certificate_manager.CertificatesBrowserProxyImpl.getInstance();
   },
@@ -34,7 +34,7 @@ Polymer({
    * @param {!CertificateAction} action
    * @private
    */
-  dispatchCertificateActionEvent_: function(action) {
+  dispatchCertificateActionEvent_(action) {
     this.fire(
         CertificateActionEvent,
         /** @type {!CertificateActionEventDetail} */ ({
@@ -51,7 +51,7 @@ Polymer({
    * @param {*} error Expects {?CertificatesError}.
    * @private
    */
-  onRejected_: function(error) {
+  onRejected_(error) {
     if (error === null) {
       // Nothing to do here. Null indicates that the user clicked "cancel" on
       // the native file chooser dialog.
@@ -67,7 +67,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onViewTap_: function(event) {
+  onViewTap_(event) {
     this.closePopupMenu_();
     this.browserProxy_.viewCertificate(this.model.id);
   },
@@ -76,7 +76,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onEditTap_: function(event) {
+  onEditTap_(event) {
     this.closePopupMenu_();
     this.dispatchCertificateActionEvent_(CertificateAction.EDIT);
   },
@@ -85,7 +85,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onDeleteTap_: function(event) {
+  onDeleteTap_(event) {
     this.closePopupMenu_();
     this.dispatchCertificateActionEvent_(CertificateAction.DELETE);
   },
@@ -94,7 +94,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onExportTap_: function(event) {
+  onExportTap_(event) {
     this.closePopupMenu_();
     if (this.certificateType == CertificateType.PERSONAL) {
       this.browserProxy_.exportPersonalCertificate(this.model.id).then(() => {
@@ -110,7 +110,7 @@ Polymer({
    * @return {boolean} Whether the certificate can be edited.
    * @private
    */
-  canEdit_: function(model) {
+  canEdit_(model) {
     return model.canBeEdited;
   },
 
@@ -120,7 +120,7 @@ Polymer({
    * @return {boolean} Whether the certificate can be exported.
    * @private
    */
-  canExport_: function(certificateType, model) {
+  canExport_(certificateType, model) {
     if (certificateType == CertificateType.PERSONAL) {
       return model.extractable;
     }
@@ -132,23 +132,23 @@ Polymer({
    * @return {boolean} Whether the certificate can be deleted.
    * @private
    */
-  canDelete_: function(model) {
+  canDelete_(model) {
     return model.canBeDeleted;
   },
 
   /** @private */
-  closePopupMenu_: function() {
+  closePopupMenu_() {
     this.$$('cr-action-menu').close();
   },
 
   /** @private */
-  onDotsTap_: function() {
+  onDotsTap_() {
     const actionMenu = /** @type {!CrActionMenuElement} */ (this.$.menu.get());
     actionMenu.showAt(this.$.dots);
   },
 
   /** @private */
-  getPolicyIndicatorType_: function(model) {
+  getPolicyIndicatorType_(model) {
     return model.policy ? CrPolicyIndicatorType.USER_POLICY :
                           CrPolicyIndicatorType.NONE;
   },

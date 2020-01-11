@@ -38,10 +38,12 @@ class FakeChromeUserManager : public ChromeUserManager {
   user_manager::User* AddPublicAccountUser(const AccountId& account_id);
 
   // Calculates the user name hash and calls UserLoggedIn to login a user.
-  // Sets the user as having its profile created, but does not create a profile.
+  // Sets the user as having its profile created if |set_profile_created_flag|
+  // is true, but does not create a profile.
   // NOTE: This does not match production, which first logs in the user, then
   // creates the profile and updates the user later.
-  void LoginUser(const AccountId& account_id);
+  void LoginUser(const AccountId& account_id,
+                 bool set_profile_created_flag = true);
 
   user_manager::User* AddUser(const AccountId& account_id);
   user_manager::User* AddChildUser(const AccountId& account_id);
@@ -59,6 +61,10 @@ class FakeChromeUserManager : public ChromeUserManager {
   // Creates the instance returned by |GetLocalState()| (which returns nullptr
   // by default).
   void CreateLocalState();
+
+  // Sets the user profile created flag to simulate finishing user
+  // profile loading. Note this does not create a profile.
+  void SimulateUserProfileLoad(const AccountId& account_id);
 
   // user_manager::UserManager override.
   void Shutdown() override;

@@ -55,6 +55,7 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -95,6 +96,9 @@ using PolicyEnforcement = UserCloudPolicyManagerChromeOS::PolicyEnforcement;
 
 constexpr char kEmail[] = "user@example.com";
 constexpr char kTestGaiaId[] = "12345";
+
+constexpr char kEmail2[] = "user2@example.com";
+constexpr char kTestGaiaId2[] = "123456";
 
 constexpr char kOAuth2AccessTokenData[] = R"(
     {
@@ -859,13 +863,18 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, TestHasAppInstallEventLogUploader) {
   EXPECT_TRUE(manager_->GetAppInstallEventLogUploader());
 }
 
-TEST_P(UserCloudPolicyManagerChromeOSTest, TestHasReportScheduler) {
+TEST_P(UserCloudPolicyManagerChromeOSTest, TestReportSchedulerCreation) {
   // Open policy and feature flag to enable report scheduler.
   g_browser_process->local_state()->SetBoolean(prefs::kCloudReportingEnabled,
                                                true);
   scoped_feature_list()->Reset();
   scoped_feature_list()->InitAndEnableFeature(
       features::kEnterpriseReportingInChromeOS);
+
+  // Log in an user account, and set it as primary.
+  AccountId account_id = AccountId::FromUserEmailGaiaId(kEmail, kTestGaiaId);
+  user_manager_->LoginUser(account_id);
+  ASSERT_TRUE(user_manager_->GetPrimaryUser());
 
   // Before UserCloudPolicyManagerChromeOS is initialized, report scheduler is
   // not existing.
@@ -888,6 +897,76 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, TestHasReportScheduler) {
       manager_->GetReportSchedulerForTesting()->GetRequestTimerForTesting();
   EXPECT_TRUE(request_timer->IsFirstTimerRunning());
   EXPECT_FALSE(request_timer->IsRepeatTimerRunning());
+}
+
+TEST_P(UserCloudPolicyManagerChromeOSTest, TestReportSchedulerDelayedCreation) {
+  // Open policy and feature flag to enable report scheduler.
+  g_browser_process->local_state()->SetBoolean(prefs::kCloudReportingEnabled,
+                                               true);
+  scoped_feature_list()->Reset();
+  scoped_feature_list()->InitAndEnableFeature(
+      features::kEnterpriseReportingInChromeOS);
+
+  // To simulate an intermediate status in user session, log in an user account
+  // as primiary but set |profile_is_created_| as false.
+  AccountId account_id = AccountId::FromUserEmailGaiaId(kEmail, kTestGaiaId);
+  user_manager_->LoginUser(account_id, false /* set_profile_created_flag */);
+  ASSERT_TRUE(user_manager_->GetPrimaryUser());
+  ASSERT_FALSE(user_manager_->GetPrimaryUser()->is_profile_created());
+
+  // Before UserCloudPolicyManagerChromeOS is initialized, report scheduler is
+  // not existing.
+  MakeManagerWithPreloadedStore(base::TimeDelta());
+  EXPECT_FALSE(manager_->GetReportSchedulerForTesting());
+
+  // After UserCloudPolicyManagerChromeOS is initialized, report scheduler is
+  // still not created because the profile of primary user hasn't been created.
+  session_manager::SessionManager session_manager;
+  InitAndConnectManager();
+  EXPECT_FALSE(manager_->GetReportSchedulerForTesting());
+
+  // The notification has no effect if the primary use keep not created status.
+  session_manager.NotifyUserProfileLoaded(account_id);
+  EXPECT_FALSE(manager_->GetReportSchedulerForTesting());
+
+  // The notification has no effect if the account id is another one.
+  AccountId account_id2 = AccountId::FromUserEmailGaiaId(kEmail2, kTestGaiaId2);
+  session_manager.NotifyUserProfileLoaded(account_id2);
+  EXPECT_FALSE(manager_->GetReportSchedulerForTesting());
+
+  // After the profile of primary user is created successfully, the delegate
+  // will be notified to create report scheduler.
+  user_manager_->SimulateUserProfileLoad(account_id);
+  session_manager.NotifyUserProfileLoaded(account_id);
+  EXPECT_TRUE(manager_->GetReportSchedulerForTesting());
+
+  // Make sure the |report_scheduler| submit the request to DM Server.
+  enterprise_reporting::RequestTimer* request_timer =
+      manager_->GetReportSchedulerForTesting()->GetRequestTimerForTesting();
+  EXPECT_TRUE(request_timer->IsFirstTimerRunning());
+  EXPECT_FALSE(request_timer->IsRepeatTimerRunning());
+}
+
+TEST_P(UserCloudPolicyManagerChromeOSTest, TestSkipReportSchedulerCreation) {
+  // Open policy and feature flag to enable report scheduler.
+  g_browser_process->local_state()->SetBoolean(prefs::kCloudReportingEnabled,
+                                               true);
+  scoped_feature_list()->Reset();
+  scoped_feature_list()->InitAndEnableFeature(
+      features::kEnterpriseReportingInChromeOS);
+
+  // No primary user is specified.
+  ASSERT_FALSE(user_manager_->GetPrimaryUser());
+
+  // Before UserCloudPolicyManagerChromeOS is initialized, report scheduler is
+  // not existing.
+  MakeManagerWithPreloadedStore(base::TimeDelta());
+  EXPECT_FALSE(manager_->GetReportSchedulerForTesting());
+
+  // After UserCloudPolicyManagerChromeOS is initialized, report scheduler is
+  // still not existing because there is no valid primary user.
+  InitAndConnectManager();
+  EXPECT_FALSE(manager_->GetReportSchedulerForTesting());
 }
 
 TEST_P(UserCloudPolicyManagerChromeOSTest,

@@ -11,6 +11,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_clipboard_permission_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_midi_permission_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_permission_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_push_permission_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_wake_lock_permission_descriptor.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -31,11 +36,153 @@ using mojom::blink::PermissionDescriptorPtr;
 using mojom::blink::PermissionName;
 using mojom::blink::PermissionService;
 
+namespace {
+
+// Parses the raw permission dictionary and returns the Mojo
+// PermissionDescriptor if parsing was successful. If an exception occurs, it
+// will be stored in |exceptionState| and null will be returned. Therefore, the
+// |exceptionState| should be checked before attempting to use the returned
+// permission as the non-null assert will be fired otherwise.
+//
+// Websites will be able to run code when `name()` is called, changing the
+// current context. The caller should make sure that no assumption is made
+// after this has been called.
+PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
+                                        const ScriptValue raw_permission,
+                                        ExceptionState& exception_state) {
+  PermissionDescriptor* permission =
+      NativeValueTraits<PermissionDescriptor>::NativeValue(
+          script_state->GetIsolate(), raw_permission.V8Value(),
+          exception_state);
+
+  if (exception_state.HadException()) {
+    exception_state.ThrowTypeError(exception_state.Message());
+    return nullptr;
+  }
+
+  const String& name = permission->name();
+  if (name == "geolocation")
+    return CreatePermissionDescriptor(PermissionName::GEOLOCATION);
+  if (name == "camera")
+    return CreatePermissionDescriptor(PermissionName::VIDEO_CAPTURE);
+  if (name == "microphone")
+    return CreatePermissionDescriptor(PermissionName::AUDIO_CAPTURE);
+  if (name == "notifications")
+    return CreatePermissionDescriptor(PermissionName::NOTIFICATIONS);
+  if (name == "persistent-storage")
+    return CreatePermissionDescriptor(PermissionName::DURABLE_STORAGE);
+  if (name == "push") {
+    PushPermissionDescriptor* push_permission =
+        NativeValueTraits<PushPermissionDescriptor>::NativeValue(
+            script_state->GetIsolate(), raw_permission.V8Value(),
+            exception_state);
+    if (exception_state.HadException()) {
+      exception_state.ThrowTypeError(exception_state.Message());
+      return nullptr;
+    }
+
+    // Only "userVisibleOnly" push is supported for now.
+    if (!push_permission->userVisibleOnly()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotSupportedError,
+          "Push Permission without userVisibleOnly:true isn't supported yet.");
+      return nullptr;
+    }
+
+    return CreatePermissionDescriptor(PermissionName::NOTIFICATIONS);
+  }
+  if (name == "midi") {
+    MidiPermissionDescriptor* midi_permission =
+        NativeValueTraits<MidiPermissionDescriptor>::NativeValue(
+            script_state->GetIsolate(), raw_permission.V8Value(),
+            exception_state);
+    return CreateMidiPermissionDescriptor(midi_permission->sysex());
+  }
+  if (name == "background-sync")
+    return CreatePermissionDescriptor(PermissionName::BACKGROUND_SYNC);
+  if (name == "ambient-light-sensor" || name == "accelerometer" ||
+      name == "gyroscope" || name == "magnetometer") {
+    // ALS requires an extra flag.
+    if (name == "ambient-light-sensor") {
+      if (!RuntimeEnabledFeatures::SensorExtraClassesEnabled()) {
+        exception_state.ThrowTypeError(
+            "GenericSensorExtraClasses flag is not enabled.");
+        return nullptr;
+      }
+    }
+
+    return CreatePermissionDescriptor(PermissionName::SENSORS);
+  }
+  if (name == "accessibility-events") {
+    if (!RuntimeEnabledFeatures::AccessibilityObjectModelEnabled()) {
+      exception_state.ThrowTypeError(
+          "Accessibility Object Model is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::ACCESSIBILITY_EVENTS);
+  }
+  if (name == "clipboard-read" || name == "clipboard-write") {
+    PermissionName permission_name = PermissionName::CLIPBOARD_READ;
+    if (name == "clipboard-write")
+      permission_name = PermissionName::CLIPBOARD_WRITE;
+
+    ClipboardPermissionDescriptor* clipboard_permission =
+        NativeValueTraits<ClipboardPermissionDescriptor>::NativeValue(
+            script_state->GetIsolate(), raw_permission.V8Value(),
+            exception_state);
+    return CreateClipboardPermissionDescriptor(
+        permission_name, clipboard_permission->allowWithoutGesture(),
+        clipboard_permission->allowWithoutSanitization());
+  }
+  if (name == "payment-handler")
+    return CreatePermissionDescriptor(PermissionName::PAYMENT_HANDLER);
+  if (name == "background-fetch")
+    return CreatePermissionDescriptor(PermissionName::BACKGROUND_FETCH);
+  if (name == "idle-detection")
+    return CreatePermissionDescriptor(PermissionName::IDLE_DETECTION);
+  if (name == "periodic-background-sync")
+    return CreatePermissionDescriptor(PermissionName::PERIODIC_BACKGROUND_SYNC);
+  if (name == "wake-lock") {
+    if (!RuntimeEnabledFeatures::WakeLockEnabled(
+            ExecutionContext::From(script_state))) {
+      exception_state.ThrowTypeError("Wake Lock is not enabled.");
+      return nullptr;
+    }
+    WakeLockPermissionDescriptor* wake_lock_permission =
+        NativeValueTraits<WakeLockPermissionDescriptor>::NativeValue(
+            script_state->GetIsolate(), raw_permission.V8Value(),
+            exception_state);
+    if (exception_state.HadException())
+      return nullptr;
+    const String& type = wake_lock_permission->type();
+    if (type == "screen") {
+      return CreateWakeLockPermissionDescriptor(
+          mojom::blink::WakeLockType::kScreen);
+    } else if (type == "system") {
+      return CreateWakeLockPermissionDescriptor(
+          mojom::blink::WakeLockType::kSystem);
+    } else {
+      NOTREACHED();
+    }
+  }
+  if (name == "nfc") {
+    if (!RuntimeEnabledFeatures::WebNFCEnabled(
+            ExecutionContext::From(script_state))) {
+      exception_state.ThrowTypeError("Web NFC is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::NFC);
+  }
+  return nullptr;
+}
+
+}  // anonymous namespace
+
 ScriptPromise Permissions::query(ScriptState* script_state,
                                  const ScriptValue& raw_permission,
                                  ExceptionState& exception_state) {
   PermissionDescriptorPtr descriptor =
-      ParsePermissionDescriptor(script_state, raw_permission, exception_state);
+      ParsePermission(script_state, raw_permission, exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
 
@@ -59,7 +206,7 @@ ScriptPromise Permissions::request(ScriptState* script_state,
                                    const ScriptValue& raw_permission,
                                    ExceptionState& exception_state) {
   PermissionDescriptorPtr descriptor =
-      ParsePermissionDescriptor(script_state, raw_permission, exception_state);
+      ParsePermission(script_state, raw_permission, exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
 
@@ -84,7 +231,7 @@ ScriptPromise Permissions::revoke(ScriptState* script_state,
                                   const ScriptValue& raw_permission,
                                   ExceptionState& exception_state) {
   PermissionDescriptorPtr descriptor =
-      ParsePermissionDescriptor(script_state, raw_permission, exception_state);
+      ParsePermission(script_state, raw_permission, exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
 
@@ -114,8 +261,8 @@ ScriptPromise Permissions::requestAll(
   for (wtf_size_t i = 0; i < raw_permissions.size(); ++i) {
     const ScriptValue& raw_permission = raw_permissions[i];
 
-    auto descriptor = ParsePermissionDescriptor(script_state, raw_permission,
-                                                exception_state);
+    auto descriptor =
+        ParsePermission(script_state, raw_permission, exception_state);
     if (exception_state.HadException())
       return ScriptPromise();
 

@@ -93,7 +93,7 @@ cr.define('cr.ui', function() {
 
   TabBox.prototype = {
     __proto__: HTMLElement.prototype,
-    decorate: function() {
+    decorate() {
       decorateChildren.call(this);
       this.addEventListener('selectedChange', this.handleSelectedChange_, true);
       this.selectedIndex = 0;
@@ -104,7 +104,7 @@ cr.define('cr.ui', function() {
      * @param {Event} e The property change event.
      * @private
      */
-    handleSelectedChange_: function(e) {
+    handleSelectedChange_(e) {
       const target = /** @type {cr.ui.Tab|cr.ui.TabPanel}} */ (e.target);
       if (e.newValue && isTabElement(target) && getTabBox(target) == this) {
         const index =
@@ -132,7 +132,7 @@ cr.define('cr.ui', function() {
   const Tabs = cr.ui.define('tabs');
   Tabs.prototype = {
     __proto__: HTMLElement.prototype,
-    decorate: function() {
+    decorate() {
       decorateChildren.call(this);
 
       this.addEventListener('keydown', this.handleKeyDown_.bind(this));
@@ -148,7 +148,7 @@ cr.define('cr.ui', function() {
      * @param {Event} e The keyboard event.
      * @private
      */
-    handleKeyDown_: function(e) {
+    handleKeyDown_(e) {
       let delta = 0;
       switch (e.key) {
         case 'ArrowLeft':
@@ -189,7 +189,7 @@ cr.define('cr.ui', function() {
   const Tab = cr.ui.define('tab');
   Tab.prototype = {
     __proto__: HTMLElement.prototype,
-    decorate: function() {
+    decorate() {
       const self = this;
       this.addEventListener(cr.isMac ? 'click' : 'mousedown', function() {
         self.selected = true;
@@ -222,10 +222,7 @@ cr.define('cr.ui', function() {
    * @extends {HTMLElement}
    */
   const TabPanel = cr.ui.define('tabpanel');
-  TabPanel.prototype = {
-    __proto__: HTMLElement.prototype,
-    decorate: function() {}
-  };
+  TabPanel.prototype = {__proto__: HTMLElement.prototype, decorate() {}};
 
   /**
    * Whether the tab is selected.

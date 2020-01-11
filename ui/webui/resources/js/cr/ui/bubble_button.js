@@ -18,7 +18,7 @@ cr.define('cr.ui', function() {
     /**
      * Decorates the base element to show the proper icon.
      */
-    decorate: function() {
+    decorate() {
       this.className = 'bubble-button';
       this.location = cr.ui.ArrowLocation.TOP_END;
       this.image = document.createElement('div');
@@ -46,7 +46,7 @@ cr.define('cr.ui', function() {
      * informative bubble.
      * @param {Event} event Mouse or keyboard event.
      */
-    handleEvent: function(event) {
+    handleEvent(event) {
       switch (event.type) {
         // Toggle the bubble on left click. Let any other clicks propagate.
         case 'click':

@@ -29,6 +29,7 @@ class Browser : public base::SupportsUserData {
   // Creates a new Browser attached to |browser_state|.
   static std::unique_ptr<Browser> Create(
       ios::ChromeBrowserState* browser_state);
+
   ~Browser() override {}
 
   // Accessor for the owning ChromeBrowserState.

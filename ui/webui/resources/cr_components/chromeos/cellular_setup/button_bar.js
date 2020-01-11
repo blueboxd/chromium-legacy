@@ -29,17 +29,17 @@ Polymer({
   },
 
   /** @private */
-  onBackwardButtonClicked_: function() {
+  onBackwardButtonClicked_() {
     this.fire('backward-nav-requested');
   },
 
   /** @private */
-  onTryAgainButtonClicked_: function() {
+  onTryAgainButtonClicked_() {
     this.fire('retry-requested');
   },
 
   /** @private */
-  onFinishButtonClicked_: function() {
+  onFinishButtonClicked_() {
     this.fire('complete-flow-requested');
   },
 });

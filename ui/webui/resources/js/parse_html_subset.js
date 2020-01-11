@@ -16,12 +16,12 @@
   'use strict';
 
   const allowedAttributes = {
-    'href': function(node, value) {
+    'href'(node, value) {
       // Only allow a[href] starting with chrome:// and https://
       return node.tagName == 'A' &&
           (value.startsWith('chrome://') || value.startsWith('https://'));
     },
-    'target': function(node, value) {
+    'target'(node, value) {
       // Only allow a[target='_blank'].
       // TODO(dbeam): are there valid use cases for target != '_blank'?
       return node.tagName == 'A' && value == '_blank';

@@ -318,6 +318,8 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     case CommandId::LAUNCH_TYPE_REGULAR_TAB:
     case CommandId::LAUNCH_TYPE_FULLSCREEN:
     case CommandId::LAUNCH_TYPE_WINDOW:
+    case CommandId::SWAP_WITH_NEXT:
+    case CommandId::SWAP_WITH_PREVIOUS:
     // Used by AppMenuModelAdapter
     case CommandId::NOTIFICATION_CONTAINER:
     // Used by CrostiniShelfContextMenu.

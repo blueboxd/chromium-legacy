@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/sessions/session_restoration_agent.h"
+#include "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/sessions/session_ios_factory.h"
 #include "ios/chrome/browser/sessions/session_restoration_observer.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
@@ -28,33 +29,47 @@
 #error "This file requires ARC support."
 #endif
 
-SessionRestorationAgent::SessionRestorationAgent(
-    SessionServiceIOS* session_service,
-    WebStateList* web_state_list,
-    ios::ChromeBrowserState* browser_state)
-    : session_service_(session_service),
-      web_state_list_(web_state_list),
-      browser_state_(browser_state),
-      session_ios_factory_(
-          [[SessionIOSFactory alloc] initWithWebStateList:web_state_list]) {}
+BROWSER_USER_DATA_KEY_IMPL(SessionRestorationBrowserAgent)
 
-SessionRestorationAgent::~SessionRestorationAgent() {
+// static
+void SessionRestorationBrowserAgent::CreateForBrowser(
+    Browser* browser,
+    SessionServiceIOS* session_service) {
+  DCHECK(browser);
+  if (!FromBrowser(browser)) {
+    browser->SetUserData(UserDataKey(),
+                         base::WrapUnique(new SessionRestorationBrowserAgent(
+                             browser, session_service)));
+  }
+}
+
+SessionRestorationBrowserAgent::SessionRestorationBrowserAgent(
+    Browser* browser,
+    SessionServiceIOS* session_service)
+    : session_service_(session_service),
+      web_state_list_(browser->GetWebStateList()),
+      browser_state_(browser->GetBrowserState()),
+      session_ios_factory_(
+          [[SessionIOSFactory alloc] initWithWebStateList:web_state_list_]) {}
+
+SessionRestorationBrowserAgent::~SessionRestorationBrowserAgent() {
   // Disconnect the session factory object as it's not granteed that it will be
   // released before it's referenced by the session service.
   [session_ios_factory_ disconnect];
 }
 
-void SessionRestorationAgent::AddObserver(
+void SessionRestorationBrowserAgent::AddObserver(
     SessionRestorationObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void SessionRestorationAgent::RemoveObserver(
+void SessionRestorationBrowserAgent::RemoveObserver(
     SessionRestorationObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool SessionRestorationAgent::RestoreSessionWindow(SessionWindowIOS* window) {
+bool SessionRestorationBrowserAgent::RestoreSessionWindow(
+    SessionWindowIOS* window) {
   if (!window.sessions.count)
     return NO;
 
@@ -137,7 +152,7 @@ bool SessionRestorationAgent::RestoreSessionWindow(SessionWindowIOS* window) {
   return closed_ntp_tab;
 }
 
-void SessionRestorationAgent::SaveSession(bool immediately) {
+void SessionRestorationBrowserAgent::SaveSession(bool immediately) {
   if (!CanSaveSession())
     return;
 
@@ -148,7 +163,7 @@ void SessionRestorationAgent::SaveSession(bool immediately) {
                     immediately:immediately];
 }
 
-bool SessionRestorationAgent::CanSaveSession() {
+bool SessionRestorationBrowserAgent::CanSaveSession() {
   // A session requires an active browser state and web state list.
   if (!browser_state_ || !web_state_list_)
     return NO;

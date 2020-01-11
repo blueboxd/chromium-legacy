@@ -37,7 +37,7 @@ const UiPageContainerBehaviorImpl = {
    * page does not change.
    * @return {!Promise}
    */
-  getCanNavigateToNextPage: function() {
+  getCanNavigateToNextPage() {
     return new Promise((resolve) => {
       resolve(true /* canNavigate */);
     });

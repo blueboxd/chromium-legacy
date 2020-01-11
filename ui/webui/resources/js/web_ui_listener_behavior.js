@@ -20,7 +20,7 @@
      */
     webUIListeners_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -35,12 +35,12 @@
    * @param {string} eventName The event to listen to.
    * @param {!Function} callback The callback run when the event is fired.
    */
-  addWebUIListener: function(eventName, callback) {
+  addWebUIListener(eventName, callback) {
     this.webUIListeners_.push(cr.addWebUIListener(eventName, callback));
   },
 
   /** @override */
-  detached: function() {
+  detached() {
     while (this.webUIListeners_.length > 0) {
       cr.removeWebUIListener(this.webUIListeners_.pop());
     }

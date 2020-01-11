@@ -25,7 +25,7 @@ Polymer({
    * @param {!KeyboardEvent} e
    * @private
    */
-  onKeyDown_: function(e) {
+  onKeyDown_(e) {
     const items = this.querySelectorAll('.avatar');
     switch (e.key) {
       case 'ArrowDown':
@@ -54,7 +54,7 @@ Polymer({
    *     'ArrowUp', 'ArrowDown'.
    * @private
    */
-  moveFocusRow_: function(items, direction) {
+  moveFocusRow_(items, direction) {
     let offset =
         (direction == 'ArrowDown' || direction == 'ArrowRight') ? 1 : -1;
     const style = getComputedStyle(this);

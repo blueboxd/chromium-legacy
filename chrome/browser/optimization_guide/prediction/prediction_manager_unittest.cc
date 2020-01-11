@@ -732,6 +732,9 @@ TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {
               proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
   EXPECT_TRUE(stored_prediction_model);
   EXPECT_EQ(3, stored_prediction_model->GetVersion());
+
+  histogram_tester.ExpectBucketCount("OptimizationGuide.IsPredictionModelValid",
+                                     true, 2);
 }
 
 TEST_F(PredictionManagerTest,

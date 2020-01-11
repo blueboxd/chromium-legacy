@@ -1493,10 +1493,16 @@ ${PROFILING_LEAVING_NATIVE}\
 
 def WrapOutput(output):
   ret = []
+  is_preprocessor_directive = False
   for line in output.splitlines():
+    if line and line[0] == '#':
+      is_preprocessor_directive = True
     # Do not wrap preprocessor directives or comments.
-    if len(line) < _WRAP_LINE_LENGTH or line[0] == '#' or line.startswith('//'):
+    if (len(line) < _WRAP_LINE_LENGTH or is_preprocessor_directive
+        or line.startswith('//')):
       ret.append(line)
+      if not line or line[-1] != '\\':
+        is_preprocessor_directive = False
     else:
       # Assumes that the line is not already indented as a continuation line,
       # which is not always true (oh well).

@@ -804,8 +804,10 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
     steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
         src_to_linear_fn, src.HasExtendedSkTransferFn()));
   } else if (src.GetTransferID() == ColorSpace::TransferID::SMPTEST2084) {
-    steps_.push_back(std::make_unique<ColorTransformPQToLinear>(
-        ColorSpace::kDefaultSDRWhiteLevel));
+    float sdr_white_level = 0.f;
+    src.GetPQSDRWhiteLevel(&sdr_white_level);
+    steps_.push_back(
+        std::make_unique<ColorTransformPQToLinear>(sdr_white_level));
   } else {
     steps_.push_back(
         std::make_unique<ColorTransformToLinear>(src.GetTransferID()));
@@ -832,8 +834,10 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
     steps_.push_back(std::make_unique<ColorTransformSkTransferFn>(
         dst_from_linear_fn, dst.HasExtendedSkTransferFn()));
   } else if (dst.GetTransferID() == ColorSpace::TransferID::SMPTEST2084) {
-    steps_.push_back(std::make_unique<ColorTransformPQFromLinear>(
-        ColorSpace::kDefaultSDRWhiteLevel));
+    float sdr_white_level = 0.f;
+    dst.GetPQSDRWhiteLevel(&sdr_white_level);
+    steps_.push_back(
+        std::make_unique<ColorTransformPQFromLinear>(sdr_white_level));
   } else {
     steps_.push_back(
         std::make_unique<ColorTransformFromLinear>(dst.GetTransferID()));

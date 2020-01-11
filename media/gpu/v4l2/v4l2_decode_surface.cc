@@ -141,7 +141,7 @@ void V4L2RequestDecodeSurface::PrepareSetCtrls(
   DCHECK_NE(ctrls, nullptr);
 
   ctrls->which = V4L2_CTRL_WHICH_REQUEST_VAL;
-  request_ref_.SetCtrls(ctrls);
+  request_ref_.ApplyCtrls(ctrls);
 }
 
 uint64_t V4L2RequestDecodeSurface::GetReferenceID() const {

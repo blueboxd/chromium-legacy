@@ -9108,6 +9108,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_SHELF_CONTEXT_MENU_PIN_ENFORCED_BY_POLICY" desc="Short text for the pin/unpin context menu to tell user the setting is enforced by policy of a shelf item">
           Pinned by administrator
         </message>
+        <message name="IDS_SHELF_CONTEXT_MENU_SWAP_WITH_NEXT" desc="Label of the context menu item allowing to swap the selected shelf item with the next one">
+          Swap with next
+        </message>
+        <message name="IDS_SHELF_CONTEXT_MENU_SWAP_WITH_PREVIOUS" desc="Label of the context menu item allowing to swap the selected shelf item with the previous one">
+          Swap with previous
+        </message>
       </if>
 
       <!-- High-contrast mode. -->

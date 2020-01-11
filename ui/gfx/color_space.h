@@ -99,7 +99,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
     LINEAR_HDR,
     // A parametric transfer function defined by |transfer_params_|.
     CUSTOM,
-    LAST = CUSTOM,
+    // An HDR parametric transfer function defined by |transfer_params_|.
+    CUSTOM_HDR,
+    LAST = CUSTOM_HDR,
   };
 
   enum class MatrixID : uint8_t {
@@ -185,10 +187,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   }
 
   // HDR10 uses BT.2020 primaries with SMPTE ST 2084 PQ transfer function.
-  static constexpr ColorSpace CreateHDR10() {
-    return ColorSpace(PrimaryID::BT2020, TransferID::SMPTEST2084, MatrixID::RGB,
-                      RangeID::FULL);
-  }
+  static ColorSpace CreateHDR10(float sdr_white_point = 0.f);
 
   // TODO(ccameron): Remove these, and replace with more generic constructors.
   static constexpr ColorSpace CreateJpeg() {
@@ -266,6 +265,11 @@ class COLOR_SPACE_EXPORT ColorSpace {
   bool GetTransferFunction(skcms_TransferFunction* fn) const;
   bool GetInverseTransferFunction(skcms_TransferFunction* fn) const;
 
+  // Returns the SDR white level specified for the PQ transfer function. If
+  // no value was specified, then use kDefaultSDRWhiteLevel. If the transfer
+  // function is not PQ then return false.
+  bool GetPQSDRWhiteLevel(float* sdr_white_level) const;
+
   // For most formats, this is the RGB to YUV matrix.
   void GetTransferMatrix(SkMatrix44* matrix) const;
   void GetRangeAdjustMatrix(SkMatrix44* matrix) const;
@@ -308,8 +312,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // Parameters for the transfer function. The interpretation depends on
   // |transfer_|. Only TransferParamCount() of these parameters are used, all
   // others must be zero.
-  // - CUSTOM: Entries A through G of the skcms_TransferFunction structure in
-  //   alphabetical order.
+  // - CUSTOM and CUSTOM_HDR: Entries A through G of the skcms_TransferFunction
+  //   structure in alphabetical order.
+  // - SMPTEST2084: SDR white point.
   float transfer_params_[7] = {0, 0, 0, 0, 0, 0, 0};
 
   friend struct IPC::ParamTraits<gfx::ColorSpace>;

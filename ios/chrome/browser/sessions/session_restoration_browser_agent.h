@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_AGENT_H_
-#define IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_AGENT_H_
+#ifndef IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_BROWSER_AGENT_H_
+#define IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_BROWSER_AGENT_H_
 
 #include <memory>
 #include <string>
@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "ios/chrome/browser/main/browser_user_data.h"
 
 @class SessionWindowIOS;
 @class SessionIOSFactory;
@@ -23,15 +24,16 @@ class ChromeBrowserState;
 }
 
 // This class is responsible for handling requests of session restoration. It
-// can be observed via SessnRestorationObserver which it uses to notify
+// can be observed via SeassonRestorationObserver which it uses to notify
 // observers of session restoration events.
-class SessionRestorationAgent {
+class SessionRestorationBrowserAgent
+    : public BrowserUserData<SessionRestorationBrowserAgent> {
  public:
-  explicit SessionRestorationAgent(SessionServiceIOS* session_service,
-                                   WebStateList* web_state_list,
-                                   ios::ChromeBrowserState* browser_state);
+  // Creates an SessionRestorationBrowserAgent scoped to |browser|.
+  static void CreateForBrowser(Browser* browser,
+                               SessionServiceIOS* session_service);
 
-  ~SessionRestorationAgent();
+  ~SessionRestorationBrowserAgent() override;
 
   // Adds/Removes Observer to session restoration events.
   void AddObserver(SessionRestorationObserver* observer);
@@ -48,6 +50,12 @@ class SessionRestorationAgent {
   void SaveSession(const bool immediately);
 
  private:
+  SessionRestorationBrowserAgent(Browser* browser,
+                                 SessionServiceIOS* session_service);
+
+  friend class BrowserUserData<SessionRestorationBrowserAgent>;
+  BROWSER_USER_DATA_KEY_DECL();
+
   // Returns true if the current session can be saved.
   bool CanSaveSession();
 
@@ -65,4 +73,4 @@ class SessionRestorationAgent {
   SessionIOSFactory* session_ios_factory_;
 };
 
-#endif  // IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_AGENT_H_
+#endif  // IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_BROWSER_AGENT_H_

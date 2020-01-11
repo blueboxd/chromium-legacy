@@ -109,6 +109,15 @@ class StartSurfaceToolbarView extends RelativeLayout {
         mNewTabButton.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
+    /**
+     * @param isClickable Whether the buttons are clickable.
+     */
+    void setButtonClickableState(boolean isClickable) {
+        mNewTabButton.setClickable(isClickable);
+        mIncognitoSwitch.setClickable(isClickable);
+        mMenuButton.setClickable(isClickable);
+    }
+
     /** Called when incognito mode changes. */
     void updateIncognito(boolean isIncognito) {
         updatePrimaryColorAndTint(isIncognito);

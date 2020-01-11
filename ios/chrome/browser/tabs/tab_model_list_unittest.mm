@@ -8,6 +8,8 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
+#import "ios/chrome/browser/main/test_browser.h"
+#include "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_list_observer.h"
@@ -40,30 +42,20 @@ class MockTabModelListObserver : public TabModelListObserver {
 class TabModelListTest : public PlatformTest {
  public:
   TabModelListTest()
-      : scoped_browser_state_manager_(
-            std::make_unique<TestChromeBrowserStateManager>(
-                TestChromeBrowserState::Builder().Build())),
-        web_state_list_delegate_(
-            std::make_unique<BrowserWebStateListDelegate>()),
-        web_state_list_(
-            std::make_unique<WebStateList>(web_state_list_delegate_.get())),
-        otr_web_state_list_delegate_(
-            std::make_unique<BrowserWebStateListDelegate>()),
-        otr_web_state_list_(
-            std::make_unique<WebStateList>(web_state_list_delegate_.get())) {}
+      : browser_(std::make_unique<TestBrowser>()),
+        otr_browser_(std::make_unique<TestBrowser>()) {
+    SessionRestorationBrowserAgent::CreateForBrowser(
+        browser_.get(), [[TestSessionService alloc] init]);
+    SessionRestorationBrowserAgent::CreateForBrowser(
+        otr_browser_.get(), [[TestSessionService alloc] init]);
+  }
 
   TabModel* CreateTabModel() {
-    return [[TabModel alloc]
-        initWithSessionService:[[TestSessionService alloc] init]
-                  browserState:browser_state()
-                  webStateList:web_state_list_.get()];
+    return [[TabModel alloc] initWithBrowser:browser_.get()];
   }
 
   TabModel* CreateOffTheRecordTabModel() {
-    return [[TabModel alloc]
-        initWithSessionService:[[TestSessionService alloc] init]
-                  browserState:otr_browser_state()
-                  webStateList:otr_web_state_list_.get()];
+    return [[TabModel alloc] initWithBrowser:otr_browser_.get()];
   }
 
   NSArray<TabModel*>* RegisteredTabModels() {
@@ -75,24 +67,18 @@ class TabModelListTest : public PlatformTest {
   }
 
   ios::ChromeBrowserState* browser_state() {
-    return GetApplicationContext()
-        ->GetChromeBrowserStateManager()
-        ->GetLastUsedBrowserState();
+    return browser_->GetBrowserState();
   }
 
   ios::ChromeBrowserState* otr_browser_state() {
-    return browser_state()->GetOffTheRecordChromeBrowserState();
+    return otr_browser_->GetBrowserState();
   }
 
  private:
   web::WebTaskEnvironment task_environment_;
-  IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
 
-  std::unique_ptr<WebStateListDelegate> web_state_list_delegate_;
-  std::unique_ptr<WebStateList> web_state_list_;
-
-  std::unique_ptr<WebStateListDelegate> otr_web_state_list_delegate_;
-  std::unique_ptr<WebStateList> otr_web_state_list_;
+  std::unique_ptr<TestBrowser> browser_;
+  std::unique_ptr<TestBrowser> otr_browser_;
 
   DISALLOW_COPY_AND_ASSIGN(TabModelListTest);
 };

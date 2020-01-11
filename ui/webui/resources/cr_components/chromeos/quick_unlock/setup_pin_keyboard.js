@@ -98,7 +98,7 @@ Polymer({
      */
     writeUma: {
       type: Object,
-      value: function() {
+      value() {
         return function() {};
       }
     },
@@ -137,12 +137,12 @@ Polymer({
     },
   },
 
-  focus: function() {
+  focus() {
     this.$.pinKeyboard.focusInput();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.resetState();
 
     // Show the pin is too short error when first displaying the PIN dialog.
@@ -155,7 +155,7 @@ Polymer({
   /**
    * Resets the element to the initial state.
    */
-  resetState: function() {
+  resetState() {
     this.initialPin_ = '';
     this.pinKeyboardValue_ = '';
     this.enableSubmit = false;
@@ -171,7 +171,7 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  canSubmit_: function() {
+  canSubmit_() {
     return this.initialPin_ == this.pinKeyboardValue_;
   },
 
@@ -183,7 +183,7 @@ Polymer({
    * @param {chrome.quickUnlockPrivate.CredentialRequirements} requirements
    *     The requirements received from getCredentialRequirements.
    */
-  processPinRequirements_: function(messageId, requirements) {
+  processPinRequirements_(messageId, requirements) {
     let additionalInformation = '';
     switch (messageId) {
       case MessageType.TOO_SHORT:
@@ -209,7 +209,7 @@ Polymer({
    * @param {string} messageId
    * @param {string} problemClass
    */
-  showProblem_: function(messageId, problemClass) {
+  showProblem_(messageId, problemClass) {
     this.quickUnlockPrivate.getCredentialRequirements(
         chrome.quickUnlockPrivate.QuickUnlockMode.PIN,
         this.processPinRequirements_.bind(this, messageId));
@@ -220,7 +220,7 @@ Polymer({
   },
 
   /** @private */
-  hideProblem_: function() {
+  hideProblem_() {
     this.problemMessageId_ = '';
     this.problemClass_ = '';
   },
@@ -232,7 +232,7 @@ Polymer({
    * @param {chrome.quickUnlockPrivate.CredentialCheck} message The message
    *     received from checkCredential.
    */
-  processPinProblems_: function(message) {
+  processPinProblems_(message) {
     if (!message.errors.length && !message.warnings.length) {
       this.hideProblem_();
       this.enableSubmit = true;
@@ -278,7 +278,7 @@ Polymer({
    * @param {!CustomEvent<{pin: string}>} e Custom event containing the new pin.
    * @private
    */
-  onPinChange_: function(e) {
+  onPinChange_(e) {
     const newPin = e.detail.pin;
     if (!this.isConfirmStep) {
       if (newPin) {
@@ -296,7 +296,7 @@ Polymer({
   },
 
   /** @private */
-  onPinSubmit_: function() {
+  onPinSubmit_() {
     // Notify container object.
     this.fire('pin-submit');
   },
@@ -307,7 +307,7 @@ Polymer({
    * @private
    * @param {boolean} didSet
    */
-  onSetModesCompleted_: function(didSet) {
+  onSetModesCompleted_(didSet) {
     if (!didSet) {
       console.error('Failed to update pin');
       return;
@@ -318,7 +318,7 @@ Polymer({
   },
 
   /** This is called by container object when user initiated submit. */
-  doSubmit: function() {
+  doSubmit() {
     if (!this.isConfirmStep) {
       if (!this.enableSubmit) {
         return;
@@ -355,7 +355,7 @@ Polymer({
    * @param {string} problemClass
    * @return {boolean}
    */
-  hasError_: function(problemMessageId, problemClass) {
+  hasError_(problemMessageId, problemClass) {
     return !!problemMessageId && problemClass == ProblemType.ERROR;
   },
 
@@ -367,7 +367,7 @@ Polymer({
    * @param {string} messageParameters
    * @return {string}
    */
-  formatProblemMessage_: function(locale, messageId, messageParameters) {
+  formatProblemMessage_(locale, messageId, messageParameters) {
     return messageId ? this.i18nDynamic(locale, messageId, messageParameters) :
                        '';
   },

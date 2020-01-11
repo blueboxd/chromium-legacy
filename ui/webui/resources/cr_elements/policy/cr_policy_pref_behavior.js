@@ -23,7 +23,7 @@ const CrPolicyPrefBehavior = {
    * preference.
    * @return {boolean} True if |this.pref| is controlled by an enforced policy.
    */
-  isPrefEnforced: function() {
+  isPrefEnforced() {
     return !!this.pref &&
         this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
@@ -31,7 +31,7 @@ const CrPolicyPrefBehavior = {
   /**
    * @return {boolean} True if |this.pref| has a recommended or enforced policy.
    */
-  hasPrefPolicyIndicator: function() {
+  hasPrefPolicyIndicator() {
     if (!this.pref) {
       return false;
     }

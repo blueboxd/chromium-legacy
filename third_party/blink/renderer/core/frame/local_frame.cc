@@ -255,7 +255,7 @@ bool LocalFrame::IsLocalRoot() const {
   return Tree().Parent()->IsRemoteFrame();
 }
 
-void LocalFrame::Navigate(const FrameLoadRequest& request,
+void LocalFrame::Navigate(FrameLoadRequest& request,
                           WebFrameLoadType frame_load_type) {
   if (!navigation_rate_limiter().CanProceed())
     return;
@@ -279,9 +279,11 @@ void LocalFrame::Navigate(const FrameLoadRequest& request,
     frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
 
+  const ClientNavigationReason client_redirect_reason =
+      request.ClientRedirectReason();
   loader_.StartNavigation(request, frame_load_type);
 
-  if (request.ClientRedirectReason() != ClientNavigationReason::kNone)
+  if (client_redirect_reason != ClientNavigationReason::kNone)
     probe::FrameClearedScheduledNavigation(this);
 }
 
@@ -455,7 +457,7 @@ void LocalFrame::Reload(WebFrameLoadType load_type) {
   DCHECK(IsReloadLoadType(load_type));
   if (!loader_.GetDocumentLoader()->GetHistoryItem())
     return;
-  FrameLoadRequest request = FrameLoadRequest(
+  FrameLoadRequest request(
       nullptr, loader_.ResourceRequestForReload(
                    load_type, ClientRedirectPolicy::kClientRedirect));
   request.SetClientRedirectReason(ClientNavigationReason::kReload);

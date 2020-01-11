@@ -1494,4 +1494,9 @@ public class TabPersistentStore extends TabPersister {
     public static void setBaseStateDirectoryForTests(File directory) {
         BaseStateDirectoryHolder.sDirectory = directory;
     }
+
+    @VisibleForTesting
+    public SequencedTaskRunner getTaskRunnerForTests() {
+        return mSequencedTaskRunner;
+    }
 }

@@ -34,7 +34,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the index below.
      * @return {number} The index below or -1 if not found.
      */
-    getIndexBelow: function(index) {
+    getIndexBelow(index) {
       if (index == this.getLastIndex()) {
         return -1;
       }
@@ -46,7 +46,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the index above.
      * @return {number} The index below or -1 if not found.
      */
-    getIndexAbove: function(index) {
+    getIndexAbove(index) {
       return index - 1;
     },
 
@@ -58,7 +58,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the index before.
      * @return {number} The index before or -1 if not found.
      */
-    getIndexBefore: function(index) {
+    getIndexBefore(index) {
       return -1;
     },
 
@@ -70,7 +70,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the index after.
      * @return {number} The index after or -1 if not found.
      */
-    getIndexAfter: function(index) {
+    getIndexAfter(index) {
       return -1;
     },
 
@@ -80,7 +80,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the next index for.
      * @return {number} The next index or -1 if not found.
      */
-    getNextIndex: function(index) {
+    getNextIndex(index) {
       if (index == this.getLastIndex()) {
         return -1;
       }
@@ -93,21 +93,21 @@ cr.define('cr.ui', function() {
      * @param {number} index The index to get the previous index for.
      * @return {number} The previous index or -1 if not found.
      */
-    getPreviousIndex: function(index) {
+    getPreviousIndex(index) {
       return index - 1;
     },
 
     /**
      * @return {number} The first index.
      */
-    getFirstIndex: function() {
+    getFirstIndex() {
       return 0;
     },
 
     /**
      * @return {number} The last index.
      */
-    getLastIndex: function() {
+    getLastIndex() {
       return this.selectionModel.length - 1;
     },
 
@@ -118,7 +118,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index that was under the mouse pointer, -1 if
      *     none.
      */
-    handlePointerDownUp: function(e, index) {
+    handlePointerDownUp(e, index) {
       const sm = this.selectionModel;
       const anchorIndex = sm.anchorIndex;
       const isDown = (e.type == 'mousedown');
@@ -186,7 +186,7 @@ cr.define('cr.ui', function() {
      * @param {number} index The index that was under the touched point, -1 if
      *     none.
      */
-    handleTouchEvents: function(e, index) {
+    handleTouchEvents(e, index) {
       // Do nothing.
     },
 
@@ -194,7 +194,7 @@ cr.define('cr.ui', function() {
      * Called by the view when it receives a keydown event.
      * @param {Event} e The keydown event.
      */
-    handleKeyDown: function(e) {
+    handleKeyDown(e) {
       const tagName = e.target.tagName;
       // If focus is in an input field of some kind, only handle navigation keys
       // that aren't likely to conflict with input interaction (e.g., text

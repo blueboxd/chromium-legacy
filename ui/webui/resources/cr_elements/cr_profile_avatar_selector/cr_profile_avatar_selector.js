@@ -25,7 +25,7 @@ Polymer({
      */
     avatars: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       }
     },
@@ -49,7 +49,7 @@ Polymer({
   },
 
   /** @private */
-  getSelectedClass_: function(isSelected) {
+  getSelectedClass_(isSelected) {
     // TODO(dpapad): Rename 'iron-selected' to 'selected' now that this CSS
     // class is not assigned by any iron-* behavior.
     return isSelected ? 'iron-selected' : '';
@@ -60,7 +60,7 @@ Polymer({
    * @return {string} A CSS image-set for multiple scale factors.
    * @private
    */
-  getIconImageSet_: function(iconUrl) {
+  getIconImageSet_(iconUrl) {
     return cr.icon.getImage(iconUrl);
   },
 
@@ -68,7 +68,7 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onAvatarTap_: function(e) {
+  onAvatarTap_(e) {
     // Manual selection for profile creation
     if (this.selectedAvatarElement_) {
       this.selectedAvatarElement_.classList.remove('iron-selected');

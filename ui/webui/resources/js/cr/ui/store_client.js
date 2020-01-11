@@ -26,7 +26,7 @@ cr.define('cr.ui', function() {
    * @polymerBehavior
    */
   /* #export */ const StoreClient = {
-    created: function() {
+    created() {
       /**
        * @type {!Array<{
        *   localProperty: string,
@@ -36,11 +36,11 @@ cr.define('cr.ui', function() {
       this.watches_ = [];
     },
 
-    attached: function() {
+    attached() {
       this.getStore().addObserver(this);
     },
 
-    detached: function() {
+    detached() {
       this.getStore().removeObserver(this);
     },
 
@@ -57,7 +57,7 @@ cr.define('cr.ui', function() {
      * @param {string} localProperty
      * @param {function(!Object)} valueGetter
      */
-    watch_: function(localProperty, valueGetter) {
+    watch_(localProperty, valueGetter) {
       this.watches_.push({
         localProperty: localProperty,
         valueGetter: valueGetter,
@@ -69,7 +69,7 @@ cr.define('cr.ui', function() {
      * data and then (possibly) flow through to the UI.
      * @param {?cr.ui.Action} action
      */
-    dispatch: function(action) {
+    dispatch(action) {
       this.getStore().dispatch(action);
     },
 
@@ -78,12 +78,12 @@ cr.define('cr.ui', function() {
      * asynchronously perform updates to the store data and UI.
      * @param {cr.ui.DeferredAction} action
      */
-    dispatchAsync: function(action) {
+    dispatchAsync(action) {
       this.getStore().dispatchAsync(action);
     },
 
     /** @param {Object} newState */
-    onStateChanged: function(newState) {
+    onStateChanged(newState) {
       this.watches_.forEach((watch) => {
         const oldValue = this[watch.localProperty];
         const newValue = watch.valueGetter(newState);
@@ -99,7 +99,7 @@ cr.define('cr.ui', function() {
       });
     },
 
-    updateFromStore: function() {
+    updateFromStore() {
       if (this.getStore().isInitialized()) {
         this.onStateChanged(this.getStore().data);
       }
@@ -110,7 +110,7 @@ cr.define('cr.ui', function() {
      * with the given arguments. Needs to be overridden to allow
      * type-checking on the valueGetter parameter.
      */
-    watch: function(localProperty, valueGetter) {
+    watch(localProperty, valueGetter) {
       assertNotReached();
     },
 
@@ -119,7 +119,7 @@ cr.define('cr.ui', function() {
      * associated Store. Needs to be overridden to allow type-checking on the
      * return value, which will be a page state type specific to each page.
      */
-    getState: function() {
+    getState() {
       assertNotReached();
     },
 
@@ -129,7 +129,7 @@ cr.define('cr.ui', function() {
      * allow type-checking on the return value, which will be a
      * page-specific subclass of Store.
      */
-    getStore: function() {
+    getStore() {
       assertNotReached();
     },
   };

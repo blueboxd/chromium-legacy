@@ -94,13 +94,13 @@ Polymer({
    */
   fallbackImage_: null,
 
-  setFocus: function() {
+  setFocus() {
     if (this.selectedItem) {
       this.selectedItem.focus();
     }
   },
 
-  onImageSelected_: function(newImg, oldImg) {
+  onImageSelected_(newImg, oldImg) {
     if (newImg) {
       newImg.setAttribute('tabindex', '0');
       newImg.setAttribute('aria-checked', 'true');
@@ -116,7 +116,7 @@ Polymer({
    * @param {string} imageUrl
    * @param {boolean} selected
    */
-  setProfileImageUrl: function(imageUrl, selected) {
+  setProfileImageUrl(imageUrl, selected) {
     this.profileImageUrl_ = imageUrl;
     this.$.profileImage.title = this.profileImageLabel;
     if (!selected) {
@@ -171,7 +171,7 @@ Polymer({
    * Handler for when accessibility-specific keys are pressed.
    * @param {!CustomEvent<!{key: string, keyboardEvent: Object}>} e
    */
-  onKeysPressed: function(e) {
+  onKeysPressed(e) {
     if (!this.selectedItem) {
       return;
     }
@@ -217,7 +217,7 @@ Polymer({
   },
 
   /** @private */
-  onDefaultImagesChanged_: function() {
+  onDefaultImagesChanged_() {
     if (this.selectedImageUrl_) {
       this.setSelectedImageUrl(this.selectedImageUrl_);
     }
@@ -247,7 +247,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onIronActivate_: function(event) {
+  onIronActivate_(event) {
     event.stopPropagation();
     const type = event.detail.item.dataset.type;
     // Don't change focus when activating the camera via mouse.
@@ -259,7 +259,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onIronSelect_: function(event) {
+  onIronSelect_(event) {
     event.stopPropagation();
   },
 
@@ -267,7 +267,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onSelectedItemChanged_: function(event) {
+  onSelectedItemChanged_(event) {
     if (event.target.selectedItem) {
       event.target.selectedItem.scrollIntoViewIfNeeded(false);
     }
@@ -279,7 +279,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getImgSrc_: function(url) {
+  getImgSrc_(url) {
     // Use first frame of animated user images.
     if (url.startsWith('chrome://theme')) {
       return url + '[0]';
@@ -304,7 +304,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getImgSrc2x_: function(url) {
+  getImgSrc2x_(url) {
     if (!url.startsWith('chrome://theme')) {
       return '';
     }

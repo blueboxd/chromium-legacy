@@ -67,7 +67,7 @@ ExtensionShelfContextMenu::ExtensionShelfContextMenu(
 ExtensionShelfContextMenu::~ExtensionShelfContextMenu() = default;
 
 void ExtensionShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
-  auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
+  auto menu_model = GetBaseMenuModel();
   Profile* profile = controller()->profile();
   const std::string app_id = item().id.app_id;
 

@@ -110,6 +110,28 @@ static void Java_TestJni_testOtherFoo(JNIEnv* env, const base::android::JavaRef<
           call_context.base.method_id);
 }
 
+static std::atomic<jmethodID>
+    g_org_chromium_TestJni_testLongNameActionServiceModelProducerDelegateProxyObserverMediatorFactoryConsumerImplForTesting(nullptr);
+static void
+    Java_TestJni_testLongNameActionServiceModelProducerDelegateProxyObserverMediatorFactoryConsumerImplForTesting(JNIEnv*
+    env, const base::android::JavaRef<jobject>& obj) {
+  jclass clazz = org_chromium_TestJni_clazz(env);
+  CHECK_CLAZZ(env, obj.obj(),
+      org_chromium_TestJni_clazz(env));
+
+  jni_generator::JniJavaCallContextChecked call_context;
+  call_context.Init<
+      base::android::MethodID::TYPE_INSTANCE>(
+          env,
+          clazz,
+"testLongNameActionServiceModelProducerDelegateProxyObserverMediatorFactoryConsumerImplForTesting",
+          "()V",
+&g_org_chromium_TestJni_testLongNameActionServiceModelProducerDelegateProxyObserverMediatorFactoryConsumerImplForTesting);
+
+     env->CallVoidMethod(obj.obj(),
+          call_context.base.method_id);
+}
+
 static std::atomic<jmethodID> g_org_chromium_TestJni_00024MyInnerClass_testInnerFoo(nullptr);
 static void Java_MyInnerClass_testInnerFoo(JNIEnv* env, const base::android::JavaRef<jobject>& obj)
     {
@@ -140,6 +162,11 @@ static void Java_MyInnerClass_testInnerFoo(JNIEnv* env, const base::android::Jav
   TEST_F(test_fixture, TestOtherFoo) { \
     JNIEnv* env = base::android::AttachCurrentThread(); \
     Java_TestJni_testOtherFoo(\
+        env, java_test_object); \
+  }\
+  TEST_F(test_fixture, TestLongNameActionServiceModelProducerDelegateProxyObserverMediatorFactoryConsumerImplForTesting) { \
+    JNIEnv* env = base::android::AttachCurrentThread(); \
+    Java_TestJni_testLongNameActionServiceModelProducerDelegateProxyObserverMediatorFactoryConsumerImplForTesting(\
         env, java_test_object); \
   }\
   TEST_F(test_fixture, TestInnerFoo) { \

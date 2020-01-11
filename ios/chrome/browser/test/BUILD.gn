@@ -22,6 +22,7 @@ source_set("perf_test_support") {
     "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sessions",
+    "//ios/chrome/browser/sessions:restoration_agent",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/sessions:session_service",
     "//ios/chrome/browser/tabs",

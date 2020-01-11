@@ -6,6 +6,18 @@
   <message name="IDS_OS_SETTINGS_ABOUT_PAGE_BUILD_DETAILS" desc="Label of the row button that clicks into Build details">
     Build Details
   </message>
+  <message name="IDS_OS_SETTINGS_ABOUT_PAGE_BUILD_DETAILS_COPY_TOOLTIP_LABEL" desc="Tooltip label that describes the build details copy button.">
+    Copy build details to clipboard
+  </message>
+  <message name="IDS_OS_SETTINGS_ABOUT_PAGE_ENTERPRISE_ENNROLLED_TITLE" desc="The title label for whether a device is enterprise enrolled.">
+    Enterprise Enrolled
+  </message>
+  <message name="IDS_OS_SETTINGS_ABOUT_ARC_STATUS_TITLE" desc="The title label for Arc status (if enabled).">
+    ARC Enabled
+  </message>
+  <message name="IDS_OS_SETTINGS_ABOUT_DEVELOPER_MODE" desc="The title label for developer mode.">
+    Developer Mode
+  </message>
 
   <!-- People (OS settings) -->
   <message name="IDS_OS_SETTINGS_PEOPLE" desc="Name of a section in the OS settings page." meaning="People and their accounts.">
@@ -45,6 +57,11 @@
   </message>
   <message name="IDS_OS_SETTINGS_LANGUAGES_LIST_TITLE" desc="Title for the list of the user's preferred written languages.">
     Languages
+  </message>
+
+  <!-- Device Page (OS Settings) -->
+  <message name="IDS_OS_SETTINGS_TOUCHPAD_REVERSE_SCROLL_LABEL">
+    Reverse scrolling <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
 
   <!-- Personalization Page (OS settings) -->

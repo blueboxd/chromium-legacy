@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -26,6 +27,100 @@ using blink::mojom::PermissionStatus;
 namespace content {
 
 namespace {
+
+bool PermissionDescriptorToPermissionType(
+    const PermissionDescriptorPtr& descriptor,
+    PermissionType* permission_type) {
+  switch (descriptor->name) {
+    case PermissionName::GEOLOCATION:
+      *permission_type = PermissionType::GEOLOCATION;
+      return true;
+    case PermissionName::NOTIFICATIONS:
+      *permission_type = PermissionType::NOTIFICATIONS;
+      return true;
+    case PermissionName::MIDI: {
+      if (descriptor->extension && descriptor->extension->is_midi() &&
+          descriptor->extension->get_midi()->sysex) {
+        *permission_type = PermissionType::MIDI_SYSEX;
+        return true;
+      }
+      *permission_type = PermissionType::MIDI;
+      return true;
+    }
+    case PermissionName::PROTECTED_MEDIA_IDENTIFIER:
+#if defined(ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION)
+      *permission_type = PermissionType::PROTECTED_MEDIA_IDENTIFIER;
+      return true;
+#else
+      NOTIMPLEMENTED();
+      return false;
+#endif  // defined(ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION)
+    case PermissionName::DURABLE_STORAGE:
+      *permission_type = PermissionType::DURABLE_STORAGE;
+      return true;
+    case PermissionName::AUDIO_CAPTURE:
+      *permission_type = PermissionType::AUDIO_CAPTURE;
+      return true;
+    case PermissionName::VIDEO_CAPTURE:
+      *permission_type = PermissionType::VIDEO_CAPTURE;
+      return true;
+    case PermissionName::BACKGROUND_SYNC:
+      *permission_type = PermissionType::BACKGROUND_SYNC;
+      return true;
+    case PermissionName::SENSORS:
+      *permission_type = PermissionType::SENSORS;
+      return true;
+    case PermissionName::ACCESSIBILITY_EVENTS:
+      *permission_type = PermissionType::ACCESSIBILITY_EVENTS;
+      return true;
+    case PermissionName::CLIPBOARD_READ:
+      *permission_type = PermissionType::CLIPBOARD_READ_WRITE;
+      return true;
+    case PermissionName::CLIPBOARD_WRITE: {
+      if (descriptor->extension && descriptor->extension->is_clipboard() &&
+          descriptor->extension->get_clipboard()->allowWithoutSanitization) {
+        *permission_type = PermissionType::CLIPBOARD_READ_WRITE;
+      } else {
+        *permission_type = PermissionType::CLIPBOARD_SANITIZED_WRITE;
+      }
+      return true;
+    }
+    case PermissionName::PAYMENT_HANDLER:
+      *permission_type = PermissionType::PAYMENT_HANDLER;
+      return true;
+    case PermissionName::BACKGROUND_FETCH:
+      *permission_type = PermissionType::BACKGROUND_FETCH;
+      return true;
+    case PermissionName::IDLE_DETECTION:
+      *permission_type = PermissionType::IDLE_DETECTION;
+      return true;
+    case PermissionName::PERIODIC_BACKGROUND_SYNC:
+      *permission_type = PermissionType::PERIODIC_BACKGROUND_SYNC;
+      return true;
+    case PermissionName::WAKE_LOCK:
+      if (descriptor->extension && descriptor->extension->is_wake_lock()) {
+        switch (descriptor->extension->get_wake_lock()->type) {
+          case blink::mojom::WakeLockType::kScreen:
+            *permission_type = PermissionType::WAKE_LOCK_SCREEN;
+            break;
+          case blink::mojom::WakeLockType::kSystem:
+            *permission_type = PermissionType::WAKE_LOCK_SYSTEM;
+            break;
+          default:
+            NOTREACHED();
+            return false;
+        }
+        return true;
+      }
+      break;
+    case PermissionName::NFC:
+      *permission_type = PermissionType::NFC;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
 
 // This function allows the usage of the the multiple request map with single
 // requests.
@@ -109,14 +204,10 @@ void PermissionServiceImpl::RequestPermissions(
   std::vector<PermissionType> types(permissions.size());
   std::set<PermissionType> duplicates_check;
   for (size_t i = 0; i < types.size(); ++i) {
-    auto type = PermissionDescriptorToPermissionType(permissions[i]);
-    if (!type) {
+    if (!PermissionDescriptorToPermissionType(permissions[i], &types[i])) {
       ReceivedBadMessage();
       return;
     }
-
-    types[i] = *type;
-
     // Each permission should appear at most once in the message.
     bool inserted = duplicates_check.insert(types[i]).second;
     if (!inserted) {
@@ -162,12 +253,12 @@ void PermissionServiceImpl::HasPermission(PermissionDescriptorPtr permission,
 void PermissionServiceImpl::RevokePermission(
     PermissionDescriptorPtr permission,
     PermissionStatusCallback callback) {
-  auto permission_type = PermissionDescriptorToPermissionType(permission);
-  if (!permission_type) {
+  PermissionType permission_type;
+  if (!PermissionDescriptorToPermissionType(permission, &permission_type)) {
     ReceivedBadMessage();
     return;
   }
-  PermissionStatus status = GetPermissionStatusFromType(*permission_type);
+  PermissionStatus status = GetPermissionStatusFromType(permission_type);
 
   // Resetting the permission should only be possible if the permission is
   // already granted.
@@ -176,33 +267,33 @@ void PermissionServiceImpl::RevokePermission(
     return;
   }
 
-  ResetPermissionStatus(*permission_type);
+  ResetPermissionStatus(permission_type);
 
-  std::move(callback).Run(GetPermissionStatusFromType(*permission_type));
+  std::move(callback).Run(GetPermissionStatusFromType(permission_type));
 }
 
 void PermissionServiceImpl::AddPermissionObserver(
     PermissionDescriptorPtr permission,
     PermissionStatus last_known_status,
     mojo::PendingRemote<blink::mojom::PermissionObserver> observer) {
-  auto type = PermissionDescriptorToPermissionType(permission);
-  if (!type) {
+  PermissionType type;
+  if (!PermissionDescriptorToPermissionType(permission, &type)) {
     ReceivedBadMessage();
     return;
   }
 
-  context_->CreateSubscription(*type, origin_, GetPermissionStatus(permission),
+  context_->CreateSubscription(type, origin_, GetPermissionStatus(permission),
                                last_known_status, std::move(observer));
 }
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatus(
     const PermissionDescriptorPtr& permission) {
-  auto type = PermissionDescriptorToPermissionType(permission);
-  if (!type) {
+  PermissionType type;
+  if (!PermissionDescriptorToPermissionType(permission, &type)) {
     ReceivedBadMessage();
     return PermissionStatus::DENIED;
   }
-  return GetPermissionStatusFromType(*type);
+  return GetPermissionStatusFromType(type);
 }
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(

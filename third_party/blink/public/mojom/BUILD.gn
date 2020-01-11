@@ -94,7 +94,6 @@ mojom("mojom_platform") {
     "payments/payment_app.mojom",
     "peerconnection/peer_connection_tracker.mojom",
     "permissions/permission.mojom",
-    "permissions/permission_automation.mojom",
     "permissions/permission_status.mojom",
     "picture_in_picture/picture_in_picture.mojom",
     "plugins/plugin_registry.mojom",

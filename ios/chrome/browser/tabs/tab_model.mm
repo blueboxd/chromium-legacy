@@ -30,11 +30,12 @@
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
+#include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#import "ios/chrome/browser/sessions/session_restoration_agent.h"
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
@@ -233,8 +234,8 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   // Backs up property with the same name.
   std::unique_ptr<TabUsageRecorder> _tabUsageRecorder;
 
-  // Used to handle session restoration.
-  std::unique_ptr<SessionRestorationAgent> _sessionRestorationAgent;
+  // Weak reference to the session restoration agent.
+  SessionRestorationBrowserAgent* _sessionRestorationBrowserAgent;
 
   // Used to ensure thread-safety of the certificate policy management code.
   base::CancelableTaskTracker _clearPoliciesTaskTracker;
@@ -282,20 +283,16 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   return _webStateList;
 }
 
-- (instancetype)initWithSessionService:(SessionServiceIOS*)service
-                          browserState:(ios::ChromeBrowserState*)browserState
-                          webStateList:(WebStateList*)webStateList {
+- (instancetype)initWithBrowser:(Browser*)browser {
   if ((self = [super init])) {
-    _webStateList = webStateList;
-    _browserState = browserState;
+    _webStateList = browser->GetWebStateList();
+    _browserState = browser->GetBrowserState();
     DCHECK(_browserState);
 
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
 
-    // There must be a valid session service defined to consume session windows.
-    DCHECK(service);
-    _sessionRestorationAgent = std::make_unique<SessionRestorationAgent>(
-        service, _webStateList, _browserState);
+    _sessionRestorationBrowserAgent =
+        SessionRestorationBrowserAgent::FromBrowser(browser);
 
     // Normal browser states are the only ones to get tab restore. Tab sync
     // handles incognito browser states by filtering on profile, so it's
@@ -304,8 +301,8 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
       // Set up the usage recorder before tabs are created.
       _tabUsageRecorder = std::make_unique<TabUsageRecorder>(
           _webStateList,
-          PrerenderServiceFactory::GetForBrowserState(browserState));
-      _sessionRestorationAgent->AddObserver(_tabUsageRecorder.get());
+          PrerenderServiceFactory::GetForBrowserState(_browserState));
+      _sessionRestorationBrowserAgent->AddObserver(_tabUsageRecorder.get());
     }
 
     std::unique_ptr<TabModelSyncedWindowDelegate> syncedWindowDelegate =
@@ -319,11 +316,11 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     NSMutableArray<id<WebStateListObserving>>* retainedWebStateListObservers =
         [[NSMutableArray alloc] init];
 
-    TabModelClosingWebStateObserver* tabModelClosingWebStateObserver = [
-        [TabModelClosingWebStateObserver alloc]
-        initWithTabModel:self
-          restoreService:IOSChromeTabRestoreServiceFactory::GetForBrowserState(
-                             _browserState)];
+    TabModelClosingWebStateObserver* tabModelClosingWebStateObserver =
+        [[TabModelClosingWebStateObserver alloc]
+            initWithTabModel:self
+              restoreService:IOSChromeTabRestoreServiceFactory::
+                                 GetForBrowserState(_browserState)];
     [retainedWebStateListObservers addObject:tabModelClosingWebStateObserver];
 
     _webStateListObservers.push_back(
@@ -345,7 +342,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     auto webStateListMetricsObserver =
         std::make_unique<WebStateListMetricsObserver>();
     _webStateListMetricsObserver = webStateListMetricsObserver.get();
-    _sessionRestorationAgent->AddObserver(_webStateListMetricsObserver);
+    _sessionRestorationBrowserAgent->AddObserver(_webStateListMetricsObserver);
     _webStateListObservers.push_back(std::move(webStateListMetricsObserver));
 
     for (const auto& webStateListObserver : _webStateListObservers)
@@ -401,11 +398,11 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   TabModelList::UnregisterTabModelFromChromeBrowserState(_browserState, self);
 
-  _sessionRestorationAgent->RemoveObserver(_webStateListMetricsObserver);
+  _sessionRestorationBrowserAgent->RemoveObserver(_webStateListMetricsObserver);
   if (_tabUsageRecorder)
-    _sessionRestorationAgent->RemoveObserver(_tabUsageRecorder.get());
+    _sessionRestorationBrowserAgent->RemoveObserver(_tabUsageRecorder.get());
 
-  _sessionRestorationAgent.reset();
+  _sessionRestorationBrowserAgent = nullptr;
   _browserState = nullptr;
 
   // Clear weak pointer to observers before destroying them.
@@ -436,9 +433,9 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 #pragma mark - SessionWindowRestoring(public)
 
 - (void)saveSessionImmediately:(BOOL)immediately {
-  if (!_sessionRestorationAgent)
+  if (!_sessionRestorationBrowserAgent)
     return;
-  _sessionRestorationAgent->SaveSession(immediately);
+  _sessionRestorationBrowserAgent->SaveSession(immediately);
 }
 
 - (BOOL)isWebUsageEnabled {
@@ -462,7 +459,7 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     _restoringSession = NO;
   }));
 
-  return _sessionRestorationAgent->RestoreSessionWindow(window);
+  return _sessionRestorationBrowserAgent->RestoreSessionWindow(window);
 }
 
 #pragma mark - Notification Handlers

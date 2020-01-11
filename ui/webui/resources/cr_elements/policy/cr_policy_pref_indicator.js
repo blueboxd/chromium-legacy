@@ -45,7 +45,7 @@ Polymer({
    * @return {CrPolicyIndicatorType} The indicator type based on |controlledBy|
    *     and |enforcement|.
    */
-  getIndicatorTypeForPref_: function(controlledBy, enforcement) {
+  getIndicatorTypeForPref_(controlledBy, enforcement) {
     if (enforcement == chrome.settingsPrivate.Enforcement.RECOMMENDED) {
       return CrPolicyIndicatorType.RECOMMENDED;
     }
@@ -78,7 +78,7 @@ Polymer({
    * @return {string} The tooltip text for |indicatorType|.
    * @private
    */
-  getIndicatorTooltipForPref_: function(indicatorType) {
+  getIndicatorTooltipForPref_(indicatorType) {
     if (!this.pref) {
       return '';
     }
@@ -89,7 +89,7 @@ Polymer({
   },
 
   /** @return {!Element} */
-  getFocusableElement: function() {
+  getFocusableElement() {
     return this.$$('cr-tooltip-icon').getFocusableElement();
   },
 });

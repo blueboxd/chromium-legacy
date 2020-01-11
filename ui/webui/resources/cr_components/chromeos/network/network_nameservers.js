@@ -23,7 +23,7 @@ Polymer({
      */
     nameservers_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       },
     },
@@ -40,7 +40,7 @@ Polymer({
     /** @private */
     googleNameserversText_: {
       type: String,
-      value: function() {
+      value() {
         return this.i18nAdvanced(
             'networkNameserversGoogle', {substitutions: [], tags: ['a']});
       }
@@ -77,7 +77,7 @@ Polymer({
    * @param {!Array<string>} nameservers
    * @private
    */
-  isGoogleNameservers_: function(nameservers) {
+  isGoogleNameservers_(nameservers) {
     const matches = [];
     for (let i = 0; i < nameservers.length; ++i) {
       const nameserver = nameservers[i];
@@ -105,7 +105,7 @@ Polymer({
   },
 
   /** @private */
-  managedPropertiesChanged_: function(newValue, oldValue) {
+  managedPropertiesChanged_(newValue, oldValue) {
     if (!this.managedProperties) {
       return;
     }
@@ -146,7 +146,7 @@ Polymer({
    *     have been set in the UI.
    * @private
    */
-  setNameservers_: function(nameserversType, nameservers, sendNameservers) {
+  setNameservers_(nameserversType, nameservers, sendNameservers) {
     if (nameserversType == 'custom') {
       // Add empty entries for unset custom nameservers.
       for (let i = nameservers.length; i < this.MAX_NAMESERVERS; ++i) {
@@ -171,7 +171,7 @@ Polymer({
    * @return {boolean} True if the nameservers config type type can be changed.
    * @private
    */
-  computeCanChangeConfigType_: function(managedProperties) {
+  computeCanChangeConfigType_(managedProperties) {
     if (!managedProperties) {
       return false;
     }
@@ -194,7 +194,7 @@ Polymer({
    * @return {boolean} True if the nameservers are editable.
    * @private
    */
-  canEditCustomNameServers_: function(nameserversType, managedProperties) {
+  canEditCustomNameServers_(nameserversType, managedProperties) {
     if (!managedProperties) {
       return false;
     }
@@ -221,7 +221,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  showNameservers_: function(nameserversType, type, nameservers) {
+  showNameservers_(nameserversType, type, nameservers) {
     if (nameserversType != type) {
       return false;
     }
@@ -233,7 +233,7 @@ Polymer({
    * @return {string}
    * @private
    */
-  getNameserversString_: function(nameservers) {
+  getNameserversString_(nameservers) {
     return nameservers.join(', ');
   },
 
@@ -242,7 +242,7 @@ Polymer({
    * sends the change value if necessary.
    * @private
    */
-  onTypeChange_: function() {
+  onTypeChange_() {
     const type = this.$$('#nameserverType').selected;
     this.nameserversType_ = type;
     if (type == 'custom') {
@@ -257,7 +257,7 @@ Polymer({
    * Event triggered when a nameserver value changes.
    * @private
    */
-  onValueChange_: function() {
+  onValueChange_() {
     if (this.nameserversType_ != 'custom') {
       // If a user inputs Google nameservers in the custom nameservers fields,
       // |nameserversType| will change to 'google' so don't send the values.
@@ -270,7 +270,7 @@ Polymer({
    * Sends the current nameservers type (for automatic) or value.
    * @private
    */
-  sendNameServers_: function() {
+  sendNameServers_() {
     const type = this.nameserversType_;
 
     if (type == 'custom') {
@@ -312,7 +312,7 @@ Polymer({
    * @return {!Array<string>}
    * @private
    */
-  clearEmptyNameServers_: function(nameservers) {
+  clearEmptyNameServers_(nameservers) {
     return nameservers.filter((nameserver) => !!nameserver);
   },
 
@@ -320,7 +320,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  doNothing_: function(event) {
+  doNothing_(event) {
     event.stopPropagation();
   },
 
@@ -329,7 +329,7 @@ Polymer({
    * @return {string} Accessibility label for nameserver input with given index.
    * @private
    */
-  getCustomNameServerInputA11yLabel_: function(index) {
+  getCustomNameServerInputA11yLabel_(index) {
     return this.i18n('networkNameserversCustomInputA11yLabel', index + 1);
   },
 });

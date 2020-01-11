@@ -28,13 +28,13 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
+  ready() {
     this.browserProxy_ =
         certificate_manager.CertificatesBrowserProxyImpl.getInstance();
   },
 
   /** @override */
-  attached: function() {
+  attached() {
     this.explanationText_ = loadTimeData.getStringF(
         'certificateManagerCaTrustEditDialogExplanation', this.model.name);
 
@@ -52,12 +52,12 @@ Polymer({
   },
 
   /** @private */
-  onCancelTap_: function() {
+  onCancelTap_() {
     /** @type {!CrDialogElement} */ (this.$.dialog).close();
   },
 
   /** @private */
-  onOkTap_: function() {
+  onOkTap_() {
     this.$.spinner.active = true;
 
     const whenDone = this.model.id ?

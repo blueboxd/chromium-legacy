@@ -9,6 +9,10 @@
 Polymer({
   is: 'settings-pointers',
 
+  behaviors: [
+    PrefsBehavior,
+  ],
+
   properties: {
     prefs: {
       type: Object,
@@ -70,11 +74,36 @@ Polymer({
         .sendPrefChange();
   },
 
-  /** @private */
+  /**
+   * @param {!Event} event
+   * @private
+   */
   onMouseSwapButtonsChange_: function(event) {
     if (!this.receivedMouseSwapButtonsDown_) {
       /** @type {!SettingsToggleButtonElement} */ (this.$.mouseSwapButton)
           .sendPrefChange();
     }
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onLearnMoreLinkClicked_: function(event) {
+    if (!Array.isArray(event.path) || !event.path.length) {
+      return;
+    }
+
+    if (event.path[0].tagName == 'A') {
+      // Do not toggle reverse scrolling if the contained link is clicked.
+      event.stopPropagation();
+    }
+  },
+
+  /** @private */
+  onReverseScrollRowClicked_: function() {
+    this.setPrefValue(
+        'settings.touchpad.natural_scroll',
+        !this.getPref('settings.touchpad.natural_scroll').value);
   },
 });

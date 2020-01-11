@@ -27,6 +27,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
+#include "components/session_manager/core/session_manager_observer.h"
 
 class GoogleServiceAuthError;
 class PrefService;
@@ -53,10 +54,12 @@ class PolicyOAuth2TokenFetcher;
 class RemoteCommandsInvalidator;
 
 // Implements logic for initializing user policy on Chrome OS.
-class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
-                                       public CloudPolicyClient::Observer,
-                                       public CloudPolicyService::Observer,
-                                       public ProfileManagerObserver {
+class UserCloudPolicyManagerChromeOS
+    : public CloudPolicyManager,
+      public CloudPolicyClient::Observer,
+      public CloudPolicyService::Observer,
+      public ProfileManagerObserver,
+      public session_manager::SessionManagerObserver {
  public:
   // Enum describing what behavior we want to enforce here.
   enum class PolicyEnforcement {
@@ -166,6 +169,9 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // CloudPolicyManager:
   void OnStoreLoaded(CloudPolicyStore* cloud_policy_store) override;
 
+  // SessionManagerObserver:
+  void OnUserProfileLoaded(const AccountId& account_id) override;
+
   // Helper function to force a policy fetch timeout.
   void ForceTimeoutForTest();
 
@@ -231,8 +237,9 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   void StartRefreshSchedulerIfReady();
 
   // Starts report scheduler if all the required conditions are fulfilled.
-  // Exits immediately if corresponding feature flag is closed.
-  void StartReportSchedulerIfReady();
+  // Exits immediately if corresponding feature flag is closed. Pass |true| to
+  // pend creation until all profiles are loaded in profile manager.
+  void StartReportSchedulerIfReady(bool enable_delayed_creation);
 
   // ProfileManagerObserver:
   void OnProfileAdded(Profile* profile) override;

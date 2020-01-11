@@ -40,7 +40,7 @@ Polymer({
      */
     apnSelectList_: {
       type: Array,
-      value: function() {
+      value() {
         return [];
       }
     },
@@ -61,7 +61,7 @@ Polymer({
      */
     otherApnFields_: {
       type: Array,
-      value: function() {
+      value() {
         return ['accessPointName', 'username', 'password'];
       },
       readOnly: true
@@ -73,7 +73,7 @@ Polymer({
      */
     otherApnEditTypes_: {
       type: Object,
-      value: function() {
+      value() {
         return {
           'accessPointName': 'String',
           'username': 'String',
@@ -89,7 +89,7 @@ Polymer({
    * @return {!chromeos.networkConfig.mojom.ApnProperties}
    * @private
    */
-  getApnFromManaged_: function(apn) {
+  getApnFromManaged_(apn) {
     return {
       accessPointName: OncMojo.getActiveString(apn.accessPointName),
       authentication: OncMojo.getActiveString(apn.authentication),
@@ -102,7 +102,7 @@ Polymer({
   },
 
   /** @private*/
-  managedPropertiesChanged_: function() {
+  managedPropertiesChanged_() {
     const cellular = this.managedProperties.typeProperties.cellular;
     /** @type {!chromeos.networkConfig.mojom.ApnProperties|undefined} */ let
         activeApn;
@@ -121,7 +121,7 @@ Polymer({
    *     currently active APN properties.
    * @private
    */
-  setApnSelectList_: function(activeApn) {
+  setApnSelectList_(activeApn) {
     // Copy the list of APNs from this.managedProperties.
     const apnList = this.getApnList_().slice();
 
@@ -162,7 +162,7 @@ Polymer({
    *     properties from |apnProperties| if provided.
    * @private
    */
-  createApnObject_: function(apnProperties) {
+  createApnObject_(apnProperties) {
     const newApn = {accessPointName: ''};
     if (apnProperties) {
       Object.assign(newApn, apnProperties);
@@ -176,7 +176,7 @@ Polymer({
    *     is not set.
    * @private
    */
-  getApnList_: function() {
+  getApnList_() {
     if (!this.managedProperties) {
       return [];
     }
@@ -192,7 +192,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onSelectApnChange_: function(event) {
+  onSelectApnChange_(event) {
     const target = /** @type {!HTMLSelectElement} */ (event.target);
     const accessPointName = target.value;
     // When selecting 'Other', don't set a change event unless a valid
@@ -211,7 +211,7 @@ Polymer({
    * @param {!CustomEvent<!{field: string, value: string}>} event
    * @private
    */
-  onOtherApnChange_: function(event) {
+  onOtherApnChange_(event) {
     // TODO(benchan/stevenjb): Move the toUpperCase logic to shill or
     // onc_translator_onc_to_shill.cc.
     const value = (event.detail.field == 'accessPointName') ?
@@ -226,7 +226,7 @@ Polymer({
    * @param {!Event} event
    * @private
    */
-  onSaveOtherTap_: function(event) {
+  onSaveOtherTap_(event) {
     this.sendApnChange_(this.selectedApn_);
   },
 
@@ -235,7 +235,7 @@ Polymer({
    * @param {string} accessPointName
    * @private
    */
-  sendApnChange_: function(accessPointName) {
+  sendApnChange_(accessPointName) {
     const apnList = this.getApnList_();
     let apn = this.findApnInList_(apnList, accessPointName);
     if (apn == undefined) {
@@ -254,7 +254,7 @@ Polymer({
    * @return {boolean} True if the 'other' APN is currently selected.
    * @private
    */
-  isOtherSelected_: function(accessPointName) {
+  isOtherSelected_(accessPointName) {
     if (!this.managedProperties) {
       return false;
     }
@@ -268,7 +268,7 @@ Polymer({
    * @return {string} The most descriptive name for the access point.
    * @private
    */
-  apnDesc_: function(apn) {
+  apnDesc_(apn) {
     return apn.localizedName || apn.name || apn.accessPointName;
   },
 
@@ -279,7 +279,7 @@ Polymer({
    *     |apnList| matching |accessPointName| if it exists, or undefined.
    * @private
    */
-  findApnInList_: function(apnList, accessPointName) {
+  findApnInList_(apnList, accessPointName) {
     return apnList.find(function(a) {
       return a.accessPointName == accessPointName;
     });
@@ -291,7 +291,7 @@ Polymer({
    *     apn item.
    * @private
    */
-  isApnItemSelected_: function(item) {
+  isApnItemSelected_(item) {
     return item.accessPointName == this.selectedApn_;
   }
 });

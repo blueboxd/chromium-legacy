@@ -13,6 +13,12 @@ Polymer({
   behaviors: [I18nBehavior],
 
   properties: {
+    /** @private {!VersionInfo} */
+    versionInfo_: Object,
+
+    /** @private {!ChannelInfo} */
+    channelInfo_: Object,
+
     /** @private */
     currentlyOnChannelText_: String,
 
@@ -32,6 +38,11 @@ Polymer({
   ready: function() {
     const browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
     browserProxy.pageReady();
+
+    browserProxy.getVersionInfo().then(versionInfo => {
+      this.versionInfo_ = versionInfo;
+    });
+
     this.updateChannelInfo_();
   },
 
@@ -39,6 +50,7 @@ Polymer({
   updateChannelInfo_: function() {
     const browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
     browserProxy.getChannelInfo().then(info => {
+      this.channelInfo_ = info;
       // Display the target channel for the 'Currently on' message.
       this.currentlyOnChannelText_ = this.i18n(
           'aboutCurrentlyOnChannel',
@@ -82,10 +94,41 @@ Polymer({
   },
 
   /**
+   * @return {boolean}
+   * @private
+   */
+  copyToClipBoardEnabled_: function() {
+    return !!this.versionInfo_ && !!this.channelInfo_;
+  },
+
+  /** @private */
+  onCopyBuildDetailsToClipBoardTap_: function() {
+    const buildInfo = {
+      'application_label': loadTimeData.getString('aboutBrowserVersion'),
+      'platform': this.versionInfo_.osVersion,
+      'aboutChannelLabel': this.channelInfo_.targetChannel,
+      'firmware_version': this.versionInfo_.osFirmware,
+      'aboutIsArcStatusTitle': loadTimeData.getBoolean('aboutIsArcEnabled'),
+      'arc_label': this.versionInfo_.arcVersion,
+      'isEnterpriseManagedTitle':
+          loadTimeData.getBoolean('aboutEnterpriseManaged'),
+      'aboutIsDeveloperModeTitle':
+          loadTimeData.getBoolean('aboutIsDeveloperMode'),
+    };
+
+    const entries = [];
+    for (const key in buildInfo) {
+      entries.push(this.i18n(key) + ': ' + buildInfo[key]);
+    }
+
+    navigator.clipboard.writeText(entries.join('\n'));
+  },
+
+  /**
    * @param {!Event} e
    * @private
    */
-  onBuildDetailsTap_: function(e) {
+  onVisitBuildDetailsPageTap_: function(e) {
     e.preventDefault();
     window.open('chrome://version');
   },

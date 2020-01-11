@@ -6842,10 +6842,6 @@ crbug.com/1039401 [ Linux ] virtual/web-components-v0-disabled/fast/dom/HTMLMete
 # Sheriff 2020-01-09
 crbug.com/1040270 http/tests/devtools/elements/styles-1/disable-property-workingcopy-update.js [ Pass Timeout ]
 
-# Sheriff 2020-01-10
-crbug.com/1041052 external/wpt/offscreen-canvas/filter/offscreencanvas.filter.w.html [ Pass Failure ]
-crbug.com/1041052 external/wpt/2dcontext/fill-and-stroke-styles/canvas_colorsandstyles_createlineargradient_001.htm [ Pass Failure ]
-
 # Temporarily disabled to land Animations accessibility changes in DevTools
 crbug.com/963183 http/tests/devtools/animation/animation-timeline.js [ Pass Failure ]
 

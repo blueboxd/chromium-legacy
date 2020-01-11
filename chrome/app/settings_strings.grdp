@@ -4688,12 +4688,6 @@
     <message name="IDS_SETTINGS_SCROLL_LABEL" desc="In Device Settings, the title above the radio buttons to choose the scrolling behavior.">
       Scrolling
     </message>
-    <message name="IDS_SETTINGS_NATURAL_SCROLL_LABEL" desc="In Device Settings, the text next to the radio button that enables natural scrolling.">
-      Australian <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
-    </message>
-    <message name="IDS_SETTINGS_TRADITIONAL_SCROLL_LABEL" desc="In Device Settings, the text next to the radio button that enables traditional scrolling.">
-      Traditional
-    </message>
     <!-- Mouse -->
     <message name="IDS_SETTINGS_MOUSE_SPEED_LABEL" desc="In Device Settings, the text next to the slider that sets the speed (sensitivity) of the mouse.">
       Mouse speed

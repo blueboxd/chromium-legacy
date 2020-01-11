@@ -752,7 +752,6 @@ bool PredictionManager::ProcessAndStorePredictionModel(
     it->second = std::move(prediction_model);
     return true;
   }
-  prediction_model_recorder.set_is_valid(false);
   return false;
 }
 

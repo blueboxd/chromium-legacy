@@ -613,6 +613,7 @@ const char* ColorSpaceTransferIdToString(gfx::ColorSpace::TransferID id) {
     MATCH_ENUM_CASE(TransferID, IEC61966_2_1_HDR)
     MATCH_ENUM_CASE(TransferID, LINEAR_HDR)
     MATCH_ENUM_CASE(TransferID, CUSTOM)
+    MATCH_ENUM_CASE(TransferID, CUSTOM_HDR)
   }
 }
 
@@ -691,6 +692,7 @@ uint8_t StringToColorSpaceTransferId(const std::string& token) {
   MATCH_ENUM_CASE(TransferID, IEC61966_2_1_HDR)
   MATCH_ENUM_CASE(TransferID, LINEAR_HDR)
   MATCH_ENUM_CASE(TransferID, CUSTOM)
+  MATCH_ENUM_CASE(TransferID, CUSTOM_HDR)
   return -1;
 }
 
@@ -773,7 +775,8 @@ base::Value ColorSpaceToDict(const gfx::ColorSpace& color_space) {
     color_space.GetPrimaryMatrix(&mat);
     dict.SetKey("custom_primary_matrix", Matrix3x3ToList(mat));
   }
-  if (color_space.GetTransferID() == gfx::ColorSpace::TransferID::CUSTOM) {
+  if (color_space.GetTransferID() == gfx::ColorSpace::TransferID::CUSTOM ||
+      color_space.GetTransferID() == gfx::ColorSpace::TransferID::CUSTOM_HDR) {
     skcms_TransferFunction fn;
     color_space.GetTransferFunction(&fn);
     dict.SetKey("custom_transfer_params", TransferFunctionToList(fn));
@@ -810,7 +813,10 @@ bool ColorSpaceFromDict(const base::Value& dict, gfx::ColorSpace* color_space) {
   }
   skcms_TransferFunction t_custom_transfer_params;
   bool uses_custom_transfer_params =
-      transfer_id == static_cast<uint8_t>(gfx::ColorSpace::TransferID::CUSTOM);
+      transfer_id ==
+          static_cast<uint8_t>(gfx::ColorSpace::TransferID::CUSTOM) ||
+      transfer_id ==
+          static_cast<uint8_t>(gfx::ColorSpace::TransferID::CUSTOM_HDR);
   if (uses_custom_transfer_params) {
     const base::Value* custom_transfer_params =
         dict.FindListKey("custom_transfer_params");

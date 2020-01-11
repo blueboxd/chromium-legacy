@@ -33,7 +33,7 @@ Polymer({
    * Cancels existing auto-hide, and sets up new auto-hide.
    * @private
    */
-  resetAutoHide_: function() {
+  resetAutoHide_() {
     if (this.hideTimeoutId_ != null) {
       window.clearTimeout(this.hideTimeoutId_);
       this.hideTimeoutId_ = null;
@@ -58,7 +58,7 @@ Polymer({
    * is updated to that value.
    * @param {number=} duration
    */
-  show: function(duration) {
+  show(duration) {
     // |this.resetAutoHide_| is called whenever |this.duration| or |this.open|
     // is changed. If neither is changed, we will still need to reset auto-hide.
     let shouldResetAutoHide = true;
@@ -82,7 +82,7 @@ Polymer({
   /**
    * Hides the toast.
    */
-  hide: function() {
+  hide() {
     this.open = false;
   },
 });

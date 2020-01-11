@@ -74,7 +74,7 @@
     populateBound_: null,
 
     /** @override */
-    attached: function() {
+    attached() {
       this.isRtl_ = this.matches(':host-context([dir=rtl]) cr-radio-group');
       this.deltaKeyMap_ = new Map([
         ['ArrowDown', 1],
@@ -101,7 +101,7 @@
     },
 
     /** @override */
-    detached: function() {
+    detached() {
       if (Polymer.DomIf) {
         this.$$('slot').removeEventListener('slotchange', this.populateBound_);
       } else if (this.observer_) {
@@ -112,7 +112,7 @@
     },
 
     /** @override */
-    focus: function() {
+    focus() {
       if (this.disabled || !this.buttons_) {
         return;
       }
@@ -128,7 +128,7 @@
      * @param {!KeyboardEvent} event
      * @private
      */
-    onKeyDown_: function(event) {
+    onKeyDown_(event) {
       if (this.disabled) {
         return;
       }
@@ -187,7 +187,7 @@
      * @return {!RegExp}
      * @private
      */
-    computeSelectableRegExp_: function() {
+    computeSelectableRegExp_() {
       const tags = this.selectableElements.split(', ').join('|');
       return new RegExp(`^(${tags})$`, 'i');
     },
@@ -196,7 +196,7 @@
      * @param {!Event} event
      * @private
      */
-    onClick_: function(event) {
+    onClick_(event) {
       const path = event.composedPath();
       if (path.some(target => /^a$/i.test(target.tagName))) {
         return;
@@ -209,7 +209,7 @@
     },
 
     /** @private */
-    populate_: function() {
+    populate_() {
       // TODO(crbug.com/738611): After migration to Polymer 2, remove
       // Polymer 1 references.
       this.buttons_ = Polymer.DomIf ?
@@ -231,7 +231,7 @@
      * @param {!CrRadioButtonElement} button
      * @private
      */
-    select_: function(button) {
+    select_(button) {
       if (!isEnabled(button)) {
         return;
       }
@@ -247,12 +247,12 @@
      * @return {boolean}
      * @private
      */
-    isButtonEnabledAndSelected_: function(button) {
+    isButtonEnabledAndSelected_(button) {
       return !this.disabled && button.checked && isEnabled(button);
     },
 
     /** @private */
-    update_: function() {
+    update_() {
       if (!this.buttons_) {
         return;
       }

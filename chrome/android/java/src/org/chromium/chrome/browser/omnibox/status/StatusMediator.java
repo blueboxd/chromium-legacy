@@ -110,8 +110,6 @@ class StatusMediator {
     // The denominator for the above formula, which will adjust the scale for the alpha.
     private final float mTextOffsetAdjustedScale;
 
-    private Bitmap mCachedSearchEngineLogoBitmap;
-
     StatusMediator(PropertyModel model, Resources resources, Context context,
             UrlBarEditingTextStateProvider urlBarEditingTextStateProvider) {
         mModel = model;
@@ -427,9 +425,6 @@ class StatusMediator {
      */
     public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
-        if (!TextUtils.equals(searchEngineUrl, mSearchEngineLogoUrl)) {
-            mCachedSearchEngineLogoBitmap = null;
-        }
         mIsSearchEngineStateSetup = true;
         mIsSearchEngineGoogle = isSearchEngineGoogle;
         mSearchEngineLogoUrl = searchEngineUrl;
@@ -551,20 +546,13 @@ class StatusMediator {
 
     /** @return The non-Google search engine icon {@link Bitmap}. */
     private void getNonGoogleSearchEngineIconBitmap(final Callback<StatusIconResource> callback) {
-        if (mCachedSearchEngineLogoBitmap != null) {
-            callback.onResult(
-                    new StatusIconResource(mSearchEngineLogoUrl, mCachedSearchEngineLogoBitmap, 0));
-        }
-
         mDelegate.getSearchEngineLogoFavicon(mResources, (favicon) -> {
             if (favicon == null || mShouldCancelCustomFavicon) {
                 callback.onResult(new StatusIconResource(R.drawable.ic_search, 0));
                 return;
             }
 
-            mCachedSearchEngineLogoBitmap = favicon;
-            callback.onResult(
-                    new StatusIconResource(mSearchEngineLogoUrl, mCachedSearchEngineLogoBitmap, 0));
+            callback.onResult(new StatusIconResource(mSearchEngineLogoUrl, favicon, 0));
         });
     }
 

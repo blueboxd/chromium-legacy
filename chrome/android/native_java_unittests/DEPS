@@ -1,3 +1,7 @@
 include_rules = [
+  "+components/payments/content/android/java/src/org/chromium/components/payments",
   "+components/search_engines/android/java/src/org/chromium/components/search_engines",
+
+  "-content/public/android/java",
+  "+content/public/android/java/src/org/chromium/content_public",
 ]

@@ -349,8 +349,8 @@ _ANDROID_NEXUS5X_FYI_BENCHMARK_CONFIGS = PerfSuite([
      # Running a sample benchmark to help testing out the work on
      # trace_processor_shell: crbug.com/1028612
     _GetBenchmarkConfig('tracing.tracing_with_background_memory_infra')])
-_ANDROID_PIXEL2_AAB_FYI_BENCHMARK_CONFIGS = PerfSuite([
-    _GetBenchmarkConfig('rendering.mobile', True)])
+_ANDROID_PIXEL2_AAB_FYI_BENCHMARK_CONFIGS = PerfSuite(
+    [_GetBenchmarkConfig('startup.mobile')])
 _ANDROID_PIXEL2_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('v8.browsing_mobile'),
     _GetBenchmarkConfig('system_health.memory_mobile'),

@@ -912,6 +912,7 @@ if (!is_android) {
                       "serial/serial_input_signals.idl",
                       "serial/serial_options.idl",
                       "serial/serial_output_signals.idl",
+                      "serial/serial_port_filter.idl",
                       "serial/serial_port_request_options.idl",
                     ],
                     "abspath")

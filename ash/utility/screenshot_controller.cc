@@ -466,7 +466,7 @@ void ScreenshotController::OnKeyEvent(ui::KeyEvent* event) {
       return;
 
     ui::Accelerator accelerator(*event);
-    ash::Shell::Get()
+    Shell::Get()
         ->accelerator_controller()
         ->accelerator_history()
         ->StoreCurrentAccelerator(accelerator);

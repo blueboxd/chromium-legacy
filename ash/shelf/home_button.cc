@@ -173,13 +173,10 @@ bool HomeButton::DoesIntersectRect(const views::View* target,
                                    const gfx::Rect& rect) const {
   DCHECK_EQ(target, this);
   gfx::Rect button_bounds = target->GetLocalBounds();
-  // Increase clickable area for the button from
-  // (kShelfControlSize x kShelfButtonSize) to
-  // (kShelfButtonSize x kShelfButtonSize).
-  int left_offset = button_bounds.width() - ShelfConfig::Get()->button_size();
-  int bottom_offset =
-      button_bounds.height() - ShelfConfig::Get()->button_size();
-  button_bounds.Inset(gfx::Insets(0, left_offset, bottom_offset, 0));
+  // Increase clickable area for the button to account for clicks around the
+  // spacing. This will not intercept events outside of the parent widget.
+  button_bounds.Inset(
+      gfx::Insets(-ShelfConfig::Get()->home_button_edge_spacing()));
   return button_bounds.Intersects(rect);
 }
 

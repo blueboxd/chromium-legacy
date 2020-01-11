@@ -366,6 +366,7 @@
 <translation id="381841723434055211">फोन नम्बरहरू</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> डाउनलोडहरूलाई मेटाइयो</translation>
 <translation id="3822502789641063741">साइटको भण्डारणलई खाली गर्ने हो?</translation>
+<translation id="3853625385350850937">जारी राख्न आफ्नो फोनमा NFC सक्रिय गर्नुहोस्</translation>
 <translation id="3859306556332390985">अगाडि खोज्नुहोस्</translation>
 <translation id="388596076286380598">आफू अफलाइन भएको वा आफ्नो इन्टरनेट राम्रोसँग नचलेको बेलामा पनि आफूलाई मन पर्ने साइटहरूका लेख, भिडियो वा अन्य सामग्री प्राप्त गर्नुहोस्।</translation>
 <translation id="3894427358181296146">फोल्डर थप्नुहोस्</translation>
@@ -1048,6 +1049,7 @@
 <translation id="8912362522468806198">Google खाता</translation>
 <translation id="8920114477895755567">अभिभावकहरूको विवरणको लागि प्रतीक्षा गर्दै।</translation>
 <translation id="8922289737868596582">पृष्ठहरूलाई अफलाइन हेर्न थप विकल्पहरू नामक बटनबाट तिनीहरूलाई डाउनलोड गर्नुहोस्</translation>
+<translation id="8926666909099850184">यो यन्त्रमा NFC निष्क्रिय पारिएको छ। <ph name="BEGIN_LINK" />Android का सेटिङ<ph name="END_LINK" /> मा गई यसलाई सक्रिय गर्नुहोस्।</translation>
 <translation id="8937772741022875483">तपाईंले Chrome मा गर्नुभएका क्रियाकलाप डिजिटल वेलबिइङबाट हटाउने हो?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">अर्को विन्डोमा खोल्नुहोस्</translation>

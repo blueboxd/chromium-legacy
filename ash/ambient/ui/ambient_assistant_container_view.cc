@@ -98,7 +98,7 @@ void AmbientAssistantContainerView::InitLayout() {
       std::make_unique<views::Label>(GetGreetingMessage(active_user_session)));
   greeting_label_->SetEnabledColor(kTextColorSecondary);
   greeting_label_->SetFontList(
-      ash::assistant::ui::GetDefaultFontList()
+      assistant::ui::GetDefaultFontList()
           .DeriveWithSizeDelta(8)
           .DeriveWithWeight(gfx::Font::Weight::NORMAL));
   greeting_label_->SetHorizontalAlignment(

@@ -1237,6 +1237,9 @@ void ChromePasswordManagerClient::FocusedInputChanged(
           web_contents(), content_driver, focused_field_type))
     return;
 
+  if (!content_driver->CanShowAutofillUi())
+    return;
+
   if (!PasswordAccessoryController::AllowedForWebContents(web_contents()))
     return;
 

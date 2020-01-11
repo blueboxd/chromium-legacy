@@ -246,6 +246,10 @@ class AvSettings {
   // This function should only be implemented on HDMI platforms.
   static CHROMECAST_EXPORT int GetHdmiLatencyUs() __attribute__((weak));
 
+  // Returns true if this is an HDMI platform.
+  // This function should only be implemented on HDMI platforms.
+  static CHROMECAST_EXPORT bool IsHdmiPlatform() __attribute__((weak));
+
   // Returns the type of volume control, i.e. MASTER_VOLUME, FIXED_VOLUME or
   // ATTENUATION_VOLUME. For example, normal TVs, devices of CEC audio
   // controls, and audio devices are master volume systems. The counter

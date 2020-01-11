@@ -1409,7 +1409,6 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   RenderViewHostImpl* swapped_out_rvh =
       opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance());
   EXPECT_TRUE(swapped_out_rvh);
-  EXPECT_TRUE(swapped_out_rvh->is_swapped_out_);
   EXPECT_FALSE(swapped_out_rvh->is_active());
 
   // Fake a process crash.

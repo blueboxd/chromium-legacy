@@ -29,6 +29,33 @@ class ScriptPromiseResolver;
 class XRFrameProvider;
 class XRSessionInit;
 
+// Implementation of the XR interface according to
+// https://immersive-web.github.io/webxr/#xr-interface . This is created lazily
+// via the NavigatorXR class on first access to the navigator.xr attribute, and
+// disposed when the execution context is destroyed or on mojo communication
+// errors with the browser/device process.
+//
+// When the XR object is used for promises, it uses query objects to store state
+// including the associated ScriptPromiseResolver. These query objects are owned
+// by the XR object and remain alive until the promise is resolved or rejected.
+// (See comments below for PendingSupportsSessionQuery and
+// PendingRequestSessionQuery.) These query objects are destroyed and any
+// outstanding promises rejected when the XR object is disposed.
+//
+// The XR object owns mojo connections with the Browser process through
+// VRService, used for capability queries and session lifetime
+// management. The XR object is also the receiver for the VRServiceClient.
+//
+// The XR object owns mojo connections with the Device process (either a
+// separate utility process, or implemented as part of the Browser process,
+// depending on the runtime and options) through XRFrameProvider and
+// XREnvironmentIntegrationProvider. These are used to transport per-frame data
+// such as image data and input poses. These are lazily created when first
+// needed for a sensor-backed session (all except sensorless inline sessions),
+// and destroyed when the XR object is disposed.
+//
+// The XR object keeps weak references to XRSession objects after they were
+// returned through a successful requestSession promise, but does not own them.
 class XR final : public EventTargetWithInlineData,
                  public ContextLifecycleObserver,
                  public device::mojom::blink::VRServiceClient,
@@ -117,7 +144,8 @@ class XR final : public EventTargetWithInlineData,
 
   // Encapsulates blink-side `XR::requestSession()` call. It is a wrapper around
   // ScriptPromiseResolver that allows us to add additional logic as certain
-  // things related to promise's life cycle happen.
+  // things related to promise's life cycle happen. Instances are owned
+  // by the XR object, see outstanding_request_queries_ below.
   class PendingRequestSessionQuery final
       : public GarbageCollected<PendingRequestSessionQuery> {
    public:
@@ -197,9 +225,10 @@ class XR final : public EventTargetWithInlineData,
   static device::mojom::blink::XRSessionOptionsPtr XRSessionOptionsFromQuery(
       const PendingRequestSessionQuery& query);
 
-  // Encapsulates blink-side `XR::supportsSession()` call.  It is a wrapper
+  // Encapsulates blink-side `XR::isSessionSupported()` call.  It is a wrapper
   // around ScriptPromiseResolver that allows us to add additional logic as
-  // certain things related to promise's life cycle happen.
+  // certain things related to promise's life cycle happen. Instances are owned
+  // by the XR object, see outstanding_support_queries_ below.
   class PendingSupportsSessionQuery final
       : public GarbageCollected<PendingSupportsSessionQuery> {
    public:
@@ -312,6 +341,8 @@ class XR final : public EventTargetWithInlineData,
 
   const int64_t ukm_source_id_;
 
+  // The XR object owns outstanding pending session queries, these live until
+  // the underlying promise is either resolved or rejected.
   HeapHashSet<Member<PendingSupportsSessionQuery>> outstanding_support_queries_;
   HeapHashSet<Member<PendingRequestSessionQuery>> outstanding_request_queries_;
   bool has_outstanding_immersive_request_ = false;

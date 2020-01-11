@@ -94,7 +94,7 @@ void ProactiveSuggestionsSimpleView::InitLayout() {
   // Assistant icon.
   views::ImageView* assistant_icon = new views::ImageView();
   assistant_icon->SetImage(gfx::CreateVectorIcon(
-      ash::kAssistantIcon, kAssistantIconSizeDip, gfx::kPlaceholderColor));
+      kAssistantIcon, kAssistantIconSizeDip, gfx::kPlaceholderColor));
   assistant_icon->SetPreferredSize(
       gfx::Size(kAssistantIconSizeDip, kAssistantIconSizeDip));
   AddChildView(assistant_icon);

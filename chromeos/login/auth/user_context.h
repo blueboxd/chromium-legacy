@@ -88,6 +88,9 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) UserContext {
   GetSyncPasswordData() const;
   const base::Optional<SamlPasswordAttributes>& GetSamlPasswordAttributes()
       const;
+  // True if |managed_guest_session_launch_extension_id_| is non-empty.
+  bool IsLockableManagedGuestSession() const;
+  std::string GetManagedGuestSessionLaunchExtensionId() const;
 
   bool HasCredentials() const;
 
@@ -129,6 +132,11 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) UserContext {
   void SetSamlPasswordAttributes(
       const SamlPasswordAttributes& saml_password_attributes);
   void SetIsUnderAdvancedProtection(bool is_under_advanced_protection);
+  // Sets |managed_guest_session_launch_extension_id_| which is used to set the
+  // |kLoginExtensionApiLaunchExtensionId| pref when the user's profile is
+  // created. Setting this pref indicates that this Managed Guest Session is
+  // lockable.
+  void SetManagedGuestSessionLaunchExtensionId(const std::string& extension_id);
 
   void ClearSecrets();
 
@@ -152,6 +160,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) UserContext {
   std::string device_id_;
   std::string gaps_cookie_;
   bool is_under_advanced_protection_ = false;
+  std::string managed_guest_session_launch_extension_id_;
 
   // For password reuse detection use.
   base::Optional<password_manager::PasswordHashData> sync_password_data_;

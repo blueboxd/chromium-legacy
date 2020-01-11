@@ -38,6 +38,7 @@ class SSLErrorControllerClient
   void GoBack() override;
   void Proceed() override;
   void OpenUrlInNewForegroundTab(const GURL& url) override;
+  bool CanLaunchDateAndTimeSettings() override;
 
  private:
   const int cert_error_;

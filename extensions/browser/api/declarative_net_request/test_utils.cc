@@ -37,7 +37,7 @@ RequestAction CreateRequestActionForTesting(RequestAction::Type type,
 // with gtest. This reuses the logic used to test action equality in
 // TestRequestACtion in test_utils.h.
 bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
-  static_assert(flat::IndexType_count == 4,
+  static_assert(flat::IndexType_count == 5,
                 "Modify this method to ensure it stays updated as new actions "
                 "are added.");
 
@@ -197,6 +197,9 @@ std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
       break;
     case ParseResult::ERROR_INVALID_REGEX_SUBSTITUTION:
       output << "ERROR_INVALID_REGEX_SUBSTITUTION";
+      break;
+    case ParseResult::ERROR_INVALID_ALLOW_ALL_REQUESTS_RESOURCE_TYPE:
+      output << "ERROR_INVALID_ALLOW_ALL_REQUESTS_RESOURCE_TYPE";
       break;
   }
   return output;

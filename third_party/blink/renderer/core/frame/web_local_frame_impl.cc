@@ -763,6 +763,11 @@ void WebLocalFrameImpl::DispatchUnloadEvent() {
   GetFrame()->Loader().DispatchUnloadEvent(nullptr, nullptr);
 }
 
+bool WebLocalFrameImpl::HasAccessedInitialDocument() {
+  DCHECK(GetFrame());
+  return GetFrame()->Loader().HasAccessedInitialDocument();
+}
+
 void WebLocalFrameImpl::ExecuteScript(const WebScriptSource& source) {
   DCHECK(GetFrame());
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));

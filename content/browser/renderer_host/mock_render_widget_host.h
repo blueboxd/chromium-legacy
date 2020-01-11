@@ -23,12 +23,12 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
  public:
   // Allow poking at a few private members.
   using RenderWidgetHostImpl::frame_token_message_queue_;
+  using RenderWidgetHostImpl::GetInitialVisualProperties;
   using RenderWidgetHostImpl::GetVisualProperties;
   using RenderWidgetHostImpl::input_router_;
   using RenderWidgetHostImpl::is_hidden_;
   using RenderWidgetHostImpl::old_visual_properties_;
   using RenderWidgetHostImpl::RendererExited;
-  using RenderWidgetHostImpl::SetInitialVisualProperties;
   using RenderWidgetHostImpl::visual_properties_ack_pending_;
 
   ~MockRenderWidgetHost() override;

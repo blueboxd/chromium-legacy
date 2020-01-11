@@ -19,7 +19,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
-#include "url/origin.h"
 
 using content::BrowserThread;
 using content::StorageUsageInfo;
@@ -40,10 +39,10 @@ void BrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
                      base::WrapRefCounted(this), std::move(callback)));
 }
 
-void BrowsingDataIndexedDBHelper::DeleteIndexedDB(const GURL& origin) {
+void BrowsingDataIndexedDBHelper::DeleteIndexedDB(const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  storage_partition_->GetIndexedDBControl().DeleteForOrigin(
-      url::Origin::Create(origin), base::DoNothing());
+  storage_partition_->GetIndexedDBControl().DeleteForOrigin(origin,
+                                                            base::DoNothing());
 }
 
 void BrowsingDataIndexedDBHelper::IndexedDBUsageInfoReceived(
@@ -103,7 +102,8 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
                  base::BindOnce(std::move(callback), result));
 }
 
-void CannedBrowsingDataIndexedDBHelper::DeleteIndexedDB(const GURL& origin) {
-  pending_origins_.erase(url::Origin::Create(origin));
+void CannedBrowsingDataIndexedDBHelper::DeleteIndexedDB(
+    const url::Origin& origin) {
+  pending_origins_.erase(origin);
   BrowsingDataIndexedDBHelper::DeleteIndexedDB(origin);
 }

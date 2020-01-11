@@ -130,11 +130,11 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
   bool fade_out_in_progress_ = false;
 
   // Shared pointers to the response that is currently on stage as well as the
-  // pending response to be presented following the former's animated exit. We
+  // queued response to be presented following the former's animated exit. We
   // use shared pointers to ensure that underlying views are not destroyed
   // before we have an opportunity to remove their associated views.
   scoped_refptr<const AssistantResponse> response_;
-  scoped_refptr<const AssistantResponse> pending_response_;
+  scoped_refptr<const AssistantResponse> queued_response_;
 
   base::WeakPtrFactory<AnimatedContainerView> weak_factory_{this};
 

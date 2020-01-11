@@ -37,7 +37,7 @@ namespace dnr_api = api::declarative_net_request;
 // url_pattern_index.fbs. Whenever an extension with an indexed ruleset format
 // version different from the one currently used by Chrome is loaded, the
 // extension ruleset will be reindexed.
-constexpr int kIndexedRulesetFormatVersion = 14;
+constexpr int kIndexedRulesetFormatVersion = 15;
 
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
@@ -250,6 +250,8 @@ flat::ActionType ConvertToFlatActionType(dnr_api::RuleActionType action_type) {
       return flat::ActionType_remove_headers;
     case dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME:
       return flat::ActionType_upgrade_scheme;
+    case dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS:
+      return flat::ActionType_allow_all_requests;
     case dnr_api::RULE_ACTION_TYPE_NONE:
       break;
   }

@@ -178,11 +178,11 @@ void FullscreenControlHost::OnMouseEvent(const ui::MouseEvent& event) {
         // If the exit fullscreen prompt is being shown (say user just pressed
         // F11 with the cursor on the top of the screen) then we suppress the
         // fullscreen control host and just put it in cooldown mode.
-        if (browser_view_->exclusive_access_bubble()->IsShowing()) {
+        const auto* bubble = browser_view_->exclusive_access_bubble();
+        if (bubble && bubble->IsShowing())
           in_mouse_cooldown_mode_ = true;
-        } else {
+        else
           ShowForInputEntryMethod(InputEntryMethod::MOUSE);
-        }
       } else if (in_mouse_cooldown_mode_ &&
                  event.y() >= CalculateCursorBufferHeight()) {
         in_mouse_cooldown_mode_ = false;

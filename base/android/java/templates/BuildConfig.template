@@ -69,11 +69,10 @@ public class BuildConfig {
     public static MAYBE_FINAL int MIN_SDK_VERSION = 1;
 #endif
 
-    // Not making this final for BundleTestRule to modify.
-#if defined(_IS_BUNDLE)
-    public static boolean IS_BUNDLE = true;
+#if defined(_BUNDLES_SUPPORTED)
+    public static MAYBE_FINAL boolean BUNDLES_SUPPORTED = true;
 #else
-    public static boolean IS_BUNDLE;
+    public static MAYBE_FINAL boolean BUNDLES_SUPPORTED MAYBE_FALSE;
 #endif
 
 #if defined(_IS_INCREMENTAL_INSTALL)

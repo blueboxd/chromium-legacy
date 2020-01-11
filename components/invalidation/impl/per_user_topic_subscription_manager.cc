@@ -409,8 +409,6 @@ void PerUserTopicSubscriptionManager::ScheduleRequestForRepetition(
   pending_subscriptions_[topic]->completion_callback = base::BindOnce(
       &PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic,
       base::Unretained(this));
-  // TODO(crbug.com/1020117): We already called InformOfRequest(false) before in
-  // SubscriptionFinishedForTopic(), should probably not call it again here?
   pending_subscriptions_[topic]->request_backoff_.InformOfRequest(false);
   pending_subscriptions_[topic]->request_retry_timer_.Start(
       FROM_HERE,
@@ -429,7 +427,6 @@ void PerUserTopicSubscriptionManager::SubscriptionFinishedForTopic(
     ActOnSuccessfulSubscription(topic, private_topic_name, type);
   } else {
     auto it = pending_subscriptions_.find(topic);
-    it->second->request_backoff_.InformOfRequest(false);
     if (code.IsAuthFailure()) {
       // Re-request access token and try subscription requests again.
       RequestAccessToken();

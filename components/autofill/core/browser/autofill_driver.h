@@ -54,6 +54,10 @@ class AutofillDriver {
   // Returns whether AutofillDriver instance is associated to the main frame.
   virtual bool IsInMainFrame() const = 0;
 
+  // Returns true iff a popup can be shown on the behalf of the associated
+  // frame.
+  virtual bool CanShowAutofillUi() const = 0;
+
   // Returns the ax tree id associated with this driver.
   virtual ui::AXTreeID GetAxTreeId() const = 0;
 

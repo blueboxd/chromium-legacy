@@ -992,6 +992,63 @@ class OcclusionTrackerTestFilters : public OcclusionTrackerTest {
 
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestFilters)
 
+class OcclusionTrackerTestFiltersRenderSurfaceOcclusion
+    : public OcclusionTrackerTest {
+ protected:
+  using OcclusionTrackerTest::OcclusionTrackerTest;
+
+  void RunMyTest() override {
+    TestContentLayerImpl* parent = CreateRoot(gfx::Size(500, 500));
+    TestContentLayerImpl* blur_layer = CreateDrawingSurface(
+        parent, gfx::Transform(), gfx::PointF(100.f, 100.f), gfx::Size(50, 50),
+        true);
+    TestContentLayerImpl* opacity_layer = CreateDrawingSurface(
+        parent, gfx::Transform(), gfx::PointF(200.f, 100.f), gfx::Size(50, 50),
+        true);
+
+    // This layer fully covers the layer bounds of the above filtered layers,
+    // but not the blur filter extent of |blur_layer|.
+    TestContentLayerImpl* occluding_layer =
+        CreateDrawingLayer(parent, gfx::Transform(), gfx::PointF(100.f, 100.f),
+                           gfx::Size(300, 100), true);
+
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(10.f));
+    GetEffectNode(blur_layer)->filters = filters;
+
+    filters.Clear();
+    filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
+    GetEffectNode(opacity_layer)->filters = filters;
+
+    CalcDrawEtc();
+    TestOcclusionTrackerWithClip occlusion(gfx::Rect(0, 0, 1000, 1000));
+
+    ASSERT_NO_FATAL_FAILURE(VisitLayer(occluding_layer, &occlusion));
+
+    // The render surface of |opacity_layer| (which has a filter that doesn't
+    // move pixels) is occluded by |occluding_layer|.
+    ASSERT_NO_FATAL_FAILURE(VisitLayer(opacity_layer, &occlusion));
+    ASSERT_NO_FATAL_FAILURE(
+        EnterContributingSurface(opacity_layer, &occlusion));
+    EXPECT_EQ(gfx::Rect(),
+              occlusion.UnoccludedSurfaceContentRect(
+                  opacity_layer, gfx::Rect(opacity_layer->bounds())));
+    ASSERT_NO_FATAL_FAILURE(
+        LeaveContributingSurface(opacity_layer, &occlusion));
+
+    // The render surface of |blur_layer| (which has a filter that moves pixels)
+    // is not occluded by |occluding_layer|.
+    ASSERT_NO_FATAL_FAILURE(VisitLayer(blur_layer, &occlusion));
+    ASSERT_NO_FATAL_FAILURE(EnterContributingSurface(blur_layer, &occlusion));
+    EXPECT_EQ(gfx::Rect(blur_layer->bounds()),
+              occlusion.UnoccludedSurfaceContentRect(
+                  blur_layer, gfx::Rect(blur_layer->bounds())));
+    ASSERT_NO_FATAL_FAILURE(LeaveContributingSurface(blur_layer, &occlusion));
+  }
+};
+
+ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestFiltersRenderSurfaceOcclusion)
+
 class OcclusionTrackerTestOpaqueContentsRegionEmpty
     : public OcclusionTrackerTest {
  protected:

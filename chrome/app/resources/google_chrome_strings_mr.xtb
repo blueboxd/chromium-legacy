@@ -19,7 +19,6 @@
 <translation id="1553358976309200471">Chrome अपडेट करा</translation>
 <translation id="1587223624401073077">Google Chrome तुमचा कॅमेरा वापरत आहे.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> धोकादायक आहे, त्यामुळे Chrom ने ते अवरोधित केले आहे.</translation>
-<translation id="1590588151039584890">अपडेट करण्यासाठी, या कॉंप्युटरवर Chrome बंद करणे आवश्यक आहे. यामुळे या कॉंप्युटरवर लॉग इन केलेल्या इतर वापरकर्त्यांनी सेव्ह न केलेले बदल गमावू शकतात.</translation>
 <translation id="1619887657840448962">Chrome अधिक सुरक्षित करण्यासाठी, आम्ही <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> मध्ये सूचीबद्ध नसलेला आणि तुमच्या माहितीशिवाय कदाचित जोडले गेलेले खालील एक्स्टेंशन बंद केले आहे.</translation>
 <translation id="1628000112320670027">Chrome सह मदत मिळवा</translation>
 <translation id="1635734105302489219">तुम्ही Chrome बंद करता तेव्हा कुकी साफ करता. सिंक करणे सुरू ठेवण्यासाठी, हे <ph name="COOKIE_SETTINGS_LINK" /> बदला.</translation>
@@ -143,7 +142,6 @@
 <translation id="5430073640787465221">तुमची प्राधान्ये फाइल दूषित किंवा चुकीचे आहेत.
 
 Google Chrome तुमची सेटिंग्ज पुन्हा मिळवू शकत नाही.</translation>
-<translation id="5543953544073077331">Chrome च्या इतर प्रती रन होत आहेत. अपडेट करण्यासाठी, त्या बंद करा.</translation>
 <translation id="556024056938947818">Google Chrome पासवर्ड दर्शवण्याचा प्रयत्न करत आहे.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-मध्ये)</translation>
 <translation id="5657226924540934362">या पेजवर सेटिंग दिसत नसल्यास, तुमच्या <ph name="LINK_BEGIN" />
@@ -193,7 +191,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7408085963519505752">Chrome OS अटी</translation>
 <translation id="7419046106786626209">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Chrome OS तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="7486227612705979895">ॲड्रेस बारमध्ये सूचना देण्यासाठी Chrome तुमची ड्राइव्ह ॲक्सेस करेल</translation>
-<translation id="7531671357096394523">Chrome च्या सर्व प्रती बंद करा.</translation>
 <translation id="7535429826459677826">Google Chrome विकासक</translation>
 <translation id="7573289029918943991">तुमचे डिव्हाइस अप टू डेट असल्याची खात्री करण्यासाठी <ph name="LINK_BEGIN" />Chrome OS सेटिंग्ज<ph name="LINK_END" /> वर जा</translation>
 <translation id="7589360514048265910">यापुढे Mac OS X 10.9 ला सपोर्ट नसल्यामुळे, या कॉंप्युटरला इथून पुढे Google Chrome चे अपडेट मिळणार नाहीत.</translation>

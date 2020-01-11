@@ -347,13 +347,12 @@ void MaybeRestoreSplitView(bool refresh_snapped_windows) {
 }
 
 bool IsClamshellSplitViewModeEnabled() {
-  return base::FeatureList::IsEnabled(
-      ash::features::kDragToSnapInClamshellMode);
+  return base::FeatureList::IsEnabled(features::kDragToSnapInClamshellMode);
 }
 
 bool AreMultiDisplayOverviewAndSplitViewEnabled() {
   return base::FeatureList::IsEnabled(
-      ash::features::kMultiDisplayOverviewAndSplitView);
+      features::kMultiDisplayOverviewAndSplitView);
 }
 
 bool ShouldAllowSplitView() {
@@ -375,7 +374,7 @@ bool ShouldAllowSplitView() {
 }
 
 void ShowAppCannotSnapToast() {
-  ash::Shell::Get()->toast_manager()->Show(ash::ToastData(
+  Shell::Get()->toast_manager()->Show(ToastData(
       kAppCannotSnapToastId,
       l10n_util::GetStringUTF16(IDS_ASH_SPLIT_VIEW_CANNOT_SNAP),
       kAppCannotSnapToastDurationMs, base::Optional<base::string16>()));

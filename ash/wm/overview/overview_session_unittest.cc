@@ -169,11 +169,10 @@ class OverviewSessionTest : public MultiDisplayOverviewAndSplitViewTest {
     ScopedOverviewTransformWindow::SetImmediateCloseForTests();
     OverviewWallpaperController::SetDoNotChangeWallpaperForTests();
     FpsCounter::SetForceReportZeroAnimationForTest(true);
-    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
-        true);
+    PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(true);
   }
   void TearDown() override {
-    ash::PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+    PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
         false);
     FpsCounter::SetForceReportZeroAnimationForTest(false);
     trace_names_.clear();
@@ -906,7 +905,7 @@ TEST_P(OverviewSessionTest, FullscreenWindowTabletMode) {
 TEST_P(OverviewSessionTest, SkipOverviewWindow) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
-  window2->SetProperty(ash::kHideInOverviewKey, true);
+  window2->SetProperty(kHideInOverviewKey, true);
 
   // Enter overview.
   ToggleOverview();
@@ -5486,7 +5485,7 @@ class SplitViewOverviewSessionInClamshellTest
   // AshTestBase:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        ash::features::kDragToSnapInClamshellMode);
+        features::kDragToSnapInClamshellMode);
     OverviewSessionTest::SetUp();
     Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
     DCHECK(ShouldAllowSplitView());

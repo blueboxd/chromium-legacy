@@ -113,6 +113,14 @@ source_set("content_unittests_filters") {
   ]
 }
 
+source_set("e2e_sync_integration_tests_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/e2e.sync_integration_tests.filter",
+  ]
+}
+
 source_set("fuchsia_filters") {
   data = [
     "//testing/buildbot/filters/fuchsia.base_perftests.filter",
@@ -123,6 +131,21 @@ source_set("fuchsia_filters") {
     "//testing/buildbot/filters/fuchsia.net_unittests.filter",
     "//testing/buildbot/filters/fuchsia.services_unittests.filter",
     "//testing/buildbot/filters/fuchsia.ui_base_unittests.filter",
+  ]
+}
+
+source_set("gl_tests_filters") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/android.emulator.gl_tests.filter",
+    "//testing/buildbot/filters/android.pie_arm64_rel.gl_tests.filter",
+  ]
+}
+
+source_set("linux_ozone_views_unittests_filters") {
+  data = [
+    "//testing/buildbot/filters/ozone-linux.x11_views_unittests.filter",
   ]
 }
 
@@ -153,12 +176,11 @@ source_set("unit_tests_filters") {
   ]
 }
 
-source_set("gl_tests_filters") {
+source_set("viz_unittests_filters") {
   testonly = true
 
   data = [
-    "//testing/buildbot/filters/android.emulator.gl_tests.filter",
-    "//testing/buildbot/filters/android.pie_arm64_rel.gl_tests.filter",
+    "//testing/buildbot/filters/android.emulator.viz_unittests.filter",
   ]
 }
 
@@ -175,19 +197,5 @@ source_set("webview_instrumentation_test_apk_filters") {
 
   data = [
     "//testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter",
-  ]
-}
-
-source_set("linux_ozone_views_unittests_filters") {
-  data = [
-    "//testing/buildbot/filters/ozone-linux.x11_views_unittests.filter",
-  ]
-}
-
-source_set("e2e_sync_integration_tests_filters") {
-  testonly = true
-
-  data = [
-    "//testing/buildbot/filters/e2e.sync_integration_tests.filter",
   ]
 }

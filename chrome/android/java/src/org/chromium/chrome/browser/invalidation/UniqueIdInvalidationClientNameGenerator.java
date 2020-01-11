@@ -9,6 +9,7 @@ import android.content.Context;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.components.sync.notifier.InvalidationClientNameGenerator;
 import org.chromium.components.sync.notifier.InvalidationClientNameProvider;
 
@@ -19,17 +20,14 @@ import org.chromium.components.sync.notifier.InvalidationClientNameProvider;
  * are unique and consistent across restarts.
  */
 public class UniqueIdInvalidationClientNameGenerator implements InvalidationClientNameGenerator {
-    // Pref key to use for UUID-based generator.
-    private static final String INVALIDATIONS_UUID_PREF_KEY = "chromium.invalidations.uuid";
-
     /**
      * Called during early init to make this InvalidationClientNameGenerator the default.
      *
-     * This should be called very early during initialization to setup the invalidaiton client name.
+     * This should be called very early during initialization to setup the invalidation client name.
      */
     public static void doInitializeAndInstallGenerator(Context context) {
-        UniqueIdentificationGenerator idGenerator =
-                new UuidBasedUniqueIdentificationGenerator(context, INVALIDATIONS_UUID_PREF_KEY);
+        UniqueIdentificationGenerator idGenerator = new UuidBasedUniqueIdentificationGenerator(
+                context, ChromePreferenceKeys.INVALIDATIONS_UUID_PREF_KEY);
         InvalidationClientNameGenerator clientNameGenerator =
                 new UniqueIdInvalidationClientNameGenerator(idGenerator);
         InvalidationClientNameProvider.get().setPreferredClientNameGenerator(clientNameGenerator);

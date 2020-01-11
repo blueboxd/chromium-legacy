@@ -255,7 +255,7 @@ int SuggestionChipContainerTopMarginForType(ash::AppListConfigType type) {
 
 }  // namespace
 
-AppListConfig::AppListConfig(ash::AppListConfigType type)
+AppListConfig::AppListConfig(AppListConfigType type)
     : type_(type),
       scale_x_(1),
       scale_y_(1),
@@ -482,22 +482,22 @@ AppListConfig::~AppListConfig() = default;
 // static
 AppListConfig& AppListConfig::instance() {
   return *AppListConfigProvider::Get().GetConfigForType(
-      ash::AppListConfigType::kShared, true /*can_create*/);
+      AppListConfigType::kShared, true /*can_create*/);
 }
 
 int AppListConfig::GetPreferredIconDimension(
-    ash::SearchResultDisplayType display_type) const {
+    SearchResultDisplayType display_type) const {
   switch (display_type) {
-    case ash::SearchResultDisplayType::kRecommendation:
+    case SearchResultDisplayType::kRecommendation:
       FALLTHROUGH;
-    case ash::SearchResultDisplayType::kTile:
+    case SearchResultDisplayType::kTile:
       return search_tile_icon_dimension_;
-    case ash::SearchResultDisplayType::kList:
+    case SearchResultDisplayType::kList:
       return search_list_icon_dimension_;
-    case ash::SearchResultDisplayType::kNone:  // Falls through.
-    case ash::SearchResultDisplayType::kCard:
+    case SearchResultDisplayType::kNone:  // Falls through.
+    case SearchResultDisplayType::kCard:
       return 0;
-    case ash::SearchResultDisplayType::kLast:
+    case SearchResultDisplayType::kLast:
       return 0;
   }
 }

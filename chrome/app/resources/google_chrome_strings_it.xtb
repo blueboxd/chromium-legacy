@@ -18,7 +18,6 @@
 <translation id="1553358976309200471">Aggiorna Chrome</translation>
 <translation id="1587223624401073077">Google Chrome sta utilizzando la videocamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> è pericoloso, pertanto è stato bloccato da Chrome.</translation>
-<translation id="1590588151039584890">Per aggiornarsi, Chrome deve essere chiuso su questo computer. Questo potrebbe causare la perdita di modifiche non salvate di altri utenti che hanno eseguito l'accesso a questo computer.</translation>
 <translation id="1619887657840448962">Per rendere Chrome più sicuro, abbiamo disattivato la seguente estensione non presente nel <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> che potrebbe essere stata aggiunta a tua insaputa.</translation>
 <translation id="1628000112320670027">Ricevi assistenza per Chrome</translation>
 <translation id="1635734105302489219">I cookie vengono cancellati alla chiusura di Chrome. Per mantenere attiva la sincronizzazione, cambia questa <ph name="COOKIE_SETTINGS_LINK" />.</translation>
@@ -136,7 +135,6 @@
 <translation id="5386244825306882791">Controlla anche la pagina visualizzata all'avvio di Chrome o quando esegui ricerche dalla Omnibox.</translation>
 <translation id="5394833366792865639">Condividi una scheda di Chrome</translation>
 <translation id="5430073640787465221">Il file delle preferenze è danneggiato o non valido. Google Chrome non è in grado di recuperare le impostazioni.</translation>
-<translation id="5543953544073077331">Sono in esecuzione altre copie di Chrome. Chiudile per eseguire l'aggiornamento.</translation>
 <translation id="556024056938947818">Google Chrome sta cercando di visualizzare le password.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">Se un'impostazione non viene mostrata in questa pagina, cercala nelle <ph name="LINK_BEGIN" />impostazioni del sistema operativo Chrome<ph name="LINK_END" />.</translation>
@@ -185,7 +183,6 @@
 <translation id="7408085963519505752">Termini di Chrome OS</translation>
 <translation id="7419046106786626209">Impossibile sincronizzare i dati in Chrome OS perché la sincronizzazione non è disponibile per il tuo dominio.</translation>
 <translation id="7486227612705979895">Chrome accederà al tuo Drive per inserire suggerimenti nella barra degli indirizzi</translation>
-<translation id="7531671357096394523">Esci da tutte le copie di Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Per controllare se il tuo dispositivo è aggiornato, vai alle <ph name="LINK_BEGIN" />Impostazioni di Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Questo computer non riceverà più gli aggiornamenti di Google Chrome perché Mac OS X 10.9 non è più supportato.</translation>

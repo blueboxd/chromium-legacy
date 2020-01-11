@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Telefon nömrələri</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> endirmə silindi</translation>
 <translation id="3822502789641063741">Sayt yaddaşı silinsin?</translation>
+<translation id="3853625385350850937">Davam etmək üçün cihazınızda NFC'ni aktiv edin</translation>
 <translation id="3859306556332390985">İrəli axtarın</translation>
 <translation id="388596076286380598">Oflayn və ya bağlantınız zəif olduqda belə, bəyəndiyiniz saytlardan məqalələr, videolar və digər məzmunu əldə edin.</translation>
 <translation id="3894427358181296146">Qovluq əlavə edin</translation>
@@ -1047,6 +1048,7 @@ Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.<
 <translation id="8912362522468806198">Google Hesabı</translation>
 <translation id="8920114477895755567">Valideynlərin məlumatları gözlənilir.</translation>
 <translation id="8922289737868596582">Oflayn istifadə etmək üçün səhifələri Digər seçimlər düyməsindən endirin</translation>
+<translation id="8926666909099850184">NFC bu cihazda deaktivdir. <ph name="BEGIN_LINK" />Android Ayarlarında<ph name="END_LINK" /> onu aktiv edin.</translation>
 <translation id="8937772741022875483">Chrome fəaliyyəti Rəqəmsal Sağlamlıqdan silinsin?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Başqa pəncərədə açın</translation>

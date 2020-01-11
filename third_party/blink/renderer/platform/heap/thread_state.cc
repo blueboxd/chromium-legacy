@@ -1620,7 +1620,7 @@ void ThreadState::MarkPhasePrologue(BlinkGC::CollectionType collection_type,
 }
 
 void ThreadState::MarkPhaseVisitRoots() {
-  ThreadHeapStatsCollector::Scope stats_scope(
+  ThreadHeapStatsCollector::EnabledScope stats_scope(
       Heap().stats_collector(), ThreadHeapStatsCollector::kVisitRoots);
 
   Visitor* visitor = current_gc_data_.visitor.get();

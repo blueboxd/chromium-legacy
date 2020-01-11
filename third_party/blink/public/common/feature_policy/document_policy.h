@@ -68,8 +68,8 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
  public:
   using FeatureState = std::map<mojom::FeaturePolicyFeature, PolicyValue>;
 
-  static std::unique_ptr<DocumentPolicy> CreateWithRequiredPolicy(
-      const FeatureState& required_policy);
+  static std::unique_ptr<DocumentPolicy> CreateWithHeaderPolicy(
+      const FeatureState& header_policy);
 
   // Returns true if the feature is unrestricted (has its default value for the
   // platform)
@@ -93,15 +93,18 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   // (such as sandbox policies).
   FeatureState GetFeatureState() const;
 
-  // Returns true if this document policy is compatible with the incoming
-  // document policy.
-  bool IsPolicyCompatible(const FeatureState& incoming_policy);
+  // Returns true if the incoming policy is compatible with the given required
+  // policy, i.e. incoming policy is at least as strict as required policy.
+  static bool IsPolicyCompatible(const FeatureState& required_policy,
+                                 const FeatureState& incoming_policy);
 
   // Returns the list of features which can be controlled by Document Policy,
   // and their default values.
   static const FeatureState& GetFeatureDefaults();
 
   // Serialize document policy according to http_structured_header.
+  // returns base::nullopt when http structured header serializer encounters
+  // problems, e.g. double value out of the range supported.
   static base::Optional<std::string> Serialize(const FeatureState& policy);
 
   // Parse document policy header to FeatureState
@@ -115,8 +118,8 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   friend class DocumentPolicyTest;
 
   DocumentPolicy(const FeatureState& feature_list);
-  static std::unique_ptr<DocumentPolicy> CreateWithRequiredPolicy(
-      const FeatureState& required_policy,
+  static std::unique_ptr<DocumentPolicy> CreateWithHeaderPolicy(
+      const FeatureState& header_policy,
       const FeatureState& defaults);
 
   void UpdateFeatureState(const FeatureState& feature_state);

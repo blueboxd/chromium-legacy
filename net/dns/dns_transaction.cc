@@ -833,9 +833,9 @@ const net::BackoffEntry::Policy kProbeBackoffPolicy = {
     1000,
     // Increase the delay between consecutive probes by a factor of 1.5.
     1.5,
-    // Fuzz the delay between consecutive probes between 90%-100% of the
+    // Fuzz the delay between consecutive probes between 80%-100% of the
     // calculated time.
-    0.1,
+    0.2,
     // Cap the maximum delay between consecutive probes at 1 hour.
     1000 * 60 * 60,
     // Never expire entries.

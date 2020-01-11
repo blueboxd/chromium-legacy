@@ -96,32 +96,32 @@ class KeyboardUtilTest : public aura::test::AuraTestBase {
 // Tests that we respect the accessibility setting.
 TEST_F(KeyboardUtilTest, AlwaysShowIfA11yEnabled) {
   // Disabled by default.
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(IsKeyboardEnabled());
   // If enabled by accessibility, should ignore other flag values.
   DisableAllFlags();
-  keyboard::SetAccessibilityKeyboardEnabled(true);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+  SetAccessibilityKeyboardEnabled(true);
+  EXPECT_TRUE(IsKeyboardEnabled());
 }
 
 // Tests that we respect the policy setting.
 TEST_F(KeyboardUtilTest, AlwaysShowIfPolicyEnabled) {
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(IsKeyboardEnabled());
   // If policy is enabled, should ignore other flag values.
   DisableAllFlags();
   SetEnableFlag(KeyboardEnableFlag::kPolicyEnabled);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+  EXPECT_TRUE(IsKeyboardEnabled());
 }
 
 // Tests that we respect the policy setting.
 TEST_F(KeyboardUtilTest, HidesIfPolicyDisabled) {
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(IsKeyboardEnabled());
   EnableAllFlags();
   // Set accessibility to neutral since accessibility has higher precedence.
-  keyboard::SetAccessibilityKeyboardEnabled(false);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+  SetAccessibilityKeyboardEnabled(false);
+  EXPECT_TRUE(IsKeyboardEnabled());
   // Disable policy. Keyboard should be disabled.
   SetEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(IsKeyboardEnabled());
 }
 
 // Tests that the keyboard shows when requested flag provided higher priority
@@ -130,10 +130,10 @@ TEST_F(KeyboardUtilTest, ShowKeyboardWhenRequested) {
   DisableAllFlags();
   // Remove device policy, which has higher precedence than us.
   ClearEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(IsKeyboardEnabled());
   // Requested should have higher precedence than all the remaining flags.
   SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+  EXPECT_TRUE(IsKeyboardEnabled());
 }
 
 // Tests that the touch keyboard is hidden when requested flag is disabled and
@@ -142,20 +142,20 @@ TEST_F(KeyboardUtilTest, HideKeyboardWhenRequested) {
   EnableAllFlags();
   // Remove higher precedence flags.
   ClearEnableFlag(KeyboardEnableFlag::kPolicyEnabled);
-  keyboard::SetAccessibilityKeyboardEnabled(false);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+  SetAccessibilityKeyboardEnabled(false);
+  EXPECT_TRUE(IsKeyboardEnabled());
   // Set requested flag to disable. Keyboard should disable.
   SetEnableFlag(KeyboardEnableFlag::kExtensionDisabled);
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(IsKeyboardEnabled());
 }
 
 // SetTouchKeyboardEnabled has the lowest priority, but should still work when
 // none of the other flags are enabled.
 TEST_F(KeyboardUtilTest, HideKeyboardWhenTouchEnabled) {
   ResetAllFlags();
-  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
-  keyboard::SetTouchKeyboardEnabled(true);
-  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(IsKeyboardEnabled());
+  SetTouchKeyboardEnabled(true);
+  EXPECT_TRUE(IsKeyboardEnabled());
 }
 
 TEST_F(KeyboardUtilTest, UpdateKeyboardConfig) {
@@ -178,17 +178,17 @@ TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
   EXPECT_FALSE(keyboard_ui_controller_.IsKeyboardOverscrollEnabled());
 
   // Enable the virtual keyboard.
-  keyboard::SetTouchKeyboardEnabled(true);
+  SetTouchKeyboardEnabled(true);
   EXPECT_TRUE(keyboard_ui_controller_.IsKeyboardOverscrollEnabled());
 
   // Set overscroll enabled flag.
   KeyboardConfig config = keyboard_ui_controller_.keyboard_config();
-  config.overscroll_behavior = keyboard::KeyboardOverscrollBehavior::kDisabled;
+  config.overscroll_behavior = KeyboardOverscrollBehavior::kDisabled;
   keyboard_ui_controller_.UpdateKeyboardConfig(config);
   EXPECT_FALSE(keyboard_ui_controller_.IsKeyboardOverscrollEnabled());
 
   // Set default overscroll flag.
-  config.overscroll_behavior = keyboard::KeyboardOverscrollBehavior::kDefault;
+  config.overscroll_behavior = KeyboardOverscrollBehavior::kDefault;
   keyboard_ui_controller_.UpdateKeyboardConfig(config);
   EXPECT_TRUE(keyboard_ui_controller_.IsKeyboardOverscrollEnabled());
 
@@ -201,18 +201,18 @@ TEST_F(KeyboardUtilTest, IsOverscrollEnabled) {
 // See https://crbug.com/946358.
 TEST_F(KeyboardUtilTest, RebuildsWhenChangingAccessibilityFlag) {
   // Virtual keyboard enabled with compact layout.
-  keyboard::SetTouchKeyboardEnabled(true);
+  SetTouchKeyboardEnabled(true);
 
-  keyboard::TestKeyboardControllerObserver observer;
+  TestKeyboardControllerObserver observer;
   keyboard_ui_controller_.AddObserver(&observer);
 
   // Virtual keyboard should rebuild to switch to a11y layout.
-  keyboard::SetAccessibilityKeyboardEnabled(true);
+  SetAccessibilityKeyboardEnabled(true);
   EXPECT_EQ(1, observer.disabled_count);
   EXPECT_EQ(1, observer.enabled_count);
 
   // Virtual keyboard should rebuild to switch back to compact layout.
-  keyboard::SetAccessibilityKeyboardEnabled(false);
+  SetAccessibilityKeyboardEnabled(false);
   EXPECT_EQ(2, observer.disabled_count);
   EXPECT_EQ(2, observer.enabled_count);
 

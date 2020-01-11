@@ -31,6 +31,7 @@ using syncer::SyncChange;
 using syncer::SyncData;
 using syncer::SyncDataList;
 using syncer::SyncError;
+using testing::_;
 using testing::AnyNumber;
 using testing::DoAll;
 using testing::ElementsAre;
@@ -41,7 +42,6 @@ using testing::Matches;
 using testing::Return;
 using testing::SetArgPointee;
 using testing::UnorderedElementsAre;
-using testing::_;
 
 namespace password_manager {
 
@@ -515,8 +515,10 @@ TEST_F(PasswordSyncableServiceTest, FailedReadFromPasswordStore) {
                           syncer::PASSWORDS);
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
       .WillOnce(Return(false));
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   EXPECT_CALL(*password_store(), DeleteUndecryptableLogins())
       .WillOnce(Return(DatabaseCleanupResult::kDatabaseUnavailable));
+#endif
   EXPECT_CALL(*error_factory, CreateAndUploadError(_, _))
       .WillOnce(Return(error));
   // ActOnPasswordStoreChanges() below shouldn't generate any changes for Sync.
@@ -545,6 +547,7 @@ class PasswordSyncableServiceTestWithoutDeleteCorruptedPasswords
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 // Test that passwords are recovered for Sync users using the older logic (i.e.
 // recover passwords only for Sync users) when the feature for deleting
 // corrupted passwords for all users is disabled.
@@ -563,6 +566,7 @@ TEST_F(PasswordSyncableServiceTestWithoutDeleteCorruptedPasswords,
       syncer::PASSWORDS, SyncDataList(), std::move(processor_), nullptr);
   EXPECT_FALSE(result.error().IsSet());
 }
+#endif
 
 class PasswordSyncableServiceTestWithDeleteCorruptedPasswords
     : public PasswordSyncableServiceTest {
@@ -597,6 +601,7 @@ TEST_F(PasswordSyncableServiceTestWithDeleteCorruptedPasswords,
   EXPECT_TRUE(result.error().IsSet());
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 // Database cleanup fails because encryption is unavailable.
 TEST_F(PasswordSyncableServiceTestWithoutDeleteCorruptedPasswords,
        FailedDeleteUndecryptableLogins) {
@@ -618,6 +623,7 @@ TEST_F(PasswordSyncableServiceTestWithoutDeleteCorruptedPasswords,
       std::move(error_factory));
   EXPECT_TRUE(result.error().IsSet());
 }
+#endif
 
 // Start syncing with an error in ProcessSyncChanges. Subsequent password store
 // updates shouldn't be propagated to Sync.

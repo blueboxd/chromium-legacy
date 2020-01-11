@@ -68,13 +68,12 @@ TEST_F(InfobarBannerOverlayRequestCallbackInstallerTest, ShowModal) {
       OverlayResponse::CreateWithInfo<InfobarBannerShowModalResponse>());
 }
 
-// Tests that the request's completion callback calls
-// InfobarBannerInteractionHandler::BannerCompleted().
-TEST_F(InfobarBannerOverlayRequestCallbackInstallerTest, Completion) {
-  bool user_initiated = true;
-  callback_manager()->SetCompletionResponse(
-      OverlayResponse::CreateWithInfo<InfobarBannerCompletionResponse>(
-          user_initiated));
-  EXPECT_CALL(mock_handler_, BannerCompleted(&infobar_, user_initiated));
-  queue()->CancelAllRequests();
+// Tests that a dispatched InfobarBannerShowModalResponse calls
+// InfobarBannerInteractionHandler::BannerDismissedByUser().
+TEST_F(InfobarBannerOverlayRequestCallbackInstallerTest,
+       UserInitiatedDismissal) {
+  EXPECT_CALL(mock_handler_, BannerDismissedByUser(&infobar_));
+  callback_manager()->DispatchResponse(
+      OverlayResponse::CreateWithInfo<
+          InfobarBannerUserInitiatedDismissalResponse>());
 }

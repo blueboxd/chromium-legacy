@@ -65,6 +65,10 @@ class APP_LIST_EXPORT AppListPresenterImpl
   // one AppListShowSource or focusing out side of the launcher.
   void Dismiss(base::TimeTicks event_time_stamp);
 
+  // Sets the app list view visibility (without updating the app list window
+  // visibility). No-op if the app list view does not exist.
+  void SetViewVisibility(bool visible);
+
   // If app list has an opened folder, close it. Returns whether an opened
   // folder was closed.
   bool HandleCloseOpenFolder();

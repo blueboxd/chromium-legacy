@@ -9,9 +9,9 @@
 
 #include "base/containers/flat_map.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
+#include "third_party/blink/common/feature_policy/policy_value_mojom_traits.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/common/feature_policy/policy_value.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-shared.h"
 
@@ -73,45 +73,6 @@ struct BLINK_COMMON_EXPORT
     *out = static_cast<blink::WebSandboxFlags>(in);
     return true;
   }
-};
-
-template <>
-struct BLINK_COMMON_EXPORT
-    UnionTraits<blink::mojom::PolicyValueDataDataView, blink::PolicyValue> {
- public:
-  static blink::mojom::PolicyValueDataDataView::Tag GetTag(
-      const blink::PolicyValue& value) {
-    switch (value.Type()) {
-      case blink::mojom::PolicyValueType::kNull:
-        return blink::mojom::PolicyValueDataDataView::Tag::NULL_VALUE;
-      case blink::mojom::PolicyValueType::kBool:
-        return blink::mojom::PolicyValueDataDataView::Tag::BOOL_VALUE;
-      case blink::mojom::PolicyValueType::kDecDouble:
-        return blink::mojom::PolicyValueDataDataView::Tag::DEC_DOUBLE_VALUE;
-    }
-
-    NOTREACHED();
-    return blink::mojom::PolicyValueDataDataView::Tag::NULL_VALUE;
-  }
-  static bool null_value(const blink::PolicyValue& value) { return false; }
-  static bool bool_value(const blink::PolicyValue& value) {
-    return value.BoolValue();
-  }
-  static double dec_double_value(const blink::PolicyValue& value) {
-    return value.DoubleValue();
-  }
-  static bool Read(blink::mojom::PolicyValueDataDataView in,
-                   blink::PolicyValue* out);
-};
-
-template <>
-struct BLINK_COMMON_EXPORT
-    StructTraits<blink::mojom::PolicyValueDataView, blink::PolicyValue> {
-  static const blink::PolicyValue& data(const blink::PolicyValue& value) {
-    return value;
-  }
-  static bool Read(blink::mojom::PolicyValueDataView data,
-                   blink::PolicyValue* out);
 };
 
 template <>

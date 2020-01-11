@@ -1395,9 +1395,6 @@ void ShelfView::EndDrag(bool cancel) {
 void ShelfView::SwapButtons(views::View* button_to_swap, bool with_next) {
   if (!button_to_swap)
     return;
-  // We don't allow reordering of buttons that aren't app buttons.
-  if (button_to_swap->GetClassName() != ShelfAppButton::kViewClassName)
-    return;
 
   // Find the index of the button to swap in the view model.
   int src_index = -1;
@@ -1410,23 +1407,19 @@ void ShelfView::SwapButtons(views::View* button_to_swap, bool with_next) {
   }
 
   const int target_index = with_next ? src_index + 1 : src_index - 1;
+  // TODO(manucornet): Remove this restriction once we get rid of overflow
+  // bubbles in favor of a scrollable shelf.
   const int first_swappable_index = std::max(first_visible_index_, 0);
   const int last_swappable_index = last_visible_index_;
-  if (src_index == -1 || (target_index > last_swappable_index) ||
-      (target_index < first_swappable_index)) {
-    return;
-  }
-
-  // Only allow swapping two pinned apps or two unpinned apps.
-  if (!SamePinState(model_->items()[src_index].type,
-                    model_->items()[target_index].type)) {
+  if (target_index > last_swappable_index ||
+      target_index < first_swappable_index) {
     return;
   }
 
   // Swapping items in the model is sufficient, everything will then be
   // reflected in the views.
-  model_->Move(src_index, target_index);
-  AnimateToIdealBounds();
+  if (model_->Swap(src_index, with_next))
+    AnimateToIdealBounds();
   // TODO(manucornet): Announce the swap to screen readers.
 }
 

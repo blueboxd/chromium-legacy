@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Telefon raqamlari</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ta yuklanma o‘chirib tashlandi</translation>
 <translation id="3822502789641063741">Sayt xotirasi tozalansinmi?</translation>
+<translation id="3853625385350850937">Davom etish uchun qurilmada NFC funksiyasini yoqing</translation>
 <translation id="3859306556332390985">Oldinga surish</translation>
 <translation id="388596076286380598">Sevimli saytlaringizda maqola, video va boshqa kontentni oflayn rejimda yoki uzilishli internetda ham ochishingiz mumkin.</translation>
 <translation id="3894427358181296146">Jild qo‘shish</translation>
@@ -1049,6 +1050,7 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="8912362522468806198">Google hisobi</translation>
 <translation id="8920114477895755567">Ota-ona haqidagi ma’lumotlar yetarli emas</translation>
 <translation id="8922289737868596582">Saytlarni oflayn ko‘rish uchun “Boshqa parametrlar” tugmasidan foydalanib, yuklab oling</translation>
+<translation id="8926666909099850184">Telefonda NFC yoqilmagan. Uni <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali yoqing.</translation>
 <translation id="8937772741022875483">Raqamli muvozanat xizmatidan Chrome amallari olib tashlansinmi?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Yangi oynada ochish</translation>

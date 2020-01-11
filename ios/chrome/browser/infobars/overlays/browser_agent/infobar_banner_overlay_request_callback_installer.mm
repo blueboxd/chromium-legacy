@@ -46,17 +46,11 @@ void InfobarBannerOverlayRequestCallbackInstaller::ShowModalButtonTapped(
                                               request->GetQueueWebState());
 }
 
-void InfobarBannerOverlayRequestCallbackInstaller::BannerCompleted(
+void InfobarBannerOverlayRequestCallbackInstaller::BannerDismissedByUser(
     OverlayRequest* request,
     OverlayResponse* response) {
-  bool user_initiated = false;
-  if (response) {
-    InfobarBannerCompletionResponse* banner_completion =
-        response->GetInfo<InfobarBannerCompletionResponse>();
-    user_initiated = banner_completion && banner_completion->user_initiated();
-  }
-  interaction_handler_->BannerCompleted(GetOverlayRequestInfobar(request),
-                                        user_initiated);
+  interaction_handler_->BannerDismissedByUser(
+      GetOverlayRequestInfobar(request));
 }
 
 #pragma mark - OverlayRequestCallbackInstaller
@@ -79,7 +73,9 @@ void InfobarBannerOverlayRequestCallbackInstaller::InstallCallbacksInternal(
           &InfobarBannerOverlayRequestCallbackInstaller::ShowModalButtonTapped,
           weak_factory_.GetWeakPtr(), request),
       InfobarBannerShowModalResponse::ResponseSupport()));
-  manager->AddCompletionCallback(base::BindOnce(
-      &InfobarBannerOverlayRequestCallbackInstaller::BannerCompleted,
-      weak_factory_.GetWeakPtr(), request));
+  manager->AddDispatchCallback(OverlayDispatchCallback(
+      base::BindRepeating(
+          &InfobarBannerOverlayRequestCallbackInstaller::BannerDismissedByUser,
+          weak_factory_.GetWeakPtr(), request),
+      InfobarBannerUserInitiatedDismissalResponse::ResponseSupport()));
 }

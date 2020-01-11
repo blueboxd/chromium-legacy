@@ -481,9 +481,9 @@ class AppListControllerImplTestWithoutHotseat
   void SetUp() override {
     // The feature verified by this test is only enabled if drag from shelf to
     // home or overview is disabled.
-    scoped_features_.InitWithFeatures(
-        {}, {ash::features::kDragFromShelfToHomeOrOverview,
-             chromeos::features::kShelfHotseat});
+    scoped_features_.InitWithFeatures({},
+                                      {features::kDragFromShelfToHomeOrOverview,
+                                       chromeos::features::kShelfHotseat});
     AppListControllerImplTest::SetUp();
   }
 
@@ -1040,9 +1040,9 @@ class AppListControllerImplMetricsTestWithoutHotseat
   void SetUp() override {
     // The feature verified by this test is only enabled if drag from shelf to
     // home or overview is disabled.
-    scoped_features_.InitWithFeatures(
-        {}, {ash::features::kDragFromShelfToHomeOrOverview,
-             chromeos::features::kShelfHotseat});
+    scoped_features_.InitWithFeatures({},
+                                      {features::kDragFromShelfToHomeOrOverview,
+                                       chromeos::features::kShelfHotseat});
     AppListControllerImplMetricsTest::SetUp();
   }
 

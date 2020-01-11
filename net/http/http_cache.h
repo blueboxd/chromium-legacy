@@ -100,7 +100,8 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
     DefaultBackend(CacheType type,
                    BackendType backend_type,
                    const base::FilePath& path,
-                   int max_bytes);
+                   int max_bytes,
+                   bool hard_reset);
     ~DefaultBackend() override;
 
     // Returns a factory for an in-memory cache.
@@ -121,6 +122,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
     BackendType backend_type_;
     const base::FilePath path_;
     int max_bytes_;
+    bool hard_reset_;
 #if defined(OS_ANDROID)
     base::android::ApplicationStatusListener* app_status_listener_ = nullptr;
 #endif

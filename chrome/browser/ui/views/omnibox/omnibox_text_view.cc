@@ -260,10 +260,7 @@ void OmniboxTextView::ReapplyStyling() {
                ACMatchClassification::DIM) {
       part = OmniboxPart::RESULTS_TEXT_DIMMED;
     }
-
-    // In the absence of a widget there is no need to update the text color.
-    if (GetWidget())
-      render_text_->ApplyColor(result_view_->GetColor(part), current_range);
+    render_text_->ApplyColor(result_view_->GetColor(part), current_range);
   }
 
   OnStyleChanged();

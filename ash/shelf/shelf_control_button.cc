@@ -89,6 +89,7 @@ std::unique_ptr<views::InkDropMask> ShelfControlButton::CreateInkDropMask()
   if (chromeos::switches::ShouldShowShelfHotseat() &&
       Shell::Get()->tablet_mode_controller()->InTabletMode() &&
       ShelfConfig::Get()->is_in_app()) {
+    // Control button highlights are oval in in-app, so adjust the insets.
     return std::make_unique<views::RoundRectInkDropMask>(
         size(),
         gfx::Insets(ShelfConfig::Get()->in_app_control_button_height_inset(),

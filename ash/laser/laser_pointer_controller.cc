@@ -76,7 +76,7 @@ void LaserPointerController::DestroyPointerView() {
 
 bool LaserPointerController::CanStartNewGesture(ui::TouchEvent* event) {
   // Ignore events over the palette.
-  if (ash::palette_utils::PaletteContainsPointInScreen(event->root_location()))
+  if (palette_utils::PaletteContainsPointInScreen(event->root_location()))
     return false;
   return FastInkPointerController::CanStartNewGesture(event);
 }

@@ -933,11 +933,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishLoad,
 // Initiates a download based on user actions like 'ALT+click'.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DownloadUrl, FrameHostMsg_DownloadUrl_Params)
 
-// Notifies that the initial empty document of a view has been accessed.
-// After this, it is no longer safe to show a pending navigation's URL without
-// making a URL spoof possible.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DidAccessInitialDocument)
-
 // Sent when the RenderFrame or RenderFrameProxy either updates its opener to
 // another frame identified by |opener_routing_id|, or, if |opener_routing_id|
 // is MSG_ROUTING_NONE, the frame disowns its opener for the lifetime of the

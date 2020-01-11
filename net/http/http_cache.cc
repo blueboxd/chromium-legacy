@@ -62,11 +62,13 @@ const char HttpCache::kDoubleKeySeparator[] = " ";
 HttpCache::DefaultBackend::DefaultBackend(CacheType type,
                                           BackendType backend_type,
                                           const base::FilePath& path,
-                                          int max_bytes)
+                                          int max_bytes,
+                                          bool hard_reset)
     : type_(type),
       backend_type_(backend_type),
       path_(path),
-      max_bytes_(max_bytes) {}
+      max_bytes_(max_bytes),
+      hard_reset_(hard_reset) {}
 
 HttpCache::DefaultBackend::~DefaultBackend() = default;
 
@@ -74,7 +76,7 @@ HttpCache::DefaultBackend::~DefaultBackend() = default;
 std::unique_ptr<HttpCache::BackendFactory> HttpCache::DefaultBackend::InMemory(
     int max_bytes) {
   return std::make_unique<DefaultBackend>(MEMORY_CACHE, CACHE_BACKEND_DEFAULT,
-                                          base::FilePath(), max_bytes);
+                                          base::FilePath(), max_bytes, false);
 }
 
 int HttpCache::DefaultBackend::CreateBackend(
@@ -82,20 +84,20 @@ int HttpCache::DefaultBackend::CreateBackend(
     std::unique_ptr<disk_cache::Backend>* backend,
     CompletionOnceCallback callback) {
   DCHECK_GE(max_bytes_, 0);
-  // TODO(crbug.com/1002220): Implement a forced reset for the http_cache when
-  // the Finch experiment status changes the cache configuration.
+  disk_cache::ResetHandling reset_handling =
+      hard_reset_ ? disk_cache::ResetHandling::kReset
+                  : disk_cache::ResetHandling::kResetOnError;
+  UMA_HISTOGRAM_BOOLEAN("HttpCache.HardReset", hard_reset_);
 #if defined(OS_ANDROID)
   if (app_status_listener_) {
     return disk_cache::CreateCacheBackend(
-        type_, backend_type_, path_, max_bytes_,
-        disk_cache::ResetHandling::kResetOnError, net_log, backend,
-        std::move(callback), app_status_listener_);
+        type_, backend_type_, path_, max_bytes_, reset_handling, net_log,
+        backend, std::move(callback), app_status_listener_);
   }
 #endif
-  return disk_cache::CreateCacheBackend(
-      type_, backend_type_, path_, max_bytes_,
-      disk_cache::ResetHandling::kResetOnError, net_log, backend,
-      std::move(callback));
+  return disk_cache::CreateCacheBackend(type_, backend_type_, path_, max_bytes_,
+                                        reset_handling, net_log, backend,
+                                        std::move(callback));
 }
 
 #if defined(OS_ANDROID)

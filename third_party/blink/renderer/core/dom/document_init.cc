@@ -310,4 +310,10 @@ DocumentInit& DocumentInit::WithFramePolicy(
   return *this;
 }
 
+DocumentInit& DocumentInit::WithDocumentPolicy(
+    const DocumentPolicy::FeatureState& document_policy) {
+  document_policy_ = document_policy;
+  return *this;
+}
+
 }  // namespace blink

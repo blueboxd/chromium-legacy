@@ -29,6 +29,10 @@ bool TestAutofillDriver::IsInMainFrame() const {
   return is_in_main_frame_;
 }
 
+bool TestAutofillDriver::CanShowAutofillUi() const {
+  return true;
+}
+
 ui::AXTreeID TestAutofillDriver::GetAxTreeId() const {
   NOTIMPLEMENTED() << "See https://crbug.com/985933";
   return ui::AXTreeIDUnknown();

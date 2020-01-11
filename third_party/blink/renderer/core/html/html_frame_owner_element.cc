@@ -312,16 +312,10 @@ void HTMLFrameOwnerElement::UpdateRequiredPolicy() {
       ConstructRequiredPolicy();
   const auto* frame = GetDocument().GetFrame();
   DCHECK(frame);
-  // TODO(chenleihu): unify the logic of getting parent required policy after
-  // frame policy gets moved from FrameOwner to Frame.
-  frame_policy_.required_document_policy =
-      frame->IsMainFrame()
-          ? self_required_policy
-          : DocumentPolicy::MergeFeatureState(
-                self_required_policy,
-                frame->Owner()
-                    ->GetFramePolicy()
-                    .required_document_policy /* parent required policy */);
+  frame_policy_.required_document_policy = DocumentPolicy::MergeFeatureState(
+      self_required_policy,
+      frame->GetFramePolicy()
+          .required_document_policy /* parent required policy */);
   if (ContentFrame()) {
     frame->Client()->DidChangeFramePolicy(ContentFrame(), frame_policy_);
   }

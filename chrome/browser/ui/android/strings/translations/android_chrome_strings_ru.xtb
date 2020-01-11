@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Номера телефонов</translation>
 <translation id="3819178904835489326">Удаленные скачивания: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Удалить данные сайтов?</translation>
+<translation id="3853625385350850937">Чтобы продолжить, включите NFC на устройстве.</translation>
 <translation id="3859306556332390985">Перемотать вперед</translation>
 <translation id="388596076286380598">Вы можете просматривать статьи, видео и другой контент на любимых сайтах даже в офлайн-режиме или при нестабильном подключении.</translation>
 <translation id="3894427358181296146">Добавление папки</translation>
@@ -1049,6 +1050,7 @@
 <translation id="8912362522468806198">Аккаунт Google</translation>
 <translation id="8920114477895755567">Недостаточно данных о родителях.</translation>
 <translation id="8922289737868596582">Скачивайте страницы через меню кнопки "Ещё" и открывайте их без подключения к Интернету</translation>
+<translation id="8926666909099850184">Функция NFC на этом устройстве отключена. Включите ее в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Удалить данные о ваших действиях в Chrome из сервиса "Цифровое благополучие"?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Открыть в новом окне</translation>

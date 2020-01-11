@@ -76,6 +76,7 @@ class CORE_EXPORT SecurityContext {
   SecurityContext(scoped_refptr<SecurityOrigin> origin,
                   WebSandboxFlags sandbox_flags,
                   std::unique_ptr<FeaturePolicy> feature_policy,
+                  std::unique_ptr<DocumentPolicy> document_policy,
                   SecurityContextType context_type);
   virtual ~SecurityContext() = default;
 

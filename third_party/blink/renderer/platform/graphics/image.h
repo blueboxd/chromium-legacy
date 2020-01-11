@@ -114,6 +114,9 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   IntRect Rect() const { return IntRect(IntPoint(), Size()); }
   int width() const { return Size().Width(); }
   int height() const { return Size().Height(); }
+
+  virtual bool HasDefaultOrientation() const { return true; }
+
   virtual bool GetHotSpot(IntPoint&) const { return false; }
 
   enum SizeAvailability {

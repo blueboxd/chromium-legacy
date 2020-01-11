@@ -296,6 +296,17 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
     headers->SetHeader(net::HttpRequestHeaders::kOrigin,
                        origin_header_value.Serialize());
   }
+
+  if (base::FeatureList::IsEnabled(features::kDocumentPolicy)) {
+    const blink::DocumentPolicy::FeatureState& required_policy =
+        frame_tree_node->effective_frame_policy().required_document_policy;
+    if (!required_policy.empty()) {
+      base::Optional<std::string> policy_header =
+          blink::DocumentPolicy::Serialize(required_policy);
+      DCHECK(policy_header);
+      headers->SetHeader("Sec-Required-Document-Policy", policy_header.value());
+    }
+  }
 }
 
 // Should match the definition of

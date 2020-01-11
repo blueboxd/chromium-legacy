@@ -26,7 +26,6 @@ class ShellContentClient : public ContentClient {
   gfx::Image& GetNativeImageNamed(int resource_id) override;
   base::DictionaryValue GetNetLogConstants() override;
   blink::OriginTrialPolicy* GetOriginTrialPolicy() override;
-  bool CanSendWhileSwappedOut(const IPC::Message* message) override;
 
   void SetInWebTest(bool in_web_test);
 

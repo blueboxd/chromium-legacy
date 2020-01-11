@@ -16,9 +16,12 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/policy/policy_test_utils.h"
@@ -43,6 +46,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
+#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -75,13 +79,12 @@
 // Most tests for this class are in NetworkContextConfigurationBrowserTest.
 class ProfileNetworkContextServiceBrowsertest : public InProcessBrowserTest {
  public:
-  ProfileNetworkContextServiceBrowsertest() {
-    EXPECT_TRUE(embedded_test_server()->Start());
-  }
+  ProfileNetworkContextServiceBrowsertest() = default;
 
-  ~ProfileNetworkContextServiceBrowsertest() override {}
+  ~ProfileNetworkContextServiceBrowsertest() override = default;
 
   void SetUpOnMainThread() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
     loader_factory_ = content::BrowserContext::GetDefaultStoragePartition(
                           browser()->profile())
                           ->GetURLLoaderFactoryForBrowserProcess()
@@ -158,6 +161,83 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceBrowsertest, BrotliEnabled) {
       base::SplitString(*simple_loader_helper.response_body(), ",",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   EXPECT_TRUE(base::Contains(encodings, "br"));
+}
+
+class ProfileNetworkContextServiceCacheSameBrowsertest
+    : public ProfileNetworkContextServiceBrowsertest {
+ public:
+  ProfileNetworkContextServiceCacheSameBrowsertest() = default;
+  ~ProfileNetworkContextServiceCacheSameBrowsertest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {}, {net::features::kSplitCacheByNetworkIsolationKey,
+             net::features::kAppendFrameOriginToNetworkIsolationKey,
+             net::features::kUseRegistrableDomainInNetworkIsolationKey});
+    ProfileNetworkContextServiceBrowsertest::SetUp();
+  }
+
+  void CheckCacheNotReset() {
+    content::FetchHistogramsFromChildProcesses();
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    // Some tests load the cache multiple times, so compare to zero.
+    EXPECT_GT(histograms_.GetBucketCount("HttpCache.HardReset", false), 0);
+    // Make sure it's never reset.
+    EXPECT_EQ(histograms_.GetBucketCount("HttpCache.HardReset", true), 0);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::HistogramTester histograms_;
+};
+
+IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheSameBrowsertest,
+                       TestCacheResetParameter) {
+  // At this point, we have already called the initialization once on startup.
+  // Verify that we have the correct values in the local_state.
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK_EQ(
+      local_state->GetString(
+          "profile_network_context_service.http_cache_finch_experiment_groups"),
+      "NoneNoneNone");
+
+  CheckCacheNotReset();
+}
+
+class ProfileNetworkContextServiceCacheChangeBrowsertest
+    : public ProfileNetworkContextServiceBrowsertest {
+ public:
+  ProfileNetworkContextServiceCacheChangeBrowsertest() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{net::features::kAppendFrameOriginToNetworkIsolationKey, {}}},
+        {net::features::kSplitCacheByNetworkIsolationKey,
+         net::features::kUseRegistrableDomainInNetworkIsolationKey});
+  }
+  ~ProfileNetworkContextServiceCacheChangeBrowsertest() override = default;
+
+  void CheckCacheReset() {
+    content::FetchHistogramsFromChildProcesses();
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    // Some tests load the cache multiple times, but should only be reset once.
+    EXPECT_EQ(histograms_.GetBucketCount("HttpCache.HardReset", true), 1);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::HistogramTester histograms_;
+};
+
+IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheChangeBrowsertest,
+                       TestCacheResetParameter) {
+  // At this point, we have already called the initialization once on startup.
+  // Verify that we have the correct values in the local_state.
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK_EQ(
+      local_state->GetString(
+          "profile_network_context_service.http_cache_finch_experiment_groups"),
+      "Nonescoped_feature_list_trial_groupNone");
+
+  CheckCacheReset();
 }
 
 enum class AmbientAuthProfileBit {

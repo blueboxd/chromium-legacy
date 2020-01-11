@@ -19,11 +19,11 @@ AppListItemMetadata::~AppListItemMetadata() = default;
 OmniBoxZeroStateAction GetOmniBoxZeroStateAction(int button_index) {
   if (button_index < 0 ||
       button_index >=
-          static_cast<int>(ash::OmniBoxZeroStateAction::kZeroStateActionMax)) {
-    return ash::OmniBoxZeroStateAction::kZeroStateActionMax;
+          static_cast<int>(OmniBoxZeroStateAction::kZeroStateActionMax)) {
+    return OmniBoxZeroStateAction::kZeroStateActionMax;
   }
 
-  return static_cast<ash::OmniBoxZeroStateAction>(button_index);
+  return static_cast<OmniBoxZeroStateAction>(button_index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

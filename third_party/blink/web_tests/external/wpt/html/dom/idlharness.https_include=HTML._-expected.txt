@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 3721 tests; 3680 PASS, 41 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 3729 tests; 3680 PASS, 49 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -295,6 +295,10 @@ PASS HTMLElement interface: attribute ontimeupdate
 PASS HTMLElement interface: attribute ontoggle
 PASS HTMLElement interface: attribute onvolumechange
 PASS HTMLElement interface: attribute onwaiting
+FAIL HTMLElement interface: attribute onwebkitanimationend assert_true: The prototype object must have a property "onwebkitanimationend" expected true got false
+FAIL HTMLElement interface: attribute onwebkitanimationiteration assert_true: The prototype object must have a property "onwebkitanimationiteration" expected true got false
+FAIL HTMLElement interface: attribute onwebkitanimationstart assert_true: The prototype object must have a property "onwebkitanimationstart" expected true got false
+FAIL HTMLElement interface: attribute onwebkittransitionend assert_true: The prototype object must have a property "onwebkittransitionend" expected true got false
 PASS HTMLElement interface: attribute oncopy
 PASS HTMLElement interface: attribute oncut
 PASS HTMLElement interface: attribute onpaste
@@ -386,6 +390,10 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "ontoggle" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onvolumechange" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onwaiting" with the proper type
+FAIL HTMLElement interface: document.createElement("noscript") must inherit property "onwebkitanimationend" with the proper type assert_inherits: property "onwebkitanimationend" not found in prototype chain
+FAIL HTMLElement interface: document.createElement("noscript") must inherit property "onwebkitanimationiteration" with the proper type assert_inherits: property "onwebkitanimationiteration" not found in prototype chain
+FAIL HTMLElement interface: document.createElement("noscript") must inherit property "onwebkitanimationstart" with the proper type assert_inherits: property "onwebkitanimationstart" not found in prototype chain
+FAIL HTMLElement interface: document.createElement("noscript") must inherit property "onwebkittransitionend" with the proper type assert_inherits: property "onwebkittransitionend" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "oncopy" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "oncut" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "onpaste" with the proper type

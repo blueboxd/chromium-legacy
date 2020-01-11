@@ -36,12 +36,23 @@ class IOSSSLErrorTabHelper
   void WebStateDestroyed(web::WebState* web_state) override;
 
  private:
+  WEB_STATE_USER_DATA_KEY_DECL();
+
   explicit IOSSSLErrorTabHelper(web::WebState* web_state);
+  DISALLOW_COPY_AND_ASSIGN(IOSSSLErrorTabHelper);
+
   friend class web::WebStateUserData<IOSSSLErrorTabHelper>;
 
   void SetBlockingPage(
       int64_t navigation_id,
       std::unique_ptr<IOSSecurityInterstitialPage> blocking_page);
+
+  // Handler for "blockingPage.*" JavaScript command. Dispatch to more specific
+  // handler.
+  void OnBlockingPageCommand(const base::DictionaryValue& message,
+                             const GURL& url,
+                             bool user_is_interacting,
+                             web::WebFrame* sender_frame);
 
   // Keeps track of blocking pages for navigations that have encountered
   // certificate errors in this WebState. When a navigation commits, the
@@ -59,9 +70,9 @@ class IOSSSLErrorTabHelper
   // WebStateDestroyed has been called.
   web::WebState* web_state_ = nullptr;
 
-  WEB_STATE_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(IOSSSLErrorTabHelper);
+  // Subscription for JS messages.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
+  base::WeakPtrFactory<IOSSSLErrorTabHelper> weak_factory_{this};
 };
 
 #endif  // IOS_CHROME_BROWSER_SSL_IOS_SSL_ERROR_TAB_HELPER_H_

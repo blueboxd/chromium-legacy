@@ -13,9 +13,9 @@
 namespace blink {
 
 // static
-std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithRequiredPolicy(
-    const FeatureState& required_policy) {
-  return CreateWithRequiredPolicy(required_policy, GetFeatureDefaults());
+std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
+    const FeatureState& header_policy) {
+  return CreateWithHeaderPolicy(header_policy, GetFeatureDefaults());
 }
 
 namespace {
@@ -302,12 +302,12 @@ DocumentPolicy::DocumentPolicy(const FeatureState& defaults) {
 }
 
 // static
-std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithRequiredPolicy(
-    const FeatureState& required_policy,
+std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
+    const FeatureState& header_policy,
     const DocumentPolicy::FeatureState& defaults) {
   std::unique_ptr<DocumentPolicy> new_policy =
       base::WrapUnique(new DocumentPolicy(defaults));
-  new_policy->UpdateFeatureState(required_policy);
+  new_policy->UpdateFeatureState(header_policy);
   return new_policy;
 }
 
@@ -323,13 +323,21 @@ const DocumentPolicy::FeatureState& DocumentPolicy::GetFeatureDefaults() {
   return *default_feature_list;
 }
 
+// static
 bool DocumentPolicy::IsPolicyCompatible(
+    const DocumentPolicy::FeatureState& required_policy,
     const DocumentPolicy::FeatureState& incoming_policy) {
-  const DocumentPolicy::FeatureState& state = GetFeatureState();
-  for (const auto& e : incoming_policy) {
-    // feature value > threshold => enabled
-    // value_a > value_b => value_a less strict than value_b
-    if (state.at(e.first) > e.second)
+  for (const auto& incoming_entry : incoming_policy) {
+    // feature value > threshold => enabled, where feature value is the value in
+    // document policy and threshold is the value to test against.
+    // The smaller the feature value, the stricter the policy.
+    // Incoming policy should be at least as strict as the required one.
+    const auto required_entry =
+        required_policy.find(incoming_entry.first /* feature */);
+
+    if (required_entry != required_policy.end() &&
+        required_entry->second /* required_value */ <
+            incoming_entry.second /* incoming_value */)
       return false;
   }
   return true;

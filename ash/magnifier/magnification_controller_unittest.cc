@@ -85,8 +85,8 @@ class MagnificationControllerTest : public AshTestBase {
     return location.ToString();
   }
 
-  ash::MagnificationController* GetMagnificationController() const {
-    return ash::Shell::Get()->magnification_controller();
+  MagnificationController* GetMagnificationController() const {
+    return Shell::Get()->magnification_controller();
   }
 
   gfx::Rect GetViewport() const {

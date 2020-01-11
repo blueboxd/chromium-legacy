@@ -8,6 +8,7 @@
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension_messages.h"
@@ -23,8 +24,7 @@ SessionTabHelper::SessionTabHelper(content::WebContents* contents)
       session_id_(SessionID::NewUnique()),
       window_id_(SessionID::InvalidValue()) {}
 
-SessionTabHelper::~SessionTabHelper() {
-}
+SessionTabHelper::~SessionTabHelper() = default;
 
 void SessionTabHelper::SetWindowID(const SessionID& id) {
   window_id_ = id;
@@ -112,20 +112,6 @@ void SessionTabHelper::NavigationEntryChanged(
       sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
           change_details.index, change_details.changed_entry);
   session_service->UpdateTabNavigation(window_id(), session_id(), navigation);
-}
-#endif
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-void SessionTabHelper::SetTabExtensionAppID(
-    const std::string& extension_app_id) {
-#if BUILDFLAG(ENABLE_SESSION_SERVICE)
-  SessionService* session_service = SessionServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-  if (!session_service)
-    return;
-
-  session_service->SetTabExtensionAppID(window_id(), session_id(),
-                                        extension_app_id);
-#endif
 }
 #endif
 

@@ -21715,6 +21715,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1429" label="AUTOTESTPRIVATE_ISARCPACKAGELISTINITIALREFRESHED"/>
   <int value="1430" label="AUTOTESTPRIVATE_STARTTRACING"/>
   <int value="1431" label="AUTOTESTPRIVATE_STOPTRACING"/>
+  <int value="1432" label="LOGIN_LOCKMANAGEDGUESTSESSION"/>
+  <int value="1433" label="LOGIN_UNLOCKMANAGEDGUESTSESSION"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -25992,6 +25994,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="67" label="PublicKeyCredentials"/>
   <int value="68" label="Clipboard"/>
   <int value="69" label="ClientHintUAMobile"/>
+  <int value="70" label="FontAccess"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -36397,6 +36400,7 @@ from previous Chrome versions.
       label="ProcessSharingWithStrictSiteInstances:disabled"/>
   <int value="-1895719323" label="VrBrowsingTabsView:enabled"/>
   <int value="-1894699049" label="AudioFocusEnforcement:disabled"/>
+  <int value="-1894054576" label="FontAccess:enabled"/>
   <int value="-1893668420"
       label="AutofillSaveCreditCardUsesStrikeSystem:enabled"/>
   <int value="-1893019071" label="CSSOMViewScrollCoordinates:disabled"/>
@@ -37417,6 +37421,7 @@ from previous Chrome versions.
   <int value="-667018797"
       label="OmniboxUIExperimentBlueTitlesAndGrayUrlsOnPageSuggestions:disabled"/>
   <int value="-666508951" label="CrOSContainer:enabled"/>
+  <int value="-665514294" label="FontAccess:disabled"/>
   <int value="-663476391" label="enable-pixel-canvas-recording:enabled"/>
   <int value="-662720891" label="PreviewsCoinFlipHoldback_UKMOnly:enabled"/>
   <int value="-662064703" label="MediaSessionService:enabled"/>

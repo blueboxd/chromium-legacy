@@ -20,7 +20,6 @@ class CrostiniUpdateFilesystemView : public views::BubbleDialogDelegateView {
   static void Show(Profile* profile);
 
   // views::DialogDelegateView:
-  int GetDialogButtons() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   gfx::Size CalculatePreferredSize() const override;

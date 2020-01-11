@@ -183,7 +183,8 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
                        MakeGarbageCollected<OriginTrialContext>(),
                        origin,
                        WebSandboxFlags::kNone,
-                       nullptr,
+                       nullptr, /* feature_policy */
+                       nullptr, /* document_policy */
                        // Until there are APIs that are available in workers or
                        // or worklets that require a privileged context test
                        // that checks ancestors, just do a simple check here.

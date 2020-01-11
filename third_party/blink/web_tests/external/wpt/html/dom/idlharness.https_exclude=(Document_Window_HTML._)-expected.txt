@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1397 tests; 1356 PASS, 41 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1401 tests; 1356 PASS, 45 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -1371,6 +1371,10 @@ PASS SVGElement interface: attribute ontimeupdate
 PASS SVGElement interface: attribute ontoggle
 PASS SVGElement interface: attribute onvolumechange
 PASS SVGElement interface: attribute onwaiting
+FAIL SVGElement interface: attribute onwebkitanimationend assert_true: The prototype object must have a property "onwebkitanimationend" expected true got false
+FAIL SVGElement interface: attribute onwebkitanimationiteration assert_true: The prototype object must have a property "onwebkitanimationiteration" expected true got false
+FAIL SVGElement interface: attribute onwebkitanimationstart assert_true: The prototype object must have a property "onwebkitanimationstart" expected true got false
+FAIL SVGElement interface: attribute onwebkittransitionend assert_true: The prototype object must have a property "onwebkittransitionend" expected true got false
 PASS SVGElement interface: attribute oncopy
 PASS SVGElement interface: attribute oncut
 PASS SVGElement interface: attribute onpaste

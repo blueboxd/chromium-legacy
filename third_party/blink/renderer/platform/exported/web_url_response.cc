@@ -244,6 +244,10 @@ void WebURLResponse::SetIsLegacyTLSVersion(bool value) {
   resource_response_->SetIsLegacyTLSVersion(value);
 }
 
+void WebURLResponse::SetTimingAllowPassed(bool value) {
+  resource_response_->SetTimingAllowPassed(value);
+}
+
 void WebURLResponse::SetSecurityStyle(SecurityStyle security_style) {
   resource_response_->SetSecurityStyle(security_style);
 }

@@ -237,7 +237,7 @@ void HighlighterController::DestroyPointerView() {
 
 bool HighlighterController::CanStartNewGesture(ui::TouchEvent* event) {
   // Ignore events over the palette.
-  if (ash::palette_utils::PaletteContainsPointInScreen(event->root_location()))
+  if (palette_utils::PaletteContainsPointInScreen(event->root_location()))
     return false;
   return !interrupted_stroke_timer_ &&
          FastInkPointerController::CanStartNewGesture(event);

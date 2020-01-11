@@ -32,7 +32,6 @@
 #include <libxml/xmlIO.h>
 #include <libxml/xmlreader.h>
 #include <libxml/parserInternals.h>
-
 #ifdef LIBXML_SCHEMAS_ENABLED
 #include <libxml/relaxng.h>
 #include <libxml/xmlschemas.h>
@@ -2267,16 +2266,16 @@ xmlFreeTextReader(xmlTextReaderPtr reader) {
     if (reader->ctxt != NULL) {
         if (reader->dict == reader->ctxt->dict)
 	    reader->dict = NULL;
-#ifdef LIBXML_REGEXP_ENABLED
 	if ((reader->ctxt->vctxt.vstateTab != NULL) &&
 	    (reader->ctxt->vctxt.vstateMax > 0)){
+#ifdef LIBXML_REGEXP_ENABLED
             while (reader->ctxt->vctxt.vstateNr > 0)
                 xmlValidatePopElement(&reader->ctxt->vctxt, NULL, NULL, NULL);
+#endif
 	    xmlFree(reader->ctxt->vctxt.vstateTab);
 	    reader->ctxt->vctxt.vstateTab = NULL;
 	    reader->ctxt->vctxt.vstateMax = 0;
 	}
-#endif
 	if (reader->ctxt->myDoc != NULL) {
 	    if (reader->preserve == 0)
 		xmlTextReaderFreeDoc(reader, reader->ctxt->myDoc);

@@ -119,6 +119,9 @@ class NET_EXPORT URLRequestContextBuilder {
     // based off available disk space.
     int max_size;
 
+    // Whether or not we need to reset the cache due to an experiment change.
+    bool reset_cache;
+
     // The cache path (when type is DISK).
     base::FilePath path;
 

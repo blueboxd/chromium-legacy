@@ -207,9 +207,12 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
       LoadManifest(extension_path, error);
   if (!manifest.get())
     return nullptr;
+
   if (!extension_l10n_util::LocalizeExtension(
           extension_path, manifest.get(),
-          extension_l10n_util::GzippedMessagesPermission::kDisallow, error)) {
+          extension_l10n_util::GetGzippedMessagesPermissionForLocation(
+              location),
+          error)) {
     return nullptr;
   }
 

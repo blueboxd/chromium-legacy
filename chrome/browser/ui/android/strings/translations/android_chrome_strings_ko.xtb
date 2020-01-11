@@ -366,6 +366,7 @@
 <translation id="381841723434055211">전화번호</translation>
 <translation id="3819178904835489326">다운로드 <ph name="NUMBER_OF_DOWNLOADS" />개 삭제됨</translation>
 <translation id="3822502789641063741">사이트 저장공간을 삭제하시겠습니까?</translation>
+<translation id="3853625385350850937">계속하려면 기기에서 NFC를 사용 설정하세요.</translation>
 <translation id="3859306556332390985">앞으로 탐색</translation>
 <translation id="388596076286380598">오프라인 상태이거나 연결 상태가 좋지 못할 때도 좋아하는 사이트의 기사, 동영상 및 기타 콘텐츠를 볼 수 있습니다.</translation>
 <translation id="3894427358181296146">폴더 추가</translation>
@@ -1049,6 +1050,7 @@
 <translation id="8912362522468806198">Google 계정</translation>
 <translation id="8920114477895755567">부모님의 세부정보를 기다리는 중</translation>
 <translation id="8922289737868596582">옵션 더보기 버튼을 눌러 페이지를 다운로드하여 오프라인에서 사용하세요.</translation>
+<translation id="8926666909099850184">기기에서 NFC가 사용 중지되어 있습니다. <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 NFC를 사용 설정하세요.</translation>
 <translation id="8937772741022875483">디지털 웰빙에서 Chrome 활동을 삭제할까요?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">다른 창에서 열기</translation>

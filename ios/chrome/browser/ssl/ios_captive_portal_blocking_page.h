@@ -36,6 +36,10 @@ class IOSCaptivePortalBlockingPage : public IOSSecurityInterstitialPage {
   void AfterShow() override;
   void OnDontProceed() override;
   void CommandReceived(const std::string& command) override;
+  void HandleScriptCommand(const base::DictionaryValue& message,
+                           const GURL& origin_url,
+                           bool user_is_interacting,
+                           web::WebFrame* sender_frame) override;
 
   // The landing page url for the captive portal network.
   const GURL landing_url_;

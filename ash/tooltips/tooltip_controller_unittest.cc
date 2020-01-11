@@ -117,16 +117,16 @@ TEST_F(TooltipControllerTest, HideTooltipWhenCursorHidden) {
   EXPECT_TRUE(helper_->IsTooltipVisible());
 
   // Disable mouse event which hides the cursor and check again.
-  ash::Shell::Get()->cursor_manager()->DisableMouseEvents();
+  Shell::Get()->cursor_manager()->DisableMouseEvents();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
+  EXPECT_FALSE(Shell::Get()->cursor_manager()->IsCursorVisible());
   helper_->UpdateIfRequired();
   EXPECT_FALSE(helper_->IsTooltipVisible());
 
   // Enable mouse event which shows the cursor and re-check.
-  ash::Shell::Get()->cursor_manager()->EnableMouseEvents();
+  Shell::Get()->cursor_manager()->EnableMouseEvents();
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(ash::Shell::Get()->cursor_manager()->IsCursorVisible());
+  EXPECT_TRUE(Shell::Get()->cursor_manager()->IsCursorVisible());
   helper_->UpdateIfRequired();
   EXPECT_TRUE(helper_->IsTooltipVisible());
 }

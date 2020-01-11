@@ -46,6 +46,7 @@
 <translation id="1460620680449458626">Zvuk je vypnutý.</translation>
 <translation id="1467432559032391204">Doľava</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1508507608940204251">Zapnuté</translation>
 <translation id="1516740043221086139">Režim Nerušiť je zapnutý.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Zobraziť nastavenia upozornení. Upozornenia sú pre aplikáciu vypnuté}few{Zobraziť nastavenia upozornení. Upozornenia sú vypnuté pre # aplikácie}many{Show notification settings. Notifications are off for # apps}other{Zobraziť nastavenia upozornení. Upozornenia sú vypnuté pre # aplikácií}}</translation>
 <translation id="1525508553941733066">ZATVORIŤ</translation>
@@ -70,6 +71,7 @@
 <translation id="1836215606488044471">Asistent (načítava sa...)</translation>
 <translation id="1838895407229022812">Nočný režim je vypnutý.</translation>
 <translation id="1850504506766569011">Pripojenie Wi‑Fi je vypnuté.</translation>
+<translation id="1859889070386344428">Vypnuté</translation>
 <translation id="1864454756846565995">Zariadenie USB-C (port vzadu)</translation>
 <translation id="1882897271359938046">Zrkadlenie na displej <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Odomykajte odtlačkom prsta</translation>
@@ -122,6 +124,7 @@
 <translation id="2501920221385095727">Funkcia sticky keys</translation>
 <translation id="2509468283778169019">Kláves CAPS LOCK je zapnutý</translation>
 <translation id="2517825809102302935">Nadnes vypnúť</translation>
+<translation id="2519465031217098801">Zapnuté</translation>
 <translation id="2542089167727451762">Klepnite na svoj profilový obrázok</translation>
 <translation id="255671100581129685">Asistent Google nie je k dispozícii vo verejnej relácii.</translation>
 <translation id="256712445991462162">ukotvená lupa</translation>
@@ -225,6 +228,7 @@
 <translation id="3901991538546252627">Pripája sa k sieti <ph name="NAME" /></translation>
 <translation id="394485226368336402">Nastavenia zvuku</translation>
 <translation id="3962859241508114581">Predchádzajúca stopa</translation>
+<translation id="3965097803111112935">Vypnuté</translation>
 <translation id="397105322502079400">Prebieha výpočet...</translation>
 <translation id="3977512764614765090">Batéria je nabitá na <ph name="PERCENTAGE" /> % a nabíja sa.</translation>
 <translation id="3995138139523574647">zariadenia USB-C (port vpravo vzadu)</translation>
@@ -307,6 +311,7 @@
 <translation id="5207949376430453814">Zvýrazniť textový kurzor</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
 <translation id="523505283826916779">Nastavenia zjednodušenia prístupu</translation>
+<translation id="5250225880026334010">Vypnuté</translation>
 <translation id="5260676007519551770">4. plocha</translation>
 <translation id="5283198616748585639">Pridať 1 minútu</translation>
 <translation id="5286194356314741248">Prebieha vyhľadávanie</translation>
@@ -408,6 +413,7 @@
 <translation id="6650933572246256093">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Zadajte na danom zariadení tento prístupový kľúč: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="6665545700722362599">Udeľte webom, aplikáciám a rozšíreniam povolenie používať služby určovania polohy, mikrofón zariadenia, kameru alebo ďalšie funkcie</translation>
+<translation id="6669268301501499730">Zapnuté</translation>
 <translation id="6670153871843998651">3. plocha</translation>
 <translation id="6691659475504239918">Hľadať+Shift+H</translation>
 <translation id="6696025732084565524">Odoberateľná klávesnica potrebuje kritickú aktualizáciu</translation>

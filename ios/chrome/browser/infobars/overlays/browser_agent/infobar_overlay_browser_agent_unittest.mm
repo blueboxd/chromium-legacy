@@ -101,13 +101,6 @@ TEST_F(InfobarOverlayBrowserAgentTest, BannerPresentation) {
   EXPECT_CALL(mock_banner_handler,
               BannerVisibilityChanged(&infobar_, /*visible=*/true));
   banner_queue()->AddRequest(std::move(added_request));
-  // Set up the completion response and expect for the interaction handler to
-  // receive the BannerCompleted() callback.
-  bool user_initiated = true;
-  request->GetCallbackManager()->SetCompletionResponse(
-      OverlayResponse::CreateWithInfo<InfobarBannerCompletionResponse>(
-          user_initiated));
-  EXPECT_CALL(mock_banner_handler, BannerCompleted(&infobar_, user_initiated));
   // Simulate dismissal of the request's UI, expecting
   // InfobarBannerInteractionHandler::BannerVisibilityChanged() to be called.
   EXPECT_CALL(mock_banner_handler,

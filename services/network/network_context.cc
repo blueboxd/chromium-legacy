@@ -1838,6 +1838,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       cache_params.path = *params_->http_cache_path;
       cache_params.type = network_session_configurator::ChooseCacheType();
     }
+    cache_params.reset_cache = params_->reset_http_cache_backend;
 
 #if defined(OS_ANDROID)
     cache_params.app_status_listener = app_status_listener();

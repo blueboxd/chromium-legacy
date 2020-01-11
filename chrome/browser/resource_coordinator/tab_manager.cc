@@ -268,12 +268,20 @@ WebContents* TabManager::DiscardTabByExtension(content::WebContents* contents) {
   return DiscardTabImpl(LifecycleUnitDiscardReason::EXTERNAL);
 }
 
-void TabManager::LogMemoryAndDiscardTab(LifecycleUnitDiscardReason reason) {
+void TabManager::DiscardTabFromMemoryPressure() {
   DCHECK(!base::FeatureList::IsEnabled(
       performance_manager::features::kUrgentDiscardingFromPerformanceManager));
-  // Discard immediately without waiting for LogMemory() (https://crbug/850545).
-  // Consider removing LogMemory() at all if nobody cares about the log.
-  LogMemory("Tab Discards Memory details");
+
+#if defined(OS_CHROMEOS)
+  // Output a log with per-process memory usage and number of file descriptors,
+  // as well as GPU memory details. Discard happens without waiting for the log
+  // (https://crbug.com/850545) Per comment at
+  // https://crrev.com/c/chromium/src/+/1980282/3#message-d45cc354e7776d7e3d208e22dd2f6bbca3e9eae8,
+  // this log is used to diagnose issues on ChromeOS. Do not output it on other
+  // platforms since it is not used and data shows it can create IO thread hangs
+  // (https://crbug.com/1040522).
+  memory::OomMemoryDetails::Log("Tab Discards Memory details");
+#endif  // defined(OS_CHROMEOS)
 
   // Start handling memory pressure. Suppress further notifications before
   // completion in case a slow handler queues up multiple dispatches of this
@@ -282,12 +290,7 @@ void TabManager::LogMemoryAndDiscardTab(LifecycleUnitDiscardReason reason) {
 
   TabDiscardDoneCB tab_discard_done(base::BindOnce(
       &TabManager::OnTabDiscardDone, weak_ptr_factory_.GetWeakPtr()));
-  DiscardTab(reason, std::move(tab_discard_done));
-}
-
-void TabManager::LogMemory(const std::string& title) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  memory::OomMemoryDetails::Log(title);
+  DiscardTab(LifecycleUnitDiscardReason::URGENT, std::move(tab_discard_done));
 }
 
 void TabManager::AddObserver(TabLifecycleObserver* observer) {
@@ -385,7 +388,7 @@ void TabManager::OnMemoryPressure(
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       return;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      LogMemoryAndDiscardTab(LifecycleUnitDiscardReason::URGENT);
+      DiscardTabFromMemoryPressure();
       return;
   }
   NOTREACHED();

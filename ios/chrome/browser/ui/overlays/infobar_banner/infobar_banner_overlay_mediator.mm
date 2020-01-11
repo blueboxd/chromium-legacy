@@ -49,15 +49,15 @@
 }
 
 - (void)dismissInfobarBannerForUserInteraction:(BOOL)userInitiated {
-  if (self.request) {
-    // Add a completion response notifying the requesting code of whether the
-    // dismissal was user-initiated.  Provided to the request's completion
-    // callbacks that are executed when the UI is finished being dismissed.
-    self.request->GetCallbackManager()->SetCompletionResponse(
-        OverlayResponse::CreateWithInfo<InfobarBannerCompletionResponse>(
-            userInitiated));
+  if (userInitiated) {
+    // Notify the model layer of user-initiated banner dismissal before
+    // dismissing the banner.
+    [self dispatchResponseAndStopOverlay:
+              OverlayResponse::CreateWithInfo<
+                  InfobarBannerUserInitiatedDismissalResponse>()];
+  } else {
+    [self.delegate stopOverlayForMediator:self];
   }
-  [self.delegate stopOverlayForMediator:self];
 }
 
 - (void)presentInfobarModalFromBanner {

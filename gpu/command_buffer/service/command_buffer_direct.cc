@@ -10,16 +10,7 @@
 
 namespace gpu {
 
-namespace {
-
-uint64_t g_next_command_buffer_id = 1;
-
-}  // anonymous namespace
-
-CommandBufferDirect::CommandBufferDirect()
-    : service_(this, nullptr),
-      command_buffer_id_(
-          CommandBufferId::FromUnsafeValue(g_next_command_buffer_id++)) {}
+CommandBufferDirect::CommandBufferDirect() : service_(this, nullptr) {}
 
 CommandBufferDirect::~CommandBufferDirect() = default;
 

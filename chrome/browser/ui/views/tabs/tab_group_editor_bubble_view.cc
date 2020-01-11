@@ -104,13 +104,11 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   title_field_->SetAccessibleName(base::ASCIIToUTF16("Group title"));
   title_field_->set_controller(&title_field_controller_);
 
-  InitColorSet();
-  const SkColor current_color = tab_controller_->GetPaintedGroupColor(
-      tab_controller_->GetGroupColorId(group_));
+  const SkColor initial_color = InitColorSet();
 
   color_selector_ =
       group_modifier_container->AddChildView(std::make_unique<ColorPickerView>(
-          colors_, background_color(), current_color,
+          colors_, background_color(), initial_color,
           base::Bind(&TabGroupEditorBubbleView::UpdateGroup,
                      base::Unretained(this))));
   color_selector_->SetBorder(views::CreateEmptyBorder(
@@ -168,10 +166,16 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
 
 TabGroupEditorBubbleView::~TabGroupEditorBubbleView() = default;
 
-void TabGroupEditorBubbleView::InitColorSet() {
+SkColor TabGroupEditorBubbleView::InitColorSet() {
   base::flat_map<tab_groups::TabGroupColorId, tab_groups::TabGroupColor>
       all_colors = tab_groups::GetTabGroupColorSet();
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+
+  // Keep track of the current group's color, to be returned as the initial
+  // selected value.
+  const tab_groups::TabGroupColorId initial_color_id =
+      tab_controller_->GetGroupColorId(group_);
+  SkColor initial_color;
 
   color_ids_.reserve(all_colors.size());
   colors_.reserve(all_colors.size());
@@ -181,7 +185,12 @@ void TabGroupEditorBubbleView::InitColorSet() {
                         ? color_pair.second.dark_theme_color
                         : color_pair.second.light_theme_color;
     colors_.push_back({color, color_pair.second.label});
+
+    if (color_pair.first == initial_color_id)
+      initial_color = color;
   }
+
+  return initial_color;
 }
 
 void TabGroupEditorBubbleView::UpdateGroup() {

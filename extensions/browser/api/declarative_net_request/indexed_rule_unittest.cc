@@ -777,6 +777,59 @@ TEST_F(IndexedRuleTest, MultipleRedirectKeys) {
   EXPECT_EQ("http://google.com", indexed_rule.redirect_url);
 }
 
+TEST_F(IndexedRuleTest, InvalidAllowAllRequestsResourceType) {
+  using ResourceTypeVec = std::vector<dnr_api::ResourceType>;
+
+  struct {
+    ResourceTypeVec resource_types;
+    ResourceTypeVec excluded_resource_types;
+    const ParseResult expected_result;
+    // Only valid if |expected_result| is SUCCESS.
+    const uint16_t expected_element_types;
+  } cases[] = {
+      {{}, {}, ParseResult::ERROR_INVALID_ALLOW_ALL_REQUESTS_RESOURCE_TYPE, 0},
+      {{dnr_api::RESOURCE_TYPE_SUB_FRAME},
+       {dnr_api::RESOURCE_TYPE_SCRIPT},
+       ParseResult::SUCCESS,
+       flat_rule::ElementType_SUBDOCUMENT},
+      {{dnr_api::RESOURCE_TYPE_SCRIPT, dnr_api::RESOURCE_TYPE_MAIN_FRAME},
+       {},
+       ParseResult::ERROR_INVALID_ALLOW_ALL_REQUESTS_RESOURCE_TYPE,
+       0},
+      {{dnr_api::RESOURCE_TYPE_MAIN_FRAME, dnr_api::RESOURCE_TYPE_SUB_FRAME},
+       {},
+       ParseResult::SUCCESS,
+       flat_rule::ElementType_MAIN_FRAME | flat_rule::ElementType_SUBDOCUMENT},
+      {{dnr_api::RESOURCE_TYPE_MAIN_FRAME},
+       {},
+       ParseResult::SUCCESS,
+       flat_rule::ElementType_MAIN_FRAME},
+  };
+
+  for (size_t i = 0; i < base::size(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
+    dnr_api::Rule rule = CreateGenericParsedRule();
+
+    if (cases[i].resource_types.empty())
+      rule.condition.resource_types = nullptr;
+    else
+      rule.condition.resource_types =
+          std::make_unique<ResourceTypeVec>(cases[i].resource_types);
+
+    rule.condition.excluded_resource_types =
+        std::make_unique<ResourceTypeVec>(cases[i].excluded_resource_types);
+    rule.action.type = dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS;
+
+    IndexedRule indexed_rule;
+    ParseResult result = IndexedRule::CreateIndexedRule(
+        std::move(rule), GetBaseURL(), &indexed_rule);
+
+    EXPECT_EQ(cases[i].expected_result, result);
+    if (result == ParseResult::SUCCESS)
+      EXPECT_EQ(cases[i].expected_element_types, indexed_rule.element_types);
+  }
+}
+
 }  // namespace
 }  // namespace declarative_net_request
 }  // namespace extensions

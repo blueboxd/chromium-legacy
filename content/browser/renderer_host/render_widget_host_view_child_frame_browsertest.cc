@@ -148,8 +148,9 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
   metadata.viewport_size_in_pixels = gfx::Size(75, 75);
   metadata.local_surface_id_allocation =
       viz::LocalSurfaceIdAllocation(local_surface_id, base::TimeTicks::Now());
-  root->current_frame_host()->GetRenderWidgetHost()->DidUpdateVisualProperties(
-      metadata);
+  RenderFrameMetadataProvider::Observer* metadata_receiver =
+      root->current_frame_host()->GetRenderWidgetHost();
+  metadata_receiver->OnLocalSurfaceIdChanged(metadata);
 
   // The child frame's RenderWidgetHostView should now use the auto-resize value
   // for its visible viewport.

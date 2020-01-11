@@ -9,8 +9,13 @@
 #include <map>
 #include <vector>
 
+#include "base/time/time.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
+
+namespace base {
+class Clock;
+}
 
 namespace content {
 class BrowserContext;
@@ -30,6 +35,10 @@ class ActionTracker {
   ~ActionTracker();
   ActionTracker(const ActionTracker& other) = delete;
   ActionTracker& operator=(const ActionTracker& other) = delete;
+
+  // Sets a custom Clock to use in tests. |clock| should be owned by the caller
+  // of this function.
+  static void SetClockForTests(const base::Clock* clock);
 
   // Called whenever a request matches with a rule.
   void OnRuleMatched(const RequestAction& request_action,
@@ -60,7 +69,8 @@ class ActionTracker {
   // rules matched for |tab_id| will be returned.
   std::vector<api::declarative_net_request::MatchedRuleInfo> GetMatchedRules(
       const ExtensionId& extension_id,
-      base::Optional<int> tab_id) const;
+      const base::Optional<int>& tab_id,
+      const base::Time& min_time_stamp);
 
   // Returns the number of matched rules in |rules_tracked_| for the given
   // |extension_id| and |tab_id|. Should only be used for tests.
@@ -103,6 +113,10 @@ class ActionTracker {
 
     const int rule_id;
     const api::declarative_net_request::SourceType source_type;
+
+    // The timestamp for when the rule was matched. This is set in the
+    // constructor.
+    const base::Time time_stamp;
   };
 
   // Info tracked for each ExtensionTabIdKey or ExtensionNavigationIdKey.

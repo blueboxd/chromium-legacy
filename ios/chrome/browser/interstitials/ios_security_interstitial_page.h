@@ -17,6 +17,7 @@ class DictionaryValue;
 }
 
 namespace web {
+class WebFrame;
 class WebInterstitial;
 class WebState;
 }
@@ -32,6 +33,13 @@ class IOSSecurityInterstitialPage : public web::WebInterstitialDelegate {
 
   // web::WebInterstitialDelegate implementation.
   std::string GetHtmlContents() const override;
+
+  // Handles JS commands from the interstitial page. Overridden in subclasses
+  // to handle actions specific to the type of interstitial.
+  virtual void HandleScriptCommand(const base::DictionaryValue& message,
+                                   const GURL& origin_url,
+                                   bool user_is_interacting,
+                                   web::WebFrame* sender_frame) = 0;
 
  protected:
   // Returns true if the interstitial should create a new navigation item.

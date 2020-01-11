@@ -20,7 +20,6 @@ Ezinye izici kungenzeka zingabi khona futhi izinguquko kokuncamelayo ngeke zize 
 <translation id="1553358976309200471">Buyekeza i-Chrome</translation>
 <translation id="1587223624401073077">I-Google Chrome isebenzisa ikhamela yakho.</translation>
 <translation id="1587325591171447154">I-<ph name="FILE_NAME" /> iyingozi, ngakho-ke i-Chrome iyivimbile.</translation>
-<translation id="1590588151039584890">Ukuze ubuyekeze, i-Chrome idinga ukumisa ukusebenza kule khompyutha. Lokhu kungabangela ukuthi abanye abasebenzisi abangene kule khompyutha balahlekelwe izinguquko ezingalondoloziwe.</translation>
 <translation id="1619887657840448962">Ukuze kwenziwe i-Chrome iphephile, sikhubaza isandiso esilandelayo esingafakiwe kuhlu ku-<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> futhi kungenzeka singezwe ngaphandle kolwazi lakho.</translation>
 <translation id="1628000112320670027">Thola usizo nge-Chrome</translation>
 <translation id="1635734105302489219">Usula amakhukhi uma uyeka i-Chrome. Ukuze uqhubeke uvumelanise, shintsha le-<ph name="COOKIE_SETTINGS_LINK" />.</translation>
@@ -145,7 +144,6 @@ Ezinye izici kungenzeka zingatholakali. Sicela ucacise umkhombandlela wephrofaye
 <translation id="5430073640787465221">Ifayela lakho lokuncamelayo limoshekile noma alivumelekile. 
 
 I-Google Chrome ayikwazi ukuthola izilungiselelo zakho.</translation>
-<translation id="5543953544073077331">Amanye amakhophi e-Chrome ayasebenza. Ukuze ubuyekeze, wavale.</translation>
 <translation id="556024056938947818">I-Google Chrome izama ukubonisa amaphasiwedi.</translation>
 <translation id="5566025111015594046">I-Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">Uma isilungiselelo singaveli kuleli khasi, bheka <ph name="LINK_BEGIN" />
@@ -195,7 +193,6 @@ I-Google Chrome ayikwazi ukuthola izilungiselelo zakho.</translation>
 <translation id="7408085963519505752">Imigomo ye-Chrome OS</translation>
 <translation id="7419046106786626209">I-Chrome OS ayikwazanga ukuvumelanisa idatha yakho ngoba ukuvumelanisa akutholakaleli isizinda sakho.</translation>
 <translation id="7486227612705979895">I-Chrome izofinyelela idrayivu yakho ukwenza iziphakamiso kwibha lekheli</translation>
-<translation id="7531671357096394523">Yeka onke amakhophi e-Chrome.</translation>
 <translation id="7535429826459677826">I-Google Chrome Dev</translation>
 <translation id="7573289029918943991">Ukuze ubone uma ngabe idivayisi yakho isesikhathini, hamba <ph name="LINK_BEGIN" />kuzilungiselelo ze-Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Le khompuyutha ngeke isathola izibuyekezo ze-Google Chrome ngoba i-Mac OS X 10.9 ayisasekelwa.</translation>

@@ -114,13 +114,13 @@ bool ResolutionNotificationController::PrepareNotificationAndSetDisplayMode(
     int64_t display_id,
     const display::ManagedDisplayMode& old_resolution,
     const display::ManagedDisplayMode& new_resolution,
-    ash::mojom::DisplayConfigSource source,
+    mojom::DisplayConfigSource source,
     base::OnceClosure accept_callback) {
   Shell::Get()->screen_layout_observer()->SetDisplayChangedFromSettingsUI(
       display_id);
   display::DisplayManager* const display_manager =
       Shell::Get()->display_manager();
-  if (source == ash::mojom::DisplayConfigSource::kPolicy ||
+  if (source == mojom::DisplayConfigSource::kPolicy ||
       display::Display::IsInternalDisplayId(display_id)) {
     // We don't show notifications to confirm/revert the resolution change in
     // the case of an internal display or policy-forced changes.
@@ -222,7 +222,7 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
                 base::UTF8ToUTF16(
                     change_info_->current_resolution.size().ToString()));
 
-  std::unique_ptr<Notification> notification = ash::CreateSystemNotification(
+  std::unique_ptr<Notification> notification = CreateSystemNotification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
       timeout_message,
       base::string16(),  // display_source

@@ -154,7 +154,7 @@ void ShowDisplayErrorNotification(const base::string16& message,
   }
 
   std::unique_ptr<message_center::Notification> notification =
-      ash::CreateSystemNotification(
+      CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kDisplayErrorNotificationId,
           base::string16(),  // title
           message,

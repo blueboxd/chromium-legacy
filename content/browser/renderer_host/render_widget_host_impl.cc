@@ -414,7 +414,9 @@ RenderWidgetHost::GetRenderWidgetHosts() {
       continue;
     }
 
-    // If the widget is for a main frame, only add if it's not swapped out.
+    // If the widget is for a main frame, only add if there is a RenderWidget in
+    // the renderer process. When this is false, there is no main RenderFrame
+    // and so no RenderWidget for this RenderWidgetHost.
     if (owner_delegate->IsMainFrameActive())
       hosts->Add(widget);
   }
@@ -469,11 +471,6 @@ const viz::FrameSinkId& RenderWidgetHostImpl::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
-void RenderWidgetHostImpl::ResetSentVisualProperties() {
-  visual_properties_ack_pending_ = false;
-  old_visual_properties_.reset();
-}
-
 void RenderWidgetHostImpl::SendScreenRects() {
   if (!renderer_initialized_ || waiting_for_screen_rects_ack_)
     return;
@@ -514,12 +511,6 @@ void RenderWidgetHostImpl::SetIntersectsViewport(bool intersects) {
 void RenderWidgetHostImpl::UpdatePriority() {
   if (!destroyed_)
     process_->UpdateClientPriority(this);
-}
-
-void RenderWidgetHostImpl::DidDestroyRenderWidget() {
-  if (owner_delegate_)
-    DCHECK(!owner_delegate_->IsMainFrameActive());
-  frame_token_message_queue_->Reset();
 }
 
 void RenderWidgetHostImpl::Init() {
@@ -724,6 +715,17 @@ void RenderWidgetHostImpl::RemoveImeInputEventObserver(
 }
 #endif
 
+VisualProperties RenderWidgetHostImpl::GetInitialVisualProperties() {
+  VisualProperties initial_props = GetVisualProperties();
+
+  old_visual_properties_ = nullptr;
+  visual_properties_ack_pending_ =
+      DoesVisualPropertiesNeedAck(old_visual_properties_, initial_props);
+  old_visual_properties_ = std::make_unique<VisualProperties>(initial_props);
+
+  return initial_props;
+}
+
 VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // This is only called while the RenderWidgetHost is attached to a delegate
   // still.
@@ -838,14 +840,6 @@ VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   return visual_properties;
 }
 
-void RenderWidgetHostImpl::SetInitialVisualProperties(
-    const VisualProperties& visual_properties) {
-  visual_properties_ack_pending_ =
-      DoesVisualPropertiesNeedAck(old_visual_properties_, visual_properties);
-  old_visual_properties_ =
-      std::make_unique<VisualProperties>(visual_properties);
-}
-
 bool RenderWidgetHostImpl::SynchronizeVisualProperties() {
   return SynchronizeVisualProperties(false);
 }
@@ -875,13 +869,17 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   // inactive, so there is no focused node, or anything to scroll and display.
   if (owner_delegate_ && !owner_delegate_->IsMainFrameActive())
     return false;
+  // This is similar to the above but when the renderer process has crashed, so
+  // more objects are gone than the RenderWidget.
+  if (!renderer_initialized_)
+    return false;
 
-  // Skip if the |delegate_| has already been detached because
-  // it's web contents is being deleted, or if LocalSurfaceIdAllocation is
-  // suppressed, as we are first updating our internal state from a child's
-  // request, before subsequently merging ids to send.
+  // Skip if the |delegate_| has already been detached because it's web contents
+  // is being deleted, or if LocalSurfaceIdAllocation is suppressed, as we are
+  // first updating our internal state from a child's request, before
+  // subsequently merging ids to send.
   if (visual_properties_ack_pending_ || !process_->IsInitializedAndNotDead() ||
-      !view_ || !view_->HasSize() || !renderer_initialized_ || !delegate_ ||
+      !view_ || !view_->HasSize() || !delegate_ ||
       surface_id_allocation_suppressed_ ||
       !view_->CanSynchronizeVisualProperties()) {
     return false;
@@ -1837,11 +1835,6 @@ void RenderWidgetHostImpl::RendererExited() {
 
   waiting_for_screen_rects_ack_ = false;
 
-  // Must reset these to ensure that keyboard events work with a new renderer.
-  suppress_events_until_keydown_ = false;
-
-  // Reset some fields in preparation for recovering from a crash.
-  ResetSentVisualProperties();
   // After the renderer crashes, the view is destroyed and so the
   // RenderWidgetHost cannot track its visibility anymore. We assume such
   // RenderWidgetHost to be invisible for the sake of internal accounting - be
@@ -1857,21 +1850,33 @@ void RenderWidgetHostImpl::RendererExited() {
       process_->UpdateClientPriority(this);
   }
 
-  // Reset this to ensure the hung renderer mechanism is working properly.
-  in_flight_event_count_ = 0;
-  StopInputEventAckTimeout();
-
   if (view_) {
     view_->RenderProcessGone();
-    view_.reset();  // The View should be deleted by RenderProcessGone.
+    SetView(nullptr);  // The View should be deleted by RenderProcessGone.
   }
 
+  ResetRenderWidgetState();
+}
+
+void RenderWidgetHostImpl::DidDestroyRenderWidget() {
+  if (owner_delegate_)
+    DCHECK(!owner_delegate_->IsMainFrameActive());
+  ResetRenderWidgetState();
+}
+
+void RenderWidgetHostImpl::ResetRenderWidgetState() {
+  // Must reset these to ensure that keyboard events work with a new
+  // RenderWidget.
+  suppress_events_until_keydown_ = false;
+
   // Reconstruct the input router to ensure that it has fresh state for a new
-  // renderer. Otherwise it may be stuck waiting for the old renderer to ack an
-  // event. (In particular, the above call to view_->RenderProcessGone will
+  // RenderWidget. Otherwise it may be stuck waiting for the old renderer to ack
+  // an event. (In particular, the above call to view_->RenderProcessGone() will
   // destroy the aura window, which may dispatch a synthetic mouse move.)
+  //
+  // This also stops the event ack timeout to ensure the hung renderer mechanism
+  // is working properly.
   SetupInputRouter();
-  synthetic_gesture_controller_.reset();
 
   frame_token_message_queue_->Reset();
 }
@@ -2158,11 +2163,11 @@ void RenderWidgetHostImpl::OnRequestSetBounds(const gfx::Rect& bounds) {
   Send(new WidgetMsg_SetBounds_ACK(routing_id_));
 }
 
-void RenderWidgetHostImpl::DidUpdateVisualProperties(
+void RenderWidgetHostImpl::OnLocalSurfaceIdChanged(
     const cc::RenderFrameMetadata& metadata) {
   TRACE_EVENT_WITH_FLOW1(
       "renderer_host,disabled-by-default-viz.surface_id_flow",
-      "RenderWidgetHostImpl::DidUpdateVisualProperties",
+      "RenderWidgetHostImpl::OnLocalSurfaceIdChanged",
       metadata.local_surface_id_allocation &&
               metadata.local_surface_id_allocation->IsValid()
           ? metadata.local_surface_id_allocation->local_surface_id()
@@ -2918,6 +2923,10 @@ void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {
   // DidDestroyRenderWidget() with data from the destroyed RenderWidget.
   if (owner_delegate_ && !owner_delegate_->IsMainFrameActive())
     return;
+  // This is similar to the above but when the renderer process has crashed, so
+  // more objects are gone than the RenderWidget.
+  if (!renderer_initialized_)
+    return;
 
   frame_token_message_queue_->DidProcessFrame(frame_token);
 }
@@ -3058,11 +3067,6 @@ void RenderWidgetHostImpl::OnRenderFrameMetadataChangedAfterActivation() {
 
   delegate()->OnVerticalScrollDirectionChanged(
       metadata.new_vertical_scroll_direction);
-}
-
-void RenderWidgetHostImpl::OnLocalSurfaceIdChanged(
-    const cc::RenderFrameMetadata& metadata) {
-  DidUpdateVisualProperties(metadata);
 }
 
 std::vector<viz::SurfaceId>

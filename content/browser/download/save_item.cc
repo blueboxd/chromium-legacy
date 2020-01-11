@@ -16,9 +16,9 @@ namespace content {
 namespace {
 
 SaveItemId GetNextSaveItemId() {
-  static int g_next_save_item_id = 1;
+  static SaveItemId::Generator g_save_item_id_generator;
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return SaveItemId::FromUnsafeValue(g_next_save_item_id++);
+  return g_save_item_id_generator.GenerateNextId();
 }
 
 }  // namespace

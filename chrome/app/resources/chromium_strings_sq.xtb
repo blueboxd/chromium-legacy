@@ -38,7 +38,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="2770231113462710648">Ndrysho shfletuesin me parazgjedhje në:</translation>
 <translation id="2799223571221894425">Nis sërish</translation>
 <translation id="2805036593126168338">Sistemi operativ Chromium nuk mund t'i sinkronizonte fjalëkalimet e tua. Rregulloje tani.</translation>
-<translation id="2838154144102149890">Chromium duhet të mbyllet në këtë kompjuter, që të mund të përditësohet. Kjo mund të bëjë që përdorues të tjerë të identifikuar në këtë kompjuter të humbin ndryshimet e paruajtura.</translation>
 <translation id="2847479871509788944">Hiqe nga Chromium...</translation>
 <translation id="2886012850691518054">Opsionale: Ndihmo në përmirësimin e Chromium duke i dërguar automatikisht Google statistika përdorimi dhe raporte të ndërprerjeve aksidentale.</translation>
 <translation id="2910007522516064972">Rreth &amp;Chromium</translation>
@@ -148,7 +147,6 @@ Disa funksione mund të mos ofrohen. Specifiko një direktori tjetër profili os
 <translation id="6847869444787758381">Chromium të informon nëse fjalëkalimet e tua komprometohen ndonjëherë</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopjuar në Chromium)</translation>
-<translation id="6868056391275687737">Po ekzekutohen kopje të tjera të Chromium. Mbylli, për të kryer përditësimin.</translation>
 <translation id="6893813176749746474">Chromium është përditësuar, por nuk e ke përdorur për të paktën 30 ditë.</translation>
 <translation id="6964305034639999644">Hape lidhjen në një dritare të fshe&amp;htë të Chromium</translation>
 <translation id="6990124437352146030">Chromium ka nevojë për leje për t'u qasur te mikrofoni yt për këtë sajt</translation>
@@ -208,7 +206,6 @@ Chromium nuk është në gjendje të rikuperojë cilësimet e tua.</translation>
 <translation id="8697124171261953979">Kontrollon po ashtu se cila faqe shfaqet kur nis Chromium ose kur kërkon nga Omnibox.</translation>
 <translation id="8704119203788522458">Ky është Chromium për ty</translation>
 <translation id="8739167630197873875">Ti i pastron kukit kur mbyll Chromium. Për të vazhduar sinkronizimin, ndryshoje këtë <ph name="COOKIE_SETTINGS_LINK" />.</translation>
-<translation id="8748383401829947534">Mbyll të gjitha kopjet e Chromium.</translation>
 <translation id="8796602469536043152">Chromium ka nevojë për leje për t'u qasur te kamera dhe mikrofoni yt për këtë sajt</translation>
 <translation id="8803635938069941624">Kushtet e sistemit operativ Chromium</translation>
 <translation id="8821041990367117597">Chromium nuk mund të sinkronizonte të dhënat e tua sepse detajet e identifikimit të llogarisë nuk janë të përditësuara.</translation>

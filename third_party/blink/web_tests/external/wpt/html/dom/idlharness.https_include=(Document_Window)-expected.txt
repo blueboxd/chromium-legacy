@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 939 tests; 912 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 963 tests; 920 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -277,6 +277,10 @@ PASS Window interface: attribute ontimeupdate
 PASS Window interface: attribute ontoggle
 PASS Window interface: attribute onvolumechange
 PASS Window interface: attribute onwaiting
+PASS Window interface: attribute onwebkitanimationend
+PASS Window interface: attribute onwebkitanimationiteration
+PASS Window interface: attribute onwebkitanimationstart
+PASS Window interface: attribute onwebkittransitionend
 PASS Window interface: attribute onafterprint
 PASS Window interface: attribute onbeforeprint
 PASS Window interface: attribute onbeforeunload
@@ -422,6 +426,10 @@ PASS Window interface: window must inherit property "ontimeupdate" with the prop
 PASS Window interface: window must inherit property "ontoggle" with the proper type
 PASS Window interface: window must inherit property "onvolumechange" with the proper type
 PASS Window interface: window must inherit property "onwaiting" with the proper type
+PASS Window interface: window must inherit property "onwebkitanimationend" with the proper type
+PASS Window interface: window must inherit property "onwebkitanimationiteration" with the proper type
+PASS Window interface: window must inherit property "onwebkitanimationstart" with the proper type
+PASS Window interface: window must inherit property "onwebkittransitionend" with the proper type
 PASS Window interface: window must inherit property "onafterprint" with the proper type
 PASS Window interface: window must inherit property "onbeforeprint" with the proper type
 PASS Window interface: window must inherit property "onbeforeunload" with the proper type
@@ -569,6 +577,10 @@ PASS Document interface: attribute ontimeupdate
 PASS Document interface: attribute ontoggle
 PASS Document interface: attribute onvolumechange
 PASS Document interface: attribute onwaiting
+FAIL Document interface: attribute onwebkitanimationend assert_true: The prototype object must have a property "onwebkitanimationend" expected true got false
+FAIL Document interface: attribute onwebkitanimationiteration assert_true: The prototype object must have a property "onwebkitanimationiteration" expected true got false
+FAIL Document interface: attribute onwebkitanimationstart assert_true: The prototype object must have a property "onwebkitanimationstart" expected true got false
+FAIL Document interface: attribute onwebkittransitionend assert_true: The prototype object must have a property "onwebkittransitionend" expected true got false
 PASS Document interface: attribute oncopy
 PASS Document interface: attribute oncut
 PASS Document interface: attribute onpaste
@@ -691,6 +703,10 @@ PASS Document interface: iframe.contentDocument must inherit property "ontimeupd
 PASS Document interface: iframe.contentDocument must inherit property "ontoggle" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onvolumechange" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onwaiting" with the proper type
+FAIL Document interface: iframe.contentDocument must inherit property "onwebkitanimationend" with the proper type assert_inherits: property "onwebkitanimationend" not found in prototype chain
+FAIL Document interface: iframe.contentDocument must inherit property "onwebkitanimationiteration" with the proper type assert_inherits: property "onwebkitanimationiteration" not found in prototype chain
+FAIL Document interface: iframe.contentDocument must inherit property "onwebkitanimationstart" with the proper type assert_inherits: property "onwebkitanimationstart" not found in prototype chain
+FAIL Document interface: iframe.contentDocument must inherit property "onwebkittransitionend" with the proper type assert_inherits: property "onwebkittransitionend" not found in prototype chain
 PASS Document interface: iframe.contentDocument must inherit property "oncopy" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "oncut" with the proper type
 PASS Document interface: iframe.contentDocument must inherit property "onpaste" with the proper type
@@ -813,6 +829,10 @@ PASS Document interface: new Document() must inherit property "ontimeupdate" wit
 PASS Document interface: new Document() must inherit property "ontoggle" with the proper type
 PASS Document interface: new Document() must inherit property "onvolumechange" with the proper type
 PASS Document interface: new Document() must inherit property "onwaiting" with the proper type
+FAIL Document interface: new Document() must inherit property "onwebkitanimationend" with the proper type assert_inherits: property "onwebkitanimationend" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "onwebkitanimationiteration" with the proper type assert_inherits: property "onwebkitanimationiteration" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "onwebkitanimationstart" with the proper type assert_inherits: property "onwebkitanimationstart" not found in prototype chain
+FAIL Document interface: new Document() must inherit property "onwebkittransitionend" with the proper type assert_inherits: property "onwebkittransitionend" not found in prototype chain
 PASS Document interface: new Document() must inherit property "oncopy" with the proper type
 PASS Document interface: new Document() must inherit property "oncut" with the proper type
 PASS Document interface: new Document() must inherit property "onpaste" with the proper type
@@ -935,6 +955,10 @@ PASS Document interface: documentWithHandlers must inherit property "ontimeupdat
 PASS Document interface: documentWithHandlers must inherit property "ontoggle" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "onvolumechange" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "onwaiting" with the proper type
+FAIL Document interface: documentWithHandlers must inherit property "onwebkitanimationend" with the proper type assert_inherits: property "onwebkitanimationend" found on object expected in prototype chain
+FAIL Document interface: documentWithHandlers must inherit property "onwebkitanimationiteration" with the proper type assert_inherits: property "onwebkitanimationiteration" found on object expected in prototype chain
+FAIL Document interface: documentWithHandlers must inherit property "onwebkitanimationstart" with the proper type assert_inherits: property "onwebkitanimationstart" found on object expected in prototype chain
+FAIL Document interface: documentWithHandlers must inherit property "onwebkittransitionend" with the proper type assert_inherits: property "onwebkittransitionend" found on object expected in prototype chain
 PASS Document interface: documentWithHandlers must inherit property "oncopy" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "oncut" with the proper type
 PASS Document interface: documentWithHandlers must inherit property "onpaste" with the proper type

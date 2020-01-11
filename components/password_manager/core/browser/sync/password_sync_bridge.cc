@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -168,8 +169,20 @@ bool AreLocalAndRemotePasswordsEqual(
               .Serialize() == password_form.federation_origin.Serialize());
 }
 
+// Whether we should try to recover undecryptable local passwords by deleting
+// the local copy, to be replaced by the remote version coming from Sync during
+// merge.
 bool ShouldRecoverPasswordsDuringMerge() {
+  // Delete the local undecryptable copy under the following conditions:
+  // 1. This is MacOS only.
+  // 2. The more general feature kDeleteCorruptedPasswords is disabled.
+  //    kDeleteCorruptedPasswords takes cares of deleting undecryptable entities
+  //    for Sync and non-Sync users upon reading from the LoginDatabase.
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   return !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
+#else
+  return false;
+#endif
 }
 
 // A simple class for scoping a password store sync transaction. If the

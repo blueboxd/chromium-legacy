@@ -96,6 +96,7 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
   network::mojom::URLLoaderFactory* GetURLLoaderFactory() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     if (!url_loader_factory_ || !url_loader_factory_.is_connected()) {
+      url_loader_factory_.reset();
       network::mojom::URLLoaderFactoryParamsPtr params =
           network::mojom::URLLoaderFactoryParams::New();
       params->process_id = network::mojom::kBrowserProcessId;

@@ -56,7 +56,7 @@ class ASH_EXPORT PhotoModel {
 
   int buffer_length_for_testing_ = -1;
 
-  base::ObserverList<ash::PhotoModelObserver> observers_;
+  base::ObserverList<PhotoModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PhotoModel);
 };

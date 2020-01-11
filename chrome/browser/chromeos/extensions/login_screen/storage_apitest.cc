@@ -28,15 +28,15 @@ class StorageApitest : public LoginScreenApitestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(StorageApitest, CannotAccessLocalStorage) {
-  SetUpExtensionAndRunTest(kCannotAccessLocalStorage);
+  SetUpLoginScreenExtensionAndRunTest(kCannotAccessLocalStorage);
 }
 
 IN_PROC_BROWSER_TEST_F(StorageApitest, CannotAccessSyncStorage) {
-  SetUpExtensionAndRunTest(kCannotAccessSyncStorage);
+  SetUpLoginScreenExtensionAndRunTest(kCannotAccessSyncStorage);
 }
 
 IN_PROC_BROWSER_TEST_F(StorageApitest, CanAccessManagedStorage) {
-  SetUpExtensionAndRunTest(kCanAccessManagedStorage);
+  SetUpLoginScreenExtensionAndRunTest(kCanAccessManagedStorage);
 }
 
 }  // namespace chromeos

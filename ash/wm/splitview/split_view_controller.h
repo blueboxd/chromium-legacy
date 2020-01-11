@@ -220,8 +220,8 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void OnResizeLoopEnded(aura::Window* window) override;
 
   // WindowStateObserver:
-  void OnPostWindowStateTypeChange(ash::WindowState* window_state,
-                                   ash::WindowStateType old_type) override;
+  void OnPostWindowStateTypeChange(WindowState* window_state,
+                                   WindowStateType old_type) override;
 
   // wm::ActivationChangeObserver:
   void OnWindowActivated(ActivationReason reason,

@@ -59,7 +59,7 @@ bool IsExtraHeadersMatcherInternal(
     const ExtensionUrlPatternIndexMatcher::UrlPatternIndexList* index_list) {
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
-  static_assert(flat::IndexType_count == 4,
+  static_assert(flat::IndexType_count == 5,
                 "Modify this method to ensure IsExtraHeadersMatcherInternal is "
                 "updated as new actions are added.");
   static const flat::IndexType extra_header_indices[] = {
@@ -93,9 +93,9 @@ ExtensionUrlPatternIndexMatcher::~ExtensionUrlPatternIndexMatcher() = default;
 base::Optional<RequestAction>
 ExtensionUrlPatternIndexMatcher::GetBeforeRequestAction(
     const RequestParams& params) const {
-  const flat_rule::UrlRule* rule =
-      GetMatchingRule(params, flat::IndexType_before_request,
-                      FindRuleStrategy::kHighestPriority);
+  const flat_rule::UrlRule* rule = GetMatchingRule(
+      params, flat::IndexType_before_request_except_allow_all_requests,
+      FindRuleStrategy::kHighestPriority);
   if (!rule)
     return base::nullopt;
 
@@ -112,6 +112,7 @@ ExtensionUrlPatternIndexMatcher::GetBeforeRequestAction(
       return CreateRedirectActionFromMetadata(params, *rule, *metadata_list_);
     case flat::ActionType_upgrade_scheme:
       return CreateUpgradeAction(params, *rule);
+    case flat::ActionType_allow_all_requests:
     case flat::ActionType_remove_headers:
     case flat::ActionType_count:
       NOTREACHED();

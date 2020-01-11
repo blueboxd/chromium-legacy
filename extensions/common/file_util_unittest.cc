@@ -195,6 +195,31 @@ TEST_F(FileUtilTest, LoadExtensionWithValidLocales) {
   EXPECT_EQ("The first extension that I made.", extension->description());
 }
 
+TEST_F(FileUtilTest, LoadExtensionWithGzippedLocalesAllowed) {
+  base::FilePath install_dir;
+  ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extension_with_gzipped_locales");
+
+  std::string error;
+  scoped_refptr<Extension> extension(file_util::LoadExtension(
+      install_dir, Manifest::COMPONENT, Extension::NO_FLAGS, &error));
+  ASSERT_TRUE(extension.get() != nullptr);
+  EXPECT_EQ("The first extension that I made.", extension->description());
+  ASSERT_TRUE(error.empty());
+}
+
+TEST_F(FileUtilTest, LoadExtensionWithGzippedLocalesNotAllowed) {
+  base::FilePath install_dir;
+  ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extension_with_gzipped_locales");
+
+  std::string error;
+  scoped_refptr<Extension> extension(file_util::LoadExtension(
+      install_dir, Manifest::UNPACKED, Extension::NO_FLAGS, &error));
+  ASSERT_TRUE(extension.get() == nullptr);
+  EXPECT_EQ("Catalog file is missing for locale en.", error);
+}
+
 TEST_F(FileUtilTest, LoadExtensionWithoutLocalesFolder) {
   base::FilePath install_dir;
   ASSERT_TRUE(base::PathService::Get(DIR_TEST_DATA, &install_dir));

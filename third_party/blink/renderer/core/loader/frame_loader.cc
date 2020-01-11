@@ -1032,12 +1032,12 @@ void FrameLoader::StopAllLoaders() {
 }
 
 void FrameLoader::DidAccessInitialDocument() {
-  if (frame_->IsMainFrame()) {
+  if (frame_->IsMainFrame() && !has_accessed_initial_document_) {
+    has_accessed_initial_document_ = true;
     // Forbid script execution to prevent re-entering V8, since this is called
     // from a binding security check.
     ScriptForbiddenScope forbid_scripts;
-    if (Client())
-      Client()->DidAccessInitialDocument();
+    frame_->GetLocalFrameHostRemote().DidAccessInitialDocument();
   }
 }
 

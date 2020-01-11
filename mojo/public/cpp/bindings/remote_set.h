@@ -136,7 +136,7 @@ class RemoteSetImpl {
 
  private:
   RemoteSetElementId GenerateNextElementId() {
-    return RemoteSetElementId::FromUnsafeValue(next_element_id_++);
+    return remote_set_element_id_generator_.GenerateNextId();
   }
 
   void OnDisconnect(RemoteSetElementId id) {
@@ -145,7 +145,7 @@ class RemoteSetImpl {
       disconnect_handler_.Run(id);
   }
 
-  uint32_t next_element_id_ = 1;
+  RemoteSetElementId::Generator remote_set_element_id_generator_;
   Storage storage_;
   DisconnectHandler disconnect_handler_;
 

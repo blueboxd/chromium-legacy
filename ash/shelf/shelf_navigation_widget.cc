@@ -38,7 +38,12 @@ bool IsTabletMode() {
 // Returns the bounds for the first button shown in this view (the back
 // button in tablet mode, the home button otherwise).
 gfx::Rect GetFirstButtonBounds() {
-  return gfx::Rect(0, 0, ShelfConfig::Get()->control_size(),
+  // ShelfNavigationWidget is larger than the buttons in order to enable child
+  // views to capture events nearby.
+  const int home_button_edge_spacing =
+      ShelfConfig::Get()->home_button_edge_spacing();
+  return gfx::Rect(home_button_edge_spacing, home_button_edge_spacing,
+                   ShelfConfig::Get()->control_size(),
                    ShelfConfig::Get()->control_size());
 }
 
@@ -46,10 +51,13 @@ gfx::Rect GetFirstButtonBounds() {
 // always the home button and only in tablet mode, which implies a horizontal
 // shelf).
 gfx::Rect GetSecondButtonBounds() {
-  return gfx::Rect(
-      ShelfConfig::Get()->control_size() + ShelfConfig::Get()->button_spacing(),
-      0, ShelfConfig::Get()->control_size(),
-      ShelfConfig::Get()->control_size());
+  const int home_button_edge_spacing =
+      ShelfConfig::Get()->home_button_edge_spacing();
+  return gfx::Rect(home_button_edge_spacing +
+                       ShelfConfig::Get()->control_size() +
+                       ShelfConfig::Get()->button_spacing(),
+                   home_button_edge_spacing, ShelfConfig::Get()->control_size(),
+                   ShelfConfig::Get()->control_size());
 }
 
 bool IsBackButtonShown() {
@@ -151,7 +159,13 @@ void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
   if (opaque_background_.rounded_corner_radii() != rounded_corners)
     opaque_background_.SetRoundedCornerRadius(rounded_corners);
 
-  opaque_background_.SetBounds(GetLocalBounds());
+  // The opaque background does not show up when there are two buttons.
+  gfx::Rect opaque_background_bounds = GetFirstButtonBounds();
+  if (base::i18n::IsRTL()) {
+    opaque_background_bounds.set_x(
+        2 * ShelfConfig::Get()->home_button_edge_spacing());
+  }
+  opaque_background_.SetBounds(opaque_background_bounds);
   opaque_background_.SetBackgroundBlur(
       ShelfConfig::Get()->GetShelfControlButtonBlurRadius());
 }
@@ -240,13 +254,19 @@ void ShelfNavigationWidget::Initialize(aura::Window* container) {
 
 gfx::Size ShelfNavigationWidget::GetIdealSize() const {
   const int control_size = ShelfConfig::Get()->control_size();
-  if (!shelf_->IsHorizontalAlignment())
-    return gfx::Size(control_size, control_size);
+  const int home_button_edge_spacing =
+      ShelfConfig::Get()->home_button_edge_spacing();
 
-  return gfx::Size(IsBackButtonShown() ? (2 * control_size +
-                                          ShelfConfig::Get()->button_spacing())
-                                       : control_size,
-                   control_size);
+  if (!shelf_->IsHorizontalAlignment())
+    return gfx::Size(home_button_edge_spacing + control_size,
+                     home_button_edge_spacing + control_size);
+
+  return gfx::Size(
+      2 * home_button_edge_spacing +
+          (IsBackButtonShown()
+               ? (2 * control_size + ShelfConfig::Get()->button_spacing())
+               : control_size),
+      2 * home_button_edge_spacing + control_size);
 }
 
 void ShelfNavigationWidget::OnMouseEvent(ui::MouseEvent* event) {

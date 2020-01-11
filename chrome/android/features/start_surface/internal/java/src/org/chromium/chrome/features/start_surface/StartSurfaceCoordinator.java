@@ -101,6 +101,15 @@ public class StartSurfaceCoordinator implements StartSurface {
 
     // Implements StartSurface.
     @Override
+    public void initialize() {
+        // TODO (crbug.com/1041047): Move more stuff from the constructor to here for lazy
+        // initialization.
+        if (mTasksSurface != null) {
+            mTasksSurface.initialize();
+        }
+    }
+
+    @Override
     public void setStateChangeObserver(StartSurface.StateObserver observer) {
         mStartSurfaceMediator.setStateChangeObserver(observer);
     }
@@ -215,6 +224,12 @@ public class StartSurfaceCoordinator implements StartSurface {
         mSecondaryTasksSurface =
                 TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
                         propertyModel, mActivity.getToolbarManager().getFakeboxDelegate(), false);
+
+        // Intentionally do not call mSecondaryTasksSurface.initialize since the secondary tasks
+        // surface will never show MV tiles.
+        // TODO(crbug.com/1041047): Remove constructing of the MV tilles from the
+        // TasksSurfaceCoordinator.
+
         mSecondaryTasksSurface.getView().setId(R.id.secondary_tasks_surface_view);
         mSecondaryTasksSurfacePropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(mPropertyModel,

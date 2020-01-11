@@ -20,7 +20,6 @@
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1587223624401073077">Google Chrome iသည် သင်၏ ကင်မရာကို သုံးနေ</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> သည် အန္တရာယ်ရှိသောကြောင့် Chrome က ၎င်းကို ပိတ်ဆို့ထားပါသည်။</translation>
-<translation id="1590588151039584890">အပ်ဒိတ်လုပ်ရန် ဤကွန်ပျူတာတွင် Chrome ကို ရပ်ထားရပါမည်။ ဤသို့ပြုလုပ်ခြင်းဖြင့် ဤကွန်ပျူတာသို့ အကောင့်ဝင်ထားသည့် အခြားအသုံးပြုသူများ၏ မသိမ်းရသေးသော အပြောင်းအလဲများ ဆုံးရှုံးနိုင်ပါသည်။</translation>
 <translation id="1619887657840448962">Chrome ပိုမိုလုံခြုံမှုရှိစေရန်၊ <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> တွင် စာရင်းဝင်ထားခြင်း မရှိသည့်အပြင် သင့်အား အသိမပေးဘဲ ထည့်ထားပုံရသည့် အောက်ပါ တိုးချဲ့လိုင်းအား ပိတ်ထားခဲ့၏။</translation>
 <translation id="1628000112320670027">Chrome အကူအညီရယူရန်</translation>
 <translation id="1635734105302489219">Chrome မှထွက်သည့်အခါ ကွတ်ကီးများကို သင်ရှင်းလင်းထားသည်။ ဆက်လက်၍ စင့်ခ်လုပ်ရန် <ph name="COOKIE_SETTINGS_LINK" /> ကို ပြောင်းပါ။</translation>
@@ -145,7 +144,6 @@
 <translation id="5430073640787465221">သင်၏ ဦးစားပေးမှု ဖိုင်မှာ ပျက်စီး သို့မဟုတ် မမှန်ကန်ပါ။
 
 Google Chrome သည် သင်၏ ဆက်တင်များကို ပြန်ပြီး မဖေါ်ထုတ်နိုင်ပါ။</translation>
-<translation id="5543953544073077331">အခြား Chrome မိတ္တူများ ဖွင့်ထားသည်။ အပ်ဒိတ်လုပ်ရန် ၎င်းတို့ကို ပိတ်ပါ။</translation>
 <translation id="556024056938947818">Google Chrome က စကားဝှက်များကို ပြပေးရန် ကြိုးစားနေသည်။</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">ဤစာမျက်နှာပေါ်တွင် ဆက်တင်ကို မပြလျှင် သင်၏ <ph name="LINK_BEGIN" />
@@ -195,7 +193,6 @@ Google Chrome သည် သင်၏ ဆက်တင်များကို ပ
 <translation id="7408085963519505752">Chrome OS စည်းကမ်းချက်များ</translation>
 <translation id="7419046106786626209">သင်၏ ဒိုမိန်းအတွက် စင့်က် လုပ်မရနိုင်သောကြောင့် Chrome OS က သင်၏ ဒေတာကို စင့်က် မလုပ်နိုင်ခဲ့ပါ။</translation>
 <translation id="7486227612705979895">လိပ်စာဘားတွင် အကြံပြုချက်များ ပေးနိုင်ရန် Chrome သည် သင်၏ Drive ကို အသုံးပြုသွားပါမည်။</translation>
-<translation id="7531671357096394523">Chrome မိတ္တူအားလုံးကို ရပ်လိုက်ပါ။</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">သင်၏စက် အပ်ဒိတ်ဖြစ်မဖြစ် ကြည့်ရန် <ph name="LINK_BEGIN" />Chrome OS ဆက်တင်များ<ph name="LINK_END" /> သို့သွားပါ</translation>
 <translation id="7589360514048265910">Mac OS X 10.9 ကို ဆက်လက် မပံ့ပိုးတော့သောကြောင့် ဤကွန်ပျူတာသည် Google Chrome အပ်ဒိတ်များကို မရရှိနိုင်တော့ပါ။</translation>

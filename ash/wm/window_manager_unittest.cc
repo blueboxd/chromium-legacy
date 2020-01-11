@@ -722,7 +722,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
 // Touch visually hides the cursor.
 TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
 
   generator->MoveMouseTo(gfx::Point(0, 0));
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
@@ -741,7 +741,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
 // Tests cursor visibility on key pressed event.
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
 
   // Pressing a key hides the cursor but does not disable mouse events.
   generator->PressKey(ui::VKEY_A, ui::EF_NONE);
@@ -790,7 +790,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityAccelerator) {
 
 TEST_F(WindowManagerTest, TestCursorClientObserver) {
   ui::test::EventGenerator* generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager = ash::Shell::Get()->cursor_manager();
+  ::wm::CursorManager* cursor_manager = Shell::Get()->cursor_manager();
 
   std::unique_ptr<aura::Window> w1(
       CreateTestWindowInShell(SK_ColorWHITE, -1, gfx::Rect(0, 0, 100, 100)));

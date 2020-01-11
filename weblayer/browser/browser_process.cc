@@ -24,6 +24,8 @@ BrowserProcess* g_browser_process = nullptr;
 std::unique_ptr<PrefService> CreatePrefService() {
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
 
+  network_time::NetworkTimeTracker::RegisterPrefs(pref_registry.get());
+
   PrefServiceFactory pref_service_factory;
   pref_service_factory.set_user_prefs(
       base::MakeRefCounted<InMemoryPrefStore>());

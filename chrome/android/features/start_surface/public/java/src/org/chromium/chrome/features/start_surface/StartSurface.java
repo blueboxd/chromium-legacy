@@ -12,6 +12,14 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 /** Interface to communicate with the start surface. */
 public interface StartSurface {
     /**
+     * Called to initialize this interface.
+     * It should be called before showing.
+     * It should not be called in the critical startup process since it will do expensive work.
+     * It might be called many times.
+     */
+    void initialize();
+
+    /**
      * An observer that is notified when the start surface internal state, excluding
      * the states notified in {@link OverviewModeObserver}, is changed.
      */

@@ -80,6 +80,11 @@ bool DefaultLocaleHandler::Validate(
   const base::FilePath default_locale_path = path.AppendASCII(default_locale);
   bool has_default_locale_message_file = false;
 
+  bool gzipped_messages_allowed =
+      extension_l10n_util::GetGzippedMessagesPermissionForLocation(
+          extension->location()) ==
+      extension_l10n_util::GzippedMessagesPermission::kAllowForTrustedSource;
+
   base::FilePath locale_path;
   while (!(locale_path = locales.Next()).empty()) {
     if (extension_l10n_util::ShouldSkipValidation(path, locale_path,
@@ -87,8 +92,13 @@ bool DefaultLocaleHandler::Validate(
       continue;
 
     base::FilePath messages_path = locale_path.Append(kMessagesFilename);
+    base::FilePath gzipped_messages_path =
+        locale_path.Append(kGzippedMessagesFilename);
 
-    if (!base::PathExists(messages_path)) {
+    // Fail unless plain exists or (gzip allowed and gzip exists)
+    if (!base::PathExists(messages_path) &&
+        !(gzipped_messages_allowed &&
+          base::PathExists(gzipped_messages_path))) {
       *error = base::StringPrintf(
           "%s %s", errors::kLocalesMessagesFileMissing,
           base::UTF16ToUTF8(messages_path.LossyDisplayName()).c_str());

@@ -275,8 +275,8 @@ class OverviewGrid::TargetWindowObserver : public aura::WindowObserver {
     DCHECK_EQ(window, target_window_);
     // When the property is cleared, the dragged window should have been merged
     // into |target_window_|, update the corresponding window item in overview.
-    if (key == ash::kIsDeferredTabDraggingTargetWindowKey &&
-        !window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
+    if (key == kIsDeferredTabDraggingTargetWindowKey &&
+        !window->GetProperty(kIsDeferredTabDraggingTargetWindowKey)) {
       UpdateWindowItemInOverviewContaining(window);
       StopObserving();
     }
@@ -761,7 +761,7 @@ void OverviewGrid::OnWindowDragContinued(
     // overview item so that it can't merge into this overview item if the
     // dragged window is currently in preview window area.
     if (target_window && !IsDropTargetWindow(target_window))
-      target_window->ClearProperty(ash::kIsDeferredTabDraggingTargetWindowKey);
+      target_window->ClearProperty(kIsDeferredTabDraggingTargetWindowKey);
 
     return;
   }
@@ -769,7 +769,7 @@ void OverviewGrid::OnWindowDragContinued(
   // Show the tab drag highlight if |location_in_screen| is contained by the
   // browser windows' overview item in overview.
   if (target_window &&
-      target_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
+      target_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey)) {
     auto* item = GetOverviewItemContaining(target_window);
     if (!item)
       return;
@@ -814,7 +814,7 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
   aura::Window* target_window =
       GetTargetWindowOnLocation(location_in_screen, /*ignored_item=*/nullptr);
   if (target_window &&
-      target_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey)) {
+      target_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey)) {
     // Create an window observer and update the minimized window widget after
     // the dragged window merges into |target_window|.
     if (!target_window_observer_)
@@ -1874,7 +1874,7 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
     // into another window when changing the dragged window's bounds, so
     // that the dragged window doesn't merge into another window because of
     // its changed bounds.
-    dragged_window->SetProperty(ash::kCanAttachToAnotherWindowKey, false);
+    dragged_window->SetProperty(kCanAttachToAnotherWindowKey, false);
     TabletModeWindowState::UpdateWindowPosition(
         WindowState::Get(dragged_window), /*animate=*/false);
     const gfx::Rect new_bounds = dragged_window->bounds();
@@ -1884,7 +1884,7 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
           gfx::RectF(new_bounds), gfx::RectF(old_bounds));
       dragged_window->SetTransform(transform);
     }
-    dragged_window->ClearProperty(ash::kCanAttachToAnotherWindowKey);
+    dragged_window->ClearProperty(kCanAttachToAnotherWindowKey);
   }
 
   overview_session_->AddItem(dragged_window, /*reposition=*/false,

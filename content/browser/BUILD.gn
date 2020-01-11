@@ -367,6 +367,7 @@ jumbo_source_set("browser") {
     "android/java_interfaces_impl.h",
     "android/launcher_thread.cc",
     "android/launcher_thread.h",
+    "android/message_port_descriptor.cc",
     "android/scoped_surface_request_manager.cc",
     "android/scoped_surface_request_manager.h",
     "android/text_suggestion_host_android.cc",

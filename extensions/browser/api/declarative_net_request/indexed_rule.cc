@@ -212,14 +212,15 @@ uint16_t GetResourceTypesMask(
   return mask;
 }
 
-// Computes the bitmask of flat_rule::ElementType taking into consideration
-// the included and excluded resource types for |condition|.
-ParseResult ComputeElementTypes(const dnr_api::RuleCondition& condition,
+// Computes the bitmask of flat_rule::ElementType taking into consideration the
+// included and excluded resource types for |rule| and its associated action
+// type.
+ParseResult ComputeElementTypes(const dnr_api::Rule& rule,
                                 uint16_t* element_types) {
   uint16_t include_element_type_mask =
-      GetResourceTypesMask(condition.resource_types.get());
+      GetResourceTypesMask(rule.condition.resource_types.get());
   uint16_t exclude_element_type_mask =
-      GetResourceTypesMask(condition.excluded_resource_types.get());
+      GetResourceTypesMask(rule.condition.excluded_resource_types.get());
 
   // OBJECT_SUBREQUEST is not used by Extensions.
   if (exclude_element_type_mask ==
@@ -230,6 +231,17 @@ ParseResult ComputeElementTypes(const dnr_api::RuleCondition& condition,
 
   if (include_element_type_mask & exclude_element_type_mask)
     return ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED;
+
+  if (rule.action.type == dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS) {
+    // For allowAllRequests rule, the resourceTypes key must always be specified
+    // and may only include main_frame and sub_frame types.
+    const uint16_t frame_element_type_mask =
+        flat_rule::ElementType_MAIN_FRAME | flat_rule::ElementType_SUBDOCUMENT;
+    if (include_element_type_mask == flat_rule::ElementType_NONE ||
+        !IsSubset(include_element_type_mask, frame_element_type_mask)) {
+      return ParseResult::ERROR_INVALID_ALLOW_ALL_REQUESTS_RESOURCE_TYPE;
+    }
+  }
 
   if (include_element_type_mask != flat_rule::ElementType_NONE)
     *element_types = include_element_type_mask;
@@ -368,6 +380,27 @@ ParseResult ParseRedirect(dnr_api::Redirect redirect,
   return ParseResult::ERROR_INVALID_REDIRECT;
 }
 
+bool DoesActionSupportPriority(dnr_api::RuleActionType type) {
+  switch (type) {
+    case dnr_api::RULE_ACTION_TYPE_NONE:
+      break;
+    case dnr_api::RULE_ACTION_TYPE_BLOCK:
+      return true;
+    case dnr_api::RULE_ACTION_TYPE_REDIRECT:
+      return true;
+    case dnr_api::RULE_ACTION_TYPE_ALLOW:
+      return true;
+    case dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME:
+      return true;
+    case dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS:
+      return false;
+    case dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 IndexedRule::IndexedRule() = default;
@@ -384,12 +417,9 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   if (parsed_rule.id < kMinValidID)
     return ParseResult::ERROR_INVALID_RULE_ID;
 
-  const bool is_before_request_rule =
-      parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_BLOCK ||
-      parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_ALLOW ||
-      parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_REDIRECT ||
-      parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME;
-  if (is_before_request_rule) {
+  const bool is_priority_supported =
+      DoesActionSupportPriority(parsed_rule.action.type);
+  if (is_priority_supported) {
     if (!parsed_rule.priority)
       return ParseResult::ERROR_EMPTY_RULE_PRIORITY;
     if (*parsed_rule.priority < kMinValidPriority)
@@ -464,13 +494,13 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   indexed_rule->action_type = parsed_rule.action.type;
   indexed_rule->id = base::checked_cast<uint32_t>(parsed_rule.id);
   indexed_rule->priority = base::checked_cast<uint32_t>(
-      is_before_request_rule ? *parsed_rule.priority : kDefaultPriority);
+      is_priority_supported ? *parsed_rule.priority : kDefaultPriority);
   indexed_rule->options = GetOptionsMask(parsed_rule);
   indexed_rule->activation_types = GetActivationTypes(parsed_rule);
 
   {
-    ParseResult result = ComputeElementTypes(parsed_rule.condition,
-                                             &indexed_rule->element_types);
+    ParseResult result =
+        ComputeElementTypes(parsed_rule, &indexed_rule->element_types);
     if (result != ParseResult::SUCCESS)
       return result;
   }

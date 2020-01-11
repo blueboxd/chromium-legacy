@@ -43,17 +43,24 @@ class MostVisitedListCoordinator implements TileGroup.Observer, TileGroup.TileSe
 
     // There's a limit of 12 in {@link MostVisitedSitesBridge#setObserver}.
     private static final int MAX_RESULTS = 12;
-    private PropertyModelChangeProcessor mModelChangeProcessor;
+    private final ChromeActivity mActivity;
+    private final ViewGroup mParent;
+    private final PropertyModelChangeProcessor mModelChangeProcessor;
     private TileGroup mTileGroup;
     private TileRenderer mRenderer;
-    private ViewGroup mParent;
 
     public MostVisitedListCoordinator(
             ChromeActivity activity, ViewGroup parent, PropertyModel propertyModel) {
-        mModelChangeProcessor = PropertyModelChangeProcessor.create(
-                propertyModel, parent, MostVisitedListViewBinder::bind);
-
+        mActivity = activity;
         mParent = parent;
+        mModelChangeProcessor = PropertyModelChangeProcessor.create(
+                propertyModel, mParent, MostVisitedListViewBinder::bind);
+    }
+
+    public void initialize() {
+        if (mRenderer != null) return;
+        assert mTileGroup == null;
+
         Profile profile = Profile.getLastUsedProfile();
         SuggestionsSource suggestionsSource =
                 SuggestionsDependencyFactory.getInstance().createSuggestionSource(profile);
@@ -62,16 +69,16 @@ class MostVisitedListCoordinator implements TileGroup.Observer, TileGroup.TileSe
 
         DiscardableReferencePool referencePool = GlobalDiscardableReferencePool.getReferencePool();
         ImageFetcher imageFetcher = new ImageFetcher(suggestionsSource, profile, referencePool);
-        SnackbarManager snackbarManager = activity.getSnackbarManager();
+        SnackbarManager snackbarManager = mActivity.getSnackbarManager();
 
         mRenderer = new TileRenderer(
-                activity, SuggestionsConfig.TileStyle.MODERN, TITLE_LINES, imageFetcher);
+                mActivity, SuggestionsConfig.TileStyle.MODERN, TITLE_LINES, imageFetcher);
 
         OfflinePageBridge offlinePageBridge =
                 SuggestionsDependencyFactory.getInstance().getOfflinePageBridge(profile);
 
         TileGroupDelegateImpl tileGroupDelegate =
-                new TileGroupDelegateImpl(activity, profile, null, snackbarManager);
+                new TileGroupDelegateImpl(mActivity, profile, null, snackbarManager);
         SuggestionsUiDelegate suggestionsUiDelegate = new MostVisitedSuggestionsUiDelegate(
                 suggestionsSource, eventReporter, profile, referencePool, snackbarManager);
         mTileGroup = new TileGroup(

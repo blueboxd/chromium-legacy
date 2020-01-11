@@ -23,13 +23,18 @@ class LenientMockInstrumentationDelegate
     MessagePortDescriptor::SetInstrumentationDelegate(nullptr);
   }
 
-  MOCK_METHOD1(NotifyMessagePortPairCreated,
-               void(const MessagePortDescriptorPair& pair));
+  MOCK_METHOD2(NotifyMessagePortPairCreated,
+               void(const base::UnguessableToken& port0_id,
+                    const base::UnguessableToken& port1_id));
 
   MOCK_METHOD3(NotifyMessagePortAttached,
                void(const base::UnguessableToken& port_id,
                     uint64_t sequence_number,
                     const base::UnguessableToken& execution_context_id));
+
+  MOCK_METHOD2(NotifyMessagePortAttachedToEmbedder,
+               void(const base::UnguessableToken& port_id,
+                    uint64_t sequence_number));
 
   MOCK_METHOD2(NotifyMessagePortDetached,
                void(const base::UnguessableToken& port_id,
@@ -95,12 +100,11 @@ TEST(MessagePortDescriptorTest, InstrumentationAndSerializationWorks) {
   } created_data;
 
   // Create a message handle descriptor pair and expect a notification.
-  EXPECT_CALL(delegate, NotifyMessagePortPairCreated(_))
-      .WillOnce(Invoke([&created_data](const MessagePortDescriptorPair& pair) {
-        created_data.token0 = pair.port0().id();
-        created_data.token1 = pair.port1().id();
-        EXPECT_EQ(1u, pair.port0().sequence_number());
-        EXPECT_EQ(1u, pair.port1().sequence_number());
+  EXPECT_CALL(delegate, NotifyMessagePortPairCreated(_, _))
+      .WillOnce(Invoke([&created_data](const base::UnguessableToken& port0_id,
+                                       const base::UnguessableToken& port1_id) {
+        created_data.token0 = port0_id;
+        created_data.token1 = port1_id;
       }));
   MessagePortDescriptorPair pair;
 

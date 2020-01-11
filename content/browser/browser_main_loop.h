@@ -16,7 +16,6 @@
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "media/media_buildflags.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
 #include "ui/base/buildflags.h"
 

@@ -99,9 +99,10 @@ void SessionStorageBuilder::ExtractSessionState(
   SessionCertificatePolicyCacheStorageBuilder cert_builder;
   std::unique_ptr<SessionCertificatePolicyCacheImpl> cert_policy_cache =
       cert_builder.BuildSessionCertificatePolicyCache(
-          storage.certPolicyCacheStorage);
+          storage.certPolicyCacheStorage, web_state->GetBrowserState());
   if (!cert_policy_cache)
-    cert_policy_cache = std::make_unique<SessionCertificatePolicyCacheImpl>();
+    cert_policy_cache = std::make_unique<SessionCertificatePolicyCacheImpl>(
+        web_state->GetBrowserState());
   web_state->certificate_policy_cache_ = std::move(cert_policy_cache);
   web::SerializableUserDataManager::FromWebState(web_state)
       ->AddSerializableUserData(storage.userData);

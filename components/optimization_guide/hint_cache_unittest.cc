@@ -142,12 +142,12 @@ class HintCacheTest : public ProtoDatabaseProviderTestBase {
     RunUntilIdle();
   }
 
- private:
   void RunUntilIdle() {
     task_environment_.RunUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
+ private:
   void OnStoreInitialized() { is_store_initialized_ = true; }
   void OnUpdateComponentHints() { are_component_hints_updated_ = true; }
   void OnLoadHint(const proto::Hint* hint) {
@@ -577,12 +577,10 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
       std::make_unique<proto::GetHintsResponse>();
 
   // Set server-provided expiration time.
-  get_hints_response->mutable_max_cache_duration()->set_seconds(
-      kFetchedHintExpirationSecs);
-
   proto::Hint* hint = get_hints_response->add_hints();
   hint->set_key_representation(proto::HOST_SUFFIX);
   hint->set_key("host.domain.org");
+  hint->mutable_max_cache_duration()->set_seconds(kFetchedHintExpirationSecs);
   proto::PageHint* page_hint = hint->add_page_hints();
   page_hint->set_page_pattern("page pattern");
 
@@ -635,7 +633,7 @@ TEST_F(HintCacheTest, CacheValidURLKeyedHint) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_cache()->CreateUpdateDataForFetchedHints(base::Time(), base::Time());
+      hint_cache()->CreateUpdateDataForFetchedHints(base::Time());
   ASSERT_TRUE(update_data);
 
   GURL url("https://whatever.com/r/werd");
@@ -655,7 +653,7 @@ TEST_F(HintCacheTest, URLKeyedHintExpired) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_cache()->CreateUpdateDataForFetchedHints(base::Time(), base::Time());
+      hint_cache()->CreateUpdateDataForFetchedHints(base::Time());
   ASSERT_TRUE(update_data);
 
   GURL url("https://whatever.com/r/werd");
@@ -674,12 +672,55 @@ TEST_F(HintCacheTest, URLKeyedHintExpired) {
   EXPECT_FALSE(hint_cache()->GetURLKeyedHint(url));
 }
 
+TEST_F(HintCacheTest, PurgeExpiredFetchedHints) {
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      hint_cache()->CreateUpdateDataForFetchedHints(base::Time());
+  ASSERT_TRUE(update_data);
+
+  int cache_duration_in_secs = 60;
+
+  std::unique_ptr<proto::GetHintsResponse> get_hints_response =
+      std::make_unique<proto::GetHintsResponse>();
+
+  std::string host = "shouldpurge.com";
+  proto::Hint* hint1 = get_hints_response->add_hints();
+  hint1->set_key_representation(proto::HOST_SUFFIX);
+  hint1->set_key(host);
+  hint1->mutable_max_cache_duration()->set_seconds(cache_duration_in_secs);
+  proto::PageHint* page_hint1 = hint1->add_page_hints();
+  page_hint1->set_page_pattern("page pattern");
+  std::string host2 = "notpurged.com";
+  proto::Hint* hint2 = get_hints_response->add_hints();
+  hint2->set_key_representation(proto::HOST_SUFFIX);
+  hint2->set_key(host2);
+  hint2->mutable_max_cache_duration()->set_seconds(cache_duration_in_secs * 2);
+  proto::PageHint* page_hint2 = hint2->add_page_hints();
+  page_hint2->set_page_pattern("page pattern");
+
+  base::Time stored_time = base::Time().Now();
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
+  EXPECT_TRUE(are_fetched_hints_updated());
+  EXPECT_TRUE(hint_cache()->HasHint("shouldpurge.com"));
+  EXPECT_TRUE(hint_cache()->HasHint("notpurged.com"));
+
+  MoveClockForwardBy(base::TimeDelta().FromSeconds(cache_duration_in_secs + 1));
+
+  hint_cache()->PurgeExpiredFetchedHints();
+  RunUntilIdle();
+
+  EXPECT_FALSE(hint_cache()->HasHint("shouldpurge.com"));
+  EXPECT_TRUE(hint_cache()->HasHint("notpurged.com"));
+}
+
 TEST_F(HintCacheTest, ClearFetchedHints) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_cache()->CreateUpdateDataForFetchedHints(base::Time(), base::Time());
+      hint_cache()->CreateUpdateDataForFetchedHints(base::Time());
   ASSERT_TRUE(update_data);
 
   GURL url("https://whatever.com/r/werd");
@@ -720,7 +761,7 @@ TEST_F(HintCacheTest, UnsupportedURLsForURLKeyedHints) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   std::unique_ptr<StoreUpdateData> update_data =
-      hint_cache()->CreateUpdateDataForFetchedHints(base::Time(), base::Time());
+      hint_cache()->CreateUpdateDataForFetchedHints(base::Time());
   ASSERT_TRUE(update_data);
 
   GURL https_url("https://whatever.com/r/werd");

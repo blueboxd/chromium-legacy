@@ -67,10 +67,6 @@ ContentClient::ContentClient()
 ContentClient::~ContentClient() {
 }
 
-bool ContentClient::CanSendWhileSwappedOut(const IPC::Message* message) {
-  return false;
-}
-
 base::string16 ContentClient::GetLocalizedString(int message_id) {
   return base::string16();
 }

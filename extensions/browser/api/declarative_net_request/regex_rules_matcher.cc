@@ -25,7 +25,7 @@ bool IsExtraHeadersMatcherInternal(
 
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
-  static_assert(flat::ActionType_count == 5,
+  static_assert(flat::ActionType_count == 6,
                 "Modify this method to ensure IsExtraHeadersMatcherInternal is "
                 "updated as new actions are added.");
 
@@ -61,6 +61,7 @@ bool IsBeforeRequestAction(flat::ActionType action_type) {
     case flat::ActionType_allow:
     case flat::ActionType_redirect:
     case flat::ActionType_upgrade_scheme:
+    case flat::ActionType_allow_all_requests:
       return true;
     case flat::ActionType_remove_headers:
       return false;
@@ -124,6 +125,9 @@ base::Optional<RequestAction> RegexRulesMatcher::GetBeforeRequestAction(
                                                     *metadata_list_);
     case flat::ActionType_upgrade_scheme:
       return CreateUpgradeAction(params, rule);
+    case flat::ActionType_allow_all_requests:
+      // TODO(crbug.com/1038831): Handle allowAllRequests case.
+      break;
     default:
       NOTREACHED();
   }

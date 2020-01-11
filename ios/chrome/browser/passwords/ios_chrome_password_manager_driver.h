@@ -73,6 +73,7 @@ class IOSChromePasswordManagerDriver
       override;
   autofill::AutofillDriver* GetAutofillDriver() override;
   bool IsMainFrame() const override;
+  bool CanShowAutofillUi() const override;
   const GURL& GetLastCommittedURL() const override;
 
  private:

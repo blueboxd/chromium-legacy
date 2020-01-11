@@ -2047,7 +2047,7 @@ TEST_F(LockContentsViewUnitTest, DisableAuthAfterMediaSessionChanged) {
   // Disable auth and media.
   DataDispatcher()->DisableAuthForUser(
       kFirstUserAccountId,
-      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+      AuthDisabledData(AuthDisabledReason::kTimeWindowLimit,
                        base::Time::Now() + base::TimeDelta::FromHours(8),
                        base::TimeDelta::FromHours(1),
                        true /*disable_lock_screen_media*/));
@@ -2073,7 +2073,7 @@ TEST_F(LockContentsViewUnitTest, DisableAuthBeforeMediaSessionChanged) {
   // Disable auth and media.
   DataDispatcher()->DisableAuthForUser(
       kFirstUserAccountId,
-      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+      AuthDisabledData(AuthDisabledReason::kTimeWindowLimit,
                        base::Time::Now() + base::TimeDelta::FromHours(8),
                        base::TimeDelta::FromHours(1),
                        true /*disable_lock_screen_media*/));
@@ -2109,7 +2109,7 @@ TEST_F(LockContentsViewUnitTest, DisableAuthAllowMediaControls) {
   // Disable auth, but allow media.
   DataDispatcher()->DisableAuthForUser(
       kFirstUserAccountId,
-      AuthDisabledData(ash::AuthDisabledReason::kTimeWindowLimit,
+      AuthDisabledData(AuthDisabledReason::kTimeWindowLimit,
                        base::Time::Now() + base::TimeDelta::FromHours(8),
                        base::TimeDelta::FromHours(1),
                        false /*disable_lock_screen_media*/));
@@ -2175,30 +2175,30 @@ TEST_F(LockContentsViewUnitTest, ParentAccessButton) {
   // Simulate initial state - user auth disabled and button shown.
   DataDispatcher()->DisableAuthForUser(child_id, GetTestDisabledAuthData());
   Shell::Get()->login_screen_controller()->ShowParentAccessButton(true);
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  EXPECT_TRUE(LoginScreenTestApi::IsParentAccessButtonShown());
 
   // Validation failed - show the button.
   contents->ShowParentAccessDialog();
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
   ParentAccessWidget::TestApi(ParentAccessWidget::Get())
       .SimulateValidationFinished(false);
-  EXPECT_TRUE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  EXPECT_TRUE(LoginScreenTestApi::IsParentAccessButtonShown());
 
   // Validation succeeded - hide the button.
   contents->ShowParentAccessDialog();
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
   ParentAccessWidget::TestApi(ParentAccessWidget::Get())
       .SimulateValidationFinished(true);
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
 
   // Validation failed but user auth got enabled - hide button.
   // (Device got unlocked when parent access dialog was shown)
   contents->ShowParentAccessDialog();
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
   DataDispatcher()->EnableAuthForUser(child_id);
   ParentAccessWidget::TestApi(ParentAccessWidget::Get())
       .SimulateValidationFinished(false);
-  EXPECT_FALSE(ash::LoginScreenTestApi::IsParentAccessButtonShown());
+  EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
 }
 
 using LockContentsViewPowerManagerUnitTest = LockContentsViewUnitTest;

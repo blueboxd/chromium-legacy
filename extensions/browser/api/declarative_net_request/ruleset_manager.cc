@@ -311,7 +311,7 @@ bool RulesetManager::HasExtraHeadersMatcherForRequest(
 
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
-  static_assert(flat::ActionType_count == 5,
+  static_assert(flat::ActionType_count == 6,
                 "Modify this method to ensure HasExtraHeadersMatcherForRequest "
                 "is updated as new actions are added.");
 

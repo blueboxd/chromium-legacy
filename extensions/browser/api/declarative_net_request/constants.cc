@@ -53,7 +53,10 @@ const char kErrorMultipleFilters[] =
 const char kErrorRegexSubstitutionWithoutFilter[] =
     "Rule with id * can't specify the \"*\" key without specifying the \"*\" "
     "key.";
-
+const char kErrorInvalidAllowAllRequestsResourceType[] =
+    "Rule with id * is an \"allowAllRequests\" rule and must specify the "
+    "\"resourceTypes\" key. It may only include the \"main_frame\" and "
+    "\"sub_frame\" resource types.";
 const char kErrorListNotPassed[] = "Rules file must contain a list.";
 
 const char kRuleCountExceeded[] =

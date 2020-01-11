@@ -15,6 +15,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kLockedToRootKey, false)
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowIsJanky, false)
 
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ash::WindowState, kWindowStateKey, nullptr)
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(WindowState, kWindowStateKey, nullptr)
 
 }  // namespace ash

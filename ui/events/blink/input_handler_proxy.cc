@@ -916,9 +916,8 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   base::TimeTicks event_time = gesture_event.TimeStamp();
   base::TimeDelta delay = base::TimeTicks::Now() - event_time;
 
-  cc::InputHandlerScrollResult scroll_result = input_handler_->ScrollUpdate(
-      &scroll_state, GestureScrollInputType(gesture_event.SourceDevice()),
-      delay);
+  cc::InputHandlerScrollResult scroll_result =
+      input_handler_->ScrollUpdate(&scroll_state, delay);
 
   HandleOverscroll(gesture_event.PositionInWidget(), scroll_result);
 
@@ -1172,10 +1171,8 @@ gfx::Vector2dF InputHandlerProxy::ScrollByForSnapFling(
     const gfx::Vector2dF& delta) {
   cc::ScrollState scroll_state = CreateScrollStateForInertialUpdate(delta);
 
-  // TODO(bokan): We should be passing in the source device that was used to
-  // scroll during the gesture.
-  cc::InputHandlerScrollResult scroll_result = input_handler_->ScrollUpdate(
-      &scroll_state, cc::InputHandler::TOUCHSCREEN, base::TimeDelta());
+  cc::InputHandlerScrollResult scroll_result =
+      input_handler_->ScrollUpdate(&scroll_state, base::TimeDelta());
   return scroll_result.current_visual_offset;
 }
 

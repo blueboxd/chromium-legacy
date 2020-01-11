@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ssl/ios_ssl_error_tab_helper.h"
 
+#include "base/values.h"
 #include "ios/chrome/browser/interstitials/ios_security_interstitial_page.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/web_state.h"
@@ -13,9 +14,18 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Script command prefix.
+const char kCommandPrefix[] = "blockingPage";
+}  // namespace
+
 IOSSSLErrorTabHelper::IOSSSLErrorTabHelper(web::WebState* web_state)
-    : web_state_(web_state) {
+    : web_state_(web_state), subscription_(nullptr), weak_factory_(this) {
   web_state_->AddObserver(this);
+  auto command_callback = base::Bind(
+      &IOSSSLErrorTabHelper::OnBlockingPageCommand, weak_factory_.GetWeakPtr());
+  subscription_ =
+      web_state->AddScriptCommandCallback(command_callback, kCommandPrefix);
 }
 
 IOSSSLErrorTabHelper::~IOSSSLErrorTabHelper() = default;
@@ -74,6 +84,20 @@ void IOSSSLErrorTabHelper::SetBlockingPage(
     int64_t navigation_id,
     std::unique_ptr<IOSSecurityInterstitialPage> blocking_page) {
   blocking_pages_for_navigations_[navigation_id] = std::move(blocking_page);
+}
+
+void IOSSSLErrorTabHelper::OnBlockingPageCommand(
+    const base::DictionaryValue& message,
+    const GURL& url,
+    bool user_is_interacting,
+    web::WebFrame* sender_frame) {
+  std::string command;
+  if (!message.GetString("command", &command)) {
+    DLOG(WARNING) << "JS message parameter not found: command";
+  } else {
+    blocking_page_for_currently_committed_navigation_->HandleScriptCommand(
+        message, url, user_is_interacting, sender_frame);
+  }
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(IOSSSLErrorTabHelper)

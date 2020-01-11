@@ -121,6 +121,11 @@ interface LocalFrameHost {
   // process.
   BubbleLogicalScrollInParentFrame(ScrollDirection direction,
                                    ui.mojom.ScrollGranularity granularity);
+
+  // Indicates that another page has accessed the DOM of the initial empty
+  // document of a main frame. After this, it is no longer safe to show a
+  // pending navigation's URL, because a URL spoof is possible.
+  DidAccessInitialDocument();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">البحث في وضع التصفُّح المتخفي</translation>
 <translation id="277771892408211951">اختيار لغة</translation>
 <translation id="2780046210906776326">لا تتوفر حسابات بريد إلكتروني</translation>
+<translation id="2781331604911854368">مفعّل</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">الخروج من أداة تغيير علامات التبويب</translation>
 <translation id="2830972654601096923">إدارة العناوين...</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">علامات التبويب المفتوحة</translation>
 <translation id="3277021493514034324">تم نسخ عنوان الموقع</translation>
 <translation id="3290875554372353449">اختيار حساب</translation>
+<translation id="3311748811247479259">غير مفعَّل</translation>
 <translation id="3324193307694657476">العنوان 2</translation>
 <translation id="3329904751041170572">تعذر الاتصال بالخادم.</translation>
 <translation id="3335947283844343239">إعادة فتح علامة التبويب المغلقة</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">جارٍ مزامنة علامات التبويب الخاصة بك ...</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /> حول المحتوى المقترح</translation>
 <translation id="3494788280727468875">تأكيد محو بيانات التصفّح</translation>
+<translation id="35083190962747987">‏فتح عنوان ${url}</translation>
 <translation id="3519193562722059437">افتح علامة تبويب لتصفح الويب.</translation>
 <translation id="3527085408025491307">المجلد</translation>
 <translation id="3529024052484145543">غير آمن</translation>
@@ -301,6 +304,7 @@
 <translation id="5062321486222145940">‏تثبيت Google Drive</translation>
 <translation id="5083464117946352670">تعذر تحديد حجم الملف.</translation>
 <translation id="5094827893301452931">‏اكتملت مشاركة Tweet.</translation>
+<translation id="5118764316110575523">غير مفعَّل</translation>
 <translation id="5127805178023152808">المزامنة غير مفعّلة</translation>
 <translation id="5132942445612118989">مزامنة كلمات المرور والسجلّ والمزيد على جميع الأجهزة</translation>
 <translation id="5140288047769711648">‏سيتذكّر Chrome كلمة المرور هذه بالنيابة عنك. وبالتالي لن تضطرّ لتذكُّرها كلّ مرّة.</translation>
@@ -363,6 +367,7 @@
 <translation id="5979837087407522202">بحث عن كلمات المرور</translation>
 <translation id="5982717868370722439">يمكنك إضافة البيانات الحالية إلى <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">تم الانتقال إليها مؤخرًا</translation>
+<translation id="5988851877894965432">‏فتح عناوين URL في Chrome</translation>
 <translation id="6012140227487808125">جارٍ التشفير...</translation>
 <translation id="6021332621416007159">فتح في...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />، <ph name="PUBLISHER_INFORMATION" />، <ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@
 <translation id="7961015016161918242">مطلقًا</translation>
 <translation id="7971521879845308059">حظر النوافذ المنبثقة</translation>
 <translation id="7982789257301363584">الشبكة</translation>
+<translation id="800361585186029508">‏فتح عناوين URL التي تم إدخالها في Google Chrome</translation>
 <translation id="8007420562015504427">البحث في وضع التصفح المتخفي</translation>
 <translation id="8019783059653722575">هذا يتيح لك حفظ الصور وتحميلها.</translation>
 <translation id="802154636333426148">تعذّر التنزيل</translation>

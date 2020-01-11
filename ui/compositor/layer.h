@@ -598,6 +598,10 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   bool IsHitTestableForCC() const { return visible_ && accept_events_; }
 
+  // Gets a flattened WeakPtr list of all layers and layer masks in the tree
+  // rooted from |this|.
+  void GetFlattenedWeakList(std::vector<base::WeakPtr<Layer>>* flattened_list);
+
   const LayerType type_;
 
   Compositor* compositor_;

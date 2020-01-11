@@ -83,13 +83,16 @@ WTF::Vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
   return serialized;
 }
 
-SecurityContext::SecurityContext(scoped_refptr<SecurityOrigin> origin,
-                                 WebSandboxFlags sandbox_flags,
-                                 std::unique_ptr<FeaturePolicy> feature_policy,
-                                 SecurityContextType context_type)
+SecurityContext::SecurityContext(
+    scoped_refptr<SecurityOrigin> origin,
+    WebSandboxFlags sandbox_flags,
+    std::unique_ptr<FeaturePolicy> feature_policy,
+    std::unique_ptr<DocumentPolicy> document_policy,
+    SecurityContextType context_type)
     : sandbox_flags_(sandbox_flags),
       security_origin_(std::move(origin)),
       feature_policy_(std::move(feature_policy)),
+      document_policy_(std::move(document_policy)),
       address_space_(network::mojom::IPAddressSpace::kUnknown),
       insecure_request_policy_(kLeaveInsecureRequestsAlone),
       require_safe_types_(false),

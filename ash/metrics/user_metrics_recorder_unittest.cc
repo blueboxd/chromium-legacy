@@ -137,13 +137,13 @@ TEST_F(UserMetricsRecorderTest, ValuesRecordedByRecordShelfItemCounts) {
   ASSERT_EQ(0u, shelf_model->items().size());
 
   ShelfItem shelf_item;
-  shelf_item.type = ash::TYPE_PINNED_APP;
+  shelf_item.type = TYPE_PINNED_APP;
   shelf_item.id = ShelfID("app_id_1");
   shelf_model->Add(shelf_item);
   shelf_item.id = ShelfID("app_id_2");
   shelf_model->Add(shelf_item);
 
-  shelf_item.type = ash::TYPE_APP;
+  shelf_item.type = TYPE_APP;
   shelf_item.id = ShelfID("app_id_3");
   shelf_model->Add(shelf_item);
   shelf_item.id = ShelfID("app_id_4");

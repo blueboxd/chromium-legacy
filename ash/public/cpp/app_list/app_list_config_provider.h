@@ -32,7 +32,7 @@ class ASH_PUBLIC_EXPORT AppListConfigProvider {
     // for AppListConfigType::kShared configs, as they're assumed to always
     // exist.
     // |config_type| - The created config's type.
-    virtual void OnAppListConfigCreated(ash::AppListConfigType config_type) = 0;
+    virtual void OnAppListConfigCreated(AppListConfigType config_type) = 0;
   };
 
   static AppListConfigProvider& Get();
@@ -48,7 +48,7 @@ class ASH_PUBLIC_EXPORT AppListConfigProvider {
   // is set. Returns nullptr if the config does not exist and cannot be created.
   // NOTE: |can_create| has effect only on config types different than kShared.
   //     A new kShared config will always be created if it does not yet exist.
-  AppListConfig* GetConfigForType(ash::AppListConfigType type, bool can_create);
+  AppListConfig* GetConfigForType(AppListConfigType type, bool can_create);
 
   // Returns the app list config that should be used by an app list instance
   // based on the app list display, and available size for the apps grid.
@@ -74,7 +74,7 @@ class ASH_PUBLIC_EXPORT AppListConfigProvider {
   const AppListConfig& GetBaseConfigForDisplaySize(
       const gfx::Size& display_work_area_size);
 
-  std::map<ash::AppListConfigType, std::unique_ptr<AppListConfig>> configs_;
+  std::map<AppListConfigType, std::unique_ptr<AppListConfig>> configs_;
 
   base::ObserverList<Observer>::Unchecked observers_;
 

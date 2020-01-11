@@ -28,7 +28,6 @@
 #include "base/optional.h"
 #include "base/strings/pattern.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/fake/fake_display_snapshot.h"
@@ -196,7 +195,6 @@ class NightLightTest : public NoSessionAshTestBase {
 
     // Start with ambient color pref disabled.
     SetAmbientColorPrefEnabled(false);
-    SetAmbientColorSupported(false);
   }
 
   void CreateTestUserSessions() {
@@ -217,12 +215,6 @@ class NightLightTest : public NoSessionAshTestBase {
 
   void SetAmbientColorPrefEnabled(bool enabled) {
     GetController()->SetAmbientColorEnabled(enabled);
-  }
-
-  void SetAmbientColorSupported(bool supported) {
-    static_cast<chromeos::FakePowerManagerClient*>(
-        chromeos::PowerManagerClient::Get())
-        ->set_supports_ambient_color(supported);
   }
 
   // Simulate powerd sending multiple times an ambient temperature of
@@ -999,52 +991,31 @@ TEST_F(NightLightTest, TestCustomScheduleInvertedStartAndEndTimesCase3) {
             controller->timer()->GetCurrentDelay());
 }
 
-TEST_F(NightLightTest, TestAmbientLightEnabledSetting) {
-  // Feature enabled, Device not supported, Pref disabled -> disabled
+TEST_F(NightLightTest, TestAmbientLightEnabledSetting_FeatureOn) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAllowAmbientEQ);
+
+  // Feature enabled, Pref disabled -> disabled
   SetAmbientColorPrefEnabled(false);
-  SetAmbientColorSupported(false);
   EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
 
-  // Feature enabled, Device not supported, Pref enabled -> disabled
+  // Feature enabled, Pref enabled -> enabled
   SetAmbientColorPrefEnabled(true);
-  SetAmbientColorSupported(false);
-  EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
-
-  // Feature enabled, Device not supported, Pref enabled -> disabled
-  SetAmbientColorPrefEnabled(false);
-  SetAmbientColorSupported(true);
-  EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
-
-  // Feature enabled, Device supported, Pref enabled -> enabled
-  SetAmbientColorPrefEnabled(true);
-  SetAmbientColorSupported(true);
   EXPECT_TRUE(GetController()->GetAmbientColorEnabled());
+}
 
+TEST_F(NightLightTest, TestAmbientLightEnabledSetting_FeatureOff) {
   // With the feature disabled it should always be disabled.
-  {
-    base::test::ScopedFeatureList features;
-    features.InitAndDisableFeature(features::kAllowAmbientEQ);
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(features::kAllowAmbientEQ);
 
-    // Feature disabled, Device not supported, Pref disabled -> disabled
-    SetAmbientColorPrefEnabled(false);
-    SetAmbientColorSupported(false);
-    EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
+  // Feature disabled, Pref disabled -> disabled
+  SetAmbientColorPrefEnabled(false);
+  EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
 
-    // Feature disabled, Device not supported, Pref enabled -> disabled
-    SetAmbientColorPrefEnabled(true);
-    SetAmbientColorSupported(false);
-    EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
-
-    // Feature disabled, Device not supported, Pref enabled -> disabled
-    SetAmbientColorPrefEnabled(false);
-    SetAmbientColorSupported(true);
-    EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
-
-    // Feature disabled, Device supported, Pref enabled -> disabled
-    SetAmbientColorPrefEnabled(true);
-    SetAmbientColorSupported(true);
-    EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
-  }
+  // Feature disabled, Pref enabled -> disabled
+  SetAmbientColorPrefEnabled(true);
+  EXPECT_FALSE(GetController()->GetAmbientColorEnabled());
 }
 
 TEST_F(NightLightTest, TestAmbientLightRemappingTemperature) {
@@ -1082,9 +1053,10 @@ TEST_F(NightLightTest, TestAmbientLightRemappingTemperature) {
 }
 
 TEST_F(NightLightTest, TestAmbientColorMatrix) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAllowAmbientEQ);
   SetNightLightEnabled(false);
   SetAmbientColorPrefEnabled(true);
-  SetAmbientColorSupported(true);
   auto scaling_factors = GetAllDisplaysCompositorsRGBScaleFactors();
   // If no temperature is set, we expect 1.0 for each scaling factor.
   for (const gfx::Vector3dF& rgb : scaling_factors) {
@@ -1113,12 +1085,14 @@ TEST_F(NightLightTest, TestAmbientColorMatrix) {
 }
 
 TEST_F(NightLightTest, TestNightLightAndAmbientColorInteraction) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kAllowAmbientEQ);
+
   SetNightLightEnabled(true);
 
   auto night_light_rgb = GetAllDisplaysCompositorsRGBScaleFactors().front();
 
   SetAmbientColorPrefEnabled(true);
-  SetAmbientColorSupported(true);
 
   auto night_light_and_ambient_rgb =
       GetAllDisplaysCompositorsRGBScaleFactors().front();
@@ -1659,6 +1633,92 @@ TEST_F(AutoNightLightOnFirstLogin, NotifyOnFirstLogin) {
   NightLightControllerImpl* controller = GetController();
   EXPECT_TRUE(controller->GetEnabled());
   EXPECT_TRUE(controller->GetAutoNightLightNotificationForTesting());
+}
+
+// Fixture for testing Ambient EQ.
+class AmbientEQTest : public NightLightTest {
+ public:
+  AmbientEQTest() = default;
+  ~AmbientEQTest() override = default;
+  AmbientEQTest(const AmbientEQTest& other) = delete;
+  AmbientEQTest& operator=(const AmbientEQTest& rhs) = delete;
+
+  static constexpr gfx::Vector3dF kDefaultScalingFactors{1.0f, 1.0f, 1.0f};
+
+  // NightLightTest:
+  void SetUp() override {
+    NightLightTest::SetUp();
+    features_.InitAndEnableFeature(features::kAllowAmbientEQ);
+    controller_ = GetController();
+  }
+
+ protected:
+  base::test::ScopedFeatureList features_;
+  NightLightControllerImpl* controller_;  // Not owned.
+};
+
+// static
+constexpr gfx::Vector3dF AmbientEQTest::kDefaultScalingFactors;
+
+TEST_F(AmbientEQTest, TestAmbientRgbScalingUpdatesOnPrefChanged) {
+  // Start with the pref disabled.
+  controller_->SetAmbientColorEnabled(false);
+
+  // Shift to the coolest temperature and the temperature updates even with the
+  // pref disabled but the scaling factors don't.
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+  EXPECT_EQ(ambient_temperature, controller_->ambient_temperature());
+  EXPECT_EQ(kDefaultScalingFactors, controller_->ambient_rgb_scaling_factors());
+
+  // Enabling the pref and the scaling factors update.
+  controller_->SetAmbientColorEnabled(true);
+  const auto coolest_scaling_factors =
+      controller_->ambient_rgb_scaling_factors();
+  EXPECT_NE(kDefaultScalingFactors, coolest_scaling_factors);
+
+  // Shift to the warmest temp and the the scaling factors should update along
+  // with the temperature while the pref is enabled.
+  ambient_temperature = SimulateAmbientColorFromPowerd(2700, 5800.0f);
+  EXPECT_EQ(ambient_temperature, controller_->ambient_temperature());
+  const auto warmest_scaling_factors =
+      controller_->ambient_rgb_scaling_factors();
+  EXPECT_NE(warmest_scaling_factors, coolest_scaling_factors);
+  EXPECT_NE(warmest_scaling_factors, kDefaultScalingFactors);
+}
+
+TEST_F(AmbientEQTest, TestAmbientRgbScalingUpdatesOnUserChangedToEnabled) {
+  // Start with user1 logged in with pref disabled.
+  controller_->SetAmbientColorEnabled(false);
+
+  // Shift to the coolest temperature and the temperature updates even with the
+  // pref disabled but the scaling factors don't.
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+  EXPECT_EQ(ambient_temperature, controller_->ambient_temperature());
+  EXPECT_EQ(kDefaultScalingFactors, controller_->ambient_rgb_scaling_factors());
+
+  // Enable the pref for user 2 then switch to user2 and the factors update.
+  user2_pref_service()->SetBoolean(prefs::kAmbientColorEnabled, true);
+  SwitchActiveUser(kUser2Email);
+  const auto coolest_scaling_factors =
+      controller_->ambient_rgb_scaling_factors();
+  EXPECT_NE(kDefaultScalingFactors, coolest_scaling_factors);
+}
+
+TEST_F(AmbientEQTest, TestAmbientRgbScalingUpdatesOnUserChangedBothDisabled) {
+  // Start with user1 logged in with pref disabled.
+  controller_->SetAmbientColorEnabled(false);
+
+  // Shift to the coolest temperature and the temperature updates even with the
+  // pref disabled but the scaling factors don't.
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+  EXPECT_EQ(ambient_temperature, controller_->ambient_temperature());
+  EXPECT_EQ(kDefaultScalingFactors, controller_->ambient_rgb_scaling_factors());
+
+  // Disable the pref for user 2 then switch to user2 and the factors still
+  // shouldn't update.
+  user2_pref_service()->SetBoolean(prefs::kAmbientColorEnabled, false);
+  SwitchActiveUser(kUser2Email);
+  EXPECT_EQ(kDefaultScalingFactors, controller_->ambient_rgb_scaling_factors());
 }
 
 }  // namespace

@@ -45,7 +45,7 @@ TEST(StoreUpdateDataTest, BuildComponentStoreUpdateData) {
   EXPECT_EQ(3ul, component_update->TakeUpdateEntries()->size());
 }
 
-TEST(StoreUpdateDataTest, BuildFetchUpdateData) {
+TEST(StoreUpdateDataTest, BuildFetchUpdateDataUsesDefaultCacheDuration) {
   // Verify creating a Fetched Hint update package.
   base::Time update_time = base::Time::Now();
   proto::Hint hint1;
@@ -55,16 +55,64 @@ TEST(StoreUpdateDataTest, BuildFetchUpdateData) {
   page_hint1->set_page_pattern("slowpage");
 
   std::unique_ptr<StoreUpdateData> fetch_update =
-      StoreUpdateData::CreateFetchedStoreUpdateData(
-          update_time, update_time + optimization_guide::features::
-                                         StoredFetchedHintsFreshnessDuration());
+      StoreUpdateData::CreateFetchedStoreUpdateData(update_time);
   fetch_update->MoveHintIntoUpdateData(std::move(hint1));
   EXPECT_FALSE(fetch_update->component_version().has_value());
   EXPECT_TRUE(fetch_update->update_time().has_value());
   EXPECT_EQ(update_time, *fetch_update->update_time());
   // Verify there are 2 store entries: 1 for the metadata entry plus
   // the 1 added hint entries.
-  EXPECT_EQ(2ul, fetch_update->TakeUpdateEntries()->size());
+  const auto update_entries = fetch_update->TakeUpdateEntries();
+  EXPECT_EQ(2ul, update_entries->size());
+  // Verify expiry time taken from hint rather than the default expiry time of
+  // the store update data.
+  for (const auto& entry : *update_entries) {
+    proto::StoreEntry store_entry = entry.second;
+    if (store_entry.entry_type() == proto::FETCHED_HINT) {
+      base::Time expected_expiry_time =
+          base::Time::Now() + features::StoredFetchedHintsFreshnessDuration();
+      EXPECT_EQ(expected_expiry_time.ToDeltaSinceWindowsEpoch().InSeconds(),
+                store_entry.expiry_time_secs());
+      break;
+    }
+  }
+}
+
+TEST(StoreUpdateDataTest,
+     BuildFetchUpdateDataUsesCacheDurationFromHintIfAvailable) {
+  // Verify creating a Fetched Hint update package.
+  int max_cache_duration_secs = 60;
+  base::Time update_time = base::Time::Now();
+  proto::Hint hint1;
+  hint1.set_key("foo.org");
+  hint1.set_key_representation(proto::HOST_SUFFIX);
+  hint1.mutable_max_cache_duration()->set_seconds(max_cache_duration_secs);
+  proto::PageHint* page_hint1 = hint1.add_page_hints();
+  page_hint1->set_page_pattern("slowpage");
+
+  std::unique_ptr<StoreUpdateData> fetch_update =
+      StoreUpdateData::CreateFetchedStoreUpdateData(update_time);
+  fetch_update->MoveHintIntoUpdateData(std::move(hint1));
+  EXPECT_FALSE(fetch_update->component_version().has_value());
+  EXPECT_TRUE(fetch_update->update_time().has_value());
+  EXPECT_EQ(update_time, *fetch_update->update_time());
+  // Verify there are 2 store entries: 1 for the metadata entry plus
+  // the 1 added hint entries.
+  const auto update_entries = fetch_update->TakeUpdateEntries();
+  EXPECT_EQ(2ul, update_entries->size());
+  // Verify expiry time taken from hint rather than the default expiry time of
+  // the store update data.
+  for (const auto& entry : *update_entries) {
+    proto::StoreEntry store_entry = entry.second;
+    if (store_entry.entry_type() == proto::FETCHED_HINT) {
+      base::Time expected_expiry_time =
+          base::Time::Now() +
+          base::TimeDelta::FromSeconds(max_cache_duration_secs);
+      EXPECT_EQ(expected_expiry_time.ToDeltaSinceWindowsEpoch().InSeconds(),
+                store_entry.expiry_time_secs());
+      break;
+    }
+  }
 }
 
 TEST(StoreUpdateDataTest, BuildPredictionModelUpdateData) {

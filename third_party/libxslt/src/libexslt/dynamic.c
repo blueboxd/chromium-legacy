@@ -127,7 +127,15 @@ exsltDynMapFunction(xmlXPathParserContextPtr ctxt, int nargs)
         goto cleanup;
     }
 
-    if (str == NULL || !xmlStrlen(str) || !(comp = xmlXPathCompile(str)))
+    tctxt = xsltXPathGetTransformContext(ctxt);
+    if (tctxt == NULL) {
+	xsltTransformError(xsltXPathGetTransformContext(ctxt), NULL, NULL,
+	      "dyn:map : internal error tctxt == NULL\n");
+	goto cleanup;
+    }
+
+    if (str == NULL || !xmlStrlen(str) ||
+        !(comp = xmlXPathCtxtCompile(tctxt->xpathCtxt, str)))
         goto cleanup;
 
     oldDoc = ctxt->context->doc;
@@ -139,12 +147,6 @@ exsltDynMapFunction(xmlXPathParserContextPtr ctxt, int nargs)
 	 * since we really don't know we're going to be adding node(s)
 	 * down the road we create the RVT regardless
 	 */
-    tctxt = xsltXPathGetTransformContext(ctxt);
-    if (tctxt == NULL) {
-	xsltTransformError(xsltXPathGetTransformContext(ctxt), NULL, NULL,
-	      "dyn:map : internal error tctxt == NULL\n");
-	goto cleanup;
-    }
     container = xsltCreateRVT(tctxt);
     if (container == NULL) {
 	xsltTransformError(tctxt, NULL, NULL,

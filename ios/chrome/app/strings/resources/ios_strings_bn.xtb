@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">ছদ্মবেশী সার্চ</translation>
 <translation id="277771892408211951">ভাষা বেছে নিন</translation>
 <translation id="2780046210906776326">কোনো ইমেল অ্যাকাউন্ট নেই</translation>
+<translation id="2781331604911854368">চালু করা আছে</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">ট্যাব পরিবর্তনকারী থেকে বেরিয়ে যান</translation>
 <translation id="2830972654601096923">ঠিকানাগুলি ম্যানেজ করুন...</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">ওপেন ট্যাব</translation>
 <translation id="3277021493514034324">সাইটের ঠিকানা কপি করা হয়েছে</translation>
 <translation id="3290875554372353449">একটি অ্যাকাউন্ট বেছে নিন</translation>
+<translation id="3311748811247479259">বন্ধ করা আছে</translation>
 <translation id="3324193307694657476">ঠিকানা ২</translation>
 <translation id="3329904751041170572">সার্ভারের সাথে সংযোগ করা যাযনি৷</translation>
 <translation id="3335947283844343239">বন্ধ হওয়া ট্যাব আবার খুলুন</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">আপনার ট্যাবগুলি সিঙ্ক করা হচ্ছে ...</translation>
 <translation id="3493531032208478708">প্রস্তাবিত কন্টেন্ট সম্পর্কে <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="3494788280727468875">ব্রাউজ করা ডেটা সাফ করার বিষয়টি নিশ্চিত করুন</translation>
+<translation id="35083190962747987">${url} খুলুন</translation>
 <translation id="3519193562722059437">ওয়েব ব্রাউজ করার জন্য একটি ট্যাব খুলুন।</translation>
 <translation id="3527085408025491307">ফোল্ডার</translation>
 <translation id="3529024052484145543">সুরক্ষিত নয়</translation>
@@ -301,6 +304,7 @@
 <translation id="5062321486222145940">Google ড্রাইভ ইনস্টল করুন</translation>
 <translation id="5083464117946352670">ফাইলের আকার নির্ধারণ করা যাচ্ছে না।</translation>
 <translation id="5094827893301452931">Tweet সম্পূর্ণ হয়েছে৷</translation>
+<translation id="5118764316110575523">বন্ধ করা আছে</translation>
 <translation id="5127805178023152808">সিঙ্ক বন্ধ রয়েছে</translation>
 <translation id="5132942445612118989">সমস্ত ডিভাইসে আপনার পাসওয়ার্ড, ইতিহাস ও আরও অনেক কিছু সিঙ্ক করুন</translation>
 <translation id="5140288047769711648">Chrome আপনার জন্য এই পাসওয়ার্ড মনে রাখবে। আপনাকে এটি মনে রাখতে হবে না।</translation>
@@ -364,6 +368,7 @@
 <translation id="5979837087407522202">পাসওয়ার্ড খুঁজুন</translation>
 <translation id="5982717868370722439">বিদ্যমান ডেটা <ph name="USER_EMAIL" /> এ যোগ করুন।</translation>
 <translation id="5984222099446776634">সাম্প্রতিককালে দেখা</translation>
+<translation id="5988851877894965432">Chrome ব্রাউজার থেকে ইউআরএলগুলি খুলুন</translation>
 <translation id="6012140227487808125">এনক্রিপ্ট হচ্ছে...</translation>
 <translation id="6021332621416007159">এতে খুলুন...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -513,6 +518,7 @@
 <translation id="7961015016161918242">কখনই নয়</translation>
 <translation id="7971521879845308059">পপ-আপগুলি অবরুদ্ধ করুন</translation>
 <translation id="7982789257301363584">নেটওয়ার্ক</translation>
+<translation id="800361585186029508">Google Chrome-এ ইনপুট করা ইউআরএলগুলি খোলে।</translation>
 <translation id="8007420562015504427">নতুন ছদ্মবেশী ট্যাবে সার্চ করুন</translation>
 <translation id="8019783059653722575">এটি আপনাকে ফটো সংরক্ষণ এবং আপলোড করতে দেয়।</translation>
 <translation id="802154636333426148">ডাউনলোড করা যায়নি</translation>

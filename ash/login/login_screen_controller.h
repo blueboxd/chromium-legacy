@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 
 class PrefRegistrySimple;
 

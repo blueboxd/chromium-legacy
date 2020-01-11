@@ -20,7 +20,6 @@
 <translation id="1553358976309200471">‏Chrome کو اپ ڈیٹ کریں</translation>
 <translation id="1587223624401073077">‏Google Chrome آپ کا کیمرا استعمال کر رہا ہے۔</translation>
 <translation id="1587325591171447154">‏<ph name="FILE_NAME" /> خطرناک ہے، اس لیے Chrome نے اسے مسدود کر دیا ہے۔</translation>
-<translation id="1590588151039584890">‏اپ ڈیٹ کرنے کے لیے، Chrome کا اس کمپیوٹر پر چلنا بند ہونا ضروری ہے۔ اس وجہ سے اس کمپیوٹر پر لاگ ان کیے ہوئے دیگر صارفین کی غیر محفوظ کردہ تبدیلیاں ضائع ہو سکتی ہیں۔</translation>
 <translation id="1619887657840448962">‏Chrome کو محفوظ تر بنانے کیلئے، ہم نے مندرجہ ذیل ایکسٹینشن کو غیر فعال کر دیا ہے جو <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> میں مندرج نہیں ہے اور ممکن ہے کہ اسے آپ کے علم کے بغیر شامل کر دیا گیا ہو۔</translation>
 <translation id="1628000112320670027">‏Chrome کے بارے میں مدد حاصل کریں</translation>
 <translation id="1635734105302489219">‏Chrome چھوڑنے پر آپ کوکیز صاف کرتے ہیں۔ مطابقت پذیری جاری رکھنے کے لئے، یہ<ph name="COOKIE_SETTINGS_LINK" /> تبدیل کریں۔</translation>
@@ -145,7 +144,6 @@
 <translation id="5430073640787465221">‏آپ کی ترجیحات کی فائل خراب یا غلط ہے۔
 
 Google Chrome آپ کی ترتیبات کو بازیافت کرنے سے قاصر ہے۔</translation>
-<translation id="5543953544073077331">‏Chrome کی دیگر کاپیاں فعال ہیں۔ اپ ڈیٹ کرنے کے لیے، انہیں بند کریں۔</translation>
 <translation id="556024056938947818">‏Google Chrome پاس ورڈز دکھانے کی کوشش کر رہا ہے۔</translation>
 <translation id="5566025111015594046">‎Google Chrome (mDNS-In)‎</translation>
 <translation id="5657226924540934362">‏اگر اس صفحے پر کوئی ترتیب دکھائی نہیں دے رہی ہے تو اپنے <ph name="LINK_BEGIN" />
@@ -195,7 +193,6 @@ Google Chrome آپ کی ترتیبات کو بازیافت کرنے سے قاص�
 <translation id="7408085963519505752">‏Chrome OS کی شرائط</translation>
 <translation id="7419046106786626209">‏Chrome OS آپ کے ڈیٹا کی مطابقت پذیری نہیں کر سکا کیونکہ Sync آپ کے ڈومین کیلئے دستیاب نہیں ہے۔</translation>
 <translation id="7486227612705979895">‏پتہ بار میں تجاویز پیش کرنے کے لیے Chrome آپ کی Drive تک رسائی حاصل کرے گا</translation>
-<translation id="7531671357096394523">‏Chrome کی تمام کاپیاں بند کریں۔</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">‏یہ دیکھنے کی لیے کہ کیا آپ کا آلہ اپ ٹو ڈیٹ ہے، <ph name="LINK_BEGIN" />Chromium OS کی ترتیبات<ph name="LINK_END" /> پر جائیں</translation>
 <translation id="7589360514048265910">‏یہ کمپیوٹر اب Google Chrome اپ ڈيٹس موصول نہیں کرے گا کیونکہ Mac OS X 10.9 اب تعاون یافتہ نہیں ہے۔</translation>

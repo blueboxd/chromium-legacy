@@ -38,7 +38,6 @@ Sumir eiginleikar kunna að vera óaðgengilegir og breytingar á kjörstillingu
 <translation id="2770231113462710648">Breyta sjálfgefnum vafra í:</translation>
 <translation id="2799223571221894425">Endurræsa</translation>
 <translation id="2805036593126168338">Chromium OS gat ekki samstillt aðgangsorðin þín. Laga núna.</translation>
-<translation id="2838154144102149890">Hætta þarf notkun Chromium í þessari tölvu til að uppfæra. Það kann að verða til þess að aðrir notendur sem skráðir eru inn í þessari tölvu glati óvistuðum breytingum.</translation>
 <translation id="2847479871509788944">Fjarlægja úr Chromium...</translation>
 <translation id="2886012850691518054">Valfrjálst: Hjálpaðu til við að bæta Chromium með því að senda sjálfkrafa talnagögn um notkun og tilkynningar um hrun til Google.</translation>
 <translation id="2910007522516064972">Um &amp;Chromium</translation>
@@ -148,7 +147,6 @@ Sumir eiginleikar kunna að verða óaðgengilegir. Tilgreindu aðra prófílam�
 <translation id="6847869444787758381">Chromium lætur þig vita ef aðgangsorðin þín eru einhvern tímann í hættu</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (afritað í Chromium)</translation>
-<translation id="6868056391275687737">Önnur afrit af Chromium eru í notkun. Lokaðu þeim til að uppfæra.</translation>
 <translation id="6893813176749746474">Chromium var uppfært en þú hefur ekki notað það í a.m.k. 30 daga.</translation>
 <translation id="6964305034639999644">Opna tengil í &amp;huliðsglugga í Chromium</translation>
 <translation id="6990124437352146030">Chromium þarf leyfi til að nota hljóðnemann á þessu vefsvæði</translation>
@@ -208,7 +206,6 @@ Chromium getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="8697124171261953979">Það stýrir því einnig hvaða síða opnast þegar þú ræsir Chromium eða leitar í veffangastikunni.</translation>
 <translation id="8704119203788522458">Chromium er þitt</translation>
 <translation id="8739167630197873875">Fótspor eru hreinsuð þegar þú lokar Chromium. Breyttu <ph name="COOKIE_SETTINGS_LINK" /> til að halda áfram að samstilla.</translation>
-<translation id="8748383401829947534">Loka öllum afritum Chromium.</translation>
 <translation id="8796602469536043152">Chromium þarf leyfi til að nota myndavélina og hljóðnemann á þessu vefsvæði</translation>
 <translation id="8803635938069941624">Skilmálar Chromium OS</translation>
 <translation id="8821041990367117597">Chrome gat ekki samstillt gögnin þín vegna þess að innskráningarupplýsingar reikningsins þíns eru úreltar.</translation>

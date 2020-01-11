@@ -94,6 +94,7 @@ source_set("common") {
   ]
 
   deps = [
+    "//base",
     "//net",
   ]
 }

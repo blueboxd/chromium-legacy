@@ -1240,7 +1240,13 @@ void WebContentsViewAura::OnMouseEvent(ui::MouseEvent* event) {
     // raise-on-click manually, this may override user settings that prevent
     // focus-stealing.
 #if !defined(USE_X11)
+    // It is possible for the web-contents to be destroyed while it is being
+    // activated. Use a weak-ptr to track whether that happened or not.
+    // More in https://crbug.com/1040725
+    auto weak_this = weak_ptr_factory_.GetWeakPtr();
     web_contents_->GetDelegate()->ActivateContents(web_contents_);
+    if (!weak_this)
+      return;
 #endif
   }
 

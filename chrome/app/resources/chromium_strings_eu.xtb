@@ -38,7 +38,6 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="2770231113462710648">Ezarri hau arakatzaile lehenetsia gisa:</translation>
 <translation id="2799223571221894425">Abiarazi berriro</translation>
 <translation id="2805036593126168338">Chromium OS sistema eragileak ezin izan ditu sinkronizatu pasahitzak. Konpondu arazoa.</translation>
-<translation id="2838154144102149890">Chromium eguneratzeko, geldiarazi egin behar dituzu ordenagailuan abian dituen instantziak. Hori eginez gero, ordenagailuan saioa hasita daukaten erabiltzaileek galdu egin ditzakete gordeta ez dituzten aldaketak.</translation>
 <translation id="2847479871509788944">Kendu Chromium-etik…</translation>
 <translation id="2886012850691518054">Aukerakoa: lagundu Chromium hobetzen Google-ra erabilera-estatistikak eta hutsegite-txostenak automatikoki bidalita.</translation>
 <translation id="2910007522516064972">&amp;Chromium arakatzaileari buruz</translation>
@@ -148,7 +147,6 @@ Baliteke eginbide batzuk erabilgarri ez egotea. Adierazi beste profil-direktorio
 <translation id="6847869444787758381">Chromium-ek abisatu egingo dizu pasahitzak inoiz arriskuan badaude</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium-en kopiatu da)</translation>
-<translation id="6868056391275687737">Chromium-en beste kopia batzuk dituzu abian. Eguneratu nahi baduzu, itxi itzazu.</translation>
 <translation id="6893813176749746474">Chromium eguneratu da baina ez duzu erabili 30 egunetan gutxienez.</translation>
 <translation id="6964305034639999644">Ireki esteka Chromium-eko &amp;ezkutuko moduko leiho batean</translation>
 <translation id="6990124437352146030">Chromium-ek webgune honen izenean mikrofonoa atzitzeko baimena behar du</translation>
@@ -208,7 +206,6 @@ Chromium-ek ezin ditu ezarpenak berreskuratu.</translation>
 <translation id="8697124171261953979">Chromium hasten duzunean edo Omnibox-etik bilaketak egiten dituzunean erakusten den orria ere kontrolatzen du.</translation>
 <translation id="8704119203788522458">Hau da zure Chromium arakatzailea</translation>
 <translation id="8739167630197873875">Chromium-etik irteten zarenean, cookieak garbitzen dira. Sinkronizatzen jarraitzeko, aldatu <ph name="COOKIE_SETTINGS_LINK" />.</translation>
-<translation id="8748383401829947534">Itxi Chromium-en kopia guztiak.</translation>
 <translation id="8796602469536043152">Chromium-ek webgune honen izenean kamera eta mikrofonoa atzitzeko baimena behar du</translation>
 <translation id="8803635938069941624">Chromium OS sistema eragilearen baldintzak</translation>
 <translation id="8821041990367117597">Chromium-ek ezin izan ditu zure datuak sinkronizatu kontuan saioa hasteko datuak iraungi egin direlako.</translation>

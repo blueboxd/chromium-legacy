@@ -6,6 +6,7 @@
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -181,6 +182,10 @@ class ActivityServiceControllerTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
     TestChromeBrowserState::Builder test_cbs_builder;
+
+    ASSERT_TRUE(state_dir_.CreateUniqueTempDir());
+    test_cbs_builder.SetPath(state_dir_.GetPath());
+
     chrome_browser_state_ = test_cbs_builder.Build();
     chrome_browser_state_->CreateBookmarkModel(false);
     bookmark_model_ = ios::BookmarkModelFactory::GetForBrowserState(
@@ -314,6 +319,11 @@ class ActivityServiceControllerTest : public PlatformTest {
     EXPECT_TRUE(provider.fakePasswordFormFiller);
     EXPECT_FALSE(provider.fakePasswordFormFiller.methodCalled);
   }
+
+  // A state directory that outlives |task_environment_| is needed because
+  // CreateHistoryService/CreateBookmarkModel use the directory to host
+  // databases. See https://crbug.com/546640 for more details.
+  base::ScopedTempDir state_dir_;
 
   web::WebTaskEnvironment task_environment_;
   UIViewController* parentController_;

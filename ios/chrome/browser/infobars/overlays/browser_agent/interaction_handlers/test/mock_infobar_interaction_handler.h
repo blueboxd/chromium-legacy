@@ -20,7 +20,7 @@ class MockInfobarBannerInteractionHandler
   MOCK_METHOD1(MainButtonTapped, void(InfoBarIOS* infobar));
   MOCK_METHOD2(ShowModalButtonTapped,
                void(InfoBarIOS* infobar, web::WebState* web_state));
-  MOCK_METHOD2(BannerCompleted, void(InfoBarIOS* infobar, bool user_initiated));
+  MOCK_METHOD1(BannerDismissedByUser, void(InfoBarIOS* infobar));
 };
 
 // Mock version of InfobarDetailSheetInteractionHandler.

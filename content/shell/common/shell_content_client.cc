@@ -79,19 +79,6 @@ blink::OriginTrialPolicy* ShellContentClient::GetOriginTrialPolicy() {
   return &origin_trial_policy_;
 }
 
-bool ShellContentClient::CanSendWhileSwappedOut(const IPC::Message* message) {
-  if (!in_web_test_)
-    return ContentClient::CanSendWhileSwappedOut(message);
-  switch (message->type()) {
-    // Used in web tests; handled in BlinkTestController.
-    case BlinkTestHostMsg_PrintMessage::ID:
-      return true;
-
-    default:
-      return false;
-  }
-}
-
 void ShellContentClient::SetInWebTest(bool in_web_test) {
   in_web_test_ = in_web_test;
 }

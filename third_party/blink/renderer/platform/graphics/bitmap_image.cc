@@ -156,6 +156,11 @@ IntSize BitmapImage::SizeRespectingOrientation() const {
   return size_respecting_orientation_;
 }
 
+bool BitmapImage::HasDefaultOrientation() const {
+  ImageOrientation orientation = CurrentFrameOrientation();
+  return orientation == kDefaultImageOrientation;
+}
+
 bool BitmapImage::GetHotSpot(IntPoint& hot_spot) const {
   return decoder_ && decoder_->HotSpot(hot_spot);
 }

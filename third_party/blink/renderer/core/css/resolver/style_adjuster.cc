@@ -604,8 +604,12 @@ static void AdjustStateForRenderSubtree(ComputedStyle& style,
 
   if (should_be_invisible) {
     // Add containment to style if we're invisible.
-    auto contain =
-        style.Contain() | kContainsStyle | kContainsLayout | kContainsSize;
+    auto contain = style.Contain() | kContainsStyle | kContainsLayout;
+    // If we haven't activated, then we should also contain size. This means
+    // that if we are rendering the element's subtree (i.e. it is either
+    // unlocked or activated), then we do not have size containment.
+    if (!context->IsActivated())
+      contain |= kContainsSize;
     style.SetContain(contain);
 
     // If we're unlocked and unactivated, then we should lock the context. Note

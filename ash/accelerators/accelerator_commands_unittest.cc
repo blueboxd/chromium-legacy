@@ -52,19 +52,19 @@ TEST_F(AcceleratorCommandsTest, ToggleMaximized) {
 
   // When not in fullscreen, accelerators::ToggleMaximized toggles Maximized.
   EXPECT_FALSE(window_state->IsMaximized());
-  accelerators::ToggleMaximized();
+  ToggleMaximized();
   EXPECT_TRUE(window_state->IsMaximized());
-  accelerators::ToggleMaximized();
+  ToggleMaximized();
   EXPECT_FALSE(window_state->IsMaximized());
 
   // When in fullscreen accelerators::ToggleMaximized gets out of fullscreen.
   EXPECT_FALSE(window_state->IsFullscreen());
-  accelerators::ToggleFullscreen();
+  ToggleFullscreen();
   EXPECT_TRUE(window_state->IsFullscreen());
-  accelerators::ToggleMaximized();
+  ToggleMaximized();
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_FALSE(window_state->IsMaximized());
-  accelerators::ToggleMaximized();
+  ToggleMaximized();
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
 }

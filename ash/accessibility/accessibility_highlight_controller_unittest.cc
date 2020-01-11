@@ -105,7 +105,7 @@ class AccessibilityHighlightControllerTest : public AshTestBase {
     // Keep trying until we get the correct size butmap and
     // the first pixel is not transparent.
     while (true) {
-      aura::Window* window = ash::Shell::GetPrimaryRootWindow();
+      aura::Window* window = Shell::GetPrimaryRootWindow();
       base::RunLoop run_loop;
       ui::GrabWindowSnapshotAndScaleAsync(
           window, bounds, bounds.size(),
@@ -197,7 +197,7 @@ TEST_F(AccessibilityHighlightControllerTest, TestFocusRingDrawsPixels) {
 // and AccessibilityFocusRingController.
 TEST_F(AccessibilityHighlightControllerTest, CursorWorksOnMultipleDisplays) {
   UpdateDisplay("400x400,500x500");
-  aura::Window::Windows root_windows = ash::Shell::Get()->GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
 
   AccessibilityHighlightController highlight_controller;

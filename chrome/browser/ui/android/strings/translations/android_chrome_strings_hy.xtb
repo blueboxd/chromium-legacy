@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Հեռախոսահամարներ</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ներբեռնում ջնջվեց</translation>
 <translation id="3822502789641063741">Մաքրե՞լ կայքերի տվյալները:</translation>
+<translation id="3853625385350850937">Շարունակելու համար ձեր սարքում միացրեք NFC-ն</translation>
 <translation id="3859306556332390985">Որոնել դեպի առաջ</translation>
 <translation id="388596076286380598">Դուք կարող եք կարդալ հոդվածներ, դիտել տեսանյութեր և այլ բովանդակություն ձեր սիրած կայքերից նույնիսկ, երբ կապը թույլ է կամ բացակայում է։</translation>
 <translation id="3894427358181296146">Պանակի ավելացում</translation>
@@ -1049,6 +1050,7 @@
 <translation id="8912362522468806198">Google հաշիվ</translation>
 <translation id="8920114477895755567">Ծնողների տվյալները սպասվում են:</translation>
 <translation id="8922289737868596582">«Այլ տարբերակներ» կոճակի օգնությամբ ներբեռնեք էջերը՝ անցանց ռեժիմում օգտագործելու համար</translation>
+<translation id="8926666909099850184">Սարքի NFC-ն անջատված է։ Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />։</translation>
 <translation id="8937772741022875483">Հեռացնե՞լ Chrome-ի պատմությունը Թվային բարեկեցությունից</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Բացել նոր պատուհանում</translation>

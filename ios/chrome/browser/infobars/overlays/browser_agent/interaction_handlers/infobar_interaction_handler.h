@@ -27,11 +27,9 @@ class InfobarBannerInteractionHandler {
   // |web_state| is the WebState associated with |infobar|'s InfoBarManager.
   virtual void ShowModalButtonTapped(InfoBarIOS* infobar,
                                      web::WebState* web_state) = 0;
-  // Called when the banner overlay for |infobar| is completed.  Called when the
-  // banner UI is dismissed by user interaction or when its request is
-  // cancelled.  |user_initiated| describes whether the banner was dismissed for
-  // user interaction.
-  virtual void BannerCompleted(InfoBarIOS* infobar, bool user_initiated) = 0;
+  // Notifies the model that the upcoming dismissal is user-initiated (i.e.
+  // a swipe dismissal in the refresh UI).
+  virtual void BannerDismissedByUser(InfoBarIOS* infobar) = 0;
 };
 
 // Handler for infobar detail sheet user interaction events.

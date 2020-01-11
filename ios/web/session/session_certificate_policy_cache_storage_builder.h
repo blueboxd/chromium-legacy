@@ -11,6 +11,7 @@
 
 namespace web {
 
+class BrowserState;
 class SessionCertificatePolicyCacheImpl;
 
 // Class that converts between model objects and their serializable versions.
@@ -22,7 +23,8 @@ class SessionCertificatePolicyCacheStorageBuilder {
   // Creates a SessionCertificatePolicyCache from |cache_storage|.
   std::unique_ptr<SessionCertificatePolicyCacheImpl>
   BuildSessionCertificatePolicyCache(
-      CRWSessionCertificatePolicyCacheStorage* cache_storage) const;
+      CRWSessionCertificatePolicyCacheStorage* cache_storage,
+      BrowserState* browser_state) const;
 };
 
 }  // namespace web

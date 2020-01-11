@@ -21,16 +21,15 @@ namespace component_updater {
 
 namespace {
 
-// The SHA256 of the SubjectPublicKeyInfo used to sign the archive.
-// TODO(evliu): The SODA library isn't ready to be exposed to the public yet so
-// we should not check in the SHA256.
+// The SHA256 of the SubjectPublicKeyInfo used to sign the component.
+// The component id is: icnkogojpkfjeajonkmlplionaamopkf
 const uint8_t kSODAPublicKeySHA256[32] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    0x82, 0xda, 0xe6, 0xe9, 0xfa, 0x59, 0x40, 0x9e, 0xda, 0xcb, 0xfb,
+    0x8e, 0xd0, 0x0c, 0xef, 0xa5, 0xc0, 0x97, 0x00, 0x84, 0x1c, 0x21,
+    0xa6, 0xae, 0xc8, 0x1b, 0x87, 0xfb, 0x12, 0x27, 0x28, 0xb1};
 
 const base::FilePath::CharType kSODABinaryFileName[] =
-    FILE_PATH_LITERAL("SODAFiles/libsoda.experimental.so");
+    FILE_PATH_LITERAL("SODAFiles/libsoda.so");
 
 static_assert(base::size(kSODAPublicKeySHA256) == crypto::kSHA256Length,
               "Wrong hash length");
@@ -120,12 +119,24 @@ std::vector<std::string> SODAComponentInstallerPolicy::GetMimeTypes() const {
   return std::vector<std::string>();
 }
 
+void UpdateSODAInstallDirPref(PrefService* prefs,
+                              const base::FilePath& install_dir) {
+  prefs->SetFilePath(prefs::kSODAPath, install_dir.Append(kSODABinaryFileName));
+}
+
 void RegisterSODAComponent(ComponentUpdateService* cus,
                            PrefService* prefs,
                            base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(evliu): The SODA library isn't ready to be exposed to the public yet
-  // we should not register the component.
-  NOTIMPLEMENTED();
+
+  auto installer = base::MakeRefCounted<ComponentInstaller>(
+      std::make_unique<SODAComponentInstallerPolicy>(base::BindRepeating(
+          [](PrefService* prefs, const base::FilePath& install_dir) {
+            base::PostTask(
+                FROM_HERE, {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+                base::BindOnce(&UpdateSODAInstallDirPref, prefs, install_dir));
+          },
+          prefs)));
+  installer->Register(cus, std::move(callback));
 }
 }  // namespace component_updater

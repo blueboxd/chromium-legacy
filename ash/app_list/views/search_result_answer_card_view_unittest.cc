@@ -12,8 +12,6 @@
 #include "ash/app_list/views/search_result_view.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/content/public/cpp/test/fake_navigable_contents.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/background.h"

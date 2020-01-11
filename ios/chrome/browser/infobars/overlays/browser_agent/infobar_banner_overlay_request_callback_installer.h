@@ -24,17 +24,24 @@ class InfobarBannerOverlayRequestCallbackInstaller
   ~InfobarBannerOverlayRequestCallbackInstaller() override;
 
  private:
-  // Called as a dispatch callback for |request| when |response| is configured
-  // with an InfobarBannerMainActionResponse.
+  // Used as a callback for OverlayResponses dispatched through |request|'s
+  // callback manager.  The OverlayDispatchCallback is created with an
+  // OverlayResponseSupport that guarantees that |response| is created with an
+  // InfobarBannerMainActionResponse.
   void MainActionButtonTapped(OverlayRequest* request,
                               OverlayResponse* response);
-  // Called as a dispatch callback for |request| when |response| is configured
-  // with an InfobarBannerShowModalResponse.
+  // Used as a callback for OverlayResponses dispatched through |request|'s
+  // callback manager.  The OverlayDispatchCallback is created with an
+  // OverlayResponseSupport that guarantees that |response| is created with an
+  // InfobarBannerShowModalResponse.
   void ShowModalButtonTapped(OverlayRequest* request,
                              OverlayResponse* response);
-  // Called as a completion callback for |request|, where |response| is the
-  // completion response.
-  void BannerCompleted(OverlayRequest* request, OverlayResponse* response);
+  // Used as a callback for OverlayResponses dispatched through |request|'s
+  // callback manager.  The OverlayDispatchCallback is created with an
+  // OverlayResponseSupport that guarantees that |response| is created with an
+  // InfobarBannerUserInitiatedDismissalResponse.
+  void BannerDismissedByUser(OverlayRequest* request,
+                             OverlayResponse* response);
 
   // OverlayRequestCallbackInstaller:
   const OverlayRequestSupport* GetRequestSupport() const override;

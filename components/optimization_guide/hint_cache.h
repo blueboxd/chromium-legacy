@@ -62,12 +62,9 @@ class HintCache {
   // processing of the GetHintsResponse, hints are moved into the update data.
   // After processing is complete, the update data is provided to the backing
   // store to update hints. |update_time| specifies when the hints within the
-  // created update data will be scheduled to be updated. |expiry_time|
-  // specifies when the hints within the created update data will be expired
-  // from the store.
+  // created update data will be scheduled to be updated.
   std::unique_ptr<StoreUpdateData> CreateUpdateDataForFetchedHints(
-      base::Time update_time,
-      base::Time expiry_time) const;
+      base::Time update_time) const;
 
   // Updates the store's component data using the provided StoreUpdateData
   // and asynchronously runs the provided callback after the update finishes.
@@ -82,6 +79,10 @@ class HintCache {
       std::unique_ptr<proto::GetHintsResponse> get_hints_response,
       base::Time update_time,
       base::OnceClosure callback);
+
+  // Purges fetched hints from the owned |optimization_guide_store| that have
+  // expired.
+  void PurgeExpiredFetchedHints();
 
   // Purges fetched hints from the owned |optimization_guide_store_| and resets
   // the host-keyed cache.

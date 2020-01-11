@@ -3983,6 +3983,47 @@ TEST_P(HotseatShelfLayoutManagerTest, ExitingOvervieHidesHotseat) {
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
 }
 
+// Tests that failing to drag the maximized window to overview mode results in
+// an extended hotseat.
+TEST_P(HotseatShelfLayoutManagerTest,
+       FailingOverviewDragResultsInExtendedHotseat) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(
+      features::kDragFromShelfToHomeOrOverview);
+
+  const ShelfAutoHideBehavior auto_hide_behavior = GetParam();
+  GetPrimaryShelf()->SetAutoHideBehavior(auto_hide_behavior);
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  // If the shelf is auto-hidden, swipe up to bring up shelf and hotseat first
+  // (otherwise, the window drag to overview will not be handled).
+  if (auto_hide_behavior == ShelfAutoHideBehavior::kAlways) {
+    SwipeUpOnShelf();
+    ASSERT_EQ(HotseatState::kExtended,
+              GetShelfLayoutManager()->hotseat_state());
+  }
+
+  // Swipe up to start dragging the active window.
+  const gfx::Rect bottom_shelf_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  StartScroll(bottom_shelf_bounds.top_center());
+
+  // Drag upward, a bit past the hotseat extended height but not enough to go to
+  // overview.
+  const int extended_hotseat_distance_from_top_of_shelf =
+      ShelfConfig::Get()->hotseat_bottom_padding() +
+      ShelfConfig::Get()->hotseat_size();
+  UpdateScroll(-extended_hotseat_distance_from_top_of_shelf - 30);
+  EndScroll(/*is_fling=*/false, 0.f);
+
+  ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+}
+
 // Tests that hotseat remains in extended state while in overview mode when
 // flinging the shelf up or down.
 TEST_P(HotseatShelfLayoutManagerTest, SwipeOnHotseatInOverview) {
@@ -4862,8 +4903,7 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
 }
 
-// Tests that closing a window which was opened prior to entering tablet mode
-// results in a kShown hotseat.
+// Tests that the hotseat is extended if focused with a keyboard.
 TEST_F(HotseatShelfLayoutManagerTest, ExtendHotseatIfFocusedWithKeyboard) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
@@ -4894,7 +4934,7 @@ TEST_F(HotseatShelfLayoutManagerTest, ExtendHotseatIfFocusedWithKeyboard) {
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 }
 
-// Tests that if the hotseat was hidden while being focused, doing a trasversal
+// Tests that if the hotseat was hidden while being focused, doing a traversal
 // focus on the next element brings it up again.
 TEST_F(HotseatShelfLayoutManagerTest, SwipeDownOnFocusedHotseat) {
   TabletModeControllerTestApi().EnterTabletMode();

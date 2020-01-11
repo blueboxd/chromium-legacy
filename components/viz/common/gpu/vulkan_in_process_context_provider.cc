@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
+#include "gpu/config/skia_limits.h"
 #include "gpu/vulkan/buildflags.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
@@ -98,7 +99,18 @@ bool VulkanInProcessContextProvider::Initialize() {
       vulkan_implementation_->enforce_protected_memory() ? GrProtected::kYes
                                                          : GrProtected::kNo;
 
-  gr_context_ = GrContext::MakeVulkan(backend_context);
+  size_t max_resource_cache_bytes;
+  size_t max_glyph_cache_texture_bytes;
+  gpu::DetermineGrCacheLimitsFromAvailableMemory(
+      &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
+
+  GrContextOptions context_options;
+  context_options.fGlyphCacheTextureMaximumBytes =
+      max_glyph_cache_texture_bytes;
+
+  gr_context_ = GrContext::MakeVulkan(backend_context, context_options);
+  if (gr_context_)
+    gr_context_->setResourceCacheLimit(max_resource_cache_bytes);
 
   return gr_context_ != nullptr;
 }

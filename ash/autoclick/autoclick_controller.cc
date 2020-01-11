@@ -514,10 +514,8 @@ void AutoclickController::UpdateRingSize() {
 
 void AutoclickController::InitializeScrollLocation() {
   // Sets the scroll location to the center of the root window.
-  scroll_location_ = ash::Shell::Get()
-                         ->GetPrimaryRootWindow()
-                         ->GetBoundsInScreen()
-                         .CenterPoint();
+  scroll_location_ =
+      Shell::Get()->GetPrimaryRootWindow()->GetBoundsInScreen().CenterPoint();
   is_initial_scroll_location_ = true;
   Shell::Get()
       ->accessibility_controller()

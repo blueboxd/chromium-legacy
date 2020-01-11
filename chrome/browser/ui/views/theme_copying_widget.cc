@@ -12,7 +12,3 @@ ThemeCopyingWidget::~ThemeCopyingWidget() {}
 const ui::NativeTheme* ThemeCopyingWidget::GetNativeTheme() const {
   return role_model_->GetNativeTheme();
 }
-
-const ui::ThemeProvider* ThemeCopyingWidget::GetThemeProvider() const {
-  return role_model_->GetThemeProvider();
-}

@@ -55,10 +55,15 @@ class IOSSSLBlockingPage : public IOSSecurityInterstitialPage {
 
  private:
   void NotifyDenyCertificate();
+  void HandleScriptCommand(const base::DictionaryValue& message,
+                           const GURL& origin_url,
+                           bool user_is_interacting,
+                           web::WebFrame* sender_frame) override;
 
   // Returns true if |options_mask| refers to a soft-overridable SSL error.
   static bool IsOverridable(int options_mask);
 
+  web::WebState* web_state_ = nullptr;
   base::OnceCallback<void(bool)> callback_;
   const net::SSLInfo ssl_info_;
   const bool overridable_;  // The UI allows the user to override the error.

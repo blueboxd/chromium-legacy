@@ -1535,9 +1535,18 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
   }
 
   if (!found_match_for_text) {
+    // For match generation, we use the unelided |url_for_editing_|, unless the
+    // user input is in progress or Query in Omnibox is active.
+    LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
+    base::string16 text_for_match_generation = url_for_editing_;
+    if (user_input_in_progress() ||
+        location_bar_model->GetDisplaySearchTerms(nullptr)) {
+      text_for_match_generation = view_->GetText();
+    }
+
     client_->GetAutocompleteClassifier()->Classify(
-        MaybePrependKeyword(view_->GetText()), is_keyword_selected(), true,
-        GetPageClassification(), match, alternate_nav_url);
+        MaybePrependKeyword(text_for_match_generation), is_keyword_selected(),
+        true, GetPageClassification(), match, alternate_nav_url);
   }
 }
 

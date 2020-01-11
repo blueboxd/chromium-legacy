@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -60,9 +61,11 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
+#include "third_party/blink/public/mojom/remote_objects/remote_objects.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -3635,4 +3638,108 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest,
   EXPECT_TRUE(web_contents->IsDocumentOnLoadCompletedInMainFrame());
 }
 
+// TODO(crbug.com/794320): the code below is temporary and will be removed when
+// Java Bridge is mojofied.
+#if defined(OS_ANDROID)
+const int32_t kObjectId = 5;
+const char* const kMethods[] = {"b", "c", "d"};
+
+class MockObject : public blink::mojom::RemoteObject {
+ public:
+  void HasMethod(const std::string& name, HasMethodCallback callback) override {
+    // TODO(crbug.com/794320): implement this.
+  }
+
+  void GetMethods(GetMethodsCallback callback) override {
+    std::move(callback).Run(
+        std::vector<std::string>(std::begin(kMethods), std::end(kMethods)));
+  }
+  void InvokeMethod(
+      const std::string& name,
+      std::vector<blink::mojom::RemoteInvocationArgumentPtr> arguments,
+      InvokeMethodCallback callback) override {
+    // TODO(crbug.com/794320): implement this.
+  }
+};
+
+class MockObjectHost : public blink::mojom::RemoteObjectHost {
+ public:
+  void GetObject(
+      int32_t object_id,
+      mojo::PendingReceiver<blink::mojom::RemoteObject> receiver) override {
+    EXPECT_EQ(kObjectId, object_id);
+    mojo::MakeSelfOwnedReceiver(std::make_unique<MockObject>(),
+                                std::move(receiver));
+  }
+
+  void ReleaseObject(int32_t) override {
+    // TODO(crbug.com/794320): implement this.
+  }
+
+  mojo::PendingRemote<blink::mojom::RemoteObjectHost> GetRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
+ private:
+  mojo::Receiver<blink::mojom::RemoteObjectHost> receiver_{this};
+};
+
+class RenderFrameHostObserver : public WebContentsObserver {
+ public:
+  explicit RenderFrameHostObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+ private:
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+    mojo::Remote<blink::mojom::RemoteObjectGateway> gateway;
+    mojo::Remote<blink::mojom::RemoteObjectGatewayFactory> factory;
+    static_cast<RenderFrameHostImpl*>(render_frame_host)
+        ->GetRemoteInterfaces()
+        ->GetInterface(factory.BindNewPipeAndPassReceiver());
+    factory->CreateRemoteObjectGateway(host_.GetRemote(),
+                                       gateway.BindNewPipeAndPassReceiver());
+    gateway->AddNamedObject("testObject", kObjectId);
+  }
+
+  MockObjectHost host_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostObserver);
+};
+
+// TODO(crbug.com/794320): Remove this when the new Java Bridge code is
+// integrated into WebView.
+// This test is a temporary way of verifying that the renderer part
+// works as expected.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       RemoteObjectEnumerateProperties) {
+  GURL url1(embedded_test_server()->GetURL("/empty.html"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RenderFrameHostObserver rfh_observer(web_contents);
+
+  {
+    // The first load triggers RenderFrameCreated on |rfh_observer|, where the
+    // object injection happens.
+    TestNavigationObserver observer(web_contents);
+    shell()->LoadURL(url1);
+    observer.Wait();
+  }
+
+  {
+    // Injected objects become visible only after reload
+    // (see JavaBridgeBasicsTest#testEnumerateMembers in
+    // JavaBridgeBasicsTest.java).
+    TestNavigationObserver observer(web_contents);
+    web_contents->GetController().Reload(ReloadType::NORMAL, false);
+    observer.Wait();
+  }
+
+  const std::string kScript = "Object.keys(testObject).join(' ');";
+  auto result = EvalJs(web_contents, kScript);
+  EXPECT_EQ(base::JoinString(std::vector<std::string>(std::begin(kMethods),
+                                                      std::end(kMethods)),
+                             " "),
+            result.value.GetString());
+}
+#endif  // OS_ANDROID
 }  // namespace content

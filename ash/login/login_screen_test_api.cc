@@ -136,8 +136,8 @@ bool LoginScreenTestApi::IsShutdownButtonShown() {
 
 // static
 bool LoginScreenTestApi::IsAuthErrorBubbleShown() {
-  ash::LockScreen::TestApi lock_screen_test(ash::LockScreen::Get());
-  ash::LockContentsView::TestApi lock_contents_test(
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi lock_contents_test(
       lock_screen_test.contents_view());
   return lock_contents_test.auth_error_bubble()->GetVisible();
 }

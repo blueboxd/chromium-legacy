@@ -525,23 +525,8 @@ const char BookmarkBarView::kViewClassName[] = "BookmarkBarView";
 
 BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
     : AnimationDelegateViews(this),
-      button_listener_(this),
-      menu_button_listener_(this),
-      page_navigator_(nullptr),
-      managed_(nullptr),
-      bookmark_menu_(nullptr),
-      bookmark_drop_menu_(nullptr),
-      other_bookmarks_button_(nullptr),
-      managed_bookmarks_button_(nullptr),
-      apps_page_shortcut_(nullptr),
-      overflow_button_(nullptr),
-      bookmarks_separator_view_(nullptr),
       browser_(browser),
-      browser_view_(browser_view),
-      infobar_visible_(false),
-      size_animation_(this),
-      throbbing_view_(nullptr),
-      bookmark_bar_state_(BookmarkBar::SHOW) {
+      browser_view_(browser_view) {
   SetID(VIEW_ID_BOOKMARK_BAR);
   Init();
 
@@ -1451,21 +1436,17 @@ void BookmarkBarView::Init() {
 
   // Child views are traversed in the order they are added. Make sure the order
   // they are added matches the visual order.
-  apps_page_shortcut_ = CreateAppsPageShortcutButton();
-  AddChildView(apps_page_shortcut_);
+  apps_page_shortcut_ = AddChildView(CreateAppsPageShortcutButton());
 
-  managed_bookmarks_button_ = CreateManagedBookmarksButton();
+  managed_bookmarks_button_ = AddChildView(CreateManagedBookmarksButton());
   // Also re-enabled when the model is loaded.
   managed_bookmarks_button_->SetEnabled(false);
-  AddChildView(managed_bookmarks_button_);
 
-  overflow_button_ = CreateOverflowButton();
-  AddChildView(overflow_button_);
+  overflow_button_ = AddChildView(CreateOverflowButton());
 
-  other_bookmarks_button_ = CreateOtherBookmarksButton();
+  other_bookmarks_button_ = AddChildView(CreateOtherBookmarksButton());
   // We'll re-enable when the model is loaded.
   other_bookmarks_button_->SetEnabled(false);
-  AddChildView(other_bookmarks_button_);
 
   profile_pref_registrar_.Init(browser_->profile()->GetPrefs());
   profile_pref_registrar_.Add(
@@ -1479,8 +1460,8 @@ void BookmarkBarView::Init() {
   apps_page_shortcut_->SetVisible(
       chrome::ShouldShowAppsShortcutInBookmarkBar(browser_->profile()));
 
-  bookmarks_separator_view_ = new ButtonSeparatorView();
-  AddChildView(bookmarks_separator_view_);
+  bookmarks_separator_view_ =
+      AddChildView(std::make_unique<ButtonSeparatorView>());
   UpdateBookmarksSeparatorVisibility();
 
   set_context_menu_controller(this);
@@ -1503,26 +1484,26 @@ size_t BookmarkBarView::GetFirstHiddenNodeIndex() {
   return i - bookmark_buttons_.cbegin();
 }
 
-MenuButton* BookmarkBarView::CreateOtherBookmarksButton() {
+std::unique_ptr<MenuButton> BookmarkBarView::CreateOtherBookmarksButton() {
   // Title is set in Loaded.
-  MenuButton* button =
-      new BookmarkFolderButton(base::string16(), &menu_button_listener_);
+  auto button = std::make_unique<BookmarkFolderButton>(base::string16(),
+                                                       &menu_button_listener_);
   button->SetID(VIEW_ID_OTHER_BOOKMARKS);
   button->set_context_menu_controller(this);
   return button;
 }
 
-MenuButton* BookmarkBarView::CreateManagedBookmarksButton() {
+std::unique_ptr<MenuButton> BookmarkBarView::CreateManagedBookmarksButton() {
   // Title is set in Loaded.
-  MenuButton* button =
-      new BookmarkFolderButton(base::string16(), &menu_button_listener_);
+  auto button = std::make_unique<BookmarkFolderButton>(base::string16(),
+                                                       &menu_button_listener_);
   button->SetID(VIEW_ID_MANAGED_BOOKMARKS);
   button->set_context_menu_controller(this);
   return button;
 }
 
-MenuButton* BookmarkBarView::CreateOverflowButton() {
-  MenuButton* button = new OverflowButton(this, &menu_button_listener_);
+std::unique_ptr<MenuButton> BookmarkBarView::CreateOverflowButton() {
+  auto button = std::make_unique<OverflowButton>(this, &menu_button_listener_);
 
   // The overflow button's image contains an arrow and therefore it is a
   // direction sensitive image and we need to flip it if the UI layout is
@@ -1541,26 +1522,29 @@ MenuButton* BookmarkBarView::CreateOverflowButton() {
   return button;
 }
 
-views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
+std::unique_ptr<views::View> BookmarkBarView::CreateBookmarkButton(
+    const BookmarkNode* node) {
   int index = node->parent()->GetIndexOf(node);
-  views::LabelButton* button = nullptr;
+  std::unique_ptr<views::LabelButton> button;
   if (node->is_url()) {
-    button =
-        new BookmarkButton(&button_listener_, node->url(), node->GetTitle());
+    button = std::make_unique<BookmarkButton>(&button_listener_, node->url(),
+                                              node->GetTitle());
     button->GetViewAccessibility().OverrideDescription(url_formatter::FormatUrl(
         node->url(), url_formatter::kFormatUrlOmitDefaults,
         net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
   } else {
-    button = new BookmarkFolderButton(node->GetTitle(), &menu_button_listener_);
+    button = std::make_unique<BookmarkFolderButton>(node->GetTitle(),
+                                                    &menu_button_listener_);
     button->GetViewAccessibility().OverrideDescription("");
   }
-  ConfigureButton(node, button);
-  bookmark_buttons_.insert(bookmark_buttons_.cbegin() + index, button);
+  ConfigureButton(node, button.get());
+  bookmark_buttons_.insert(bookmark_buttons_.cbegin() + index, button.get());
   return button;
 }
 
-views::LabelButton* BookmarkBarView::CreateAppsPageShortcutButton() {
-  views::LabelButton* button = new ShortcutButton(
+std::unique_ptr<views::LabelButton>
+BookmarkBarView::CreateAppsPageShortcutButton() {
+  auto button = std::make_unique<ShortcutButton>(
       &button_listener_,
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_APPS_SHORTCUT_NAME));
   button->SetTooltipText(
@@ -2000,8 +1984,9 @@ void BookmarkBarView::OnShowManagedBookmarksPrefChanged() {
     LayoutAndPaint();
 }
 
-void BookmarkBarView::InsertBookmarkButtonAtIndex(views::View* button,
-                                                  size_t index) {
+void BookmarkBarView::InsertBookmarkButtonAtIndex(
+    std::unique_ptr<views::View> button,
+    size_t index) {
 // All of the secondary buttons are always in the view hierarchy, even if
 // they're not visible. The order should be: [Apps shortcut] [Managed bookmark
 // button] ..bookmark buttons.. [Overflow chevron] [Other bookmarks]
@@ -2019,7 +2004,7 @@ void BookmarkBarView::InsertBookmarkButtonAtIndex(views::View* button,
   DCHECK_EQ(*i++, overflow_button_);
   DCHECK_EQ(*i++, other_bookmarks_button_);
 #endif
-  AddChildViewAt(button,
+  AddChildViewAt(std::move(button),
                  GetIndexOf(managed_bookmarks_button_) + 1 + int{index});
 }
 

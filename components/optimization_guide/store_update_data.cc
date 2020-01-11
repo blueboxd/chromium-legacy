@@ -5,6 +5,7 @@
 #include "components/optimization_guide/store_update_data.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_store.h"
 #include "components/optimization_guide/proto/hint_cache.pb.h"
 #include "components/optimization_guide/proto/hints.pb.h"
@@ -24,12 +25,11 @@ StoreUpdateData::CreateComponentStoreUpdateData(
 
 // static
 std::unique_ptr<StoreUpdateData> StoreUpdateData::CreateFetchedStoreUpdateData(
-    base::Time fetch_update_time,
-    base::Time expiry_time) {
+    base::Time fetch_update_time) {
   std::unique_ptr<StoreUpdateData> update_data(
       new StoreUpdateData(base::Optional<base::Version>(),
                           base::Optional<base::Time>(fetch_update_time),
-                          base::Optional<base::Time>(expiry_time)));
+                          base::Optional<base::Time>()));
   return update_data;
 }
 
@@ -146,9 +146,16 @@ void StoreUpdateData::MoveHintIntoUpdateData(proto::Hint&& hint) {
     entry_proto.set_entry_type(static_cast<proto::StoreEntryType>(
         OptimizationGuideStore::StoreEntryType::kComponentHint));
   } else if (update_time()) {
-    DCHECK(expiry_time());
-    entry_proto.set_expiry_time_secs(
-        expiry_time_->ToDeltaSinceWindowsEpoch().InSeconds());
+    base::TimeDelta expiry_duration;
+    if (hint.has_max_cache_duration()) {
+      expiry_duration =
+          base::TimeDelta().FromSeconds(hint.max_cache_duration().seconds());
+    } else {
+      expiry_duration = features::StoredFetchedHintsFreshnessDuration();
+    }
+    entry_proto.set_expiry_time_secs((base::Time::Now() + expiry_duration)
+                                         .ToDeltaSinceWindowsEpoch()
+                                         .InSeconds());
     entry_proto.set_entry_type(static_cast<proto::StoreEntryType>(
         OptimizationGuideStore::StoreEntryType::kFetchedHint));
   }

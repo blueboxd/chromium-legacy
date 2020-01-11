@@ -464,15 +464,6 @@ android_library("chrome_java") {
   if (enable_vr) {
     deps += [ ":chrome_vr_java_resources" ]
   }
-
-  if (enable_arcore) {
-    # AR DFM is disabled, so include the ARCore dependencies here as well.
-    # They are needed for "java/src/org/chromium/chrome/browser/vr/ArCoreShimImpl.java"
-    # to compile.
-    deps +=
-        [ "//third_party/arcore-android-sdk-client:com_google_ar_core_java" ]
-  }
-
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
   if (enable_feed_in_chrome) {
     deps += [ ":chrome_feed_java_resources" ]
@@ -1988,6 +1979,7 @@ template("chrome_test_apk_tmpl") {
     testonly = true
     target_type = "instrumentation_test_apk"
     shared_library_for_unwind_asset = "chromefortest"
+    bundles_supported = true
 
     deps = _chrome_public_shared_deps + invoker.deps + [
              ":chrome_apk_pak_assets",
@@ -2165,8 +2157,10 @@ if (enable_arcore) {
     ]
 
     # Include ArCore files directly instead of using bundles.
-    deps +=
-        [ "//third_party/arcore-android-sdk-client:com_google_ar_core_java" ]
+    deps += [
+      "//chrome/browser/android/vr:ar_java",
+      "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
+    ]
 
     _libarcore_dir = get_label_info(
                          "//third_party/arcore-android-sdk-client:com_google_ar_core_java($default_toolchain)",
@@ -2951,6 +2945,8 @@ android_library("native_java_unittests_java") {
     "//base/test:test_support_java",
     "//chrome/android:chrome_java",
     "//chrome/test/android:chrome_java_test_support",
+    "//components/payments/content/android:java",
+    "//content/public/android:content_java",
     "//content/public/test/android:android_test_message_pump_support_java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/blink/public:blink_headers_java",
@@ -2964,6 +2960,10 @@ android_library("native_java_unittests_java") {
   sources = [
     "native_java_unittests/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulatorTest.java",
     "native_java_unittests/src/org/chromium/chrome/browser/installedapp/InstalledAppProviderTest.java",
+    "native_java_unittests/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeUnitTest.java",
+    "native_java_unittests/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizationsUnitTest.java",
+    "native_java_unittests/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinderUnitTest.java",
+    "native_java_unittests/src/org/chromium/chrome/browser/payments/PaymentManifestVerifierTest.java",
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -2976,5 +2976,9 @@ generate_jni("native_j_unittests_jni_headers") {
   sources = [
     "native_java_unittests/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulatorTest.java",
     "native_java_unittests/src/org/chromium/chrome/browser/installedapp/InstalledAppProviderTest.java",
+    "native_java_unittests/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeUnitTest.java",
+    "native_java_unittests/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizationsUnitTest.java",
+    "native_java_unittests/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinderUnitTest.java",
+    "native_java_unittests/src/org/chromium/chrome/browser/payments/PaymentManifestVerifierTest.java",
   ]
 }

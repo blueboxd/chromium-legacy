@@ -44,8 +44,6 @@ base::TimeTicks g_process_creation_ticks;
 
 base::TimeTicks g_browser_main_entry_point_ticks;
 
-base::TimeTicks g_renderer_main_entry_point_ticks;
-
 base::TimeTicks g_browser_exe_main_entry_point_ticks;
 
 base::TimeTicks g_message_loop_start_ticks;
@@ -335,15 +333,6 @@ base::TimeTicks StartupTimeToTimeTicks(base::Time time) {
   return trace_ticks_base - delta_since_base;
 }
 
-void RecordRendererMainEntryHistogram() {
-  if (!g_browser_main_entry_point_ticks.is_null() &&
-      !g_renderer_main_entry_point_ticks.is_null()) {
-    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
-        UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserMainToRendererMain",
-        g_browser_main_entry_point_ticks, g_renderer_main_entry_point_ticks);
-  }
-}
-
 void AddStartupEventsForTelemetry()
 {
   DCHECK(!g_browser_main_entry_point_ticks.is_null());
@@ -490,13 +479,6 @@ void RecordBrowserOpenTabsDelta(base::TimeDelta delta) {
   g_browser_open_tabs_duration = delta;
 }
 
-void RecordRendererMainEntryTime(base::TimeTicks ticks) {
-  // Record the renderer main entry time, but don't log the UMA metric
-  // immediately because the startup temperature is not known yet.
-  if (g_renderer_main_entry_point_ticks.is_null())
-    g_renderer_main_entry_point_ticks = ticks;
-}
-
 void RecordFirstWebContentsNonEmptyPaint(
     base::TimeTicks now,
     base::TimeTicks render_process_host_init_time) {
@@ -504,10 +486,6 @@ void RecordFirstWebContentsNonEmptyPaint(
   if (!is_first_call || now.is_null())
     return;
   is_first_call = false;
-
-  // Log Startup.BrowserMainToRendererMain now that the first renderer main
-  // entry time and the startup temperature are known.
-  RecordRendererMainEntryHistogram();
 
   if (!ShouldLogStartupHistogram())
     return;

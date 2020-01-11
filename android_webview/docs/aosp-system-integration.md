@@ -195,10 +195,6 @@ is_component_build = false
 # Disable Google-specific branding/features
 is_chrome_branded = false
 use_official_google_api_keys = false
-
-# Significantly reduces binary size at the cost of preventing Android's native
-# crash handler from being able to produce useful stack unwindings.
-exclude_unwind_tables = true
 ```
 
 The `target_cpu` option must be set to
@@ -270,6 +266,24 @@ arguments:
 ffmpeg_branding = "Chrome"
 proprietary_codecs = true
 ```
+
+#### Crash stack unwinding
+
+By default, builds using `is_official_build = true` exclude unwind tables from
+the binaries, as they significantly increase binary size. Google's builds rely
+on crashes being reported using Crashpad, which can then be decoded server-side.
+If you don't intend to enable Crashpad and set up dedicated crash reporting
+infrastructure for your WebView, you may wish to re-enable the unwind tables
+with the following GN argument:
+
+``` gn
+exclude_unwind_tables = false
+```
+
+This will allow Android's debuggerd to produce meaningful stack traces for
+crashes that occur inside WebView's native code. We don't recommend using this
+setting in shipping builds due to the binary size impact, but it may be the only
+alternative if using Crashpad is impractical.
 
 #### Other build options
 

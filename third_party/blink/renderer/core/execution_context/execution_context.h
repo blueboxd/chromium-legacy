@@ -342,6 +342,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                    scoped_refptr<SecurityOrigin> origin,
                    WebSandboxFlags sandbox_flags,
                    std::unique_ptr<FeaturePolicy> feature_policy,
+                   std::unique_ptr<DocumentPolicy> document_policy,
                    SecureContextMode secure_context_mode);
   ~ExecutionContext() override;
 

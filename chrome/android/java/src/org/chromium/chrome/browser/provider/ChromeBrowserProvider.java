@@ -10,7 +10,6 @@ import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.UriMatcher;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -29,7 +28,6 @@ import android.util.LongSparseArray;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -40,6 +38,8 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.database.SQLiteCursor;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -139,8 +139,6 @@ public class ChromeBrowserProvider extends ContentProvider {
 
     // ID used to indicate an invalid id for bookmark nodes.
     private static final long INVALID_BOOKMARK_ID = -1;
-
-    private static final String LAST_MODIFIED_BOOKMARK_FOLDER_ID_KEY = "last_bookmark_folder_id";
 
     private static final int URI_MATCH_BOOKMARKS = 0;
     private static final int URI_MATCH_BOOKMARKS_ID = 1;
@@ -274,10 +272,8 @@ public class ChromeBrowserProvider extends ContentProvider {
      */
     private long getLastModifiedBookmarkFolderId() {
         if (mLastModifiedBookmarkFolderId == INVALID_BOOKMARK_ID) {
-            SharedPreferences sharedPreferences =
-                    ContextUtils.getAppSharedPreferences();
-            mLastModifiedBookmarkFolderId = sharedPreferences.getLong(
-                    LAST_MODIFIED_BOOKMARK_FOLDER_ID_KEY, INVALID_BOOKMARK_ID);
+            mLastModifiedBookmarkFolderId = SharedPreferencesManager.getInstance().readLong(
+                    ChromePreferenceKeys.BOOKMARKS_LAST_MODIFIED_FOLDER_ID, INVALID_BOOKMARK_ID);
         }
         return mLastModifiedBookmarkFolderId;
     }
@@ -605,11 +601,9 @@ public class ChromeBrowserProvider extends ContentProvider {
         if (getLastModifiedBookmarkFolderId() == id) return;
 
         mLastModifiedBookmarkFolderId = id;
-        SharedPreferences sharedPreferences =
-                ContextUtils.getAppSharedPreferences();
-        sharedPreferences.edit()
-                .putLong(LAST_MODIFIED_BOOKMARK_FOLDER_ID_KEY, mLastModifiedBookmarkFolderId)
-                .apply();
+        SharedPreferencesManager.getInstance().writeLong(
+                ChromePreferenceKeys.BOOKMARKS_LAST_MODIFIED_FOLDER_ID,
+                mLastModifiedBookmarkFolderId);
     }
 
     @VisibleForTesting

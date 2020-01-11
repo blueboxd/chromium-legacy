@@ -211,6 +211,11 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
 
 void LocalDiscoveryUIHandler::HandleRegisterDevice(
     const base::ListValue* args) {
+  if (IsUserProfileRestricted()) {
+    OnSetupError();
+    return;
+  }
+
   std::string device;
   bool rv = args->GetString(0, &device);
   DCHECK(rv);
@@ -221,15 +226,16 @@ void LocalDiscoveryUIHandler::HandleRegisterDevice(
     return;
   }
 
-  if (it->second.version < kCloudDevicesPrivetVersion) {
-    privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(device);
-    privet_resolution_->Start(
-        it->second.address,
-        base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
-                   base::Unretained(this)));
-  } else {
+  if (it->second.version >= kCloudDevicesPrivetVersion) {
     OnSetupError();
+    return;
   }
+
+  privet_resolution_ = privet_http_factory_->CreatePrivetHTTP(device);
+  privet_resolution_->Start(
+      it->second.address,
+      base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
+                 base::Unretained(this)));
 }
 
 void LocalDiscoveryUIHandler::HandleCancelRegistration(
@@ -255,6 +261,11 @@ void LocalDiscoveryUIHandler::HandleRequestDeviceList(
 
 void LocalDiscoveryUIHandler::HandleOpenCloudPrintURL(
     const base::ListValue* args) {
+  // Opening of the Cloud Print URL should be disabled if the profile is
+  // restricted.
+  if (IsUserProfileRestricted())
+    return;
+
   std::string id;
   bool rv = args->GetString(0, &id);
   DCHECK(rv);
@@ -481,9 +492,9 @@ void LocalDiscoveryUIHandler::ResetCurrentRegistration() {
 
 void LocalDiscoveryUIHandler::CheckUserLoggedIn() {
   base::Value logged_in_value(!GetSyncAccount().empty());
-  base::Value is_supervised_value(IsUserSupervisedOrOffTheRecord());
+  base::Value is_restricted_value(IsUserProfileRestricted());
   web_ui()->CallJavascriptFunctionUnsafe("local_discovery.setUserLoggedIn",
-                                         logged_in_value, is_supervised_value);
+                                         logged_in_value, is_restricted_value);
 }
 
 void LocalDiscoveryUIHandler::CheckListingDone() {
@@ -528,9 +539,10 @@ std::unique_ptr<GCDApiFlow> LocalDiscoveryUIHandler::CreateApiFlow() {
   return GCDApiFlow::Create(url_loader_factory, identity_manager);
 }
 
-bool LocalDiscoveryUIHandler::IsUserSupervisedOrOffTheRecord() {
+bool LocalDiscoveryUIHandler::IsUserProfileRestricted() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  return profile->IsSupervised() || profile->IsOffTheRecord();
+  return profile->IsSupervised() || profile->IsOffTheRecord() ||
+         !profile->GetPrefs()->GetBoolean(prefs::kLocalDiscoveryEnabled);
 }
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)

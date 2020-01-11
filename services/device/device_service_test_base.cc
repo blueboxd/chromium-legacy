@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/device/device_service.h"
 #include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"

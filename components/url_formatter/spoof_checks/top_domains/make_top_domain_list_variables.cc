@@ -130,10 +130,8 @@ int main(int argc, char* argv[]) {
     }
 
     if (keywords.size() < kTopN) {
-      std::string keywords_for_current_line;
-      base::TrimString(
-          url_formatter::top_domains::HostnameWithoutRegistry(line), ".",
-          &keywords_for_current_line);
+      std::string keywords_for_current_line =
+          url_formatter::top_domains::HostnameWithoutRegistry(line);
       CHECK(keywords_for_current_line.find('.') == std::string::npos);
 
       for (const std::string& keyword : base::SplitString(

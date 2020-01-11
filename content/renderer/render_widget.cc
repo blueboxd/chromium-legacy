@@ -43,7 +43,6 @@
 #include "content/common/drag_messages.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/render_message_filter.mojom.h"
-#include "content/common/swapped_out_messages.h"
 #include "content/common/text_input_state.h"
 #include "content/common/widget_messages.h"
 #include "content/public/common/content_client.h"

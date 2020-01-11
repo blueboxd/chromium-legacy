@@ -11,8 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/bubble/bubble_reference.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 
 namespace content {

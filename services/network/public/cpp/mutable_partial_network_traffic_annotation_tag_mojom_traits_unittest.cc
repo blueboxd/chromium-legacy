@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/mutable_partial_network_traffic_annotation_tag.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

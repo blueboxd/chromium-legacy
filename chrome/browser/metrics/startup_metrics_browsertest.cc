@@ -16,7 +16,6 @@ using StartupMetricsTest = InProcessBrowserTest;
 namespace {
 
 constexpr const char* kStartupMetrics[] = {
-    "Startup.BrowserMainToRendererMain",
     "Startup.BrowserMessageLoopStartTime",
     "Startup.BrowserMessageLoopStartTimeFromMainEntry3",
     "Startup.BrowserOpenTabs",

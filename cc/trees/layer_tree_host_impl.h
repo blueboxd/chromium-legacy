@@ -268,7 +268,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       InputHandler::ScrollInputType type) override;
   InputHandlerScrollResult ScrollUpdate(
       ScrollState* scroll_state,
-      InputHandler::ScrollInputType type,
       base::TimeDelta delayed_by = base::TimeDelta()) override;
   void RequestUpdateForSynchronousInputHandler() override;
   void SetSynchronousInputHandlerRootScrollOffset(
@@ -933,8 +932,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   void ScrollLatchedScroller(ScrollState* scroll_state);
 
-  bool ShouldAnimateScroll(const ScrollState& scroll_state,
-                           InputHandler::ScrollInputType type) const;
+  bool ShouldAnimateScroll(const ScrollState& scroll_state) const;
 
   bool AnimatePageScale(base::TimeTicks monotonic_time);
   bool AnimateScrollbars(base::TimeTicks monotonic_time);
@@ -1090,7 +1088,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<LayerTreeImpl> recycle_tree_;
 
   InputHandlerClient* input_handler_client_ = nullptr;
-  bool wheel_scrolling_ = false;
 
   // This is used to tell the scheduler there are active scroll handlers on the
   // page so we should prioritize latency during a scroll to try to keep
@@ -1105,7 +1102,11 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // Tracks, for debugging purposes, the amount of scroll received (not
   // necessarily applied) in this compositor frame. This will be reset each
   // time a CompositorFrame is generated.
-  gfx::ScrollOffset scroll_accumulated_this_frame_;
+  gfx::Vector2dF scroll_accumulated_this_frame_;
+
+  // Tracks the last scroll state received. At the moment, this is used to infer
+  // the most recent scroll type and direction for scroll snapping purposes.
+  base::Optional<ScrollState> last_scroll_state_;
 
   std::vector<std::unique_ptr<SwapPromise>>
       swap_promises_for_main_thread_scroll_update_;
@@ -1288,6 +1289,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // when scrolling occurs on the compositor thread. This value is cleared at
   // the first commit after a GSE.
   ElementId last_latched_scroller_;
+
+  // The source device type that started the scroll gesture. Only set between a
+  // ScrollBegin and ScrollEnd.
+  base::Optional<InputHandler::ScrollInputType> latched_scroll_type_;
 
   // Scroll animation can finish either before or after GSE arrival.
   // deferred_scroll_end_ is set when the GSE has arrvied before scroll

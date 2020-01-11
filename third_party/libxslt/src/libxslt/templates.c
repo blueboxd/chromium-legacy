@@ -332,7 +332,7 @@ xsltAttrTemplateValueProcessNode(xsltTransformContextPtr ctxt,
 			nsNr = i;
 		    }
 		}
-		comp = xmlXPathCompile(expr);
+		comp = xmlXPathCtxtCompile(ctxt->xpathCtxt, expr);
                 val = xsltEvalXPathStringNs(ctxt, comp, nsNr, nsList);
 		xmlXPathFreeCompExpr(comp);
 		xmlFree(expr);

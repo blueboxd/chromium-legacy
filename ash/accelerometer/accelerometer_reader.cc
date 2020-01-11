@@ -153,7 +153,7 @@ enum State { INITIALIZING, SUCCESS, FAILED };
 // configuration, and reads the data. Upon a successful read it will notify
 // all observers.
 class AccelerometerFileReader
-    : public ash::TabletModeObserver,
+    : public TabletModeObserver,
       public base::RefCountedThreadSafe<AccelerometerFileReader> {
  public:
   AccelerometerFileReader();

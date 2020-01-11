@@ -39,10 +39,6 @@ void CrostiniAppUninstallerView::Show(Profile* profile,
       ->Show();
 }
 
-int CrostiniAppUninstallerView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
 base::string16 CrostiniAppUninstallerView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(
       IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_TITLE);

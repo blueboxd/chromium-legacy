@@ -366,6 +366,7 @@
 <translation id="381841723434055211">ഫോൺ നമ്പറുകൾ</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ഡൗൺലോഡുകൾ ഇല്ലാതാക്കി</translation>
 <translation id="3822502789641063741">സൈറ്റ് സ്‌റ്റോറേജ് മായ്‌ക്കണോ?</translation>
+<translation id="3853625385350850937">തുടരാൻ നിങ്ങളുടെ ഉപകരണത്തിൽ NFC ഓണാക്കുക</translation>
 <translation id="3859306556332390985">മുന്നോട്ട് നീക്കുക</translation>
 <translation id="388596076286380598">നിങ്ങൾ ഓഫ്‌ലൈനിൽ ആണെങ്കിലും കണക്ഷന് വേഗത കുറവാണെങ്കിലും നിങ്ങൾ ഇഷ്‌ടപ്പെടുന്ന സൈറ്റുകളിൽ നിന്ന് ലേഖനങ്ങളും വീഡിയോകളും മറ്റ് ഉള്ളടക്കവും നേടുക.</translation>
 <translation id="3894427358181296146">ഫോൾഡർ ചേർക്കുക</translation>
@@ -1049,6 +1050,7 @@
 <translation id="8912362522468806198">Google അക്കൗണ്ട്</translation>
 <translation id="8920114477895755567">രക്ഷകർത്താക്കളുടെ വിശദാംശങ്ങൾക്കായി കാത്തിരിക്കുന്നു.</translation>
 <translation id="8922289737868596582">ഓഫ്‌ലൈനായി ഉപയോഗിക്കാൻ 'കൂടുതൽ ഓപ്ഷനുകൾ' ബട്ടണിൽ നിന്ന് പേജുകൾ ഡൗൺലോഡ് ചെയ്യുക</translation>
+<translation id="8926666909099850184">ഈ ഉപകരണത്തിനുള്ള NFC ഓഫാണ്. ഇത് <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> ഓണാക്കുക.</translation>
 <translation id="8937772741022875483">ഡിജിറ്റൽ ആരോഗ്യത്തിൽ നിന്ന് നിങ്ങളുടെ Chrome ആക്റ്റിവിറ്റി നീക്കം ചെയ്യണോ?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">മറ്റൊരു വിൻഡോയിൽ തുറക്കുക</translation>

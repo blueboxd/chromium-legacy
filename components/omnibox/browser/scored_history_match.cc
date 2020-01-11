@@ -407,13 +407,15 @@ TermMatches ScoredHistoryMatch::FilterTermMatchesByWordStarts(
     while ((next_word_starts != end_word_starts) &&
            (*next_word_starts < (term_match.offset + term_offset)))
       ++next_word_starts;
-    // Add the match if it's before the position we start filtering at or
+    // Add the match if it's (1) before the position we start filtering at, (2)
     // after the position we stop filtering at (assuming we have a position
-    // to stop filtering at) or if it's at a word boundary.
+    // to stop filtering at), (3) at a word boundary, or (4) void of words (e.g.
+    // the term '-' contains no words).
     if ((term_match.offset < start_pos) ||
         ((end_pos != std::string::npos) && (term_match.offset >= end_pos)) ||
         ((next_word_starts != end_word_starts) &&
-         (*next_word_starts == term_match.offset + term_offset)))
+         (*next_word_starts == term_match.offset + term_offset)) ||
+        term_offset == term_match.length)
       filtered_matches.push_back(term_match);
   }
   return filtered_matches;
@@ -497,13 +499,16 @@ float ScoredHistoryMatch::GetTopicalityScore(
     }
     const bool at_word_boundary = (next_word_starts != end_word_starts) &&
                                   (*next_word_starts == term_word_offset);
+    // Terms such as '-' contain no words.
+    const bool term_has_no_words =
+        url_match.length == terms_to_word_starts_offsets[url_match.term_num];
     if (term_word_offset >= query_pos) {
       // The match is in the query or ref component.
-      DCHECK(at_word_boundary);
+      DCHECK(at_word_boundary || term_has_no_words);
       term_scores[url_match.term_num] += 5;
     } else if (term_word_offset >= path_pos) {
       // The match is in the path component.
-      DCHECK(at_word_boundary);
+      DCHECK(at_word_boundary || term_has_no_words);
       term_scores[url_match.term_num] += 8;
     } else if (term_word_offset >= host_pos) {
       if (term_word_offset < last_part_of_host_pos) {
@@ -519,7 +524,7 @@ float ScoredHistoryMatch::GetTopicalityScore(
     } else {
       // The match is in the protocol (a.k.a. scheme).
       // Matches not at a word boundary should have been filtered already.
-      DCHECK(at_word_boundary);
+      DCHECK(at_word_boundary || term_has_no_words);
       if (allow_scheme_matches_)
         term_scores[url_match.term_num] += 10;
     }
@@ -547,7 +552,10 @@ float ScoredHistoryMatch::GetTopicalityScore(
     if (word_num >= num_title_words_to_allow_)
       break;  // only count the first ten words
     DCHECK(next_word_starts != end_word_starts);
-    DCHECK_EQ(*next_word_starts, term_word_offset) << "not at word boundary";
+    DCHECK(*next_word_starts == term_word_offset ||
+           title_match.length ==
+               terms_to_word_starts_offsets[title_match.term_num])
+        << "not at word boundary";
     term_scores[title_match.term_num] += 8;
   }
   // TODO(mpearson): Restore logic for penalizing out-of-order matches.

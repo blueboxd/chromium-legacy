@@ -62,25 +62,24 @@ void AppListConfigProvider::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-AppListConfig* AppListConfigProvider::GetConfigForType(
-    ash::AppListConfigType type,
-    bool can_create) {
+AppListConfig* AppListConfigProvider::GetConfigForType(AppListConfigType type,
+                                                       bool can_create) {
   const auto config_it = configs_.find(type);
   if (config_it != configs_.end())
     return config_it->second.get();
 
   // Assume the shared config always exists.
-  if (type != ash::AppListConfigType::kShared && !can_create)
+  if (type != AppListConfigType::kShared && !can_create)
     return nullptr;
 
-  DCHECK(type == ash::AppListConfigType::kShared ||
+  DCHECK(type == AppListConfigType::kShared ||
          app_list_features::IsScalableAppListEnabled());
 
   auto config = std::make_unique<AppListConfig>(type);
   auto* result = config.get();
   configs_.emplace(type, std::move(config));
 
-  if (type != ash::AppListConfigType::kShared) {
+  if (type != AppListConfigType::kShared) {
     for (auto& observer : observers_)
       observer.OnAppListConfigCreated(type);
   }
@@ -182,8 +181,7 @@ const AppListConfig& AppListConfigProvider::GetBaseConfigForDisplaySize(
   if (!app_list_features::IsScalableAppListEnabled())
     return AppListConfig::instance();
 
-  ash::AppListConfigType type =
-      GetConfigTypeForDisplaySize(display_work_area_size);
+  AppListConfigType type = GetConfigTypeForDisplaySize(display_work_area_size);
   // Ensures that the app list config provider has a config with the same
   // type as the created config - the app list model will use the config owned
   // by the AppListConfigProvider instance to generate folder icons needed by

@@ -37,8 +37,7 @@ class StoreUpdateData {
 
   // Creates an update data object for a fetched hint update.
   static std::unique_ptr<StoreUpdateData> CreateFetchedStoreUpdateData(
-      base::Time fetch_update_time,
-      base::Time expiry_time);
+      base::Time fetch_update_time);
 
   // Creates an update data object for a prediction model update.
   static std::unique_ptr<StoreUpdateData>

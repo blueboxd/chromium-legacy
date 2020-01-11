@@ -28,10 +28,11 @@ cr.define('local_discovery', function() {
   let isUserLoggedIn = true;
 
   /**
-   * Whether or not the user is supervised or off the record.
+   * Whether or not the user's profile is restricted because of being
+   * supervised, off the record, or limited by an enterprise policy.
    * @type bool
    */
-  let isUserSupervisedOrOffTheRecord = false;
+  let isUserProfileRestricted = false;
 
   /**
    * Whether or not the path-based dialog has been shown.
@@ -357,7 +358,7 @@ cr.define('local_discovery', function() {
     } else {
       $('no-printers-message').hidden = true;
       $('register-login-promo').hidden =
-          isUserLoggedIn || isUserSupervisedOrOffTheRecord;
+          isUserLoggedIn || isUserProfileRestricted;
     }
     if (!($('register-login-promo').hidden) ||
         !($('cloud-devices-login-promo').hidden) ||
@@ -433,26 +434,31 @@ cr.define('local_discovery', function() {
   }
 
   /**
-   * User is not logged in.
+   * Registers whether the user is logged in. Modifies the UI to display the
+   * appropriate content based on user log-in status and profile restrictions.
+   * @param {boolean} userLoggedIn Whether the user is logged in.
+   * @param {boolean} userProfileRestricted Whether the user profile's access to
+   *     the local discovery page is restricted because of being supervised, off
+   *     the record, or disallowed by policy.
    */
-  function setUserLoggedIn(userLoggedIn, userSupervisedOrOffTheRecord) {
+  function setUserLoggedIn(userLoggedIn, userProfileRestricted) {
     isUserLoggedIn = userLoggedIn;
-    isUserSupervisedOrOffTheRecord = userSupervisedOrOffTheRecord;
+    isUserProfileRestricted = userProfileRestricted;
 
     $('cloud-devices-login-promo').hidden =
-        isUserLoggedIn || isUserSupervisedOrOffTheRecord;
+        isUserLoggedIn || isUserProfileRestricted;
     $('register-overlay-login-promo').hidden =
-        isUserLoggedIn || isUserSupervisedOrOffTheRecord;
+        isUserLoggedIn || isUserProfileRestricted;
     $('register-continue').disabled =
-        !isUserLoggedIn || isUserSupervisedOrOffTheRecord;
+        !isUserLoggedIn || isUserProfileRestricted;
 
-    $('my-devices-container').hidden = userSupervisedOrOffTheRecord;
+    $('my-devices-container').hidden = isUserProfileRestricted;
 
-    if (isUserSupervisedOrOffTheRecord) {
+    if (isUserProfileRestricted) {
       $('cloud-print-connector-section').hidden = true;
     }
 
-    if (isUserLoggedIn && !isUserSupervisedOrOffTheRecord) {
+    if (isUserLoggedIn && !isUserProfileRestricted) {
       requestDeviceList();
       $('register-login-promo').hidden = true;
     } else {

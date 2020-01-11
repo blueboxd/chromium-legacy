@@ -38,7 +38,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2770231113462710648">Change default browser to:</translation>
 <translation id="2799223571221894425">Relaunch</translation>
 <translation id="2805036593126168338">Chromium OS could not sync your passwords. Fix now.</translation>
-<translation id="2838154144102149890">To update, Chromium needs to stop running on this computer. This may cause other users logged into this computer to lose unsaved changes.</translation>
 <translation id="2847479871509788944">Remove from Chromium...</translation>
 <translation id="2886012850691518054">Optional: Help make Chrome better by automatically sending usage statistics and crash reports to Google.</translation>
 <translation id="2910007522516064972">About &amp;Chromium</translation>
@@ -148,7 +147,6 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6847869444787758381">Chromium lets you know if your passwords are ever compromised</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copied to Chromium)</translation>
-<translation id="6868056391275687737">Other copies of Chromium are running. To update, close them.</translation>
 <translation id="6893813176749746474">Chromium has been updated, but you haven't used it for 30 days or more.</translation>
 <translation id="6964305034639999644">Open link in Chromium inco&amp;gnito window</translation>
 <translation id="6990124437352146030">Chromium needs permission to access your microphone for this site</translation>
@@ -208,7 +206,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8697124171261953979">It also controls what page is shown when you start Chromium or search from the Omnibox.</translation>
 <translation id="8704119203788522458">This is your Chromium</translation>
 <translation id="8739167630197873875">You clear cookies when you quit Chromium. To keep syncing, change this <ph name="COOKIE_SETTINGS_LINK" />.</translation>
-<translation id="8748383401829947534">Quit all copies of Chromium.</translation>
 <translation id="8796602469536043152">Chromium needs permission to access your camera and microphone for this site</translation>
 <translation id="8803635938069941624">Chromium OS terms</translation>
 <translation id="8821041990367117597">Chromium could not sync your data because your account sign-in details are out of date.</translation>

@@ -811,13 +811,11 @@ L2TP over IPsec with pre-shared key:
 * **IgnoreDefaultRoute**
     * (optional, defaults to *false*) - **boolean**
     * Omits a default route to the VPN gateway while the connection is active.
-      By default, the client creates a default route to the gateway address
-      advertised by the VPN server.  Setting this value to
-      *true* will allow split tunnelling for
-      configurations where the VPN server omits explicit default routes.
-      This is roughly equivalent to omitting "redirect-gateway" OpenVPN client
-      configuration option.  If the server pushes a "redirect-gateway"
-      configuration flag to the client, this option is ignored.
+      The client will create a default route through the VPN **only** if the
+      OpenVPN server pushes a "redirect-gateway" option. Setting this value to
+      *true* will cause the client to ignore any "redirect-gateway" option
+      provided by the server, ensuring that no default route is available for
+      the VPN.
 
 * **KeyDirection**
     * (optional) - **string**

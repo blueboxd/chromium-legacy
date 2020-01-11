@@ -105,7 +105,7 @@ exsltSaxonExpressionFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     ret = xmlHashLookup(hash, arg);
 
     if (ret == NULL) {
-	 ret = xmlXPathCompile(arg);
+	 ret = xmlXPathCtxtCompile(tctxt->xpathCtxt, arg);
 	 if (ret == NULL) {
 	      xmlFree(arg);
               xmlXPathSetError(ctxt, XPATH_EXPR_ERROR);

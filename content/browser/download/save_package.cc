@@ -68,8 +68,8 @@ namespace {
 
 // Generates unique ids for SavePackage::unique_id_ field.
 SavePackageId GetNextSavePackageId() {
-  static int g_save_package_id = 0;
-  return SavePackageId::FromUnsafeValue(g_save_package_id++);
+  static SavePackageId::Generator g_save_package_id_generator;
+  return g_save_package_id_generator.GenerateNextId();
 }
 
 // Default name which will be used when we can not get proper name from

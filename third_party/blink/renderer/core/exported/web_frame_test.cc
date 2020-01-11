@@ -6697,13 +6697,12 @@ TEST_F(WebFrameTest, SpellcheckResultsSavedInDocument) {
             document->Markers().Markers()[0]->GetType());
 }
 
-class TestAccessInitialDocumentWebFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
+class TestAccessInitialDocumentLocalFrameHost : public FakeLocalFrameHost {
  public:
-  TestAccessInitialDocumentWebFrameClient() = default;
-  ~TestAccessInitialDocumentWebFrameClient() override = default;
+  TestAccessInitialDocumentLocalFrameHost() = default;
+  ~TestAccessInitialDocumentLocalFrameHost() override = default;
 
-  // frame_test_helpers::TestWebFrameClient:
+  // FakeLocalFrameHost:
   void DidAccessInitialDocument() override { ++did_access_initial_document_; }
 
   // !!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!
@@ -6716,153 +6715,169 @@ class TestAccessInitialDocumentWebFrameClient
 };
 
 TEST_F(WebFrameTest, DidAccessInitialDocumentBody) {
-  TestAccessInitialDocumentWebFrameClient web_frame_client;
+  TestAccessInitialDocumentLocalFrameHost frame_host;
+  frame_test_helpers::TestWebFrameClient web_frame_client;
+  frame_host.Init(web_frame_client.GetRemoteNavigationAssociatedInterfaces());
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(&web_frame_client);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(0, frame_host.did_access_initial_document_);
 
   // Create another window that will try to access it.
   frame_test_helpers::WebViewHelper new_web_view_helper;
   WebViewImpl* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.GetWebView()->MainFrame());
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(0, frame_host.did_access_initial_document_);
 
   // Access the initial document by modifying the body.
   new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("window.opener.document.body.innerHTML += 'Modified';"));
   RunPendingTasks();
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(1, frame_host.did_access_initial_document_);
 
   web_view_helper.Reset();
 }
 
 TEST_F(WebFrameTest, DidAccessInitialDocumentOpen) {
-  TestAccessInitialDocumentWebFrameClient web_frame_client;
+  TestAccessInitialDocumentLocalFrameHost frame_host;
+  frame_test_helpers::TestWebFrameClient web_frame_client;
+  frame_host.Init(web_frame_client.GetRemoteNavigationAssociatedInterfaces());
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(&web_frame_client);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(0, frame_host.did_access_initial_document_);
 
   // Create another window that will try to access it.
   frame_test_helpers::WebViewHelper new_web_view_helper;
   WebViewImpl* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.GetWebView()->MainFrame());
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(0, frame_host.did_access_initial_document_);
 
   // Access the initial document by calling document.open(), which allows
   // arbitrary modification of the initial document.
   new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("window.opener.document.open();"));
   RunPendingTasks();
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(1, frame_host.did_access_initial_document_);
 
   web_view_helper.Reset();
 }
 
 TEST_F(WebFrameTest, DidAccessInitialDocumentNavigator) {
-  TestAccessInitialDocumentWebFrameClient web_frame_client;
+  TestAccessInitialDocumentLocalFrameHost frame_host;
+  frame_test_helpers::TestWebFrameClient web_frame_client;
+  frame_host.Init(web_frame_client.GetRemoteNavigationAssociatedInterfaces());
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(&web_frame_client);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(0, frame_host.did_access_initial_document_);
 
   // Create another window that will try to access it.
   frame_test_helpers::WebViewHelper new_web_view_helper;
   WebViewImpl* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.GetWebView()->MainFrame());
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(0, frame_host.did_access_initial_document_);
 
   // Access the initial document to get to the navigator object.
   new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("console.log(window.opener.navigator);"));
   RunPendingTasks();
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(1, frame_host.did_access_initial_document_);
 
   web_view_helper.Reset();
 }
 
 TEST_F(WebFrameTest, DidAccessInitialDocumentViaJavascriptUrl) {
-  TestAccessInitialDocumentWebFrameClient web_frame_client;
+  TestAccessInitialDocumentLocalFrameHost frame_host;
+  frame_test_helpers::TestWebFrameClient web_frame_client;
+  frame_host.Init(web_frame_client.GetRemoteNavigationAssociatedInterfaces());
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(&web_frame_client);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(0, frame_host.did_access_initial_document_);
 
   // Access the initial document from a javascript: URL.
   frame_test_helpers::LoadFrame(web_view_helper.GetWebView()->MainFrameImpl(),
                                 "javascript:document.body.appendChild(document."
                                 "createTextNode('Modified'))");
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(1, frame_host.did_access_initial_document_);
 
   web_view_helper.Reset();
 }
 
 TEST_F(WebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog) {
-  TestAccessInitialDocumentWebFrameClient web_frame_client;
+  TestAccessInitialDocumentLocalFrameHost frame_host;
+  frame_test_helpers::TestWebFrameClient web_frame_client;
+  frame_host.Init(web_frame_client.GetRemoteNavigationAssociatedInterfaces());
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(&web_frame_client);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(0, frame_host.did_access_initial_document_);
 
   // Create another window that will try to access it.
   frame_test_helpers::WebViewHelper new_web_view_helper;
   WebViewImpl* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.GetWebView()->MainFrame());
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(0, frame_host.did_access_initial_document_);
 
   // Access the initial document by modifying the body.
   new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("window.opener.document.body.innerHTML += 'Modified';"));
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
+  RunPendingTasks();
+  EXPECT_EQ(1, frame_host.did_access_initial_document_);
 
   // Run a modal dialog, which used to run a nested run loop and require
   // a special case for notifying about the access.
   new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("window.opener.confirm('Modal');"));
-  EXPECT_EQ(2, web_frame_client.did_access_initial_document_);
+  RunPendingTasks();
+  EXPECT_EQ(1, frame_host.did_access_initial_document_);
 
   // Ensure that we don't notify again later.
   RunPendingTasks();
-  EXPECT_EQ(2, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(1, frame_host.did_access_initial_document_);
 
   web_view_helper.Reset();
 }
 
 TEST_F(WebFrameTest, DidWriteToInitialDocumentBeforeModalDialog) {
-  TestAccessInitialDocumentWebFrameClient web_frame_client;
+  TestAccessInitialDocumentLocalFrameHost frame_host;
+  frame_test_helpers::TestWebFrameClient web_frame_client;
+  frame_host.Init(web_frame_client.GetRemoteNavigationAssociatedInterfaces());
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(&web_frame_client);
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(0, frame_host.did_access_initial_document_);
 
   // Create another window that will try to access it.
   frame_test_helpers::WebViewHelper new_web_view_helper;
   WebViewImpl* new_view = new_web_view_helper.InitializeWithOpener(
       web_view_helper.GetWebView()->MainFrame());
   RunPendingTasks();
-  EXPECT_EQ(0, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(0, frame_host.did_access_initial_document_);
 
   // Access the initial document with document.write, which moves us past the
   // initial empty document state of the state machine.
   new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("window.opener.document.write('Modified'); "
                       "window.opener.document.close();"));
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
+  RunPendingTasks();
+  EXPECT_EQ(1, frame_host.did_access_initial_document_);
 
   // Run a modal dialog, which used to run a nested run loop and require
   // a special case for notifying about the access.
   new_view->MainFrameImpl()->ExecuteScript(
       WebScriptSource("window.opener.confirm('Modal');"));
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
+  RunPendingTasks();
+  EXPECT_EQ(1, frame_host.did_access_initial_document_);
 
   // Ensure that we don't notify again later.
   RunPendingTasks();
-  EXPECT_EQ(1, web_frame_client.did_access_initial_document_);
+  EXPECT_EQ(1, frame_host.did_access_initial_document_);
 
   web_view_helper.Reset();
 }

@@ -563,7 +563,7 @@ TEST_F(ClientControlledStateTest, MoveWindowToDisplayOutOfBounds) {
 }
 
 TEST_F(ClientControlledStateTest, HandleBoundsEventsUpdatesPipRestoreBounds) {
-  state()->EnterNextState(window_state(), ash::WindowStateType::kPip);
+  state()->EnterNextState(window_state(), WindowStateType::kPip);
 
   EXPECT_TRUE(window_state()->IsPip());
 

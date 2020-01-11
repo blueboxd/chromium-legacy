@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
+#include "url/origin.h"
 
 class Profile;
 
@@ -37,13 +38,13 @@ class MockBrowsingDataIndexedDBHelper
 
   // BrowsingDataIndexedDBHelper.
   void StartFetching(FetchCallback callback) override;
-  void DeleteIndexedDB(const GURL& origin) override;
+  void DeleteIndexedDB(const url::Origin& origin) override;
 
  private:
   ~MockBrowsingDataIndexedDBHelper() override;
 
   FetchCallback callback_;
-  std::map<GURL, bool> origins_;
+  std::map<url::Origin, bool> origins_;
   std::list<content::StorageUsageInfo> response_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBrowsingDataIndexedDBHelper);

@@ -107,7 +107,7 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIOSSettingsHost);
 
-  OSSettingsUI::InitOSWebUIHandlers(profile, web_ui, html_source);
+  InitOSWebUIHandlers(html_source);
 
   // This handler is for chrome://os-settings.
   html_source->AddBoolean("isOSSettings", true);
@@ -220,9 +220,9 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
 
 OSSettingsUI::~OSSettingsUI() = default;
 
-void OSSettingsUI::InitOSWebUIHandlers(Profile* profile,
-                                       content::WebUI* web_ui,
-                                       content::WebUIDataSource* html_source) {
+void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+
   // TODO(jamescook): Sort out how account management is split between Chrome OS
   // and browser settings.
   if (chromeos::IsAccountManagerAvailable(profile)) {
@@ -232,7 +232,7 @@ void OSSettingsUI::InitOSWebUIHandlers(Profile* profile,
         factory->GetAccountManager(profile->GetPath().value());
     DCHECK(account_manager);
 
-    web_ui->AddMessageHandler(
+    web_ui()->AddMessageHandler(
         std::make_unique<chromeos::settings::AccountManagerUIHandler>(
             account_manager, IdentityManagerFactory::GetForProfile(profile)));
     html_source->AddBoolean(
@@ -241,25 +241,25 @@ void OSSettingsUI::InitOSWebUIHandlers(Profile* profile,
             chromeos::prefs::kSecondaryGoogleAccountSigninAllowed));
   }
 
-  web_ui->AddMessageHandler(
+  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::ChangePictureHandler>());
 
-  web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::AccessibilityHandler>(web_ui));
-  web_ui->AddMessageHandler(
+  web_ui()->AddMessageHandler(
+      std::make_unique<chromeos::settings::AccessibilityHandler>(web_ui()));
+  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::AndroidAppsHandler>(profile));
   if (crostini::CrostiniFeatures::Get()->IsUIAllowed(profile,
                                                      /*check_policy=*/false)) {
-    web_ui->AddMessageHandler(
+    web_ui()->AddMessageHandler(
         std::make_unique<chromeos::settings::CrostiniHandler>(profile));
   }
-  web_ui->AddMessageHandler(
-      chromeos::settings::CupsPrintersHandler::Create(web_ui));
-  web_ui->AddMessageHandler(base::WrapUnique(
+  web_ui()->AddMessageHandler(
+      chromeos::settings::CupsPrintersHandler::Create(web_ui()));
+  web_ui()->AddMessageHandler(base::WrapUnique(
       chromeos::settings::DateTimeHandler::Create(html_source)));
-  web_ui->AddMessageHandler(
+  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::FingerprintHandler>(profile));
-  web_ui->AddMessageHandler(
+  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::GoogleAssistantHandler>(profile));
 
   std::unique_ptr<chromeos::settings::KerberosAccountsHandler>
@@ -268,39 +268,39 @@ void OSSettingsUI::InitOSWebUIHandlers(Profile* profile,
               profile);
   if (kerberos_accounts_handler) {
     // Note that the UI is enabled only if Kerberos is enabled.
-    web_ui->AddMessageHandler(std::move(kerberos_accounts_handler));
+    web_ui()->AddMessageHandler(std::move(kerberos_accounts_handler));
   }
 
-  web_ui->AddMessageHandler(
+  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::KeyboardHandler>());
 
   // TODO(crbug/950007): Remove adding WallpaperHandler when
   // SplitSettings complete.
-  web_ui->AddMessageHandler(
-      std::make_unique<chromeos::settings::WallpaperHandler>(web_ui));
+  web_ui()->AddMessageHandler(
+      std::make_unique<chromeos::settings::WallpaperHandler>(web_ui()));
 
   if (plugin_vm::IsPluginVmEnabled(profile)) {
-    web_ui->AddMessageHandler(
+    web_ui()->AddMessageHandler(
         std::make_unique<chromeos::settings::PluginVmHandler>(profile));
   }
-  web_ui->AddMessageHandler(
+  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::PointerHandler>());
-  web_ui->AddMessageHandler(
+  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::StorageHandler>(profile,
                                                            html_source));
-  web_ui->AddMessageHandler(
+  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::StylusHandler>());
-  web_ui->AddMessageHandler(
+  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::InternetHandler>(profile));
-  web_ui->AddMessageHandler(std::make_unique<::settings::TtsHandler>());
-  web_ui->AddMessageHandler(
+  web_ui()->AddMessageHandler(std::make_unique<::settings::TtsHandler>());
+  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::smb_dialog::SmbHandler>(profile));
 
   if (!profile->IsGuestSession()) {
     chromeos::android_sms::AndroidSmsService* android_sms_service =
         chromeos::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(
             profile);
-    web_ui->AddMessageHandler(
+    web_ui()->AddMessageHandler(
         std::make_unique<chromeos::settings::MultideviceHandler>(
             profile->GetPrefs(),
             chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
@@ -311,7 +311,7 @@ void OSSettingsUI::InitOSWebUIHandlers(Profile* profile,
             android_sms_service ? android_sms_service->android_sms_app_manager()
                                 : nullptr));
     if (chromeos::settings::ShouldShowParentalControls(profile)) {
-      web_ui->AddMessageHandler(
+      web_ui()->AddMessageHandler(
           std::make_unique<chromeos::settings::ParentalControlsHandler>(
               profile));
     }
@@ -387,7 +387,7 @@ void OSSettingsUI::InitOSWebUIHandlers(Profile* profile,
   html_source->AddBoolean("havePlayStoreApp", arc::IsPlayStoreAvailable());
 
   html_source->AddBoolean("enablePowerSettings", true);
-  web_ui->AddMessageHandler(
+  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::PowerHandler>(profile->GetPrefs()));
 
   html_source->AddBoolean(

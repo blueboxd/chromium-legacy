@@ -147,6 +147,14 @@ UserContext::GetSamlPasswordAttributes() const {
   return saml_password_attributes_;
 }
 
+bool UserContext::IsLockableManagedGuestSession() const {
+  return !managed_guest_session_launch_extension_id_.empty();
+}
+
+std::string UserContext::GetManagedGuestSessionLaunchExtensionId() const {
+  return managed_guest_session_launch_extension_id_;
+}
+
 bool UserContext::HasCredentials() const {
   return (account_id_.is_valid() && !key_.GetSecret().empty()) ||
          !auth_code_.empty();
@@ -234,6 +242,12 @@ void UserContext::SetSamlPasswordAttributes(
 void UserContext::SetIsUnderAdvancedProtection(
     bool is_under_advanced_protection) {
   is_under_advanced_protection_ = is_under_advanced_protection;
+}
+
+void UserContext::SetManagedGuestSessionLaunchExtensionId(
+    const std::string& managed_guest_session_launch_extension_id) {
+  managed_guest_session_launch_extension_id_ =
+      managed_guest_session_launch_extension_id;
 }
 
 void UserContext::ClearSecrets() {

@@ -316,7 +316,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, KeyboardBounds) {
 
   // Verify that window bounds get updated when Chromevox bounds are shown (so
   // the Chromevox panel does not overlay with the action handler window).
-  ash::ShelfLayoutManager* shelf_layout_manager =
+  ShelfLayoutManager* shelf_layout_manager =
       GetPrimaryShelf()->shelf_layout_manager();
   ASSERT_TRUE(shelf_layout_manager);
 

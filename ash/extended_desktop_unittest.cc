@@ -833,8 +833,8 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   views::Textfield* textfield = new views::Textfield;
   lock_widget->client_view()->AddChildView(textfield);
 
-  ash::Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                           ash::kShellWindowId_LockScreenContainer)
+  Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                      kShellWindowId_LockScreenContainer)
       ->AddChild(lock_widget->GetNativeView());
   lock_widget->Show();
   textfield->RequestFocus();

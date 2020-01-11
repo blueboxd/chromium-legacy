@@ -418,6 +418,11 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kSettingsShowBrowserBanner, true);
   registry->RegisterBooleanPref(prefs::kSettingsShowOSBanner, true);
+
+  // This pref is a per-session pref and must not be synced.
+  registry->RegisterStringPref(prefs::kLoginExtensionApiLaunchExtensionId,
+                               std::string(),
+                               PrefRegistry::NO_REGISTRATION_FLAGS);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {

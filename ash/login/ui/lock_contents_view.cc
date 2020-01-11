@@ -1831,7 +1831,7 @@ void LockContentsView::OnBigUserChanged() {
   }
 
   // http://crbug/866790: After Supervised Users are deprecated, remove this.
-  if (ash::features::IsSupervisedUserDeprecationNoticeEnabled() &&
+  if (features::IsSupervisedUserDeprecationNoticeEnabled() &&
       big_user.basic_user_info.type == user_manager::USER_TYPE_SUPERVISED) {
     base::string16 message = l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_POD_LEGACY_SUPERVISED_EXPIRATION_WARNING);

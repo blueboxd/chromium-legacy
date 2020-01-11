@@ -38,7 +38,6 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 <translation id="2770231113462710648">Promijenite zadani preglednik u:</translation>
 <translation id="2799223571221894425">Ponovo pokreni</translation>
 <translation id="2805036593126168338">Chromium OS nije uspio sinhronizirati vaše lozinke. Ispravi sada.</translation>
-<translation id="2838154144102149890">Za potrebe ažuriranja, Chromium mora prestati raditi na ovom uređaju. Zbog toga drugi korisnici koji su prijavljeni na ovaj računar mogu izgubiti izmjene koje nisu sačuvane.</translation>
 <translation id="2847479871509788944">Ukloni iz Chromiuma...</translation>
 <translation id="2886012850691518054">Nije obavezno: Pomozite nam poboljšati Chromium automatskim slanjem Googleu statistika korištenja i izvještaja o padovima aplikacija.</translation>
 <translation id="2910007522516064972">O &amp;Chromiumu</translation>
@@ -148,7 +147,6 @@ Moguće je da neke funkcije neće biti dostupne. Odredite drugi direktorij profi
 <translation id="6847869444787758381">Chromium vas obavještava ako sigurnost vaših lozinki bude ugrožena</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopirano u Chromium)</translation>
-<translation id="6868056391275687737">Ostali primjerci Chromiuma su pokrenuti. Da ih ažurirate, zatvorite ih.</translation>
 <translation id="6893813176749746474">Chromium je ažuriran, ali ga niste koristili najmanje 30 dana.</translation>
 <translation id="6964305034639999644">Otvori link u anonim&amp;nom prozoru Chromiuma</translation>
 <translation id="6990124437352146030">Chromium treba dopuštenje za pristup mikrofonu za ovu web-lokaciju</translation>
@@ -208,7 +206,6 @@ Chromium ne može vratiti vaše postavke.</translation>
 <translation id="8697124171261953979">Također kontrolira koja stranica će se prikazati kada pokrenete Chromium ili budete pretraživali iz višenamjenskog okvira.</translation>
 <translation id="8704119203788522458">Ovo je vaš Chromium</translation>
 <translation id="8739167630197873875">Kolačići se brišu kada napustite Chromium. Da nastavite sa sinhroniziranjem, promijenite postavku <ph name="COOKIE_SETTINGS_LINK" />.</translation>
-<translation id="8748383401829947534">Napustite sve primjerke Chromiuma.</translation>
 <translation id="8796602469536043152">Chromium traži odobrenje za pristup vašoj kameri i mikrofonu na ovoj web lokaciji</translation>
 <translation id="8803635938069941624">Uslovi korištenja Chromium OS-a</translation>
 <translation id="8821041990367117597">Chromium nije mogao sinkronizirati podatke vašeg računa jer su pojedinosti prijave na račun zastarjele.</translation>

@@ -186,40 +186,45 @@ public class DownloadManagerBridge {
         DownloadQueryResult result = new DownloadQueryResult(downloadId);
         DownloadManager manager =
                 (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
-        Cursor c = manager.query(new DownloadManager.Query().setFilterById(downloadId));
-        if (c == null) {
-            result.downloadStatus = DownloadStatus.CANCELLED;
-            return result;
-        }
-        result.downloadStatus = DownloadStatus.IN_PROGRESS;
-        if (c.moveToNext()) {
-            int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
-            result.downloadStatus = getDownloadStatus(status);
-            result.fileName = c.getString(c.getColumnIndex(DownloadManager.COLUMN_TITLE));
-            result.failureReason = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON));
-            result.lastModifiedTime =
-                    c.getLong(c.getColumnIndex(DownloadManager.COLUMN_LAST_MODIFIED_TIMESTAMP));
-            result.bytesDownloaded =
-                    c.getLong(c.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
-            result.bytesTotal =
-                    c.getLong(c.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
-            String localUri = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
-            if (!TextUtils.isEmpty(localUri)) {
-                Uri uri = Uri.parse(localUri);
-                result.filePath = uri.getPath();
-            }
-        } else {
-            result.downloadStatus = DownloadStatus.CANCELLED;
-        }
-        c.close();
-
         try {
-            result.contentUri = manager.getUriForDownloadedFile(downloadId);
-        } catch (SecurityException e) {
-            Log.e(TAG, "unable to get content URI from DownloadManager");
-        }
+            Cursor c = manager.query(new DownloadManager.Query().setFilterById(downloadId));
+            if (c == null) {
+                result.downloadStatus = DownloadStatus.CANCELLED;
+                return result;
+            }
+            result.downloadStatus = DownloadStatus.IN_PROGRESS;
+            if (c.moveToNext()) {
+                int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
+                result.downloadStatus = getDownloadStatus(status);
+                result.fileName = c.getString(c.getColumnIndex(DownloadManager.COLUMN_TITLE));
+                result.failureReason = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_REASON));
+                result.lastModifiedTime =
+                        c.getLong(c.getColumnIndex(DownloadManager.COLUMN_LAST_MODIFIED_TIMESTAMP));
+                result.bytesDownloaded =
+                        c.getLong(c.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                result.bytesTotal =
+                        c.getLong(c.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+                String localUri = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
+                if (!TextUtils.isEmpty(localUri)) {
+                    Uri uri = Uri.parse(localUri);
+                    result.filePath = uri.getPath();
+                }
+            } else {
+                result.downloadStatus = DownloadStatus.CANCELLED;
+            }
+            c.close();
 
-        result.mimeType = manager.getMimeTypeForDownloadedFile(downloadId);
+            try {
+                result.contentUri = manager.getUriForDownloadedFile(downloadId);
+            } catch (SecurityException e) {
+                Log.e(TAG, "unable to get content URI from DownloadManager");
+            }
+
+            result.mimeType = manager.getMimeTypeForDownloadedFile(downloadId);
+        } catch (Exception e) {
+            result.downloadStatus = DownloadStatus.CANCELLED;
+            Log.e(TAG, "unable to query android DownloadManager", e);
+        }
 
         return result;
     }

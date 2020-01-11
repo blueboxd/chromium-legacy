@@ -38,7 +38,6 @@
 <translation id="2770231113462710648">Стандарт вэб хөтчийг дараах руу өөрчил:</translation>
 <translation id="2799223571221894425">Дахин эхлүүлэх</translation>
 <translation id="2805036593126168338">Chromium үйлдлийн систем таны нууц үгийг синк хийж чадсангүй. Одоо засна уу.</translation>
-<translation id="2838154144102149890">Шинэчлэхийн тулд Chromium-г энэ компьютер дээр ажиллуулахаа зогсоох шаардлагатай. Энэ нь энэ компьютерт нэвтэрсэн бусад хэрэглэгчийг хадгалаагүй өөрчлөлтөө алдахад хүргэж болзошгүй.</translation>
 <translation id="2847479871509788944">Chromium-аас устгах ...</translation>
 <translation id="2886012850691518054">Заавал биш:  Хэрэглээний статистик мэдээ болон алдаа ослын тайланг автоматаар Google рүү илгээж, Chromium-ыг улам сайжруулахад тусална уу.</translation>
 <translation id="2910007522516064972">Chromium-ын тухай</translation>
@@ -146,7 +145,6 @@
 <translation id="6847869444787758381">Хэрэв таны нууц үг алдагдсан байвал Chromium танд мэдэгдэнэ</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium-д хуулсан)</translation>
-<translation id="6868056391275687737">Chromium-н бусад хуулбар ажиллаж байна. Шинэчлэхийн тулд тэдгээрийг хаана уу.</translation>
 <translation id="6893813176749746474">Chromium нь шинэчлэгдсэн байгаа хэдий ч та үүнийг доод тал нь 30 хоногийн турш ашиглаагүй байна.</translation>
 <translation id="6964305034639999644">Холбоосыг Chromium-н нууцлалтай цонхонд нээх</translation>
 <translation id="6990124437352146030">Энэ сайтыг ашиглахын тулд Chromium-д таны микрофонд хандах зөвшөөрөл шаардлагатай</translation>
@@ -204,7 +202,6 @@
 <translation id="8697124171261953979">Энэ нь мөн таныг Chromium-ыг эхлүүлж байх үед эсвэл Omnibox-аас хайлт хийж буй үед гарч ирдэг хуудсыг хянаж байдаг.</translation>
 <translation id="8704119203788522458">Энэ бол таны Chromium.</translation>
 <translation id="8739167630197873875">Та Chromium-с гарах үедээ күүкийг устгана. Синкийг үргэлжлүүлэхийн тулд <ph name="COOKIE_SETTINGS_LINK" />-г өөрчилнө үү.</translation>
-<translation id="8748383401829947534">Chromium-н бүх хуулбараас гарна уу.</translation>
 <translation id="8796602469536043152">Энэ сайтыг ашиглахын тулд Chromium-д таны камер болон микрофонд хандах зөвшөөрөл шаардлагатай</translation>
 <translation id="8803635938069941624">Chromium OS-ын нөхцлүүд</translation>
 <translation id="8821041990367117597">Таны нэвтрэх мэдээлэл хуучирсан учир Chromium таны датаг синхрончилж чадсангүй.</translation>

@@ -342,7 +342,7 @@ SyncPointManager::~SyncPointManager() {
 
 scoped_refptr<SyncPointOrderData> SyncPointManager::CreateSyncPointOrderData() {
   base::AutoLock auto_lock(lock_);
-  SequenceId sequence_id = SequenceId::FromUnsafeValue(next_sequence_id_++);
+  SequenceId sequence_id = sequence_id_generator_.GenerateNextId();
   scoped_refptr<SyncPointOrderData> order_data =
       new SyncPointOrderData(this, sequence_id);
   DCHECK(!order_data_map_.count(sequence_id));

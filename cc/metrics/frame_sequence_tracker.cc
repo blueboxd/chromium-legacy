@@ -417,6 +417,16 @@ FrameSequenceTracker::FrameSequenceTracker(
 FrameSequenceTracker::~FrameSequenceTracker() {
 }
 
+void FrameSequenceTracker::ScheduleTerminate() {
+  termination_status_ = TerminationStatus::kScheduledForTermination;
+  // It could happen that a main/impl frame is generated, but never processed
+  // (didn't report no damage and didn't submit) when this happens.
+  if (last_processed_impl_sequence_ < last_started_impl_sequence_) {
+    impl_throughput().frames_expected -=
+        begin_impl_frame_data_.previous_sequence_delta;
+  }
+}
+
 void FrameSequenceTracker::ReportMetricsForTesting() {
   metrics_->ReportMetrics();
 }
@@ -437,12 +447,12 @@ void FrameSequenceTracker::ReportBeginImplFrame(
 
   DCHECK_EQ(last_started_impl_sequence_, 0u) << TRACKER_DCHECK_MSG;
   DCHECK_EQ(last_processed_impl_sequence_, 0u) << TRACKER_DCHECK_MSG;
-  last_started_impl_sequence_ = args.frame_id.sequence_number;
 
   if (args.type == viz::BeginFrameArgs::NORMAL)
     impl_frames_.insert(args.frame_id);
 #endif
 
+  last_started_impl_sequence_ = args.frame_id.sequence_number;
   if (reset_all_state_) {
     begin_impl_frame_data_ = {};
     begin_main_frame_data_ = {};
@@ -507,9 +517,9 @@ void FrameSequenceTracker::ReportSubmitFrame(
 
 #if DCHECK_IS_ON()
   DCHECK(is_inside_frame_) << TRACKER_DCHECK_MSG;
-  last_processed_impl_sequence_ = ack.frame_id.sequence_number;
 #endif
 
+  last_processed_impl_sequence_ = ack.frame_id.sequence_number;
   if (first_submitted_frame_ == 0)
     first_submitted_frame_ = frame_token;
   last_submitted_frame_ = frame_token;
@@ -587,8 +597,9 @@ void FrameSequenceTracker::ReportFrameEnd(const viz::BeginFrameArgs& args) {
   DCHECK_EQ(last_started_impl_sequence_, last_processed_impl_sequence_)
       << TRACKER_DCHECK_MSG;
   is_inside_frame_ = false;
-  last_started_impl_sequence_ = last_processed_impl_sequence_ = 0;
 #endif
+
+  last_started_impl_sequence_ = last_processed_impl_sequence_ = 0;
 }
 
 void FrameSequenceTracker::ReportFramePresented(
@@ -693,10 +704,7 @@ void FrameSequenceTracker::ReportImplFrameCausedNoDamage(
   if (ShouldIgnoreSequence(ack.frame_id.sequence_number))
     return;
 
-#if DCHECK_IS_ON()
   last_processed_impl_sequence_ = ack.frame_id.sequence_number;
-#endif
-
   // If there is no damage for this frame (and no frame is submitted), then the
   // impl-sequence needs to be reset. However, this should be done after the
   // processing the frame is complete (i.e. in ReportFrameEnd()), so that other

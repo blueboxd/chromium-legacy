@@ -26,6 +26,7 @@ class ASH_EXPORT ShelfButton : public views::Button {
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
 
   Shelf* shelf() { return shelf_; }
+  const Shelf* shelf() const { return shelf_; }
 
  protected:
   ShelfButtonDelegate* shelf_button_delegate() {

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.init;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.SystemClock;
 import android.text.format.DateUtils;
@@ -69,6 +68,8 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.photo_picker.PhotoPickerDialog;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
@@ -109,12 +110,10 @@ import java.util.Locale;
 public class ProcessInitializationHandler {
     private static final String TAG = "ProcessInitHandler";
 
-    private static final String SESSIONS_UUID_PREF_KEY = "chromium.sync.sessions.id";
     private static final String DEV_TOOLS_SERVER_SOCKET_PREFIX = "chrome";
 
     /** Prevents race conditions when deleting snapshot database. */
     private static final Object SNAPSHOT_DATABASE_LOCK = new Object();
-    private static final String SNAPSHOT_DATABASE_REMOVED = "snapshot_database_removed";
     private static final String SNAPSHOT_DATABASE_NAME = "snapshots.db";
 
     private static ProcessInitializationHandler sInstance;
@@ -183,7 +182,8 @@ public class ProcessInitializationHandler {
         // in the SyncController constructor.
         UniqueIdentificationGeneratorFactory.registerGenerator(SyncController.GENERATOR_ID,
                 new UuidBasedUniqueIdentificationGenerator(
-                        application, SESSIONS_UUID_PREF_KEY), false);
+                        application, ChromePreferenceKeys.SYNC_SESSIONS_UUID),
+                false);
 
         // Set up the DownloadCollectionBridge early as display names may be immediately retrieved
         // after native is loaded.
@@ -640,10 +640,10 @@ public class ProcessInitializationHandler {
     @WorkerThread
     private void removeSnapshotDatabase() {
         synchronized (SNAPSHOT_DATABASE_LOCK) {
-            SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-            if (!prefs.getBoolean(SNAPSHOT_DATABASE_REMOVED, false)) {
+            SharedPreferencesManager prefs = SharedPreferencesManager.getInstance();
+            if (!prefs.readBoolean(ChromePreferenceKeys.SNAPSHOT_DATABASE_REMOVED, false)) {
                 ContextUtils.getApplicationContext().deleteDatabase(SNAPSHOT_DATABASE_NAME);
-                prefs.edit().putBoolean(SNAPSHOT_DATABASE_REMOVED, true).apply();
+                prefs.writeBoolean(ChromePreferenceKeys.SNAPSHOT_DATABASE_REMOVED, true);
             }
         }
     }

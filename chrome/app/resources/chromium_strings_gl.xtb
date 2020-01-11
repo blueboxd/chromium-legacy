@@ -38,7 +38,6 @@
 <translation id="2770231113462710648">Cambiar o navegador predeterminado a:</translation>
 <translation id="2799223571221894425">Iniciar de novo</translation>
 <translation id="2805036593126168338">Chromium OS non puido sincronizar os teus contrasinais. Corríxeo agora.</translation>
-<translation id="2838154144102149890">Para aplicar a actualización, é necesario que Chromium deixe de executarse neste ordenador, o que pode provocar que outros usuarios que iniciasen sesión nel perdan os cambios non gardados.</translation>
 <translation id="2847479871509788944">Eliminar de Chromium...</translation>
 <translation id="2886012850691518054">Opcional: axuda a mellorar Chromium mediante o envío automático de estatísticas de uso e informes de erros a Google.</translation>
 <translation id="2910007522516064972">Acerca de &amp;Chromium</translation>
@@ -148,7 +147,6 @@
 <translation id="6847869444787758381">Chromium permíteche saber se os teus contrasinais están en risco nalgún momento</translation>
 <translation id="6857782730669500492">Chromium: <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiouse en Chromium)</translation>
-<translation id="6868056391275687737">Estanse executando outras instancias de Chromium. Para aplicar a actualización, péchaas.</translation>
 <translation id="6893813176749746474">Actualizouse Chromium, pero non o utilizas desde hai polo menos 30 días.</translation>
 <translation id="6964305034639999644">Abrir ligazón nunha ventá do modo de incó&amp;gnito de Chromium</translation>
 <translation id="6990124437352146030">Chromium necesita permiso para acceder ao micrófono neste sitio</translation>
@@ -208,7 +206,6 @@ Chromium non pode recuperar a túa configuración.</translation>
 <translation id="8697124171261953979">Tamén controla a páxina que se mostra ao iniciar Chromium ou ao realizar unha busca desde Omnibox.</translation>
 <translation id="8704119203788522458">Este é o teu Chromium</translation>
 <translation id="8739167630197873875">As cookies bórranse ao pechar Chromium. Para seguir coa sincronización, cambia esta <ph name="COOKIE_SETTINGS_LINK" />.</translation>
-<translation id="8748383401829947534">Saír de todas as instancias de Chromium.</translation>
 <translation id="8796602469536043152">Chromium necesita permiso para acceder á cámara e ao micrófono neste sitio</translation>
 <translation id="8803635938069941624">Condicións de Chromium OS</translation>
 <translation id="8821041990367117597">Chromium non puido sincronizar os teus datos porque os detalles de inicio de sesión da túa conta están desactualizados.</translation>

@@ -1213,7 +1213,7 @@ TEST_P(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
   wm::ActivateWindow(dragged_window.get());
   ASSERT_TRUE(Shell::Get()->toplevel_window_event_handler()->AttemptToStartDrag(
       dragged_window.get(), gfx::PointF(), HTCAPTION,
-      ash::ToplevelWindowEventHandler::EndClosure()));
+      ToplevelWindowEventHandler::EndClosure()));
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewController::State::kLeftSnapped,
             split_view_controller()->state());
@@ -1255,7 +1255,7 @@ TEST_P(TabletModeControllerTest,
   wm::ActivateWindow(dragged_window.get());
   ASSERT_TRUE(Shell::Get()->toplevel_window_event_handler()->AttemptToStartDrag(
       dragged_window.get(), gfx::PointF(), HTCAPTION,
-      ash::ToplevelWindowEventHandler::EndClosure()));
+      ToplevelWindowEventHandler::EndClosure()));
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewController::State::kLeftSnapped,
             split_view_controller()->state());

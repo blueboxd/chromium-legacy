@@ -53,7 +53,6 @@
 #include "content/common/page_messages.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
-#include "content/common/swapped_out_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -224,7 +223,6 @@ RenderViewHostImpl::RenderViewHostImpl(
     : render_widget_host_(std::move(widget)),
       delegate_(delegate),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
-      is_swapped_out_(swapped_out),
       routing_id_(routing_id),
       main_frame_routing_id_(main_frame_routing_id) {
   DCHECK(instance_.get());
@@ -376,8 +374,7 @@ bool RenderViewHostImpl::CreateRenderView(
 
   // TODO(danakj): Make the visual_properties optional in the message.
   if (proxy_route_id == MSG_ROUTING_NONE) {
-    params->visual_properties = GetWidget()->GetVisualProperties();
-    GetWidget()->SetInitialVisualProperties(params->visual_properties);
+    params->visual_properties = GetWidget()->GetInitialVisualProperties();
   }
 
   // The RenderView is owned by this process. This call must be accompanied by a
@@ -801,23 +798,6 @@ bool RenderViewHostImpl::SuddenTerminationAllowed() const {
 // RenderViewHostImpl, IPC message handlers:
 
 bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
-  // Filter out most IPC messages if this renderer is swapped out.
-  // We still want to handle certain ACKs to keep our state consistent.
-  if (is_swapped_out_) {
-    if (!SwappedOutMessages::CanHandleWhileSwappedOut(msg)) {
-      // If this is a synchronous message and we decided not to handle it,
-      // we must send an error reply, or else the renderer will be stuck
-      // and won't respond to future requests.
-      if (msg.is_sync()) {
-        IPC::Message* reply = IPC::SyncMessage::GenerateReply(&msg);
-        reply->set_reply_error();
-        Send(reply);
-      }
-      // Don't continue looking for someone to handle it.
-      return true;
-    }
-  }
-
   // Crash reports trigerred by the IPC messages below should be associated
   // with URL of the main frame.
   ScopedActiveURL scoped_active_url(this);

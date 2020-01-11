@@ -292,24 +292,6 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
         timing.paint_timing->first_meaningful_paint.value().InMilliseconds());
   }
   const page_load_metrics::ContentfulPaintTimingInfo&
-      main_frame_largest_image_paint =
-          largest_contentful_paint_handler_.MainFrameLargestImagePaint();
-  if (!main_frame_largest_image_paint.IsEmpty() &&
-      WasStartedInForegroundOptionalEventInForeground(
-          main_frame_largest_image_paint.Time(), GetDelegate())) {
-    builder.SetExperimental_PaintTiming_NavigationToLargestImagePaint(
-        timing.paint_timing->largest_image_paint.value().InMilliseconds());
-  }
-  const page_load_metrics::ContentfulPaintTimingInfo&
-      main_frame_largest_text_paint =
-          largest_contentful_paint_handler_.MainFrameLargestTextPaint();
-  if (!main_frame_largest_text_paint.IsEmpty() &&
-      WasStartedInForegroundOptionalEventInForeground(
-          main_frame_largest_text_paint.Time(), GetDelegate())) {
-    builder.SetExperimental_PaintTiming_NavigationToLargestTextPaint(
-        timing.paint_timing->largest_text_paint.value().InMilliseconds());
-  }
-  const page_load_metrics::ContentfulPaintTimingInfo&
       main_frame_largest_contentful_paint =
           largest_contentful_paint_handler_.MainFrameLargestContentfulPaint();
   if (!main_frame_largest_contentful_paint.IsEmpty() &&

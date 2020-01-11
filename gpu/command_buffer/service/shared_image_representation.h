@@ -78,11 +78,36 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
   SharedImageBacking* backing() const { return backing_; }
   bool has_context() const { return has_context_; }
 
+  // Helper class for derived classes' Scoped*Access objects. Has tracking to
+  // ensure a Scoped*Access does not outlive the representation it's associated
+  // with.
+  template <typename RepresentationClass>
+  class ScopedAccessBase {
+   public:
+    ScopedAccessBase(RepresentationClass* representation)
+        : representation_(representation) {
+      DCHECK(!representation_->has_scoped_access_);
+      representation_->has_scoped_access_ = true;
+    }
+    ~ScopedAccessBase() {
+      DCHECK(representation_->has_scoped_access_);
+      representation_->has_scoped_access_ = false;
+    }
+
+    RepresentationClass* representation() { return representation_; }
+
+   private:
+    RepresentationClass* const representation_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedAccessBase);
+  };
+
  private:
   SharedImageManager* const manager_;
   SharedImageBacking* const backing_;
   MemoryTypeTracker* const tracker_;
   bool has_context_ = true;
+  bool has_scoped_access_ = false;
 };
 
 class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
@@ -106,20 +131,16 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
 class GPU_GLES2_EXPORT SharedImageRepresentationGLTextureBase
     : public SharedImageRepresentation {
  public:
-  class ScopedAccess {
+  class ScopedAccess
+      : public ScopedAccessBase<SharedImageRepresentationGLTextureBase> {
    public:
     ScopedAccess(util::PassKey<SharedImageRepresentationGLTextureBase> pass_key,
                  SharedImageRepresentationGLTextureBase* representation)
-        : representation_(representation) {}
+        : ScopedAccessBase(representation) {}
     ~ScopedAccess() {
-      representation_->UpdateClearedStateOnEndAccess();
-      representation_->EndAccess();
+      representation()->UpdateClearedStateOnEndAccess();
+      representation()->EndAccess();
     }
-
-   private:
-    SharedImageRepresentationGLTextureBase* representation_ = nullptr;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedAccess);
   };
 
   SharedImageRepresentationGLTextureBase(SharedImageManager* manager,
@@ -183,7 +204,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
 class GPU_GLES2_EXPORT SharedImageRepresentationSkia
     : public SharedImageRepresentation {
  public:
-  class GPU_GLES2_EXPORT ScopedWriteAccess {
+  class GPU_GLES2_EXPORT ScopedWriteAccess
+      : public ScopedAccessBase<SharedImageRepresentationSkia> {
    public:
     ScopedWriteAccess(util::PassKey<SharedImageRepresentationSkia> pass_key,
                       SharedImageRepresentationSkia* representation,
@@ -193,13 +215,11 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
     SkSurface* surface() const { return surface_.get(); }
 
    private:
-    SharedImageRepresentationSkia* const representation_;
     sk_sp<SkSurface> surface_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedWriteAccess);
   };
 
-  class GPU_GLES2_EXPORT ScopedReadAccess {
+  class GPU_GLES2_EXPORT ScopedReadAccess
+      : public ScopedAccessBase<SharedImageRepresentationSkia> {
    public:
     ScopedReadAccess(util::PassKey<SharedImageRepresentationSkia> pass_key,
                      SharedImageRepresentationSkia* representation,
@@ -211,10 +231,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
     }
 
    private:
-    SharedImageRepresentationSkia* const representation_;
     sk_sp<SkPromiseImageTexture> promise_image_texture_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedReadAccess);
   };
 
   SharedImageRepresentationSkia(SharedImageManager* manager,
@@ -280,7 +297,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationDawn
                                 MemoryTypeTracker* tracker)
       : SharedImageRepresentation(manager, backing, tracker) {}
 
-  class GPU_GLES2_EXPORT ScopedAccess {
+  class GPU_GLES2_EXPORT ScopedAccess
+      : public ScopedAccessBase<SharedImageRepresentationDawn> {
    public:
     ScopedAccess(util::PassKey<SharedImageRepresentationDawn> pass_key,
                  SharedImageRepresentationDawn* representation,
@@ -290,10 +308,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationDawn
     WGPUTexture texture() const { return texture_; }
 
    private:
-    SharedImageRepresentationDawn* representation_ = nullptr;
     WGPUTexture texture_ = 0;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedAccess);
   };
 
   // Calls BeginAccess and returns a ScopedAccess object which will EndAccess
@@ -318,24 +333,19 @@ class GPU_GLES2_EXPORT SharedImageRepresentationOverlay
                                    MemoryTypeTracker* tracker)
       : SharedImageRepresentation(manager, backing, tracker) {}
 
-  class ScopedReadAccess {
+  class ScopedReadAccess
+      : public ScopedAccessBase<SharedImageRepresentationOverlay> {
    public:
     ScopedReadAccess(util::PassKey<SharedImageRepresentationOverlay> pass_key,
                      SharedImageRepresentationOverlay* representation,
-                     gl::GLImage* gl_image)
-        : representation_(representation), gl_image_(gl_image) {}
-    ~ScopedReadAccess() {
-      if (representation_)
-        representation_->EndReadAccess();
-    }
+                     gl::GLImage* gl_image);
+    ~ScopedReadAccess() { representation()->EndReadAccess(); }
 
     gl::GLImage* gl_image() const {
-      DCHECK(representation_);
       return gl_image_;
     }
 
    private:
-    SharedImageRepresentationOverlay* representation_;
     gl::GLImage* gl_image_;
   };
 

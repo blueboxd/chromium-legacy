@@ -76,7 +76,6 @@ template("chrome_bundle") {
                              "proguard_android_sdk_dep",
                              "proguard_jar_path",
                              "sign_bundle",
-                             "static_library_proguard_disabled",
                              "static_library_provider",
                              "static_library_synchronized_proguard",
                              "verify_proguard_flags",

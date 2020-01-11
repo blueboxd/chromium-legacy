@@ -1886,7 +1886,6 @@
 <translation id="3635353578505343390">Изпращане на отзиви до Google</translation>
 <translation id="3636096452488277381">Здравейте, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% – остава/т <ph name="TIME" /></translation>
-<translation id="3637561406135221044">Файловете се сканират за чувствителни данни...</translation>
 <translation id="3637682276779847508">SIM картата ви ще бъде деактивирана за постоянно, ако не успеете да въведете
 правилния PUK код</translation>
 <translation id="3640214691812501263">Да се добави ли <ph name="EXTENSION_NAME" /> за <ph name="USER_NAME" />?</translation>

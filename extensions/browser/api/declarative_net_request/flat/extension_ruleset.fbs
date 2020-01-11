@@ -18,6 +18,7 @@ enum ActionType : ubyte {
   redirect,
   upgrade_scheme,
   remove_headers,
+  allow_all_requests,
   /// Number of actions. Must be the last entry.
   count
 }
@@ -79,8 +80,12 @@ table UrlRuleMetadata {
 /// the |index_list| vector.
 enum IndexType : ubyte {
   /// Index for rules that are evaluated during the onBeforeRequest stage of a
-  /// request.
-  before_request = 0,
+  /// request, excluding allowAllRequests rules.
+  before_request_except_allow_all_requests = 0,
+
+  /// Index for allowAllRequests rule. We have a separate index for these rules
+  /// since they need to be evaluated separately when a navigation commits.
+  allow_all_requests,
 
   remove_cookie_header,
   remove_referer_header,

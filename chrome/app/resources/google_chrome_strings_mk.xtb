@@ -20,7 +20,6 @@
 <translation id="1553358976309200471">Ажурирај го Chrome</translation>
 <translation id="1587223624401073077">Google Chrome ја користи вашата камера.</translation>
 <translation id="1587325591171447154">Датотеката <ph name="FILE_NAME" /> е опасна, па затоа Chrome ја блокираше.</translation>
-<translation id="1590588151039584890">За да се ажурира, Chrome треба да престане да се извршува на овој компјутер. Ова може да предизвика другите корисници најавени на компјутеров да ги загубат незачуваните промени.</translation>
 <translation id="1619887657840448962">За Chrome да биде побезбеден, ја оневозможивме следнава екстензија што не е наведена во <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е додадена без ваше знаење.</translation>
 <translation id="1628000112320670027">Добијте помош за Chrome</translation>
 <translation id="1635734105302489219">Ги бришете колачињата кога ќе го напуштите Chrome. За да продолжите со синхронизирање, променете го ова на <ph name="COOKIE_SETTINGS_LINK" />.</translation>
@@ -145,7 +144,6 @@
 <translation id="5430073640787465221">Вашата датотека со претпочитани вредности е оштетена или неважечка.
 
 Google Chrome не може да ги обнови вашите поставки.</translation>
-<translation id="5543953544073077331">Се извршуваат други примероци на Chrome. За да ажурирате, затворете ги.</translation>
 <translation id="556024056938947818">Google Chrome се обидува да прикаже лозинки.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">Ако некоја поставка не се прикажува на страницава, погледнете во <ph name="LINK_BEGIN" />
@@ -195,7 +193,6 @@ Google Chrome не може да ги обнови вашите поставки
 <translation id="7408085963519505752">Услови на Chrome OS</translation>
 <translation id="7419046106786626209">Chrome ОС не може да ги синхронизира вашите податоци бидејќи синхронизацијата не е достапна за вашиот домен.</translation>
 <translation id="7486227612705979895">Chrome ќе пристапува до Drive за да дава предлози во лентата за адреси</translation>
-<translation id="7531671357096394523">Затворете ги сите примероци на Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">За да видите дали уредот ви е ажуриран, одете на <ph name="LINK_BEGIN" />Поставки за Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Компјутеров веќе нема да добива ажурирања на Google Chrome затоа што Mac OS X 10.9 веќе не е поддржан.</translation>

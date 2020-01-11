@@ -674,7 +674,7 @@ exsltFuncResultComp (xsltStylesheetPtr style, xmlNodePtr inst,
      */
     sel = xmlGetNsProp(inst, (const xmlChar *) "select", NULL);
     if (sel != NULL) {
-	ret->select = xmlXPathCompile (sel);
+	ret->select = xsltXPathCompileFlags(style, sel, 0);
 	xmlFree(sel);
     }
     /*

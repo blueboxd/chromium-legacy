@@ -26,6 +26,20 @@ TEST(IdType, NormalValueIsValid) {
   EXPECT_FALSE(foo_id.is_null());
 }
 
+TEST(IdType, Generator) {
+  FooId::Generator foo_id_generator;
+  for (int i = 1; i < 10; i++)
+    EXPECT_EQ(foo_id_generator.GenerateNextId(), FooId::FromUnsafeValue(i));
+}
+
+TEST(IdType, GeneratorWithNonZeroInvalidValue) {
+  using TestId = IdType<class TestIdTag, int, -1>;
+
+  TestId::Generator test_id_generator;
+  for (int i = 0; i < 10; i++)
+    EXPECT_EQ(test_id_generator.GenerateNextId(), TestId::FromUnsafeValue(i));
+}
+
 class IdTypeSpecificValueTest : public ::testing::TestWithParam<int> {
  protected:
   FooId test_id() { return FooId::FromUnsafeValue(GetParam()); }

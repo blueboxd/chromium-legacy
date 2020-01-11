@@ -291,9 +291,7 @@ class CC_EXPORT FrameSequenceTracker {
     return metrics_->main_throughput();
   }
 
-  void ScheduleTerminate() {
-    termination_status_ = TerminationStatus::kScheduledForTermination;
-  }
+  void ScheduleTerminate();
 
   struct TrackedFrameData {
     // Represents the |BeginFrameArgs::source_id| and
@@ -393,6 +391,9 @@ class CC_EXPORT FrameSequenceTracker {
   // Report the throughput metrics every 5 seconds.
   const base::TimeDelta time_delta_to_report_ = base::TimeDelta::FromSeconds(5);
 
+  uint64_t last_started_impl_sequence_ = 0;
+  uint64_t last_processed_impl_sequence_ = 0;
+
 #if DCHECK_IS_ON()
   bool is_inside_frame_ = false;
 
@@ -405,9 +406,6 @@ class CC_EXPORT FrameSequenceTracker {
   // Note that |frame_sequence_trace_| is only defined and populated
   // when DCHECK is on.
   std::stringstream frame_sequence_trace_;
-
-  uint64_t last_started_impl_sequence_ = 0;
-  uint64_t last_processed_impl_sequence_ = 0;
 
   uint64_t last_started_main_sequence_ = 0;
 

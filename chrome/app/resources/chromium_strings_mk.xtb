@@ -38,7 +38,6 @@
 <translation id="2770231113462710648">Променете го стандардниот прелистувач во:</translation>
 <translation id="2799223571221894425">Рестартирај</translation>
 <translation id="2805036593126168338">Chromium OS не можеше да ги синхронизира вашите лозинки. Поправете сега.</translation>
-<translation id="2838154144102149890">За да се ажурира, Chromium треба да престане да се извршува на овој компјутер. Ова може да предизвика другите корисници најавени на компјутеров да ги загубат незачуваните промени.</translation>
 <translation id="2847479871509788944">Отстрани од Chromium</translation>
 <translation id="2886012850691518054">Изборно: помогнете да го подобриме Chromium со автоматско испраќање статистика на користење и извештаи за падови на Google.</translation>
 <translation id="2910007522516064972">За &amp;Chromium</translation>
@@ -148,7 +147,6 @@
 <translation id="6847869444787758381">Chromium ве известува дали вашите лозинки се компромитирани</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (копирана во Chromium)</translation>
-<translation id="6868056391275687737">Се извршуваат други примероци на Chromium. За да ажурирате, затворете ги.</translation>
 <translation id="6893813176749746474">Chromium се ажурираше, но не сте го употребиле најмалку 30 дена.</translation>
 <translation id="6964305034639999644">Отвори го линкот во инко&amp;гнито прозорец на Chromium</translation>
 <translation id="6990124437352146030">На Chromium му треба дозвола за да пристапи до микрофонот за сајтов</translation>
@@ -208,7 +206,6 @@ Chromium не може да ги обнови вашите поставки.</tr
 <translation id="8697124171261953979">Контролира и која страница се прикажува кога го стартувате Chromium или ако пребарувате од лентата за адреси.</translation>
 <translation id="8704119203788522458">Ова е вашиот Chromium</translation>
 <translation id="8739167630197873875">Ги бришете колачињата кога ќе го напуштите Chromium. За да продолжите со синхронизирање, променете го ова на <ph name="COOKIE_SETTINGS_LINK" />.</translation>
-<translation id="8748383401829947534">Затворете ги сите примероци на Chromium.</translation>
 <translation id="8796602469536043152">На Chromium му треба дозвола за да пристапи до камерата и микрофонот за сајтов</translation>
 <translation id="8803635938069941624">Услови на Chromium OS</translation>
 <translation id="8821041990367117597">Chromium не може да ги синхронизира вашите податоци бидејќи вашите информации за пријавување на сметката се застарени.</translation>

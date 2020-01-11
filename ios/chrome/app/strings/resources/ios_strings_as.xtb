@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">ইনক’গনিট’ ম’ডত সন্ধান কৰক</translation>
 <translation id="277771892408211951">ভাষা বাছনি কৰক</translation>
 <translation id="2780046210906776326">কোনো ইমেইল একাউণ্ট নাই</translation>
+<translation id="2781331604911854368">অন আছে</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">টেব সলনি কৰোঁতা এৰক</translation>
 <translation id="2830972654601096923">ঠিকনা পৰিচালনা কৰক...</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">খুলি ৰখা টেব</translation>
 <translation id="3277021493514034324">ছাইটৰ ঠিকনা প্ৰতিলিপি কৰা হৈছে</translation>
 <translation id="3290875554372353449">একাউণ্ট বাছনি কৰক</translation>
+<translation id="3311748811247479259">অফ আছে</translation>
 <translation id="3324193307694657476">ঠিকনা ২</translation>
 <translation id="3329904751041170572">ছার্ভাৰত সংযোগ কৰিব পৰা নগ’ল।</translation>
 <translation id="3335947283844343239">বন্ধ কৰা টেব পুনৰ খোলক</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">আপোনাৰ টেববোৰ ছিংক কৰি থকা হৈছে...</translation>
 <translation id="3493531032208478708">পৰামৰ্শ দিয়া সমলৰ বিষয়ে <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" /></translation>
 <translation id="3494788280727468875">ব্ৰাউজিং ডেটা মচাটো নিশ্চিত কৰক</translation>
+<translation id="35083190962747987">${url} খোলক</translation>
 <translation id="3519193562722059437">ৱেব ব্ৰাউজ কৰিবলৈ এটা টেব খোলক।</translation>
 <translation id="3527085408025491307">ফ’ল্ডাৰ</translation>
 <translation id="3529024052484145543">সুৰক্ষিত নহয়</translation>
@@ -301,6 +304,7 @@
 <translation id="5062321486222145940">Google Drive ইনষ্টল কৰক</translation>
 <translation id="5083464117946352670">ফাইলৰ আকাৰ নির্ধাৰণ কৰিব পৰা নাই।</translation>
 <translation id="5094827893301452931">টুইট সম্পূর্ণ হ'ল</translation>
+<translation id="5118764316110575523">অফ আছে</translation>
 <translation id="5127805178023152808">ছিংক অফ কৰা আছে</translation>
 <translation id="5132942445612118989">আপোনাৰ পাছৱর্ড, ইতিহাস আৰু অধিক সকলো ডিভাইচতে ছিংক কৰক</translation>
 <translation id="5140288047769711648">Chromeএ আপোনাৰ বাবে এই পাছৱৰ্ডটো মনত ৰাখিব। আপুনি ইয়াক মনত ৰাখিব নালাগে।</translation>
@@ -363,6 +367,7 @@
 <translation id="5979837087407522202">পাছৱর্ডসমূহ সন্ধান কৰক</translation>
 <translation id="5982717868370722439">ইতিমধ্যে থকা ডেটাখিনি <ph name="USER_EMAIL" />ত যোগ কৰক।</translation>
 <translation id="5984222099446776634">শেহতীয়াকৈ চোৱা</translation>
+<translation id="5988851877894965432">Chromeত URLসমূহ খোলক</translation>
 <translation id="6012140227487808125">এনক্ৰিপ্ট কৰি থকা হৈছে…</translation>
 <translation id="6021332621416007159">ইয়াৰ জৰিয়তে খোলক</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -509,6 +514,7 @@
 <translation id="7961015016161918242">কেতিয়াও নহয়</translation>
 <translation id="7971521879845308059">পপ-আপ অৱৰোধ কৰক</translation>
 <translation id="7982789257301363584">নেটৱৰ্ক</translation>
+<translation id="800361585186029508">ইনপুট কৰা URLসমূহ Google Chromeত খোলে।</translation>
 <translation id="8007420562015504427">ইনক’গনিট’ ম’ডত সন্ধান কৰক</translation>
 <translation id="8019783059653722575">ইয়াৰ জৰিয়তে আপুনি ফট’ ছেভ কৰিব পাৰে আৰু আপল’ড কৰিব পাৰে৷</translation>
 <translation id="802154636333426148">ডাউনল’ড কৰিব পৰা নগ’ল</translation>

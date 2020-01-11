@@ -32,7 +32,6 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/browser/mojo_safe_browsing_impl.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
-#include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
@@ -339,15 +338,3 @@ void ChromeContentBrowserClient::BindHostReceiverForRenderer(
   }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
-
-void ChromeContentBrowserClient::BindHostReceiverForRendererOnIOThread(
-    int render_process_id,
-    mojo::GenericPendingReceiver* receiver) {
-  if (auto host_receiver =
-          receiver->As<startup_metric_utils::mojom::StartupMetricHost>()) {
-    startup_metric_utils::StartupMetricHostImpl::Create(
-        std::move(host_receiver));
-    return;
-  }
-}
-

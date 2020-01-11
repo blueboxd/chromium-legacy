@@ -660,7 +660,6 @@ class CONTENT_EXPORT RenderFrameImpl
   service_manager::InterfaceProvider* GetInterfaceProvider() override;
   blink::AssociatedInterfaceProvider* GetRemoteNavigationAssociatedInterfaces()
       override;
-  void DidAccessInitialDocument() override;
   blink::WebLocalFrame* CreateChildFrame(
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,
@@ -1571,9 +1570,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Only used when PerNavigationMojoInterface is enabled.
   std::unique_ptr<NavigationClient> navigation_client_impl_;
-
-  // Indicates whether |didAccessInitialDocument| was called.
-  bool has_accessed_initial_document_;
 
   // Creates various media clients.
   MediaFactory media_factory_;

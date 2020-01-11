@@ -82,6 +82,10 @@ bool WebViewPasswordManagerDriver::IsMainFrame() const {
   return true;
 }
 
+bool WebViewPasswordManagerDriver::CanShowAutofillUi() const {
+  return true;
+}
+
 const GURL& WebViewPasswordManagerDriver::GetLastCommittedURL() const {
   return delegate_.lastCommittedURL;
 }

@@ -18,7 +18,6 @@
 <translation id="1553358976309200471">Актуализиране на Chrome</translation>
 <translation id="1587223624401073077">Google Chrome използва камерата ви.</translation>
 <translation id="1587325591171447154">Chrome блокира „<ph name="FILE_NAME" />“, тъй като файлът е опасен.</translation>
-<translation id="1590588151039584890">За да се извърши актуализацията, Chrome трябва да спре работа на този компютър. Това може да доведе до изтриване на незапазените промени на други потребители, които са влезли в профила си на този компютър.</translation>
 <translation id="1619887657840448962">За да направим Chrome по-безопасен, деактивирахме следното разширение, което липсва от <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
 <translation id="1628000112320670027">Получаване на помощ за Chrome</translation>
 <translation id="1635734105302489219">„Бисквитките“ ви се изчистват, когато излизате от Chrome. За да продължи синхронизирането, променете тази <ph name="COOKIE_SETTINGS_LINK" />.</translation>
@@ -138,7 +137,6 @@
 <translation id="5386244825306882791">То също контролира коя страница се показва при стартиране на Chrome или при търсене от полето за всичко.</translation>
 <translation id="5394833366792865639">Споделяне на раздел в Chrome</translation>
 <translation id="5430073640787465221">Файлът с предпочитанията ви е повреден или невалиден. Google Chrome не може да възстанови настройките ви.</translation>
-<translation id="5543953544073077331">Изпълняват се други копия на Chrome. Затворете ги, за да актуализирате.</translation>
 <translation id="556024056938947818">Google Chrome опитва да покаже паролите.</translation>
 <translation id="5566025111015594046">Google Chrome (входящ трафик за mDNS)</translation>
 <translation id="5657226924540934362">Ако дадена настройка не се показва на тази страница, потърсете в <ph name="LINK_BEGIN" />настройките на Chrome OS<ph name="LINK_END" /></translation>
@@ -187,7 +185,6 @@
 <translation id="7408085963519505752">Общи условия на Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS не можа да синхронизира данните ви, защото тази функция не е налице за домейна ви.</translation>
 <translation id="7486227612705979895">Chrome ще осъществява достъп до хранилището ви в Диск, за да извежда предложения в адресната лента</translation>
-<translation id="7531671357096394523">Затваряне на всички копия на Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">За да разберете дали устройството ви е актуално, отворете <ph name="LINK_BEGIN" />настройките на Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Занапред този компютър няма да получава актуализации на Google Chrome, защото Mac OS X 10.9 вече не се поддържа.</translation>

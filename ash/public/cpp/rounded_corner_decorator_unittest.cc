@@ -21,7 +21,7 @@ TEST_F(RoundedCornerDecoratorTest, RoundedCornerMaskProperlyInvalidatesItself) {
   constexpr gfx::RoundedCornersF kRadii(kCornerRadius);
   std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithBounds(
       gfx::Rect(100, 100, 100, 100), root_window()));
-  auto decorator = std::make_unique<ash::RoundedCornerDecorator>(
+  auto decorator = std::make_unique<RoundedCornerDecorator>(
       window.get(), window.get(), window->layer(), kCornerRadius);
 
   // Confirm a mask layer exists and the decorator is valid.
@@ -44,7 +44,7 @@ TEST_F(RoundedCornerDecoratorTest,
   constexpr gfx::RoundedCornersF kRadii(kCornerRadius);
   std::unique_ptr<aura::Window> window(aura::test::CreateTestWindowWithBounds(
       gfx::Rect(100, 100, 100, 100), root_window()));
-  auto decorator = std::make_unique<ash::RoundedCornerDecorator>(
+  auto decorator = std::make_unique<RoundedCornerDecorator>(
       window.get(), window.get(), window->layer(), kCornerRadius);
 
   ASSERT_FALSE(window->layer()->layer_mask_layer());

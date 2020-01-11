@@ -220,7 +220,8 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   std::unique_ptr<net::HttpCache::BackendFactory> main_backend(
       new net::HttpCache::DefaultBackend(
           net::DISK_CACHE, net::CACHE_BACKEND_BLOCKFILE,
-          lazy_params_->cache_path, lazy_params_->cache_max_size));
+          lazy_params_->cache_path, lazy_params_->cache_max_size,
+          /*hard_reset=*/false));
   http_network_session_ = CreateHttpNetworkSession(*profile_params);
   main_http_factory_ = CreateMainHttpFactory(http_network_session_.get(),
                                              std::move(main_backend));

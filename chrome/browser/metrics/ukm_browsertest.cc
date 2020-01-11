@@ -9,6 +9,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
@@ -16,7 +18,9 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
+#include "chrome/browser/metrics/testing/demographic_metrics_test_utils.h"
 #include "chrome/browser/metrics/testing/metrics_reporting_pref_helper.h"
+#include "chrome/browser/metrics/testing/sync_metrics_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -30,6 +34,7 @@
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/metrics/demographic_metrics_provider.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -54,6 +59,7 @@
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/network/test/test_network_quality_tracker.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "url/url_constants.h"
 
@@ -211,7 +217,7 @@ class UkmBrowserTestBase : public SyncTest {
   ukm::Report GetUkmReport() {
     EXPECT_TRUE(HasUnsentUkmLogs());
 
-    metrics::UnsentLogStore* log_store =
+    UnsentLogStore* log_store =
         ukm_service()->reporting_service_.ukm_log_store();
     if (log_store->has_staged_log()) {
       // For testing purposes, we are examining the content of a staged log
@@ -231,36 +237,10 @@ class UkmBrowserTestBase : public SyncTest {
   }
 
  protected:
-  std::unique_ptr<ProfileSyncServiceHarness> InitializeProfileForSync(
-      Profile* profile) {
-    ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile)
-        ->OverrideNetworkForTest(
-            fake_server::CreateFakeServerHttpPostProviderFactory(
-                GetFakeServer()->AsWeakPtr()));
-
-    std::string username;
-#if defined(OS_CHROMEOS)
-    // In browser tests, the profile may already by authenticated with stub
-    // account |user_manager::kStubUserEmail|.
-    CoreAccountInfo info =
-        IdentityManagerFactory::GetForProfile(profile)->GetPrimaryAccountInfo();
-    username = info.email;
-#endif
-    if (username.empty()) {
-      username = "user@gmail.com";
-    }
-
-    std::unique_ptr<ProfileSyncServiceHarness> harness =
-        ProfileSyncServiceHarness::Create(
-            profile, username, "unused" /* password */,
-            ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
-    return harness;
-  }
-
   std::unique_ptr<ProfileSyncServiceHarness> EnableSyncForProfile(
       Profile* profile) {
     std::unique_ptr<ProfileSyncServiceHarness> harness =
-        InitializeProfileForSync(profile);
+        test::InitializeProfileForSync(profile, GetFakeServer()->AsWeakPtr());
     EXPECT_TRUE(harness->SetupSync());
 
     // If unified consent is enabled, then enable url-keyed-anonymized data
@@ -387,6 +367,36 @@ class UkmEnabledChecker : public SingleClientStatusChangeChecker {
   UkmBrowserTestBase* const test_;
   const bool want_enabled_;
   DISALLOW_COPY_AND_ASSIGN(UkmEnabledChecker);
+};
+
+// Test the reporting of the synced user's birth year and gender.
+class UkmBrowserTestWithDemographics
+    : public UkmBrowserTestBase,
+      public testing::WithParamInterface<test::DemographicsTestParams> {
+ public:
+  UkmBrowserTestWithDemographics() : UkmBrowserTestBase() {
+    test::DemographicsTestParams param = GetParam();
+    if (param.enable_feature) {
+      scoped_feature_list_.InitWithFeatures(
+          // enabled_features
+          {DemographicMetricsProvider::kDemographicMetricsReporting,
+           ukm::UkmService::kReportUserNoisedUserBirthYearAndGender},
+          // disabled_features
+          {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          // enabled_features
+          {},
+          // disabled_features
+          {DemographicMetricsProvider::kDemographicMetricsReporting,
+           ukm::UkmService::kReportUserNoisedUserBirthYearAndGender});
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(UkmBrowserTestWithDemographics);
 };
 
 // Make sure that UKM is disabled while an incognito window is open.
@@ -578,6 +588,76 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);
 }
+
+// TODO(crbug/1016118): Add the remaining test cases.
+IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithDemographics,
+                       AddSyncedUserBirthYearAndGenderToProtoData) {
+  test::DemographicsTestParams param = GetParam();
+  MetricsConsentOverride metrics_consent(true);
+
+  base::HistogramTester histogram;
+
+  const int test_birth_year =
+      test::UpdateNetworkTimeAndGetMinimalEligibleBirthYear();
+  const UserDemographicsProto::Gender test_gender =
+      UserDemographicsProto::GENDER_FEMALE;
+
+  // Add the test synced user birth year and gender priority prefs to the sync
+  // server data.
+  test::AddUserBirthYearAndGenderToSyncServer(GetFakeServer()->AsWeakPtr(),
+                                              test_birth_year, test_gender);
+
+  Profile* test_profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(test_profile);
+
+  // Make sure that there is only one Profile to allow reporting the user's
+  // birth year and gender.
+  ASSERT_EQ(1, num_clients());
+
+  Browser* sync_browser = CreateBrowser(test_profile);
+  EXPECT_TRUE(ukm_enabled());
+  uint64_t original_client_id = client_id();
+  EXPECT_NE(0U, original_client_id);
+
+  // Log UKM metrics report.
+  BuildAndStoreUkmLog();
+  EXPECT_TRUE(HasUnsentUkmLogs());
+
+  // Check the log's content and the histogram.
+  ukm::Report report = GetUkmReport();
+  if (param.expect_reported_demographics) {
+    EXPECT_EQ(test::GetNoisedBirthYear(test_birth_year, *test_profile),
+              report.user_demographics().birth_year());
+    EXPECT_EQ(test_gender, report.user_demographics().gender());
+    histogram.ExpectUniqueSample("UKM.UserDemographics.Status",
+                                 syncer::UserDemographicsStatus::kSuccess, 1);
+  } else {
+    EXPECT_FALSE(report.has_user_demographics());
+    histogram.ExpectTotalCount("UKM.UserDemographics.Status", /*count=*/0);
+  }
+
+  harness->service()->GetUserSettings()->SetSyncRequested(false);
+  CloseBrowserSynchronously(sync_browser);
+}
+
+#if defined(OS_CHROMEOS)
+// Cannot test for the enabled feature on Chrome OS because there are always
+// multiple profiles.
+static const auto kDemographicsTestParams = testing::Values(
+    test::DemographicsTestParams{/*enable_feature=*/false,
+                                 /*expect_reported_demographics=*/false});
+#else
+static const auto kDemographicsTestParams = testing::Values(
+    test::DemographicsTestParams{/*enable_feature=*/false,
+                                 /*expect_reported_demographics=*/false},
+    test::DemographicsTestParams{/*enable_feature=*/true,
+                                 /*expect_reported_demographics=*/true});
+#endif
+
+INSTANTIATE_TEST_SUITE_P(,
+                         UkmBrowserTestWithDemographics,
+                         kDemographicsTestParams);
 
 // Verifies that network provider attaches effective connection type correctly
 // to the UKM report.
@@ -903,8 +983,8 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
   // Need to set the Metrics Default to OPT_OUT to trigger MetricsReporting.
   DCHECK(g_browser_process);
   PrefService* local_state = g_browser_process->local_state();
-  metrics::ForceRecordMetricsReportingDefaultState(
-      local_state, metrics::EnableMetricsDefault::OPT_OUT);
+  ForceRecordMetricsReportingDefaultState(local_state,
+                                          EnableMetricsDefault::OPT_OUT);
   // Verify that kMetricsReportingFeature is disabled (i.e. other metrics
   // services will be sampled out).
   EXPECT_FALSE(
@@ -967,7 +1047,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTestWithSyncTransport,
   // transport mode.
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::unique_ptr<ProfileSyncServiceHarness> harness =
-      InitializeProfileForSync(profile);
+      test::InitializeProfileForSync(profile, GetFakeServer()->AsWeakPtr());
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 

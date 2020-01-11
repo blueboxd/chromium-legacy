@@ -273,7 +273,11 @@ FlatRulesetIndexer::GetBuilders(const IndexedRule& indexed_rule) {
     case dnr_api::RULE_ACTION_TYPE_ALLOW:
     case dnr_api::RULE_ACTION_TYPE_REDIRECT:
     case dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME:
-      return {index_builders_[flat::IndexType_before_request].get()};
+      return {index_builders_
+                  [flat::IndexType_before_request_except_allow_all_requests]
+                      .get()};
+    case dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS:
+      return {index_builders_[flat::IndexType_allow_all_requests].get()};
     case dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS:
       return GetRemoveHeaderBuilders(indexed_rule.remove_headers_set);
     case dnr_api::RULE_ACTION_TYPE_NONE:

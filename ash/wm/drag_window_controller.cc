@@ -128,7 +128,6 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
     ::wm::SetShadowElevation(drag_window_, ::wm::kShadowElevationActiveWindow);
 
     RecreateWindowLayers(original_window);
-    layer_owner_->root()->SetVisible(true);
     drag_window_->layer()->Add(layer_owner_->root());
     drag_window_->layer()->StackAtTop(layer_owner_->root());
 
@@ -150,7 +149,6 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
     layer_bounds.set_origin(gfx::Point(0, 0));
     layer_owner_->root()->SetBounds(layer_bounds);
     layer_owner_->root()->SetTransform(gfx::Transform());
-    layer_owner_->root()->SetVisible(false);
   }
 
   void SetOpacity(float opacity) {

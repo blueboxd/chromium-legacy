@@ -46,10 +46,6 @@ void CrostiniUpdateComponentView::Show(Profile* profile) {
   g_crostini_upgrade_view->GetWidget()->Show();
 }
 
-int CrostiniUpdateComponentView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
 base::string16 CrostiniUpdateComponentView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CROSTINI_TERMINA_UPDATE_REQUIRED);
 }
@@ -72,6 +68,8 @@ CrostiniUpdateComponentView::GetActiveViewForTesting() {
 }
 
 CrostiniUpdateComponentView::CrostiniUpdateComponentView() {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
+
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,

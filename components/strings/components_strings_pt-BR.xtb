@@ -854,7 +854,7 @@
 <translation id="5112422516732747637">A5</translation>
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">64 bits</translation>
-<translation id="5121469660360593280">Compartilhe com seu administrador os dados sobre ocorrências de segurança sinalizadas pelo serviço de proteção ao usuário do Chrome Enterprise. Isso pode incluir URLs das páginas visitadas, metadados ou nomes de arquivos e o nome de usuário usado para fazer login no dispositivo e no Chrome.</translation>
+<translation id="5121469660360593280">Compartilhe com seu administrador os dados sobre ocorrências de segurança sinalizadas pelo Serviço de proteção ao usuário do Chrome Enterprise. Isso pode incluir URLs das páginas visitadas, metadados ou nomes de arquivos e o nome de usuário usado para fazer login no dispositivo e no Chrome.</translation>
 <translation id="5125394840236832993">B Plus</translation>
 <translation id="5126510351761255129">Verificar seu cartão</translation>
 <translation id="5135404736266831032">Gerenciar endereços…</translation>
@@ -989,7 +989,7 @@
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Salvar cartão na Conta do Google}one{Salvar cartão na Conta do Google}other{Salvar cartões na Conta do Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Usar um número virtual para este cartão}one{Selecionar um cartão}other{Selecionar cartões}}</translation>
 <translation id="5763042198335101085">Informe um endereço de e-mail válido.</translation>
-<translation id="5763703224595565476">Seu administrador ativou o serviço de proteção ao usuário do Chrome Enterprise no seu navegador. O serviço de proteção ao usuário do Chrome Enterprise tem acesso a parte dos seus dados.</translation>
+<translation id="5763703224595565476">Seu administrador ativou o Serviço de proteção ao usuário do Chrome Enterprise no seu navegador. O Serviço de proteção ao usuário do Chrome Enterprise tem acesso a parte dos seus dados.</translation>
 <translation id="5765072501007116331">Para ver métodos e requisitos de entrega, selecione um endereço</translation>
 <translation id="5778550464785688721">Controle total de dispositivos MIDI</translation>
 <translation id="5781136890105823427">Experimento ativado</translation>
@@ -1306,7 +1306,7 @@ Mais detalhes:
 <translation id="733923710415886693">O certificado do servidor não foi divulgado por meio da Transparência dos certificados.</translation>
 <translation id="734600844861828519">11x15</translation>
 <translation id="7346048084945669753">O usuário é afiliado:</translation>
-<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ativou o serviço de proteção ao usuário do Chrome Enterprise no seu navegador. O serviço de proteção ao usuário do Chrome Enterprise tem acesso a parte dos seus dados.</translation>
+<translation id="73479065977517481"><ph name="ENROLLMENT_DOMAIN" /> ativou o Serviço de proteção ao usuário do Chrome Enterprise no seu navegador. O Serviço de proteção ao usuário do Chrome Enterprise tem acesso a parte dos seus dados.</translation>
 <translation id="7349430561505560861">A4 Extra</translation>
 <translation id="7353601530677266744">Linha de comando</translation>
 <translation id="7372973238305370288">resultado da pesquisa</translation>

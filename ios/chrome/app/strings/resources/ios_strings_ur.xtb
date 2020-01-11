@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">پوشیدگی وضع میں تلاش کریں</translation>
 <translation id="277771892408211951">زبان منتخب کریں</translation>
 <translation id="2780046210906776326">کوئی ای میل اکاؤنٹس نہیں ہیں</translation>
+<translation id="2781331604911854368">آن</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">ٹیب سوئچ کنندہ کو چھوڑیں</translation>
 <translation id="2830972654601096923">پتوں کا نظم کریں...</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">کھلے ٹیبز</translation>
 <translation id="3277021493514034324">سائٹ کا پتہ کاپی ہو گیا</translation>
 <translation id="3290875554372353449">اکاؤنٹ منتخب کریں</translation>
+<translation id="3311748811247479259">آف</translation>
 <translation id="3324193307694657476">پتہ 2</translation>
 <translation id="3329904751041170572">سرور سے منسلک نہیں ہو سکے۔</translation>
 <translation id="3335947283844343239">بند ٹیب دوبارہ کھولیں</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">آپ کے ٹیبز کی مطابقت پذیری ہو رہی ہے…</translation>
 <translation id="3493531032208478708">تجویز کردہ مواد کے بارے میں <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="3494788280727468875">براؤزنگ ڈیٹا صاف کرنے کی توثیق کریں</translation>
+<translation id="35083190962747987">‏{url}$ کھولیں</translation>
 <translation id="3519193562722059437">ویب براؤز کرنے کیلئے ایک ٹیب کھولیں۔</translation>
 <translation id="3527085408025491307">فولڈر</translation>
 <translation id="3529024052484145543">محفوظ نہیں</translation>
@@ -301,6 +304,7 @@
 <translation id="5062321486222145940">‏Google Drive انسٹال کریں</translation>
 <translation id="5083464117946352670">فائل سائز کا تعین نہیں کیا جا سکتا ہے۔</translation>
 <translation id="5094827893301452931">ٹویٹ مکمل ہوگیا۔</translation>
+<translation id="5118764316110575523">آف</translation>
 <translation id="5127805178023152808">‏Sync آف ہے</translation>
 <translation id="5132942445612118989">سبھی آلات پر اپنے پاس ورڈز اور سرگزشت کی مطابقت پذیری اور مزید بہت کچھ کریں</translation>
 <translation id="5140288047769711648">‏Chrome یہ پاس ورڈ آپ کے لئے یاد رکھے گا۔ آپ کو اسے یاد رکھنے کی ضرورت نہیں ہے۔</translation>
@@ -363,6 +367,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="5979837087407522202">پاس ورڈز تلاش کریں</translation>
 <translation id="5982717868370722439"><ph name="USER_EMAIL" /> میں موجودہ ڈیٹا شامل کریں۔</translation>
 <translation id="5984222099446776634">حال ہی میں ملاحظہ کردہ</translation>
+<translation id="5988851877894965432">‏URLs کو Chrome میں کھولیں</translation>
 <translation id="6012140227487808125">مرموز کاری ہو رہی ہے…</translation>
 <translation id="6021332621416007159">اس میں کھولیں…</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />، <ph name="PUBLISHER_INFORMATION" />، <ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="7961015016161918242">کبھی نہیں</translation>
 <translation id="7971521879845308059">پاپ اپس کو مسدود کریں</translation>
 <translation id="7982789257301363584">نیٹ ورک</translation>
+<translation id="800361585186029508">‏درج کردہ URLs کو Google Chrome میں کھولتا ہے۔</translation>
 <translation id="8007420562015504427">پوشیدگی وضع میں تلاش کریں</translation>
 <translation id="8019783059653722575">یہ آپ کو تصاویر محفوظ کرنے اور اپ لوڈ کرنے دیتا ہے۔</translation>
 <translation id="802154636333426148">ڈاؤن لوڈ ناکام ہوگیا</translation>

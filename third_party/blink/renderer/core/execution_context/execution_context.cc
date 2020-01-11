@@ -59,11 +59,13 @@ ExecutionContext::ExecutionContext(
     scoped_refptr<SecurityOrigin> origin,
     WebSandboxFlags sandbox_flags,
     std::unique_ptr<FeaturePolicy> feature_policy,
+    std::unique_ptr<DocumentPolicy> document_policy,
     SecureContextMode secure_context_mode)
     : isolate_(isolate),
       security_context_(origin,
                         sandbox_flags,
                         std::move(feature_policy),
+                        std::move(document_policy),
                         SecurityContext::kLocal),
       circular_sequential_id_(0),
       in_dispatch_error_event_(false),

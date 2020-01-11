@@ -8,6 +8,7 @@
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "content/browser/browser_interface_broker_impl.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom.h"
@@ -43,9 +44,8 @@ class StoragePartitionImpl;
 // Creates a host factory for a dedicated worker. This must be called on the UI
 // thread.
 void CreateDedicatedWorkerHostFactory(
-    int creator_process_id,
-    int ancestor_render_frame_id,
-    int creator_render_frame_id,
+    GlobalFrameRoutingId creator_render_frame_host_id,
+    GlobalFrameRoutingId ancestor_render_frame_host_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver);
 
@@ -57,8 +57,8 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
  public:
   DedicatedWorkerHost(
       RenderProcessHost* worker_process_host,
-      int ancestor_render_frame_id,
-      int creator_render_frame_id,
+      GlobalFrameRoutingId creator_render_frame_host_id,
+      GlobalFrameRoutingId ancestor_render_frame_host_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host);
   ~DedicatedWorkerHost() final;
@@ -139,15 +139,13 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
   // Creates a network factory for subresource requests from this worker. The
   // network factory is meant to be passed to the renderer.
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
-  CreateNetworkFactoryForSubresources(RenderFrameHostImpl* render_frame_host,
-                                      bool* bypass_redirect_checks);
+  CreateNetworkFactoryForSubresources(
+      RenderFrameHostImpl* ancestor_render_frame_host,
+      bool* bypass_redirect_checks);
 
   // Updates subresource loader factories. This is supposed to be called when
   // out-of-process Network Service crashes.
   void UpdateSubresourceLoaderFactories();
-
-  // May return a nullptr.
-  RenderFrameHostImpl* GetAncestorRenderFrameHost();
 
   void OnMojoDisconnect();
 
@@ -157,13 +155,14 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
   ScopedObserver<RenderProcessHost, RenderProcessHostObserver>
       scoped_process_host_observer_;
 
+  // The ID of the frame that directly starts this worker. This is
+  // {creator_render_process_host_id, MSG_ROUTING_NONE} when this worker is
+  // nested.
+  const GlobalFrameRoutingId creator_render_frame_host_id_;
+
   // The ID of the frame that owns this worker, either directly, or (in the case
   // of nested workers) indirectly via a tree of dedicated workers.
-  const int ancestor_render_frame_id_;
-
-  // The ID of the frame that directly starts this worker. This is
-  // MSG_ROUTING_NONE when this worker is nested.
-  const int creator_render_frame_id_;
+  const GlobalFrameRoutingId ancestor_render_frame_host_id_;
 
   const url::Origin origin_;
 

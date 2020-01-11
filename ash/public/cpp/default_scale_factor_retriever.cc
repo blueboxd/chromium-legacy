@@ -13,7 +13,7 @@ namespace ash {
 DefaultScaleFactorRetriever::DefaultScaleFactorRetriever() {}
 
 void DefaultScaleFactorRetriever::Start(
-    mojo::PendingRemote<ash::mojom::CrosDisplayConfigController>
+    mojo::PendingRemote<mojom::CrosDisplayConfigController>
         cros_display_config) {
   cros_display_config_.Bind(std::move(cros_display_config));
   auto callback = base::BindOnce(
@@ -23,10 +23,10 @@ void DefaultScaleFactorRetriever::Start(
       /*single_unified=*/false,
       base::BindOnce(
           [](GetDefaultScaleFactorCallback callback,
-             std::vector<ash::mojom::DisplayUnitInfoPtr> info_list) {
+             std::vector<mojom::DisplayUnitInfoPtr> info_list) {
             // TODO(oshima): This does not return correct value in docked
             // mode.
-            for (const ash::mojom::DisplayUnitInfoPtr& info : info_list) {
+            for (const mojom::DisplayUnitInfoPtr& info : info_list) {
               if (info->is_internal) {
                 DCHECK(info->available_display_modes.size());
                 std::move(callback).Run(

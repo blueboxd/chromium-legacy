@@ -510,7 +510,9 @@ class ASH_EXPORT ShelfLayoutManager
                   float scroll_y);
   void CompleteDrag(const ui::LocatedEvent& event_in_screen);
   void CompleteAppListDrag(const ui::LocatedEvent& event_in_screen);
-  void CancelDrag();
+  void CancelDrag(
+      base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
+          window_drag_result);
   void CompleteDragWithChangedVisibility();
 
   float GetAppListBackgroundOpacityOnShelfOpacity();

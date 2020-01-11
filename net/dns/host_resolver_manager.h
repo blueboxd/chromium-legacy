@@ -453,11 +453,10 @@ class NET_EXPORT HostResolverManager
 
   void InvalidateCaches();
 
-  // Currently only allows one probe to be started at a time. Must be cancelled
-  // before starting another.
-  void ActivateDohProbes(URLRequestContext* url_request_context,
-                         bool network_change);
-  void CancelDohProbes();
+  // Returns |nullptr| if DoH probes are currently not allowed (due to
+  // configuration or current connection state).
+  std::unique_ptr<DnsProbeRunner> CreateDohProbeRunner(
+      URLRequestContext* url_request_context);
 
   // Used for multicast DNS tasks. Created on first use using
   // GetOrCreateMndsClient().
@@ -478,8 +477,7 @@ class NET_EXPORT HostResolverManager
 
   NetLog* net_log_;
 
-  URLRequestContext* url_request_context_for_probes_ = nullptr;
-  std::unique_ptr<DnsProbeRunner> doh_probe_runner_;
+  std::set<ProbeRequestImpl*> started_doh_probe_requests_;
 
   // If present, used by DnsTask and ServeFromHosts to resolve requests.
   std::unique_ptr<DnsClient> dns_client_;

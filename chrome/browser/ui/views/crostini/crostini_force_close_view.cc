@@ -57,10 +57,6 @@ ui::ModalType CrostiniForceCloseView::GetModalType() const {
   return ui::ModalType::MODAL_TYPE_WINDOW;
 }
 
-int CrostiniForceCloseView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
 bool CrostiniForceCloseView::ShouldShowCloseButton() const {
   return false;
 }

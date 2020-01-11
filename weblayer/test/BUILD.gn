@@ -81,6 +81,7 @@ test("weblayer_browsertests") {
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/core/common",
+    "//components/network_time",
     "//components/security_interstitials/content:security_interstitial_page",
     "//content/public/browser",
     "//content/test:test_support",

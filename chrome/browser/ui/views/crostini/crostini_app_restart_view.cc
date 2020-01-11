@@ -39,10 +39,6 @@ void CrostiniAppRestartView::Show(const ash::ShelfID& id, int64_t display_id) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CROSTINI_APP_RESTART);
 }
 
-int CrostiniAppRestartView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
-}
-
 bool CrostiniAppRestartView::ShouldShowCloseButton() const {
   return false;
 }

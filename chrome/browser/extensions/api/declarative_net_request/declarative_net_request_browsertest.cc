@@ -21,12 +21,15 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/extension_action/test_extension_action_api_observer.h"
@@ -62,6 +65,7 @@
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/declarative_net_request/action_tracker.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
@@ -554,6 +558,32 @@ class DeclarativeNetRequestBrowserTest
     return ExecuteScriptInBackgroundPage(
         extension_id,
         base::StringPrintf(kGetMatchedRulesScript, tab_id_param.c_str()));
+  }
+
+  // Calls getMatchedRules for |extension_id|, |tab_id| and optionally,
+  // |timestamp|. Returns the matched rule count for the tab specified by
+  // |tab_id| and are more recent than |timestamp| if specified.
+  std::string GetMatchedRuleCountForTab(const ExtensionId& extension_id,
+                                        int tab_id,
+                                        base::Optional<base::Time> timestamp) {
+    const char kGetMatchedRulesScript[] = R"(
+      chrome.declarativeNetRequest.getMatchedRules(%s, (rules) => {
+        var rule_count = rules.rulesMatchedInfo.length;
+        window.domAutomationController.send(rule_count.toString());
+      });
+    )";
+
+    std::string param_string = base::StringPrintf("{tabId: %d}", tab_id);
+
+    if (timestamp) {
+      double timestamp_in_js = timestamp->ToJsTimeIgnoringNull();
+      param_string = base::StringPrintf("{tabId: %d, minTimeStamp: %f}", tab_id,
+                                        timestamp_in_js);
+    }
+
+    return ExecuteScriptInBackgroundPage(
+        extension_id,
+        base::StringPrintf(kGetMatchedRulesScript, param_string.c_str()));
   }
 
   std::set<GURL> GetAndResetRequestsToServer() {
@@ -3566,6 +3596,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     base::Optional<int> tab_id;
     std::string expected_rule_and_tab_ids;
   } test_cases[] = {
+      // No rules should be matched for |extension_1| and the unknown tab ID.
+      {extension_1_id, extension_misc::kUnknownTabId, ""},
+
       // No filter is specified for |extension_1|, therefore two MatchedRuleInfo
       // should be returned:
       // (abc_id, first_tab_id) and (abc_id, second_tab_id)
@@ -3685,6 +3718,98 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   actual_rule_and_tab_ids =
       GetRuleAndTabIdsMatched(last_loaded_extension_id(), first_tab_id);
   EXPECT_EQ("", actual_rule_and_tab_ids);
+}
+
+// Test that getMatchedRules only returns rules more recent than the provided
+// timestamp.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
+                       GetMatchedRulesTimestampFiltering) {
+  base::Time start_time = base::Time::Now();
+
+  base::SimpleTestClock clock_;
+  clock_.SetNow(start_time);
+  auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(profile());
+  rules_monitor_service->action_tracker().SetClockForTests(&clock_);
+
+  // Load the extension with a background script so scripts can be run from its
+  // generated background page.
+  set_has_background_script(true);
+
+  const std::string kFrameName1 = "frame1";
+  const GURL page_url = embedded_test_server()->GetURL(
+      "nomatch.com", "/page_with_two_frames.html");
+
+  const std::string example_host = "example.com";
+  const GURL sub_frame_url = embedded_test_server()->GetURL(
+      example_host, "/pages_with_script/index.html");
+
+  TestRule rule = CreateGenericRule();
+  rule.id = kMinValidID;
+  rule.condition->url_filter = example_host;
+  rule.condition->resource_types = std::vector<std::string>({"sub_frame"});
+  rule.action->type = "block";
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}, "extension_1", {}));
+  const ExtensionId& extension_id = last_loaded_extension_id();
+  ui_test_utils::NavigateToURL(browser(), page_url);
+
+  // Using subframes here to make requests without triggering main-frame
+  // navigations. This request will match with the block rule for example.com at
+  // |start_time|.
+  NavigateFrame(kFrameName1, sub_frame_url);
+
+  const char getMatchedRuleTimestampScript[] = R"(
+    chrome.declarativeNetRequest.getMatchedRules((rules) => {
+      var rule_count = rules.rulesMatchedInfo.length;
+      var timestamp = rule_count === 1 ?
+          rules.rulesMatchedInfo[0].timeStamp.toString() : '';
+
+      window.domAutomationController.send(timestamp);
+    });
+  )";
+
+  std::string timestamp_string = ExecuteScriptInBackgroundPage(
+      extension_id, getMatchedRuleTimestampScript);
+
+  double matched_rule_timestamp;
+  ASSERT_TRUE(base::StringToDouble(timestamp_string, &matched_rule_timestamp));
+
+  // Verify that the rule was matched at |start_time|.
+  EXPECT_DOUBLE_EQ(start_time.ToJsTimeIgnoringNull(), matched_rule_timestamp);
+
+  // Advance the clock to capture a timestamp after when the first request was
+  // made.
+  clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+  base::Time timestamp_1 = clock_.Now();
+  clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+
+  // Navigate to example.com again. This should cause |rule| to be matched.
+  NavigateFrame(kFrameName1, sub_frame_url);
+
+  // Advance the clock to capture a timestamp after when the second request was
+  // made.
+  clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+  base::Time timestamp_2 = clock_.Now();
+
+  int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
+
+  // Two rules should be matched on |first_tab_id|.
+  std::string rule_count =
+      GetMatchedRuleCountForTab(extension_id, first_tab_id, base::nullopt);
+  EXPECT_EQ("2", rule_count);
+
+  // Only one rule should be matched on |first_tab_id| after |timestamp_1|.
+  rule_count =
+      GetMatchedRuleCountForTab(extension_id, first_tab_id, timestamp_1);
+  EXPECT_EQ("1", rule_count);
+
+  // No rules should be matched on |first_tab_id| after |timestamp_2|.
+  rule_count =
+      GetMatchedRuleCountForTab(extension_id, first_tab_id, timestamp_2);
+  EXPECT_EQ("0", rule_count);
+
+  rules_monitor_service->action_tracker().SetClockForTests(nullptr);
 }
 
 // Test fixture to verify that host permissions for the request url and the

@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/interstitials/ios_security_interstitial_page.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -14,6 +15,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/ui/util/dynamic_type_util.h"
+#include "ios/web/common/features.h"
 #include "ios/web/public/security/web_interstitial.h"
 #import "ios/web/public/web_state.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -65,6 +67,9 @@ void IOSSecurityInterstitialPage::Show() {
 
 std::string IOSSecurityInterstitialPage::GetHtmlContents() const {
   base::DictionaryValue load_time_data;
+  load_time_data.SetBoolean(
+      "committed_interstitials_enabled",
+      base::FeatureList::IsEnabled(web::features::kSSLCommittedInterstitials));
   PopulateInterstitialStrings(&load_time_data);
   webui::SetLoadTimeDataDefaults(
       GetApplicationContext()->GetApplicationLocale(), &load_time_data);

@@ -282,6 +282,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool IsLegacyTLSVersion() const { return is_legacy_tls_version_; }
   void SetIsLegacyTLSVersion(bool value) { is_legacy_tls_version_ = value; }
 
+  bool TimingAllowPassed() const { return timing_allow_passed_; }
+  void SetTimingAllowPassed(bool value) { timing_allow_passed_ = value; }
+
   SecurityStyle GetSecurityStyle() const { return security_style_; }
   void SetSecurityStyle(SecurityStyle security_style) {
     security_style_ = security_style;
@@ -503,6 +506,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   // True if the response was sent over TLS 1.0 or 1.1, which are deprecated and
   // will be removed in the future.
   bool is_legacy_tls_version_ = false;
+
+  // True if the Timing-Allow-Origin check passes.
+  // https://fetch.spec.whatwg.org/#concept-response-timing-allow-passed
+  bool timing_allow_passed_ = false;
 
   // The time at which the resource's certificate expires. Null if there was no
   // certificate.

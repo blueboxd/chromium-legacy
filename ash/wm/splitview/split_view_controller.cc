@@ -195,8 +195,7 @@ class SplitViewController::TabDraggedWindowObserver
                                const void* key,
                                intptr_t old) override {
     DCHECK_EQ(window, dragged_window_);
-    if (key == ash::kIsDraggingTabsKey &&
-        !window_util::IsDraggingTabs(window)) {
+    if (key == kIsDraggingTabsKey && !window_util::IsDraggingTabs(window)) {
       // At this point we know the newly created dragged window just finished
       // dragging.
       EndTabDragging(window, /*is_being_destroyed=*/false);
@@ -222,7 +221,7 @@ class SplitViewController::TabDraggedWindowObserver
   // update its bounds to ensure it has the right bounds after the drag ends.
   void UpdateSourceWindowBoundsAfterDragEnds(aura::Window* window) {
     aura::Window* source_window =
-        window->GetProperty(ash::kTabDraggingSourceWindowKey);
+        window->GetProperty(kTabDraggingSourceWindowKey);
     if (source_window) {
       TabletModeWindowState::UpdateWindowPosition(
           WindowState::Get(source_window), /*animate=*/true);
@@ -936,8 +935,8 @@ void SplitViewController::OnResizeLoopEnded(aura::Window* window) {
 }
 
 void SplitViewController::OnPostWindowStateTypeChange(
-    ash::WindowState* window_state,
-    ash::WindowStateType old_type) {
+    WindowState* window_state,
+    WindowStateType old_type) {
   DCHECK_EQ(
       window_state->GetDisplay().id(),
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_).id());
@@ -1854,7 +1853,7 @@ void SplitViewController::EndWindowDragImpl(
     }
   } else {
     aura::Window* initiator_window =
-        window->GetProperty(ash::kTabDraggingSourceWindowKey);
+        window->GetProperty(kTabDraggingSourceWindowKey);
     // Note SnapWindow() might put the previous window that was snapped at the
     // |desired_snap_position| in overview.
     SnapWindow(window, desired_snap_position,

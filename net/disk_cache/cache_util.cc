@@ -110,9 +110,12 @@ void DeleteCache(const base::FilePath& path, bool remove_folder) {
 // rename the cache directory (for instance due to a sharing violation), and in
 // that case a cache for this profile (on the desired path) cannot be created.
 bool DelayedCacheCleanup(const base::FilePath& full_path) {
-  // GetTempCacheName() and MoveCache() use synchronous file
-  // operations.
+  // GetTempCacheName() and MoveCache() use synchronous file operations.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+  // We can exit early if nothing was done/the directory is empty.
+  if (base::IsDirectoryEmpty(full_path))
+    return true;
 
   base::FilePath current_path = full_path.StripTrailingSeparators();
 

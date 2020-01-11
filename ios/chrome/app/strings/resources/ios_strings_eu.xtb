@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">Ezkutuko moduko bilaketa</translation>
 <translation id="277771892408211951">Hautatu hizkuntza</translation>
 <translation id="2780046210906776326">Ez dago posta-konturik</translation>
+<translation id="2781331604911854368">Aktibatuta</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Irten fitxa-aldatzailetik</translation>
 <translation id="2830972654601096923">Kudeatu helbideak…</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">Ireki fitxak</translation>
 <translation id="3277021493514034324">Kopiatu da webgunearen helbidea</translation>
 <translation id="3290875554372353449">Aukeratu kontu bat</translation>
+<translation id="3311748811247479259">Desaktibatuta</translation>
 <translation id="3324193307694657476">Helbidea (2)</translation>
 <translation id="3329904751041170572">Ezin izan da konektatu zerbitzarira.</translation>
 <translation id="3335947283844343239">Ireki aurretik itxitako fitxa</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">Fitxak sinkronizatzen…</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /> iradokitako edukiari buruz</translation>
 <translation id="3494788280727468875">Berretsi arakatze-datuak garbitu nahi dituzula</translation>
+<translation id="35083190962747987">Ireki ${url}</translation>
 <translation id="3519193562722059437">Sarea arakatzeko, ireki fitxa bat.</translation>
 <translation id="3527085408025491307">Karpeta</translation>
 <translation id="3529024052484145543">Ez da segurua</translation>
@@ -301,6 +304,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5062321486222145940">Instalatu Google Drive</translation>
 <translation id="5083464117946352670">Ezin da zehaztu fitxategiaren tamaina.</translation>
 <translation id="5094827893301452931">Txio egin da.</translation>
+<translation id="5118764316110575523">Desaktibatuta</translation>
 <translation id="5127805178023152808">Sinkronizazioa desaktibatuta dago</translation>
 <translation id="5132942445612118989">Sinkronizatu pasahitzak, historia eta beste gauza asko gailu guztietan</translation>
 <translation id="5140288047769711648">Chrome-k gogoratuko du pasahitza. Ez duzu zuk gogoratu beharko.</translation>
@@ -363,6 +367,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5979837087407522202">Bilatu pasahitzak</translation>
 <translation id="5982717868370722439">Gehitu lehendik dituzun datuak <ph name="USER_EMAIL" /> kontuan.</translation>
 <translation id="5984222099446776634">Bisitatutako azkenak</translation>
+<translation id="5988851877894965432">Ireki URLak Chrome-n</translation>
 <translation id="6012140227487808125">Enkriptatzen…</translation>
 <translation id="6021332621416007159">Ireki hemen…</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" /> (<ph name="PUBLICATION_DATE" />)</translation>
@@ -512,6 +517,7 @@ Sinkronizatzeko pasaesaldiaren bidez enkriptatu dira datuak (<ph name="TIME" />)
 <translation id="7961015016161918242">Inoiz ez</translation>
 <translation id="7971521879845308059">Blokeatu leihoak</translation>
 <translation id="7982789257301363584">Sarea</translation>
+<translation id="800361585186029508">Idatzitako URLak Google Chrome-n irekitzen ditu.</translation>
 <translation id="8007420562015504427">Ezkutuko moduko bilaketa</translation>
 <translation id="8019783059653722575">Honi esker, argazkiak gorde eta kargatu ahal izango dituzu.</translation>
 <translation id="802154636333426148">Ezin izan da deskargatu</translation>

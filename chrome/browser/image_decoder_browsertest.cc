@@ -30,8 +30,6 @@ std::vector<uint8_t> GetValidPngData() {
   return std::vector<uint8_t>(kPngData, kPngData + sizeof(kPngData) - 1);
 }
 
-#if defined(OS_CHROMEOS)
-
 std::vector<uint8_t> GetValidJpgData() {
   // 1x1 JPG created from the 1x1 PNG above.
   static const char kJpgData[] =
@@ -57,8 +55,6 @@ std::vector<uint8_t> GetValidJpgData() {
   return std::vector<uint8_t>(kJpgData, kJpgData + sizeof(kJpgData) - 1);
 }
 
-#endif  // defined(OS_CHROMEOS)
-
 class TestImageRequest : public ImageDecoder::ImageRequest {
  public:
   explicit TestImageRequest(base::OnceClosure quit_closure)
@@ -74,9 +70,12 @@ class TestImageRequest : public ImageDecoder::ImageRequest {
 
   bool decode_succeeded() const { return decode_succeeded_; }
 
+  const SkBitmap& get_bitmap() const { return bitmap_; }
+
  private:
   void OnImageDecoded(const SkBitmap& decoded_image) override {
     decode_succeeded_ = true;
+    bitmap_ = decoded_image;
     Quit();
   }
 
@@ -94,6 +93,7 @@ class TestImageRequest : public ImageDecoder::ImageRequest {
 
   base::OnceClosure quit_closure_;
   bool quit_called_;
+  SkBitmap bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(TestImageRequest);
 };
@@ -185,13 +185,27 @@ IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, BasicDecode) {
 }
 
 IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, BasicDecodeString) {
-  scoped_refptr<content::MessageLoopRunner> runner =
-      new content::MessageLoopRunner;
-  TestImageRequest test_request(runner->QuitClosure());
+  base::RunLoop runner;
+  TestImageRequest test_request(runner.QuitClosure());
   const std::vector<uint8_t> data = GetValidPngData();
   ImageDecoder::Start(&test_request, std::string(data.begin(), data.end()));
-  runner->Run();
+  runner.Run();
   EXPECT_TRUE(test_request.decode_succeeded());
+  EXPECT_EQ(test_request.get_bitmap().height(), 1);
+  EXPECT_EQ(test_request.get_bitmap().width(), 1);
+  EXPECT_EQ(test_request.get_bitmap().getColor(0, 0), 0xffffffffUL);
+}
+
+IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, BasicDecodeStringJpeg) {
+  base::RunLoop runner;
+  TestImageRequest test_request(runner.QuitClosure());
+  const std::vector<uint8_t> data = GetValidJpgData();
+  ImageDecoder::Start(&test_request, std::string(data.begin(), data.end()));
+  runner.Run();
+  EXPECT_TRUE(test_request.decode_succeeded());
+  EXPECT_EQ(test_request.get_bitmap().height(), 1);
+  EXPECT_EQ(test_request.get_bitmap().width(), 1);
+  EXPECT_EQ(test_request.get_bitmap().getColor(0, 0), 0xffffffffUL);
 }
 
 IN_PROC_BROWSER_TEST_F(ImageDecoderBrowserTest, StartAndDestroy) {

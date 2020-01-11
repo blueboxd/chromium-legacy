@@ -305,6 +305,29 @@ TEST_F(H264DecoderTest, DecodeProfileBaseline) {
   ASSERT_TRUE(decoder_->Flush());
 }
 
+TEST_F(H264DecoderTest, OutputPictureFailureCausesFlushToFail) {
+  // Provide one frame so that Decode() will not try to output a frame, so
+  // Flush() will.
+  SetInputFrameFiles({
+      kBaselineFrame0,
+  });
+  ASSERT_EQ(AcceleratedVideoDecoder::kConfigChange, Decode());
+  EXPECT_CALL(*accelerator_, OutputPicture(_)).WillRepeatedly(Return(false));
+  ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode());
+  ASSERT_FALSE(decoder_->Flush());
+}
+
+TEST_F(H264DecoderTest, OutputPictureFailureCausesDecodeToFail) {
+  // Provide enough data that Decode() will try to output a frame.
+  SetInputFrameFiles({
+      kBaselineFrame0,
+      kBaselineFrame1,
+  });
+  ASSERT_EQ(AcceleratedVideoDecoder::kConfigChange, Decode());
+  EXPECT_CALL(*accelerator_, OutputPicture(_)).WillRepeatedly(Return(false));
+  ASSERT_EQ(AcceleratedVideoDecoder::kDecodeError, Decode());
+}
+
 TEST_F(H264DecoderTest, DecodeProfileHigh) {
   SetInputFrameFiles({kHighFrame0, kHighFrame1, kHighFrame2, kHighFrame3});
   ASSERT_EQ(AcceleratedVideoDecoder::kConfigChange, Decode());

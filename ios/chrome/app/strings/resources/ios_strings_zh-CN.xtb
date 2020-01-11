@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">无痕搜索</translation>
 <translation id="277771892408211951">选择语言</translation>
 <translation id="2780046210906776326">没有电子邮件帐号</translation>
+<translation id="2781331604911854368">已开启</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">离开标签页切换器</translation>
 <translation id="2830972654601096923">管理地址…</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">打开的标签页</translation>
 <translation id="3277021493514034324">已复制网站地址</translation>
 <translation id="3290875554372353449">选择帐号</translation>
+<translation id="3311748811247479259">已关闭</translation>
 <translation id="3324193307694657476">地址第2行</translation>
 <translation id="3329904751041170572">无法连接到服务器。</translation>
 <translation id="3335947283844343239">重新打开关闭的标签页</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">正在同步您的标签页…</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />详细了解<ph name="END_LINK" />推荐内容</translation>
 <translation id="3494788280727468875">确认清除浏览数据</translation>
+<translation id="35083190962747987">打开 ${url}</translation>
 <translation id="3519193562722059437">打开一个标签页即可浏览网络。</translation>
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="3529024052484145543">不安全</translation>
@@ -301,6 +304,7 @@
 <translation id="5062321486222145940">安装Google云端硬盘</translation>
 <translation id="5083464117946352670">无法确定文件大小。</translation>
 <translation id="5094827893301452931">Tweet 信息发布已完成。</translation>
+<translation id="5118764316110575523">已关闭</translation>
 <translation id="5127805178023152808">同步功能已关闭</translation>
 <translation id="5132942445612118989">将您的密码、历史记录等信息同步到所有设备上</translation>
 <translation id="5140288047769711648">Chrome 将为您记住此密码，因此，您不必记住它。</translation>
@@ -363,6 +367,7 @@
 <translation id="5979837087407522202">搜索密码</translation>
 <translation id="5982717868370722439">将现有数据添加到 <ph name="USER_EMAIL" />。</translation>
 <translation id="5984222099446776634">最近访问过的内容</translation>
+<translation id="5988851877894965432">在 Chrome 中打开网址</translation>
 <translation id="6012140227487808125">正在加密…</translation>
 <translation id="6021332621416007159">打开方式...</translation>
 <translation id="6039429417015973673">标题：<ph name="TITLE" />；发布者：<ph name="PUBLISHER_INFORMATION" />；发布日期：<ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7971521879845308059">拦截弹出式窗口</translation>
 <translation id="7982789257301363584">网络</translation>
+<translation id="800361585186029508">在 Google Chrome 中打开所输入的网址。</translation>
 <translation id="8007420562015504427">无痕搜索</translation>
 <translation id="8019783059653722575">这样，您就可以保存并上传照片。</translation>
 <translation id="802154636333426148">下载失败</translation>

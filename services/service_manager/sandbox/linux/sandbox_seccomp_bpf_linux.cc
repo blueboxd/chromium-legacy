@@ -43,6 +43,7 @@
 #include "services/service_manager/sandbox/linux/bpf_pdf_compositor_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_ppapi_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_renderer_policy_linux.h"
+#include "services/service_manager/sandbox/linux/bpf_soda_policy_linux.h"
 #include "services/service_manager/sandbox/linux/bpf_utility_policy_linux.h"
 
 #if !defined(OS_NACL_NONSFI)
@@ -172,6 +173,8 @@ std::unique_ptr<BPFBasePolicy> SandboxSeccompBPF::PolicyForSandboxType(
       return std::make_unique<NetworkProcessPolicy>();
     case SandboxType::kAudio:
       return std::make_unique<AudioProcessPolicy>();
+    case SandboxType::kSoda:
+      return std::make_unique<SodaProcessPolicy>();
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
       return std::make_unique<ImeProcessPolicy>();
@@ -219,6 +222,7 @@ void SandboxSeccompBPF::RunSandboxSanityChecks(
     case SandboxType::kIme:
 #endif  // defined(OS_CHROMEOS)
     case SandboxType::kAudio:
+    case SandboxType::kSoda:
     case SandboxType::kNetwork:
     case SandboxType::kUtility:
     case SandboxType::kNoSandbox:

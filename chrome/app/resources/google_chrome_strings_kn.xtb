@@ -18,7 +18,6 @@
 <translation id="1553358976309200471">Chrome ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
 <translation id="1587223624401073077">Google Chrome ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಬಳಸುತ್ತಿದೆ.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹಾಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
-<translation id="1590588151039584890">ಅಪ್‌ಡೇಟ್ ಮಾಡಲು, ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ರನ್ ಆಗುತ್ತಿರುವ Chrome ಅನ್ನು ನಿಲ್ಲಿಸಬೇಕಾಗುತ್ತದೆ. ಇದರಿಂದಾಗಿ ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಲಾಗ್ ಇನ್ ಆಗಿರುವ ಇತರ ಬಳಕೆದಾರರು ತಮ್ಮ ಉಳಿಸಲಾಗದ ಬದಲಾವಣೆಗಳನ್ನು ಕಳೆದುಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="1619887657840448962">Chrome ಅನ್ನು ಸುರಕ್ಷಿತವಾಗಿರಿಸಲು, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ನಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡದಿರುವ ಕೆಳಗಿನ ವಿಸ್ತರಣೆಯನ್ನು ನಾವು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದೇವೆ ಮತ್ತು ಇದು ನಿಮ್ಮ ಗಮನಕ್ಕೆ ಬಾರದೇ ಸೇರಿಸಲಾಗಿರಬಹುದು.</translation>
 <translation id="1628000112320670027">Chrome ಕುರಿತಾಗಿ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="1635734105302489219">ನೀವು Chrome ನಿಂದ ನಿರ್ಗಮಿಸಿದಾಗ ಕುಕೀಗಳನ್ನು ತೆರವುಗೊಳಿಸುತ್ತೀರಿ. ಸಿಂಕ್ ಮಾಡುವುದನ್ನು ಮುಂದುವರಿಸಲು, ಈ <ph name="COOKIE_SETTINGS_LINK" /> ಅನ್ನು ಬದಲಾಯಿಸಿ.</translation>
@@ -138,7 +137,6 @@
 <translation id="5386244825306882791">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ಅಥವಾ ಓಮ್ನಿಬಾಕ್ಸ್ ನಿಂದ ಹುಡುಕಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
 <translation id="5394833366792865639">Chrome ಟ್ಯಾಬ್ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಿ</translation>
 <translation id="5430073640787465221">ನಿಮ್ಮ ಪ್ರಾಶಸ್ತ್ಯಗಳ ಫೈಲ್ ದೋಷಪೂರಿತವಾಗಿದೆ ಅಥವಾ ಅಮಾನ್ಯವಾಗಿದೆ. ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಪಡೆದುಕೊಳ್ಳುವಲ್ಲಿ Google Chrome ವಿಫಲಗೊಂಡಿದೆ.</translation>
-<translation id="5543953544073077331">Chrome ನ ಇತರ ನಕಲುಗಳು ರನ್ ಆಗುತ್ತಿವೆ. ಅಪ್‌ಡೇಟ್ ಮಾಡಲು, ಅವುಗಳನ್ನು ಮುಚ್ಚಿರಿ.</translation>
 <translation id="556024056938947818">Google Chrome ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">ಈ ಪುಟದಲ್ಲಿ ಸೆಟ್ಟಿಂಗ್ ಒಂದು ಕಾಣಿಸದಿದ್ದರೆ, ನಿಮ್ಮ <ph name="LINK_BEGIN" />Chrome OS ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="LINK_END" /> ನೋಡಿರಿ</translation>
@@ -187,7 +185,6 @@
 <translation id="7408085963519505752">Chrome OS ನಿಯಮಗಳು</translation>
 <translation id="7419046106786626209">ನಿಮ್ಮ ಡೊಮೇನ್‌ನಲ್ಲಿ ಸಿಂಕ್ ಮಾಡುವ ಸೌಲಭ್ಯವಿಲ್ಲದ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="7486227612705979895">ವಿಳಾಸಪಟ್ಟಿಯಲ್ಲಿ ಸಲಹೆ ನೀಡಲು, Chrome ನಿಮ್ಮ ಡ್ರೈವ್‌ಗೆ ಪ್ರವೇಶಿಸುತ್ತದೆ.</translation>
-<translation id="7531671357096394523">Chrome ನ ಎಲ್ಲಾ ನಕಲುಗಳನ್ನು ತ್ಯಜಿಸಿ.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">ನಿಮ್ಮ ಸಾಧನ ಅಪ್ ಟು ಡೇಟ್ ಆಗಿದೆಯೇ ಎಂಬುದನ್ನು ನೋಡಲು, <ph name="LINK_BEGIN" />Chrome OS ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ<ph name="LINK_END" /> ಹೋಗಿ</translation>
 <translation id="7589360514048265910">ಈ ಕಂಪ್ಯೂಟರ್‌ ಇನ್ನು ಮುಂದೆ Google Chrome ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಸ್ವೀಕರಿಸುವುದಿಲ್ಲ. ಏಕೆಂದರೆ ಅದರ Mac OS X 10.9 ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>

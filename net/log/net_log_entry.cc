@@ -33,6 +33,8 @@ base::Value NetLogEntry::ToValue() const {
   base::DictionaryValue source_dict;
   source_dict.SetInteger("id", source.id);
   source_dict.SetInteger("type", static_cast<int>(source.type));
+  source_dict.SetString("start_time",
+                        NetLog::TickCountToString(source.start_time));
   entry_dict.SetKey("source", std::move(source_dict));
 
   // Set the event info.

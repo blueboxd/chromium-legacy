@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -21,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -421,6 +423,26 @@ class TestCompositorAnimationObserver : public CompositorAnimationObserver {
   bool shutdown_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorAnimationObserver);
+};
+
+// An animation observer that invokes a callback when the animation ends.
+class TestCallbackAnimationObserver : public ImplicitAnimationObserver {
+ public:
+  TestCallbackAnimationObserver() = default;
+
+  void SetCallback(base::OnceClosure callback) {
+    callback_ = std::move(callback);
+  }
+
+  // ui::ImplicitAnimationObserver overrides:
+  void OnImplicitAnimationsCompleted() override {}
+  void OnLayerAnimationEnded(LayerAnimationSequence* sequence) override {
+    if (callback_)
+      std::move(callback_).Run();
+  }
+
+ private:
+  base::OnceClosure callback_;
 };
 
 }  // namespace
@@ -2536,42 +2558,23 @@ TEST_P(LayerWithRealCompositorTest, SwitchCCLayerMasksToBounds) {
   EXPECT_TRUE(l1->cc_layer_for_testing()->masks_to_bounds());
 }
 
-// An animation observer that deletes the layer when the animation ends.
-class TestAnimationObserver : public ImplicitAnimationObserver {
- public:
-  TestAnimationObserver() = default;
-
-  Layer* layer() const { return layer_.get(); }
-
-  void SetLayer(std::unique_ptr<Layer> layer) { layer_ = std::move(layer); }
-
-  // ui::ImplicitAnimationObserver overrides:
-  void OnImplicitAnimationsCompleted() override {}
-
- protected:
-  void OnLayerAnimationEnded(LayerAnimationSequence* sequence) override {
-    layer_.reset();
-  }
-
- private:
-  std::unique_ptr<Layer> layer_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAnimationObserver);
-};
-
 // Triggerring a OnDeviceScaleFactorChanged while a layer is undergoing
-// transform animation, may cause a crash. This is because the layer may be
-// deleted by the animation observer leading to a seg fault.
-TEST_P(LayerWithRealCompositorTest, DeletingLayerDuringScaleFactorChange) {
-  TestAnimationObserver animation_observer;
+// transform animation, may cause a crash. This is because an animation observer
+// may mutate the tree, e.g. deleting a layer, changing ancestor z-order etc,
+// which breaks the tree traversal and might lead to a use-after-free seg fault.
+TEST_P(LayerWithRealCompositorTest, TreeMutationDuringScaleFactorChange) {
+  TestCallbackAnimationObserver animation_observer;
 
   std::unique_ptr<Layer> root = CreateLayer(LAYER_SOLID_COLOR);
-  animation_observer.SetLayer(CreateLayer(LAYER_SOLID_COLOR));
-
-  Layer* layer_to_delete = animation_observer.layer();
-
   GetCompositor()->SetRootLayer(root.get());
-  root->Add(layer_to_delete);
+
+  // Tests scenarios that |layer_to_delete| is deleted when animation ends.
+
+  std::unique_ptr<Layer> layer_to_delete = CreateLayer(LAYER_SOLID_COLOR);
+  animation_observer.SetCallback(
+      base::BindLambdaForTesting([&]() { layer_to_delete.reset(); }));
+
+  root->Add(layer_to_delete.get());
 
   EXPECT_EQ(gfx::Transform(), layer_to_delete->GetTargetTransform());
 
@@ -2591,13 +2594,16 @@ TEST_P(LayerWithRealCompositorTest, DeletingLayerDuringScaleFactorChange) {
 
   // This call should not crash.
   root->OnDeviceScaleFactorChanged(2.f);
+  // |layer_to_delete| should be gone.
+  EXPECT_FALSE(layer_to_delete);
 
-  animation_observer.SetLayer(CreateLayer(LAYER_SOLID_COLOR));
-  layer_to_delete = animation_observer.layer();
+  layer_to_delete = CreateLayer(LAYER_SOLID_COLOR);
+  animation_observer.SetCallback(
+      base::BindLambdaForTesting([&]() { layer_to_delete.reset(); }));
 
   std::unique_ptr<Layer> child = CreateLayer(LAYER_SOLID_COLOR);
 
-  root->Add(layer_to_delete);
+  root->Add(layer_to_delete.get());
   layer_to_delete->Add(child.get());
 
   long_duration_animation =
@@ -2612,13 +2618,16 @@ TEST_P(LayerWithRealCompositorTest, DeletingLayerDuringScaleFactorChange) {
 
   // This call should not crash.
   root->OnDeviceScaleFactorChanged(1.5f);
+  // |layer_to_delete| should be gone.
+  EXPECT_FALSE(layer_to_delete);
 
-  animation_observer.SetLayer(CreateLayer(LAYER_SOLID_COLOR));
-  layer_to_delete = animation_observer.layer();
+  layer_to_delete = CreateLayer(LAYER_SOLID_COLOR);
+  animation_observer.SetCallback(
+      base::BindLambdaForTesting([&]() { layer_to_delete.reset(); }));
 
   std::unique_ptr<Layer> child2 = CreateLayer(LAYER_SOLID_COLOR);
 
-  root->Add(layer_to_delete);
+  root->Add(layer_to_delete.get());
   layer_to_delete->Add(child.get());
   layer_to_delete->Add(child2.get());
 
@@ -2634,6 +2643,29 @@ TEST_P(LayerWithRealCompositorTest, DeletingLayerDuringScaleFactorChange) {
 
   // This call should not crash.
   root->OnDeviceScaleFactorChanged(2.f);
+  // |layer_to_delete| should be gone.
+  EXPECT_FALSE(layer_to_delete);
+
+  // Tests scenarios that the tree is changed when animation ends.
+
+  root->Add(child.get());
+  root->Add(child2.get());
+
+  animation_observer.SetCallback(base::BindLambdaForTesting(
+      [&]() { root->StackChildrenAtBottom({child2.get()}); }));
+
+  long_duration_animation =
+      std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+          ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
+  {
+    ui::ScopedLayerAnimationSettings animation(child->GetAnimator());
+    animation.AddObserver(&animation_observer);
+    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(1000));
+    child->SetTransform(transform);
+  }
+
+  // This call should not crash.
+  root->OnDeviceScaleFactorChanged(1.5f);
 }
 
 // Tests that the animators in the layer tree is added to the

@@ -545,6 +545,8 @@ void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   LOCAL_HISTOGRAM_BOOLEAN("OptimizationGuide.FetchedHints.Stored", true);
 
+  hint_cache_->PurgeExpiredFetchedHints();
+
   top_hosts_hints_fetch_timer_.Stop();
   top_hosts_hints_fetch_timer_.Start(
       FROM_HERE, hint_cache_->GetFetchedHintsUpdateTime() - clock_->Now(), this,

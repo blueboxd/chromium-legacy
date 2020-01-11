@@ -18,19 +18,16 @@ namespace web {
 // Concrete implementation of SessionCertificatePolicyCache.
 class SessionCertificatePolicyCacheImpl : public SessionCertificatePolicyCache {
  public:
-  SessionCertificatePolicyCacheImpl();
+  SessionCertificatePolicyCacheImpl(BrowserState* browser_state);
   ~SessionCertificatePolicyCacheImpl() override;
 
   // SessionCertificatePolicyCache:
   void UpdateCertificatePolicyCache(
       const scoped_refptr<web::CertificatePolicyCache>& cache) const override;
-
-  // Stores certificate information that a user has indicated should be allowed
-  // for this session.
   void RegisterAllowedCertificate(
-      const scoped_refptr<net::X509Certificate> certificate,
+      scoped_refptr<net::X509Certificate> certificate,
       const std::string& host,
-      net::CertStatus status);
+      net::CertStatus status) override;
 
   // Allows for batch updating the allowed certificate storages.
   void SetAllowedCerts(NSSet* allowed_certs);

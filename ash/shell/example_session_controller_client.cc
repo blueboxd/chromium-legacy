@@ -46,7 +46,7 @@ void ExampleSessionControllerClient::Initialize() {
 
 void ExampleSessionControllerClient::RequestLockScreen() {
   TestSessionControllerClient::RequestLockScreen();
-  shell::CreateLockScreen();
+  CreateLockScreen();
   Shell::Get()->UpdateShelfVisibility();
 }
 

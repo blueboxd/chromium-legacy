@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -104,13 +103,8 @@ class TabManager : public LifecycleUnitObserver,
   // was discarded.
   content::WebContents* DiscardTabByExtension(content::WebContents* contents);
 
-  // Log memory statistics for the running processes, then discards a tab.
-  // Tab discard happens sometime later, as collecting the statistics touches
-  // multiple threads and takes time.
-  void LogMemoryAndDiscardTab(LifecycleUnitDiscardReason reason);
-
-  // Log memory statistics for the running processes.
-  void LogMemory(const std::string& title);
+  // Discards a tab in response to memory pressure.
+  void DiscardTabFromMemoryPressure();
 
   // TODO(fdoray): Remove these methods. TabManager shouldn't know about tabs.
   // https://crbug.com/775644

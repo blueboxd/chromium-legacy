@@ -5,12 +5,11 @@
 package org.chromium.chrome.browser.identity;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 import java.util.UUID;
 
@@ -29,8 +28,8 @@ public class UuidBasedUniqueIdentificationGenerator implements UniqueIdentificat
 
     @Override
     public String getUniqueId(@Nullable String salt) {
-        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        String storedUniqueId = preferences.getString(mPreferenceKey, null);
+        SharedPreferencesManager preferences = SharedPreferencesManager.getInstance();
+        String storedUniqueId = preferences.readString(mPreferenceKey, null);
         if (storedUniqueId != null) {
             return storedUniqueId;
         }
@@ -39,9 +38,7 @@ public class UuidBasedUniqueIdentificationGenerator implements UniqueIdentificat
         String uniqueId = getUUID();
 
         // Store the field so we ensure we always return the same unique ID.
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString(mPreferenceKey, uniqueId);
-        editor.apply();
+        preferences.writeString(mPreferenceKey, uniqueId);
         return uniqueId;
 
     }

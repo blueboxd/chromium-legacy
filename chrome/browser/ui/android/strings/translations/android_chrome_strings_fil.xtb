@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Mga numero ng telepono</translation>
 <translation id="3819178904835489326">Na-delete ang <ph name="NUMBER_OF_DOWNLOADS" /> (na) pag-download</translation>
 <translation id="3822502789641063741">I-clear ang storage ng site?</translation>
+<translation id="3853625385350850937">Para magpatuloy, i-on ang NFC sa iyong device</translation>
 <translation id="3859306556332390985">Maghanap nang pasulong</translation>
 <translation id="388596076286380598">Kumuha ng mga artikulo, video, at iba pang content sa mga site na gusto mo, kahit na offline ka o mahina ang iyong koneksyon.</translation>
 <translation id="3894427358181296146">Magdagdag ng folder</translation>
@@ -1049,6 +1050,7 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">Hinihintay ang mga detalye ng mga magulang.</translation>
 <translation id="8922289737868596582">I-download ang mga page mula sa button na Higit pang opsyon para magamit ang mga ito offline</translation>
+<translation id="8926666909099850184">Naka-off ang NFC para sa device na ito. I-on ito sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Alisin sa Digital Wellness ang aktibidad mo sa Chrome?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Buksan sa ibang window</translation>

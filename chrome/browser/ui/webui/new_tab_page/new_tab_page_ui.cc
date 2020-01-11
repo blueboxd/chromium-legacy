@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -85,19 +87,30 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource() {
 }  // namespace
 
 NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui, true), page_factory_receiver_(this) {
-  profile_ = Profile::FromWebUI(web_ui);
-
+    : ui::MojoWebUIController(web_ui, true),
+      page_factory_receiver_(this),
+      profile_(Profile::FromWebUI(web_ui)),
+      instant_service_(InstantServiceFactory::GetForProfile(profile_)) {
   content::WebUIDataSource::Add(profile_, CreateNewTabPageUiHtmlSource());
 
   content::URLDataSource::Add(
       profile_, std::make_unique<FaviconSource>(
                     profile_, chrome::FaviconUrlFormat::kFavicon2));
+
+  UpdateBackgroundColor(*instant_service_->GetInitializedNtpTheme());
+  instant_service_->AddObserver(this);
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(NewTabPageUI)
 
-NewTabPageUI::~NewTabPageUI() = default;
+NewTabPageUI::~NewTabPageUI() {
+  instant_service_->RemoveObserver(this);
+}
+
+// static
+bool NewTabPageUI::IsNewTabPageOrigin(const GURL& url) {
+  return url.GetOrigin() == GURL(chrome::kChromeUINewTabPageURL).GetOrigin();
+}
 
 void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<new_tab_page::mojom::PageHandlerFactory>
@@ -118,7 +131,22 @@ void NewTabPageUI::CreatePageHandler(
       std::move(pending_page_handler), std::move(pending_page), profile_);
 }
 
-// static
-bool NewTabPageUI::IsNewTabPageOrigin(const GURL& url) {
-  return url.GetOrigin() == GURL(chrome::kChromeUINewTabPageURL).GetOrigin();
+void NewTabPageUI::NtpThemeChanged(const NtpTheme& theme) {
+  // Load time data is cached across page reloads. Update the background color
+  // here to prevent a white flicker on page reload.
+  UpdateBackgroundColor(theme);
+}
+
+void NewTabPageUI::MostVisitedInfoChanged(const InstantMostVisitedInfo& info) {}
+
+void NewTabPageUI::UpdateBackgroundColor(const NtpTheme& theme) {
+  std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue);
+  auto background_color = theme.background_color;
+  update->SetString(
+      "backgroundColor",
+      base::StringPrintf("#%02X%02X%02X", SkColorGetR(background_color),
+                         SkColorGetG(background_color),
+                         SkColorGetB(background_color)));
+  content::WebUIDataSource::Update(profile_, chrome::kChromeUINewTabPageHost,
+                                   std::move(update));
 }

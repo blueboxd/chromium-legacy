@@ -333,12 +333,6 @@ CreateSequenceManagerOnCurrentThreadWithPump(
 BASE_EXPORT std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
     SequenceManager::Settings settings = SequenceManager::Settings());
 
-// Create a SequenceManager that runs on top of |task_runner|.
-// TODO(alexclarke): Change |task_runner| to a SequencedTaskRunner.
-BASE_EXPORT std::unique_ptr<SequenceManager> CreateFunneledSequenceManager(
-    scoped_refptr<SingleThreadTaskRunner> task_runner,
-    SequenceManager::Settings settings = SequenceManager::Settings());
-
 }  // namespace sequence_manager
 }  // namespace base
 

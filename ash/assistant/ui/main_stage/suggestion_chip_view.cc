@@ -106,7 +106,7 @@ void SuggestionChipView::InitLayout(const Params& params) {
   text_view_->SetEnabledColor(kTextColor);
   text_view_->SetSubpixelRenderingEnabled(false);
   text_view_->SetFontList(
-      ash::assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1));
+      assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1));
   SetText(params.text);
   AddChildView(text_view_);
 }

@@ -3575,6 +3575,7 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case service_manager::SandboxType::kCdm:
     case service_manager::SandboxType::kPdfCompositor:
     case service_manager::SandboxType::kAudio:
+    case service_manager::SandboxType::kSoda:
       // Should never reach here.
       CHECK(0);
       return base::string16();

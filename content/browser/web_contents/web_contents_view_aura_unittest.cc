@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,6 +27,7 @@
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/display/display_switches.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_WIN)
@@ -38,6 +40,26 @@ namespace {
 constexpr gfx::Rect kBounds = gfx::Rect(0, 0, 20, 20);
 constexpr gfx::PointF kClientPt = {5, 10};
 constexpr gfx::PointF kScreenPt = {17, 3};
+
+// Runs a specified callback when a ui::MouseEvent is received.
+class RunCallbackOnActivation : public WebContentsDelegate {
+ public:
+  explicit RunCallbackOnActivation(base::OnceClosure closure)
+      : closure_(std::move(closure)) {}
+
+  ~RunCallbackOnActivation() override = default;
+
+  // WebContentsDelegate:
+  void ActivateContents(WebContents* contents) override {
+    std::move(closure_).Run();
+  }
+
+ private:
+  base::OnceClosure closure_;
+
+  DISALLOW_COPY_AND_ASSIGN(RunCallbackOnActivation);
+};
+
 }  // namespace
 
 class WebContentsViewAuraTest : public RenderViewHostTestHarness {
@@ -143,6 +165,26 @@ TEST_F(WebContentsViewAuraTest, ShowHideParent) {
   EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::HIDDEN);
   root_window()->Show();
   EXPECT_EQ(web_contents()->GetVisibility(), content::Visibility::VISIBLE);
+}
+
+TEST_F(WebContentsViewAuraTest, WebContentsDestroyedDuringClick) {
+  RunCallbackOnActivation delegate(base::BindOnce(
+      &RenderViewHostTestHarness::DeleteContents, base::Unretained(this)));
+  web_contents()->SetDelegate(&delegate);
+
+  // Simulates the mouse press.
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                             0);
+  ui::EventHandler* event_handler = GetView();
+  event_handler->OnMouseEvent(&mouse_event);
+#if defined(USE_X11)
+  // The web-content is not activated during mouse-press on X11.
+  // See comment in WebContentsViewAura::OnMouseEvent() for more details.
+  EXPECT_NE(web_contents(), nullptr);
+#else
+  EXPECT_EQ(web_contents(), nullptr);
+#endif
 }
 
 TEST_F(WebContentsViewAuraTest, OccludeView) {

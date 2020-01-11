@@ -26,6 +26,7 @@ enum ActionType : ubyte {
   redirect,
   upgrade_scheme,
   remove_headers,
+  allow_all_requests,
   count
 }
 table QueryKeyValue {
@@ -55,7 +56,8 @@ table UrlRuleMetadata {
   transform : UrlTransform;
 }
 enum IndexType : ubyte {
-  before_request = 0,
+  before_request_except_allow_all_requests = 0,
+  allow_all_requests,
   remove_cookie_header,
   remove_referer_header,
   remove_set_cookie_header,
@@ -143,7 +145,7 @@ TEST_F(IndexedRulesetFormatVersionTest, CheckVersionUpdated) {
   EXPECT_EQ(StripCommentsAndWhitespace(kFlatbufferSchemaExpected),
             StripCommentsAndWhitespace(flatbuffer_schema))
       << "Schema change detected; update this test and the schema version.";
-  EXPECT_EQ(14, GetIndexedRulesetFormatVersionForTesting())
+  EXPECT_EQ(15, GetIndexedRulesetFormatVersionForTesting())
       << "Update this test if you update the schema version.";
 }
 

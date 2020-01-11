@@ -366,6 +366,7 @@
 <translation id="381841723434055211">شماره‌های تلفن</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> بارگیری حذف شد</translation>
 <translation id="3822502789641063741">فضای ذخیره سایت پاک شود؟</translation>
+<translation id="3853625385350850937">‏برای ادامه، NFC را در دستگاه روشن کنید</translation>
 <translation id="3859306556332390985">جستجو به جلو</translation>
 <translation id="388596076286380598">حتی وقتی آفلاین هستید یا ارتباط ضعیفی دارید، مقاله، ویدیو، و محتواهای دیگر را از سایت‌های موردعلاقه دریافت کنید.</translation>
 <translation id="3894427358181296146">افزودن پوشه</translation>
@@ -1049,6 +1050,7 @@
 <translation id="8912362522468806198">‏حساب Google</translation>
 <translation id="8920114477895755567">در انتظار اطلاعات والدین.</translation>
 <translation id="8922289737868596582">برای استفاده از صفحه‌ها در حالت آفلاین، آن‌ها را با دکمه «گزینه‌های بیشتر» بارگیری کنید</translation>
+<translation id="8926666909099850184">‏NFC برای این دستگاه خاموش است. در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> آن را روشن کنید.</translation>
 <translation id="8937772741022875483">‏فعالیت Chrome شما در «آسایش دیجیتالی» برداشته شود؟</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">باز کردن در پنجره دیگر</translation>

@@ -19,6 +19,10 @@ SharedImageRepresentation::SharedImageRepresentation(
 }
 
 SharedImageRepresentation::~SharedImageRepresentation() {
+  // CHECK here as we'll crash later anyway, and this makes it clearer what the
+  // error is.
+  CHECK(!has_scoped_access_) << "Destroying a SharedImageRepresentation with "
+                                "outstanding Scoped*Access objects.";
   manager_->OnRepresentationDestroyed(backing_->mailbox(), this);
 }
 
@@ -85,10 +89,10 @@ SharedImageRepresentationSkia::ScopedWriteAccess::ScopedWriteAccess(
     util::PassKey<SharedImageRepresentationSkia> /* pass_key */,
     SharedImageRepresentationSkia* representation,
     sk_sp<SkSurface> surface)
-    : representation_(representation), surface_(std::move(surface)) {}
+    : ScopedAccessBase(representation), surface_(std::move(surface)) {}
 
 SharedImageRepresentationSkia::ScopedWriteAccess::~ScopedWriteAccess() {
-  representation_->EndWriteAccess(std::move(surface_));
+  representation()->EndWriteAccess(std::move(surface_));
 }
 
 std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
@@ -127,11 +131,11 @@ SharedImageRepresentationSkia::ScopedReadAccess::ScopedReadAccess(
     util::PassKey<SharedImageRepresentationSkia> /* pass_key */,
     SharedImageRepresentationSkia* representation,
     sk_sp<SkPromiseImageTexture> promise_image_texture)
-    : representation_(representation),
+    : ScopedAccessBase(representation),
       promise_image_texture_(std::move(promise_image_texture)) {}
 
 SharedImageRepresentationSkia::ScopedReadAccess::~ScopedReadAccess() {
-  representation_->EndReadAccess();
+  representation()->EndReadAccess();
 }
 
 std::unique_ptr<SharedImageRepresentationSkia::ScopedReadAccess>
@@ -153,6 +157,12 @@ SharedImageRepresentationSkia::BeginScopedReadAccess(
       std::move(promise_image_texture));
 }
 
+SharedImageRepresentationOverlay::ScopedReadAccess::ScopedReadAccess(
+    util::PassKey<SharedImageRepresentationOverlay> pass_key,
+    SharedImageRepresentationOverlay* representation,
+    gl::GLImage* gl_image)
+    : ScopedAccessBase(representation), gl_image_(gl_image) {}
+
 std::unique_ptr<SharedImageRepresentationOverlay::ScopedReadAccess>
 SharedImageRepresentationOverlay::BeginScopedReadAccess(bool needs_gl_image) {
   if (!IsCleared()) {
@@ -170,10 +180,10 @@ SharedImageRepresentationDawn::ScopedAccess::ScopedAccess(
     util::PassKey<SharedImageRepresentationDawn> /* pass_key */,
     SharedImageRepresentationDawn* representation,
     WGPUTexture texture)
-    : representation_(representation), texture_(texture) {}
+    : ScopedAccessBase(representation), texture_(texture) {}
 
 SharedImageRepresentationDawn::ScopedAccess::~ScopedAccess() {
-  representation_->EndAccess();
+  representation()->EndAccess();
 }
 
 std::unique_ptr<SharedImageRepresentationDawn::ScopedAccess>

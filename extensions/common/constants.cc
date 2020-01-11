@@ -20,6 +20,8 @@ const base::FilePath::CharType kLocaleFolder[] =
     FILE_PATH_LITERAL("_locales");
 const base::FilePath::CharType kMessagesFilename[] =
     FILE_PATH_LITERAL("messages.json");
+const base::FilePath::CharType kGzippedMessagesFilename[] =
+    FILE_PATH_LITERAL("messages.json.gz");
 const base::FilePath::CharType kPlatformSpecificFolder[] =
     FILE_PATH_LITERAL("_platform_specific");
 const base::FilePath::CharType kMetadataFolder[] =

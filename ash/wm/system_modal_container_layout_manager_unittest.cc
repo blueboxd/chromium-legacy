@@ -328,7 +328,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   std::unique_ptr<aura::Window> status_control(
       status_delegate->OpenTestWindowWithParent(
           Shell::GetPrimaryRootWindowController()->GetContainer(
-              ash::kShellWindowId_ShelfControlContainer)));
+              kShellWindowId_ShelfControlContainer)));
   status_control->SetBounds(main->bounds());
 
   // Make sure that status window can receive event.
@@ -360,7 +360,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
     EventTestWindow* lock_delegate = new EventTestWindow(false);
     std::unique_ptr<aura::Window> lock(lock_delegate->OpenTestWindowWithParent(
         Shell::GetPrimaryRootWindowController()->GetContainer(
-            ash::kShellWindowId_LockScreenContainer)));
+            kShellWindowId_LockScreenContainer)));
     // BlockUserSession could change the workspace size. Make sure |lock| has
     // the same bounds as |main| so that |lock| gets the generated mouse events.
     lock->SetBounds(main->bounds());
@@ -421,7 +421,7 @@ TEST_F(SystemModalContainerLayoutManagerTest,
   std::unique_ptr<aura::Window> status_control(
       status_delegate->OpenTestWindowWithParent(
           Shell::GetPrimaryRootWindowController()->GetContainer(
-              ash::kShellWindowId_ShelfControlContainer)));
+              kShellWindowId_ShelfControlContainer)));
   status_control->SetBounds(main->bounds());
 
   // Events are blocked on all windows because status window is above the modal
@@ -627,7 +627,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
     std::unique_ptr<aura::Window> lock_parent(OpenTestWindowWithParent(
         Shell::GetPrimaryRootWindowController()->GetContainer(
-            ash::kShellWindowId_LockScreenContainer),
+            kShellWindowId_LockScreenContainer),
         false));
     std::unique_ptr<aura::Window> lock_modal_window(
         OpenTestWindowWithParent(lock_parent.get(), true));
@@ -666,10 +666,10 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2U, root_windows.size());
-  aura::Window* container1 = Shell::GetContainer(
-      root_windows[0], ash::kShellWindowId_SystemModalContainer);
-  aura::Window* container2 = Shell::GetContainer(
-      root_windows[1], ash::kShellWindowId_SystemModalContainer);
+  aura::Window* container1 =
+      Shell::GetContainer(root_windows[0], kShellWindowId_SystemModalContainer);
+  aura::Window* container2 =
+      Shell::GetContainer(root_windows[1], kShellWindowId_SystemModalContainer);
 
   std::unique_ptr<aura::Window> modal1(
       OpenTestWindowWithParent(container1, true));

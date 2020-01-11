@@ -4,18 +4,39 @@
 
 #include "chrome/browser/ui/color/chrome_color_mixers.h"
 
+#include "base/bind.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_recipe.h"
 
+namespace {
+
+constexpr float kMinOmniboxToolbarContrast = 1.3f;
+
+ui::ColorTransform ChooseOmniboxBgBlendTarget() {
+  return base::BindRepeating(
+      [](SkColor input_color, const ui::ColorMixer& mixer) {
+        const SkColor toolbar_color = mixer.GetResultColor(kColorToolbar);
+        const SkColor darkest_color = color_utils::GetDarkestColor();
+        return (color_utils::GetContrastRatio(toolbar_color, darkest_color) >=
+                kMinOmniboxToolbarContrast)
+                   ? darkest_color
+                   : color_utils::GetColorWithMaxContrast(darkest_color);
+      });
+}
+
+}  // namespace
+
 void AddChromeColorMixers(ui::ColorProvider* provider) {
   ui::ColorMixer& mixer = provider->AddMixer();
 
   mixer[kColorOmniboxBackground] = ui::BlendForMinContrast(
-      ui::kColorTextfieldBackground, kColorToolbar, base::nullopt, 1.11f);
-  mixer[kColorOmniboxText] = {ui::kColorTextfieldForeground};
+      kColorToolbar, kColorToolbar, ChooseOmniboxBgBlendTarget(),
+      kMinOmniboxToolbarContrast);
+  mixer[kColorOmniboxText] =
+      ui::GetColorWithMaxContrast(kColorOmniboxBackground);
   // TODO(tluk) Behavior change for dark mode to a darker toolbar color for
   // better color semantics. Follow up with UX team before landing change.
   mixer[kColorToolbar] = {ui::kColorPrimaryBackground};

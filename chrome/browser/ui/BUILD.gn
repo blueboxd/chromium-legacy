@@ -509,7 +509,7 @@ jumbo_static_library("ui") {
     "//components/signin/public/identity_manager",
     "//components/spellcheck/browser",
     "//components/ssl_errors",
-    "//components/startup_metric_utils/browser:lib",
+    "//components/startup_metric_utils/browser",
     "//components/strings",
     "//components/subresource_filter/content/browser",
     "//components/subresource_filter/core/browser",

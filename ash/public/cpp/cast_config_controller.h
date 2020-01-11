@@ -97,7 +97,7 @@ class ASH_PUBLIC_EXPORT CastConfigController {
   // registered observers will get called.
   virtual void RequestDeviceRefresh() = 0;
 
-  virtual const std::vector<ash::SinkAndRoute>& GetSinksAndRoutes() = 0;
+  virtual const std::vector<SinkAndRoute>& GetSinksAndRoutes() = 0;
 
   // Initiate a casting session to the sink identified by |sink_id|.
   virtual void CastToSink(const std::string& sink_id) = 0;

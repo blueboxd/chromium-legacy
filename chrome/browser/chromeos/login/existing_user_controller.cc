@@ -75,6 +75,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -320,6 +321,18 @@ LoginDisplayHost* GetLoginDisplayHost() {
 
 LoginDisplay* GetLoginDisplay() {
   return GetLoginDisplayHost()->GetLoginDisplay();
+}
+
+void SetLoginExtensionApiLaunchExtensionIdPref(const AccountId& account_id,
+                                               const std::string extension_id) {
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  DCHECK(user);
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+  DCHECK(profile);
+  PrefService* prefs = profile->GetPrefs();
+  prefs->SetString(prefs::kLoginExtensionApiLaunchExtensionId, extension_id);
+  prefs->CommitPendingWrite();
 }
 
 }  // namespace
@@ -969,6 +982,17 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   if (!is_enterprise_managed &&
       user_manager::UserManager::Get()->GetUsers().empty()) {
     DeviceSettingsService::Get()->MarkWillEstablishConsumerOwnership();
+  }
+
+  if (user_context.IsLockableManagedGuestSession()) {
+    CHECK(user_context.GetUserType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+    user_manager::User* user =
+        user_manager::UserManager::Get()->FindUserAndModify(
+            user_context.GetAccountId());
+    DCHECK(user);
+    user->AddProfileCreatedObserver(base::BindOnce(
+        &SetLoginExtensionApiLaunchExtensionIdPref, user_context.GetAccountId(),
+        user_context.GetManagedGuestSessionLaunchExtensionId()));
   }
 
   UserSessionManager::StartSessionType start_session_type =

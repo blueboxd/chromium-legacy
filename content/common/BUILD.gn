@@ -213,8 +213,6 @@ source_set("common") {
     "service_worker/service_worker_utils.h",
     "skia_utils.cc",
     "skia_utils.h",
-    "swapped_out_messages.cc",
-    "swapped_out_messages.h",
     "tab_switch_time_recorder.cc",
     "tab_switch_time_recorder.h",
     "text_input_client_messages.h",

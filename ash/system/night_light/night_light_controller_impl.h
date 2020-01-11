@@ -146,6 +146,10 @@ class ASH_EXPORT NightLightControllerImpl
   TimeOfDay GetCustomEndTime() const;
   bool GetAmbientColorEnabled() const;
 
+  // Update |ambient_rgb_scaling_factors_| from the current
+  // |ambient_temperature_|.
+  void UpdateAmbientRgbScalingFactors();
+
   // Set the desired NightLight settings in the current active user prefs.
   void SetEnabled(bool enabled, AnimationDuration animation_type);
   void SetColorTemperature(float temperature);
@@ -309,7 +313,7 @@ class ASH_EXPORT NightLightControllerImpl
 
   // The ambient color R, G, and B scaling factors.
   // Valid only if ambient color is enabled.
-  gfx::Vector3dF ambient_rgb_scaling_factors_;
+  gfx::Vector3dF ambient_rgb_scaling_factors_ = {1.f, 1.f, 1.f};
 
   base::WeakPtrFactory<NightLightControllerImpl> weak_ptr_factory_;
 

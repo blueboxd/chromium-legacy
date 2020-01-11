@@ -46,7 +46,8 @@ class SimRequestBase {
   void Write(const Vector<char>& data);
 
   // Finish the response, this is as if the server closed the connection.
-  void Finish();
+  // If |navigation_body_loader| already finished, skip calling Finish on it.
+  void Finish(bool body_loader_finished = false);
 
   // Shorthand to complete a request (start/write/finish) sequence in order.
   void Complete(const String& data = String());

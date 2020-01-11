@@ -53,7 +53,11 @@ namespace declarativeNetRequest {
     // or ftp.
     upgradeScheme,
     // Remove request/response headers from the network request.
-    removeHeaders
+    removeHeaders,
+    // TODO(crbug.com/1038831): Add documentation once the implementation is
+    // complete.
+    [nodoc]
+    allowAllRequests
   };
 
   // Represents a query key-value pair.
@@ -258,7 +262,7 @@ namespace declarativeNetRequest {
     long? tabId;
 
     // If specified, only matches rules after the given timestamp.
-    long? minTimeStamp;
+    double? minTimeStamp;
   };
 
   [nodoc]

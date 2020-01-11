@@ -28,28 +28,43 @@ LoginScreenApitestBase::LoginScreenApitestBase(version_info::Channel channel)
       extension_id_(kExtensionId),
       extension_update_manifest_path_(kExtensionUpdateManifestPath) {}
 
-LoginScreenApitestBase::~LoginScreenApitestBase() = default;
-
-void LoginScreenApitestBase::SetUpExtensionAndRunTest(
-    const std::string& testName) {
-  SetUpExtensionAndRunTest(testName, /*assert_test_succeed=*/true);
+LoginScreenApitestBase::~LoginScreenApitestBase() {
+  catcher_.reset();
+  listener_.reset();
 }
-void LoginScreenApitestBase::SetUpExtensionAndRunTest(
-    const std::string& testName,
-    bool assert_test_succeed) {
-  extensions::ResultCatcher catcher;
 
-  ExtensionTestMessageListener listener(kWaitingForTestName,
-                                        /*will_reply=*/true);
+void LoginScreenApitestBase::SetUpTestListeners() {
+  catcher_ = std::make_unique<extensions::ResultCatcher>();
+  listener_ =
+      std::make_unique<ExtensionTestMessageListener>(kWaitingForTestName,
+                                                     /*will_reply=*/true);
+}
 
-  AddExtensionForForceInstallation(extension_id_,
-                                   extension_update_manifest_path_);
+void LoginScreenApitestBase::RunTest(const std::string& test_name) {
+  RunTest(test_name, /*assert_test_succeed=*/true);
+}
 
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(testName);
+void LoginScreenApitestBase::RunTest(const std::string& test_name,
+                                     bool assert_test_succeed) {
+  ASSERT_TRUE(listener_->WaitUntilSatisfied());
+  listener_->Reply(test_name);
 
   if (assert_test_succeed)
-    ASSERT_TRUE(catcher.GetNextResult());
+    ASSERT_TRUE(catcher_->GetNextResult());
+}
+
+void LoginScreenApitestBase::SetUpLoginScreenExtensionAndRunTest(
+    const std::string& test_name) {
+  SetUpLoginScreenExtensionAndRunTest(test_name, /*assert_test_succeed=*/true);
+}
+
+void LoginScreenApitestBase::SetUpLoginScreenExtensionAndRunTest(
+    const std::string& test_name,
+    bool assert_test_succeed) {
+  SetUpTestListeners();
+  AddExtensionForForceInstallation(extension_id_,
+                                   extension_update_manifest_path_);
+  RunTest(test_name, assert_test_succeed);
 }
 
 }  // namespace chromeos

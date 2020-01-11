@@ -21,8 +21,6 @@ js_type_check("closure_compile") {
     ":users_add_user_dialog",
     ":users_page",
     "//chrome/browser/resources/settings/people_page:account_manager_browser_proxy",
-    "//chrome/browser/resources/settings/people_page:change_picture",
-    "//chrome/browser/resources/settings/people_page:change_picture_browser_proxy",
     "//chrome/browser/resources/settings/people_page:profile_info_browser_proxy",
     "//chrome/browser/resources/settings/people_page:signout_dialog",
     "//chrome/browser/resources/settings/people_page:sync_browser_proxy",

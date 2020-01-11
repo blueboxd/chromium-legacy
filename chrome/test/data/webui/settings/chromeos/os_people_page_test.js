@@ -144,6 +144,20 @@ cr.define('settings_people_page', function() {
       assertTrue(peoplePage.$$('#account-manager-subpage-trigger').hidden);
     });
 
+    test('parental controls page is shown when enabled', () => {
+      loadTimeData.overrideValues({
+        // Simulate parental controls.
+        showParentalControls: true,
+      });
+
+      peoplePage = document.createElement('os-settings-people-page');
+      document.body.appendChild(peoplePage);
+      Polymer.dom.flush();
+
+      // Setup button is shown and enabled.
+      assert(peoplePage.$$('settings-parental-controls-page'));
+    });
+
     test('GAIA name and picture, account manager enabled', async () => {
       loadTimeData.overrideValues({
         isAccountManagerEnabled: true,

@@ -45,6 +45,7 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
 #endif
+    case SandboxType::kSoda:
       return false;
   }
 }
@@ -89,6 +90,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
 #endif  // defined(OS_CHROMEOS)
+    case SandboxType::kSoda:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kUtilityProcess);
       DCHECK(!command_line->HasSwitch(switches::kServiceSandboxType));
@@ -164,6 +166,8 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
       return switches::kUtilitySandbox;
     case SandboxType::kAudio:
       return switches::kAudioSandbox;
+    case SandboxType::kSoda:
+      return switches::kSodaSandbox;
 #if defined(OS_WIN)
     case SandboxType::kXrCompositing:
       return switches::kXrCompositingSandbox;
@@ -214,6 +218,8 @@ SandboxType UtilitySandboxTypeFromString(const std::string& sandbox_string) {
 #endif
   if (sandbox_string == switches::kAudioSandbox)
     return SandboxType::kAudio;
+  if (sandbox_string == switches::kSodaSandbox)
+    return SandboxType::kSoda;
 #if defined(OS_CHROMEOS)
   if (sandbox_string == switches::kImeSandbox)
     return SandboxType::kIme;

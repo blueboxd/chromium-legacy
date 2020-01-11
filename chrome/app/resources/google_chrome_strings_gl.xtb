@@ -20,7 +20,6 @@
 <translation id="1553358976309200471">Actualizar Chrome</translation>
 <translation id="1587223624401073077">Google Chrome utiliza a túa cámara.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> é perigoso, así que Chrome bloqueouno.</translation>
-<translation id="1590588151039584890">Para aplicar a actualización, é necesario que Chrome deixe de executarse neste ordenador, o que pode provocar que outros usuarios que iniciasen sesión nel perdan os cambios non gardados.</translation>
 <translation id="1619887657840448962">Para conseguir que Chrome resulte máis seguro, desactivamos a seguinte extensión que non aparece en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e que quizais se engadise sen o teu coñecemento.</translation>
 <translation id="1628000112320670027">Obter axuda sobre Chrome</translation>
 <translation id="1635734105302489219">As cookies bórranse ao pechar Chrome. Para seguir coa sincronización, cambia este <ph name="COOKIE_SETTINGS_LINK" />.</translation>
@@ -145,7 +144,6 @@
 <translation id="5430073640787465221">O teu ficheiro de preferencias está danado ou non é válido.
 
 Google Chrome non pode recuperar a túa configuración.</translation>
-<translation id="5543953544073077331">Estanse executando outras instancias de Chrome. Para aplicar a actualización, péchaas.</translation>
 <translation id="556024056938947818">Google Chrome está intentando mostrar contrasinais.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">Se non se mostra algunha opción de configuración nesta páxina, accede á <ph name="LINK_BEGIN" />
@@ -195,7 +193,6 @@ Google Chrome non pode recuperar a túa configuración.</translation>
 <translation id="7408085963519505752">Condicións de Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS non puido sincronizar os teus datos porque a función de sincronización non está dispoñible para o teu dominio.</translation>
 <translation id="7486227612705979895">Chrome accederá a Drive para facer suxestións na barra de enderezos</translation>
-<translation id="7531671357096394523">Saír de todas as instancias de Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Para ver ser o teu dispositivo está actualizado, accede á <ph name="LINK_BEGIN" />configuración de Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Este ordenador deixará de recibir actualizacións de Google Chrome porque Mac OS X 10.9 deixou de ser compatible.</translation>

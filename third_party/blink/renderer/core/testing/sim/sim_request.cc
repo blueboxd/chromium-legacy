@@ -84,7 +84,7 @@ void SimRequestBase::WriteInternal(base::span<const char> data) {
     client_->DidReceiveData(data.data(), data.size());
 }
 
-void SimRequestBase::Finish() {
+void SimRequestBase::Finish(bool body_loader_finished) {
   if (!started_)
     ServePending();
   DCHECK(started_);
@@ -94,7 +94,8 @@ void SimRequestBase::Finish() {
                      total_encoded_data_length_, total_encoded_data_length_);
   } else {
     if (navigation_body_loader_) {
-      navigation_body_loader_->Finish();
+      if (!body_loader_finished)
+        navigation_body_loader_->Finish();
     } else {
       // TODO(esprehn): Is claiming a request time of 0 okay for tests?
       client_->DidFinishLoading(base::TimeTicks(), total_encoded_data_length_,

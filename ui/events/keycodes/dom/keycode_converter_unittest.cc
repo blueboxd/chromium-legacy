@@ -22,7 +22,7 @@ namespace {
 
 // Number of native codes expected to be mapped for each kind of native code.
 // These are in the same order as the columns in dom_code_data.inc
-// as reflected in the USB_KEYMAP() macro below.
+// as reflected in the DOM_CODE() macro below.
 const size_t expected_mapped_key_count[] = {
   212,  // evdev
   212,  // xkb
@@ -39,13 +39,15 @@ struct KeycodeConverterData {
   int native_keycode[kNativeColumns];
 };
 
-#define USB_KEYMAP(usb, evdev, xkb, win, mac, code, id) \
-  { usb, code, #id, { evdev, xkb, win, mac } }
-#define USB_KEYMAP_DECLARATION \
+#define DOM_CODE(usb, evdev, xkb, win, mac, code, id) \
+  {                                                   \
+    usb, code, #id, { evdev, xkb, win, mac }          \
+  }
+#define DOM_CODE_DECLARATION \
   const KeycodeConverterData kKeycodeConverterData[] =
 #include "ui/events/keycodes/dom/dom_code_data.inc"
-#undef USB_KEYMAP
-#undef USB_KEYMAP_DECLARATION
+#undef DOM_CODE
+#undef DOM_CODE_DECLARATION
 
 const uint32_t kUsbNonExistentKeycode = 0xffffff;
 const uint32_t kUsbUsBackslash =        0x070031;

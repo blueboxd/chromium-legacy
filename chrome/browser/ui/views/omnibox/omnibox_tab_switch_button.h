@@ -22,9 +22,8 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
 
   // views::MdTextButton:
   void StateChanged(ButtonState old_state) override;
-
-  // views::View:
   void OnThemeChanged() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Called by parent views to change background on external (not mouse related)
   // event (tab key).
@@ -36,7 +35,6 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
 
   // Called to indicate button has been focused.
   void ProvideFocusHint();
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
   // Consults the parent views to see if the button is selected.
@@ -44,14 +42,6 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
 
   // Produces a path custom to this button for the focus ring to follow.
   SkPath GetFocusRingPath() const;
-
-  // Encapsulates the color look-up, which uses the button state (hovered,
-  // etc.) and consults the parent result view.
-  SkColor GetBackgroundColor() const;
-
-  // Encapsulates changing the color of the button to display being
-  // pressed.
-  void SetPressed();
 
   // Helper function to translate parent width into goal width, and
   // pass back the text at that width.

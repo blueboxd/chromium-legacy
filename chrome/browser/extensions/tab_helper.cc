@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/render_messages.h"
@@ -58,6 +59,11 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/url_constants.h"
+
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/session_service.h"
+#include "chrome/browser/sessions/session_service_factory.h"
+#endif
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -113,10 +119,19 @@ void TabHelper::SetExtensionApp(const Extension* extension) {
 
   UpdateExtensionAppIcon(extension_app_);
 
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
   if (extension_app_) {
-    SessionTabHelper::FromWebContents(web_contents())
-        ->SetTabExtensionAppID(GetAppId());
+    SessionService* session_service = SessionServiceFactory::GetForProfile(
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+    if (session_service) {
+      SessionTabHelper* session_tab_helper =
+          SessionTabHelper::FromWebContents(web_contents());
+      session_service->SetTabExtensionAppID(session_tab_helper->window_id(),
+                                            session_tab_helper->session_id(),
+                                            GetAppId());
+    }
   }
+#endif
 }
 
 void TabHelper::SetExtensionAppById(const ExtensionId& extension_app_id) {

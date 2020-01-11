@@ -120,9 +120,9 @@ void DisplayAnimator::StartFadeOutAnimation(base::OnceClosure callback) {
         std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
     hiding_layer->SetColor(SK_ColorBLACK);
     hiding_layer->SetBounds(root_window->bounds());
-    ui::Layer* parent = ash::Shell::GetContainer(
-                            root_window, ash::kShellWindowId_OverlayContainer)
-                            ->layer();
+    ui::Layer* parent =
+        Shell::GetContainer(root_window, kShellWindowId_OverlayContainer)
+            ->layer();
     parent->Add(hiding_layer.get());
 
     hiding_layer->SetOpacity(0.0);
@@ -173,9 +173,9 @@ void DisplayAnimator::StartFadeInAnimation() {
       hiding_layer = new ui::Layer(ui::LAYER_SOLID_COLOR);
       hiding_layer->SetColor(SK_ColorBLACK);
       hiding_layer->SetBounds(root_window->bounds());
-      ui::Layer* parent = ash::Shell::GetContainer(
-                              root_window, ash::kShellWindowId_OverlayContainer)
-                              ->layer();
+      ui::Layer* parent =
+          Shell::GetContainer(root_window, kShellWindowId_OverlayContainer)
+              ->layer();
       parent->Add(hiding_layer);
       hiding_layer->SetOpacity(1.0f);
       hiding_layer->SetVisible(true);

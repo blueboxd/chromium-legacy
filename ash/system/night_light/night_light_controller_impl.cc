@@ -534,6 +534,12 @@ float NightLightControllerImpl::GetColorTemperature() const {
   return kDefaultColorTemperature;
 }
 
+void NightLightControllerImpl::UpdateAmbientRgbScalingFactors() {
+  ambient_rgb_scaling_factors_ =
+      NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(
+          ambient_temperature_);
+}
+
 NightLightController::ScheduleType NightLightControllerImpl::GetScheduleType()
     const {
   if (active_user_pref_service_) {
@@ -568,10 +574,7 @@ void NightLightControllerImpl::SetAmbientColorEnabled(bool enabled) {
 }
 
 bool NightLightControllerImpl::GetAmbientColorEnabled() const {
-  const bool ambient_eq_supported =
-      features::IsAllowAmbientEQEnabled() &&
-      chromeos::PowerManagerClient::Get()->SupportsAmbientColor();
-  return ambient_eq_supported && active_user_pref_service_ &&
+  return features::IsAllowAmbientEQEnabled() && active_user_pref_service_ &&
          active_user_pref_service_->GetBoolean(prefs::kAmbientColorEnabled);
 }
 
@@ -735,10 +738,9 @@ void NightLightControllerImpl::AmbientColorChanged(
   ambient_temperature_ +=
       (temperature_difference / abs_temperature_difference) *
       kAmbientColorChangeThreshold;
+
   if (GetAmbientColorEnabled()) {
-    ambient_rgb_scaling_factors_ =
-        NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(
-            ambient_temperature_);
+    UpdateAmbientRgbScalingFactors();
     RefreshDisplaysColorTemperatures();
   }
 }
@@ -912,6 +914,8 @@ void NightLightControllerImpl::StartWatchingPrefsChanges() {
 void NightLightControllerImpl::InitFromUserPrefs() {
   StartWatchingPrefsChanges();
   LoadCachedGeopositionIfNeeded();
+  if (GetAmbientColorEnabled())
+    UpdateAmbientRgbScalingFactors();
   Refresh(true /* did_schedule_change */);
   NotifyStatusChanged();
   NotifyClientWithScheduleChange();
@@ -950,9 +954,7 @@ void NightLightControllerImpl::OnEnabledPrefChanged() {
 void NightLightControllerImpl::OnAmbientColorEnabledPrefChanged() {
   DCHECK(active_user_pref_service_);
   if (GetAmbientColorEnabled()) {
-    ambient_rgb_scaling_factors_ =
-        NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(
-            ambient_temperature_);
+    UpdateAmbientRgbScalingFactors();
     VerifyAmbientColorCtmSupport();
   }
   RefreshDisplaysColorTemperatures();

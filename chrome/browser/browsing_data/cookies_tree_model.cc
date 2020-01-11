@@ -547,8 +547,7 @@ class CookieTreeIndexedDBNode : public CookieTreeNode {
     LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
     if (container) {
-      container->indexed_db_helper_->DeleteIndexedDB(
-          usage_info_->origin.GetURL());
+      container->indexed_db_helper_->DeleteIndexedDB(usage_info_->origin);
       container->indexed_db_info_list_.erase(usage_info_);
     }
   }

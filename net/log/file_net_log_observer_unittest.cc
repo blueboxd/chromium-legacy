@@ -68,13 +68,13 @@ void AddEntries(FileNetLogObserver* logger,
 
   // The maximum value of base::TimeTicks::Now() will be the maximum value of
   // int64_t, and if the maximum number of digits are included, the
-  // |base_entry_size| could be up to 101 characters. Check that the event
+  // |base_entry_size| could be up to 136 characters. Check that the event
   // format does not include additional padding.
-  DCHECK_LE(base_entry_size, 101u);
+  DCHECK_LE(base_entry_size, 136u);
 
   // |entry_size| should be at least as big as the largest possible base
   // entry.
-  EXPECT_GE(entry_size, 101u);
+  EXPECT_GE(entry_size, 136u);
 
   // |entry_size| cannot be smaller than the minimum event size.
   EXPECT_GE(entry_size, base_entry_size);

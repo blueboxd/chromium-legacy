@@ -120,8 +120,14 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
     return;
   }
 
+  // We require observation if we are viewport-activatable, and one of the
+  // following is true:
+  // 1. We're locked, which means that we need to know when to unlock the
+  //    element
+  // 2. We're activated (in the CSS version), which means that we need to know
+  //    when we stop intersecting the viewport so that we can re-lock.
   bool should_observe =
-      IsLocked() &&
+      (IsLocked() || (!IsAttributeVersion(this) && IsActivated())) &&
       IsActivatable(DisplayLockActivationReason::kViewportIntersection) &&
       ConnectedToView();
   if (should_observe && !is_observed_) {
@@ -414,7 +420,16 @@ void DisplayLockContext::CommitForActivationWithSignal(
                 weak_factory_.GetWeakPtr(), WrapPersistent(activated_element)));
 
   StartCommit();
-  is_activated_ = true;
+
+  if (!IsAttributeVersion(this)) {
+    css_is_activated_ = true;
+    // Since size containment depends on the activatability state, we should
+    // invalidate the style for this element, so that the style adjuster can
+    // properly remove the containment.
+    element_->SetNeedsStyleRecalc(
+        kLocalStyleChange,
+        StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
+  }
 
   // Since setting the attribute might trigger a commit if we are still locked,
   // we set it after we start the commit.
@@ -423,11 +438,12 @@ void DisplayLockContext::CommitForActivationWithSignal(
 }
 
 bool DisplayLockContext::IsActivated() const {
-  return is_activated_;
+  DCHECK(!IsAttributeVersion(this));
+  return css_is_activated_;
 }
 
 void DisplayLockContext::ClearActivated() {
-  is_activated_ = false;
+  css_is_activated_ = false;
 }
 
 bool DisplayLockContext::ShouldCommitForActivation(

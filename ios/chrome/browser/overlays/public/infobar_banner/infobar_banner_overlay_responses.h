@@ -31,22 +31,17 @@ class InfobarBannerShowModalResponse
   InfobarBannerShowModalResponse();
 };
 
-// Response info used to create completion OverlayResponses for an infobar
-// banner OverlayRequest.  Executed when the banner is dismissed by the user or
-// the request is cancelled.
-class InfobarBannerCompletionResponse
-    : public OverlayResponseInfo<InfobarBannerCompletionResponse> {
+// Response info used to create dispatched OverlayResponses that notify the
+// model layer that the upcoming dismissal is user-initiated (i.e. swipe up to
+// dismiss the banner on the refresh banner UI).
+class InfobarBannerUserInitiatedDismissalResponse
+    : public OverlayResponseInfo<InfobarBannerUserInitiatedDismissalResponse> {
  public:
-  ~InfobarBannerCompletionResponse() override;
-
-  // Whether the banner dismissal was user-initiated.
-  bool user_initiated() const { return user_initiated_; }
+  ~InfobarBannerUserInitiatedDismissalResponse() override;
 
  private:
-  OVERLAY_USER_DATA_SETUP(InfobarBannerCompletionResponse);
-  explicit InfobarBannerCompletionResponse(bool user_initiated);
-
-  bool user_initiated_ = false;
+  OVERLAY_USER_DATA_SETUP(InfobarBannerUserInitiatedDismissalResponse);
+  InfobarBannerUserInitiatedDismissalResponse();
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_INFOBAR_BANNER_INFOBAR_BANNER_OVERLAY_RESPONSES_H_

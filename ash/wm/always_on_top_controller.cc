@@ -86,7 +86,7 @@ void AlwaysOnTopController::ReparentWindow(aura::Window* window) {
          window->type() == aura::client::WINDOW_TYPE_POPUP);
   aura::Window* container = GetContainer(window);
   if (window->parent() != container &&
-      !window->GetProperty(ash::kDisallowReparentKey))
+      !window->GetProperty(kDisallowReparentKey))
     container->AddChild(window);
 }
 

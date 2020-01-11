@@ -84,6 +84,11 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   std::unique_ptr<ShelfItemDelegate> RemoveItemAndTakeShelfItemDelegate(
       const ShelfID& shelf_id);
 
+  // Swaps the item at the given index with the next one if |with_next| is
+  // true, or with the previous one if |with_next| is false. Returns true
+  // if the requested swap has happened, and false otherwise.
+  bool Swap(int index, bool with_next);
+
   // Moves the item at |index| to |target_index|. |target_index| is in terms
   // of the model *after* the item at |index| is removed.
   void Move(int index, int target_index);

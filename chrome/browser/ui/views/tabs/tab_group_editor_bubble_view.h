@@ -99,7 +99,9 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   std::vector<std::pair<SkColor, base::string16>> colors_;
   ColorPickerView* color_selector_;
 
-  void InitColorSet();
+  // Creates the set of tab group colors to display and returns the color that
+  // is initially selected.
+  SkColor InitColorSet();
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_EDITOR_BUBBLE_VIEW_H_

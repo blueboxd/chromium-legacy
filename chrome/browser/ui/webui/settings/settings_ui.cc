@@ -92,7 +92,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/account_manager_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/components/account_manager/account_manager.h"
@@ -190,7 +189,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #endif
 
 #if defined(OS_CHROMEOS)
-  InitBrowserSettingsWebUIHandlers(profile, web_ui, html_source);
+  InitBrowserSettingsWebUIHandlers();
 #else
   AddSettingsPageUIHandler(std::make_unique<DefaultBrowserHandler>());
   AddSettingsPageUIHandler(std::make_unique<ManageProfileHandler>(profile));
@@ -240,11 +239,15 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       base::FeatureList::IsEnabled(features::kSyncSetupFriendlySettings));
 
 #if defined(OS_CHROMEOS)
-  html_source->AddBoolean(
-      "showParentalControls",
-      chromeos::settings::ShouldShowParentalControls(profile));
   html_source->AddBoolean("splitSettingsSyncEnabled",
                           chromeos::features::IsSplitSettingsSyncEnabled());
+
+  html_source->AddBoolean(
+      "userCannotManuallyEnterPassword",
+      !chromeos::password_visibility::AccountHasUserFacingPassword(
+          chromeos::ProfileHelper::Get()
+              ->GetUserByProfile(profile)
+              ->GetAccountId()));
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -293,11 +296,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 SettingsUI::~SettingsUI() = default;
 
 #if defined(OS_CHROMEOS)
-// static
-void SettingsUI::InitBrowserSettingsWebUIHandlers(
-    Profile* profile,
-    content::WebUI* web_ui,
-    content::WebUIDataSource* html_source) {
+void SettingsUI::InitBrowserSettingsWebUIHandlers() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+
   // TODO(jamescook): Sort out how account management is split between Chrome OS
   // and browser settings.
   if (chromeos::IsAccountManagerAvailable(profile)) {
@@ -307,7 +308,7 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers(
         factory->GetAccountManager(profile->GetPath().value());
     DCHECK(account_manager);
 
-    web_ui->AddMessageHandler(
+    web_ui()->AddMessageHandler(
         std::make_unique<chromeos::settings::AccountManagerUIHandler>(
             account_manager, IdentityManagerFactory::GetForProfile(profile)));
   }
@@ -316,7 +317,7 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers(
     chromeos::android_sms::AndroidSmsService* android_sms_service =
         chromeos::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(
             profile);
-    web_ui->AddMessageHandler(
+    web_ui()->AddMessageHandler(
         std::make_unique<chromeos::settings::MultideviceHandler>(
             profile->GetPrefs(),
             chromeos::multidevice_setup::MultiDeviceSetupClientFactory::
@@ -326,22 +327,10 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers(
                 : nullptr,
             android_sms_service ? android_sms_service->android_sms_app_manager()
                                 : nullptr));
-    if (chromeos::settings::ShouldShowParentalControls(profile)) {
-      web_ui->AddMessageHandler(
-          std::make_unique<chromeos::settings::ParentalControlsHandler>(
-              profile));
-    }
   }
 
-  web_ui->AddMessageHandler(
+  web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::AndroidAppsHandler>(profile));
-
-  html_source->AddBoolean(
-      "userCannotManuallyEnterPassword",
-      !chromeos::password_visibility::AccountHasUserFacingPassword(
-          chromeos::ProfileHelper::Get()
-              ->GetUserByProfile(profile)
-              ->GetAccountId()));
 }
 #endif  // defined(OS_CHROMEOS)
 

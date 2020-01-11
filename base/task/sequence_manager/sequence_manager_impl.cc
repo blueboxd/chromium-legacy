@@ -71,16 +71,6 @@ std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
   return internal::SequenceManagerImpl::CreateUnbound(std::move(settings));
 }
 
-BASE_EXPORT std::unique_ptr<SequenceManager> CreateFunneledSequenceManager(
-    scoped_refptr<SingleThreadTaskRunner> task_runner,
-    SequenceManager::Settings settings) {
-  std::unique_ptr<SequenceManager> sequence_manager =
-      internal::SequenceManagerImpl::CreateSequenceFunneled(
-          std::move(task_runner), std::move(settings));
-  sequence_manager->BindToCurrentThread();
-  return sequence_manager;
-}
-
 namespace internal {
 
 using TimeRecordingPolicy =

@@ -20,6 +20,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -63,14 +64,6 @@ ContentAutofillDriver::~ContentAutofillDriver() {}
 // static
 ContentAutofillDriver* ContentAutofillDriver::GetForRenderFrameHost(
     content::RenderFrameHost* render_frame_host) {
-  // With back-forward cache, the page stays alive and its mojo connections are
-  // not closed. The page would be frozen and would eventually stop doing work,
-  // but the messages can still arrive when the frame is not active. Given that
-  // autofill logic can show popups, it's problematic - prevent pages using
-  // autofill from entering back-forward cache for now to avoid it.
-  content::BackForwardCache::DisableForRenderFrameHost(
-      render_frame_host, "autofill::ContentAutofillDriver");
-
   ContentAutofillDriverFactory* factory =
       ContentAutofillDriverFactory::FromWebContents(
           content::WebContents::FromRenderFrameHost(render_frame_host));
@@ -90,6 +83,14 @@ bool ContentAutofillDriver::IsIncognito() const {
 
 bool ContentAutofillDriver::IsInMainFrame() const {
   return render_frame_host_->GetParent() == nullptr;
+}
+
+bool ContentAutofillDriver::CanShowAutofillUi() const {
+  // TODO(crbug.com/1041021): Use RenderFrameHost::IsActive here when available.
+  return !content::BackForwardCache::EvictIfCached(
+      {render_frame_host_->GetProcess()->GetID(),
+       render_frame_host_->GetRoutingID()},
+      "ContentAutofillDriver::CanShowAutofillUi");
 }
 
 ui::AXTreeID ContentAutofillDriver::GetAxTreeId() const {

@@ -1795,10 +1795,6 @@
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
-          "--gtest_shuffle"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3393,10 +3389,6 @@
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
-          "--gtest_shuffle"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5038,10 +5030,6 @@
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
-          "--gtest_shuffle"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -6672,10 +6660,6 @@
         "test_target": "//third_party/boringssl:boringssl_ssl_tests"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter",
-          "--gtest_shuffle"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

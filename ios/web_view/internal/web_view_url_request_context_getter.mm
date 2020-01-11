@@ -146,7 +146,8 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
         base_path_.Append(FILE_PATH_LITERAL("ChromeWebViewCache"));
     std::unique_ptr<net::HttpCache::DefaultBackend> main_backend(
         new net::HttpCache::DefaultBackend(
-            net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, cache_path, 0));
+            net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, cache_path,
+            /*max_bytes=*/0, /*hard_reset=*/false));
 
     storage_->set_http_network_session(
         std::make_unique<net::HttpNetworkSession>(

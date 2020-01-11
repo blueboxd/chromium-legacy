@@ -516,12 +516,10 @@ void AppListControllerImpl::OnSessionStateChanged(
 
   // Hide app list UI initially to prevent app list from flashing in background
   // while the initial app window is being shown.
-  if (!last_target_visible_) {
-    presenter_.GetView()->SetVisible(false);
-    presenter_.GetView()->search_box_view()->SetVisible(false);
-  } else {
+  if (!last_target_visible_)
+    presenter_.SetViewVisibility(false);
+  else
     OnVisibilityChanged(true, last_visible_display_id_);
-  }
 }
 
 void AppListControllerImpl::OnAppListItemWillBeDeleted(AppListItem* item) {
@@ -784,6 +782,11 @@ void AppListControllerImpl::OnUiVisibilityChanged(
 
       if (!IsShowingEmbeddedAssistantUI())
         presenter_.ShowEmbeddedAssistantUI(true);
+
+      // Make sure that app list views are visible - they might get hidden
+      // during session startup, and the app list visibility might not have yet
+      // changed to visible by this point.
+      presenter_.SetViewVisibility(true);
       break;
     case AssistantVisibility::kHidden:
       NOTREACHED();
@@ -1494,10 +1497,8 @@ void AppListControllerImpl::OnVisibilityWillChange(bool visible,
         presenter_.GetView()->SelectInitialAppsPage();
     }
 
-    if (real_target_visibility && presenter_.GetView()) {
-      presenter_.GetView()->SetVisible(true);
-      presenter_.GetView()->search_box_view()->SetVisible(true);
-    }
+    if (real_target_visibility && presenter_.GetView())
+      presenter_.SetViewVisibility(true);
 
     if (client_)
       client_->OnAppListVisibilityWillChange(real_target_visibility);

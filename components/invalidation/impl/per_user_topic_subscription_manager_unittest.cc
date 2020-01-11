@@ -181,8 +181,13 @@ class PerUserTopicSubscriptionManagerTest : public testing::Test {
         CreateStatusForTest(net::OK, std::string() /* response_body */));
   }
 
+  void FastForwardTimeBy(base::TimeDelta delta) {
+    task_environment_.FastForwardBy(delta);
+  }
+
  private:
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   network::TestURLLoaderFactory url_loader_factory_;
   TestingPrefServiceSimple pref_service_;
@@ -255,17 +260,39 @@ TEST_F(PerUserTopicSubscriptionManagerTest, ShouldRepeatRequestsOnFailure) {
   ASSERT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
 
+  // The first subscription attempt will fail.
   AddCorrectSubscriptionResponce(
-      /* private_topic */ std::string(), kFakeInstanceIdToken,
+      /*private_topic=*/std::string(), kFakeInstanceIdToken,
       net::HTTP_INTERNAL_SERVER_ERROR);
 
   per_user_topic_subscription_manager->UpdateSubscribedTopics(
       ids, kFakeInstanceIdToken);
   base::RunLoop().RunUntilIdle();
 
+  // Since the subscriptions failed, the requests should still be pending.
   EXPECT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
                   .empty());
   EXPECT_FALSE(
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
+
+  // The second attempt will succeed.
+  AddCorrectSubscriptionResponce();
+
+  // Initial backoff is 2 seconds with 20% jitter, so the minimum possible delay
+  // is 1600ms. Advance time to just before that; nothing should have changed
+  // yet.
+  FastForwardTimeBy(base::TimeDelta::FromMilliseconds(1500));
+  EXPECT_TRUE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
+                  .empty());
+  EXPECT_FALSE(
+      per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
+
+  // The maximum backoff is 2 seconds; advance to just past that. Now all
+  // subscriptions should have finished.
+  FastForwardTimeBy(base::TimeDelta::FromMilliseconds(600));
+  EXPECT_FALSE(per_user_topic_subscription_manager->GetSubscribedTopicsForTest()
+                   .empty());
+  EXPECT_TRUE(
       per_user_topic_subscription_manager->HaveAllRequestsFinishedForTest());
 }
 

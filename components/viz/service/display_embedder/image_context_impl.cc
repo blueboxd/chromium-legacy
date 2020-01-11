@@ -50,7 +50,8 @@ ImageContextImpl::~ImageContextImpl() {
 void ImageContextImpl::OnContextLost() {
   if (representation_) {
     representation_->OnContextLost();
-    representation_ = nullptr;
+    representation_scoped_read_access_.reset();
+    representation_.reset();
   }
 
   if (fallback_context_state_) {

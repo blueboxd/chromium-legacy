@@ -32,7 +32,7 @@ class ASH_EXPORT EventRewriterControllerImpl : public EventRewriterController,
 
   // EventRewriterController:
   void Initialize(ui::EventRewriterChromeOS::Delegate* event_rewriter_delegate,
-                  ash::SpokenFeedbackEventRewriterDelegate*
+                  SpokenFeedbackEventRewriterDelegate*
                       spoken_feedback_event_rewriter_delegate) override;
   void AddEventRewriter(std::unique_ptr<ui::EventRewriter> rewriter) override;
   void SetKeyboardDrivenEventRewriterEnabled(bool enabled) override;

@@ -97,7 +97,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   }
 
   ShellInitParams shell_init_params;
-  shell_init_params.delegate = std::make_unique<shell::ShellDelegateImpl>();
+  shell_init_params.delegate = std::make_unique<ShellDelegateImpl>();
   shell_init_params.context_factory = content::GetContextFactory();
   shell_init_params.context_factory_private =
       content::GetContextFactoryPrivate();
@@ -130,7 +130,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
     example_app_list_client_ = std::make_unique<ExampleAppListClient>(
         Shell::Get()->app_list_controller());
 
-    shell::InitWindowTypeLauncher(
+    InitWindowTypeLauncher(
         base::BindRepeating(views::examples::ShowExamplesWindowWithContent,
                             base::Passed(base::OnceClosure()),
                             base::Unretained(browser_context_.get()), nullptr),

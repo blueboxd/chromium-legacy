@@ -57,6 +57,11 @@ public class TasksSurfaceCoordinator implements TasksSurface {
 
     /** TasksSurface implementation. */
     @Override
+    public void initialize() {
+        mMostVisitedList.initialize();
+    }
+
+    @Override
     public void setOnTabSelectingListener(TabSwitcher.OnTabSelectingListener listener) {
         mTabSwitcher.setOnTabSelectingListener(listener);
     }

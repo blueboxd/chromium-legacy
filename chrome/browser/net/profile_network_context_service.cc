@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
@@ -93,6 +94,9 @@
 namespace {
 
 bool* g_discard_domain_reliability_uploads_for_testing = nullptr;
+
+const char kHttpCacheFinchExperimentGroups[] =
+    "profile_network_context_service.http_cache_finch_experiment_groups";
 
 std::vector<std::string> TranslateStringArray(const base::ListValue* list) {
   std::vector<std::string> strings;
@@ -344,6 +348,10 @@ void ProfileNetworkContextService::RegisterLocalStatePrefs(
   registry->RegisterIntegerPref(
       prefs::kAmbientAuthenticationInPrivateModesEnabled,
       static_cast<int>(net::AmbientAuthAllowedProfileTypes::REGULAR_ONLY));
+
+  // For information about whether to reset the HTTP Cache or not, store the
+  // groups for all the relevant experiments.  Initially unknown status for all.
+  registry->RegisterStringPref(kHttpCacheFinchExperimentGroups, "NoneNoneNone");
 }
 
 void ProfileNetworkContextService::DisableQuicIfNotAllowed() {
@@ -592,6 +600,30 @@ ProfileNetworkContextService::CreateClientCertStore() {
 #endif
 }
 
+bool GetHttpCacheBackendResetParam(PrefService* local_state) {
+  // Get the field trial groups.  If the server cannot be reached, then
+  // this corresponds to "None" for each experiment.
+  base::FieldTrial* field_trial = base::FeatureList::GetFieldTrial(
+      net::features::kSplitCacheByNetworkIsolationKey);
+  std::string current_field_trial_status =
+      (field_trial ? field_trial->group_name() : "None");
+  field_trial = base::FeatureList::GetFieldTrial(
+      net::features::kAppendFrameOriginToNetworkIsolationKey);
+  current_field_trial_status +=
+      (field_trial ? field_trial->group_name() : "None");
+  field_trial = base::FeatureList::GetFieldTrial(
+      net::features::kUseRegistrableDomainInNetworkIsolationKey);
+  current_field_trial_status +=
+      (field_trial ? field_trial->group_name() : "None");
+
+  std::string previous_field_trial_status =
+      local_state->GetString(kHttpCacheFinchExperimentGroups);
+  local_state->SetString(kHttpCacheFinchExperimentGroups,
+                         current_field_trial_status);
+
+  return current_field_trial_status != previous_field_trial_status;
+}
+
 network::mojom::NetworkContextParamsPtr
 ProfileNetworkContextService::CreateNetworkContextParams(
     bool in_memory,
@@ -802,6 +834,9 @@ ProfileNetworkContextService::CreateNetworkContextParams(
       profile_->GetSharedCorsOriginAccessList()
           ->GetOriginAccessList()
           .CreateCorsOriginAccessPatternsList();
+
+  network_context_params->reset_http_cache_backend =
+      GetHttpCacheBackendResetParam(g_browser_process->local_state());
 
   return network_context_params;
 }

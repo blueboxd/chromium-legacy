@@ -238,6 +238,8 @@ class CORE_EXPORT FrameLoader final {
 
   bool IsClientNavigationInitialHistoryLoad();
 
+  bool HasAccessedInitialDocument() { return has_accessed_initial_document_; }
+
   static bool NeedsHistoryItemRestore(WebFrameLoadType type);
 
  private:
@@ -325,6 +327,7 @@ class CORE_EXPORT FrameLoader final {
   bool dispatching_did_clear_window_object_in_main_world_;
   bool detached_;
   bool committing_navigation_ = false;
+  bool has_accessed_initial_document_ = false;
 
   WebScopedVirtualTimePauser virtual_time_pauser_;
 

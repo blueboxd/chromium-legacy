@@ -156,7 +156,7 @@ class LocalDiscoveryUIHandler
 
   void CheckListingDone();
 
-  bool IsUserSupervisedOrOffTheRecord();
+  bool IsUserProfileRestricted();
 
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   void StartCloudPrintConnector();

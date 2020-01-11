@@ -348,7 +348,7 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
   std::unique_ptr<Window> w1(CreateTestWindow());
   const gfx::Rect w1_bounds(0, 1, 101, 102);
   Shelf* shelf = GetPrimaryShelf();
-  shelf->SetAutoHideBehavior(ash::ShelfAutoHideBehavior::kAlways);
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   const gfx::Rect touches_shelf_bounds(
       0, shelf_layout_manager()->GetIdealBounds().y() - 10, 101, 102);
   // Move |w1| to overlap the shelf.
@@ -444,7 +444,7 @@ TEST_F(WorkspaceControllerTest, MinimizeResetsVisibility) {
   // AshTestHelper.
   SessionInfo info;
   info.state = session_manager::SessionState::ACTIVE;
-  ash::Shell::Get()->session_controller()->SetSessionInfo(info);
+  Shell::Get()->session_controller()->SetSessionInfo(info);
 
   std::unique_ptr<Window> w1(CreateTestWindow());
   w1->Show();

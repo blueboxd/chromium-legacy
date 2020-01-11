@@ -36,7 +36,6 @@
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
 <translation id="2799223571221894425">Стартиране отново</translation>
 <translation id="2805036593126168338">Chromium OS не синхронизира паролите ви. Отстранете проблема.</translation>
-<translation id="2838154144102149890">За да се извърши актуализацията, Chromium трябва да спре работа на този компютър. Това може да доведе до изтриване на незапазените промени на други потребители, които са влезли в профила си на този компютър.</translation>
 <translation id="2847479871509788944">Премахване от Chromium...</translation>
 <translation id="2886012850691518054">По избор: Помогнете ни да подобрим Chromium, като автоматично изпращате на Google статистически данни за използването му и сигнали за сривове.</translation>
 <translation id="2910007522516064972">Всичко за &amp;Chromium</translation>
@@ -142,7 +141,6 @@
 <translation id="6847869444787758381">Chromium ви уведомява, ако паролите ви бъдат компрометирани</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (копирано в Chromium)</translation>
-<translation id="6868056391275687737">Изпълняват се други копия на Chromium. Затворете ги, за да актуализирате.</translation>
 <translation id="6893813176749746474">Chromium е актуализиран, но не сте го използвали от поне 30 дни.</translation>
 <translation id="6964305034639999644">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chromium</translation>
 <translation id="6990124437352146030">Chromium се нуждае от разрешение за достъп до микрофона ви за този сайт</translation>
@@ -198,7 +196,6 @@
 <translation id="8697124171261953979">То също контролира коя страница се показва при стартиране на Chromium или при търсене от полето за всичко.</translation>
 <translation id="8704119203788522458">Това е вашият Chromium</translation>
 <translation id="8739167630197873875">„Бисквитките“ ви се изчистват, когато излизате от Chromium. За да продължи синхронизирането, променете тази <ph name="COOKIE_SETTINGS_LINK" />.</translation>
-<translation id="8748383401829947534">Затваряне на всички копия на Chromium.</translation>
 <translation id="8796602469536043152">Chromium се нуждае от разрешение за достъп до камерата и микрофона ви за този сайт</translation>
 <translation id="8803635938069941624">Общи условия на Chromium OS</translation>
 <translation id="8821041990367117597">Chromium не можа да синхронизира данните ви, защото потребителското име и паролата за вход в профила ви не са актуални.</translation>

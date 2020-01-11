@@ -401,7 +401,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   const mojo::Remote<mojom::blink::ReportingServiceProxy>& GetReportingService()
       const;
 
-  // Returns the frame host ptr.
+  // Returns the frame host ptr. The interface returned is backed by an
+  // associated interface with the legacy Chrome IPC channel.
   mojom::blink::LocalFrameHost& GetLocalFrameHostRemote();
 
   // Overlays a color on top of this LocalFrameView if it is associated with

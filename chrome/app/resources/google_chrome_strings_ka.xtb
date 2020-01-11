@@ -20,7 +20,6 @@
 <translation id="1553358976309200471">Chrome-ის განახლება</translation>
 <translation id="1587223624401073077">Google Chrome იყენებს თქვენს კამერას.</translation>
 <translation id="1587325591171447154">Chrome-მა დაბლოკა <ph name="FILE_NAME" />, რადგან ის სახიფათოა.</translation>
-<translation id="1590588151039584890">გასაახლებლად Chrome-მა უნდა შეწყვიტოს მუშაობა ამ კომპიუტერზე. აღნიშნულის შედეგად ამ კომპიუტერში შესულმა სხვა მომხმარებლებმა შესაძლოა დაკარგონ შეუნახავი ცვლილებები.</translation>
 <translation id="1619887657840448962">Chrome-ის უსაფრთხოების გასაძლიერებლად, ჩვენ გავთიშეთ შემდეგი გაფართოება, რომელიც არ არის ხელმისაწვდომი <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />-ში და, შესაძლოა, თქვენი თანხმობის გარეშე დაემატა.</translation>
 <translation id="1628000112320670027">Chrome-თან დაკავშირებული დახმარების მიღება</translation>
 <translation id="1635734105302489219">Chrome-იდან გასვლისას ქუქი-ჩანაწერები გაასუფთავეთ. სინქრონიზაციის შესანარჩუნებლად შეცვალეთ ეს <ph name="COOKIE_SETTINGS_LINK" />.</translation>
@@ -144,7 +143,6 @@
 <translation id="5430073640787465221">თქვენი გამორჩეული ფაილი დაზიანებულია ან არასწორია.
 
 Google Chrome ვერ შეძლებს თქვენი პარამეტრების აღდგენას.</translation>
-<translation id="5543953544073077331">გაშვებულია Chrome-ის სხვა ასლები. გასაახლებლად დახურეთ ისინი.</translation>
 <translation id="556024056938947818">Google Chrome ცდილობს პაროლების ჩვენებას.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">თუ პარამეტრი ამ გვერდზე არ გამოჩნდება, ცადეთ მისი პოვნა <ph name="LINK_BEGIN" />Chrome OS-ის პარამეტრებში<ph name="LINK_END" /></translation>
@@ -193,7 +191,6 @@ Google Chrome ვერ შეძლებს თქვენი პარამ
 <translation id="7408085963519505752">Chrome OS ტერმინები</translation>
 <translation id="7419046106786626209">Chrome OS ის საშუალებით ვერ მოხერხდა თქვენი მონაცემების სინქრონიზაცია, რადგნა თქვენს დომენზე სინქრონ. შეუძლებელია.</translation>
 <translation id="7486227612705979895">Chrome-ს ექნება წვდომა თქვენს Drive-ზე მისამართთა ზოლში შემოთავაზებების უზრუნველსაყოფად</translation>
-<translation id="7531671357096394523">დაასრულეთ Chrome-ის ყველა გაშვებული ასლის მუშაობა.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">თქვენი მოწყობილობის განახლების სტატუსის სანახავად გადადით <ph name="LINK_BEGIN" />Chrome OS-ის პარამეტრებზე<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">ეს კომპიუტერი აღარ მიიღებს Google Chrome-ის განახლებებს, რადგან Mac OS X 10.9 აღარ არის მხარდაჭერილი.</translation>

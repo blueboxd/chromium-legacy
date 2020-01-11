@@ -144,6 +144,19 @@ ShelfModel::RemoveItemAndTakeShelfItemDelegate(const ShelfID& shelf_id) {
   return item;
 }
 
+bool ShelfModel::Swap(int index, bool with_next) {
+  const int target_index = with_next ? index + 1 : index - 1;
+
+  if (index < 0 || target_index >= item_count() || target_index < 0)
+    return false;
+
+  // Only allow swapping two pinned apps or two unpinned apps.
+  if (!SamePinState(items()[index].type, items()[target_index].type))
+    return false;
+  Move(index, target_index);
+  return true;
+}
+
 void ShelfModel::Move(int index, int target_index) {
   if (index == target_index)
     return;

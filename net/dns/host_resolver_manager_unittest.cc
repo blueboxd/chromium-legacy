@@ -8497,6 +8497,27 @@ TEST_F(HostResolverManagerDnsTest, DohProbeRequest_CancelOnConnectionLoss) {
   EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
 }
 
+TEST_F(HostResolverManagerDnsTest, MultipleDohProbeRequests) {
+  ChangeDnsConfig(CreateValidDnsConfig());
+
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+
+  std::unique_ptr<HostResolverManager::CancellableProbeRequest> request1 =
+      resolver_->CreateDohProbeRequest(request_context_.get());
+  EXPECT_THAT(request1->Start(), IsError(ERR_IO_PENDING));
+  std::unique_ptr<HostResolverManager::CancellableProbeRequest> request2 =
+      resolver_->CreateDohProbeRequest(request_context_.get());
+  EXPECT_THAT(request2->Start(), IsError(ERR_IO_PENDING));
+
+  EXPECT_TRUE(dns_client_->factory()->doh_probes_running());
+
+  request1.reset();
+  EXPECT_TRUE(dns_client_->factory()->doh_probes_running());
+
+  request2.reset();
+  EXPECT_FALSE(dns_client_->factory()->doh_probes_running());
+}
+
 TEST_F(HostResolverManagerDnsTest, EsniQuery) {
   EsniContent c1, c2, c3;
   IPAddress a1(1, 2, 3, 4), a2(5, 6, 7, 8);

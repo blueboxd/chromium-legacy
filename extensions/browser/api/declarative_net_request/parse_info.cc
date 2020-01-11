@@ -177,6 +177,11 @@ std::string ParseInfo::GetErrorDescription() const {
                                              base::NumberToString(*rule_id_),
                                              kRegexSubstitutionPath);
       break;
+    case ParseResult::ERROR_INVALID_ALLOW_ALL_REQUESTS_RESOURCE_TYPE:
+      error = ErrorUtils::FormatErrorMessage(
+          kErrorInvalidAllowAllRequestsResourceType,
+          base::NumberToString(*rule_id_));
+      break;
   }
   return error;
 }

@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/test/bind_test_util.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
@@ -101,6 +102,20 @@ class BrowsingDataRemoverImplBrowserTest : public ContentBrowserTest {
         base::Time(), base::Time::Max(), remove_mask,
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
         &completion_observer);
+    completion_observer.BlockUntilCompletion();
+  }
+
+  void RemoveWithFilterAndWait(
+      int remove_mask,
+      std::unique_ptr<BrowsingDataFilterBuilder> filter) {
+    content::BrowsingDataRemover* remover =
+        content::BrowserContext::GetBrowsingDataRemover(
+            shell()->web_contents()->GetBrowserContext());
+    content::BrowsingDataRemoverCompletionObserver completion_observer(remover);
+    remover->RemoveWithFilterAndReply(
+        base::Time(), base::Time::Max(), remove_mask,
+        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+        std::move(filter), &completion_observer);
     completion_observer.BlockUntilCompletion();
   }
 
@@ -214,12 +229,20 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplBrowserTest,
 }
 
 // Verify that TransportSecurityState data is not cleared if REMOVE_CACHE is not
-// set.
+// set or there is a WHITELIST filter.
+// TODO(crbug.com/1040065): Add support for filtered deletions and update test.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverImplBrowserTest,
                        PreserveTransportSecurityState) {
   IssueRequestThatSetsHsts();
 
   RemoveAndWait(BrowsingDataRemover::DATA_TYPE_DOWNLOADS);
+  EXPECT_TRUE(IsHstsSet());
+
+  auto filter =
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
+  filter->AddRegisterableDomain("foobar.com");
+  RemoveWithFilterAndWait(BrowsingDataRemover::DATA_TYPE_CACHE,
+                          std::move(filter));
   EXPECT_TRUE(IsHstsSet());
 }
 

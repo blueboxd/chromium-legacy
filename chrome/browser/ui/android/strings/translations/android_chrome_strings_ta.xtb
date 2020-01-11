@@ -366,6 +366,7 @@
 <translation id="381841723434055211">ஃபோன் எண்கள்</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> பதிவிறக்கங்கள் உள்ளன</translation>
 <translation id="3822502789641063741">தளச் சேமிப்பகத்தை அழிக்கவா?</translation>
+<translation id="3853625385350850937">தொடர்வதற்கு உங்கள் சாதனத்தில் NFCயை ஆன் செய்யுங்கள்</translation>
 <translation id="3859306556332390985">முன்செல்</translation>
 <translation id="388596076286380598">ஆஃப்லைனிலும், வேகம் குறைந்த இணைப்பிலும் கூட உங்களுக்கு விருப்பமான தளங்களில் இருந்து கட்டுரைகள், வீடியோக்கள் மற்றும் பிற உள்ளடக்கங்களைப் பெற்றிடுங்கள்.</translation>
 <translation id="3894427358181296146">கோப்புறையைச் சேர்</translation>
@@ -1049,6 +1050,7 @@
 <translation id="8912362522468806198">Google கணக்கு</translation>
 <translation id="8920114477895755567">பெற்றோர்களின் விவரங்களுக்காகக் காத்திருக்கிறது.</translation>
 <translation id="8922289737868596582">பக்கங்களை ஆஃப்லைனில் பயன்படுத்த, மேலும் விருப்பங்கள் பொத்தானுக்குச் சென்று, அவற்றைப் பதிவிறக்கவும்</translation>
+<translation id="8926666909099850184">இந்தச் சாதனத்தில் NFC ஆஃப் செய்யப்பட்டுள்ளது. அதை <ph name="BEGIN_LINK" />Android அமைப்புகளில்<ph name="END_LINK" /> ஆன் செய்யவும்.</translation>
 <translation id="8937772741022875483">உங்கள் Chrome செயல்பாட்டை டிஜிட்டல் வெல்பீயிங்கிலிருந்து நீக்கவா?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">வேறு சாளரத்தில் திற</translation>

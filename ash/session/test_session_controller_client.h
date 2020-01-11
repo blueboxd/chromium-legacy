@@ -38,7 +38,7 @@ class TestPrefServiceProvider;
 // SessionControllerClient created, e.g. InProcessBrowserTest based tests. On
 // the other hand, tests code in chrome can use this class as long as it does
 // not run BrowserMain, e.g. testing::Test based test.
-class TestSessionControllerClient : public ash::SessionControllerClient {
+class TestSessionControllerClient : public SessionControllerClient {
  public:
   TestSessionControllerClient(SessionControllerImpl* controller,
                               TestPrefServiceProvider* prefs_provider);

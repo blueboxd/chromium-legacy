@@ -65,7 +65,6 @@
 #include "content/common/page_messages.h"
 #include "content/common/renderer_host.mojom.h"
 #include "content/common/savable_subframe.h"
-#include "content/common/swapped_out_messages.h"
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/web_package/signed_exchange_utils.h"
@@ -1836,7 +1835,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       pepper_last_mouse_event_target_(nullptr),
 #endif
       navigation_client_impl_(nullptr),
-      has_accessed_initial_document_(false),
       media_factory_(
           this,
           base::BindRepeating(&RenderFrameImpl::RequestOverlayRoutingToken,
@@ -4027,19 +4025,6 @@ RenderFrameImpl::GetRemoteNavigationAssociatedInterfaces() {
   return GetRemoteAssociatedInterfaces();
 }
 
-void RenderFrameImpl::DidAccessInitialDocument() {
-  DCHECK(!frame_->Parent());
-  // NOTE: Do not call back into JavaScript here, since this call is made from a
-  // V8 security check.
-
-  // Notify the browser process that it is no longer safe to show the pending
-  // URL of the main frame, since a URL spoof is now possible.
-  if (!has_accessed_initial_document_)
-    Send(new FrameHostMsg_DidAccessInitialDocument(routing_id_));
-
-  has_accessed_initial_document_ = true;
-}
-
 blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
     blink::WebLocalFrame* parent,
     blink::WebTreeScopeType scope,
@@ -5983,7 +5968,11 @@ void RenderFrameImpl::BeginNavigation(
       info->navigation_policy == blink::kWebNavigationPolicyCurrentTab &&
       // No need to dispatch beforeunload if the frame has not committed a
       // navigation and contains an empty initial document.
-      (has_accessed_initial_document_ || !current_history_item_.IsNull());
+      // TODO(dtapuska): crbug.com/1040954 Try to remove the
+      // HasAccessedInitialDocument interface for this. There shouldn't be a
+      // beforeunload handler if it hasn't accessed the initial document so it
+      // should be fine to dispatch in those cases.
+      (frame_->HasAccessedInitialDocument() || !current_history_item_.IsNull());
 
   if (should_dispatch_before_unload) {
     // Execute the BeforeUnload event. If asked not to proceed or the frame is

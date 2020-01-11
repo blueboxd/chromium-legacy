@@ -12,6 +12,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 MockBrowsingDataIndexedDBHelper::MockBrowsingDataIndexedDBHelper(
     Profile* profile)
@@ -28,20 +29,20 @@ void MockBrowsingDataIndexedDBHelper::StartFetching(FetchCallback callback) {
 }
 
 void MockBrowsingDataIndexedDBHelper::DeleteIndexedDB(
-    const GURL& origin) {
+    const url::Origin& origin) {
   ASSERT_TRUE(base::Contains(origins_, origin));
   origins_[origin] = false;
 }
 
 void MockBrowsingDataIndexedDBHelper::AddIndexedDBSamples() {
-  const GURL kOrigin1("http://idbhost1:1/");
-  const GURL kOrigin2("http://idbhost2:2/");
-  content::StorageUsageInfo info1(url::Origin::Create(kOrigin1), 1,
-                                  base::Time());
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("http://idbhost1:1/"));
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("http://idbhost2:2/"));
+
+  content::StorageUsageInfo info1(kOrigin1, 1, base::Time());
   response_.push_back(info1);
   origins_[kOrigin1] = true;
-  content::StorageUsageInfo info2(url::Origin::Create(kOrigin2), 2,
-                                  base::Time());
+
+  content::StorageUsageInfo info2(kOrigin2, 2, base::Time());
   response_.push_back(info2);
   origins_[kOrigin2] = true;
 }

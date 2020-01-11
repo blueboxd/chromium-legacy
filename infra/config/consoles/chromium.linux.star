@@ -24,11 +24,6 @@ luci.console_view(
             short_name = 'det',
         ),
         luci.console_view_entry(
-            builder = 'ci/Leak Detection Linux',
-            category = 'release',
-            short_name = 'lk',
-        ),
-        luci.console_view_entry(
             builder = 'ci/linux-ozone-rel',
             category = 'release',
             short_name = 'ozo',

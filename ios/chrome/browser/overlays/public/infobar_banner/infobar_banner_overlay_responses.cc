@@ -20,12 +20,12 @@ InfobarBannerShowModalResponse::InfobarBannerShowModalResponse() = default;
 
 InfobarBannerShowModalResponse::~InfobarBannerShowModalResponse() = default;
 
-#pragma mark - InfobarBannerCompletionResponse
+#pragma mark - InfobarBannerUserInitiatedDismissalResponse
 
-OVERLAY_USER_DATA_SETUP_IMPL(InfobarBannerCompletionResponse);
+OVERLAY_USER_DATA_SETUP_IMPL(InfobarBannerUserInitiatedDismissalResponse);
 
-InfobarBannerCompletionResponse::InfobarBannerCompletionResponse(
-    bool user_initiated)
-    : user_initiated_(user_initiated) {}
+InfobarBannerUserInitiatedDismissalResponse::
+    InfobarBannerUserInitiatedDismissalResponse() = default;
 
-InfobarBannerCompletionResponse::~InfobarBannerCompletionResponse() = default;
+InfobarBannerUserInitiatedDismissalResponse::
+    ~InfobarBannerUserInitiatedDismissalResponse() = default;

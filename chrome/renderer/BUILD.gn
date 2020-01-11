@@ -157,7 +157,6 @@ jumbo_static_library("renderer") {
     "//components/security_interstitials/core:",
     "//components/security_interstitials/core/common/mojom:",
     "//components/spellcheck:buildflags",
-    "//components/startup_metric_utils/common:interfaces",
     "//components/subresource_filter/content/renderer",
     "//components/translate/content/renderer",
     "//components/translate/core/common",

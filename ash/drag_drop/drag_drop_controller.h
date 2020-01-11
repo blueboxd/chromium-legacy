@@ -138,7 +138,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   // Closure for quitting nested run loop.
   base::OnceClosure quit_closure_;
 
-  std::unique_ptr<ash::DragDropTracker> drag_drop_tracker_;
+  std::unique_ptr<DragDropTracker> drag_drop_tracker_;
   std::unique_ptr<DragDropTrackerDelegate> drag_drop_window_delegate_;
 
   ui::DragDropTypes::DragEventSource current_drag_event_source_;

@@ -50,19 +50,6 @@ void CrostiniUninstallerView::Show(Profile* profile) {
   g_crostini_uninstaller_view->GetWidget()->Show();
 }
 
-int CrostiniUninstallerView::GetDialogButtons() const {
-  switch (state_) {
-    case State::PROMPT:
-      return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-    case State::UNINSTALLING:
-      return ui::DIALOG_BUTTON_NONE;
-    case State::ERROR:
-      return ui::DIALOG_BUTTON_CANCEL;
-  }
-  NOTREACHED();
-  return 0;
-}
-
 base::string16 CrostiniUninstallerView::GetWindowTitle() const {
   const base::string16 device_type = ui::GetChromeOSDeviceName();
   return l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_TITLE);
@@ -74,6 +61,7 @@ bool CrostiniUninstallerView::ShouldShowCloseButton() const {
 
 bool CrostiniUninstallerView::Accept() {
   state_ = State::UNINSTALLING;
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   message_label_->SetText(
       l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_UNINSTALLING_MESSAGE));
 
@@ -140,6 +128,7 @@ CrostiniUninstallerView::~CrostiniUninstallerView() {
 
 void CrostiniUninstallerView::HandleError(const base::string16& error_message) {
   state_ = State::ERROR;
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL);
   message_label_->SetVisible(true);
   message_label_->SetText(error_message);
   progress_bar_->SetVisible(false);

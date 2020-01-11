@@ -99,7 +99,6 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -1091,10 +1090,8 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("listAllDisplayModes",
                           display::features::IsListAllDisplayModesEnabled());
 
-  const bool ambient_eq_supported =
-      ash::features::IsAllowAmbientEQEnabled() &&
-      chromeos::PowerManagerClient::Get()->SupportsAmbientColor();
-  html_source->AddBoolean("deviceSupportsAmbientColor", ambient_eq_supported);
+  html_source->AddBoolean("deviceSupportsAmbientColor",
+                          ash::features::IsAllowAmbientEQEnabled());
 
   html_source->AddBoolean(
       "enableTouchCalibrationSetting",

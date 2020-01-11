@@ -93,10 +93,10 @@ ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
   ShellWindowId parent_window_id =
       Shell::Get()->session_controller()->GetSessionState() ==
               session_manager::SessionState::ACTIVE
-          ? ash::kShellWindowId_SystemModalContainer
-          : ash::kShellWindowId_LockSystemModalContainer;
+          ? kShellWindowId_SystemModalContainer
+          : kShellWindowId_LockSystemModalContainer;
   widget_params.parent =
-      ash::Shell::GetPrimaryRootWindow()->GetChildById(parent_window_id);
+      Shell::GetPrimaryRootWindow()->GetChildById(parent_window_id);
 
   ParentAccessView::Callbacks callbacks;
   callbacks.on_finished = base::BindRepeating(&ParentAccessWidget::OnExit,

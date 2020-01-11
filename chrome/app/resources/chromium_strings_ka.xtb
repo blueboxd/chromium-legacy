@@ -38,7 +38,6 @@
 <translation id="2770231113462710648">შეცვალეთ ნაგულისხმევი ბრაუზერი-ით:</translation>
 <translation id="2799223571221894425">ხელახლა გაშვება</translation>
 <translation id="2805036593126168338">Chromium OS-მა ვერ მოახერხა თქვენი პაროლების სინქრონიზაცია. შეასწორეთ ახლავე.</translation>
-<translation id="2838154144102149890">გასაახლებლად Chromium-მა უნდა შეწყვიტოს მუშაობა ამ კომპიუტერზე. აღნიშნულის შედეგად ამ კომპიუტერში შესულმა სხვა მომხმარებლებმა შესაძლოა დაკარგონ შეუნახავი ცვლილებები.</translation>
 <translation id="2847479871509788944">Chromium-იდან ამოღება...</translation>
 <translation id="2886012850691518054">არასავალდებულო: დაგვეხმარეთ Chromium-ის გაუმჯობესებაში, გამოყენების სტატისტიკისა და შეცდომების შესახებ მოხსენების Google-ში ავტომატური გაგზავნის გზით.</translation>
 <translation id="2910007522516064972">Chromium-ის შ&amp;ესახებ</translation>
@@ -148,7 +147,6 @@
 <translation id="6847869444787758381">Chromium გაცნობებთ, თუ თქვენს პაროლებს ვინმე გატეხავს</translation>
 <translation id="6857782730669500492">Chromium — <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium-ში კოპირებული)</translation>
-<translation id="6868056391275687737">გაშვებულია Chromium-ის სხვა ასლები. გასაახლებლად დახურეთ ისინი.</translation>
 <translation id="6893813176749746474">Chromium განახლდა, მაგრამ თქვენ მას არ იყენებდით მინიმუმ 30 დღის განმავლობაში.</translation>
 <translation id="6964305034639999644">ბმულის გახსნა Chromium-ის ინკო&amp;გნიტო ფანჯარაში</translation>
 <translation id="6990124437352146030">Chromium საჭიროებს თქვენს მიკროფონზე წვდომის ნებართვას ამ საიტისთვის</translation>
@@ -206,7 +204,6 @@ Chromium ვერ შეძლებს თქვენი პარამე�
 <translation id="8697124171261953979">იგი ასევე აკონტროლებს, თუ რომელი გვერდი გამოჩნდება Chromium-ის გაშვებისას ან Omnibox-ში ძიების დროს.</translation>
 <translation id="8704119203788522458">ეს არის თქვენი Chromium</translation>
 <translation id="8739167630197873875">Chromium-იდან გასვლისას ქუქი-ჩანაწერები გაასუფთავეთ. სინქრონიზაციის შესანარჩუნებლად შეცვალეთ ეს <ph name="COOKIE_SETTINGS_LINK" />.</translation>
-<translation id="8748383401829947534">დაასრულეთ Chromium-ის ყველა გაშვებული ასლის მუშაობა.</translation>
 <translation id="8796602469536043152">Chromium საჭიროებს თქვენს კამერასა და მიკროფონზე წვდომის ნებართვას ამ საიტისთვის</translation>
 <translation id="8803635938069941624">Chromium OS ტერმინები</translation>
 <translation id="8821041990367117597">Chromium-მა ვერ დაასინქრონა თქვენი მონაცემები, რადგან თქვენს ანგარიშზე შესვლის დეტალები მოძველდა.</translation>

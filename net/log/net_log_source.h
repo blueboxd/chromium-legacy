@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_source_type.h"
 
@@ -25,6 +26,7 @@ struct NET_EXPORT NetLogSource {
 
   NetLogSource();
   NetLogSource(NetLogSourceType type, uint32_t id);
+  NetLogSource(NetLogSourceType type, uint32_t id, base::TimeTicks start_time);
   bool IsValid() const;
 
   // Adds the source to a DictionaryValue containing event parameters,
@@ -44,6 +46,7 @@ struct NET_EXPORT NetLogSource {
 
   NetLogSourceType type;
   uint32_t id;
+  base::TimeTicks start_time;
 };
 
 }  // namespace net

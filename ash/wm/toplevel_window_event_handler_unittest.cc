@@ -187,7 +187,7 @@ void ContinueAndCompleteDrag(ui::test::EventGenerator* generator,
 TEST_F(ToplevelWindowEventHandlerTest, WindowPositionAutoManagement) {
   std::unique_ptr<aura::Window> w1(CreateWindow(HTNOWHERE));
   const gfx::Size size = w1->bounds().size();
-  WindowState* window_state = ash::WindowState::Get(w1.get());
+  WindowState* window_state = WindowState::Get(w1.get());
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w1.get());
 
   // Explicitly enable window position auto management, and expect it to be
@@ -1033,8 +1033,7 @@ class ToplevelWindowEventHandlerBackGestureTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    feature_list_.InitAndEnableFeature(
-        ash::features::kSwipingFromLeftEdgeToGoBack);
+    feature_list_.InitAndEnableFeature(features::kSwipingFromLeftEdgeToGoBack);
     top_window_ = CreateAppWindow(gfx::Rect(), AppType::BROWSER);
     TabletModeControllerTestApi().EnterTabletMode();
   }
@@ -1069,7 +1068,7 @@ class ToplevelWindowEventHandlerBackGestureTest : public AshTestBase {
                            /*pointer_id=*/5, /*radius_x=*/5.0f,
                            /*radius_y=*/5.0, /*force=*/1.0f));
     ui::Event::DispatcherApi(&event).set_target(top_window_.get());
-    ash::Shell::Get()->toplevel_window_event_handler()->OnTouchEvent(&event);
+    Shell::Get()->toplevel_window_event_handler()->OnTouchEvent(&event);
   }
 
   aura::Window* top_window() { return top_window_.get(); }
@@ -1614,7 +1613,7 @@ class ToplevelWindowEventHandlerDragTest : public AshTestBase {
         position.x(), position.y(), ui::EF_NONE, base::TimeTicks::Now(),
         ui::GestureEventDetails(type, scroll_x, scroll_y));
     ui::Event::DispatcherApi(&event).set_target(dragged_window_.get());
-    ash::Shell::Get()->toplevel_window_event_handler()->OnGestureEvent(&event);
+    Shell::Get()->toplevel_window_event_handler()->OnGestureEvent(&event);
   }
 
   std::unique_ptr<aura::Window> dragged_window_;

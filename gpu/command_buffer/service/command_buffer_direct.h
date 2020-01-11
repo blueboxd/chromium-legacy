@@ -6,7 +6,6 @@
 #define GPU_COMMAND_BUFFER_SERVICE_COMMAND_BUFFER_DIRECT_H_
 
 #include "base/callback.h"
-#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/decoder_client.h"
@@ -62,7 +61,6 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
  private:
   CommandBufferService service_;
   AsyncAPIInterface* handler_ = nullptr;
-  const CommandBufferId command_buffer_id_;
 };
 
 }  // namespace gpu

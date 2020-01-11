@@ -20,7 +20,6 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="1553358976309200471">Dateer Chrome op</translation>
 <translation id="1587223624401073077">Google Chrome gebruik tans jou kamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> is gevaarlik en daarom het Chrome dit geblokkeer.</translation>
-<translation id="1590588151039584890">Om op te dateer, moet Chrome ophou om op hierdie rekenaar te loop. Dit kan veroorsaak dat ander gebruikers wat by hierdie rekenaar aangemeld is, veranderinge verloor wat nie gestoor is nie.</translation>
 <translation id="1619887657840448962">Om Chrome veiliger te maak, het ons die volgende uitbreiding, wat nie in die <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> gelys word nie en wat dalk sonder jou medewete bygevoeg is, gedeaktiveer.</translation>
 <translation id="1628000112320670027">Kry hulp met Chrome</translation>
 <translation id="1635734105302489219">Jy vee webkoekies uit wanneer jy Chrome verlaat. Verander hierdie <ph name="COOKIE_SETTINGS_LINK" /> om aan te hou sinkroniseer.</translation>
@@ -145,7 +144,6 @@ Sommige kenmerke kan dalk onbeskikbaar wees. Spesifiseer 'n ander profielgids of
 <translation id="5430073640787465221">Jou voorkeurelêer is korrup of ongeldig.
 
 Google Chrome kan nie jou instellings terugstel nie.</translation>
-<translation id="5543953544073077331">Ander kopieë van Chrome loop tans. Maak hulle toe om op te dateer.</translation>
 <translation id="556024056938947818">Google Chrome probeer tans om wagwoorde te wys.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">As 'n instelling nie op hierdie bIadsy verskyn nie, moet jy in jou <ph name="LINK_BEGIN" />
@@ -195,7 +193,6 @@ Google Chrome kan nie jou instellings terugstel nie.</translation>
 <translation id="7408085963519505752">Chrome-bedryfstelsel se bepalings</translation>
 <translation id="7419046106786626209">Chrome-bedryfstelsel kon nie jou data sinkroniseer nie, omdat sinkronisering nie vir jou domein beskikbaar is nie.</translation>
 <translation id="7486227612705979895">Chrome sal by jou Drive ingaan om voorstelle in die adresbalk te maak</translation>
-<translation id="7531671357096394523">Maak alle kopieë van Chrome toe.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Gaan na <ph name="LINK_BEGIN" />Chrome OS-instellings<ph name="LINK_END" /> om te sien of jou toestel op datum is</translation>
 <translation id="7589360514048265910">Hierdie rekenaar sal nie meer Google Chrome-opdaterings ontvang nie omdat Mac OS X 10.9 nie meer gesteun word nie.</translation>

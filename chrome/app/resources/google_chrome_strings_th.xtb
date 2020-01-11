@@ -18,7 +18,6 @@
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
 <translation id="1587223624401073077">Google Chrome ใช้กล้องของคุณอยู่</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> เป็นอันตราย Chromium จึงบล็อกไว้</translation>
-<translation id="1590588151039584890">Chrome ต้องหยุดทำงานในคอมพิวเตอร์เครื่องนี้ก่อนจึงจะอัปเดตได้ การดำเนินการนี้อาจทำให้ผู้ใช้ที่อยู่ในระบบของคอมพิวเตอร์เครื่องนี้สูญเสียการเปลี่ยนแปลงที่ยังไม่ได้บันทึก</translation>
 <translation id="1619887657840448962">เพื่อให้ Chrome ปลอดภัยขึ้น เราได้ปิดส่วนขยายต่อไปนี้ซึ่งไม่ได้แสดงอยู่ใน <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> และอาจมีการเพิ่มเข้ามาโดยที่คุณไม่รู้ตัว</translation>
 <translation id="1628000112320670027">รับความช่วยเหลือเกี่ยวกับ Chrome</translation>
 <translation id="1635734105302489219">คุณจะล้างคุ้กกี้เมื่อปิด Chrome หากต้องการซิงค์ต่อไป ให้เปลี่ยน<ph name="COOKIE_SETTINGS_LINK" />นี้</translation>
@@ -136,7 +135,6 @@
 <translation id="5386244825306882791">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณเปิด Chrome หรือทำการค้นหาจากแถบอเนกประสงค์ด้วย</translation>
 <translation id="5394833366792865639">แชร์แท็บ Chrome</translation>
 <translation id="5430073640787465221">ไฟล์ค่ากำหนดของคุณขัดข้องหรือไม่ถูกต้อง Google Chrome ไม่สามารถกู้คืนการตั้งค่าของคุณได้</translation>
-<translation id="5543953544073077331">ใช้งาน Chrome สำเนาอื่นอยู่ ปิดสำเนานั้นก่อนแล้วค่อยอัปเดต</translation>
 <translation id="556024056938947818">Google Chrome กำลังพยายามแสดงรหัสผ่าน</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">หากการตั้งค่าไม่แสดงในหน้านี้ โปรดดูที่<ph name="LINK_BEGIN" />การตั้งค่า Chrome OS<ph name="LINK_END" /></translation>
@@ -185,7 +183,6 @@
 <translation id="7408085963519505752">ข้อกำหนดของ Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากการซิงค์ไม่พร้อมให้บริการสำหรับโดเมนของคุณ</translation>
 <translation id="7486227612705979895">Chrome จะเข้าถึงไดรฟ์ของคุณเพื่อแสดงคำแนะนำในแถบที่อยู่</translation>
-<translation id="7531671357096394523">ปิด Chrome ทุกสำเนา</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">หากต้องการดูว่าอุปกรณ์เป็นเวอร์ชันล่าสุดแล้วหรือไม่ ให้ไปที่<ph name="LINK_BEGIN" />การตั้งค่า Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome อีก เนื่องจากระบบไม่รองรับ Mac OS X 10.9 แล้ว</translation>

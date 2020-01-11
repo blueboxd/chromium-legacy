@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Số điện thoại</translation>
 <translation id="3819178904835489326">Đã xóa <ph name="NUMBER_OF_DOWNLOADS" /> bản tải xuống</translation>
 <translation id="3822502789641063741">Xóa dữ liệu trang trong bộ nhớ?</translation>
+<translation id="3853625385350850937">Để tiếp tục, hãy bật NFC trên thiết bị</translation>
 <translation id="3859306556332390985">Tìm kiếm tiến</translation>
 <translation id="388596076286380598">Bạn có thể xem các bài viết, video và nội dung khác trên những trang web mình thích, ngay cả khi không có kết nối mạng hoặc kết nối yếu.</translation>
 <translation id="3894427358181296146">Thêm thư mục</translation>
@@ -1049,6 +1050,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="8920114477895755567">Đang đợi thông tin chi tiết của phụ huynh.</translation>
 <translation id="8922289737868596582">Tải trang xuống từ nút Thêm tùy chọn để sử dụng ngoại tuyến</translation>
+<translation id="8926666909099850184">NFC đã tắt đối với thiết bị này. Hãy bật trong phần <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Bạn có muốn xóa hoạt động của mình trên Chrome khỏi Digital Wellbeing không?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Mở trong cửa sổ khác</translation>

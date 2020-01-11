@@ -837,7 +837,8 @@ TEST_F(FileStreamTest, AsyncFlagMismatch) {
 #endif
 
 #if defined(OS_ANDROID)
-TEST_F(FileStreamTest, ContentUriRead) {
+// TODO(https://crbug.com/894599): flaky on both android and cronet bots.
+TEST_F(FileStreamTest, DISABLED_ContentUriRead) {
   base::FilePath test_dir;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &test_dir);
   test_dir = test_dir.AppendASCII("net");

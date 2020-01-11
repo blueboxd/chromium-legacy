@@ -88,7 +88,6 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/renderer/threat_dom_details.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
-#include "components/startup_metric_utils/common/startup_metric.mojom.h"
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/common_features.h"
@@ -319,7 +318,7 @@ std::unique_ptr<base::Unwinder> CreateV8Unwinder(
 }  // namespace
 
 ChromeContentRendererClient::ChromeContentRendererClient()
-    : main_entry_time_(base::TimeTicks::Now()),
+    :
 #if defined(OS_WIN)
       remote_module_watcher_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
 #endif
@@ -347,13 +346,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
       IsStandaloneContentExtensionProcess()
           ? blink::scheduler::WebRendererProcessType::kExtensionRenderer
           : blink::scheduler::WebRendererProcessType::kRenderer);
-
-  {
-    mojo::Remote<startup_metric_utils::mojom::StartupMetricHost>
-        startup_metric_host;
-    thread->BindHostReceiver(startup_metric_host.BindNewPipeAndPassReceiver());
-    startup_metric_host->RecordRendererMainEntryTime(main_entry_time_);
-  }
 
 #if defined(OS_WIN)
   mojo::PendingRemote<mojom::ModuleEventSink> module_event_sink;

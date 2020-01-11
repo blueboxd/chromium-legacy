@@ -74,7 +74,7 @@ class KEYBOARD_EXPORT KeyboardUI {
   KeyboardUIController* keyboard_controller() { return keyboard_controller_; }
 
  private:
-  keyboard::KeyboardUIController* keyboard_controller_ = nullptr;
+  KeyboardUIController* keyboard_controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardUI);
 };

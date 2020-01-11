@@ -1593,7 +1593,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackForArc) {
   window_nonarc->Show();
 
   window_arc->SetProperty(aura::client::kAppType,
-                          static_cast<int>(ash::AppType::ARC_APP));
+                          static_cast<int>(AppType::ARC_APP));
   EXPECT_FALSE(test_helper.GetBackdropWindow());
 
   // ARC window will have a backdrop only when it's active.

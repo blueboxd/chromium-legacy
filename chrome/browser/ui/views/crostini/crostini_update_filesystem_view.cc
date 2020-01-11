@@ -90,10 +90,6 @@ void CrostiniUpdateFilesystemView::Show(Profile* profile) {
   g_crostini_update_filesystem_view_dialog->GetWidget()->Show();
 }
 
-int CrostiniUpdateFilesystemView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
 base::string16 CrostiniUpdateFilesystemView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CROSTINI_UPGRADING_LABEL);
 }
@@ -117,6 +113,8 @@ CrostiniUpdateFilesystemView::GetActiveViewForTesting() {
 
 CrostiniUpdateFilesystemView::CrostiniUpdateFilesystemView() {
   constexpr int kDialogSpacingVertical = 32;
+
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
 
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(

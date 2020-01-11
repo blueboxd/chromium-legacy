@@ -1,6 +1,6 @@
 {
   "name": "Login screen APIs test extension",
-  "version": "1.20",
+  "version": "1.23",
   "manifest_version": 2,
   "description": "Login screen APIs test extension",
   "background": {

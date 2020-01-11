@@ -605,6 +605,23 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
   // For backward compat with older themes, some newer colors are generated from
   // older ones if they are missing.
   switch (id) {
+    case TP::COLOR_OMNIBOX_BACKGROUND: {
+      constexpr float kMinOmniboxToolbarContrast = 1.3f;
+      const SkColor toolbar_color = GetColor(TP::COLOR_TOOLBAR, incognito);
+      const SkColor darkest_color = color_utils::GetDarkestColor();
+      const SkColor blend_target =
+          (color_utils::GetContrastRatio(toolbar_color, darkest_color) >=
+           kMinOmniboxToolbarContrast)
+              ? darkest_color
+              : color_utils::GetColorWithMaxContrast(darkest_color);
+      return color_utils::BlendForMinContrast(toolbar_color, toolbar_color,
+                                              blend_target,
+                                              kMinOmniboxToolbarContrast)
+          .color;
+    }
+    case TP::COLOR_OMNIBOX_TEXT:
+      return color_utils::GetColorWithMaxContrast(
+          GetColor(TP::COLOR_OMNIBOX_BACKGROUND, incognito));
     case TP::COLOR_TOOLBAR_BUTTON_ICON:
       return color_utils::HSLShift(gfx::kChromeIconGrey,
                                    GetTint(TP::TINT_BUTTONS, incognito));
@@ -1147,6 +1164,11 @@ base::Optional<ThemeService::OmniboxColor> ThemeService::GetOmniboxColorImpl(
   OmniboxColor bg = get_resulting_paint_color(
       get_base_color(TP::COLOR_OMNIBOX_BACKGROUND),
       {GetColor(TP::COLOR_TOOLBAR, incognito, nullptr), false});
+  // Returning early here avoids an infinite loop in computing |fg|, caused by
+  // the default color for COLOR_OMNIBOX_TEXT being based on
+  // COLOR_OMNIBOX_BACKGROUND.
+  if (id == TP::COLOR_OMNIBOX_BACKGROUND)
+    return bg;
   OmniboxColor fg =
       get_resulting_paint_color(get_base_color(TP::COLOR_OMNIBOX_TEXT), bg);
 
@@ -1235,8 +1257,6 @@ base::Optional<ThemeService::OmniboxColor> ThemeService::GetOmniboxColorImpl(
     case TP::COLOR_OMNIBOX_TEXT:
     case TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED:
       return fg;
-    case TP::COLOR_OMNIBOX_BACKGROUND:
-      return bg;
     case TP::COLOR_OMNIBOX_BACKGROUND_HOVERED:
       return bg_hovered_color();
     case TP::COLOR_OMNIBOX_RESULTS_BG:

@@ -2028,6 +2028,26 @@
             ]
         }
     ],
+    "DesktopHats": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledNTP79",
+                    "params": {
+                        "en_site_id": "ty52vxwjrabfvhusawtrmkmx6m",
+                        "probability": "0.2",
+                        "survey": "satisfaction"
+                    },
+                    "enable_features": [
+                        "HappinessTrackingSurveysForDesktop"
+                    ]
+                }
+            ]
+        }
+    ],
     "DesktopTabGroups": [
         {
             "platforms": [
@@ -5533,6 +5553,25 @@
             ]
         }
     ],
+    "SafeBrowsingCommittedInterstitials": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingCommittedInterstitials"
+                    ]
+                }
+            ]
+        }
+    ],
     "SafeBrowsingPasswordProtectionForSavedPasswords": [
         {
             "platforms": [
@@ -6610,6 +6649,7 @@
         {
             "platforms": [
                 "android",
+                "android_webview",
                 "chromeos",
                 "linux",
                 "mac",

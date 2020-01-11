@@ -628,7 +628,7 @@ TEST_F(ScoredHistoryMatchTest, GetDocumentSpecificityScore) {
 // once somewhere in the URL or title.
 TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
   GURL url("http://abc.def.com/path1/path2?arg1=val1&arg2=val2#hash_fragment");
-  base::string16 title = ASCIIToUTF16("here is a title");
+  base::string16 title = ASCIIToUTF16("here is a - title");
   auto Score = [&](const char* term) {
     return GetTopicalityScoreOfTermAgainstURLAndTitle(ASCIIToUTF16(term), url,
                                                       title);
@@ -652,6 +652,7 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
   const float protocol_mid_word_score = Score("tt");
   const float title_score = Score("her");
   const float title_mid_word_score = Score("er");
+  const float wordless_match_at_title_mid_word_score = Score("-");
   // Verify hostname and domain name > path > arg.
   EXPECT_GT(hostname_score, path_score);
   EXPECT_GT(domain_name_score, path_score);
@@ -673,6 +674,17 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
   EXPECT_GT(arg_score, hostname_mid_word_score);
   EXPECT_GT(arg_score, domain_name_mid_word_score);
   EXPECT_GT(title_score, title_mid_word_score);
+  // Verify mid word scores are scored 0 unless 1) in the host or domain 2) or
+  // the match contains no words.
+  EXPECT_GT(hostname_mid_word_score, 0);
+  EXPECT_GT(domain_name_mid_word_score, 0);
+  EXPECT_EQ(tld_mid_word_score, 0);
+  EXPECT_EQ(path_mid_word_score, 0);
+  EXPECT_EQ(arg_mid_word_score, 0);
+  EXPECT_EQ(protocol_mid_word_score, 0);
+  EXPECT_EQ(title_mid_word_score, 0);
+  EXPECT_GT(wordless_match_at_title_mid_word_score, 0);
+  // Verify matches not at word starts score non 0 when they contain no words.
   // Check that title matches fit somewhere reasonable compared to the
   // various types of URL matches.
   EXPECT_GT(title_score, arg_score);

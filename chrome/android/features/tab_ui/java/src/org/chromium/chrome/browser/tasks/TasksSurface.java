@@ -17,6 +17,14 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
  */
 public interface TasksSurface {
     /**
+     * Called to initialize this interface.
+     * It should be called before showing.
+     * It should not be called in the critical startup process since it will do expensive work.
+     * It might be called many times.
+     */
+    void initialize();
+
+    /**
      * Set the listener to get the {@link Layout#onTabSelecting} event from the Grid Tab Switcher.
      * @param listener The {@link TabSwitcher.OnTabSelectingListener} to use.
      */

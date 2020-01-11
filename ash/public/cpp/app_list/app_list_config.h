@@ -22,7 +22,7 @@ namespace ash {
 class ASH_PUBLIC_EXPORT AppListConfig {
  public:
   // Constructor for unscaled configurations of the provided type.
-  explicit AppListConfig(ash::AppListConfigType type);
+  explicit AppListConfig(AppListConfigType type);
 
   // Constructor for scaled app list configuration.
   // Used only if kScalableAppList feature is not enabled, in which case the
@@ -47,7 +47,7 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // Gets default app list configuration.
   static AppListConfig& instance();
 
-  ash::AppListConfigType type() const { return type_; }
+  AppListConfigType type() const { return type_; }
   float scale_x() const { return scale_x_; }
   float scale_y() const { return scale_y_; }
   int grid_tile_width() const { return grid_tile_width_; }
@@ -226,8 +226,7 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   }
 
   // Returns the dimension at which a result's icon should be displayed.
-  int GetPreferredIconDimension(
-      ash::SearchResultDisplayType display_type) const;
+  int GetPreferredIconDimension(SearchResultDisplayType display_type) const;
 
   // Returns the maximum number of items allowed in specified page in apps grid.
   int GetMaxNumOfItemsPerPage(int page) const;
@@ -241,7 +240,7 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int GetIdealVerticalMargin(const gfx::Rect& abailable_bounds) const;
 
  private:
-  const ash::AppListConfigType type_;
+  const AppListConfigType type_;
 
   // Current config scale values - should be different from 1 for
   // AppListConfigType::kShared only.

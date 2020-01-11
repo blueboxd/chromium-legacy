@@ -53,7 +53,7 @@ AcceleratorConfirmationDialog::AcceleratorConfirmationDialog(
 
   views::Widget* widget = CreateDialogWidget(
       this, nullptr,
-      Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(), container_id));
+      Shell::GetContainer(Shell::GetPrimaryRootWindow(), container_id));
   widget->Show();
 }
 

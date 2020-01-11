@@ -268,7 +268,7 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
   if (GetThreadState()->SweepForbidden())
     return nullptr;
 
-  ThreadHeapStatsCollector::Scope stats_scope(
+  ThreadHeapStatsCollector::EnabledScope stats_scope(
       GetThreadState()->Heap().stats_collector(),
       ThreadHeapStatsCollector::kLazySweepOnAllocation);
   ThreadState::SweepForbiddenScope sweep_forbidden(GetThreadState());

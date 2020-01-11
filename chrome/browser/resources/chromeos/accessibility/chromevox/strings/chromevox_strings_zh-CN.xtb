@@ -842,6 +842,7 @@
 <translation id="6865519907510167493">拼写错误</translation>
 <translation id="6871161210040114857">不区分大小写。</translation>
 <translation id="6877435256196695200">不存在下一个图形。</translation>
+<translation id="688976158310523235">搜索菜单</translation>
 <translation id="6897341342232909480">向左移动</translation>
 <translation id="6901540140423170855">日期</translation>
 <translation id="6910211073230771657">已删除</translation>
@@ -1207,6 +1208,7 @@
 <translation id="9065283790526219006">含弹出项</translation>
 <translation id="9066023754636984703">先按搜索键 + A 键，再按 J 键，即可跳转到相关详情。</translation>
 <translation id="9067522039955793016">分页符</translation>
+<translation id="9074824103975499138">搜索 ChromeVox 菜单</translation>
 <translation id="9077213568694924680">已从所选文字中移除</translation>
 <translation id="9077305471618729969">亮海绿</translation>
 <translation id="9082874451376019682">不存在上一个滑块。</translation>

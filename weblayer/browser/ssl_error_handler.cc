@@ -6,6 +6,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
@@ -13,6 +14,8 @@
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
+#include "components/ssl_errors/error_info.h"
+#include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/ssl_error_controller_client.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
 
@@ -146,6 +149,40 @@ void ShowSSLInterstitial(
                                 base::WrapUnique(interstitial_page)));
 }
 
+// Constructs and shows a bad clock interstitial. Adapted from //chrome's
+// SSLErrorHandlerDelegateImpl::ShowCaptivePortalInterstitial().
+void ShowBadClockInterstitial(
+    content::WebContents* web_contents,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
+    ssl_errors::ClockState clock_state,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    base::OnceCallback<
+        void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
+        blocking_page_ready_callback) {
+  security_interstitials::MetricsHelper::ReportDetails report_details;
+  report_details.metric_prefix = "bad_clock";
+  auto metrics_helper = std::make_unique<security_interstitials::MetricsHelper>(
+      request_url, report_details, /*history_service=*/nullptr);
+
+  auto controller_client = std::make_unique<SSLErrorControllerClient>(
+      web_contents, cert_error, ssl_info, request_url,
+      std::move(metrics_helper));
+
+  auto* interstitial_page = new BadClockBlockingPage(
+      web_contents, cert_error, ssl_info, request_url,
+      base::Time::NowFromSystemTime(), clock_state,
+      std::move(ssl_cert_reporter), std::move(controller_client));
+
+  // Note: |blocking_page_ready_callback| must be posted due to
+  // HandleSSLError()'s guarantee that it will not invoke this callback
+  // synchronously.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(blocking_page_ready_callback),
+                                base::WrapUnique(interstitial_page)));
+}
+
 }  // namespace
 
 void HandleSSLError(
@@ -157,7 +194,35 @@ void HandleSSLError(
     base::OnceCallback<
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
         blocking_page_ready_callback) {
-  // First check for captive portal.
+  // Check for a clock error.
+  if (ssl_errors::ErrorInfo::NetErrorToErrorType(cert_error) ==
+      ssl_errors::ErrorInfo::CERT_DATE_INVALID) {
+    // This implementation is adapted from //chrome's
+    // SSLErrorHandler::HandleCertDateInvalidErrorImpl(). Note that we did not
+    // port the fetch of NetworkTimeTracker's time made in //chrome's
+    // SSLErrorHandler::HandleCertDateInvalidError() into //weblayer: this
+    // fetch introduces a fair degree of complexity into the flow by making it
+    // asynchronous, and it is not relevant on Android, where such fetches are
+    // not supported. This fetch will be incorporated when WebLayer shares
+    // //chrome's SSLErrorHandler implementation as part of crbug.com/1026547.
+
+    const base::Time now = base::Time::NowFromSystemTime();
+
+    network_time::NetworkTimeTracker* tracker =
+        BrowserProcess::GetInstance()->GetNetworkTimeTracker();
+    ssl_errors::ClockState clock_state =
+        ssl_errors::GetClockState(now, tracker);
+
+    if (clock_state == ssl_errors::CLOCK_STATE_FUTURE ||
+        clock_state == ssl_errors::CLOCK_STATE_PAST) {
+      ShowBadClockInterstitial(web_contents, cert_error, ssl_info, request_url,
+                               clock_state, std::move(ssl_cert_reporter),
+                               std::move(blocking_page_ready_callback));
+      return;
+    }
+  }
+
+  // Next check for a captive portal.
 
   // TODO(https://crbug.com/1030692): Share the check for known captive
   // portal certificates from //chrome's SSLErrorHandler:757.

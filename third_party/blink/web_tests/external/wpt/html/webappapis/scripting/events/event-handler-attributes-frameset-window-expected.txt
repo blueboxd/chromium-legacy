@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 312 tests; 297 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 324 tests; 297 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS shadowed blur (document.body)
 PASS shadowed error (document.body)
 PASS shadowed focus (document.body)
@@ -79,6 +79,10 @@ PASS not shadowed timeupdate (document.body)
 PASS not shadowed toggle (document.body)
 PASS not shadowed volumechange (document.body)
 PASS not shadowed waiting (document.body)
+FAIL not shadowed webkitanimationend (document.body) assert_equals: alternative body should reflect expected (object) null but got (undefined) undefined
+FAIL not shadowed webkitanimationiteration (document.body) assert_equals: alternative body should reflect expected (object) null but got (undefined) undefined
+FAIL not shadowed webkitanimationstart (document.body) assert_equals: alternative body should reflect expected (object) null but got (undefined) undefined
+FAIL not shadowed webkittransitionend (document.body) assert_equals: alternative body should reflect expected (object) null but got (undefined) undefined
 FAIL not shadowed copy (document.body) assert_equals: window should reflect expected (object) null but got (undefined) undefined
 FAIL not shadowed cut (document.body) assert_equals: window should reflect expected (object) null but got (undefined) undefined
 FAIL not shadowed paste (document.body) assert_equals: window should reflect expected (object) null but got (undefined) undefined
@@ -183,6 +187,10 @@ PASS not shadowed timeupdate (document.createElement("frameset"))
 PASS not shadowed toggle (document.createElement("frameset"))
 PASS not shadowed volumechange (document.createElement("frameset"))
 PASS not shadowed waiting (document.createElement("frameset"))
+FAIL not shadowed webkitanimationend (document.createElement("frameset")) assert_equals: body should reflect expected (object) null but got (undefined) undefined
+FAIL not shadowed webkitanimationiteration (document.createElement("frameset")) assert_equals: body should reflect expected (object) null but got (undefined) undefined
+FAIL not shadowed webkitanimationstart (document.createElement("frameset")) assert_equals: body should reflect expected (object) null but got (undefined) undefined
+FAIL not shadowed webkittransitionend (document.createElement("frameset")) assert_equals: body should reflect expected (object) null but got (undefined) undefined
 FAIL not shadowed copy (document.createElement("frameset")) assert_equals: window should reflect expected (object) null but got (undefined) undefined
 FAIL not shadowed cut (document.createElement("frameset")) assert_equals: window should reflect expected (object) null but got (undefined) undefined
 FAIL not shadowed paste (document.createElement("frameset")) assert_equals: window should reflect expected (object) null but got (undefined) undefined
@@ -287,6 +295,10 @@ PASS not shadowed timeupdate (window)
 PASS not shadowed toggle (window)
 PASS not shadowed volumechange (window)
 PASS not shadowed waiting (window)
+FAIL not shadowed webkitanimationend (window) assert_equals: body should reflect expected (object) null but got (undefined) undefined
+FAIL not shadowed webkitanimationiteration (window) assert_equals: body should reflect expected (object) null but got (undefined) undefined
+FAIL not shadowed webkitanimationstart (window) assert_equals: body should reflect expected (object) null but got (undefined) undefined
+FAIL not shadowed webkittransitionend (window) assert_equals: body should reflect expected (object) null but got (undefined) undefined
 PASS not shadowed copy (window)
 PASS not shadowed cut (window)
 PASS not shadowed paste (window)

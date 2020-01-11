@@ -9,10 +9,6 @@ CONSOLE WARNING: line 58: Synchronous XMLHttpRequest on the main thread is depre
 <xsl:apply-templates/><xsl:text>
 </xsl:text></xsl:template>
 
-<xsl:template>
-		<xsl:value-of select="."/>
-</xsl:template>
-
 </xsl:stylesheet>
 0.3 xsl2:
 <?xml version="1.0" encoding="UTF-8"?><xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
@@ -27,11 +23,6 @@ CONSOLE WARNING: line 58: Synchronous XMLHttpRequest on the main thread is depre
             </body>
         </html>
   </xsl:template>
-
-<xsl:template>
-		<xsl:value-of select="."/>
-</xsl:template>
-
 </xsl:stylesheet>
 
 1.0 void importStylesheet(in DOMNode style):

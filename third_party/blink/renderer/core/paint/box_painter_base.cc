@@ -376,13 +376,11 @@ FloatRect ComputeSubsetForBackground(const FloatRect& phase_and_size,
 FloatRect CorrectSrcRectForImageOrientation(BitmapImage* image,
                                             FloatRect original_rect) {
   ImageOrientation orientation = image->CurrentFrameOrientation();
-  if (orientation != kDefaultImageOrientation) {
-    AffineTransform forward_map =
-        orientation.TransformFromDefault(original_rect.Size());
-    AffineTransform inverse_map = forward_map.Inverse();
-    return inverse_map.MapRect(original_rect);
-  }
-  return original_rect;
+  DCHECK(orientation != kDefaultImageOrientation);
+  AffineTransform forward_map =
+      orientation.TransformFromDefault(original_rect.Size());
+  AffineTransform inverse_map = forward_map.Inverse();
+  return inverse_map.MapRect(original_rect);
 }
 
 // The unsnapped_subset_size should be the target painting area implied by the
@@ -441,7 +439,7 @@ void DrawTiledBackground(GraphicsContext& context,
     // rect to be in the unrotated image space, but we have computed it here in
     // the rotated space in order to position and size the background. Undo the
     // src rect rotation if necessaary.
-    if (respect_orientation && image->IsBitmapImage()) {
+    if (respect_orientation && !image->HasDefaultOrientation()) {
       visible_src_rect = CorrectSrcRectForImageOrientation(ToBitmapImage(image),
                                                            visible_src_rect);
     }
@@ -559,6 +557,7 @@ inline bool PaintFastBottomLayer(Node* node,
       !has_intrinsic_size
           ? image_tile.Size()
           : FloatSize(image->Size(info.respect_image_orientation));
+
   // Subset computation needs the same location as was used with
   // ComputePhaseForBackground above, but needs the unsnapped destination
   // size to correctly calculate sprite subsets in the presence of zoom. But if
@@ -584,7 +583,7 @@ inline bool PaintFastBottomLayer(Node* node,
   // to be in the unrotated image space, but we have computed it here in the
   // rotated space in order to position and size the background. Undo the src
   // rect rotation if necessaary.
-  if (info.respect_image_orientation && image->IsBitmapImage()) {
+  if (info.respect_image_orientation && !image->HasDefaultOrientation()) {
     src_rect =
         CorrectSrcRectForImageOrientation(ToBitmapImage(image), src_rect);
   }

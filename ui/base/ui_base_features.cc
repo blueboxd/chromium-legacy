@@ -151,7 +151,9 @@ const base::Feature kWebUIA11yEnhancements{"WebUIA11yEnhancements",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsFormControlsRefreshEnabled() {
-  return base::FeatureList::IsEnabled(features::kFormControlsRefresh);
+  static const bool form_controls_refresh_enabled =
+      base::FeatureList::IsEnabled(features::kFormControlsRefresh);
+  return form_controls_refresh_enabled;
 }
 
 bool IsAutomaticUiAdjustmentsForTouchEnabled() {

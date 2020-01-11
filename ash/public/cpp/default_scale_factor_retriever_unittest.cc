@@ -84,7 +84,7 @@ class DefaultScaleFactorRetrieverTest : public testing::Test {
 TEST_F(DefaultScaleFactorRetrieverTest, Basic) {
   display::Display::SetInternalDisplayId(TestCrosDisplayConfig::kFakeDisplayId);
   auto display_config = std::make_unique<TestCrosDisplayConfig>();
-  auto retriever = std::make_unique<ash::DefaultScaleFactorRetriever>();
+  auto retriever = std::make_unique<DefaultScaleFactorRetriever>();
 
   auto callback = [](float* result, float default_scale_factor) {
     result[0] = default_scale_factor;
@@ -118,7 +118,7 @@ TEST_F(DefaultScaleFactorRetrieverTest, Basic) {
 TEST_F(DefaultScaleFactorRetrieverTest, Cancel) {
   display::Display::SetInternalDisplayId(TestCrosDisplayConfig::kFakeDisplayId);
   auto display_config = std::make_unique<TestCrosDisplayConfig>();
-  auto retriever = std::make_unique<ash::DefaultScaleFactorRetriever>();
+  auto retriever = std::make_unique<DefaultScaleFactorRetriever>();
 
   auto callback = [](float* result, float default_scale_factor) {
     result[0] = default_scale_factor;

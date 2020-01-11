@@ -453,8 +453,8 @@ TEST_F(MediaNotificationControllerImplTest, HideWhenScreenLocked) {
 
   // Show a non-media notification that should still be displayed.
   message_center->AddNotification(
-      ash::CreateSystemNotification("test", base::string16(), base::string16(),
-                                    "test", base::BindRepeating([]() {})));
+      CreateSystemNotification("test", base::string16(), base::string16(),
+                               "test", base::BindRepeating([]() {})));
 
   EXPECT_EQ(2u, message_center->GetVisibleNotifications().size());
 

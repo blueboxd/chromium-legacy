@@ -70,34 +70,31 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(
 OmniboxTabSwitchButton::~OmniboxTabSwitchButton() = default;
 
 void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
-  if (state() == STATE_NORMAL) {
-    // If used to be pressed, transfer ownership.
-    if (old_state == STATE_PRESSED) {
-      SetBgColorOverride(GetBackgroundColor());
-      SetMouseHandler(parent());
-      if (popup_contents_view_->IsButtonSelected())
-        popup_contents_view_->UnselectButton();
-    } else if (!popup_contents_view_->IsButtonSelected()) {
-      // Otherwise, the button was hovered. Update color if not selected.
-      SetBgColorOverride(GetBackgroundColor());
-    }
-  } else if (state() == STATE_HOVERED) {
-    if (old_state == STATE_NORMAL) {
-      SetBgColorOverride(GetBackgroundColor());
-    }
-  } else if (state() == STATE_PRESSED) {
-    SetPressed();
+  if (state() == STATE_NORMAL && old_state == STATE_PRESSED) {
+    SetMouseHandler(parent());
+    if (popup_contents_view_->IsButtonSelected())
+      popup_contents_view_->UnselectButton();
   }
   MdTextButton::StateChanged(old_state);
 }
 
-void OmniboxTabSwitchButton::UpdateBackground() {
-  focus_ring()->SchedulePaint();
-  SetBgColorOverride(GetBackgroundColor());
+void OmniboxTabSwitchButton::OnThemeChanged() {
+  SetBgColorOverride(GetOmniboxColor(GetThemeProvider(),
+                                     OmniboxPart::RESULTS_BACKGROUND,
+                                     OmniboxPartState::NORMAL));
 }
 
-void OmniboxTabSwitchButton::OnThemeChanged() {
-  SetBgColorOverride(GetBackgroundColor());
+void OmniboxTabSwitchButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACC_TAB_SWITCH_BUTTON));
+  // Although this appears visually as a button, expose as a list box option so
+  // that it matches the other options within its list box container.
+  node_data->role = ax::mojom::Role::kListBoxOption;
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                              IsSelected());
+}
+
+void OmniboxTabSwitchButton::UpdateBackground() {
+  focus_ring()->SchedulePaint();
 }
 
 void OmniboxTabSwitchButton::ProvideWidthHint(int parent_width) {
@@ -111,31 +108,9 @@ void OmniboxTabSwitchButton::ProvideFocusHint() {
   NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 }
 
-void OmniboxTabSwitchButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACC_TAB_SWITCH_BUTTON));
-  // Although this appears visually as a button, expose as a list box option so
-  // that it matches the other options within its list box container.
-  node_data->role = ax::mojom::Role::kListBoxOption;
-  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
-                              IsSelected());
-}
-
 bool OmniboxTabSwitchButton::IsSelected() const {
   // Is this result selected and is button selected?
   return result_view_->IsSelected() && popup_contents_view_->IsButtonSelected();
-}
-
-SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
-  return GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_BACKGROUND,
-                         state() == STATE_HOVERED ? OmniboxPartState::HOVERED
-                                                  : OmniboxPartState::NORMAL);
-}
-
-void OmniboxTabSwitchButton::SetPressed() {
-  SetBgColorOverride(color_utils::AlphaBlend(
-      GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_BACKGROUND,
-                      OmniboxPartState::SELECTED),
-      SK_ColorBLACK, 0.8f));
 }
 
 int OmniboxTabSwitchButton::CalculateGoalWidth(int parent_width,

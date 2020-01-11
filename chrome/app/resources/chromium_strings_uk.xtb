@@ -36,7 +36,6 @@
 <translation id="2770231113462710648">Змінити веб-переглядач за умовчанням на:</translation>
 <translation id="2799223571221894425">Перезапустити</translation>
 <translation id="2805036593126168338">ОС Chromium не вдалося синхронізувати ваші паролі. Виправити.</translation>
-<translation id="2838154144102149890">Для оновлення потрібно припинити роботу Chromium. У результаті інші користувачі, що ввійшли в обліковий запис на цьому комп’ютері, можуть утратити незбережені зміни.</translation>
 <translation id="2847479871509788944">Видалити з Chromium…</translation>
 <translation id="2886012850691518054">Додатково: допоможіть покращити Chromium,  автоматично надсилаючи статистику використання та звіти про аварійне завершення роботи в Google.</translation>
 <translation id="2910007522516064972">Про &amp;Chromium</translation>
@@ -146,7 +145,6 @@
 <translation id="6847869444787758381">Chromium повідомляє, коли ваші паролі зламують</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (скопійовано в Chromium)</translation>
-<translation id="6868056391275687737">Запущено інші копії Chromium. Щоб оновити, закрийте їх.</translation>
 <translation id="6893813176749746474">Chromium оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
 <translation id="6964305034639999644">Відкрити посилання в аноні&amp;мному вікні Chromium</translation>
 <translation id="6990124437352146030">Chromium потрібен дозвіл на використання мікрофона, щоб надати цьому сайту доступ до нього</translation>
@@ -206,7 +204,6 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="8697124171261953979">Розширення також змінило сторінку, яка відкривається під час запуску Chromium або пошуку в універсальному вікні пошуку.</translation>
 <translation id="8704119203788522458">Це ваш Chromium</translation>
 <translation id="8739167630197873875">Файли cookie видаляються, коли ви закриваєте Chromium. Щоб продовжити синхронізацію, змініть ці <ph name="COOKIE_SETTINGS_LINK" />.</translation>
-<translation id="8748383401829947534">Закрийте всі копії Chromium.</translation>
 <translation id="8796602469536043152">Chromium потрібен дозвіл на використання камери й мікрофона, щоб надати цьому сайту доступ до них</translation>
 <translation id="8803635938069941624">Умови ОС Chromium</translation>
 <translation id="8821041990367117597">Chromium не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>

@@ -1882,6 +1882,10 @@ class SafeBrowsingBlockingPageIDNTest
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageIDNTest,
                        SafeBrowsingBlockingPageDecodesIDN) {
+  // TODO(crbug.com/1039367): VerifyIDNDecoded does not work with committed
+  // interstitials, this test should be re-enabled once it is adapted.
+  if (AreCommittedInterstitialsEnabled())
+    return;
   EXPECT_TRUE(VerifyIDNDecoded());
 }
 

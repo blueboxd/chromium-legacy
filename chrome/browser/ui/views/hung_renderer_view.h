@@ -178,17 +178,10 @@ class HungRendererDialogView : public views::DialogDelegateView,
   HungRendererDialogView();
   ~HungRendererDialogView() override;
 
-  // views::View overrides:
-  void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override;
-
   static HungRendererDialogView* g_instance_;
 
  private:
   friend class HungRendererDialogViewBrowserTest;
-
-  // Initialize the controls in this dialog.
-  void Init();
 
   // Restart the hang timer, giving the page more time.
   void RestartHangTimer();
@@ -206,9 +199,6 @@ class HungRendererDialogView : public views::DialogDelegateView,
   // The model that provides the contents of the table that shows a list of
   // pages affected by the hang.
   std::unique_ptr<HungPagesTableModel> hung_pages_table_model_;
-
-  // Whether or not we've created controls for ourself.
-  bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(HungRendererDialogView);
 };

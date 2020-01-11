@@ -6,11 +6,12 @@ package org.chromium.chrome.browser.tab;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,9 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  *                    started first.  Unify the ways the maximum Tab ID is set (crbug.com/502384).
  */
 public class TabIdManager {
-    @VisibleForTesting
-    public static final String PREF_NEXT_ID =
-            "org.chromium.chrome.browser.tab.TabIdManager.NEXT_ID";
 
     private static final Object INSTANCE_LOCK = new Object();
     @SuppressLint("StaticFieldLeak")
@@ -41,7 +39,7 @@ public class TabIdManager {
     private final Context mContext;
     private final AtomicInteger mIdCounter = new AtomicInteger();
 
-    private SharedPreferences mPreferences;
+    private SharedPreferencesManager mPreferences;
 
     /** Returns the Singleton instance of the TabIdManager. */
     public static TabIdManager getInstance() {
@@ -60,8 +58,8 @@ public class TabIdManager {
     /**
      * Validates {@code id} and increments the internal counter to make sure future ids don't
      * collide.
-     * @param id The current id.  May be {@link #INVALID_TAB_ID}.
-     * @return A new id if {@code id} was {@link #INVALID_TAB_ID}, or {@code id}.
+     * @param id The current id.  May be {@link Tab#INVALID_TAB_ID}.
+     * @return A new id if {@code id} was {@link Tab#INVALID_TAB_ID}, or {@code id}.
      */
     public final int generateValidId(int id) {
         if (id == Tab.INVALID_TAB_ID) id = mIdCounter.getAndIncrement();
@@ -85,7 +83,7 @@ public class TabIdManager {
         // It's possible idCounter has been incremented between the get and the add but that's OK --
         // in the worst case mIdCounter will just be overly incremented.
         mIdCounter.addAndGet(diff);
-        mPreferences.edit().putInt(PREF_NEXT_ID, mIdCounter.get()).apply();
+        mPreferences.writeInt(ChromePreferenceKeys.TAB_ID_MANAGER_NEXT_ID, mIdCounter.get());
     }
 
     private TabIdManager(Context context) {
@@ -94,7 +92,7 @@ public class TabIdManager {
         // Read the shared preference.  This has to be done on the critical path to ensure that the
         // myriad Activities that serve as entries into Chrome are all synchronized on the correct
         // maximum Tab ID.
-        mPreferences = ContextUtils.getAppSharedPreferences();
-        mIdCounter.set(mPreferences.getInt(PREF_NEXT_ID, 0));
+        mPreferences = SharedPreferencesManager.getInstance();
+        mIdCounter.set(mPreferences.readInt(ChromePreferenceKeys.TAB_ID_MANAGER_NEXT_ID));
     }
 }

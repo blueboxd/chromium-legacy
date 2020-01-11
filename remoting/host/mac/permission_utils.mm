@@ -118,24 +118,42 @@ bool CanInjectInput() {
 }
 
 // Heuristic to check screen capture permission. See http://crbug.com/993692
+// Screen capture is considered allowed if the name of at least one normal
+// or dock window running on another process is visible.
 // Copied from
 // chrome/browser/media/webrtc/system_media_capture_permissions_mac.mm
 // TODO(garykac) Move webrtc version where it can be shared.
 bool CanRecordScreen() {
   if (@available(macOS 10.15, *)) {
-    base::ScopedCFTypeRef<CFArrayRef> window_list(CGWindowListCopyWindowInfo(
-        kCGWindowListOptionOnScreenOnly, kCGNullWindowID));
-    NSUInteger num_windows = CFArrayGetCount(window_list);
-    NSUInteger num_windows_with_name = 0;
-    for (NSDictionary* dict in base::mac::CFToNSCast(window_list.get())) {
-      if ([dict objectForKey:base::mac::CFToNSCast(kCGWindowName)]) {
-        num_windows_with_name++;
-      } else {
-        // No kCGWindowName detected implies no permission.
-        break;
+    base::ScopedCFTypeRef<CFArrayRef> window_list(
+        CGWindowListCopyWindowInfo(kCGWindowListOptionAll, kCGNullWindowID));
+    int current_pid = [[NSProcessInfo processInfo] processIdentifier];
+    for (NSDictionary* window in base::mac::CFToNSCast(window_list.get())) {
+      NSNumber* window_pid =
+          [window objectForKey:base::mac::CFToNSCast(kCGWindowOwnerPID)];
+      if (!window_pid || [window_pid integerValue] == current_pid)
+        continue;
+
+      NSString* window_name =
+          [window objectForKey:base::mac::CFToNSCast(kCGWindowName)];
+      if (!window_name)
+        continue;
+
+      NSNumber* layer =
+          [window objectForKey:base::mac::CFToNSCast(kCGWindowLayer)];
+      if (!layer)
+        continue;
+
+      NSInteger layer_integer = [layer integerValue];
+      if (layer_integer == CGWindowLevelForKey(kCGNormalWindowLevelKey) ||
+          layer_integer == CGWindowLevelForKey(kCGDockWindowLevelKey)) {
+        return true;
       }
+      return false;
     }
-    return num_windows == num_windows_with_name;
+
+    // Screen capture is always allowed in older macOS versions.
+    return true;
   }
 
   // Previous to 10.15, screen capture was always allowed.

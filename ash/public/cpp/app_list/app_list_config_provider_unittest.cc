@@ -154,15 +154,15 @@ class SharedConfigAppListConfigProviderTest : public testing::Test {
 // ash::AppListConfigType::kShared app list config.
 TEST_F(SharedConfigAppListConfigProviderTest, SharedInstance) {
   AppListConfig* shared_config = AppListConfigProvider::Get().GetConfigForType(
-      ash::AppListConfigType::kShared, false);
+      AppListConfigType::kShared, false);
   ASSERT_TRUE(shared_config);
   EXPECT_EQ(&AppListConfig::instance(), shared_config);
   // Observer not expected to trigger, as the shared config is considered
   // created by default (even though it's created lazily on first access).
-  EXPECT_EQ(std::vector<ash::AppListConfigType>(),
+  EXPECT_EQ(std::vector<AppListConfigType>(),
             registry_observer_.created_types());
 
-  EXPECT_EQ(ash::AppListConfigType::kShared, shared_config->type());
+  EXPECT_EQ(AppListConfigType::kShared, shared_config->type());
   EXPECT_EQ(1., shared_config->scale_x());
   EXPECT_EQ(1., shared_config->scale_y());
 }
@@ -170,9 +170,9 @@ TEST_F(SharedConfigAppListConfigProviderTest, SharedInstance) {
 // Tests GetConfigForType behavior for app list configs associated with
 // kScalableAppList feature.
 TEST_F(AppListConfigProviderTest, NonSharedConfigGetters) {
-  std::vector<ash::AppListConfigType> test_cases = {
-      ash::AppListConfigType::kSmall, ash::AppListConfigType::kMedium,
-      ash::AppListConfigType::kLarge};
+  std::vector<AppListConfigType> test_cases = {AppListConfigType::kSmall,
+                                               AppListConfigType::kMedium,
+                                               AppListConfigType::kLarge};
   for (const auto& config_type : test_cases) {
     SCOPED_TRACE(static_cast<int>(config_type));
 
@@ -180,7 +180,7 @@ TEST_F(AppListConfigProviderTest, NonSharedConfigGetters) {
     // config.
     EXPECT_FALSE(AppListConfigProvider::Get().GetConfigForType(
         config_type, false /*can_create*/));
-    EXPECT_EQ(std::vector<ash::AppListConfigType>(),
+    EXPECT_EQ(std::vector<AppListConfigType>(),
               registry_observer_.created_types());
 
     // Calling GetConfigForType with true |can_create| will create a new config
@@ -190,8 +190,7 @@ TEST_F(AppListConfigProviderTest, NonSharedConfigGetters) {
         config_type, true /*can_create*/);
     ASSERT_TRUE(config);
     EXPECT_EQ(config_type, config->type());
-    const std::vector<ash::AppListConfigType> expected_created_types = {
-        config_type};
+    const std::vector<AppListConfigType> expected_created_types = {config_type};
     EXPECT_EQ(expected_created_types, registry_observer_.created_types());
     EXPECT_NE(&AppListConfig::instance(), config);
 
@@ -212,15 +211,15 @@ TEST_F(AppListConfigProviderTest, NonSharedConfigGetters) {
 TEST_F(AppListConfigProviderTest, CreateConfigByDisplayWorkArea) {
   const struct TestCase {
     gfx::Size work_area_size;
-    ash::AppListConfigType config_type;
-  } test_cases[] = {{gfx::Size(900, 500), ash::AppListConfigType::kSmall},
-                    {gfx::Size(500, 900), ash::AppListConfigType::kSmall},
-                    {gfx::Size(960, 600), ash::AppListConfigType::kMedium},
-                    {gfx::Size(1100, 700), ash::AppListConfigType::kMedium},
-                    {gfx::Size(600, 960), ash::AppListConfigType::kMedium},
-                    {gfx::Size(700, 1100), ash::AppListConfigType::kMedium},
-                    {gfx::Size(1200, 768), ash::AppListConfigType::kLarge},
-                    {gfx::Size(768, 1200), ash::AppListConfigType::kLarge}};
+    AppListConfigType config_type;
+  } test_cases[] = {{gfx::Size(900, 500), AppListConfigType::kSmall},
+                    {gfx::Size(500, 900), AppListConfigType::kSmall},
+                    {gfx::Size(960, 600), AppListConfigType::kMedium},
+                    {gfx::Size(1100, 700), AppListConfigType::kMedium},
+                    {gfx::Size(600, 960), AppListConfigType::kMedium},
+                    {gfx::Size(700, 1100), AppListConfigType::kMedium},
+                    {gfx::Size(1200, 768), AppListConfigType::kLarge},
+                    {gfx::Size(768, 1200), AppListConfigType::kLarge}};
 
   for (const auto& test_case : test_cases) {
     SCOPED_TRACE(::testing::Message()
@@ -269,7 +268,7 @@ TEST_F(AppListConfigProviderTest,
           gfx::Size(1200, 768), gfx::Insets(0, 0, 56, 0) /*shelf_insets*/,
           nullptr);
   ASSERT_TRUE(config);
-  EXPECT_EQ(ash::AppListConfigType::kLarge, config->type());
+  EXPECT_EQ(AppListConfigType::kLarge, config->type());
 
   // Verify CreateForAppListWidget returns nullptr if the created config would
   // be the same as |config|.
@@ -283,7 +282,7 @@ TEST_F(AppListConfigProviderTest,
           gfx::Size(960, 600), gfx::Insets(0, 0, 56, 0) /*shelf_insets*/,
           config.get());
   ASSERT_TRUE(updated_config);
-  EXPECT_EQ(ash::AppListConfigType::kMedium, updated_config->type());
+  EXPECT_EQ(AppListConfigType::kMedium, updated_config->type());
 }
 
 TEST_F(SharedConfigAppListConfigProviderTest,
@@ -297,7 +296,7 @@ TEST_F(SharedConfigAppListConfigProviderTest,
           gfx::Size(1200, 768) /*display_work_area_size*/,
           gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, nullptr);
   ASSERT_TRUE(config.get());
-  EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
+  EXPECT_EQ(AppListConfigType::kShared, config->type());
   EXPECT_EQ(1, config->scale_x());
   EXPECT_EQ(1, config->scale_y());
   EXPECT_EQ(112, config->grid_tile_width());
@@ -321,7 +320,7 @@ TEST_F(SharedConfigAppListConfigProviderTest,
       gfx::Size(800, 700) /*display_work_area_size*/,
       gfx::Insets(0, 102, 56, 102) /*shelf_insets*/, config.get());
   ASSERT_TRUE(config);
-  EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
+  EXPECT_EQ(AppListConfigType::kShared, config->type());
   EXPECT_EQ(500.f / kMinGridWidth, config->scale_x());
   EXPECT_EQ(1, config->scale_y());
   // 100 == std::round(scale_x * 112)
@@ -336,7 +335,7 @@ TEST_F(SharedConfigAppListConfigProviderTest,
       gfx::Size(800, 624) /*display_work_area_size*/,
       gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, config.get());
   ASSERT_TRUE(config);
-  EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
+  EXPECT_EQ(AppListConfigType::kShared, config->type());
   EXPECT_EQ(1, config->scale_x());
   // Available height includes fadeout zones, which should not be included in
   // scale calculation.
@@ -353,7 +352,7 @@ TEST_F(SharedConfigAppListConfigProviderTest,
       gfx::Size(800, 624) /*display_work_area_size*/,
       gfx::Insets(0, 102, 56, 102) /*shelf_insets*/, config.get());
   ASSERT_TRUE(config);
-  EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
+  EXPECT_EQ(AppListConfigType::kShared, config->type());
   EXPECT_EQ(500.f / kMinGridWidth, config->scale_x());
   // Available height includes fadeout zones, which should not be included in
   // scale calculation.
@@ -379,7 +378,7 @@ TEST_F(SharedConfigAppListConfigProviderTest,
           gfx::Size(768, 1200) /*display_work_area_size*/,
           gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, nullptr);
   ASSERT_TRUE(config.get());
-  EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
+  EXPECT_EQ(AppListConfigType::kShared, config->type());
   EXPECT_EQ(1, config->scale_x());
   EXPECT_EQ(1, config->scale_y());
   EXPECT_EQ(112, config->grid_tile_width());
@@ -403,7 +402,7 @@ TEST_F(SharedConfigAppListConfigProviderTest,
       gfx::Size(600, 800) /*display_work_area_size*/,
       gfx::Insets(0, 52, 56, 52) /*shelf_insets*/, config.get());
   ASSERT_TRUE(config);
-  EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
+  EXPECT_EQ(AppListConfigType::kShared, config->type());
   EXPECT_EQ(400.f / kMinGridWidth, config->scale_x());
   EXPECT_EQ(1, config->scale_y());
   // 100 == std::round(scale_x * 112)
@@ -418,7 +417,7 @@ TEST_F(SharedConfigAppListConfigProviderTest,
       gfx::Size(600, 624) /*display_work_area_size*/,
       gfx::Insets(0, 0, 56, 0) /*shelf_insets*/, config.get());
   ASSERT_TRUE(config);
-  EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
+  EXPECT_EQ(AppListConfigType::kShared, config->type());
   EXPECT_EQ(1, config->scale_x());
   // Available height includes fadeout zones, which should not be included in
   // scale calculation.
@@ -435,7 +434,7 @@ TEST_F(SharedConfigAppListConfigProviderTest,
       gfx::Size(600, 732) /*display_work_area_size*/,
       gfx::Insets(0, 102, 56, 102) /*shelf_insets*/, config.get());
   ASSERT_TRUE(config);
-  EXPECT_EQ(ash::AppListConfigType::kShared, config->type());
+  EXPECT_EQ(AppListConfigType::kShared, config->type());
   EXPECT_EQ(300.f / kMinGridWidth, config->scale_x());
   // Available height includes fadeout zones, which should not be included in
   // scale calculation.

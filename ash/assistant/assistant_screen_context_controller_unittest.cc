@@ -52,7 +52,7 @@ class AssistantScreenContextControllerTest : public AshTestBase {
     DCHECK(controller_);
   }
 
-  ash::AssistantScreenContextController* controller() { return controller_; }
+  AssistantScreenContextController* controller() { return controller_; }
 
  private:
   AssistantScreenContextController* controller_ = nullptr;

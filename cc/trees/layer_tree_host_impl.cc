@@ -2375,7 +2375,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
                        TRACE_EVENT_SCOPE_THREAD, "x",
                        scroll_accumulated_this_frame_.x(), "y",
                        scroll_accumulated_this_frame_.y());
-  scroll_accumulated_this_frame_ = gfx::ScrollOffset();
+  scroll_accumulated_this_frame_ = gfx::Vector2dF();
 
   bool is_new_trace;
   TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
@@ -4162,10 +4162,7 @@ void LayerTreeHostImpl::ScrollAnimated(const gfx::Point& viewport_point,
   scroll_status.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
   ScrollNode* scroll_node = CurrentlyScrollingNode();
-
   DCHECK(scroll_node);
-
-  scroll_accumulated_this_frame_ += gfx::ScrollOffset(scroll_delta);
 
   if (mutator_host_->IsImplOnlyScrollAnimating()) {
     // Flash the overlay scrollbar even if the scroll delta is 0.
@@ -4405,7 +4402,10 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollSingleNode(
 }
 
 void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state) {
-  DCHECK(CurrentlyScrollingNode() && scroll_state);
+  DCHECK(CurrentlyScrollingNode());
+  DCHECK(scroll_state);
+  DCHECK(latched_scroll_type_.has_value());
+
   ScrollNode* scroll_node = CurrentlyScrollingNode();
   gfx::Point viewport_point(scroll_state->position_x(),
                             scroll_state->position_y());
@@ -4428,7 +4428,8 @@ void LayerTreeHostImpl::ScrollLatchedScroller(ScrollState* scroll_state) {
     // still use Viewport::ScrollBy to also move browser controls if needed.
     Viewport::ScrollResult result = viewport().ScrollBy(
         delta, viewport_point, scroll_state->is_direct_manipulation(),
-        !wheel_scrolling_, scroll_node->scrolls_outer_viewport);
+        latched_scroll_type_ != InputHandler::WHEEL,
+        scroll_node->scrolls_outer_viewport);
 
     applied_delta = result.consumed_delta;
     delta_applied_to_content = result.content_scrolled_delta;
@@ -4530,9 +4531,9 @@ void LayerTreeHostImpl::DidLatchToScroller(const ScrollState& scroll_state,
   scroll_affects_scroll_handler_ = active_tree_->have_scroll_event_handlers();
   scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
   last_latched_scroller_ = CurrentlyScrollingNode()->element_id;
-  wheel_scrolling_ = type == InputHandler::WHEEL;
+  latched_scroll_type_ = type;
 
-  frame_trackers_.StartSequence(wheel_scrolling_
+  frame_trackers_.StartSequence(latched_scroll_type_ == InputHandler::WHEEL
                                     ? FrameSequenceTrackerType::kWheelScroll
                                     : FrameSequenceTrackerType::kTouchScroll);
   client_->RenewTreePriority();
@@ -4587,8 +4588,7 @@ void LayerTreeHostImpl::SetRenderFrameObserver(
 }
 
 bool LayerTreeHostImpl::ShouldAnimateScroll(
-    const ScrollState& scroll_state,
-    InputHandler::ScrollInputType type) const {
+    const ScrollState& scroll_state) const {
   if (!settings_.enable_smooth_scroll)
     return false;
 
@@ -4603,7 +4603,7 @@ bool LayerTreeHostImpl::ShouldAnimateScroll(
 
   // Mac does not smooth scroll wheel events (crbug.com/574283). We allow tests
   // to force it on.
-  return type == InputHandler::SCROLLBAR
+  return latched_scroll_type_ == InputHandler::SCROLLBAR
              ? true
              : force_smooth_wheel_scrolling_for_testing_;
 #else
@@ -4613,14 +4613,15 @@ bool LayerTreeHostImpl::ShouldAnimateScroll(
 
 InputHandlerScrollResult LayerTreeHostImpl::ScrollUpdate(
     ScrollState* scroll_state,
-    InputHandler::ScrollInputType type,
     base::TimeDelta delayed_by) {
   DCHECK(scroll_state);
+  last_scroll_state_ = *scroll_state;
 
-  if (ShouldAnimateScroll(*scroll_state, type)) {
+  gfx::Vector2dF scroll_delta(scroll_state->delta_x(), scroll_state->delta_y());
+  scroll_accumulated_this_frame_ += scroll_delta;
+
+  if (ShouldAnimateScroll(*scroll_state)) {
     DCHECK(!scroll_state->is_in_inertial_phase());
-    gfx::Vector2dF scroll_delta(scroll_state->delta_x(),
-                                scroll_state->delta_y());
     ScrollAnimated(gfx::Point(), scroll_delta, delayed_by);
 
     // TODO(bokan): Always return |did_scroll| to preserve existing behavior
@@ -4643,9 +4644,6 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   DCHECK(!scroll_state->data()->current_native_scrolling_element());
 
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBy");
-
-  scroll_accumulated_this_frame_ +=
-      gfx::ScrollOffset(scroll_state->delta_x(), scroll_state->delta_y());
 
   if (!CurrentlyScrollingNode())
     return InputHandlerScrollResult();
@@ -4787,10 +4785,27 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
   SnapContainerData& data = scroll_node->snap_container_data.value();
   gfx::ScrollOffset current_position = GetVisualScrollOffset(*scroll_node);
 
-  std::unique_ptr<SnapSelectionStrategy> strategy =
-      SnapSelectionStrategy::CreateForEndPosition(
-          current_position, did_scroll_x_for_scroll_gesture_,
-          did_scroll_y_for_scroll_gesture_);
+  DCHECK(last_scroll_state_);
+  bool imprecise_wheel_scrolling =
+      latched_scroll_type_ == InputHandler::WHEEL &&
+      last_scroll_state_->delta_granularity() !=
+          static_cast<double>(
+              ui::input_types::ScrollGranularity::kScrollByPrecisePixel);
+  gfx::ScrollOffset last_scroll_delta(last_scroll_state_->delta_x(),
+                                      last_scroll_state_->delta_y());
+
+  std::unique_ptr<SnapSelectionStrategy> strategy;
+
+  if (imprecise_wheel_scrolling && !last_scroll_delta.IsZero()) {
+    // This was an imprecise wheel scroll so use direction snapping.
+    strategy = SnapSelectionStrategy::CreateForDirection(
+        current_position, last_scroll_delta, true);
+  } else {
+    strategy = SnapSelectionStrategy::CreateForEndPosition(
+        current_position, did_scroll_x_for_scroll_gesture_,
+        did_scroll_y_for_scroll_gesture_);
+  }
+
   gfx::ScrollOffset snap_position;
   TargetSnapAreaElementIds snap_target_ids;
   if (!data.FindSnapPosition(*strategy, &snap_position, &snap_target_ids))
@@ -4901,22 +4916,32 @@ void LayerTreeHostImpl::ClearCurrentlyScrollingNode() {
   did_scroll_x_for_scroll_gesture_ = false;
   did_scroll_y_for_scroll_gesture_ = false;
   scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
+  latched_scroll_type_.reset();
+  last_scroll_state_.reset();
 }
 
 void LayerTreeHostImpl::ScrollEnd(bool should_snap) {
-  if ((should_snap && SnapAtScrollEnd()) ||
-      mutator_host_->IsImplOnlyScrollAnimating()) {
+  // Note that if we deferred the scroll end then we should not snap. We will
+  // snap once we deliver the deferred scroll end.
+  if (mutator_host_->IsImplOnlyScrollAnimating()) {
     DCHECK(!deferred_scroll_end_);
     deferred_scroll_end_ = true;
     return;
   }
 
+  if (should_snap && SnapAtScrollEnd()) {
+    deferred_scroll_end_ = true;
+    return;
+  }
+
+  DCHECK(latched_scroll_type_.has_value());
+
   browser_controls_offset_manager_->ScrollEnd();
-  ClearCurrentlyScrollingNode();
-  frame_trackers_.StopSequence(wheel_scrolling_
+  frame_trackers_.StopSequence(latched_scroll_type_ == InputHandler::WHEEL
                                    ? FrameSequenceTrackerType::kWheelScroll
                                    : FrameSequenceTrackerType::kTouchScroll);
 
+  ClearCurrentlyScrollingNode();
   deferred_scroll_end_ = false;
   scroll_gesture_did_end_ = true;
   client_->SetNeedsCommitOnImplThread();
@@ -5996,10 +6021,11 @@ void LayerTreeHostImpl::AnimationScalesChanged(ElementId element_id,
 
 void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollOffsetAnimationFinished");
-  // ScrollOffsetAnimationFinished is called in two cases: 1- smooth scrolling
-  // animation is over (IsAnimatingForSnap == false). 2- snap scroll
-  // animation is over (IsAnimatingForSnap == true).  When smooth scroll
-  // animation is over we should check and run snap scroll animation if needed.
+  // ScrollOffsetAnimationFinished is called in two cases:
+  //  1- smooth scrolling animation is over (IsAnimatingForSnap == false).
+  //  2- snap scroll animation is over (IsAnimatingForSnap == true).
+  //
+  //  Only for case (1) we should check and run snap scroll animation if needed.
   if (!IsAnimatingForSnap() && SnapAtScrollEnd())
     return;
 

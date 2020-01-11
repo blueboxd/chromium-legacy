@@ -36,6 +36,6 @@ copy("test_fonts") {
   ]
 
   outputs = [
-    "${root_build_dir}/test_fonts/{{source_file_part}}",
+    "$root_out_dir/test_fonts/{{source_file_part}}",
   ]
 }

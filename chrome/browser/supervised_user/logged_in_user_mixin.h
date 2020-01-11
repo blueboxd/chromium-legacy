@@ -96,6 +96,10 @@ class LoggedInUserMixin : public InProcessBrowserTestMixin {
 
   UserPolicyMixin* GetUserPolicyMixin() { return &user_policy_; }
 
+  LocalPolicyTestServerMixin* GetLocalPolicyTestServerMixin() {
+    return &local_policy_server_;
+  }
+
   policy::UserPolicyTestHelper* GetUserPolicyTestHelper() {
     return &user_policy_helper_;
   }

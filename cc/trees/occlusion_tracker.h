@@ -64,6 +64,7 @@ class CC_EXPORT OcclusionTracker {
     const RenderSurfaceImpl* target;
     SimpleEnclosedRegion occlusion_from_outside_target;
     SimpleEnclosedRegion occlusion_from_inside_target;
+    bool ignores_parent_occlusion = false;
   };
 
   // The stack holds occluded regions for subtrees in the

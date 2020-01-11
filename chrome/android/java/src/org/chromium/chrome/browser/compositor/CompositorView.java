@@ -343,6 +343,19 @@ public class CompositorView
      * @param enabled Whether to enter or leave overlay immersive ar mode.
      */
     public void setOverlayImmersiveArMode(boolean enabled) {
+        if (mIsSurfaceControlEnabled) {
+            // SurfaceControl doesn't mark the translucent SurfaceView as a media overlay by
+            // default, but we need that to allow the DOM content drawn by the compositor to show
+            // above the WebXR content. Replace the surface manager with a customized one
+            // for the duration of the immersive-ar session.
+            if (enabled) {
+                mCompositorSurfaceManager.shutDown();
+                createCompositorSurfaceManager(true);
+            } else {
+                mCompositorSurfaceManager.shutDown();
+                createCompositorSurfaceManager();
+            }
+        }
         setOverlayVideoMode(enabled);
         CompositorViewJni.get().setOverlayImmersiveArMode(
                 mNativeCompositorView, CompositorView.this, enabled);
@@ -602,12 +615,19 @@ public class CompositorView
         createCompositorSurfaceManager();
     }
 
-    private void createCompositorSurfaceManager() {
+    private void createCompositorSurfaceManager(boolean supportMediaOverlay) {
         mCompositorSurfaceManager =
-                new CompositorSurfaceManagerImpl(this, this, mIsSurfaceControlEnabled);
+                new CompositorSurfaceManagerImpl(this, this, supportMediaOverlay);
         mCompositorSurfaceManager.requestSurface(getSurfacePixelFormat());
         CompositorViewJni.get().setNeedsComposite(mNativeCompositorView, CompositorView.this);
         mCompositorSurfaceManager.setVisibility(getVisibility());
+    }
+
+    private void createCompositorSurfaceManager() {
+        // If surface control is available, video overlays don't need a translucent media
+        // overlay view, so disable support for that. This lets other components such
+        // as ThinWebView use ZOrderMediaOverlay.
+        createCompositorSurfaceManager(!mIsSurfaceControlEnabled);
     }
 
     @NativeMethods

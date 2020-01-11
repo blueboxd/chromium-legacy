@@ -125,7 +125,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // (MSG_ROUTING_NONE if none).
   // |window_was_created_with_opener| is true if this top-level frame was
   // created with an opener. (The opener may have been closed since.)
-  // The |proxy_route_id| is only used when creating a RenderView in swapped out
+  // The |proxy_route_id| is only used when creating a RenderView in an inactive
   // state.
   // |devtools_frame_token| contains the devtools token for tagging requests and
   // attributing them to the context frame.
@@ -139,15 +139,9 @@ class CONTENT_EXPORT RenderViewHostImpl
       bool window_was_created_with_opener);
 
   // Tracks whether this RenderViewHost is in an active state (rather than
-  // pending swap out or swapped out), according to its main frame
+  // pending unload or unloaded), according to its main frame
   // RenderFrameHost.
   bool is_active() const { return main_frame_routing_id_ != MSG_ROUTING_NONE; }
-
-  // Tracks whether this RenderViewHost is swapped out, according to its main
-  // frame RenderFrameHost.
-  void set_is_swapped_out(bool is_swapped_out) {
-    is_swapped_out_ = is_swapped_out;
-  }
 
   // TODO(creis): Remove as part of http://crbug.com/418265.
   bool is_waiting_for_close_ack() const { return is_waiting_for_close_ack_; }
@@ -307,11 +301,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, BasicRenderFrameHost);
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, RoutingIdSane);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
-                           CleanUpSwappedOutRVHOnProcessCrash);
-  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            CloseWithPendingWhileUnresponsive);
-  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
-                           NavigateMainFrameToChildSite);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -351,12 +341,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // in this RenderViewHost are part of this SiteInstance.  Cannot change
   // over time.
   scoped_refptr<SiteInstanceImpl> instance_;
-
-  // Tracks whether the main frame RenderFrameHost is swapped out.  Unlike
-  // is_active(), this is false when the frame is pending swap out or deletion.
-  // TODO(creis): Remove this when we no longer filter IPCs after swap out.
-  // See https://crbug.com/745091.
-  bool is_swapped_out_;
 
   // Routing ID for this RenderViewHost.
   const int routing_id_;

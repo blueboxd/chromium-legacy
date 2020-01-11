@@ -25,6 +25,11 @@ class TestInterstitialPage : public IOSSecurityInterstitialPage {
 
   ~TestInterstitialPage() override { *destroyed_tracker_ = true; }
 
+  void HandleScriptCommand(const base::DictionaryValue& message,
+                           const GURL& origin_url,
+                           bool user_is_interacting,
+                           web::WebFrame* sender_frame) override {}
+
  protected:
   bool ShouldCreateNewNavigation() const override { return false; }
 

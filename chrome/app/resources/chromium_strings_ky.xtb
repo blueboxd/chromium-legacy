@@ -38,7 +38,6 @@
 <translation id="2770231113462710648">Демейки серепчини төмөнкүгө өзгөртүү:</translation>
 <translation id="2799223571221894425">Кайра ишке киргизүү</translation>
 <translation id="2805036593126168338">Chromium OS сырсөздөрүңүздү шайкештештире албай койду. Азыр оңдоо.</translation>
-<translation id="2838154144102149890">Жаңыртуу үчүн, Chromium'ду бул компьютерде жабуу керек. Компьютерге кирип турган башка колдонуучулардын сакталбаган өзгөртүүлөрү өчүп калышы мүмкүн.</translation>
 <translation id="2847479871509788944">Chromium'дан чыгарып салуу…</translation>
 <translation id="2886012850691518054">Кошумча: Google'га автоматтык түрдө колдонуу статистикасын жөнөтүп, каталар жөнүндө кабар берүү менен, Chromium'ду өркүндөтүүгө кол кабыш кылыңыз.</translation>
 <translation id="2910007522516064972">&amp;Chromium жөнүндө</translation>
@@ -148,7 +147,6 @@
 <translation id="6847869444787758381">Chromium сырсөздөрүңүздү башка бирөөлөр билип алса сизге кабарлайт</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium'га көчүрүлдү)</translation>
-<translation id="6868056391275687737">Chromium'дун бир нече көчүрмөсү иштеп жатат. Жаңыртуу үчүн, аларды жабыңыз.</translation>
 <translation id="6893813176749746474">Chromium жаңыртылды, бирок аны 30 күндөн бери колдоно элексиз.</translation>
 <translation id="6964305034639999644">Шилтемени Chromium'дун жашы&amp;руун терезесинде ачуу</translation>
 <translation id="6990124437352146030">Бул сайтта иштөө үчүн Chromium микрофонуңузду колдонушу керек</translation>
@@ -208,7 +206,6 @@ Chromium жөндөөлөрүңүздү калыбына келтире алба
 <translation id="8697124171261953979">Chromium иштеп баштаганда же Omnibox'тон изделгенде, кайсы бет көрсөтүлө тургандыгын көзөмөлдөйт.</translation>
 <translation id="8704119203788522458">Бул сиздин Chromium</translation>
 <translation id="8739167630197873875">Chromium'дан чыкканыңызда cookie файлдары тазаланат. Шайкештире берүү үчүн <ph name="COOKIE_SETTINGS_LINK" /> өзгөртүңүз.</translation>
-<translation id="8748383401829947534">Chromium'дун бардык көчүрмөлөрүнөн чыгуу.</translation>
 <translation id="8796602469536043152">Бул сайтта иштөө үчүн Chromium камераңызды жана микрофонуңузду колдонушу керек</translation>
 <translation id="8803635938069941624">Chromium OS шарттары</translation>
 <translation id="8821041990367117597">Каттоо эсебиңиздин кирүү чоо-жайлары эскирип калгандыктан, Chromium дайындарыңызды шайкештештире алган жок.</translation>

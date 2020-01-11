@@ -127,8 +127,7 @@ class OptimizationGuideStore {
   // Service so the store can expire old hints, remove hints specified by the
   // server, and store the fresh hints.
   std::unique_ptr<StoreUpdateData> CreateUpdateDataForFetchedHints(
-      base::Time update_time,
-      base::Time expiry_time) const;
+      base::Time update_time) const;
 
   // Updates the component hints and version contained within the store. When
   // this is called, all pre-existing component hints within the store is purged

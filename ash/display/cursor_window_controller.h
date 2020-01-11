@@ -102,7 +102,7 @@ class ASH_EXPORT CursorWindowController {
   ui::CursorSize cursor_size_ = ui::CursorSize::kNormal;
   gfx::Point hot_point_;
 
-  int large_cursor_size_in_dip_ = ash::kDefaultLargeCursorSize;
+  int large_cursor_size_in_dip_ = kDefaultLargeCursorSize;
 
   // The display on which the cursor is drawn.
   // For mirroring mode, the display is always the primary display.

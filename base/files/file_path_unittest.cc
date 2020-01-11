@@ -728,6 +728,7 @@ TEST_F(FilePathTest, Extension) {
 }
 
 TEST_F(FilePathTest, Extension2) {
+  // clang-format off
   const struct UnaryTestData cases[] = {
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
     { FPL("C:\\a\\b\\c.ext"),        FPL(".ext") },
@@ -772,8 +773,11 @@ TEST_F(FilePathTest, Extension2) {
     { FPL("/foo.1234.user.js"),      FPL(".user.js") },
     { FPL("foo.user.js"),            FPL(".user.js") },
     { FPL("/foo.tar.bz"),            FPL(".tar.bz") },
+    { FPL("/foo.tar.xz"),            FPL(".tar.xz") },
   };
-  for (unsigned int i = 0; i < base::size(cases); ++i) {
+  // clang-format on
+
+  for (size_t i = 0; i < base::size(cases); ++i) {
     FilePath path(cases[i].input);
     FilePath::StringType extension = path.Extension();
     FilePath::StringType final_extension = path.FinalExtension();
@@ -782,7 +786,8 @@ TEST_F(FilePathTest, Extension2) {
     EXPECT_EQ(cases[i].expected, final_extension)
         << "i: " << i << ", path: " << path.value();
   }
-  for (unsigned int i = 0; i < base::size(double_extension_cases); ++i) {
+
+  for (size_t i = 0; i < base::size(double_extension_cases); ++i) {
     FilePath path(double_extension_cases[i].input);
     FilePath::StringType extension = path.Extension();
     EXPECT_EQ(double_extension_cases[i].expected, extension)
@@ -878,7 +883,7 @@ TEST_F(FilePathTest, RemoveExtension) {
     { FPL("/foo.bar/foo"),        FPL("/foo.bar/foo") },
     { FPL("/foo.bar/..////"),     FPL("/foo.bar/..////") },
   };
-  for (unsigned int i = 0; i < base::size(cases); ++i) {
+  for (size_t i = 0; i < base::size(cases); ++i) {
     FilePath path(cases[i].input);
     FilePath removed = path.RemoveExtension();
     FilePath removed_final = path.RemoveFinalExtension();
@@ -887,13 +892,18 @@ TEST_F(FilePathTest, RemoveExtension) {
     EXPECT_EQ(cases[i].expected, removed_final.value()) << "i: " << i <<
         ", path: " << path.value();
   }
-  {
+
+  const FilePath::StringPieceType tarballs[] = {
+      FPL("foo.tar.gz"), FPL("foo.tar.xz"), FPL("foo.tar.bz2"),
+      FPL("foo.tar.Z"), FPL("foo.tar.bz")};
+  for (size_t i = 0; i < base::size(tarballs); ++i) {
     FilePath path(FPL("foo.tar.gz"));
     FilePath removed = path.RemoveExtension();
     FilePath removed_final = path.RemoveFinalExtension();
-    EXPECT_EQ(FPL("foo"), removed.value()) << ", path: " << path.value();
-    EXPECT_EQ(FPL("foo.tar"), removed_final.value()) << ", path: "
-                                                     << path.value();
+    EXPECT_EQ(FPL("foo"), removed.value())
+        << "i: " << i << ", path: " << path.value();
+    EXPECT_EQ(FPL("foo.tar"), removed_final.value())
+        << "i: " << i << ", path: " << path.value();
   }
 }
 

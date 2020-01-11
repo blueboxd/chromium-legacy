@@ -9,6 +9,10 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/common/common_export.h"
 
+namespace content {
+class MessagePort;
+}
+
 namespace blink {
 
 // Defines a message port descriptor, which is a mojo::MessagePipeHandle and
@@ -69,6 +73,10 @@ class BLINK_COMMON_EXPORT MessagePortDescriptor {
   const base::UnguessableToken& id() const { return id_; }
   uint64_t sequence_number() const { return sequence_number_; }
 
+  // Helper accessor for getting the underlying Mojo handle. Makes tests a
+  // little easier to write.
+  MojoHandle GetMojoHandleForTesting() const;
+
   // Returns true if this is a valid descriptor.
   bool IsValid() const;
 
@@ -82,16 +90,18 @@ class BLINK_COMMON_EXPORT MessagePortDescriptor {
   void Reset();
 
  protected:
+  friend class content::MessagePort;
   friend class MessagePort;
-  friend class MessagePortSerializationAccess;
   friend class MessagePortDescriptorTestHelper;
+  friend class MessagePortJavaAccess;
+  friend class MessagePortSerializationAccess;
 
   // These are only meant to be used for serialization, and as such the values
   // should always be non-default initialized when they are called. Intended for
   // use via MessagePortSerializationAccess. These should only be called for
   // descriptors that actually host non-default values.
   void Init(mojo::ScopedMessagePipeHandle handle,
-            base::UnguessableToken id,
+            const base::UnguessableToken& id,
             uint64_t sequence_number);
   mojo::ScopedMessagePipeHandle TakeHandle();
   base::UnguessableToken TakeId();
@@ -107,7 +117,13 @@ class BLINK_COMMON_EXPORT MessagePortDescriptor {
   // caller. See MessagePort::Entangle and MessagePort::Disentangle.
   mojo::ScopedMessagePipeHandle TakeHandleToEntangle(
       const base::UnguessableToken& execution_context_id);
+  // Intended for use by Fuchsia's MessagePort integration, or other similar
+  // embedders.
+  mojo::ScopedMessagePipeHandle TakeHandleToEntangleWithEmbedder();
   void GiveDisentangledHandle(mojo::ScopedMessagePipeHandle handle);
+
+  // Exposed for access by the Java MessagePortDescriptor counterpart.
+  static InstrumentationDelegate* GetInstrumentationDelegate();
 
  private:
   // For access to NotifyPeer and the following constructor.
@@ -121,6 +137,7 @@ class BLINK_COMMON_EXPORT MessagePortDescriptor {
   // Helper functions for forwarding notifications to the
   // InstrumentationDelegate if it exists.
   void NotifyAttached(const base::UnguessableToken& execution_context_id);
+  void NotifyAttachedToEmbedder();
   void NotifyDetached();
   void NotifyDestroyed();
 
@@ -194,7 +211,8 @@ class BLINK_COMMON_EXPORT MessagePortDescriptor::InstrumentationDelegate {
 
   // Notifies the instrumentation that a pair of matching ports was created.
   virtual void NotifyMessagePortPairCreated(
-      const MessagePortDescriptorPair& pair) = 0;
+      const base::UnguessableToken& port0_id,
+      const base::UnguessableToken& port1_id) = 0;
 
   // Notifies the instrumentation that a handle has been attached to an
   // execution context.
@@ -202,6 +220,12 @@ class BLINK_COMMON_EXPORT MessagePortDescriptor::InstrumentationDelegate {
       const base::UnguessableToken& port_id,
       uint64_t sequence_number,
       const base::UnguessableToken& execution_context_id) = 0;
+
+  // Notifies the instrumentation that a handle has been attached to an
+  // embedder.
+  virtual void NotifyMessagePortAttachedToEmbedder(
+      const base::UnguessableToken& port_id,
+      uint64_t sequence_number) = 0;
 
   // Notifies the instrumentation that a handle has been detached from an
   // execution context.

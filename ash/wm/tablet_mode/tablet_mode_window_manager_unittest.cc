@@ -1913,7 +1913,7 @@ class TabletModeWindowManagerWithClamshellSplitViewTest
   // AshTestBase:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        ash::features::kDragToSnapInClamshellMode);
+        features::kDragToSnapInClamshellMode);
     TabletModeWindowManagerTest::SetUp();
     DCHECK(ShouldAllowSplitView());
   }

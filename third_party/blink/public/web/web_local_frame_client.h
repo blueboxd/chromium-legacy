@@ -216,11 +216,6 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // General notifications -----------------------------------------------
 
-  // Indicates that another page has accessed the DOM of the initial empty
-  // document of a main frame. After this, it is no longer safe to show a
-  // pending navigation's URL, because a URL spoof is possible.
-  virtual void DidAccessInitialDocument() {}
-
   // Request the creation of a new child frame. Embedders may return nullptr
   // to prevent the new child frame from being attached. Otherwise, embedders
   // should create a new WebLocalFrame, insert it into the frame tree, and

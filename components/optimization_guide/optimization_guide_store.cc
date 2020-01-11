@@ -165,13 +165,11 @@ OptimizationGuideStore::MaybeCreateUpdateDataForComponentHints(
 
 std::unique_ptr<StoreUpdateData>
 OptimizationGuideStore::CreateUpdateDataForFetchedHints(
-    base::Time update_time,
-    base::Time expiry_time) const {
+    base::Time update_time) const {
   // Create and returns a StoreUpdateData object. This object has has hints
   // from the GetHintsResponse moved into and organizes them in a format
   // usable by the store. The object will be store with UpdateFetchedData().
-  return StoreUpdateData::CreateFetchedStoreUpdateData(update_time,
-                                                       expiry_time);
+  return StoreUpdateData::CreateFetchedStoreUpdateData(update_time);
 }
 
 void OptimizationGuideStore::UpdateComponentHints(

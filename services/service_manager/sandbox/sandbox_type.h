@@ -67,6 +67,9 @@ enum class SandboxType {
 #if defined(OS_CHROMEOS)
   kIme,
 #endif  // defined(OS_CHROMEOS)
+
+  // The Speech On-Device API service process.
+  kSoda
 };
 
 SERVICE_MANAGER_SANDBOX_EXPORT bool IsUnsandboxedSandboxType(

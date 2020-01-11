@@ -40,6 +40,7 @@ source_set("ssl") {
     "//ios/web/common",
     "//ios/web/public",
     "//ios/web/public/security",
+    "//ios/web/public/session",
     "//net",
     "//ui/base",
     "//url",

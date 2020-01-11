@@ -20,7 +20,6 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="1553358976309200471">Eguneratu Chrome</translation>
 <translation id="1587223624401073077">Google Chrome kamera erabiltzen ari da.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> arriskutsua da; horregatik, blokeatu egin du Chrome-k.</translation>
-<translation id="1590588151039584890">Chrome eguneratzeko, geldiarazi egin behar dituzu ordenagailuan abian dituen instantziak. Hori eginez gero, ordenagailuan saioa hasita daukaten erabiltzaileek galdu egin ditzakete gordeta ez dituzten aldaketak.</translation>
 <translation id="1619887657840448962">Chrome seguruagoa izan dadin, zuk jakin gabe gehitu den eta <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dendan zerrendatu gabe dagoen luzapena desgaitu dugu.</translation>
 <translation id="1628000112320670027">Lortu Chrome erabiltzeko laguntza</translation>
 <translation id="1635734105302489219">Chrome-tik irteten zarenean, cookieak garbitzen dira. Sinkronizatzen jarraitzeko, aldatu <ph name="COOKIE_SETTINGS_LINK" />.</translation>
@@ -145,7 +144,6 @@ Agian eginbide batzuk ez dira erabilgarri egongo. Zehaztu profilaren beste direk
 <translation id="5430073640787465221">Hobespenen fitxategia hondatuta dago edo ez du balio.
 
 Google Chrome-k ezin ditu berreskuratu zure ezarpenak.</translation>
-<translation id="5543953544073077331">Chrome-ren beste kopia batzuk dituzu abian. Eguneratu nahi baduzu, itxi itzazu.</translation>
 <translation id="556024056938947818">Google Chrome pasahitzak erakusten saiatzen ari da.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">Ezarpenen bat orri honetan agertzen ez bada, bila ezazu <ph name="LINK_BEGIN" />
@@ -195,7 +193,6 @@ Google Chrome-k ezin ditu berreskuratu zure ezarpenak.</translation>
 <translation id="7408085963519505752">Chrome OS sistema eragilearen baldintzak</translation>
 <translation id="7419046106786626209">Chrome OS sistema eragileak ezin izan ditu sinkronizatu zure datuak, sinkronizazioa ez dagoelako erabilgarri zure domeinuan.</translation>
 <translation id="7486227612705979895">Chrome-k zure Drive unitatea atzituko du helbide-barran iradokizunak egiteko</translation>
-<translation id="7531671357096394523">Itxi Chrome-ren kopia guztiak.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Gailua eguneratuta dagoen ikusteko, joan <ph name="LINK_BEGIN" />Chrome OS sistemaren ezarpenetara<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Ordenagailu honek ez du Google Chrome eguneratze gehiago jasoko ez delako jada onartzen Mac OS X 10.9 bertsioa.</translation>

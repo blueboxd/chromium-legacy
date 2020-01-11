@@ -684,7 +684,7 @@ bool ShelfLayoutManager::ProcessGestureEvent(
   }
 
   // Unexpected event. Reset the state and let the event fall through.
-  CancelDrag();
+  CancelDrag(base::nullopt);
   return false;
 }
 
@@ -856,7 +856,7 @@ void ShelfLayoutManager::CancelDragOnShelfIfInProgress() {
   if (drag_status_ == kDragInProgress ||
       drag_status_ == kDragAppListInProgress ||
       drag_status_ == kDragHomeToOverviewInProgress) {
-    CancelDrag();
+    CancelDrag(base::nullopt);
   }
 }
 
@@ -1622,11 +1622,15 @@ void ShelfLayoutManager::CalculateTargetBounds(
     status_origin.set_x(shelf_width - status_size.width());
   target_bounds_.status_bounds_in_shelf = gfx::Rect(status_origin, status_size);
 
-  gfx::Point nav_origin =
-      gfx::Point(home_button_edge_spacing, home_button_edge_spacing);
-  const gfx::Size nav_size = shelf_widget_->navigation_widget()->GetIdealSize();
+  gfx::Point nav_origin = gfx::Point();
+  gfx::Size nav_size = shelf_widget_->navigation_widget()->GetIdealSize();
+
+  // Enlarge the widget to take up available space, this ensures events which
+  // are outside of the HomeButton bounds can be received.
+  nav_size.Enlarge(home_button_edge_spacing, home_button_edge_spacing);
+
   if (shelf_->IsHorizontalAlignment() && base::i18n::IsRTL())
-    nav_origin.set_x(shelf_width - nav_size.width() - nav_origin.x());
+    nav_origin.set_x(shelf_width - nav_size.width());
   target_bounds_.nav_bounds_in_shelf = gfx::Rect(nav_origin, nav_size);
 
   gfx::Point hotseat_origin;
@@ -2405,8 +2409,8 @@ void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
 
 void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
   // End the possible window drag before checking the shelf visibility.
-  base::Optional<ShelfWindowDragResult> window_drag_result =
-      MaybeEndWindowDrag(event_in_screen);
+  base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
+      window_drag_result = MaybeEndWindowDrag(event_in_screen);
   HotseatState old_hotseat_state = hotseat_state();
 
   const bool transitioned_from_overview_to_home =
@@ -2421,7 +2425,7 @@ void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
   if (ShouldChangeVisibilityAfterDrag(event_in_screen))
     CompleteDragWithChangedVisibility();
   else
-    CancelDrag();
+    CancelDrag(window_drag_result);
 
   // Hotseat gestures are meaningful only in tablet mode with hotseat enabled.
   if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletModeEnabled()) {
@@ -2470,7 +2474,9 @@ void ShelfLayoutManager::CompleteAppListDrag(
   drag_status_ = kDragNone;
 }
 
-void ShelfLayoutManager::CancelDrag() {
+void ShelfLayoutManager::CancelDrag(
+    base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
+        window_drag_result) {
   if (drag_status_ == kDragAppListInProgress ||
       drag_status_ == kDragHomeToOverviewInProgress) {
     HomeLauncherGestureHandler* home_launcher_handler =
@@ -2494,7 +2500,12 @@ void ShelfLayoutManager::CancelDrag() {
     // extending the hotseat was not the primary goal of the gesture.
     shelf_widget_->hotseat_widget()->set_manually_extended(
         hotseat_state() == HotseatState::kExtended &&
-        !Shell::Get()->overview_controller()->InOverviewSession());
+        (!Shell::Get()->overview_controller()->InOverviewSession() ||
+         (window_drag_result.has_value() &&
+          window_drag_result.value() ==
+              DragWindowFromShelfController::ShelfWindowDragResult::
+                  kRestoreToOriginalBounds)));
+
     hotseat_presentation_time_recorder_.reset();
   }
   hotseat_is_in_drag_ = false;

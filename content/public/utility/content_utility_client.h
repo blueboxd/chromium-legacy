@@ -16,6 +16,10 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
+namespace IPC {
+class Message;
+}
+
 namespace mojo {
 class BinderMap;
 class ServiceFactory;

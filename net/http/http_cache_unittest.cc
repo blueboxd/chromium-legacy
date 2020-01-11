@@ -3019,7 +3019,8 @@ TEST_F(HttpCacheTest, RangeGET_Enormous) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   auto backend_factory = std::make_unique<HttpCache::DefaultBackend>(
-      DISK_CACHE, CACHE_BACKEND_BLOCKFILE, temp_dir.GetPath(), 1024 * 1024);
+      DISK_CACHE, CACHE_BACKEND_BLOCKFILE, temp_dir.GetPath(), 1024 * 1024,
+      false);
   MockHttpCache cache(std::move(backend_factory));
 
   RangeTransactionServer handler;

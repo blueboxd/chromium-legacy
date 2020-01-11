@@ -1174,14 +1174,29 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
 
   base::WeakPtr<Layer> weak_this = weak_ptr_factory_.GetWeakPtr();
 
-  // NOTE: Some animation observers destroy the layer when the animation ends.
-  if (animator_) {
-    animator_->StopAnimatingProperty(LayerAnimationElement::TRANSFORM);
+  // Some animation observers may mutate the tree (e.g. destroy the layer,
+  // change ancestor/sibling z-order etc) when the animation ends. This break
+  // the tree traversal and could lead to a crash. Collect all descendants (and
+  // their mask layers) in a flattened WeakPtr list at the root level then stop
+  // animations to let potential tree mutations happen before traversing the
+  // tree. See https://crbug.com/1037852.
+  const bool is_root_layer = !parent();
+  if (is_root_layer) {
+    std::vector<base::WeakPtr<Layer>> flattened;
+    GetFlattenedWeakList(&flattened);
+    for (auto& weak_layer : flattened) {
+      // Skip if layer is gone or not animating.
+      if (!weak_layer || !weak_layer->animator_)
+        continue;
 
-    // Do not proceed if the layer was destroyed due to an animation
-    // observer.
-    if (!weak_this)
-      return;
+      weak_layer->animator_->StopAnimatingProperty(
+          LayerAnimationElement::TRANSFORM);
+
+      // Do not proceed if the root layer was destroyed due to an animation
+      // observer.
+      if (!weak_this)
+        return;
+    }
   }
 
   const float old_device_scale_factor = device_scale_factor_;
@@ -1626,6 +1641,16 @@ void Layer::ResetSubtreeReflectedLayer() {
       subtree_reflected_layer_->subtree_reflecting_layers_.erase(this);
   DCHECK_EQ(1u, result);
   subtree_reflected_layer_ = nullptr;
+}
+
+void Layer::GetFlattenedWeakList(
+    std::vector<base::WeakPtr<Layer>>* flattened_list) {
+  flattened_list->emplace_back(weak_ptr_factory_.GetWeakPtr());
+  if (layer_mask_)
+    flattened_list->emplace_back(layer_mask_->weak_ptr_factory_.GetWeakPtr());
+
+  for (auto* child : children_)
+    child->GetFlattenedWeakList(flattened_list);
 }
 
 }  // namespace ui

@@ -70,6 +70,12 @@ MessagePortDescriptor& MessagePortDescriptor::operator=(
   return *this;
 }
 
+MojoHandle MessagePortDescriptor::GetMojoHandleForTesting() const {
+  if (!handle_.get())
+    return MOJO_HANDLE_INVALID;
+  return handle_.get().value();
+}
+
 bool MessagePortDescriptor::IsValid() const {
   // |handle_| can be valid or invalid, depending on if we're entangled or
   // not. But everything else should be consistent.
@@ -122,7 +128,7 @@ void MessagePortDescriptor::Reset() {
 }
 
 void MessagePortDescriptor::Init(mojo::ScopedMessagePipeHandle handle,
-                                 base::UnguessableToken id,
+                                 const base::UnguessableToken& id,
                                  uint64_t sequence_number) {
   // Init is only called by deserialization code and thus should only be called
   // on a default initialized descriptor.
@@ -170,6 +176,13 @@ mojo::ScopedMessagePipeHandle MessagePortDescriptor::TakeHandleToEntangle(
   return std::move(handle_);
 }
 
+mojo::ScopedMessagePipeHandle
+MessagePortDescriptor::TakeHandleToEntangleWithEmbedder() {
+  DCHECK(handle_.is_valid());
+  NotifyAttachedToEmbedder();
+  return std::move(handle_);
+}
+
 void MessagePortDescriptor::GiveDisentangledHandle(
     mojo::ScopedMessagePipeHandle handle) {
   // We should only ever be given back the same handle that was taken from us.
@@ -179,6 +192,12 @@ void MessagePortDescriptor::GiveDisentangledHandle(
 #endif
   handle_ = std::move(handle);
   NotifyDetached();
+}
+
+// static
+MessagePortDescriptor::InstrumentationDelegate*
+MessagePortDescriptor::GetInstrumentationDelegate() {
+  return g_instrumentation_delegate;
 }
 
 MessagePortDescriptor::MessagePortDescriptor(
@@ -197,6 +216,14 @@ void MessagePortDescriptor::NotifyAttached(
   if (g_instrumentation_delegate) {
     g_instrumentation_delegate->NotifyMessagePortAttached(
         id_, sequence_number_++, execution_context_id);
+  }
+}
+
+void MessagePortDescriptor::NotifyAttachedToEmbedder() {
+  DCHECK(!id_.is_empty());
+  if (g_instrumentation_delegate) {
+    g_instrumentation_delegate->NotifyMessagePortAttachedToEmbedder(
+        id_, sequence_number_++);
   }
 }
 
@@ -223,8 +250,10 @@ MessagePortDescriptorPair::MessagePortDescriptorPair() {
 
   // Notify the instrumentation that these ports are newly created and peers of
   // each other.
-  if (g_instrumentation_delegate)
-    g_instrumentation_delegate->NotifyMessagePortPairCreated(*this);
+  if (g_instrumentation_delegate) {
+    g_instrumentation_delegate->NotifyMessagePortPairCreated(port0_.id(),
+                                                             port1_.id());
+  }
 }
 
 MessagePortDescriptorPair::~MessagePortDescriptorPair() = default;

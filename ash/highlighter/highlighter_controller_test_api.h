@@ -19,8 +19,7 @@ namespace ash {
 // An api for testing the HighlighterController class.
 // Implements ash::mojom::HighlighterControllerClient and binds itself as the
 // client to provide the tests with access to gesture recognition results.
-class HighlighterControllerTestApi
-    : public ash::HighlighterController::Observer {
+class HighlighterControllerTestApi : public HighlighterController::Observer {
  public:
   explicit HighlighterControllerTestApi(HighlighterController* instance);
   ~HighlighterControllerTestApi() override;

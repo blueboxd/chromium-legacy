@@ -121,7 +121,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
       : dragged_window_(dragged_window) {
     DCHECK(dragged_window);
     aura::Window* source_window =
-        dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey);
+        dragged_window->GetProperty(kTabDraggingSourceWindowKey);
     DCHECK(source_window);
 
     // Disable the backdrop for |source_window| during dragging.
@@ -160,7 +160,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
   ~WindowsHider() override {
     // It might be possible that |source_window| is destroyed during dragging.
     aura::Window* source_window =
-        dragged_window_->GetProperty(ash::kTabDraggingSourceWindowKey);
+        dragged_window_->GetProperty(kTabDraggingSourceWindowKey);
     if (source_window)
       source_window->SetProperty(kBackdropWindowMode, source_window_backdrop_);
 
@@ -265,7 +265,7 @@ void TabletModeBrowserWindowDragDelegate::StartFling(
 bool TabletModeBrowserWindowDragDelegate::ShouldOpenOverviewWhenDragStarts() {
   DCHECK(dragged_window_);
   aura::Window* source_window =
-      dragged_window_->GetProperty(ash::kTabDraggingSourceWindowKey);
+      dragged_window_->GetProperty(kTabDraggingSourceWindowKey);
   return !source_window;
 }
 
@@ -275,10 +275,10 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
   // source window is not in splitscreen && the source window is not in
   // overview.
   aura::Window* source_window =
-      dragged_window_->GetProperty(ash::kTabDraggingSourceWindowKey);
+      dragged_window_->GetProperty(kTabDraggingSourceWindowKey);
   if (!source_window || source_window == dragged_window_ ||
       split_view_controller_->IsWindowInSplitView(source_window) ||
-      source_window->GetProperty(ash::kIsShowingInOverviewKey)) {
+      source_window->GetProperty(kIsShowingInOverviewKey)) {
     return;
   }
 
@@ -333,7 +333,7 @@ void TabletModeBrowserWindowDragDelegate::MergeBackToSourceWindowIfApplicable(
     return;
 
   aura::Window* source_window =
-      dragged_window_->GetProperty(ash::kTabDraggingSourceWindowKey);
+      dragged_window_->GetProperty(kTabDraggingSourceWindowKey);
   // Do not merge back if there is no source window.
   if (!source_window)
     return;
@@ -381,7 +381,7 @@ void TabletModeBrowserWindowDragDelegate::MergeBackToSourceWindowIfApplicable(
 
   // Arriving here we know the dragged window should merge back into its source
   // window.
-  source_window->SetProperty(ash::kIsDeferredTabDraggingTargetWindowKey, true);
+  source_window->SetProperty(kIsDeferredTabDraggingTargetWindowKey, true);
 }
 
 }  // namespace ash

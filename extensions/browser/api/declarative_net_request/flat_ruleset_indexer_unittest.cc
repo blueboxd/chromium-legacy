@@ -426,16 +426,26 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
       {dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE,
        dnr_api::REMOVE_HEADER_TYPE_COOKIE, dnr_api::REMOVE_HEADER_TYPE_REFERER},
       nullptr, base::nullopt));
+  rules_to_index.push_back(CreateIndexedRule(
+      22, 3, flat_rule::OptionFlag_NONE, flat_rule::ElementType_SUBDOCUMENT,
+      flat_rule::ActivationType_NONE, flat_rule::UrlPatternType_SUBSTRING,
+      flat_rule::AnchorType_NONE, flat_rule::AnchorType_NONE, "example.com", {},
+      {}, base::nullopt, dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS, {},
+      nullptr, base::nullopt));
 
   // Note: It's unsafe to store/return pointers to a mutable vector since the
   // vector can resize/reallocate invalidating the existing pointers/iterators.
   // Hence we build |expected_index_lists| once the vector |rules_to_index| is
   // finalized.
   std::vector<const IndexedRule*> expected_index_lists[flat::IndexType_count];
-  expected_index_lists[flat::IndexType_before_request] = {
-      &rules_to_index[0], &rules_to_index[1], &rules_to_index[2],
-      &rules_to_index[3], &rules_to_index[4], &rules_to_index[5],
-      &rules_to_index[6], &rules_to_index[7]};
+  expected_index_lists
+      [flat::IndexType_before_request_except_allow_all_requests] = {
+          &rules_to_index[0], &rules_to_index[1], &rules_to_index[2],
+          &rules_to_index[3], &rules_to_index[4], &rules_to_index[5],
+          &rules_to_index[6], &rules_to_index[7]};
+  expected_index_lists[flat::IndexType_allow_all_requests] = {
+      &rules_to_index[10]};
+
   expected_index_lists[flat::IndexType_remove_cookie_header] = {
       &rules_to_index[8], &rules_to_index[9]};
   expected_index_lists[flat::IndexType_remove_referer_header] = {

@@ -11,6 +11,13 @@ const cannotAccessSyncStorageErrorMessage =
     '"sync" is not available for login screen extensions';
 const noManagedGuestSessionAccountsErrorMessage =
     'No managed guest session accounts';
+const alreadyExistsActiveSessionErrorMessage =
+    'There is already an active session';
+const sessionNotLockedErrorMessage = 'Session is not locked';
+const sessionNotActiveErrorMessage = 'Session is not active';
+const noPermissionToUnlockErrorMessage =
+    'The extension does not have permission to unlock this session';
+const authenticationFailedErrorMessage = 'Authentication failed';
 
 const tests = {
   /* LoginScreenUi ************************************************************/
@@ -92,6 +99,20 @@ const tests = {
       chrome.test.succeed();
     });
   },
+  'LoginLaunchManagedGuestSessionWithPassword': () => {
+    chrome.test.getConfig(config => {
+      chrome.login.launchManagedGuestSession(config.customArg, () => {
+        chrome.test.assertNoLastError();
+        chrome.test.succeed();
+      });
+    });
+  },
+  'LoginLaunchManagedGuestSessionAlreadyExistsActiveSession': () => {
+    chrome.login.launchManagedGuestSession(() => {
+      chrome.test.assertLastError(alreadyExistsActiveSessionErrorMessage);
+      chrome.test.succeed();
+    });
+  },
   'LoginLaunchManagedGuestSessionNoAccounts': () => {
     chrome.login.launchManagedGuestSession(() => {
       chrome.test.assertLastError(noManagedGuestSessionAccountsErrorMessage);
@@ -111,6 +132,46 @@ const tests = {
         chrome.test.assertEq(config.customArg, data);
         chrome.test.succeed();
       });
+    });
+  },
+  'LoginLockManagedGuestSessionNotActive': () => {
+    chrome.login.lockManagedGuestSession(() => {
+      chrome.test.assertLastError(sessionNotActiveErrorMessage);
+      chrome.test.succeed();
+    });
+  },
+  'LoginUnlockManagedGuestSession': () => {
+    chrome.test.getConfig(config => {
+      chrome.login.unlockManagedGuestSession(config.customArg, () => {
+        chrome.test.assertNoLastError();
+        chrome.test.succeed();
+      });
+    });
+  },
+  'LoginUnlockManagedGuestSessionWrongPassword': () => {
+    chrome.test.getConfig(config => {
+      chrome.login.unlockManagedGuestSession(config.customArg, () => {
+        chrome.test.assertLastError(authenticationFailedErrorMessage);
+        chrome.test.succeed();
+      });
+    });
+  },
+  'LoginUnlockManagedGuestSessionNotLocked': () => {
+    chrome.login.unlockManagedGuestSession('dummy_password', () => {
+      chrome.test.assertLastError(sessionNotLockedErrorMessage);
+      chrome.test.succeed();
+    });
+  },
+  'LoginUnlockManagedGuestSessionNotManagedGuestSession': () => {
+    chrome.login.unlockManagedGuestSession('dummy_password', () => {
+      chrome.test.assertLastError(noPermissionToUnlockErrorMessage);
+      chrome.test.succeed();
+    });
+  },
+  'LoginUnlockManagedGuestSessionWrongExtensionId': () => {
+    chrome.login.unlockManagedGuestSession('dummy_password', () => {
+      chrome.test.assertLastError(noPermissionToUnlockErrorMessage);
+      chrome.test.succeed();
     });
   },
 };

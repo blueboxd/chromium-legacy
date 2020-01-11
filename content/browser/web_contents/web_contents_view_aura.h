@@ -327,8 +327,6 @@ class CONTENT_EXPORT WebContentsViewAura
 
   bool init_rwhv_with_null_parent_for_testing_;
 
-  // Used to ensure that the drag and drop callbacks bound to this
-  // object are canceled when this object is destroyed.
   base::WeakPtrFactory<WebContentsViewAura> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);

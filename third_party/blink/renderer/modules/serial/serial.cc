@@ -18,6 +18,8 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
 #include "third_party/blink/renderer/modules/serial/serial_port.h"
+#include "third_party/blink/renderer/modules/serial/serial_port_filter.h"
+#include "third_party/blink/renderer/modules/serial/serial_port_request_options.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
@@ -102,11 +104,40 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
     return ScriptPromise();
   }
 
+  Vector<mojom::blink::SerialPortFilterPtr> filters;
+  if (options && options->hasFilters()) {
+    for (const auto& filter : options->filters()) {
+      auto mojo_filter = mojom::blink::SerialPortFilter::New();
+
+      mojo_filter->has_vendor_id = filter->hasUsbVendorId();
+      if (mojo_filter->has_vendor_id) {
+        mojo_filter->vendor_id = filter->usbVendorId();
+      } else {
+        exception_state.ThrowTypeError(
+            "A filter must provide a property to filter by.");
+        return ScriptPromise();
+      }
+
+      mojo_filter->has_product_id = filter->hasUsbProductId();
+      if (mojo_filter->has_product_id) {
+        if (!mojo_filter->has_vendor_id) {
+          exception_state.ThrowTypeError(
+              "A filter containing a usbProductId must also specify a "
+              "usbVendorId.");
+          return ScriptPromise();
+        }
+        mojo_filter->product_id = filter->usbProductId();
+      }
+
+      filters.push_back(std::move(mojo_filter));
+    }
+  }
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   request_port_promises_.insert(resolver);
 
   EnsureServiceConnection();
-  service_->RequestPort(Vector<mojom::blink::SerialPortFilterPtr>(),
+  service_->RequestPort(std::move(filters),
                         WTF::Bind(&Serial::OnRequestPort, WrapPersistent(this),
                                   WrapPersistent(resolver)));
 

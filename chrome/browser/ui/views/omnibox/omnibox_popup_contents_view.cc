@@ -135,10 +135,12 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 OmniboxPopupContentsView::OmniboxPopupContentsView(
     OmniboxViewViews* omnibox_view,
     OmniboxEditModel* edit_model,
-    LocationBarView* location_bar_view)
+    LocationBarView* location_bar_view,
+    const ui::ThemeProvider* theme_provider)
     : model_(new OmniboxPopupModel(this, edit_model)),
       omnibox_view_(omnibox_view),
-      location_bar_view_(location_bar_view) {
+      location_bar_view_(location_bar_view),
+      theme_provider_(theme_provider) {
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
 
@@ -243,7 +245,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     // expensive to create due to loading font data, this saves time and memory
     // during browser startup.
     if (children().size() == i) {
-      AddChildView(std::make_unique<OmniboxResultView>(this, i));
+      AddChildView(
+          std::make_unique<OmniboxResultView>(this, i, theme_provider_));
     }
 
     OmniboxResultView* view = result_view_at(i);

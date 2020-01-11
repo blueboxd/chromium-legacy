@@ -65,7 +65,7 @@ class LockLayoutManagerTest : public AshTestBase {
                                       bool use_delegate) {
     aura::Window* parent =
         Shell::GetPrimaryRootWindowController()->GetContainer(
-            ash::kShellWindowId_LockScreenContainer);
+            kShellWindowId_LockScreenContainer);
     params.parent = parent;
     views::Widget* widget = new views::Widget;
     if (use_delegate)
@@ -177,7 +177,7 @@ TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
 }
 
 TEST_F(LockLayoutManagerTest, AccessibilityPanel) {
-  ash::ShelfLayoutManager* shelf_layout_manager =
+  ShelfLayoutManager* shelf_layout_manager =
       GetPrimaryShelf()->shelf_layout_manager();
   ASSERT_TRUE(shelf_layout_manager);
 
@@ -335,7 +335,7 @@ TEST_F(LockLayoutManagerTest, MultipleMonitors) {
 TEST_F(LockLayoutManagerTest, AccessibilityPanelWithMultipleMonitors) {
   UpdateDisplay("300x400,400x500");
 
-  ash::ShelfLayoutManager* shelf_layout_manager =
+  ShelfLayoutManager* shelf_layout_manager =
       GetPrimaryShelf()->shelf_layout_manager();
   ASSERT_TRUE(shelf_layout_manager);
 

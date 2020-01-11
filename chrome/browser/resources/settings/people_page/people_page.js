@@ -117,17 +117,6 @@ Polymer({
     /** @private */
     showSignoutDialog_: Boolean,
 
-    // <if expr="chromeos">
-    /** @private */
-    showParentalControls_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.valueExists('showParentalControls') &&
-            loadTimeData.getBoolean('showParentalControls');
-      },
-    },
-    // </if>
-
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
@@ -143,13 +132,6 @@ Polymer({
               loadTimeData.getBoolean('diceEnabled') ?
                   '#edit-profile .subpage-arrow' :
                   '#picture-subpage-trigger .subpage-arrow');
-        }
-        // </if>
-        // <if expr="chromeos">
-        if (settings.routes.CHANGE_PICTURE) {
-          map.set(
-              settings.routes.CHANGE_PICTURE.path,
-              '#picture-subpage-trigger .subpage-arrow');
         }
         // </if>
         return map;

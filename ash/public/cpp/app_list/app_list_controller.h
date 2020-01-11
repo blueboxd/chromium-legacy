@@ -38,12 +38,11 @@ class ASH_PUBLIC_EXPORT AppListController {
   virtual AppListClient* GetClient() = 0;
 
   // Adds an item to AppListModel.
-  virtual void AddItem(std::unique_ptr<ash::AppListItemMetadata> app_item) = 0;
+  virtual void AddItem(std::unique_ptr<AppListItemMetadata> app_item) = 0;
 
   // Adds an item into a certain folder in AppListModel.
-  virtual void AddItemToFolder(
-      std::unique_ptr<ash::AppListItemMetadata> app_item,
-      const std::string& folder_id) = 0;
+  virtual void AddItemToFolder(std::unique_ptr<AppListItemMetadata> app_item,
+                               const std::string& folder_id) = 0;
 
   // Removes an item by its id from AppListModel.
   virtual void RemoveItem(const std::string& id) = 0;
@@ -58,11 +57,11 @@ class ASH_PUBLIC_EXPORT AppListController {
 
   // Tells Ash what the current status of AppListModel should be,
   // e.g. the model is under synchronization or in normal status.
-  virtual void SetStatus(ash::AppListModelStatus status) = 0;
+  virtual void SetStatus(AppListModelStatus status) = 0;
 
   // Tells Ash what the current state of the app list should be,
   // e.g. the user is searching for something, or showing apps, etc.
-  virtual void SetState(ash::AppListState state) = 0;
+  virtual void SetState(AppListState state) = 0;
 
   // Highlights the given item in the app list. If not present and it is later
   // added, the item will be highlighted after being added.
@@ -86,12 +85,11 @@ class ASH_PUBLIC_EXPORT AppListController {
 
   // Publishes search results to Ash to render them.
   virtual void PublishSearchResults(
-      std::vector<std::unique_ptr<ash::SearchResultMetadata>> results) = 0;
+      std::vector<std::unique_ptr<SearchResultMetadata>> results) = 0;
 
   // Updates an item's metadata (e.g. name, position, etc).
-  virtual void SetItemMetadata(
-      const std::string& id,
-      std::unique_ptr<ash::AppListItemMetadata> data) = 0;
+  virtual void SetItemMetadata(const std::string& id,
+                               std::unique_ptr<AppListItemMetadata> data) = 0;
 
   // Updates an item's icon.
   virtual void SetItemIcon(const std::string& id,
@@ -108,12 +106,12 @@ class ASH_PUBLIC_EXPORT AppListController {
   // Update the whole model, usually when profile changes happen in Chrome.
   virtual void SetModelData(
       int profile_id,
-      std::vector<std::unique_ptr<ash::AppListItemMetadata>> apps,
+      std::vector<std::unique_ptr<AppListItemMetadata>> apps,
       bool is_search_engine_google) = 0;
 
   // Updates a search rresult's metadata.
   virtual void SetSearchResultMetadata(
-      std::unique_ptr<ash::SearchResultMetadata> metadata) = 0;
+      std::unique_ptr<SearchResultMetadata> metadata) = 0;
 
   // Updates whether a search result is being installed.
   virtual void SetSearchResultIsInstalling(const std::string& id,
@@ -150,7 +148,7 @@ class ASH_PUBLIC_EXPORT AppListController {
   //                           Ash.
   // |oem_folder|: the meta data of the OEM folder, or null if it doesn't exist.
   using ResolveOemFolderPositionCallback =
-      base::OnceCallback<void(std::unique_ptr<ash::AppListItemMetadata>)>;
+      base::OnceCallback<void(std::unique_ptr<AppListItemMetadata>)>;
   virtual void ResolveOemFolderPosition(
       const syncer::StringOrdinal& preferred_oem_position,
       ResolveOemFolderPositionCallback callback) = 0;

@@ -49,7 +49,30 @@ namespace util {
 template <typename TypeMarker, typename WrappedType, WrappedType kInvalidValue>
 class IdType : public StrongAlias<TypeMarker, WrappedType> {
  public:
+  static_assert(kInvalidValue <= 0,
+                "The invalid value should be negative or equal to zero to "
+                "avoid overflow issues.");
+
   using StrongAlias<TypeMarker, WrappedType>::StrongAlias;
+
+  // This class can be used to generate unique IdTypes. It keeps an internal
+  // counter that is continually increased by one every time an ID is generated.
+  class Generator {
+   public:
+    Generator() = default;
+    ~Generator() = default;
+
+    // Generates the next unique ID.
+    IdType GenerateNextId() { return FromUnsafeValue(next_id_++); }
+
+    // Non-copyable.
+    Generator(const Generator&) = delete;
+    Generator& operator=(const Generator&) = delete;
+
+   private:
+    WrappedType next_id_ = kInvalidValue + 1;
+  };
+
   // Default-construct in the null state.
   IdType() : StrongAlias<TypeMarker, WrappedType>::StrongAlias(kInvalidValue) {}
 

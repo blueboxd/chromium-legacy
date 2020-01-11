@@ -30,9 +30,7 @@ class OSSettingsUI : public ui::MojoWebUIController {
   ~OSSettingsUI() override;
 
   // Initializes the WebUI message handlers for OS-specific settings.
-  static void InitOSWebUIHandlers(Profile* profile,
-                                  content::WebUI* web_ui,
-                                  content::WebUIDataSource* html_source);
+  void InitOSWebUIHandlers(content::WebUIDataSource* html_source);
 
   // Instantiates implementor of the mojom::CrosNetworkConfig mojo interface
   // passing the pending receiver that will be internally bound.

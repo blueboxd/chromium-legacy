@@ -173,7 +173,7 @@ void MediaNotificationControllerImpl::ShowNotification(const std::string& id) {
     return;
 
   std::unique_ptr<message_center::Notification> notification =
-      ash::CreateSystemNotification(
+      CreateSystemNotification(
           message_center::NotificationType::NOTIFICATION_TYPE_CUSTOM, id,
           base::string16(), base::string16(), base::string16(), GURL(),
           message_center::NotifierId(

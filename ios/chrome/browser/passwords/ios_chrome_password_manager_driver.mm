@@ -93,6 +93,10 @@ bool IOSChromePasswordManagerDriver::IsMainFrame() const {
   return true;
 }
 
+bool IOSChromePasswordManagerDriver::CanShowAutofillUi() const {
+  return true;
+}
+
 const GURL& IOSChromePasswordManagerDriver::GetLastCommittedURL() const {
   return delegate_.lastCommittedURL;
 }

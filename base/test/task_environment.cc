@@ -354,11 +354,13 @@ TaskEnvironment::TaskEnvironment(
     MainThreadType main_thread_type,
     ThreadPoolExecutionMode thread_pool_execution_mode,
     ThreadingMode threading_mode,
+    ThreadPoolCOMEnvironment thread_pool_com_environment,
     bool subclass_creates_default_taskrunner,
     trait_helpers::NotATraitTag)
     : main_thread_type_(main_thread_type),
       thread_pool_execution_mode_(thread_pool_execution_mode),
       threading_mode_(threading_mode),
+      thread_pool_com_environment_(thread_pool_com_environment),
       subclass_creates_default_taskrunner_(subclass_creates_default_taskrunner),
       sequence_manager_(
           CreateSequenceManagerForMainThreadType(main_thread_type)),
@@ -434,18 +436,10 @@ void TaskEnvironment::InitializeThreadPool() {
   ThreadPoolInstance::InitParams init_params(kMaxThreads);
   init_params.suggested_reclaim_time = TimeDelta::Max();
 #if defined(OS_WIN)
-  // Enable the MTA in unit tests to match the browser process's
-  // ThreadPoolInstance configuration.
-  //
-  // This has the adverse side-effect of enabling the MTA in non-browser unit
-  // tests as well but the downside there is not as bad as not having it in
-  // browser unit tests. It just means some COM asserts may pass in unit tests
-  // where they wouldn't in integration tests or prod. That's okay because unit
-  // tests are already generally very loose on allowing I/O, waits, etc. Such
-  // misuse will still be caught in later phases (and COM usage should already
-  // be pretty much inexistent in sandboxed processes).
-  init_params.common_thread_pool_environment =
-      ThreadPoolInstance::InitParams::CommonThreadPoolEnvironment::COM_MTA;
+  if (thread_pool_com_environment_ == ThreadPoolCOMEnvironment::COM_MTA) {
+    init_params.common_thread_pool_environment =
+        ThreadPoolInstance::InitParams::CommonThreadPoolEnvironment::COM_MTA;
+  }
 #endif
 
   auto task_tracker = std::make_unique<TestTaskTracker>();

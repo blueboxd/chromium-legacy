@@ -178,7 +178,7 @@ void ShellTestApi::EnableVirtualKeyboard() {
 }
 
 void ShellTestApi::ToggleFullscreen() {
-  ash::accelerators::ToggleFullscreen();
+  accelerators::ToggleFullscreen();
 }
 
 bool ShellTestApi::IsOverviewSelecting() {
@@ -231,7 +231,7 @@ void ShellTestApi::WaitForOverviewAnimationState(OverviewAnimationState state) {
 }
 
 void ShellTestApi::WaitForLauncherAnimationState(
-    ash::AppListViewState target_state) {
+    AppListViewState target_state) {
   base::RunLoop run_loop;
   WaitForLauncherState(target_state, run_loop.QuitWhenIdleClosure());
   run_loop.Run();
@@ -251,7 +251,7 @@ PaginationModel* ShellTestApi::GetAppListPaginationModel() {
 }
 
 std::vector<aura::Window*> ShellTestApi::GetItemWindowListInOverviewGrids() {
-  return ash::Shell::Get()
+  return Shell::Get()
       ->overview_controller()
       ->GetItemWindowListInOverviewGridsForTest();
 }

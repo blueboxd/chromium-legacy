@@ -279,7 +279,7 @@ class CORE_EXPORT DisplayLockContext final
   // Note that this returns true if there is no context at all, so in order to
   // check whether this is strictly an attribute version, as opposed to a null
   // context, one needs to compare context with nullptr first.
-  static bool IsAttributeVersion(DisplayLockContext* context) {
+  static bool IsAttributeVersion(const DisplayLockContext* context) {
     return !context ||
            context->GetMethod() == DisplayLockContextCreateMethod::kAttribute;
   }
@@ -434,7 +434,9 @@ class CORE_EXPORT DisplayLockContext final
   uint16_t activatable_mask_ =
       static_cast<uint16_t>(DisplayLockActivationReason::kAny);
 
-  bool is_activated_ = false;
+  // State that tracks whether we've been activated. Note that this is only
+  // valid for CSS version of render-subtree.
+  bool css_is_activated_ = false;
 
   DisplayLockContextCreateMethod method_ =
       DisplayLockContextCreateMethod::kUnknown;

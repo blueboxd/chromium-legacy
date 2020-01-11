@@ -105,10 +105,7 @@ group("closure_compile") {
   }
 
   if (is_chromeos) {
-    deps += [
-      "chromeos:closure_compile",
-      "parental_controls_page:closure_compile",
-    ]
+    deps += [ "chromeos:closure_compile" ]
   }
 }
 
@@ -155,10 +152,22 @@ js_library("open_window_proxy") {
 js_library("route") {
   deps = [
     ":page_visibility",
+    ":router",
+    ":settings_routes",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
   ]
+}
+
+js_library("router") {
+  deps = [
+    ":settings_routes",
+    "//ui/webui/resources/js:cr",
+  ]
   externs_list = [ "$externs_path/metrics_private.js" ]
+}
+
+js_library("settings_routes") {
 }
 
 js_library("page_visibility") {

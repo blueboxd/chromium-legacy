@@ -4357,6 +4357,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCreditCardUploadFeedback)},
 
+    {"font-access", flag_descriptions::kFontAccessAPIName,
+     flag_descriptions::kFontAccessAPIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kFontAccess)},
+
     {"font-src-local-matching", flag_descriptions::kFontSrcLocalMatchingName,
      flag_descriptions::kFontSrcLocalMatchingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kFontSrcLocalMatching)},

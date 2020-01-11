@@ -58,6 +58,7 @@ void AnimatedContainerView::OnResponseChanged(
 
 void AnimatedContainerView::OnResponseCleared() {
   RemoveAllViews();
+  queued_response_ = nullptr;
 }
 
 void AnimatedContainerView::RemoveAllViews() {
@@ -137,13 +138,13 @@ void AnimatedContainerView::FadeOutViews() {
 
 void AnimatedContainerView::ChangeResponse(
     const scoped_refptr<const AssistantResponse>& response) {
-  // We may have to pend the response while we animate the previous response off
-  // stage. We use a shared pointer to ensure that any views we add to the view
-  // hierarchy can be removed before the underlying views are destroyed.
-  pending_response_ = response;
+  // We may have to postpone the response while we animate the previous response
+  // off stage. We use a shared pointer to ensure that any views we add to the
+  // view hierarchy can be removed before the underlying views are destroyed.
+  queued_response_ = response;
 
   // If we are currently fading out the old content, don't interrupt it.
-  // When the fading out is completed, it will detect we've got a pending
+  // When the fading out is completed, it will detect we've got a queued
   // response and animate it in.
   if (fade_out_in_progress_)
     return;
@@ -151,7 +152,7 @@ void AnimatedContainerView::ChangeResponse(
   // If we don't have any pre-existing content, there is nothing to animate off
   // stage so we can proceed to add the new response.
   if (content_view()->children().empty()) {
-    AddResponse(std::move(pending_response_));
+    AddResponse(std::move(queued_response_));
     return;
   }
 
@@ -242,10 +243,10 @@ bool AnimatedContainerView::AnimateOutObserverCallback(
   // clearing of their views and managed resources.
   weak_ptr->RemoveAllViews();
 
-  // It is safe to add our pending response, if one exists, to the view
+  // It is safe to add our queued response, if one exists, to the view
   // hierarchy now that we've cleared the previous response from the stage.
-  if (weak_ptr->pending_response_)
-    weak_ptr->AddResponse(std::move(weak_ptr->pending_response_));
+  if (weak_ptr->queued_response_)
+    weak_ptr->AddResponse(std::move(weak_ptr->queued_response_));
 
   // We return true to delete our observer.
   return true;
@@ -268,8 +269,8 @@ bool AnimatedContainerView::FadeOutObserverCallback(
 
   // If the new response arrived while the fade-out was in progress, we will
   // start handling it now.
-  if (weak_ptr->pending_response_)
-    weak_ptr->ChangeResponse(std::move(weak_ptr->pending_response_));
+  if (weak_ptr->queued_response_)
+    weak_ptr->ChangeResponse(std::move(weak_ptr->queued_response_));
 
   // We return true to delete our observer.
   return true;

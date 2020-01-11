@@ -10,10 +10,7 @@
 #include "chrome/browser/ui/webui/webui_load_timer.h"
 #include "content/public/browser/web_ui_controller.h"
 
-class Profile;
-
 namespace content {
-class WebUIDataSource;
 class WebUIMessageHandler;
 }  // namespace content
 
@@ -34,10 +31,7 @@ class SettingsUI : public content::WebUIController {
 #if defined(OS_CHROMEOS)
   // Initializes the WebUI message handlers for CrOS-specific settings that are
   // still shown in the browser settings UI.
-  static void InitBrowserSettingsWebUIHandlers(
-      Profile* profile,
-      content::WebUI* web_ui,
-      content::WebUIDataSource* html_source);
+  void InitBrowserSettingsWebUIHandlers();
 #endif  // defined(OS_CHROMEOS)
 
  private:

@@ -10,7 +10,6 @@
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "extensions/buildflags/buildflags.h"
 
 // This class keeps the extension API's windowID up to date with the current
 // window of the tab and observes navigation events.
@@ -54,10 +53,6 @@ class SessionTabHelper : public content::WebContentsObserver,
   void NavigationEntriesDeleted() override;
   void NavigationEntryChanged(
       const content::EntryChangedDetails& change_details) override;
-#endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  void SetTabExtensionAppID(const std::string& extension_app_id);
 #endif
 
  private:

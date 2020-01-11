@@ -450,6 +450,12 @@ struct NetworkContextParams {
   // the dynamic preference from NetworkService side, to populate
   // HttpAuthPreference.
   HttpAuthStaticNetworkContextParams? http_auth_static_network_context_params;
+
+  // Indicates that the HttpCache back-end should be reset (e.g. when a Finch
+  // experiment changes the cache key representation via NetworkIsolationKey).
+  // A reset throws out all existing cache content when loading the cache,
+  // effectively starting with an empty cache.
+  bool reset_http_cache_backend = false;
 };
 
 struct NetworkConditions {

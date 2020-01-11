@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
@@ -87,14 +88,6 @@ ContentPasswordManagerDriver::~ContentPasswordManagerDriver() = default;
 ContentPasswordManagerDriver*
 ContentPasswordManagerDriver::GetForRenderFrameHost(
     content::RenderFrameHost* render_frame_host) {
-  // With back-forward cache, the page stays alive and its mojo connections are
-  // not closed. The page would be frozen and would eventually stop doing work,
-  // but the messages can still arrive when the frame is not active. Given that
-  // autofill logic can show popups, it's problematic - prevent pages using
-  // autofill from entering back-forward cache for now to avoid it.
-  content::BackForwardCache::DisableForRenderFrameHost(
-      render_frame_host, "password_manager::ContentPasswordManagerDriver");
-
   ContentPasswordManagerDriverFactory* factory =
       ContentPasswordManagerDriverFactory::FromWebContents(
           content::WebContents::FromRenderFrameHost(render_frame_host));
@@ -196,6 +189,14 @@ autofill::AutofillDriver* ContentPasswordManagerDriver::GetAutofillDriver() {
 
 bool ContentPasswordManagerDriver::IsMainFrame() const {
   return is_main_frame_;
+}
+
+bool ContentPasswordManagerDriver::CanShowAutofillUi() const {
+  // TODO(crbug.com/1041021): Use RenderFrameHost::IsActive here when available.
+  return !content::BackForwardCache::EvictIfCached(
+      {render_frame_host_->GetProcess()->GetID(),
+       render_frame_host_->GetRoutingID()},
+      "ContentPasswordManagerDriver::CanShowAutofillUi");
 }
 
 const GURL& ContentPasswordManagerDriver::GetLastCommittedURL() const {

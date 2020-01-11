@@ -15,7 +15,6 @@ class CrostiniAppRestartView : public views::DialogDelegateView {
   static void Show(const ash::ShelfID& id, int64_t display_id);
 
   // views::DialogDelegateView:
-  int GetDialogButtons() const override;
   bool ShouldShowCloseButton() const override;
   bool Accept() override;
   gfx::Size CalculatePreferredSize() const override;

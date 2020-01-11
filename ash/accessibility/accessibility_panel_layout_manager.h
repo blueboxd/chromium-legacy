@@ -29,7 +29,7 @@ class ASH_EXPORT AccessibilityPanelLayoutManager
     : public aura::LayoutManager,
       public display::DisplayObserver,
       public ::wm::ActivationChangeObserver,
-      public ash::ShellObserver {
+      public ShellObserver {
  public:
   // Height of the panel in DIPs. Public for test.
   static constexpr int kDefaultPanelHeight = 35;

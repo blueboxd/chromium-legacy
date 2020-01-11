@@ -156,6 +156,13 @@ luci.console_view(
             builder = 'ci/linux-wpt-fyi-rel',
             category = 'linux',
         ),
+        # Moved to the FYI console for being habitually flaky.
+        # https://crbug.com/1014673
+        luci.console_view_entry(
+            builder = 'ci/Leak Detection Linux',
+            category = 'linux',
+            short_name = 'lk',
+        ),
         luci.console_view_entry(
             builder = 'ci/Mojo Android',
             category = 'mojo',

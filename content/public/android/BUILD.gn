@@ -120,6 +120,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/app/SandboxedProcessService.java",
     "java/src/org/chromium/content/app/ZygotePreload.java",
     "java/src/org/chromium/content/browser/AppWebMessagePort.java",
+    "java/src/org/chromium/content/browser/AppWebMessagePortDescriptor.java",
     "java/src/org/chromium/content/browser/AudioFocusDelegate.java",
     "java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java",
     "java/src/org/chromium/content/browser/BindingManager.java",
@@ -347,6 +348,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/app/ContentChildProcessServiceDelegate.java",
     "java/src/org/chromium/content/app/ContentMain.java",
     "java/src/org/chromium/content/browser/AppWebMessagePort.java",
+    "java/src/org/chromium/content/browser/AppWebMessagePortDescriptor.java",
     "java/src/org/chromium/content/browser/AudioFocusDelegate.java",
     "java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java",
     "java/src/org/chromium/content/browser/BrowserStartupControllerImpl.java",
@@ -444,6 +446,7 @@ android_library("content_javatests") {
   ]
 
   sources = [
+    "javatests/src/org/chromium/content/browser/AppWebMessagePortDescriptorTest.java",
     "javatests/src/org/chromium/content/browser/BrowserStartupControllerTest.java",
     "javatests/src/org/chromium/content/browser/ChildProcessLauncherHelperTest.java",
     "javatests/src/org/chromium/content/browser/ChildProcessLauncherIntegrationTest.java",

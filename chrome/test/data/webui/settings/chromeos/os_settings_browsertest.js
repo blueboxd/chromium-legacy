@@ -579,6 +579,12 @@ TEST_F('OSSettingsMainTest', 'AllJsTests', () => {
 // eslint-disable-next-line no-var
 var OSSettingsMenuTest = class extends OSSettingsBrowserTest {
   /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/os_settings_menu/os_settings_menu.html';
+  }
+
+  /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../test_util.js',
@@ -847,6 +853,12 @@ TEST_F('OSSettingsPeoplePageSetupPinDialogTest', 'AllJsTests', () => {
 // eslint-disable-next-line no-var
 var OSSettingsPeoplePageSyncControlsTest = class extends OSSettingsBrowserTest {
   /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/os_people_page/os_sync_controls.html';
+  }
+
+  /** @override */
   get featureList() {
     return {enabled: ['chromeos::features::kSplitSettingsSync']};
   }
@@ -868,6 +880,11 @@ TEST_F('OSSettingsPeoplePageSyncControlsTest', 'AllJsTests', () => {
 // eslint-disable-next-line no-var
 var OSSettingsPeoplePageTest = class extends OSSettingsBrowserTest {
   /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'chromeos/os_people_page/os_people_page.html';
+  }
+
+  /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
@@ -883,9 +900,36 @@ TEST_F('OSSettingsPeoplePageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// eslint-disable-next-line no-var
+var OSSettingsParentalControlsPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/parental_controls_page/parental_controls_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      'parental_controls_page_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsParentalControlsPageTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 // Tests for the Personalization section.
 // eslint-disable-next-line no-var
 var OSSettingsPersonalizationPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/personalization_page/personalization_page.html';
+  }
+
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([

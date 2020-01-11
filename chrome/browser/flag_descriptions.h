@@ -243,6 +243,9 @@ extern const char kExperimentalAccessibilityLanguageDetectionDynamicName[];
 extern const char
     kExperimentalAccessibilityLanguageDetectionDynamicDescription[];
 
+extern const char kFontAccessAPIName[];
+extern const char kFontAccessAPIDescription[];
+
 extern const char kFontSrcLocalMatchingName[];
 extern const char kFontSrcLocalMatchingDescription[];
 

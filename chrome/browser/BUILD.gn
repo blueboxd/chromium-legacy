@@ -2093,8 +2093,7 @@ jumbo_static_library("browser") {
     "//components/signin/public/webdata",
     "//components/spellcheck:buildflags",
     "//components/ssl_errors",
-    "//components/startup_metric_utils/browser:host",
-    "//components/startup_metric_utils/browser:lib",
+    "//components/startup_metric_utils/browser",
     "//components/storage_monitor",
     "//components/strings",
     "//components/subresource_filter/content/browser",
@@ -4468,7 +4467,10 @@ jumbo_static_library("browser") {
   }
 
   if (enable_kaleidoscope) {
-    deps += [ "//chrome/browser/media/kaleidoscope/internal" ]
+    deps += [
+      "//chrome/browser/media/kaleidoscope/internal",
+      "//chrome/browser/media/kaleidoscope/internal/mojom",
+    ]
   }
 
   if (enable_legacy_desktop_in_product_help) {

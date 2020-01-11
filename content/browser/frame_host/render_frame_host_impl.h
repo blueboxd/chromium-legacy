@@ -1299,6 +1299,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BubbleLogicalScrollInParentFrame(
       blink::mojom::ScrollDirection direction,
       ui::input_types::ScrollGranularity granularity) override;
+  void DidAccessInitialDocument() override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1454,7 +1455,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                              JavaScriptDialogType dialog_type,
                              IPC::Message* reply_msg);
   void OnRunBeforeUnloadConfirm(bool is_reload, IPC::Message* reply_msg);
-  void OnDidAccessInitialDocument();
   void OnDidChangeOpener(int32_t opener_routing_id);
 
   void OnDidChangeFramePolicy(int32_t frame_routing_id,

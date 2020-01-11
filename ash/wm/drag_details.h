@@ -25,7 +25,7 @@ struct ASH_EXPORT DragDetails {
               ::wm::WindowMoveSource source);
   ~DragDetails();
 
-  ash::WindowStateType initial_state_type;
+  WindowStateType initial_state_type;
 
   // Initial bounds of the window in parent coordinates.
   const gfx::Rect initial_bounds_in_parent;

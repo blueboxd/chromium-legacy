@@ -268,16 +268,16 @@ Status MergeDatabaseIntoActiveBlobJournal(
 //     (for Files only) fileName [string-with-length]
 //   }
 // There is no length field; just read until you run out of data.
-std::string EncodeBlobInfos(const std::vector<IndexedDBBlobInfo*>& blob_info) {
+std::string EncodeBlobInfos(const std::vector<IndexedDBBlobInfo>& blob_info) {
   std::string ret;
-  for (const auto* info : blob_info) {
-    EncodeBool(info->is_file(), &ret);
-    EncodeVarInt(info->blob_number(), &ret);
-    EncodeStringWithLength(info->type(), &ret);
-    if (info->is_file())
-      EncodeStringWithLength(info->file_name(), &ret);
+  for (const auto& info : blob_info) {
+    EncodeBool(info.is_file(), &ret);
+    EncodeVarInt(info.blob_number(), &ret);
+    EncodeStringWithLength(info.type(), &ret);
+    if (info.is_file())
+      EncodeStringWithLength(info.file_name(), &ret);
     else
-      EncodeVarInt(info->size(), &ret);
+      EncodeVarInt(info.size(), &ret);
   }
   return ret;
 }
@@ -3005,14 +3005,12 @@ void IndexedDBBackingStore::Transaction::Begin(std::vector<ScopeLock> locks) {
 }
 
 Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
-    BlobEntryKeyValuePairVec* new_blob_entries,
     WriteDescriptorVec* new_files_to_write) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(backing_store_);
   if (backing_store_->is_incognito())
     return Status::OK();
 
-  DCHECK(new_blob_entries->empty());
   DCHECK(new_files_to_write->empty());
   DCHECK(blobs_to_write_.empty());
 
@@ -3039,7 +3037,6 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
   }
 
   for (auto& iter : blob_change_map_) {
-    std::vector<IndexedDBBlobInfo*> new_blob_numbers;
     for (auto& entry : iter.second->mutable_blob_info()) {
       blobs_to_write_.push_back({database_id_, next_blob_number});
       if (entry.is_file() && !entry.file_path().empty()) {
@@ -3052,7 +3049,6 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
                             entry.last_modified()));
       }
       entry.set_blob_number(next_blob_number);
-      new_blob_numbers.push_back(&entry);
       ++next_blob_number;
       result = indexed_db::UpdateBlobNumberGeneratorCurrentNumber(
           direct_txn.get(), database_id_, next_blob_number);
@@ -3065,8 +3061,6 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
       NOTREACHED();
       return InternalInconsistencyStatus();
     }
-    new_blob_entries->push_back(
-        {blob_entry_key, EncodeBlobInfos(new_blob_numbers)});
   }
 
   AppendBlobsToRecoveryBlobJournal(direct_txn.get(), blobs_to_write_);
@@ -3146,9 +3140,8 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
 
   Status s;
 
-  BlobEntryKeyValuePairVec new_blob_entries;
   WriteDescriptorVec new_files_to_write;
-  s = HandleBlobPreTransaction(&new_blob_entries, &new_files_to_write);
+  s = HandleBlobPreTransaction(&new_files_to_write);
   if (!s.ok()) {
     INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
     transaction_ = nullptr;
@@ -3168,9 +3161,8 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
 
   if (!new_files_to_write.empty()) {
     // This kicks off the writes of the new blobs, if any.
-    // This call will zero out new_blob_entries and new_files_to_write.
-    return WriteNewBlobs(&new_blob_entries, &new_files_to_write,
-                         std::move(callback));
+    // This call will zero out new_files_to_write.
+    return WriteNewBlobs(&new_files_to_write, std::move(callback));
   } else {
     return std::move(callback).Run(
         BlobWriteResult::kRunPhaseTwoAndReturnResult);
@@ -3191,6 +3183,28 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
   BlobJournalType recovery_journal, active_journal, saved_recovery_journal,
       inactive_blobs;
   if (!blob_change_map_.empty()) {
+    if (!backing_store_->is_incognito()) {
+      for (auto& iter : blob_change_map_) {
+        BlobEntryKey blob_entry_key;
+        StringPiece key_piece(iter.second->object_store_data_key());
+        if (!BlobEntryKey::FromObjectStoreDataKey(&key_piece,
+                                                  &blob_entry_key)) {
+          NOTREACHED();
+          return InternalInconsistencyStatus();
+        }
+        // Add the new blob-table entry for each blob to the main transaction,
+        // or remove any entry that may exist if there's no new one.
+        if (iter.second->blob_info().empty()) {
+          s = transaction_->Remove(blob_entry_key.Encode());
+        } else {
+          std::string tmp = EncodeBlobInfos(iter.second->blob_info());
+          s = transaction_->Put(blob_entry_key.Encode(), &tmp);
+        }
+        if (!s.ok())
+          return s;
+      }
+    }
+
     IDB_TRACE("IndexedDBBackingStore::Transaction.BlobJournal");
     // Read the persisted states of the recovery/live blob journals,
     // so that they can be updated correctly by the transaction.
@@ -3280,7 +3294,6 @@ Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
 }
 
 leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
-    BlobEntryKeyValuePairVec* new_blob_entries,
     WriteDescriptorVec* new_files_to_write,
     BlobWriteCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
@@ -3289,19 +3302,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
   DCHECK(backing_store_);
   DCHECK(!new_files_to_write->empty());
   DCHECK_GT(database_id_, 0);
-  leveldb::Status s;
-  for (auto& blob_entry_iter : *new_blob_entries) {
-    // Add the new blob-table entry for each blob to the main transaction, or
-    // remove any entry that may exist if there's no new one.
-    if (blob_entry_iter.second.empty()) {
-      s = transaction_->Remove(blob_entry_iter.first.Encode());
-    } else {
-      s = transaction_->Put(blob_entry_iter.first.Encode(),
-                            &blob_entry_iter.second);
-    }
-    if (!s.ok())
-      return s;
-  }
+
   // Creating the writer will start it going asynchronously. The transaction
   // can be destructed before the callback is triggered.
 

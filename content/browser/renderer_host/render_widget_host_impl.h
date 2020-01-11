@@ -544,10 +544,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // mode.
   void GotResponseToKeyboardLockRequest(bool allowed);
 
-  // Resets state variables related to tracking pending updates to visual
-  // properties.
-  void ResetSentVisualProperties();
-
   // When the WebContents (which acts as the Delegate) is destroyed, this object
   // may still outlive it while the renderer is shutting down. In that case the
   // delegate pointer is removed (since it would be a UAF).
@@ -606,13 +602,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                      const gfx::Size& min_size,
                      const gfx::Size& max_size);
 
-  // Generates a filled in VisualProperties struct representing the current
-  // properties of this widget.
-  VisualProperties GetVisualProperties();
-
-  // Sets the |visual_properties| that were sent to the renderer bundled with
-  // the request to create a new RenderWidget.
-  void SetInitialVisualProperties(const VisualProperties& visual_properties);
+  // Returns the result of GetVisualProperties(), resetting and storing that
+  // value as what has been sent to the renderer. This should be called when
+  // getting VisualProperties that will be sent in order to create a
+  // RenderWidget, since the creation acts as the initial
+  // SynchronizeVisualProperties().
+  VisualProperties GetInitialVisualProperties();
 
   // Pushes updated visual properties to the renderer as well as whether the
   // focused node should be scrolled into view.
@@ -797,34 +792,18 @@ class CONTENT_EXPORT RenderWidgetHostImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            DontPostponeInputEventAckTimeout);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, HideShowMessages);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, PendingUserActivationTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, RendererExitedNoDrag);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            StopAndStartInputEventAckTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            ShorterDelayInputEventAckTimeout);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, SynchronizeVisualProperties);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            AddAndRemoveInputEventObserver);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            AddAndRemoveImeInputEventObserver);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, AutoResizeWithScale);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
-                           AutoResizeWithBrowserInitiatedResize);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
-                           ChildAllocationAcceptedInParentWhileHidden);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, Resize);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewChildFrameTest,
-                           ChildFrameAutoResizeUpdate);
   FRIEND_TEST_ALL_PREFIXES(DevToolsManagerTest,
                            NoUnresponsiveDialogInInspectedContents);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
-                           ChildAllocationAcceptedInParent);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
-                           ConflictingAllocationsResolve);
-  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacTest,
-                           ChildAllocationAcceptedInParent);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacTest,
                            ConflictingAllocationsResolve);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
@@ -885,8 +864,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                          const gfx::Rect& rect_to_zoom);
   void OnZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom);
 
-  // Called when visual properties have changed in the renderer.
-  void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
+  // When the RenderWidget is destroyed, this resets states in the browser
+  // to be ready for a replacement RenderWidget with a clean start.
+  void ResetRenderWidgetState();
+
+  // Generates a filled in VisualProperties struct representing the current
+  // properties of this widget.
+  VisualProperties GetVisualProperties();
 
   // Returns true if the |new_visual_properties| differs from
   // |old_page_visual_properties| in a way that indicates a size changed.

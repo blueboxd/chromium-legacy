@@ -366,6 +366,7 @@
 <translation id="381841723434055211">Телефон нөмірлері</translation>
 <translation id="3819178904835489326">Жүктелген <ph name="NUMBER_OF_DOWNLOADS" /> файл жойылды</translation>
 <translation id="3822502789641063741">Сайт деректерін өшіру керек пе?</translation>
+<translation id="3853625385350850937">Жалғастыру үшін телефондағы NFC функциясын қосыңыз.</translation>
 <translation id="3859306556332390985">Алға</translation>
 <translation id="388596076286380598">Интернетке қосылмасаңыз да немесе байланыс нашар болса да, өзіңізге ұнайтын сайттардағы мақалаларды, бейнелерді және басқа мазмұнды көріңіз.</translation>
 <translation id="3894427358181296146">Қалта қосу</translation>
@@ -1049,6 +1050,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8912362522468806198">Google есептік жазбасы</translation>
 <translation id="8920114477895755567">Ата-аналар туралы толық ақпаратты қажет.</translation>
 <translation id="8922289737868596582">Беттерді офлайн пайдалану үшін оларды "Қосымша опциялар" түймесі арқылы жүктеп алыңыз</translation>
+<translation id="8926666909099850184">Бұл құрылғыда NFC функциясы өшірілген. Оны <ph name="BEGIN_LINK" />Android параметрлерінен<ph name="END_LINK" /> қосыңыз.</translation>
 <translation id="8937772741022875483">Chrome браузерін пайдалану деректері Digital Wellbeing қызметінен өшірілсін бе?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Басқа терезеде ашу</translation>

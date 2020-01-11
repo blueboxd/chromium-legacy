@@ -400,6 +400,10 @@ std::string SkColorToRgbString(SkColor color) {
                             SkColorGetB(color));
 }
 
+SkColor GetDarkestColor() {
+  return g_darkest_color;
+}
+
 SkColor SetDarkestColorForTesting(SkColor color) {
   const SkColor previous_darkest_color = g_darkest_color;
   g_darkest_color = color;

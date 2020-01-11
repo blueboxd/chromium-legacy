@@ -16,7 +16,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
-#include "gpu/command_buffer/common/skia_utils.h"
+#include "gpu/config/skia_limits.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -157,8 +157,8 @@ class GrContext* InProcessContextProvider::GrContext() {
 
   size_t max_resource_cache_bytes;
   size_t max_glyph_cache_texture_bytes;
-  gpu::raster::DefaultGrCacheLimitsForTests(&max_resource_cache_bytes,
-                                            &max_glyph_cache_texture_bytes);
+  gpu::DefaultGrCacheLimitsForTests(&max_resource_cache_bytes,
+                                    &max_glyph_cache_texture_bytes);
   gr_context_ = std::make_unique<skia_bindings::GrContextForGLES2Interface>(
       ContextGL(), ContextSupport(), ContextCapabilities(),
       max_resource_cache_bytes, max_glyph_cache_texture_bytes);

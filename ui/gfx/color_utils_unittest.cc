@@ -205,6 +205,14 @@ TEST(ColorUtils, SkColorToRgbString) {
   EXPECT_EQ(color_string, "50,100,150");
 }
 
+TEST(ColorUtils, GetAndSetDarkestColor) {
+  const SkColor old_darkest_color = GetDarkestColor();
+  EXPECT_EQ(old_darkest_color, SetDarkestColorForTesting(SK_ColorLTGRAY));
+  EXPECT_EQ(SK_ColorLTGRAY, GetDarkestColor());
+  EXPECT_EQ(SK_ColorLTGRAY, SetDarkestColorForTesting(old_darkest_color));
+  EXPECT_EQ(old_darkest_color, GetDarkestColor());
+}
+
 TEST(ColorUtils, IsDarkDarkestColorChange) {
   ASSERT_FALSE(IsDark(SK_ColorLTGRAY));
   const SkColor old_darkest_color = SetDarkestColorForTesting(SK_ColorLTGRAY);

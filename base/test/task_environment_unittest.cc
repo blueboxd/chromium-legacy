@@ -44,6 +44,10 @@
 #include "base/files/file_descriptor_watcher_posix.h"
 #endif  // defined(OS_POSIX)
 
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif
+
 namespace base {
 namespace test {
 
@@ -1198,6 +1202,59 @@ TEST_F(TaskEnvironmentTest, CurrentThread) {
 
   run_loop.Run();
 }
+
+#if defined(OS_WIN)
+namespace {
+
+enum class ApartmentType {
+  kSTA,
+  kMTA,
+};
+
+void InitializeSTAApartment() {
+  base::win::ScopedCOMInitializer initializer;
+  EXPECT_TRUE(initializer.Succeeded());
+}
+
+void InitializeMTAApartment() {
+  base::win::ScopedCOMInitializer initializer(
+      base::win::ScopedCOMInitializer::kMTA);
+  EXPECT_TRUE(initializer.Succeeded());
+}
+
+void InitializeCOMOnWorker(
+    TaskEnvironment::ThreadPoolCOMEnvironment com_environment,
+    ApartmentType apartment_type) {
+  TaskEnvironment task_environment(com_environment);
+  PostTask(FROM_HERE, BindOnce(apartment_type == ApartmentType::kSTA
+                                   ? &InitializeSTAApartment
+                                   : &InitializeMTAApartment));
+  task_environment.RunUntilIdle();
+}
+
+}  // namespace
+
+TEST_F(TaskEnvironmentTest, DefaultCOMEnvironment) {
+  // Attempt to initialize an MTA COM apartment. Expect this to succeed since
+  // the thread is already in an MTA apartment.
+  InitializeCOMOnWorker(TaskEnvironment::ThreadPoolCOMEnvironment::DEFAULT,
+                        ApartmentType::kMTA);
+
+  // Attempt to initialize an STA COM apartment. Expect this to fail since the
+  // thread is already in an MTA apartment.
+  EXPECT_DCHECK_DEATH(InitializeCOMOnWorker(
+      TaskEnvironment::ThreadPoolCOMEnvironment::DEFAULT, ApartmentType::kSTA));
+}
+
+TEST_F(TaskEnvironmentTest, NoCOMEnvironment) {
+  // Attempt to initialize both MTA and STA COM apartments. Both should succeed
+  // when the thread is not already in an apartment.
+  InitializeCOMOnWorker(TaskEnvironment::ThreadPoolCOMEnvironment::NONE,
+                        ApartmentType::kMTA);
+  InitializeCOMOnWorker(TaskEnvironment::ThreadPoolCOMEnvironment::NONE,
+                        ApartmentType::kSTA);
+}
+#endif
 
 }  // namespace test
 }  // namespace base

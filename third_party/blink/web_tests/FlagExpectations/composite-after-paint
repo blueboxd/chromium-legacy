@@ -57,8 +57,6 @@ virtual/android/url-bar/bottom-and-top-fixed-sticks-to-top.html [ Crash ]
 virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Crash ]
 
 # Composited filters are not working.
-crbug.com/1008501 compositing/culling/filter-occlusion-blur-large.html [ Failure ]
-crbug.com/1008501 compositing/culling/filter-occlusion-blur.html [ Failure ]
 crbug.com/1008501 compositing/reflections/deeply-nested-reflections.html [ Failure ]
 
 # Wrong contentsOpaque or background color.

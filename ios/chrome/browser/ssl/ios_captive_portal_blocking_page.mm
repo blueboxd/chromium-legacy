@@ -106,3 +106,24 @@ void IOSCaptivePortalBlockingPage::CommandReceived(const std::string& command) {
         ->DisplayCaptivePortalLoginPage(landing_url_);
   }
 }
+
+void IOSCaptivePortalBlockingPage::HandleScriptCommand(
+    const base::DictionaryValue& message,
+    const GURL& origin_url,
+    bool user_is_interacting,
+    web::WebFrame* sender_frame) {
+  std::string command;
+  if (!message.GetString("command", &command)) {
+    LOG(ERROR) << "JS message parameter not found: command";
+    return;
+  }
+  // Non-proceed commands are handled the same between committed and
+  // non-committed interstitials, so the CommandReceived method can be used.
+  // Remove the command prefix since it is ignored when converting the value
+  // to a SecurityInterstitialCommand.
+  std::size_t delimiter = command.find(".");
+  if (delimiter != std::string::npos) {
+    IOSCaptivePortalBlockingPage::CommandReceived(
+        command.substr(delimiter + 1));
+  }
+}

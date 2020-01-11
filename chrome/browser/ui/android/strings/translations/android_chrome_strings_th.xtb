@@ -366,6 +366,7 @@
 <translation id="381841723434055211">หมายเลขโทรศัพท์</translation>
 <translation id="3819178904835489326">ลบการดาวน์โหลด <ph name="NUMBER_OF_DOWNLOADS" /> รายการแล้ว</translation>
 <translation id="3822502789641063741">ล้างพื้นที่เก็บข้อมูลเว็บไซต์ไหม</translation>
+<translation id="3853625385350850937">หากต้องการดำเนินการต่อ ให้เปิด NFC ในอุปกรณ์</translation>
 <translation id="3859306556332390985">ไปข้างหน้า</translation>
 <translation id="388596076286380598">ดูบทความ วิดีโอและเนื้อหาอื่นๆ จากเว็บไซต์ที่คุณชื่นชอบ แม้ว่าคุณกำลังออฟไลน์หรือมีการเชื่อมต่อสัญญาณที่ไม่ดี</translation>
 <translation id="3894427358181296146">เพิ่มโฟลเดอร์</translation>
@@ -1049,6 +1050,7 @@
 <translation id="8912362522468806198">บัญชี Google</translation>
 <translation id="8920114477895755567">กำลังรอรายละเอียดของผู้ปกครอง</translation>
 <translation id="8922289737868596582">ดาวน์โหลดหน้าจากปุ่มตัวเลือกเพิ่มเติมเพื่อใช้งานแบบออฟไลน์</translation>
+<translation id="8926666909099850184">NFC ในอุปกรณ์นี้ปิดอยู่ เปิดได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="8937772741022875483">ต้องการนำกิจกรรม Chrome ออกจากไลฟ์สไตล์ดิจิทัลไหม</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">เปิดในหน้าต่างอื่น</translation>

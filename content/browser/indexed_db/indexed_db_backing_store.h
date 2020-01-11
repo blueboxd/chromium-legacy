@@ -149,7 +149,6 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // them to the recovery blob journal directly (i.e. not as part of the
     // transaction). Populates blobs_to_write_.
     leveldb::Status HandleBlobPreTransaction(
-        BlobEntryKeyValuePairVec* new_blob_entries,
         WriteDescriptorVec* new_files_to_write);
 
     // Called by CommitPhaseOne: Populates blob_files_to_remove_ by
@@ -161,8 +160,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // Called by CommitPhaseOne: Kicks off the asynchronous writes of blobs
     // identified in HandleBlobPreTransaction. The callback will be called
     // eventually on success or failure.
-    leveldb::Status WriteNewBlobs(BlobEntryKeyValuePairVec* new_blob_entries,
-                                  WriteDescriptorVec* new_files_to_write,
+    leveldb::Status WriteNewBlobs(WriteDescriptorVec* new_files_to_write,
                                   BlobWriteCallback callback);
 
     // Called by CommitPhaseTwo: Partition blob references in blobs_to_remove_

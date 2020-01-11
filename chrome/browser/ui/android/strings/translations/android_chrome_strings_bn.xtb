@@ -366,6 +366,7 @@
 <translation id="381841723434055211">ফোন নম্বর</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" />টি ডাউনলোড মোছা হয়েছে</translation>
 <translation id="3822502789641063741">সাইটের সঞ্চয়স্থান সাফ করবেন?</translation>
+<translation id="3853625385350850937">চালিয়ে যেতে আপনার ফোনে NFC চালু করুন</translation>
 <translation id="3859306556332390985">সামনে এগোন</translation>
 <translation id="388596076286380598">আপনি অফলাইনে থাকার সময়ে বা কানেকশন খারাপ থাকলেও আপনার পছন্দের সাইট থেকে আর্টিকেল, ভিডিও এবং অন্যান্য কন্টেন্ট দেখতে পাবেন।</translation>
 <translation id="3894427358181296146">ফোল্ডার যোগ করুন</translation>
@@ -1051,6 +1052,7 @@
 <translation id="8912362522468806198">Google অ্যাকাউন্ট</translation>
 <translation id="8920114477895755567">অভিভাবকের বিশদ বিবরণের জন্য অপেক্ষা করা হচ্ছে৷</translation>
 <translation id="8922289737868596582">পৃষ্ঠাগুলি অফলাইনে ব্যবহার করতে সেগুলি আরও বিকল্প বোতাম থেকে ডাউনলোড করুন</translation>
+<translation id="8926666909099850184">এই ডিভাইসে NFC বন্ধ আছে। <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" /> থেকে এটি চালু করুন।</translation>
 <translation id="8937772741022875483">ডিজিটাল ওয়েলবিয়িং থেকে আপনার Chrome অ্যাক্টিভিটি সরিয়ে দিতে চান?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">অন্য উইন্ডোতে খুলুন</translation>

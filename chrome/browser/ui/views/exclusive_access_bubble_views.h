@@ -59,7 +59,7 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
   void HideImmediately();
 
   // Returns true if the popup is being shown (and not fully shown).
-  bool IsShowing();
+  bool IsShowing() const;
 
   views::View* GetView();
 

@@ -423,8 +423,12 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
     if (embedder_delegate_)
       embedder_matcher = embedder_delegate_->GetOriginTypeMatcher();
+    // Rewrite leveldb instances to clean up data from disk if almost all data
+    // is deleted. Do not perform the cleanup for partial deletions or when only
+    // hosted app data is removed as this would be very slow.
     bool perform_storage_cleanup =
         delete_begin_.is_null() && delete_end_.is_max() &&
+        origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB &&
         filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST;
 
     storage_partition->ClearData(

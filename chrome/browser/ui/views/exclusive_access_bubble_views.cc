@@ -150,8 +150,8 @@ void ExclusiveAccessBubbleViews::HideImmediately() {
   animation_->Hide();
 }
 
-bool ExclusiveAccessBubbleViews::IsShowing() {
-  return IsAnimating() && animation_->IsShowing();
+bool ExclusiveAccessBubbleViews::IsShowing() const {
+  return animation_->is_animating() && animation_->IsShowing();
 }
 
 views::View* ExclusiveAccessBubbleViews::GetView() {

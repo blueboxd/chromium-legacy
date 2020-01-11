@@ -46,6 +46,7 @@
 <translation id="1460620680449458626">Bolumena desaktibatuta dago.</translation>
 <translation id="1467432559032391204">Ezkerrera</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1508507608940204251">Aktibatuta</translation>
 <translation id="1516740043221086139">Aktibatuta dago ez molestatzeko modua.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Erakutsi jakinarazpen-ezarpenak. Aplikazio batean desaktibatuta daude jakinarazpenak.}other{Erakutsi jakinarazpen-ezarpenak. # aplikaziotan desaktibatuta daude jakinarazpenak.}}</translation>
 <translation id="1525508553941733066">BAZTERTU</translation>
@@ -70,6 +71,7 @@
 <translation id="1836215606488044471">Laguntzailea (kargatzen…)</translation>
 <translation id="1838895407229022812">Gaueko argia itzalita dago.</translation>
 <translation id="1850504506766569011">Wi-Fi konexioa desaktibatuta dago.</translation>
+<translation id="1859889070386344428">Desaktibatuta</translation>
 <translation id="1864454756846565995">USB-C gailua (atzealdeko ataka)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> pantailan islatzen</translation>
 <translation id="1885785240814121742">Desblokeatu hatz-marka bidez</translation>
@@ -122,6 +124,7 @@
 <translation id="2501920221385095727">Tekla itsaskorrak</translation>
 <translation id="2509468283778169019">BLOK MAIUS aktibatuta dago</translation>
 <translation id="2517825809102302935">Desaktibatu gaur gauerako</translation>
+<translation id="2519465031217098801">Aktibatuta</translation>
 <translation id="2542089167727451762">Sakatu profileko irudia</translation>
 <translation id="255671100581129685">Google-ren Laguntzailea ez dago erabilgarri saio publikoetan.</translation>
 <translation id="256712445991462162">ainguratutako lupa</translation>
@@ -226,6 +229,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="3901991538546252627"><ph name="NAME" /> sarera konektatzen</translation>
 <translation id="394485226368336402">Audio-ezarpenak</translation>
 <translation id="3962859241508114581">Aurreko pista</translation>
+<translation id="3965097803111112935">Desaktibatuta</translation>
 <translation id="397105322502079400">Kalkulatzen…</translation>
 <translation id="3977512764614765090">% <ph name="PERCENTAGE" /> geratzen zaio bateriari, eta kargatzen ari da.</translation>
 <translation id="3995138139523574647">USB-C gailua (eskuinaldeko atzeko ataka)</translation>
@@ -308,6 +312,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="5207949376430453814">Nabarmendu tartekatze-ikurra</translation>
 <translation id="5222676887888702881">Amaitu saioa</translation>
 <translation id="523505283826916779">Erabilerraztasun-ezarpenak</translation>
+<translation id="5250225880026334010">Desaktibatuta</translation>
 <translation id="5260676007519551770">4. lan-eremua</translation>
 <translation id="5283198616748585639">Gehitu 1 minutu</translation>
 <translation id="5286194356314741248">Bilatzen</translation>
@@ -409,6 +414,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="6650933572246256093">Bluetooth bidezko "<ph name="DEVICE_NAME" />" gailuak parekatzeko baimena nahi du. Idatzi pasakode hau gailu horretan: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Pasahitza</translation>
 <translation id="6665545700722362599">Eman webgune, aplikazio eta luzapenei kokapen-zerbitzuak edota gailuaren mikrofonoa, kamera edo beste eginbide batzuk erabiltzeko baimena</translation>
+<translation id="6669268301501499730">Aktibatuta</translation>
 <translation id="6670153871843998651">3. lan-eremua</translation>
 <translation id="6691659475504239918">Bilatu+Maius+H</translation>
 <translation id="6696025732084565524">Bereiz daitekeen teklatuak ezinbesteko eguneratze bat behar du</translation>

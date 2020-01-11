@@ -686,6 +686,7 @@ if (!is_android) {
       "//chrome:strings",
       "//chrome/browser",
       "//chrome/browser/devtools:test_support",
+      "//chrome/browser/metrics:test_support",
       "//chrome/browser/notifications/scheduler/test:test_support",
       "//chrome/browser/profiling_host:profiling_browsertests",
       "//chrome/browser/web_applications:browser_tests",
@@ -1000,6 +1001,7 @@ if (!is_android) {
       "../browser/metrics/desktop_session_duration/audible_contents_tracker_browsertest.cc",
       "../browser/metrics/metrics_reporting_state_browsertest.cc",
       "../browser/metrics/metrics_service_browsertest.cc",
+      "../browser/metrics/metrics_service_user_demographics_browsertest.cc",
       "../browser/metrics/oom/out_of_memory_reporter_browsertest.cc",
       "../browser/metrics/process_memory_metrics_emitter_browsertest.cc",
       "../browser/metrics/startup_metrics_browsertest.cc",
@@ -2602,8 +2604,6 @@ if (!is_android) {
         "../browser/process_singleton_browsertest.cc",
       ]
 
-      data += [ "//testing/buildbot/filters/mac_window_server_killers.browser_tests.filter" ]
-
       if (safe_browsing_mode == 1) {
         sources -= [
           # single-process mode hangs on Mac sometimes because of multiple UI
@@ -3777,7 +3777,9 @@ test("unit_tests") {
       "../browser/installedapp/installed_app_provider_unittest.cc",
       "../browser/media/android/cdm/media_drm_origin_id_manager_unittest.cc",
       "../browser/metrics/chrome_android_metrics_provider_unittest.cc",
+      "../browser/notifications/notification_platform_bridge_android_unittest.cc",
       "../browser/page_load_metrics/observers/android_page_load_metrics_observer_unittest.cc",
+      "../browser/partnercustomizations/partner_browser_customizations_unittest.cc",
       "../browser/password_manager/account_chooser_dialog_android_unittest.cc",
       "../browser/password_manager/auto_signin_first_run_dialog_android_unittest.cc",
       "../browser/password_manager/credential_leak_controller_android_unittest.cc",
@@ -3785,6 +3787,8 @@ test("unit_tests") {
       "../browser/password_manager/password_generation_controller_impl_unittest.cc",
       "../browser/password_manager/save_password_infobar_delegate_android_unittest.cc",
       "../browser/password_manager/update_password_infobar_delegate_android_unittest.cc",
+      "../browser/payments/android/android_payment_app_finder_unittest.cc",
+      "../browser/payments/android/payment_manifest_verifier_unittest.cc",
       "../browser/permissions/permission_prompt_android_unittest.cc",
       "../browser/permissions/permission_request_notification_android_unittest.cc",
       "../browser/permissions/permission_request_notification_handler_unittest.cc",

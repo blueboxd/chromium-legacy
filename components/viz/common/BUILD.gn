@@ -104,6 +104,7 @@ if (enable_vulkan) {
 
     deps = [
       "//base",
+      "//gpu/config",
       "//gpu/vulkan",
       "//gpu/vulkan:buildflags",
       "//ui/gfx",

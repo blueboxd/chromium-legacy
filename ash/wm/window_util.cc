@@ -316,9 +316,9 @@ void ExpandArcPipWindow() {
   if (!pip_container)
     return;
 
-  auto pip_window_iter = std::find_if(pip_container->children().begin(),
-                                      pip_container->children().end(),
-                                      window_util::IsArcPipWindow);
+  auto pip_window_iter =
+      std::find_if(pip_container->children().begin(),
+                   pip_container->children().end(), IsArcPipWindow);
   if (pip_window_iter == pip_container->children().end())
     return;
 

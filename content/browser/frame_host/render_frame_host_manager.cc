@@ -578,14 +578,12 @@ void RenderFrameHostManager::DiscardUnusedFrame(
 
   // Doing this is important in the case where the replacement proxy is created
   // above, as the RenderViewHost will continue to exist and should be
-  // considered swapped out if it is ever reused.  When there's no replacement
-  // proxy, this doesn't really matter, as the RenderViewHost will be destroyed
-  // shortly, since |render_frame_host| is its last active frame and will be
-  // deleted below.  See https://crbug.com/627400.
-  if (frame_tree_node_->IsMainFrame()) {
+  // considered inactive.  When there's no replacement proxy, this doesn't
+  // really matter, as the RenderViewHost will be destroyed shortly, since
+  // |render_frame_host| is its last active frame and will be deleted below.
+  // See https://crbug.com/627400.
+  if (frame_tree_node_->IsMainFrame())
     rvh->SetMainFrameRoutingId(MSG_ROUTING_NONE);
-    rvh->set_is_swapped_out(true);
-  }
 
   render_frame_host.reset();
 
@@ -949,7 +947,7 @@ void RenderFrameHostManager::OnDidChangeCollapsedState(bool collapsed) {
 
   // There will be no proxy to represent the pending or speculative RFHs in the
   // parent's SiteInstance until the navigation is committed, but the old RFH is
-  // not swapped out before that happens either, so we can talk to the
+  // not unloaded before that happens either, so we can talk to the
   // FrameOwner in the parent via the child's current RenderFrame at any time.
   DCHECK(current_frame_host());
   if (current_frame_host()->GetSiteInstance() == parent_site_instance) {
@@ -1852,7 +1850,7 @@ void RenderFrameHostManager::CreateProxiesForNewNamedFrame() {
   // Start from opener's parent.  There's no need to create a proxy in the
   // opener's SiteInstance, since new windows are always first opened in the
   // same SiteInstance as their opener, and if the new window navigates
-  // cross-site, that proxy would be created as part of swapping out.
+  // cross-site, that proxy would be created as part of unloading.
   for (FrameTreeNode* ancestor = opener->parent(); ancestor;
        ancestor = ancestor->parent()) {
     RenderFrameHostImpl* ancestor_rfh = ancestor->current_frame_host();
@@ -2454,7 +2452,7 @@ void RenderFrameHostManager::CommitPending(
   // routing id in the RenderViewHost associated with the old RenderFrameHost
   // to MSG_ROUTING_NONE.
   if (is_main_frame) {
-    // If the RenderViewHost is transitioning from swapped out to active state,
+    // If the RenderViewHost is transitioning from an inactive to active state,
     // it was reused, so dispatch a RenderViewReady event. For example, this is
     // necessary to hide the sad tab if one is currently displayed. See
     // https://crbug.com/591984.
@@ -2467,7 +2465,6 @@ void RenderFrameHostManager::CommitPending(
     if (!new_rvh->is_active())
       new_rvh->PostRenderViewReady();
 
-    new_rvh->set_is_swapped_out(false);
     new_rvh->SetMainFrameRoutingId(render_frame_host_->routing_id());
     old_rvh->SetMainFrameRoutingId(MSG_ROUTING_NONE);
   }
@@ -2476,8 +2473,8 @@ void RenderFrameHostManager::CommitPending(
   // to initialize the child RWHV.
   base::Optional<gfx::Size> old_size = old_render_frame_host->frame_size();
 
-  // Swap out the old frame now that the new one is visible.
-  // This will swap it out and schedule it for deletion when the swap out ack
+  // Unload the old frame now that the new one is visible.
+  // This will unload it and schedule it for deletion when the unload ack
   // arrives (or immediately if the process isn't live).
   UnloadOldFrame(std::move(old_render_frame_host));
 
@@ -2490,7 +2487,7 @@ void RenderFrameHostManager::CommitPending(
   // belongs to the parent frame's SiteInstance. If this navigation causes
   // an out-of-process frame to return to the same process as its parent, the
   // proxy would have been removed from proxy_hosts_ above.
-  // Note: We do this after swapping out the old RFH because that may create
+  // Note: We do this after unloading the old RFH because that may create
   // the proxy we're looking for.
   RenderFrameProxyHost* proxy_to_parent = GetProxyToParent();
   if (proxy_to_parent)

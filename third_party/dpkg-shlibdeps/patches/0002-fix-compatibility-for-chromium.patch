@@ -1,0 +1,59 @@
+From 9f31bd9e8a69ee2821664e576d9fc7a957205230 Mon Sep 17 00:00:00 2001
+From: Tom Anderson <thomasanderson@chromium.org>
+Date: Wed, 8 Jan 2020 12:11:56 -0800
+Subject: [PATCH 2/2] Fix compatibility for Chromium
+
+Add debug() function in case the system dpkg doesn't have it.
+---
+ scripts/dpkg-shlibdeps.pl | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/scripts/dpkg-shlibdeps.pl b/scripts/dpkg-shlibdeps.pl
+index e3d8c7200..b40667f5a 100755
+--- a/scripts/dpkg-shlibdeps.pl
++++ b/scripts/dpkg-shlibdeps.pl
+@@ -21,7 +21,6 @@
+ # You should have received a copy of the GNU General Public License
+ # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ 
+-use strict;
+ use warnings;
+ use feature qw(state);
+ 
+@@ -153,6 +152,11 @@ sub ignore_pkgdir {
+     return any { $path =~ /^\Q$_\E/ } @pkg_dir_to_ignore;
+ }
+ 
++sub debug {
++    my $level = shift;
++    print @_ if $level <= $debug;
++}
++
+ if (-d 'debian') {
+     push @pkg_symbols, grep { !ignore_pkgdir($_) } glob 'debian/*/DEBIAN/symbols';
+     push @pkg_shlibs, grep { !ignore_pkgdir($_) } glob 'debian/*/DEBIAN/shlibs';
+@@ -198,18 +202,17 @@ foreach my $file (keys %exec) {
+     my %soname_notfound;
+     my %alt_soname;
+     foreach my $soname (@sonames) {
+-	my @libs = my_find_library($soname, $obj->{RPATH}, $obj->{exec_abi}, $file);
++	my @libs = my_find_library($soname, $obj->{RPATH}, $obj->{exec_abi} || $obj->{format}, $file);
+ 	unless (scalar @libs) {
+ 	    $soname_notfound{$soname} = 1;
+ 	    $global_soname_notfound{$soname} = 1;
+ 	    my $msg = g_('cannot find library %s needed by %s (ELF ' .
+ 	                 "format: '%s' abi: '%s'; RPATH: '%s')");
+-	    my $exec_abi = unpack 'H*', $obj->{exec_abi};
+ 	    if (scalar(split_soname($soname))) {
+-		errormsg($msg, $soname, $file, $obj->{format}, $exec_abi, join(':', @{$obj->{RPATH}}));
++		errormsg($msg, $soname, $file, $obj->{format}, join(':', @{$obj->{RPATH}}));
+ 		$error_count++;
+ 	    } else {
+-		warning($msg, $soname, $file, $obj->{format}, $exec_abi, join(':', @{$obj->{RPATH}}));
++		warning($msg, $soname, $file, $obj->{format}, join(':', @{$obj->{RPATH}}));
+ 	    }
+ 	    next;
+ 	}
+-- 
+2.24.1.735.g03f4e72817-goog
+

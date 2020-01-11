@@ -365,6 +365,7 @@
 <translation id="381841723434055211">ফ’ন নম্বৰসমূহ</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" />টা ডাউনল'ড মচা হ'ল</translation>
 <translation id="3822502789641063741">ছাইটৰ ষ্ট’ৰেজ মচিবনে?</translation>
+<translation id="3853625385350850937">অব্যাহত ৰাখিবলৈ আপোনাৰ ডিভাইচটোত NFC অন কৰক</translation>
 <translation id="3859306556332390985">আগলৈ যাওক</translation>
 <translation id="388596076286380598">আপুনি অফলাইন হৈ থাকিলে অথবা আপোনাৰ সংযোগটো বেয়া হৈ থাকিলেও আপুনি পচন্দ কৰা ছাইটসমূহৰ পৰা প্ৰবন্ধ, ভিডিঅ’ আৰু অন্য সমল পাওক।</translation>
 <translation id="3894427358181296146">ফ’ল্ডাৰ যোগ কৰক</translation>
@@ -1045,6 +1046,7 @@
 <translation id="8912362522468806198">Google একাউণ্ট</translation>
 <translation id="8920114477895755567">অভিভাৱকৰ সবিশেষৰ বাবে অপেক্ষা কৰি আছে।</translation>
 <translation id="8922289737868596582">পৃষ্ঠাসমূহ অফলাইনত ব্যৱহাৰ কৰিবলৈ সেইসমূহ 'অধিক' বিকল্পৰ বুটামটোৰ পৰা ডাউনল’ড কৰক</translation>
+<translation id="8926666909099850184">এই ডিভাইচটোৰ বাবে NFC অফ কৰা আছে। ইয়াক <ph name="BEGIN_LINK" />Android ছেটিংসমূহ<ph name="END_LINK" />লৈ গৈ অন কৰক।</translation>
 <translation id="8937772741022875483">আপুনি Chromeত কৰা কাৰ্যকলাপ ডিজিটেল ৱেলবিইঙ-ৰ পৰা আঁতৰাবনে?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">অন্য উইণ্ড’ত খোলক</translation>

@@ -357,6 +357,9 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     suggestions.push_back(suggestion);
   }
 
+  if (!password_manager_driver_->CanShowAutofillUi())
+    return;
+
   metrics_util::LogPasswordDropdownShown(
       metrics_util::PasswordDropdownState::kStandard,
       password_client_->IsIncognito());
@@ -407,6 +410,9 @@ bool PasswordAutofillManager::MaybeShowPasswordSuggestionsWithGeneration(
     metrics_util::LogContextOfShowAllSavedPasswordsShown(
         metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD);
   }
+
+  if (!password_manager_driver_->CanShowAutofillUi())
+    return false;
 
   metrics_util::LogPasswordDropdownShown(
       metrics_util::PasswordDropdownState::kStandardGenerate,

@@ -35,7 +35,8 @@ using StringPieceType = FilePath::StringPieceType;
 
 namespace {
 
-const char* const kCommonDoubleExtensionSuffixes[] = { "gz", "z", "bz2", "bz" };
+const char* const kCommonDoubleExtensionSuffixes[] = {"gz", "xz", "bz2", "z",
+                                                      "bz"};
 const char* const kCommonDoubleExtensions[] = { "user.js" };
 
 // Compatibility shim for cross-platform code that passes a StringPieceType to a

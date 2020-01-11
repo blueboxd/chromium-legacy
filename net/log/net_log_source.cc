@@ -30,10 +30,16 @@ base::Value SourceEventParametersCallback(const NetLogSource source) {
 // LoadTimingInfo requires this be 0.
 const uint32_t NetLogSource::kInvalidId = 0;
 
-NetLogSource::NetLogSource() : type(NetLogSourceType::NONE), id(kInvalidId) {}
+NetLogSource::NetLogSource()
+    : NetLogSource(NetLogSourceType::NONE, kInvalidId) {}
 
 NetLogSource::NetLogSource(NetLogSourceType type, uint32_t id)
-    : type(type), id(id) {}
+    : NetLogSource(type, id, base::TimeTicks::Now()) {}
+
+NetLogSource::NetLogSource(NetLogSourceType type,
+                           uint32_t id,
+                           base::TimeTicks start_time)
+    : type(type), id(id), start_time(start_time) {}
 
 bool NetLogSource::IsValid() const {
   return id != kInvalidId;

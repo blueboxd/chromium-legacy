@@ -225,13 +225,14 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
       return;
   }
 
-  // If the event happened on the home button, it'll get handled by the
+  // If the event happened on the home button's widget, it'll get handled by the
   // button.
   Shelf* shelf = Shelf::ForWindow(target);
   HomeButton* home_button = shelf->shelf_widget()->GetHomeButton();
   if (home_button && home_button->GetWidget() &&
       target == home_button->GetWidget()->GetNativeWindow() &&
-      home_button->bounds().Contains(event->location())) {
+      home_button->GetWidget()->GetWindowBoundsInScreen().Contains(
+          event->root_location())) {
     return;
   }
 

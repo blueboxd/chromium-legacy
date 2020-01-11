@@ -567,10 +567,10 @@ public class DetachedResourceRequestTest {
 
             Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
 
-            // TODO(carlosil): For now, we check the presence of an interstitial through the title
-            // since isShowingInterstitialPage does not work with committed interstitials. Once we
-            // fully migrate to committed interstitials, this should be changed to a more robust
-            // check.
+            // TODO(crbug.com/1039443): For now, we check the presence of an interstitial through
+            // the title since isShowingInterstitialPage does not work with committed interstitials.
+            // Once we fully migrate to committed interstitials, this should be changed to a more
+            // robust check.
             CriteriaHelper.pollUiThread(
                     () -> tab.getWebContents().getTitle().equals("Security error"));
 
@@ -609,8 +609,11 @@ public class DetachedResourceRequestTest {
 
             Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
             WebContents webContents = tab.getWebContents();
-            // Need to poll as the subresource request is async.
-            CriteriaHelper.pollUiThread(() -> webContents.isShowingInterstitialPage());
+            // TODO(crbug.com/1039443): For now, we check the presence of an interstitial through
+            // the title since isShowingInterstitialPage does not work with committed interstitials.
+            // Once we fully migrate to committed interstitials, this should be changed to a more
+            // robust check.
+            CriteriaHelper.pollUiThread(() -> webContents.getTitle().equals("Security error"));
         } finally {
             MockSafeBrowsingApiHandler.clearMockResponses();
         }

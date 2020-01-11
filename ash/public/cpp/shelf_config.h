@@ -175,8 +175,8 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // all observers.
   void OnShelfConfigUpdated();
 
-  // Updates |is_dense_| and notifies all observers of the update.
-  void UpdateIsDense();
+  // Updates |is_dense_| and returns whether |is_dense_| was changed.
+  bool UpdateIsDense();
 
   // Gets the current shelf size.
   // |ignore_in_app_state| - Whether the returned shelf size should be

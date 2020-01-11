@@ -51,7 +51,7 @@ void MessagePipeReader::Close() {
 
 bool MessagePipeReader::Send(std::unique_ptr<Message> message) {
   CHECK(message->IsValid());
-  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
                          "MessagePipeReader::Send", message->flags(),
                          TRACE_EVENT_FLAG_FLOW_OUT);
   base::Optional<std::vector<mojo::native::SerializedHandlePtr>> handles;
@@ -101,9 +101,8 @@ void MessagePipeReader::Receive(MessageView message_view) {
     return;
   }
 
-  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
-                         "MessagePipeReader::Receive",
-                         message.flags(),
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+                         "MessagePipeReader::Receive", message.flags(),
                          TRACE_EVENT_FLAG_FLOW_IN);
   delegate_->OnMessageReceived(message);
 }

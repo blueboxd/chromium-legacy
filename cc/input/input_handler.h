@@ -185,7 +185,6 @@ class CC_EXPORT InputHandler {
   // taken into account when determining the duration of the animation if one
   // is created.
   virtual InputHandlerScrollResult ScrollUpdate(ScrollState* scroll_state,
-                                                ScrollInputType type,
                                                 base::TimeDelta delayed_by) = 0;
 
   // Stop scrolling the selected layer. Should only be called if ScrollBegin()

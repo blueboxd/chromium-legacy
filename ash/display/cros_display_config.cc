@@ -903,7 +903,7 @@ void CrosDisplayConfig::TouchCalibration(const std::string& display_id,
       return;
     }
     if (!touch_calibrator_)
-      touch_calibrator_ = std::make_unique<ash::TouchCalibratorController>();
+      touch_calibrator_ = std::make_unique<TouchCalibratorController>();
     if (op == mojom::DisplayConfigOperation::kShowNative) {
       // For native calibration, |callback| is not run until calibration
       // completes.
@@ -927,8 +927,8 @@ void CrosDisplayConfig::TouchCalibration(const std::string& display_id,
   }
 
   if (op == mojom::DisplayConfigOperation::kReset) {
-    ash::Shell::Get()->display_manager()->ClearTouchCalibrationData(
-        display.id(), base::nullopt);
+    Shell::Get()->display_manager()->ClearTouchCalibrationData(display.id(),
+                                                               base::nullopt);
     std::move(callback).Run(mojom::DisplayConfigResult::kSuccess);
     return;
   }
@@ -954,7 +954,7 @@ void CrosDisplayConfig::TouchCalibration(const std::string& display_id,
     return;
   }
 
-  ash::Shell::Get()->touch_transformer_controller()->SetForCalibration(false);
+  Shell::Get()->touch_transformer_controller()->SetForCalibration(false);
 
   display::TouchCalibrationData::CalibrationPointPairQuad calibration_points;
   calibration_points[0] = GetCalibrationPair(*calibration->pairs[0]);

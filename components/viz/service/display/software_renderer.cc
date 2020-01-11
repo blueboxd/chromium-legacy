@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/software_renderer.h"
 
+#include "base/process/memory.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/image_provider.h"
@@ -617,9 +618,12 @@ void SoftwareRenderer::CopyDrawnRenderPass(
                 geometry.result_selection.right(),
                 geometry.result_selection.bottom()});
   } else /* if (!request->is_scaled()) */ {
-    bitmap.allocPixels(SkImageInfo::MakeN32Premul(
+    SkImageInfo info = SkImageInfo::MakeN32Premul(
         geometry.result_selection.width(), geometry.result_selection.height(),
-        std::move(color_space)));
+        std::move(color_space));
+    if (!bitmap.tryAllocPixels(info))
+      return;
+
     if (!current_canvas_->readPixels(bitmap, geometry.readback_offset.x(),
                                      geometry.readback_offset.y()))
       return;
@@ -715,9 +719,12 @@ sk_sp<SkImage> SoftwareRenderer::ApplyImageFilter(
 
 SkBitmap SoftwareRenderer::GetBackdropBitmap(
     const gfx::Rect& bounding_rect) const {
+  SkImageInfo info =
+      SkImageInfo::MakeN32Premul(bounding_rect.width(), bounding_rect.height());
   SkBitmap bitmap;
-  bitmap.allocPixels(SkImageInfo::MakeN32Premul(bounding_rect.width(),
-                                                bounding_rect.height()));
+  if (!bitmap.tryAllocPixels(info))
+    base::TerminateBecauseOutOfMemory(info.computeMinByteSize());
+
   if (!current_canvas_->readPixels(bitmap, bounding_rect.x(),
                                    bounding_rect.y()))
     bitmap.reset();
@@ -846,7 +853,9 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(backdrop_rect.width(), backdrop_rect.height());
   SkBitmap bitmap;
-  bitmap.allocPixels(info, info.minRowBytes());
+  if (!bitmap.tryAllocPixels(info))
+    base::TerminateBecauseOutOfMemory(info.computeMinByteSize());
+
   SkCanvas canvas(bitmap);
 
   // Clip the filtered image to the (rounded) bounding box of the element.
@@ -922,7 +931,9 @@ void SoftwareRenderer::AllocateRenderPassResourceIfNeeded(
       SkImageInfo::MakeN32(requirements.size.width(),
                            requirements.size.height(), kPremul_SkAlphaType);
   SkBitmap bitmap;
-  bitmap.allocPixels(info);
+  if (!bitmap.tryAllocPixels(info))
+    base::TerminateBecauseOutOfMemory(info.computeMinByteSize());
+
   render_pass_bitmaps_.emplace(render_pass_id, std::move(bitmap));
 }
 

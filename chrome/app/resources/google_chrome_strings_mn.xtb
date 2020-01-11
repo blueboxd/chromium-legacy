@@ -20,7 +20,6 @@
 <translation id="1553358976309200471">Chrome-г шинэчлэх</translation>
 <translation id="1587223624401073077">Google Chrome нь таны камерыг ашиглаж байна.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> аюултай тул үүнийг Chrome блок хийсэн.</translation>
-<translation id="1590588151039584890">Шинэчлэхийн тулд Chrome-г энэ компьютер дээр ажиллуулахыг зогсоох шаардлагатай. Энэ нь энэ компьютерт нэвтэрсэн бусад хэрэглэгчийг хадгалаагүй өөрчлөлтөө алдахад хүргэж болзошгүй.</translation>
 <translation id="1619887657840448962">Chrome-г илүү аюулгүй болгохын тулд <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> жагсаалтанд байхгүй, танд мэдэгдэлгүйгээр нэмэгдсэн байж болох дараах өргөтгөлийг идэвхгүй болголоо.</translation>
 <translation id="1628000112320670027">Chrome-с тусламж авах</translation>
 <translation id="1635734105302489219">Chrome-с гарах үедээ күүкийг устгана. Синкийг үргэлжлүүлэхийн тулд <ph name="COOKIE_SETTINGS_LINK" />-г өөрчилнө үү.</translation>
@@ -145,7 +144,6 @@
 <translation id="5430073640787465221">Та сонгосон файл хүчин төгөлдөр бус эсвэл гэмтсэн байна.
 
 Google Chrome таны тохируулгыг дахин сэргээх боломжгүй байна.</translation>
-<translation id="5543953544073077331">Chrome-н бусад хуулбар ажиллаж байна. Шинэчлэхийн тулд тэдгээрийг хаана уу.</translation>
 <translation id="556024056938947818">Google Chrome нууц харуулахыг хичээж байна.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">Хэрэв энэ хуудсан дээр тохиргоог харуулахгүй байгаа бол <ph name="LINK_BEGIN" />
@@ -195,7 +193,6 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="7408085963519505752">Chrome OS-ийн нөхцлүүд</translation>
 <translation id="7419046106786626209">Таны домэйн дээр мэдээллийн тохиргоог хийх боломжгүй байгаа тул Chrome OS нь таны мэдээллийн тохиргоог хийх боломжгүй байна.</translation>
 <translation id="7486227612705979895">Chrome хаяг оруулах хэсэгт зөвлөмж харуулахын тулд таны Драйвт хандах болно</translation>
-<translation id="7531671357096394523">Chrome-н бүх хуулбараас гарна уу.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Таны төхөөрөмж шинэчлэгдсэн эсэхийг харахын тулд <ph name="LINK_BEGIN" />Chrome үйлдлийн системийн тохиргоо<ph name="LINK_END" /> руу очно уу</translation>
 <translation id="7589360514048265910">Энэ компьютер Mac үйлдлийн систем X 10.9-г дэмжихээ больсон тул Google Chrome-н шинэчлэлтийг цаашид авахгүй.</translation>

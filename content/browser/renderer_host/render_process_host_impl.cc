@@ -1298,8 +1298,6 @@ class RenderProcessHostImpl::IOThreadHostImpl
       return;
 
     receiver = mojo::GenericPendingReceiver(interface_name, std::move(pipe));
-    GetContentClient()->browser()->BindHostReceiverForRendererOnIOThread(
-        render_process_id_, &receiver);
     if (!receiver)
       return;
 

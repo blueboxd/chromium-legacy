@@ -92,6 +92,7 @@ using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 
 using testing::_;
+using testing::Return;
 
 namespace content {
 namespace  {
@@ -463,6 +464,7 @@ class MockRenderWidgetHostOwnerDelegate
   MOCK_METHOD1(SetBackgroundOpaque, void(bool opaque));
   MOCK_METHOD1(UpdatePageVisualProperties,
                void(const VisualProperties& visual_properties));
+  MOCK_METHOD0(IsMainFrameActive, bool());
 };
 
 // RenderWidgetHostTest --------------------------------------------------------
@@ -508,12 +510,19 @@ class RenderWidgetHostTest : public testing::Test {
                                              process_->GetNextRoutingID()));
     // Set up the RenderWidgetHost as being for a main frame.
     host_->set_owner_delegate(&mock_owner_delegate_);
-    view_.reset(new TestView(host_.get()));
+    // Act like there is no RenderWidget present in the renderer yet.
+    EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
+        .WillRepeatedly(Return(false));
+
+    view_ = std::make_unique<TestView>(host_.get());
     ConfigureView(view_.get());
     host_->SetView(view_.get());
-    SetInitialVisualProperties();
     host_->Init();
     host_->DisableGestureDebounce();
+    // Act like we've created a RenderWidget.
+    host_->GetInitialVisualProperties();
+    EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
+        .WillRepeatedly(Return(true));
 
     mojo::PendingRemote<mojom::RenderFrameMetadataObserver>
         renderer_render_frame_metadata_observer_remote;
@@ -554,11 +563,6 @@ class RenderWidgetHostTest : public testing::Test {
 
     // Process all pending tasks to avoid leaks.
     base::RunLoop().RunUntilIdle();
-  }
-
-  void SetInitialVisualProperties() {
-    VisualProperties visual_properties = host_->GetVisualProperties();
-    host_->SetInitialVisualProperties(visual_properties);
   }
 
   virtual void ConfigureView(TestView* view) {
@@ -803,7 +807,8 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = original_size.size();
   metadata.local_surface_id_allocation = base::nullopt;
-  host_->DidUpdateVisualProperties(metadata);
+  static_cast<RenderFrameMetadataProvider::Observer&>(*host_)
+      .OnLocalSurfaceIdChanged(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(1u, sink_->message_count());
 
@@ -833,7 +838,8 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   // immediately send a new resize message for the new size to the renderer.
   metadata.viewport_size_in_pixels = original_size.size();
   metadata.local_surface_id_allocation = base::nullopt;
-  host_->DidUpdateVisualProperties(metadata);
+  static_cast<RenderFrameMetadataProvider::Observer&>(*host_)
+      .OnLocalSurfaceIdChanged(metadata);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_EQ(1u, sink_->message_count());
@@ -843,7 +849,8 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   // Send the visual properties ACK for the latest size.
   metadata.viewport_size_in_pixels = third_size.size();
   metadata.local_surface_id_allocation = base::nullopt;
-  host_->DidUpdateVisualProperties(metadata);
+  static_cast<RenderFrameMetadataProvider::Observer&>(*host_)
+      .OnLocalSurfaceIdChanged(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
   EXPECT_EQ(0u, sink_->message_count());
@@ -951,37 +958,60 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
 }
 
-// Test for crbug.com/25097. If a renderer crashes between a resize and the
-// corresponding update message, we must be sure to clear the visual properties
-// ACK logic.
-TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
-  sink_->ClearMessages();
-  // Setting the bounds to a "real" rect should send out the notification.
-  view_->SetBounds(gfx::Rect(100, 100));
-  host_->SynchronizeVisualProperties();
-  // WidgetMsg_UpdateVisualProperties is sent to the renderer.
-  ASSERT_EQ(1u, sink_->message_count());
-  {
-    const IPC::Message* msg = sink_->GetMessageAt(0);
-    ASSERT_EQ(WidgetMsg_UpdateVisualProperties::ID, msg->type());
-    WidgetMsg_UpdateVisualProperties::Param params;
-    WidgetMsg_UpdateVisualProperties::Read(msg, &params);
-    VisualProperties visual_properties = std::get<0>(params);
-    // Size sent to the renderer.
-    EXPECT_EQ(gfx::Size(100, 100), visual_properties.new_size);
-  }
-  EXPECT_TRUE(host_->visual_properties_ack_pending_);
+TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromCrashedRenderer) {
+  // The Renderer sends a monotonically increasing frame token.
+  host_->DidProcessFrame(2);
 
-  // Simulate a renderer crash before an ACK for the UpdateVisualProperties
-  // message arrives. Ensure all the visual properties ACK logic is cleared.
-  // Must clear the view first so it doesn't get deleted.
+  // Simulate a renderer crash.
   host_->SetView(nullptr);
   host_->RendererExited();
-  EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  EXPECT_EQ(nullptr, host_->old_visual_properties_);
 
-  // Reset the view so we can exit the test cleanly.
+  // Receive an in-flight frame token (it needs to monotonically increase)
+  // while the RenderWidget is gone.
+  host_->DidProcessFrame(3);
+
+  // The renderer is recreated.
   host_->SetView(view_.get());
+  // Make a new RenderWidget when the renderer is recreated. This should get
+  // properties that are intended to be sent to the renderer, obsoleting any
+  // previous SynchronizeVisualProperties() calls.
+  VisualProperties props = host_->GetInitialVisualProperties();
+  // The RenderWidget is recreated with the initial VisualProperties.
+  host_->Init();
+
+  // The new RenderWidget sends a frame token, which is lower than what the
+  // previous RenderWidget sent. This should be okay, as the expected token has
+  // been reset.
+  host_->DidProcessFrame(1);
+}
+
+TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromDeletedRenderWidget) {
+  // The RenderWidget sends a monotonically increasing frame token.
+  host_->DidProcessFrame(2);
+
+  // The RenderWidget is destroyed in the renderer process as the main frame
+  // is removed from this RenderWidgetHost's RenderWidgetView, but the
+  // RenderWidgetView is still kept around for another RenderFrame.
+  EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
+      .WillRepeatedly(Return(false));
+  host_->DidDestroyRenderWidget();
+
+  // Receive an in-flight frame token (it needs to monotonically increase)
+  // while the RenderWidget is gone.
+  host_->DidProcessFrame(3);
+
+  // Make a new RenderWidget for the RenderWidget being recreated. This should
+  // get properties that are intended to be sent to the renderer, obsoleting any
+  // previous SynchronizeVisualProperties() calls.
+  VisualProperties props = host_->GetInitialVisualProperties();
+  // The RenderWidget is recreated with the initial VisualProperties.
+  EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
+      .WillRepeatedly(Return(true));
+
+  // The new RenderWidget sends a frame token, which is lower than what the
+  // previous RenderWidget sent. This should be okay, as the expected token has
+  // been reset.
+  host_->DidProcessFrame(1);
 }
 
 // Unable to include render_widget_host_view_mac.h and compile.
@@ -1048,7 +1078,8 @@ TEST_F(RenderWidgetHostTest, HideShowMessages) {
   cc::RenderFrameMetadata metadata;
   metadata.viewport_size_in_pixels = gfx::Size(100, 100);
   metadata.local_surface_id_allocation = base::nullopt;
-  host_->DidUpdateVisualProperties(metadata);
+  static_cast<RenderFrameMetadataProvider::Observer&>(*host_)
+      .OnLocalSurfaceIdChanged(metadata);
 
   // Now unhide.
   process_->sink().ClearMessages();
@@ -1579,9 +1610,28 @@ TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
 }
 
 TEST_F(RenderWidgetHostTest, RendererExitedResetsInputRouter) {
+  blink::WebMouseWheelEvent event;
+  event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  host_->input_router()->SendWheelEvent(MouseWheelEventWithLatencyInfo(event));
+  ASSERT_TRUE(host_->input_router()->HasPendingEvents());
+
   // RendererExited will delete the view.
   host_->SetView(new TestView(host_.get()));
   host_->RendererExited();
+
+  // Make sure the input router is in a fresh state.
+  ASSERT_FALSE(host_->input_router()->HasPendingEvents());
+}
+
+TEST_F(RenderWidgetHostTest, DestroyingRenderWidgetResetsInputRouter) {
+  blink::WebMouseWheelEvent event;
+  event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  host_->input_router()->SendWheelEvent(MouseWheelEventWithLatencyInfo(event));
+  ASSERT_TRUE(host_->input_router()->HasPendingEvents());
+
+  EXPECT_CALL(mock_owner_delegate_, IsMainFrameActive())
+      .WillRepeatedly(Return(false));
+  host_->DidDestroyRenderWidget();
 
   // Make sure the input router is in a fresh state.
   ASSERT_FALSE(host_->input_router()->HasPendingEvents());
@@ -1833,52 +1883,6 @@ TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
   view_->OnFrameTokenChanged(frame_token2);
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(2u, host_->processed_frame_messages_count());
-}
-
-// Check that if the renderer crashes, we drop all queued messages and allow
-// smaller frame tokens to be sent by the renderer.
-TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
-  constexpr uint32_t frame_token1 = 10;
-  constexpr uint32_t frame_token2 = 1;
-  constexpr uint32_t frame_token3 = 1;
-
-  std::vector<IPC::Message> messages1;
-  std::vector<IPC::Message> messages3;
-  messages1.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(5));
-  messages3.push_back(WidgetHostMsg_DidFirstVisuallyNonEmptyPaint(6));
-
-  // If we don't do this, then RWHI destroys the view in RendererExited and
-  // then a crash occurs when we attempt to destroy it again in TearDown().
-  host_->SetView(nullptr);
-
-  host_->OnMessageReceived(
-      WidgetHostMsg_FrameSwapMessages(0, frame_token1, messages1));
-  EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
-  EXPECT_EQ(0u, host_->processed_frame_messages_count());
-
-  host_->RendererExited();
-  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
-  EXPECT_EQ(0u, host_->processed_frame_messages_count());
-  host_->Init();
-
-  view_->OnFrameTokenChanged(frame_token2);
-  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
-  EXPECT_EQ(0u, host_->processed_frame_messages_count());
-
-  host_->RendererExited();
-  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
-  EXPECT_EQ(0u, host_->processed_frame_messages_count());
-  host_->SetView(view_.get());
-  host_->Init();
-
-  host_->OnMessageReceived(
-      WidgetHostMsg_FrameSwapMessages(0, frame_token3, messages3));
-  EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
-  EXPECT_EQ(0u, host_->processed_frame_messages_count());
-
-  view_->OnFrameTokenChanged(frame_token3);
-  EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
-  EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }
 
 TEST_F(RenderWidgetHostTest, InflightEventCountResetsAfterRebind) {

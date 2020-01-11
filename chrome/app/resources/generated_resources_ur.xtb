@@ -78,6 +78,7 @@
 <translation id="1108600514891325577">&amp;روکیں</translation>
 <translation id="1110155001042129815">انتظار کریں</translation>
 <translation id="1112420131909513020">پس منظر ٹیب بلوٹوتھ استعمال کر رہا ہے</translation>
+<translation id="1113042067630273625">یہ اسٹور کردہ سائٹ ڈیٹا کا <ph name="TOTAL_USAGE" /> صاف کر دے گا۔</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">ہیرا</translation>
 <translation id="1114335938027186412">‏آپ کا کمپیوٹر ایک بھروسہ مند پلیٹ فارم ماڈیول (TPM) سیکیورٹی آلہ پر مشتمل ہے، جو سیکیورٹی کی متعدد اہم خصوصیات کو Chrome OS میں نافذ کرنے کیلئے استعمال کیا جاتا ہے۔ مزید جاننے کیلئے Chromebook کا امدادی مرکز ملاحظہ کریں: http://support.google.com/chromebook/?p=tpm</translation>
@@ -539,6 +540,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1737968601308870607">فائل بگ</translation>
 <translation id="1741314857973421784">جاری رکھیں</translation>
 <translation id="1743570585616704562">تسلیم شدہ نہیں ہے</translation>
+<translation id="1743846852744439013">کسی بھی اوپن ٹیبز سمیت، آپ تمام سائٹس سے سائن آوٹ ہو جائیں گے۔</translation>
 <translation id="1743970419083351269">ڈاؤن لوڈز بار بند کریں</translation>
 <translation id="1744060673522309905">ڈومین میں آلہ کو شامل نہیں کیا جا سکا۔ یقینی بنائیں کہ آپ نے ان آلات کی تعداد سے تجاوز نہیں کیا ہے جنہیں آپ شامل کر سکتے ہیں۔</translation>
 <translation id="1744108098763830590">پس منظر کا صفحہ</translation>
@@ -597,6 +599,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="1813278315230285598">سروسز</translation>
 <translation id="18139523105317219">‏EDI پارٹی نام</translation>
 <translation id="1815083418640426271">سادہ متن کے بطور پیسٹ کریں</translation>
+<translation id="1815181278146012280">‏جب کوئی سائٹ HID آلات تک رسائی حاصل کرنا چاہے تو پوچھیں</translation>
 <translation id="181577467034453336"><ph name="NUMBER_OF_VIEWS" /> مزید…</translation>
 <translation id="1816036116994822943">کی بورڈ اسکیننگ کی رفتار</translation>
 <translation id="1817871734039893258">‏Microsoft فائل کی بازیابی</translation>
@@ -768,6 +771,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2076672359661571384">متوسط (تجویز کردہ)</translation>
 <translation id="2077129598763517140">دستیاب ہونے پر ہارڈ ویئر کی سرعت کاری استعمال کریں</translation>
 <translation id="2078019350989722914">چھوڑنے سے پہلے متنبہ کریں (<ph name="KEY_EQUIVALENT" />)</translation>
+<translation id="2078494137444990774">آف</translation>
 <translation id="2079053412993822885">اگر آپ خود اپنے سرٹیفکیٹس میں سے ایک کو حذف کرتے ہیں تو آپ اس کو اپنی شناخت کیلئے مزید استعمال نہیں کر سکتے ہیں۔</translation>
 <translation id="2079545284768500474">کالعدم کریں</translation>
 <translation id="2080070583977670716">مزید ترتیبات</translation>
@@ -934,6 +938,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2289270750774289114">اس وقت پوچھیں جب کسی سائٹ میں قریبی بلوٹوتھ آلات کو دریافت کرنا مقصود ہو (تجویز کردہ)</translation>
 <translation id="2292848386125228270">‏براہ کرم <ph name="PRODUCT_NAME" /> کو ایک عام صارف کے بطور شروع کریں۔ اگر آپ کو ڈویلپمنٹ کیلئے روٹ کے بطور چلانے کی ضرورت پڑتی ہے تو ‎--no-sandbox پرچم کے ساتھ دوبارہ چلائیں۔</translation>
 <translation id="2294358108254308676">کیا آپ <ph name="PRODUCT_NAME" /> کو انسٹال کرنا چاہتے ہیں؟</translation>
+<translation id="2295864384543949385"><ph name="NUM_RESULTS" /> نتائج</translation>
 <translation id="2297705863329999812">پرنٹرز تلاش کریں</translation>
 <translation id="2299734369537008228">سلائیڈر: <ph name="MIN_LABEL" /> تا <ph name="MAX_LABEL" /></translation>
 <translation id="2300383962156589922"><ph name="APP_NAME" /> کو ذاتی نوعیت کا بنائیں اور کنٹرول کريں</translation>
@@ -1067,6 +1072,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2485005079599453134">پاس ورڈ اس آلے پر محفوظ کیا گیا</translation>
 <translation id="2485422356828889247">ان انسٹال کریں</translation>
 <translation id="2487067538648443797">نیا بُک مارک شامل کریں</translation>
+<translation id="2487268545026948104">اپنے ڈیٹا کو بحال کرنے کے لیے، انٹرنیٹ سے منسلک ہوں</translation>
 <translation id="2489829450872380594">‏اگلی بار ایک نئے فون سے یہ <ph name="DEVICE_TYPE" /> غیر مقفل ہوگا۔ آپ ترتیبات میں Smart Lock کو آف کر سکتے ہیں۔</translation>
 <translation id="2489918096470125693">&amp;فولڈر شامل کریں…</translation>
 <translation id="2490481887078769936">'<ph name="FILE_NAME" />' کو فہرست سے ہٹا دیا گیا</translation>
@@ -1118,6 +1124,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2541706104884128042">سونے کا نیا وقت سیٹ کیا گیا ہے</translation>
 <translation id="2544853746127077729">نیٹ ورک نے توثیق کا سرٹیفکیٹ مسترد کر دیا گیا</translation>
 <translation id="2546283357679194313">کوکیز اور سائٹ ڈیٹا</translation>
+<translation id="2547583314137677375">مطابقت پذیری آف کریں</translation>
 <translation id="2549985041256363841">ریکارڈنگ شروع کریں</translation>
 <translation id="2550212893339833758">سویپ کردہ میموری</translation>
 <translation id="2550596535588364872"><ph name="EXTENSION_NAME" /> کو <ph name="FILE_NAME" /> کھولنے کی اجازت دیں؟</translation>
@@ -1211,6 +1218,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2672142220933875349">‏غلط crx فائل، پیک کھولنا ناکام ہو گیا۔</translation>
 <translation id="2673135533890720193">اپنی براؤزنگ سرگزشت پڑھیں</translation>
 <translation id="2673589024369449924">اس صارف کیلئے ایک ڈیسک ٹاپ شارٹ کٹ بنائیں</translation>
+<translation id="2674764818721168631">آف</translation>
 <translation id="2677748264148917807">چھوڑیں</translation>
 <translation id="2678063897982469759">دوبارہ فعال کریں</translation>
 <translation id="268053382412112343">سر&amp;گزشت</translation>
@@ -1882,7 +1890,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3635353578505343390">‏Google کو تاثرات بھیجیں</translation>
 <translation id="3636096452488277381">ہیلو <ph name="USER_GIVEN_NAME" />،</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> باقی</translation>
-<translation id="3637561406135221044">حساس ڈیٹا کے لیے فائلز اسکین کی جا رہی ہیں...</translation>
 <translation id="3637682276779847508">‏اگر آپ PIN غیر مقفل کرنے کی درست کلید درج نہیں کر سکتے ہیں تو آپ کا SIM کارڈ مستقل طور پر غیر فعال کر دیا جائے گا۔</translation>
 <translation id="3640214691812501263"><ph name="USER_NAME" /> کیلئے "<ph name="EXTENSION_NAME" />" شامل کریں؟</translation>
 <translation id="3640613767643722554">اپنی اسسٹنٹ کو اپنی آواز کی شناخت کرنا سکھائیں</translation>
@@ -1999,6 +2006,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3780211714699334884">آپ کے اس ٹیب کو بند کرنے تک <ph name="ORIGIN" /> <ph name="FOLDERNAME" /> میں فائلز میں ترمیم کر سکے گا</translation>
 <translation id="3780827508782506612">اس صفحہ کا ترجمہ کر دیا گیا ہے</translation>
 <translation id="378312418865624974">اس کمپیوٹر کیلئے ایک منفرد شناخت کار پڑھیں</translation>
+<translation id="3784472333786002075">کوکیز ایسی فائلز ہوتی ہیں جنہیں ویب سائٹس تخلیق کرتی ہیں۔ کوکیز کی دو قسمیں ہوتی ہیں: فریق اول کی کوکیز جنہیں آپ کی ملاحظہ کی جانے والی سائٹ تخلیق کرتی ہے۔ سائٹ ایڈریس بار پر دکھائی گئی ہے۔ فریق ثالث کوکیز دیگر سائٹس کے ذریعے تخلیق کی جاتی ہیں۔ یہ سائٹس کچھ مواد کی مالک ہوتی ہیں، جیسے اشتہارات یا تصاویر جنہیں آپ ملاحظہ کی جانے والی ویب سائٹ پر دیکھتے ہیں۔</translation>
 <translation id="3785308913036335955">ایپس شارٹ کٹ دکھائیں</translation>
 <translation id="3785727820640310185">اس سائٹ کے لیے محفوظ کردہ پاسورڈز</translation>
 <translation id="3788401245189148511">اس کی وجہ سے ہو سکتا ہے:</translation>
@@ -2006,6 +2014,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="379082410132524484">آپ کے کارڈ کی معیاد ختم ہو گئی ہے</translation>
 <translation id="3792890930871100565">پرنٹرز منقطع کریں</translation>
 <translation id="3793395331556663376">بہت سے فائل سسٹمز کھلے ہیں۔</translation>
+<translation id="379509625511193653">آف</translation>
 <translation id="3796648294839530037">پسندیدہ نیٹ ورکس:</translation>
 <translation id="3797739167230984533">آپ کا <ph name="BEGIN_LINK" /><ph name="DEVICE_TYPE" /> آپ کی تنظیم <ph name="END_LINK" /> کے زیر انتظام ہے</translation>
 <translation id="3797900183766075808">"<ph name="SEARCH_TERMS" />" کو <ph name="SEARCH_ENGINE" /> میں تلاش کریں</translation>
@@ -2137,6 +2146,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3954354850384043518">پیشرفت میں ہے</translation>
 <translation id="3954469006674843813">‏<ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> ہرٹز)</translation>
 <translation id="3954953195017194676">‏آپ کے پاس حالیہ کیپچر کردہ کوئی WebRTC ایونٹ لاگ نہیں ہے۔</translation>
+<translation id="3955163004258753966">اپ گریڈ شروع کرنے میں خرابی</translation>
 <translation id="3955193568934677022">سائٹس کو محفوظ کردہ مواد چلانے کی اجازت دیں (تجویز کردہ)</translation>
 <translation id="3955896417885489542">‏سیٹ اپ کے بعد Google Play کے اختیارات کا جائزہ لیں</translation>
 <translation id="3956702100721821638">‏Google Play تک رسائی حاصل نہیں کی جا سکی</translation>
@@ -2197,6 +2207,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4042863763121826131">{NUM_PAGES,plural, =1{صفحہ سے باہر نکلیں}other{صفحات سے باہر نکلیں}}</translation>
 <translation id="4044612648082411741">اپنا سرٹیفکیٹ پاس ورڈ درج کریں</translation>
 <translation id="404493185430269859">ڈیفالٹ سرچ انجن</translation>
+<translation id="4046013316139505482">ان ایکسٹینشنز کو اس سائٹ پر معلومات دیکھنا اور تبدیل کرنا درکار نہیں ہے۔</translation>
 <translation id="4046123991198612571">اگلا ٹریک</translation>
 <translation id="4050225813016893843">تصدیق کا طریقہ</translation>
 <translation id="4052120076834320548">چھوٹا</translation>
@@ -2376,6 +2387,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4330387663455830245"><ph name="LANGUAGE" /> کا کبھی بھی ترجمہ نہ کریں</translation>
 <translation id="4332976768901252016">پیرنٹل کنٹرولز ترتیب دیں</translation>
 <translation id="4333854382783149454">‏PKCS #1 SHA-1 مع RSA مرموز کاری</translation>
+<translation id="4336434711095810371">سبھی ڈیٹا صاف کریں</translation>
 <translation id="4336979451636460645">نیٹ ورک لاگز کیلئے، دیکھیں: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> ایپ "<ph name="EXTENSION_NAME" />" کے ساتھ مواصلت کرنا چاہتی ہے</translation>
 <translation id="4345587454538109430">کنفیگر کریں…</translation>
@@ -2476,6 +2488,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4479877282574735775">ورچوئل مشین ترتیب دی جا رہی ہے۔ اس میں چند منٹ لگ سکتے ہیں۔</translation>
 <translation id="4480590691557335796">‏Chrome آپ کے کمپیوٹر میں نقصان دہ سافٹ ویئر تلاش کر سکتا ہے اور اسے ہٹا سکتا ہے</translation>
 <translation id="4481530544597605423">جوڑا ختم کیے ہوئے آلات</translation>
+<translation id="4488502501195719518">سبھی ڈیٹا صاف کریں؟</translation>
 <translation id="4495419450179050807">اس صفحہ پر نہ دکھائیں</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> ناکام ہو گیا ہے</translation>
 <translation id="450099669180426158">فجائیہ نشان کا آئیکن</translation>
@@ -2536,6 +2549,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4570387585180509432">پتے، فون نمبرز اور مزید بہت کچھ</translation>
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" سے منسلک کیے جانے کے وقت توثیق منسوخ کر دی گئی۔</translation>
 <translation id="4572779512957829735">‏اپنی سیکورٹی کلید کے لئے PIN درج کریں</translation>
+<translation id="4573515936045019911">‏Linux کو اپ گریڈ کرنے کے لیے نیٹ ورک کنکشن درکار ہے۔ براہ کرم انٹر نیٹ سے منسلک ہوں اور دوبارہ کوشش کریں۔</translation>
 <translation id="457386861538956877">مزید…</translation>
 <translation id="4574741712540401491">•  <ph name="LIST_ITEM_TEXT" /></translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> کاسٹ کرنے سے قاصر۔</translation>
@@ -2815,6 +2829,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4994754230098574403">ترتیب دیا جا رہا ہے</translation>
 <translation id="4996978546172906250">اشتراک کریں بذریعہ</translation>
 <translation id="4997086284911172121">کوئی انٹرنیٹ کنکشن نہیں ہے۔</translation>
+<translation id="4998430619171209993">آن</translation>
 <translation id="4998873842614926205">تبدیلیوں کی توثیق کریں</translation>
 <translation id="5000922062037820727">مسدود کردہ (تجویز کردہ)</translation>
 <translation id="5008936837313706385">سرگرمی کا نام</translation>
@@ -2911,6 +2926,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5143712164865402236">پوری اسکرین میں داخل ہوں</translation>
 <translation id="514575469079499857">‏مقام کا تعین کرنے کے لیے اپنا IP پتہ استعمال کریں (ڈیفالٹ)</translation>
 <translation id="5146995429444047494"><ph name="ORIGIN" /> کیلئے اطلاعات مسدود ہیں</translation>
+<translation id="5147103632304200977">‏جب کوئی سائٹ HID آلات تک رسائی حاصل کرنا چاہے تو پوچھیں (تجویز کردہ)</translation>
 <translation id="5150254825601720210">‏Netscape سرٹیفکیٹ SSL سرور کا نام</translation>
 <translation id="5151354047782775295">ڈسک کی جگہ خالی کریں یا منتخب کردہ ڈیٹا خودکار طور پر حذف ہوسکتا ہے</translation>
 <translation id="5153234146675181447">فون کو بھول جائیں</translation>
@@ -3045,6 +3061,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5353252989841766347">‏Chrome سے پاس ورڈز برآمد کریں</translation>
 <translation id="5355099869024327351">'اسسٹنٹ' کو اطلاعات دکھانے کی اجازت دیں</translation>
 <translation id="5355926466126177564">آپ کی جانب سے اومنی باکس سے تلاش کرنے پر دکھائی دینے والے صفحہ کو ایکسٹینشن "<ph name="EXTENSION_NAME" />" نے تبدیل کر دیا ہے۔</translation>
+<translation id="5359910752122114278">1 نتیجہ</translation>
 <translation id="5360150013186312835">ٹول بار میں دکھائیں</translation>
 <translation id="5362741141255528695">نجی کلید والی فائل منتخب کریں۔</translation>
 <translation id="5363109466694494651">پاور واش کریں اور لوٹیں</translation>
@@ -3294,6 +3311,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5700836101007545240">کنکشن شامل کرنے کو آپ کے منتظم نے غیر فعال کر دیا ہے</translation>
 <translation id="5701080607174488915">سرور سے پالیسی بازیافت کرتے وقت ایک خرابی پیش آگئی۔</translation>
 <translation id="5701381305118179107">مرکز</translation>
+<translation id="5701441174893770082">‏Linux کو اپ گریڈ کرنا آپ کی بیٹری کو نمایاں طور پر ختم کر سکتا ہے۔ براہ کرم اپنے آلہ کو چارجر سے منسلک کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="5702898740348134351">سرچ انجنز میں &amp;ترمیم کریں…</translation>
 <translation id="570302979952009979">اس فنگر پرنٹ کیلئے ایک نام منتخب کریں</translation>
 <translation id="5704875434923668958">یہاں مطابقت پذیری کی جا رہی ہے</translation>
@@ -3523,6 +3541,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6026819612896463875">‏<ph name="WINDOW_TITLE" /> - USB آلہ منسلک ہے</translation>
 <translation id="6028117231645531007">فنگر پرنٹ شامل کریں</translation>
 <translation id="6029587122245504742">سست ترین</translation>
+<translation id="6032715498678347852">ایکسٹینشن کو اس سائٹ تک رسائی فراہم کرنے کے لیے، اس پر کلک کریں۔</translation>
 <translation id="6032912588568283682">فائل سسٹم</translation>
 <translation id="6038929619733116134">سائٹ کے دخل انداز یا گمراہ کن اشتہارات دکھانے پر مسدود کریں</translation>
 <translation id="6039651071822577588">نیٹ ورک پراپرٹی لغت بد وضع ہے</translation>
@@ -3907,6 +3926,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6582080224869403177">اپنی سیکورٹی کو اپ گریڈ کرنے کے لئے اپنا <ph name="DEVICE_TYPE" /> ری سیٹ کریں۔</translation>
 <translation id="6584878029876017575">‏Microsoft لائف ٹائم سائننگ</translation>
 <translation id="6586451623538375658">ابتدائی ماؤس بٹن سویپ کریں</translation>
+<translation id="6586604979641883411">‏Linux کو اپ گریڈ کرنے کے لیے کم از کم ڈسک کی <ph name="REQUIRED_SPACE" /> خالی جگہ درکار ہے۔ براہ کرم اپنے آلہ پر کچھ جگہ خالی کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="6590458744723262880">فولڈر کا نام تبدیل کریں</translation>
 <translation id="6592267180249644460">‏WebRTC لاگ کیپچر کرنے کا وقت <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">آپ کا فنگر پرنٹ کیپچر ہو گیا تھا</translation>
@@ -4017,6 +4037,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6757101664402245801">‏URL کاپی ہوگیا</translation>
 <translation id="6758056191028427665">ہماری کارکردگی کے بارے میں ہمیں بتائیں۔</translation>
 <translation id="6759193508432371551">فیکٹری ری سیٹ</translation>
+<translation id="6762833852331690540">آن</translation>
 <translation id="6767566652486411142">کسی دوسری زبان کا انتخاب کریں...</translation>
 <translation id="6767639283522617719">ڈومین میں شامل نہیں کیا جا سکا۔ یقینی بنائیں کہ ترتیبات تنظیمی یونٹ کے لیے درست ہیں۔</translation>
 <translation id="6769712124046837540">پرنٹر کو شامل کیا جا رہا ہے…</translation>
@@ -4138,6 +4159,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6935286146439255109">کاغذی ٹرے غائب ہے</translation>
 <translation id="693807610556624488">لکھنے کی کارروائی اس کے انتساب کی زیادہ سے زیادہ طوالت سے زیادہ ہے: "<ph name="DEVICE_NAME" />"۔</translation>
 <translation id="6938386202199793006">آپ کے پاس 1 محفوظ کردہ پرنٹر ہے۔</translation>
+<translation id="6938789263968032501">لوگ</translation>
 <translation id="6941937518557314510">براہ کرم اپنے سرٹیفکیٹ کے ساتھ <ph name="HOST_NAME" /> کی توثیق کرنے کیلئے <ph name="TOKEN_NAME" /> میں سائن ان کریں۔</translation>
 <translation id="6943176775188458830">پرنٹ کرنا منسوخ کریں</translation>
 <translation id="6943836128787782965">‏HTTP ناکام ہوگیا</translation>
@@ -4162,6 +4184,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6970856801391541997">مخصوص صفحات کو پرنٹ کریں</translation>
 <translation id="6972180789171089114">آڈیو/ویڈیو</translation>
 <translation id="6972553992270299730"><ph name="ORIGIN" /> اس فولڈر میں فائلز کو نہیں کھول سکتا کیونکہ اس میں سسٹم فائلز ہیں</translation>
+<translation id="6972629891077993081">‏HID آلات</translation>
 <translation id="6972754398087986839">شروع کریں</translation>
 <translation id="6973611239564315524">‏Debian 10 (بسٹر) کے لیے ایک اپ گریڈ دستیاب ہے</translation>
 <translation id="6974609594866392343">آف لائن ڈیمو وضع</translation>
@@ -4486,8 +4509,10 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">پس منظر کا صفحہ: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7427798576651127129"><ph name="DEVICE_NAME" /> سے کال کریں</translation>
+<translation id="7431719494109538750">‏کوئی HID آلہ نہیں ملا</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{سبھی کو &amp;نئی ونڈو میں کھولیں}=1{&amp;نئی ونڈو میں کھولیں}other{سبھی (#) کو &amp;نئی ونڈو میں کھولیں}}</translation>
 <translation id="7434509671034404296">ڈیولپر</translation>
+<translation id="7434635829372401939">اپنی ترتیبات کو مطابقت پذیر بنائیں</translation>
 <translation id="7436921188514130341">افوہ! نام کی تبدیلی کے دوران ایک خرابی تھی۔</translation>
 <translation id="7438976808740265764">‏دسمبر 2020 کے بعد Flash Player تعاون یافتہ نہیں رہے گا۔</translation>
 <translation id="7441736921018636843">اس ترتیب کو تبدیل کرنے کے لیے، اپنی مطابقت پذیری کے پاس فریز کو ہٹانے کے لیے <ph name="BEGIN_LINK" />مطابقت پذیری کو ری سیٹ کریں<ph name="END_LINK" /></translation>
@@ -4810,6 +4835,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - جوڑا بنایا گیا</translation>
 <translation id="7870730066603611552">سیٹ اپ کے بعد مطابقت پذیری کے اختیارات کا جائزہ لیں</translation>
 <translation id="7870790288828963061">‏نئے ورژن والی کوئی کیوسک ایپس نہیں ملیں۔ اپ ڈیٹ کرنے کیلئے کچھ بھی نہیں ہے۔ براہ کرم USB اسٹک ہٹائیں۔</translation>
+<translation id="787268756490971083">آف</translation>
 <translation id="7874257161694977650">‏Chrome کے پس منظر</translation>
 <translation id="7877451762676714207">سرور کی نامعلوم  خرابی۔ براہ کرم دوبارہ کوشش کریں یا سرور کے منتظم سے رابطہ کریں۔</translation>
 <translation id="7877680364634660272">ٹؤر</translation>
@@ -4837,6 +4863,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7908378463497120834">معذرت، آپ کے بیرونی اسٹوریج آلہ پر کم از کم ایک پارٹیشن کو ماؤنٹ نہیں کیا جا سکا۔</translation>
 <translation id="7909969815743704077">پوشیدگی وضع میں ڈاؤن لوڈ کیا گیا</translation>
 <translation id="7910768399700579500">&amp;نیا فولڈر</translation>
+<translation id="7910831464510799808">آن</translation>
 <translation id="7911118814695487383">Linux</translation>
 <translation id="7912080627461681647">سرور پر آپ کا پاس ورڈ تبدیل ہو گیا ہے۔ براہ کرم سائن آؤٹ کر کے پھر دوبارہ سائن ان کریں۔</translation>
 <translation id="7915457674565721553">پیرنٹل کنٹرولز سیٹ اپ کرنے کیلئے انٹرنیٹ سے منسلک ہوں</translation>
@@ -5774,6 +5801,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="934503638756687833">‏ضرورت پڑنے پر، یہاں غیر مندرج آئٹمز کو بھی ہٹا دیا جائے گا۔ Chrome رازداری کے وہائٹ پیپر میں &lt;a href‎="<ph name="URL" />"‎&gt;غیر مطلوبہ سافٹ وئیر کے تحفظ&lt;/a&gt; کے بارے میں مزید جانیں۔</translation>
 <translation id="935490618240037774">‏آپ کے بُک مارکس، سرگزشت، پاس ورڈز اور دیگر ترتیبات کی آپ کے Google اکاؤنٹ کے ساتھ مطابقت پذیری کی جائے گی تاکہ آپ انہیں اپنے سبھی آلات پر استعمال کر سکیں۔</translation>
 <translation id="935854577147268200">‏Smart Lock کا فون تبدیل ہو گيا ہے۔ Smart Lock اپ ڈیٹ کرنے کے لیے اپنا پاس ورڈ درج کریں۔ اگلی بار آپ کے فون سے آپ کا <ph name="DEVICE_TYPE" /> غیر مقفل ہوگا۔ آپ ترتیبات میں Smart Lock کو آف کر سکتے ہیں</translation>
+<translation id="93610034168535821">سائٹس کے ذریعے استعمال کردہ کل اسٹوریج:</translation>
 <translation id="936801553271523408">سسٹم ڈائیگناسٹک ڈیٹا</translation>
 <translation id="93766956588638423">ایکسٹینشن کو درست کریں</translation>
 <translation id="938339467127511841">‏Linux (بی ٹا) اسٹوریج</translation>
@@ -5795,6 +5823,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="964286338916298286">‏آپ کے IT کے منتظم نے آپ کے آلے کیلئے "Chrome کی اچھی چیزوں" کو غیر فعال کر دیا ہے۔</translation>
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{ایپلیکیشن}other{ایپلیکیشنز}}</translation>
 <translation id="965211523698323809">اپنے <ph name="DEVICE_TYPE" /> سے متنی پیغامات بھیجیں اور وصول کریں۔ <ph name="LINK_BEGIN" />مزید جانیں<ph name="LINK_END" /></translation>
+<translation id="967398046773905967">‏کسی بھی سائٹ کو HID آلات تک رسائی کی اجازت نہ دیں</translation>
 <translation id="967624055006145463">اسٹور کردہ ڈیٹا</translation>
 <translation id="968000525894980488">‏Google Play سروسز کو آن کریں۔</translation>
 <translation id="968037381421390582">پیسٹ کریں اور “<ph name="SEARCH_TERMS" />” تلاش کریں</translation>

@@ -82,7 +82,7 @@ class LauncherStateWaiter {
 std::vector<aura::Window*> GetAppWindowList() {
   ScopedSkipUserSessionBlockedCheck skip_session_blocked;
   return Shell::Get()->mru_window_tracker()->BuildWindowForCycleWithPipList(
-      ash::kAllDesks);
+      kAllDesks);
 }
 
 bool WaitForLauncherState(AppListViewState target_state,
@@ -110,7 +110,7 @@ bool WaitForLauncherState(AppListViewState target_state,
     // because a) home launcher behavior is deterministic, b) correctly
     // deteching if the home launcher is animating to visibile/invisible require
     // some refactoring.
-    bool target_visible = target_state != ash::AppListViewState::kClosed;
+    bool target_visible = target_state != AppListViewState::kClosed;
     new HomeLauncherStateWaiter(target_visible, std::move(closure));
   } else {
     // Don't wait if the launcher is already in the target state and not
@@ -121,7 +121,7 @@ bool WaitForLauncherState(AppListViewState target_state,
         app_list_view &&
         app_list_view->GetWidget()->GetLayer()->GetAnimator()->is_animating();
     bool at_target_state =
-        (!app_list_view && target_state == ash::AppListViewState::kClosed) ||
+        (!app_list_view && target_state == AppListViewState::kClosed) ||
         (app_list_view && app_list_view->app_list_state() == target_state);
     if (at_target_state && !animating) {
       std::move(closure).Run();

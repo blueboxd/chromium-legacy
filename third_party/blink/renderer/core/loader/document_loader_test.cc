@@ -14,6 +14,7 @@
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
@@ -254,6 +255,45 @@ TEST_F(DocumentLoaderSimTest, FramePolicyIntegrityOnNavigationCommit) {
 
   EXPECT_TRUE(child_document->IsFeatureEnabled(
       blink::mojom::FeaturePolicyFeature::kPayment));
+}
+
+TEST_F(DocumentLoaderSimTest, ReportErrorWhenDocumentPolicyIncompatible) {
+  blink::ScopedDocumentPolicyForTest sdp(true);
+  SimRequest::Params params;
+  params.response_http_headers = {
+      {"Document-Policy", "unoptimized-lossless-images;bpp=1.1"}};
+
+  SimRequest main_resource("https://example.com", "text/html");
+  SimRequest iframe_resource("https://example.com/foo.html", "text/html",
+                             params);
+
+  LoadURL("https://example.com");
+  main_resource.Complete(R"(
+    <iframe
+      src="https://example.com/foo.html"
+      policy="unoptimized-lossless-images;bpp=1.0">
+    </iframe>
+  )");
+
+  // When blocked by document policy, the document should be filled in with an
+  // empty response, with Finish called on |navigation_body_loader| already.
+  // If Finish was not called on the loader, because the document was not
+  // blocked, this test will fail by crashing here.
+  iframe_resource.Finish(true /* body_loader_finished */);
+
+  auto* child_frame = To<WebLocalFrameImpl>(MainFrame().FirstChild());
+  auto* child_document = child_frame->GetFrame()->GetDocument();
+
+  // Should console log a error message.
+  auto& console_messages = static_cast<frame_test_helpers::TestWebFrameClient*>(
+                               child_frame->Client())
+                               ->ConsoleMessages();
+
+  ASSERT_EQ(console_messages.size(), 1u);
+  EXPECT_TRUE(console_messages.front().Contains("document policy"));
+
+  // Should replace the document's origin with an opaque origin.
+  EXPECT_EQ(child_document->Url(), SecurityOrigin::UrlWithUniqueOpaqueOrigin());
 }
 
 TEST_F(DocumentLoaderTest, CommitsDeferredOnSameOriginNavigation) {

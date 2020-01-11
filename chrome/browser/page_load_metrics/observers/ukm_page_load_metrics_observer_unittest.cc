@@ -281,8 +281,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestImagePaint) {
                                                           GURL(kTestUrl1));
     tester()->test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(),
-        PageLoad::kExperimental_PaintTiming_NavigationToLargestImagePaintName,
-        600);
+        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName, 600);
     EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
         kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
   }
@@ -314,7 +313,7 @@ TEST_F(UkmPageLoadMetricsObserverTest,
   for (const auto& kv : merged_entries) {
     EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
         kv.second.get(),
-        PageLoad::kExperimental_PaintTiming_NavigationToLargestImagePaintName));
+        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName));
   }
 }
 
@@ -344,10 +343,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, FCPPlusPlus_DiscardBackgroundResult) {
   for (const auto& kv : merged_entries) {
     EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
         kv.second.get(),
-        PageLoad::kExperimental_PaintTiming_NavigationToLargestImagePaintName));
-    EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kExperimental_PaintTiming_NavigationToLargestTextPaintName));
+        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName));
   }
 }
 
@@ -388,12 +384,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, FCPPlusPlus_ReportLastCandidate) {
                                                           GURL(kTestUrl1));
     tester()->test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(),
-        PageLoad::kExperimental_PaintTiming_NavigationToLargestImagePaintName,
-        600);
-    tester()->test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::kExperimental_PaintTiming_NavigationToLargestTextPaintName,
-        600);
+        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName, 600);
     EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
         kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
   }
@@ -424,8 +415,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestTextPaint) {
                                                           GURL(kTestUrl1));
     tester()->test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(),
-        PageLoad::kExperimental_PaintTiming_NavigationToLargestTextPaintName,
-        600);
+        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName, 600);
     EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
         kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
   }

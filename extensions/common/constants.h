@@ -29,6 +29,9 @@ extern const base::FilePath::CharType kLocaleFolder[];
 // The name of the messages file inside an extension.
 extern const base::FilePath::CharType kMessagesFilename[];
 
+// The name of the gzipped messages file inside an extension.
+extern const base::FilePath::CharType kGzippedMessagesFilename[];
+
 // The base directory for subdirectories with platform-specific code.
 extern const base::FilePath::CharType kPlatformSpecificFolder[];
 

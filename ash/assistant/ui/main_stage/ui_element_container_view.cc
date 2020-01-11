@@ -183,6 +183,7 @@ void UiElementContainerView::OnAllViewsAnimatedIn() {
   // We don't read when there is TTS to avoid speaking over the server response.
   const AssistantResponse* response =
       delegate()->GetInteractionModel()->response();
+  DCHECK(response);
   if (!response->has_tts())
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }

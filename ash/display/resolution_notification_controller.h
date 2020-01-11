@@ -62,7 +62,7 @@ class ASH_EXPORT ResolutionNotificationController
       int64_t display_id,
       const display::ManagedDisplayMode& old_resolution,
       const display::ManagedDisplayMode& new_resolution,
-      ash::mojom::DisplayConfigSource source,
+      mojom::DisplayConfigSource source,
       base::OnceClosure accept_callback) WARN_UNUSED_RESULT;
 
   // Returns true if the notification is visible or scheduled to be visible and

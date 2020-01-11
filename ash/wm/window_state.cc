@@ -597,7 +597,7 @@ ui::WindowShowState WindowState::GetShowState() const {
   return window_->GetProperty(aura::client::kShowStateKey);
 }
 
-ash::WindowPinType WindowState::GetPinType() const {
+WindowPinType WindowState::GetPinType() const {
   return window_->GetProperty(kWindowPinTypeKey);
 }
 
@@ -644,11 +644,11 @@ void WindowState::UpdateWindowPropertiesFromStateType() {
   }
 
   // sync up current window show state with PinType property.
-  ash::WindowPinType pin_type = ash::WindowPinType::kNone;
+  WindowPinType pin_type = WindowPinType::kNone;
   if (GetStateType() == WindowStateType::kPinned)
-    pin_type = ash::WindowPinType::kPinned;
+    pin_type = WindowPinType::kPinned;
   else if (GetStateType() == WindowStateType::kTrustedPinned)
-    pin_type = ash::WindowPinType::kTrustedPinned;
+    pin_type = WindowPinType::kTrustedPinned;
   if (pin_type != GetPinType()) {
     base::AutoReset<bool> resetter(&ignore_property_change_, true);
     window_->SetProperty(kWindowPinTypeKey, pin_type);
@@ -778,8 +778,7 @@ void WindowState::OnPrePipStateChange(WindowStateType old_window_state_type) {
     // There may already be a system ui window on the initial position.
     UpdatePipBounds();
     if (!was_pip) {
-      window()->SetProperty(ash::kPrePipWindowStateTypeKey,
-                            old_window_state_type);
+      window()->SetProperty(kPrePipWindowStateTypeKey, old_window_state_type);
     }
 
     CollectPipEnterExitMetrics(/*enter=*/true);
@@ -903,7 +902,7 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     if (!ignore_property_change_) {
       // This change came from outside ash. Update our shelf visibility based
       // on our changed state.
-      ash::Shell::Get()->UpdateShelfVisibility();
+      Shell::Get()->UpdateShelfVisibility();
     }
     return;
   }

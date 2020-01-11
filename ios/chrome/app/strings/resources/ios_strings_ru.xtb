@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">Поиск в режиме инкогнито</translation>
 <translation id="277771892408211951">Выберите язык</translation>
 <translation id="2780046210906776326">Создайте аккаунт</translation>
+<translation id="2781331604911854368">ВКЛ</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Закрыть переключатель вкладок</translation>
 <translation id="2830972654601096923">Управление адресами</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">Вкладки</translation>
 <translation id="3277021493514034324">Адрес сайта скопирован</translation>
 <translation id="3290875554372353449">Выберите аккаунт</translation>
+<translation id="3311748811247479259">Отключено</translation>
 <translation id="3324193307694657476">Адрес, строка 2</translation>
 <translation id="3329904751041170572">Не удалось установить соединение с сервером.</translation>
 <translation id="3335947283844343239">Открыть закрытую вкладку</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">Синхронизация вкладок...</translation>
 <translation id="3493531032208478708">Подробнее <ph name="BEGIN_LINK" />о рекомендованном контенте<ph name="END_LINK" />…</translation>
 <translation id="3494788280727468875">Подтвердить удаление данных о работе в браузере</translation>
+<translation id="35083190962747987">Открыть URL ${url}</translation>
 <translation id="3519193562722059437">Чтобы просматривать веб-страницы, откройте вкладку.</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3529024052484145543">Автозаполнение не используется</translation>
@@ -301,6 +304,7 @@
 <translation id="5062321486222145940">Установить Google Диск</translation>
 <translation id="5083464117946352670">Не установлен размер файла</translation>
 <translation id="5094827893301452931">Опубликовано в Твиттере.</translation>
+<translation id="5118764316110575523">ВЫКЛ</translation>
 <translation id="5127805178023152808">Синхронизация выключена</translation>
 <translation id="5132942445612118989">Синхронизируйте пароли, историю и другие данные на всех ваших устройствах</translation>
 <translation id="5140288047769711648">Вам не нужно запоминать этот пароль, так как он будет сохранен в Chrome.</translation>
@@ -363,6 +367,7 @@
 <translation id="5979837087407522202">Поиск паролей</translation>
 <translation id="5982717868370722439">Объединить сохраненные данные с данными пользователя <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">Недавно посещенные страницы</translation>
+<translation id="5988851877894965432">Открывать URL в Chrome</translation>
 <translation id="6012140227487808125">Шифрование…</translation>
 <translation id="6021332621416007159">Открыть в…</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@
 <translation id="7961015016161918242">Нет</translation>
 <translation id="7971521879845308059">Блок. вспл. окна</translation>
 <translation id="7982789257301363584">Сеть</translation>
+<translation id="800361585186029508">Введенные URL будут открываться в Google Chrome.</translation>
 <translation id="8007420562015504427">Поиск в режиме инкогнито</translation>
 <translation id="8019783059653722575">Это нужно, чтобы сохранять и загружать фотографии</translation>
 <translation id="802154636333426148">Ошибка скачивания</translation>

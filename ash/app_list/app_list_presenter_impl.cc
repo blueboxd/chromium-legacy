@@ -11,6 +11,7 @@
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/search_box_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -188,6 +189,13 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   OnVisibilityWillChange(GetTargetVisibility(), GetDisplayId());
   view_->SetState(AppListViewState::kClosed);
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
+}
+
+void AppListPresenterImpl::SetViewVisibility(bool visible) {
+  if (!view_)
+    return;
+  view_->SetVisible(visible);
+  view_->search_box_view()->SetVisible(visible);
 }
 
 bool AppListPresenterImpl::HandleCloseOpenFolder() {

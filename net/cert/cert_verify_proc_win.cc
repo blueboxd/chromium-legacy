@@ -272,8 +272,10 @@ bool CertSubjectCommonNameHasNull(PCCERT_CONTEXT cert) {
 // calling this function.
 void GetCertChainInfo(PCCERT_CHAIN_CONTEXT chain_context,
                       CertVerifyResult* verify_result) {
-  if (chain_context->cChain == 0)
+  if (chain_context->cChain == 0 || chain_context->rgpChain[0]->cElement == 0) {
+    verify_result->cert_status |= CERT_STATUS_INVALID;
     return;
+  }
 
   PCERT_SIMPLE_CHAIN first_chain = chain_context->rgpChain[0];
   DWORD num_elements = first_chain->cElement;
@@ -281,6 +283,26 @@ void GetCertChainInfo(PCCERT_CHAIN_CONTEXT chain_context,
 
   PCCERT_CONTEXT verified_cert = nullptr;
   std::vector<PCCERT_CONTEXT> verified_chain;
+
+  // Recheck signatures in the event junk data was provided.
+  for (DWORD i = 0; i < num_elements - 1; ++i) {
+    PCCERT_CONTEXT issuer = element[i + 1]->pCertContext;
+
+    // If Issuer isn't ECC, skip this certificate.
+    if (strcmp(issuer->pCertInfo->SubjectPublicKeyInfo.Algorithm.pszObjId,
+               szOID_ECC_PUBLIC_KEY)) {
+      continue;
+    }
+
+    PCCERT_CONTEXT cert = element[i]->pCertContext;
+    if (!CryptVerifyCertificateSignatureEx(
+            NULL, X509_ASN_ENCODING, CRYPT_VERIFY_CERT_SIGN_SUBJECT_CERT,
+            const_cast<PCERT_CONTEXT>(cert), CRYPT_VERIFY_CERT_SIGN_ISSUER_CERT,
+            const_cast<PCERT_CONTEXT>(issuer), 0, NULL)) {
+      verify_result->cert_status |= CERT_STATUS_INVALID;
+      break;
+    }
+  }
 
   bool has_root_ca = num_elements > 1 &&
       !(chain_context->TrustStatus.dwErrorStatus &

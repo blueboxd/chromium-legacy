@@ -30,7 +30,8 @@ class OmniboxPopupContentsView : public views::View,
  public:
   OmniboxPopupContentsView(OmniboxViewViews* omnibox_view,
                            OmniboxEditModel* edit_model,
-                           LocationBarView* location_bar_view);
+                           LocationBarView* location_bar_view,
+                           const ui::ThemeProvider* theme_provider);
   ~OmniboxPopupContentsView() override;
 
   OmniboxPopupModel* model() const { return model_.get(); }
@@ -123,6 +124,8 @@ class OmniboxPopupContentsView : public views::View,
   OmniboxViewViews* omnibox_view_;
 
   LocationBarView* location_bar_view_;
+
+  const ui::ThemeProvider* theme_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContentsView);
 };

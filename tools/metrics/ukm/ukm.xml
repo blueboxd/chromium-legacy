@@ -6283,6 +6283,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Experimental.PaintTiming.NavigationToLargestImagePaint">
+    <obsolete>
+      Removed on 01/2020
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest image within
@@ -6303,6 +6306,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Experimental.PaintTiming.NavigationToLargestTextPaint">
+    <obsolete>
+      Removed on 01/2020
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest text within

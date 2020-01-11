@@ -13,6 +13,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -28,27 +29,27 @@ class CannedBrowsingDataIndexedDBHelperTest : public testing::Test {
 };
 
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, Empty) {
-  const GURL origin("http://host1:1/");
+  const url::Origin origin = url::Origin::Create(GURL("http://host1:1/"));
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(StoragePartition()));
 
   ASSERT_TRUE(helper->empty());
-  helper->Add(url::Origin::Create(origin));
+  helper->Add(origin);
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());
 }
 
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, Delete) {
-  const GURL origin1("http://host1:9000");
-  const GURL origin2("http://example.com");
+  const url::Origin origin1 = url::Origin::Create(GURL("http://host1:9000"));
+  const url::Origin origin2 = url::Origin::Create(GURL("http://example.com"));
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(StoragePartition()));
 
   EXPECT_TRUE(helper->empty());
-  helper->Add(url::Origin::Create(origin1));
-  helper->Add(url::Origin::Create(origin2));
+  helper->Add(origin1);
+  helper->Add(origin2);
   EXPECT_EQ(2u, helper->GetCount());
   helper->DeleteIndexedDB(origin2);
   EXPECT_EQ(1u, helper->GetCount());
@@ -61,16 +62,18 @@ TEST_F(CannedBrowsingDataIndexedDBHelperTest, Delete) {
 }
 
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, IgnoreExtensionsAndDevTools) {
-  const GURL origin1("chrome-extension://abcdefghijklmnopqrstuvwxyz/");
-  const GURL origin2("devtools://abcdefghijklmnopqrstuvwxyz/");
+  const url::Origin origin1 = url::Origin::Create(
+      GURL("chrome-extension://abcdefghijklmnopqrstuvwxyz/"));
+  const url::Origin origin2 =
+      url::Origin::Create(GURL("devtools://abcdefghijklmnopqrstuvwxyz/"));
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper(StoragePartition()));
 
   ASSERT_TRUE(helper->empty());
-  helper->Add(url::Origin::Create(origin1));
+  helper->Add(origin1);
   ASSERT_TRUE(helper->empty());
-  helper->Add(url::Origin::Create(origin2));
+  helper->Add(origin2);
   ASSERT_TRUE(helper->empty());
 }
 

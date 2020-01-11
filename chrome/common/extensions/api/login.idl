@@ -13,7 +13,15 @@ namespace login {
     // Launches a managed guest session if one is set up via the admin console.
     // If there are several managed guest sessions set up, it will launch the
     // first available one.
-    static void launchManagedGuestSession(optional VoidCallback callback);
+    // |password|: If provided, the launched managed guest session will be
+    // lockable, and can only be unlocked by calling
+    // <code>unlockManagedGuestSession()</code> with the same password.
+    // |callback|: Note: If the function succeeds, the callback is not
+    // guaranteed to be called as the extension will be disabled when the
+    // session starts. Use this callback only to handle the failure case by
+    // checking <code>chrome.runtime.lastError</code>.
+    static void launchManagedGuestSession(optional DOMString password,
+                                          optional VoidCallback callback);
 
     // Exits the current session.
     // |dataForNextLoginAttempt|: If set, stores data which can be read by
@@ -28,5 +36,20 @@ namespace login {
     // |callback|: Called with the stored data, or an empty string if there was
     // no previously stored data.
     static void fetchDataForNextLoginAttempt(StringCallback callback);
+
+    // Locks the current managed guest session. The session has to have been
+    // launched by <code>launchManagedGuestSession()</code> with a password.
+    static void lockManagedGuestSession(optional VoidCallback callback);
+
+    // Unlocks a managed guest session which was launched by
+    // <code>launchManagedGuestSession()</code> with a password. The session
+    // will unlock if the provided password matches the one provided earlier.
+    // |password|: The password which will be used to unlock the session.
+    // |callback|: Note: If the function succeeds, the callback is not
+    // guaranteed to be called as the extension will be disabled when the
+    // session starts. Use this callback only to handle the failure case by
+    // checking <code>chrome.runtime.lastError</code>.
+    static void unlockManagedGuestSession(DOMString password,
+                                          optional VoidCallback callback);
   };
 };

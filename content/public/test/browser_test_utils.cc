@@ -3395,7 +3395,7 @@ bool TestGuestAutoresize(RenderProcessHost* embedder_rph,
   metadata.viewport_size_in_pixels = gfx::Size(75, 75);
   metadata.local_surface_id_allocation =
       viz::LocalSurfaceIdAllocation(local_surface_id, base::TimeTicks::Now());
-  guest_rwh_impl->DidUpdateVisualProperties(metadata);
+  guest_rwh_impl->OnLocalSurfaceIdChanged(metadata);
 
   // This won't generate a response, as we short-circuit auto-resizes, so cause
   // an additional update by disabling auto-resize.

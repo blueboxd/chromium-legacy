@@ -37,9 +37,9 @@ class ASH_PUBLIC_EXPORT AssistantStateObserver
   virtual void OnAssistantNotificationEnabled(bool notification_enabled) {}
 
   // mojom::AssistantStateObserver:
-  void OnAssistantStatusChanged(ash::mojom::AssistantState state) override {}
+  void OnAssistantStatusChanged(mojom::AssistantState state) override {}
   void OnAssistantFeatureAllowedChanged(
-      ash::mojom::AssistantAllowedState state) override {}
+      mojom::AssistantAllowedState state) override {}
   void OnArcPlayStoreEnabledChanged(bool enabled) override {}
   void OnLocaleChanged(const std::string& locale) override {}
   void OnLockedFullScreenStateChanged(bool enabled) override {}

@@ -50,6 +50,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void BubbleLogicalScrollInParentFrame(
       blink::mojom::blink::ScrollDirection direction,
       ui::input_types::ScrollGranularity granularity) override;
+  void DidAccessInitialDocument() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">Recherche en mode navigation privée</translation>
 <translation id="277771892408211951">Sélectionner la langue</translation>
 <translation id="2780046210906776326">Aucun compte messag.</translation>
+<translation id="2781331604911854368">Activé</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Quitter le sélecteur d'onglets</translation>
 <translation id="2830972654601096923">Gérer les adresses…</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">Onglets ouverts</translation>
 <translation id="3277021493514034324">Adresse du site copiée</translation>
 <translation id="3290875554372353449">Sélectionner un compte</translation>
+<translation id="3311748811247479259">Désactivé</translation>
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Impossible de se connecter au serveur.</translation>
 <translation id="3335947283844343239">Rouvrir l'onglet fermé</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">Synchronisation de vos onglets en cours…</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> sur le contenu suggéré</translation>
 <translation id="3494788280727468875">Confirmer la suppression des données de navigation</translation>
+<translation id="35083190962747987">Ouvrir ${url}</translation>
 <translation id="3519193562722059437">Ouvrez un onglet pour naviguer sur le Web.</translation>
 <translation id="3527085408025491307">Dossier</translation>
 <translation id="3529024052484145543">Non sécurisé</translation>
@@ -301,6 +304,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5062321486222145940">Installer Google Drive</translation>
 <translation id="5083464117946352670">Impos. déterm. taille fichier.</translation>
 <translation id="5094827893301452931">Tweet publié.</translation>
+<translation id="5118764316110575523">Désactivé</translation>
 <translation id="5127805178023152808">La synchronisation est désactivée.</translation>
 <translation id="5132942445612118989">Synchroniser vos mots de passe, votre historique et plus encore sur tous les appareils</translation>
 <translation id="5140288047769711648">Chrome mémorisera ce mot de passe pour vous. Vous n'avez donc pas besoin de le retenir.</translation>
@@ -363,6 +367,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="5979837087407522202">Rechercher des mots de passe</translation>
 <translation id="5982717868370722439">Ajoutez les données existantes au compte <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">Consultations récentes</translation>
+<translation id="5988851877894965432">Ouvrir les URL dans Chrome</translation>
 <translation id="6012140227487808125">Chiffrement…</translation>
 <translation id="6021332621416007159">Ouvrir dans…</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7971521879845308059">Bloquer les pop-ups</translation>
 <translation id="7982789257301363584">Réseau</translation>
+<translation id="800361585186029508">Ouvre les URL saisies dans Google Chrome.</translation>
 <translation id="8007420562015504427">Recherche en mode Navigation privée</translation>
 <translation id="8019783059653722575">Cela vous permet d'enregistrer et d'importer des photos.</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>

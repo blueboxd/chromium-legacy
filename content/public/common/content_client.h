@@ -30,10 +30,6 @@ namespace blink {
 class OriginTrialPolicy;
 }
 
-namespace IPC {
-class Message;
-}
-
 namespace gfx {
 class Image;
 }
@@ -152,9 +148,6 @@ class CONTENT_EXPORT ContentClient {
   };
 
   virtual void AddAdditionalSchemes(Schemes* schemes) {}
-
-  // Returns whether the given message should be sent in a swapped out renderer.
-  virtual bool CanSendWhileSwappedOut(const IPC::Message* message);
 
   // Returns a string resource given its id.
   virtual base::string16 GetLocalizedString(int message_id);

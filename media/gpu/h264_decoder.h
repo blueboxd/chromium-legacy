@@ -278,7 +278,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   H264Accelerator::Status DecodePicture();
 
   // Notifies client that a picture is ready for output.
-  void OutputPic(scoped_refptr<H264Picture> pic);
+  bool OutputPic(scoped_refptr<H264Picture> pic);
 
   // Output all pictures in DPB that have not been outputted yet.
   bool OutputAllRemainingPics();

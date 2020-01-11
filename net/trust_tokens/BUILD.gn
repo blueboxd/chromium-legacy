@@ -1,0 +1,73 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/protobuf/proto_library.gni")
+
+source_set("trust_tokens") {
+  visibility = [
+    "//net",
+    "//services/network",
+    ":tests",
+  ]
+
+  # TODO(davidvc): Public API to be added in a subsequent CL.
+  public = []
+
+  friend = [ ":tests" ]
+
+  sources = [
+    "in_memory_trust_token_persister.cc",
+    "in_memory_trust_token_persister.h",
+    "trust_token_persister.h",
+  ]
+
+  deps = [
+    ":public_proto",
+    ":storage_proto",
+    "//base",
+    "//url",
+  ]
+}
+
+source_set("tests") {
+  testonly = true
+
+  sources = [
+    "trust_token_persister_unittest.cc",
+  ]
+
+  deps = [
+    ":public_proto",
+    ":storage_proto",
+    ":trust_tokens",
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//url",
+  ]
+}
+
+# public.proto contains datatypes intended
+# to be exposed to //net consumers.
+proto_library("public_proto") {
+  sources = [
+    "proto/public.proto",
+  ]
+}
+
+# storage.proto contains datatypes internal
+# to the implementation of Trust Token state
+# persistent storage.
+proto_library("storage_proto") {
+  visibility = [
+    ":trust_tokens",
+    ":tests",
+  ]
+  sources = [
+    "proto/storage.proto",
+  ]
+  deps = [
+    ":public_proto",
+  ]
+}

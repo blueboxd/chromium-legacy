@@ -4,6 +4,7 @@
 
 #include "weblayer/test/interstitial_utils.h"
 
+#include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
@@ -55,6 +56,11 @@ bool IsShowingSSLInterstitial(Tab* tab) {
 bool IsShowingCaptivePortalInterstitial(Tab* tab) {
   return IsShowingInterstitialOfType(
       tab, CaptivePortalBlockingPage::kTypeForTesting);
+}
+
+bool IsShowingBadClockInterstitial(Tab* tab) {
+  return IsShowingInterstitialOfType(tab,
+                                     BadClockBlockingPage::kTypeForTesting);
 }
 
 }  // namespace weblayer

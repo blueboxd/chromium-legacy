@@ -1,0 +1,84 @@
+<!doctype HTML>
+<html>
+<meta charset="utf8">
+<title>Element is unlocked near the viewport, and relocked again</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+<meta name="assert" content="element is unlocked near the viewport">
+<meta name="assert" content="element is relocked when moving away from the viewport">
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/utils.js"></script>
+
+<style>
+#container {
+  height: 10000px;
+  background: lightblue;
+  display: inline-block;
+  padding-top: 5000px;
+}
+.locked {
+  render-subtree: invisible;
+  border: 1px solid black;
+  width: max-content;
+}
+</style>
+
+<div id=container>
+  <div class=locked>This is a locked element</div>
+</div>
+
+<script>
+async_test((t) => {
+  let container;
+
+  function enqueueStep1() {
+    container = document.getElementById("container");
+    requestAnimationFrame(runStep1);
+  }
+
+  function runStep1() {
+    t.step(() => {
+      // The container should be 2 wide to account for the border
+      // on the locked element.
+      assert_equals(container.getBoundingClientRect().width, 2);
+    });
+
+    enqueueStep2();
+  }
+
+  function enqueueStep2() {
+    window.scrollTo(0, 5000);
+    requestAnimationFrame(runStep2);
+  }
+
+  function runStep2() {
+    t.step(() => {
+      // The container should be wider than before because the element
+      // is now unlocked.
+      assert_greater_than(container.getBoundingClientRect().width, 50);
+    });
+
+    enqueueStep3();
+  }
+
+  function enqueueStep2() {
+    window.scrollTo(0, 10000);
+    requestAnimationFrame(runStep3);
+  }
+
+  function runStep3() {
+    t.step(() => {
+      // The container should be 2 wide again since we relocked the
+      // element.
+      assert_equals(container.getBoundingClientRect().width, 2);
+    });
+    t.done();
+  }
+
+  window.onload = () => {
+    requestAnimationFrame(enqueueStep1);
+  };
+}, "Element unlocking and relocking test");
+</script>

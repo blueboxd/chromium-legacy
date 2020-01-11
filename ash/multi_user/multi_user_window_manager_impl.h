@@ -228,7 +228,7 @@ class ASH_EXPORT MultiUserWindowManagerImpl
   // The animation between users.
   std::unique_ptr<UserSwitchAnimator> animation_;
 
-  base::ObserverList<ash::MultiUserWindowManagerObserver>::Unchecked observers_;
+  base::ObserverList<MultiUserWindowManagerObserver>::Unchecked observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerImpl);
 };

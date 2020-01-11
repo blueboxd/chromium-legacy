@@ -1013,12 +1013,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderProcessHost* render_process_host,
       mojo::GenericPendingReceiver receiver) {}
 
-  // Called on the IO thread to handle an unhandled interface receiver binding
-  // request from a render process. See |RenderThread::BindHostReceiver()|.
-  virtual void BindHostReceiverForRendererOnIOThread(
-      int render_process_id,
-      mojo::GenericPendingReceiver* receiver) {}
-
   // Called just before the Service Manager is initialized.
   virtual void WillStartServiceManager() {}
 

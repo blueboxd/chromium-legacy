@@ -847,6 +847,7 @@ external/wpt/xhr/send-accept-language.htm [ Failure ]
 # Here are tests that were failing on WPT waterfall as of Dec. 2, 2019. They are triaged.
 # ---
 # Reftest with pixel diff. Fails locally. Fails on wpt.fyi
+external/wpt/compat/webkit-box-rtl-flex.html [ Failure ]
 external/wpt/css/css-fonts/font-display/font-display-change.html [ Failure ]
 external/wpt/css/css-layout-api/fallback-layout/constructor-error.https.html [ Failure ]
 external/wpt/mathml/presentation-markup/direction/direction-007.html [ Failure ]

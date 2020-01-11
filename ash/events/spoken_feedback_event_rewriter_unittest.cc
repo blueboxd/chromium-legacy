@@ -12,7 +12,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"

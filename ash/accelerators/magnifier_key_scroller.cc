@@ -25,7 +25,7 @@ bool MagnifierKeyScroller::IsEnabled() {
       switches::kAshEnableMagnifierKeyScroller);
 
   return (magnifier_key_scroller_enabled || has_switch) &&
-         ash::Shell::Get()->magnification_controller()->IsEnabled();
+         Shell::Get()->magnification_controller()->IsEnabled();
 }
 
 // static
@@ -42,7 +42,7 @@ std::unique_ptr<ui::EventHandler> MagnifierKeyScroller::CreateHandler() {
 }
 
 bool MagnifierKeyScroller::ShouldProcessEvent(const ui::KeyEvent* event) const {
-  return IsEnabled() && ash::keyboard_util::IsArrowKeyCode(event->key_code());
+  return IsEnabled() && keyboard_util::IsArrowKeyCode(event->key_code());
 }
 
 bool MagnifierKeyScroller::IsStartEvent(const ui::KeyEvent* event) const {

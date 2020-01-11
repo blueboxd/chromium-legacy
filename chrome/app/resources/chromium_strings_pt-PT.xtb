@@ -36,7 +36,6 @@
 <translation id="2770231113462710648">Alterar o navegador predefinido para:</translation>
 <translation id="2799223571221894425">Reiniciar</translation>
 <translation id="2805036593126168338">O Chromium OS não conseguiu sincronizar as suas palavras-passe. Corrija agora.</translation>
-<translation id="2838154144102149890">Para atualizar, deve interromper a execução do Chromium neste computador. Tal pode fazer com que outros utilizadores com sessão iniciada neste computador percam alterações não guardadas.</translation>
 <translation id="2847479871509788944">Remover do Chromium...</translation>
 <translation id="2886012850691518054">Opcional: ajude a melhorar o Chromium enviando automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="2910007522516064972">Acerca do &amp;Chromium</translation>
@@ -146,7 +145,6 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="6847869444787758381">O Chromium indica-lhe se as suas palavras-passe forem comprometidas.</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiado para o Chromium)</translation>
-<translation id="6868056391275687737">Estão em execução outras cópias do Chromium. Para atualizar, encerre-as.</translation>
 <translation id="6893813176749746474">O Chromium foi atualizado, mas já não o utiliza há, pelo menos, 30 dias.</translation>
 <translation id="6964305034639999644">Abrir link numa janela de nave&amp;gação anónima do Chromium</translation>
 <translation id="6990124437352146030">O Chromium necessita de autorização de acesso ao microfone para este site.</translation>
@@ -206,7 +204,6 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="8697124171261953979">Também controla a página apresentada quando inicia o Chromium ou pesquisa a partir da Caixa geral.</translation>
 <translation id="8704119203788522458">Este é o seu Chromium</translation>
 <translation id="8739167630197873875">Os cookies são eliminados quando sai do Chromium. Para continuar a sincronizar, altere <ph name="COOKIE_SETTINGS_LINK" />.</translation>
-<translation id="8748383401829947534">Saia de todas as cópias do Chromium</translation>
 <translation id="8796602469536043152">O Chromium necessita de autorização de acesso à câmara e ao microfone para este site.</translation>
 <translation id="8803635938069941624">Termos do SO Chromium</translation>
 <translation id="8821041990367117597">O Chromium não conseguiu sincronizar os dados porque os detalhes de início de sessão da sua conta estão desatualizados.</translation>

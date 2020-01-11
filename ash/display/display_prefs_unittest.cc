@@ -210,7 +210,7 @@ class DisplayPrefsTest : public AshTestBase {
   }
 
   display::Display::Rotation GetRotation() {
-    return ash::Shell::Get()
+    return Shell::Get()
         ->display_manager()
         ->GetDisplayInfo(display::Display::InternalDisplayId())
         .GetRotation(display::Display::RotationSource::ACCELEROMETER);
@@ -227,7 +227,7 @@ class DisplayPrefsTest : public AshTestBase {
 
   std::string GetRegisteredDisplayPlacementStr(
       const display::DisplayIdList& list) {
-    return ash::Shell::Get()
+    return Shell::Get()
         ->display_manager()
         ->layout_store()
         ->GetRegisteredDisplayLayout(list)
@@ -236,10 +236,10 @@ class DisplayPrefsTest : public AshTestBase {
   }
 
   chromeos::DisplayPowerState GetRequestedPowerState() const {
-    return ash::Shell::Get()->display_configurator()->GetRequestedPowerState();
+    return Shell::Get()->display_configurator()->GetRequestedPowerState();
   }
   PrefService* local_state() { return &local_state_; }
-  DisplayPrefs* display_prefs() { return ash::Shell::Get()->display_prefs(); }
+  DisplayPrefs* display_prefs() { return Shell::Get()->display_prefs(); }
 
  private:
   std::unique_ptr<WindowTreeHostManager::Observer> observer_;
@@ -277,9 +277,7 @@ TEST_F(DisplayPrefsTest, ListedLayoutOverrides) {
 
   // requested_power_state_ should be chromeos::DISPLAY_POWER_ALL_ON at boot
   const base::Optional<chromeos::DisplayPowerState> requested_power_state =
-      ash::Shell::Get()
-          ->display_configurator()
-          ->GetRequestedPowerStateForTest();
+      Shell::Get()->display_configurator()->GetRequestedPowerStateForTest();
   ASSERT_NE(base::nullopt, requested_power_state);
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, *requested_power_state);
   // DisplayPowerState should be ignored at boot.
@@ -303,8 +301,8 @@ TEST_F(DisplayPrefsTest, ListedLayoutOverrides) {
 }
 
 TEST_F(DisplayPrefsTest, BasicStores) {
-  ash::WindowTreeHostManager* window_tree_host_manager =
-      ash::Shell::Get()->window_tree_host_manager();
+  WindowTreeHostManager* window_tree_host_manager =
+      Shell::Get()->window_tree_host_manager();
   int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
 
   // For each configuration change, we store mirror info only for external
@@ -523,7 +521,7 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_EQ(base::NumberToString(id2), primary_id_str);
 
   display_manager()->SetLayoutForCurrentDisplays(
-      display::test::CreateDisplayLayout(ash::Shell::Get()->display_manager(),
+      display::test::CreateDisplayLayout(Shell::Get()->display_manager(),
                                          display::DisplayPlacement::BOTTOM,
                                          20));
 
@@ -619,14 +617,13 @@ TEST_F(DisplayPrefsTest, PreventStore) {
   int64_t id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   // Set display's resolution in single display. It creates the notification and
   // display preferences should not stored meanwhile.
-  ash::Shell* shell = ash::Shell::Get();
+  Shell* shell = Shell::Get();
 
   display::ManagedDisplayMode old_mode(gfx::Size(400, 300));
   display::ManagedDisplayMode new_mode(gfx::Size(500, 400));
   EXPECT_TRUE(shell->resolution_notification_controller()
                   ->PrepareNotificationAndSetDisplayMode(
-                      id, old_mode, new_mode,
-                      ash::mojom::DisplayConfigSource::kUser,
+                      id, old_mode, new_mode, mojom::DisplayConfigSource::kUser,
                       base::OnceClosure()));
   UpdateDisplay("500x400#500x400|400x300|300x200");
 
@@ -643,7 +640,7 @@ TEST_F(DisplayPrefsTest, PreventStore) {
   base::RunLoop().RunUntilIdle();
 
   // The specified resolution will be stored by SetDisplayMode.
-  ash::Shell::Get()->display_manager()->SetDisplayMode(
+  Shell::Get()->display_manager()->SetDisplayMode(
       id, display::ManagedDisplayMode(gfx::Size(300, 200), 60.0f, false, true));
   UpdateDisplay("300x200#500x400|400x300|300x200");
 
@@ -724,15 +721,15 @@ TEST_F(DisplayPrefsTest, StoreForSwappedDisplay) {
 }
 
 TEST_F(DisplayPrefsTestGuest, DisplayPrefsTestGuest) {
-  ash::WindowTreeHostManager* window_tree_host_manager =
-      ash::Shell::Get()->window_tree_host_manager();
+  WindowTreeHostManager* window_tree_host_manager =
+      Shell::Get()->window_tree_host_manager();
 
   UpdateDisplay("200x200*2,200x200");
 
   LoggedInAsGuest();
   int64_t id1 = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::test::ScopedSetInternalDisplayId set_internal(
-      ash::Shell::Get()->display_manager(), id1);
+      Shell::Get()->display_manager(), id1);
   int64_t id2 = display_manager()->GetSecondaryDisplay().id();
   display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
@@ -833,7 +830,7 @@ TEST_F(DisplayPrefsTest, DontSaveAndRestoreAllOff) {
 // Tests that display configuration changes caused by TabletModeController
 // are not saved.
 TEST_F(DisplayPrefsTest, DontSaveTabletModeControllerRotations) {
-  ash::Shell* shell = ash::Shell::Get();
+  Shell* shell = Shell::Get();
   display::Display::SetInternalDisplayId(
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   LoggedInAsUser();
@@ -852,8 +849,7 @@ TEST_F(DisplayPrefsTest, DontSaveTabletModeControllerRotations) {
               -base::kMeanGravityFloat);
   update->Set(ACCELEROMETER_SOURCE_SCREEN, false, 0.0f, base::kMeanGravityFloat,
               0.0f);
-  ash::TabletModeController* controller =
-      ash::Shell::Get()->tablet_mode_controller();
+  TabletModeController* controller = Shell::Get()->tablet_mode_controller();
   controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(controller->InTabletMode());
 
@@ -1003,8 +999,8 @@ TEST_F(DisplayPrefsTest, LoadRotationNoLogin) {
               -base::kMeanGravityFloat);
   update->Set(ACCELEROMETER_SOURCE_SCREEN, false, 0.0f, base::kMeanGravityFloat,
               0.0f);
-  ash::TabletModeController* tablet_mode_controller =
-      ash::Shell::Get()->tablet_mode_controller();
+  TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
   tablet_mode_controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(tablet_mode_controller->InTabletMode());
   bool screen_orientation_rotation_lock = IsRotationLocked();
@@ -1020,7 +1016,7 @@ TEST_F(DisplayPrefsTest, RotationLockTriggersStore) {
       display::Screen::GetScreen()->GetPrimaryDisplay().id());
   ASSERT_FALSE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 
-  ash::Shell::Get()->screen_orientation_controller()->ToggleUserRotationLock();
+  Shell::Get()->screen_orientation_controller()->ToggleUserRotationLock();
 
   EXPECT_TRUE(local_state()->HasPrefPath(prefs::kDisplayRotationLock));
 
@@ -1096,7 +1092,7 @@ TEST_F(DisplayPrefsTest, RestoreUnifiedMode) {
   std::vector<display::ManagedDisplayInfo> display_info_list;
   display_info_list.emplace_back(first_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
-  ash::Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
+  Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
       first_display_id);
   EXPECT_FALSE(display_manager()->IsInUnifiedMode());
   EXPECT_FALSE(display_manager()->IsInMirrorMode());

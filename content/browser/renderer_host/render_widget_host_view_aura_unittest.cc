@@ -2526,7 +2526,13 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
               visual_properties.compositor_viewport_pixel_rect.size());
   }
 
-  widget_host_->ResetSentVisualProperties();
+  // Get back the UpdateVisualProperties ack.
+  {
+    cc::RenderFrameMetadata metadata;
+    metadata.viewport_size_in_pixels = gfx::Size(100, 100);
+    static_cast<RenderFrameMetadataProvider::Observer*>(widget_host_)
+        ->OnLocalSurfaceIdChanged(metadata);
+  }
   sink_->ClearMessages();
 
   // Device scale factor changes to 2, so the physical pixel sizes should
@@ -2550,7 +2556,13 @@ TEST_F(RenderWidgetHostViewAuraTest, CompositorViewportPixelSizeWithScale) {
               visual_properties.compositor_viewport_pixel_rect.size());
   }
 
-  widget_host_->ResetSentVisualProperties();
+  // Get back the UpdateVisualProperties ack.
+  {
+    cc::RenderFrameMetadata metadata;
+    metadata.viewport_size_in_pixels = gfx::Size(200, 200);
+    static_cast<RenderFrameMetadataProvider::Observer*>(widget_host_)
+        ->OnLocalSurfaceIdChanged(metadata);
+  }
   sink_->ClearMessages();
 
   aura_test_helper_->test_screen()->SetDeviceScaleFactor(1.0f);
@@ -2623,7 +2635,8 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = gfx::Size(75, 75);
     metadata.local_surface_id_allocation = renderer_local_surface_id_allocation;
-    widget_host_->DidUpdateVisualProperties(metadata);
+    static_cast<RenderFrameMetadataProvider::Observer*>(widget_host_)
+        ->OnLocalSurfaceIdChanged(metadata);
   }
 
   // Changing the device scale factor updates the renderer.
@@ -2700,7 +2713,8 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = gfx::Size(75, 75);
     metadata.local_surface_id_allocation = renderer_local_surface_id_allocation;
-    widget_host_->DidUpdateVisualProperties(metadata);
+    static_cast<RenderFrameMetadataProvider::Observer*>(widget_host_)
+        ->OnLocalSurfaceIdChanged(metadata);
   }
 
   // Do a resize in the browser. It does not apply, but VisualProperties are
@@ -2753,7 +2767,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ChildAllocationAcceptedInParent) {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = gfx::Size(75, 75);
     metadata.local_surface_id_allocation = local_surface_id_allocation2;
-    widget_host_->DidUpdateVisualProperties(metadata);
+    static_cast<RenderFrameMetadataProvider::Observer*>(widget_host_)
+        ->OnLocalSurfaceIdChanged(metadata);
   }
 
   viz::LocalSurfaceIdAllocation local_surface_id_allocation3(
@@ -2790,7 +2805,8 @@ TEST_F(RenderWidgetHostViewAuraTest,
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = gfx::Size(75, 75);
     metadata.local_surface_id_allocation = local_surface_id_allocation2;
-    widget_host_->DidUpdateVisualProperties(metadata);
+    static_cast<RenderFrameMetadataProvider::Observer*>(widget_host_)
+        ->OnLocalSurfaceIdChanged(metadata);
   }
 
   viz::LocalSurfaceIdAllocation local_surface_id_allocation3(
@@ -2825,7 +2841,8 @@ TEST_F(RenderWidgetHostViewAuraTest, ConflictingAllocationsResolve) {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = gfx::Size(75, 75);
     metadata.local_surface_id_allocation = local_surface_id_allocation2;
-    widget_host_->DidUpdateVisualProperties(metadata);
+    static_cast<RenderFrameMetadataProvider::Observer*>(widget_host_)
+        ->OnLocalSurfaceIdChanged(metadata);
   }
 
   // Cause a conflicting viz::LocalSurfaceId allocation
@@ -3068,7 +3085,8 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
   {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = size1;
-    widget_host_->DidUpdateVisualProperties(metadata);
+    static_cast<RenderFrameMetadataProvider::Observer*>(widget_host_)
+        ->OnLocalSurfaceIdChanged(metadata);
     EXPECT_FALSE(widget_host_->visual_properties_ack_pending_for_testing());
   }
   sink_->ClearMessages();
@@ -3090,7 +3108,8 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
   {
     cc::RenderFrameMetadata metadata;
     metadata.viewport_size_in_pixels = size2;
-    widget_host_->DidUpdateVisualProperties(metadata);
+    static_cast<RenderFrameMetadataProvider::Observer*>(widget_host_)
+        ->OnLocalSurfaceIdChanged(metadata);
     EXPECT_FALSE(widget_host_->visual_properties_ack_pending_for_testing());
   }
   sink_->ClearMessages();
@@ -3370,9 +3389,15 @@ TEST_F(RenderWidgetHostViewAuraTest, VisibleViewportTest) {
     EXPECT_EQ(gfx::Size(100, 100), visual_properties.visible_viewport_size);
   }
 
-  widget_host_->ResetSentVisualProperties();
-
+  // Get back the UpdateVisualProperties ack.
+  {
+    cc::RenderFrameMetadata metadata;
+    metadata.viewport_size_in_pixels = gfx::Size(100, 100);
+    static_cast<RenderFrameMetadataProvider::Observer*>(widget_host_)
+        ->OnLocalSurfaceIdChanged(metadata);
+  }
   sink_->ClearMessages();
+
   view_->SetInsets(gfx::Insets(0, 0, 40, 0));
   EXPECT_EQ(60, view_->GetVisibleViewportSize().height());
 

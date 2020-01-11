@@ -6,6 +6,7 @@ include_rules = [
   "+chrome/android/java/src/org/chromium/chrome/browser/incognito/IncognitoUtils.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/tab",
   "+chrome/android/java/src/org/chromium/chrome/browser/webapps/WebDisplayMode.java",
+  "+chrome/browser/preferences",
   "+chrome/browser/ui/android/widget",
   "+components/browser_ui/styles/android",
   "+content/public/android/java/src/org/chromium/content_public",

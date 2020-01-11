@@ -156,6 +156,28 @@ class TaskEnvironment {
     DEFAULT = MULTIPLE_THREADS
   };
 
+  // On Windows, sets the COM environment for the ThreadPoolInstance. Ignored
+  // on other platforms.
+  enum class ThreadPoolCOMEnvironment {
+    // Do not initialize COM for the pool's workers.
+    NONE,
+
+    // Place the pool's workers in a COM MTA.
+    COM_MTA,
+
+    // Enable the MTA by default in unit tests to match the browser process's
+    // ThreadPoolInstance configuration.
+    //
+    // This has the adverse side-effect of enabling the MTA in non-browser unit
+    // tests as well but the downside there is not as bad as not having it in
+    // browser unit tests. It just means some COM asserts may pass in unit
+    // tests where they wouldn't in integration tests or prod. That's okay
+    // because unit tests are already generally very loose on allowing I/O,
+    // waits, etc. Such misuse will still be caught in later phases (and COM
+    // usage should already be pretty much inexistent in sandboxed processes).
+    DEFAULT = COM_MTA,
+  };
+
   // List of traits that are valid inputs for the constructor below.
   struct ValidTraits {
     ValidTraits(TimeSource);
@@ -163,6 +185,7 @@ class TaskEnvironment {
     ValidTraits(ThreadPoolExecutionMode);
     ValidTraits(SubclassCreatesDefaultTaskRunner);
     ValidTraits(ThreadingMode);
+    ValidTraits(ThreadPoolCOMEnvironment);
   };
 
   // Constructor accepts zero or more traits which customize the testing
@@ -179,6 +202,9 @@ class TaskEnvironment {
             trait_helpers::GetEnum<ThreadPoolExecutionMode,
                                    ThreadPoolExecutionMode::DEFAULT>(traits...),
             trait_helpers::GetEnum<ThreadingMode, ThreadingMode::DEFAULT>(
+                traits...),
+            trait_helpers::GetEnum<ThreadPoolCOMEnvironment,
+                                   ThreadPoolCOMEnvironment::DEFAULT>(
                 traits...),
             trait_helpers::HasTrait<SubclassCreatesDefaultTaskRunner,
                                     TaskEnvironmentTraits...>(),
@@ -329,12 +355,14 @@ class TaskEnvironment {
                   MainThreadType main_thread_type,
                   ThreadPoolExecutionMode thread_pool_execution_mode,
                   ThreadingMode threading_mode,
+                  ThreadPoolCOMEnvironment thread_pool_com_environment,
                   bool subclass_creates_default_taskrunner,
                   trait_helpers::NotATraitTag tag);
 
   const MainThreadType main_thread_type_;
   const ThreadPoolExecutionMode thread_pool_execution_mode_;
   const ThreadingMode threading_mode_;
+  const ThreadPoolCOMEnvironment thread_pool_com_environment_;
   const bool subclass_creates_default_taskrunner_;
 
   std::unique_ptr<sequence_manager::SequenceManager> sequence_manager_;

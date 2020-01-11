@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/stl_util.h"
+#include "base/time/clock.h"
 #include "base/values.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
@@ -35,6 +36,12 @@ bool IsMainFrameNavigationRequest(const WebRequestInfo& request_info) {
          request_info.type == content::ResourceType::kMainFrame;
 }
 
+const base::Clock* g_test_clock = nullptr;
+
+base::Time GetNow() {
+  return g_test_clock ? g_test_clock->Now() : base::Time::Now();
+}
+
 }  // namespace
 
 ActionTracker::ActionTracker(content::BrowserContext* browser_context)
@@ -51,6 +58,11 @@ ActionTracker::~ActionTracker() {
       }));
 
   DCHECK(pending_navigation_actions_.empty());
+}
+
+// static
+void ActionTracker::SetClockForTests(const base::Clock* clock) {
+  g_test_clock = clock;
 }
 
 void ActionTracker::OnRuleMatched(const RequestAction& request_action,
@@ -213,14 +225,19 @@ void ActionTracker::ResetTrackedInfoForTab(int tab_id, int64_t navigation_id) {
 
 std::vector<dnr_api::MatchedRuleInfo> ActionTracker::GetMatchedRules(
     const ExtensionId& extension_id,
-    base::Optional<int> tab_id) const {
+    const base::Optional<int>& tab_id,
+    const base::Time& min_time_stamp) {
   std::vector<dnr_api::MatchedRuleInfo> matched_rules;
 
-  auto add_to_matched_rules = [this, &matched_rules](
+  auto add_to_matched_rules = [this, &matched_rules, &min_time_stamp](
                                   const std::list<TrackedRule>& tracked_rules,
                                   int tab_id) {
-    for (const TrackedRule& tracked_rule : tracked_rules)
-      matched_rules.push_back(CreateMatchedRuleInfo(tracked_rule, tab_id));
+    for (const TrackedRule& tracked_rule : tracked_rules) {
+      // Filter by the provided |min_time_stamp| for both active and non-active
+      // tabs.
+      if (tracked_rule.time_stamp >= min_time_stamp)
+        matched_rules.push_back(CreateMatchedRuleInfo(tracked_rule, tab_id));
+    }
   };
 
   if (tab_id.has_value()) {
@@ -290,7 +307,7 @@ bool ActionTracker::TrackedInfoContextKey<T>::operator<(
 ActionTracker::TrackedRule::TrackedRule(
     int rule_id,
     api::declarative_net_request::SourceType source_type)
-    : rule_id(rule_id), source_type(source_type) {}
+    : rule_id(rule_id), source_type(source_type), time_stamp(GetNow()) {}
 
 ActionTracker::TrackedInfo::TrackedInfo() = default;
 ActionTracker::TrackedInfo::~TrackedInfo() = default;
@@ -368,8 +385,8 @@ dnr_api::MatchedRuleInfo ActionTracker::CreateMatchedRuleInfo(
   dnr_api::MatchedRuleInfo matched_rule_info;
   matched_rule_info.rule = std::move(matched_rule);
   matched_rule_info.tab_id = tab_id;
+  matched_rule_info.time_stamp = tracked_rule.time_stamp.ToJsTimeIgnoringNull();
 
-  // TODO(crbug.com/983761): Populate timestamp for |matched_rule_info|.
   return matched_rule_info;
 }
 

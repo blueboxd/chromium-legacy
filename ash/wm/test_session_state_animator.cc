@@ -231,7 +231,7 @@ void TestSessionStateAnimator::StartAnimationWithCallback(
   }
 }
 
-ash::SessionStateAnimator::AnimationSequence*
+SessionStateAnimator::AnimationSequence*
 TestSessionStateAnimator::BeginAnimationSequence(base::OnceClosure callback) {
   return new AnimationSequence(std::move(callback), this);
 }

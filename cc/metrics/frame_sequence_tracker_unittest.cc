@@ -696,4 +696,14 @@ TEST_F(FrameSequenceTrackerTest, SequenceStateResetsDuringFrame) {
   EXPECT_EQ(MainThroughput().frames_produced, 0u);
 }
 
+TEST_F(FrameSequenceTrackerTest, BeginImplFrameBeforeTerminate) {
+  const char sequence[] = "b(1)s(1)e(1)b(4)P(1)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 4u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 1u);
+  collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
+  EXPECT_EQ(ImplThroughput().frames_expected, 1u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 1u);
+}
+
 }  // namespace cc

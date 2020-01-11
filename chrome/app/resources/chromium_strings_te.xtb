@@ -36,7 +36,6 @@
 <translation id="2770231113462710648">డిఫాల్ట్ బ్రౌజర్‌ను దీనికి మార్చు:</translation>
 <translation id="2799223571221894425">మళ్లీ ప్రారంభించు</translation>
 <translation id="2805036593126168338">Chromium OS మీ పాస్‌వర్డ్‌‌లను సింక్ చేయలేకపోయింది. ఇప్పుడే సమస్యను పరిష్కరించండి.</translation>
-<translation id="2838154144102149890">అప్‌డేట్ చేయడానికి, ఈ కంప్యూటర్‌లో Chromiumను అమలు చేయకుండా ఆపివేయాలి. దీని వలన ఈ కంప్యూటర్‌లో లాగిన్ చేసిన ఇతర వినియోగదారులు సేవ్ చేయని మార్పులను కోల్పోయే అవకాశం ఉంది.</translation>
 <translation id="2847479871509788944">Chromium నుండి తీసివేయి...</translation>
 <translation id="2886012850691518054">ఐచ్ఛికం: Googleకు వినియోగ‌ గణాంకాలను, క్రాష్ నివేదికలను ఆటోమేటిక్‌గా పంపడం ద్వారా Chromiumను మరింత మెరుగుపరచడానికి సహాయం చేస్తుంది.</translation>
 <translation id="2910007522516064972">&amp;Chromium గురించి</translation>
@@ -144,7 +143,6 @@
 <translation id="6847869444787758381">మీ పాస్‌వర్డ్‌లు ఎప్పుడైనా హ్యాక్ అయితే, Chromium మీకు తెలియచేస్తుంది</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromiumకి కాపీ చేయబడింది)</translation>
-<translation id="6868056391275687737">Chromium యొక్క ఇతర కాపీలు అమలు అవుతున్నాయి. అప్‌డేట్ చేయడానికి, వాటిని మూసివేయండి.</translation>
 <translation id="6893813176749746474">Chromium నవీకరించబడింది, కానీ మీరు దీన్ని గత 30 రోజులుగా ఉపయోగించలేదు.</translation>
 <translation id="6964305034639999644">Chromium అజ్ఞా&amp;త విండోలో లింక్‌ను తెరువు</translation>
 <translation id="6990124437352146030">ఈ సైట్ కోసం మీ మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం</translation>
@@ -202,7 +200,6 @@
 <translation id="8697124171261953979">ఇది మీరు Chromiumను ప్రారంభించేటప్పుడు లేదా ఓమ్నిబాక్స్ నుండి వెతికేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="8704119203788522458">ఇది మీ Chromium</translation>
 <translation id="8739167630197873875">మీరు Chromium నుండి నిష్క్రమించినప్పుడు, కుక్కీలను క్లియర్ చేయండి. సింక్ చేయడం కొనసాగించడానికి, ఈ <ph name="COOKIE_SETTINGS_LINK" />ను మార్చండి.</translation>
-<translation id="8748383401829947534">Chromium యొక్క అన్ని కాపీల నుండి నిష్క్రమించండి.</translation>
 <translation id="8796602469536043152">ఈ సైట్ కోసం మీ కెమెరా మరియు మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం</translation>
 <translation id="8803635938069941624">Chromium OS నిబంధనలు</translation>
 <translation id="8821041990367117597">Chromium మీ డేటాను సింక్ చేయ‌లేకపోయింది ఎందుకంటే మీ ఖాతా సైన్-ఇన్ వివరాల గడువు ముగిసింది.</translation>

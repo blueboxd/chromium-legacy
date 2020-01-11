@@ -16,6 +16,7 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.BuildInfo;
+import org.chromium.base.BundleUtils;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.JNIUtils;
@@ -81,6 +82,7 @@ public class ChromeApplication extends Application {
         super.attachBaseContext(context);
         ContextUtils.initApplicationContext(this);
         maybeInitProcessType(isBrowserProcess);
+        BundleUtils.setIsBundle(ProductConfig.IS_BUNDLE);
         if (isBrowserProcess) {
             if (BuildConfig.IS_MULTIDEX_ENABLED) {
                 ChromiumMultiDexInstaller.install(this);

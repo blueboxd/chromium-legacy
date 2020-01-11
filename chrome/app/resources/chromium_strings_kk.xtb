@@ -38,7 +38,6 @@
 <translation id="2770231113462710648">Әдепкі браузерді келесіге өзгерту:</translation>
 <translation id="2799223571221894425">Қайта іске қосу</translation>
 <translation id="2805036593126168338">Chromium OS құпия сөздеріңізді синхрондай алмады. Қазір түзетіңіз.</translation>
-<translation id="2838154144102149890">Chromium браузерін жаңарту үшін ол осы компьютерде жұмысын тоқтатуы керек. Бұл компьютердегі есептік жазбасына кірген пайдаланушылардың сақталмаған өзгерістері жоғалып кетуі мүмкін.</translation>
 <translation id="2847479871509788944">Chromium жүйесінен алып тастау…</translation>
 <translation id="2886012850691518054">Қосымша: Google компаниясына пайдалану статистикасы мен жаңылыс есептерін автоматты түрде жіберу арқылы Chromium қызметін жақсартуға көмектесіңіз.</translation>
 <translation id="2910007522516064972">&amp;Chromium туралы</translation>
@@ -148,7 +147,6 @@
 <translation id="6847869444787758381">Құпия сөздеріңіз ұрланған жағдайда, Chromium бұл туралы хабарлайды.</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium браузеріне көшірілген)</translation>
-<translation id="6868056391275687737">Chromium браузерінің басқа көшірмелері жұмыс істеп тұр. Жаңарту үшін оларды жабуыңыз керек.</translation>
 <translation id="6893813176749746474">Chromium жаңартылды, бірақ оны кемінде 30 күн пайдаланбадыңыз.</translation>
 <translation id="6964305034639999644">Сілтемені Chromium инкогнито терезесінде ашу</translation>
 <translation id="6990124437352146030">Chromium браузеріне бұл сайтта микрофонды пайдалану үшін рұқсат керек</translation>
@@ -208,7 +206,6 @@ Chromium параметрлеріңізді қалпына келтіре алм
 <translation id="8697124171261953979">Сонымен қатар ол Chromium іске қосқаныңызда немесе Omnibox ішінен іздегеніңізде қайсы бет көрсетілетінін бақылайды.</translation>
 <translation id="8704119203788522458">Сізге арналған Chromium.</translation>
 <translation id="8739167630197873875">Chromium браузерінен шыққанда, cookie файлдарын тазартасыз. Синхрондай беру үшін <ph name="COOKIE_SETTINGS_LINK" /> параметрін өзгертіңіз.</translation>
-<translation id="8748383401829947534">Chromium браузерінің барлық көшірмесінен шығыңыз.</translation>
 <translation id="8796602469536043152">Chromium браузеріне бұл сайтта камераны және микрофонды пайдалану үшін рұқсат керек</translation>
 <translation id="8803635938069941624">Chromium OS шарттары</translation>
 <translation id="8821041990367117597">Chromium деректеріңізді синхрондай алмайды, себебі есептік жазбаңызға кіру мәліметтері ескірген.</translation>

@@ -66,6 +66,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
 
   IntSize Size() const override;
   IntSize SizeRespectingOrientation() const;
+  bool HasDefaultOrientation() const override;
   bool GetHotSpot(IntPoint&) const override;
   String FilenameExtension() const override;
 

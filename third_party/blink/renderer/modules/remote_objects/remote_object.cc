@@ -25,8 +25,7 @@ v8::Local<v8::Value> RemoteObject::GetNamedProperty(
     v8::Isolate* isolate,
     const std::string& property) {
   // TODO(crbug.com/794320): implement this.
-  ignore_result(object_id_);
-  return v8::Local<v8::Value>();
+  return gin::StringToSymbol(isolate, property);
 }
 
 std::vector<std::string> RemoteObject::EnumerateNamedProperties(

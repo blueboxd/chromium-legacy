@@ -204,6 +204,10 @@ class FakeChromeUserManager : public ChromeUserManager {
     is_enterprise_managed_ = is_enterprise_managed;
   }
 
+  void set_current_user_can_lock(bool current_user_can_lock) {
+    current_user_can_lock_ = current_user_can_lock;
+  }
+
  private:
   // Lazily creates default user flow.
   UserFlow* GetDefaultUserFlow() const;
@@ -236,6 +240,9 @@ class FakeChromeUserManager : public ChromeUserManager {
 
   // Whether the device is enterprise managed.
   bool is_enterprise_managed_ = false;
+
+  // Whether the current user can lock.
+  bool current_user_can_lock_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeChromeUserManager);
 };

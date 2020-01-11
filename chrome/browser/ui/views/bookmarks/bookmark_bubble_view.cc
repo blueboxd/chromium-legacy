@@ -197,8 +197,8 @@ void BookmarkBubbleView::OnPerformAction(views::Combobox* combobox) {
 
 void BookmarkBubbleView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  bookmark_contents_view_ = new views::View();
-  views::GridLayout* layout = bookmark_contents_view_->SetLayoutManager(
+  auto bookmark_contents_view = std::make_unique<views::View>();
+  views::GridLayout* layout = bookmark_contents_view->SetLayoutManager(
       std::make_unique<views::GridLayout>());
 
   constexpr int kColumnId = 0;
@@ -221,7 +221,7 @@ void BookmarkBubbleView::Init() {
   parent_combobox_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_BUBBLE_FOLDER_LABEL));
 
-  AddChildView(bookmark_contents_view_);
+  bookmark_contents_view_ = AddChildView(std::move(bookmark_contents_view));
 }
 
 // Private methods -------------------------------------------------------------

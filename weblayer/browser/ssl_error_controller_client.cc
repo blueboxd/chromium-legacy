@@ -51,4 +51,8 @@ void SSLErrorControllerClient::OpenUrlInNewForegroundTab(const GURL& url) {
   OpenUrlInCurrentTab(url);
 }
 
+bool SSLErrorControllerClient::CanLaunchDateAndTimeSettings() {
+  return true;
+}
+
 }  // namespace weblayer

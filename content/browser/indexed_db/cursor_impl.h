@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "url/origin.h"

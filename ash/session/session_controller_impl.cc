@@ -422,9 +422,8 @@ void SessionControllerImpl::SetSessionLengthLimit(base::TimeDelta length_limit,
 
 void SessionControllerImpl::CanSwitchActiveUser(
     CanSwitchActiveUserCallback callback) {
-  ash::Shell::Get()
-      ->screen_switch_check_controller()
-      ->CanSwitchAwayFromActiveUser(std::move(callback));
+  Shell::Get()->screen_switch_check_controller()->CanSwitchAwayFromActiveUser(
+      std::move(callback));
 }
 
 void SessionControllerImpl::ShowMultiprofilesIntroDialog(

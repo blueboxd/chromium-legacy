@@ -37,7 +37,7 @@ Occlusion OcclusionTracker::GetCurrentOcclusionForLayer(
 Occlusion OcclusionTracker::GetCurrentOcclusionForContributingSurface(
     const gfx::Transform& draw_transform) const {
   DCHECK(!stack_.empty());
-  if (stack_.size() < 2)
+  if (stack_.size() < 2 || stack_.back().ignores_parent_occlusion)
     return Occlusion();
   // A contributing surface doesn't get occluded by things inside its own
   // surface, so only things outside the surface can occlude it. That occlusion
@@ -49,10 +49,12 @@ Occlusion OcclusionTracker::GetCurrentOcclusionForContributingSurface(
 
 const RenderSurfaceImpl*
 OcclusionTracker::OcclusionSurfaceForContributingSurface() const {
+  if (stack_.size() < 2 || stack_.back().ignores_parent_occlusion)
+    return nullptr;
   // A contributing surface doesn't get occluded by things inside its own
   // surface, so only things outside the surface can occlude it. That occlusion
   // is found just below the top of the stack (if it exists).
-  return (stack_.size() < 2) ? nullptr : stack_[stack_.size() - 2].target;
+  return stack_[stack_.size() - 2].target;
 }
 
 void OcclusionTracker::EnterLayer(
@@ -162,8 +164,10 @@ void OcclusionTracker::EnterRenderTarget(
       !entering_unoccluded_subtree &&
       have_transform_from_screen_to_new_target &&
       !entering_root_target;
-  if (!copy_outside_occlusion_forward)
+  if (!copy_outside_occlusion_forward) {
+    stack_.back().ignores_parent_occlusion = true;
     return;
+  }
 
   size_t last_index = stack_.size() - 1;
   gfx::Transform old_target_to_new_target_transform(

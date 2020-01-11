@@ -129,11 +129,6 @@ class ChainedBlobWriter : public base::RefCountedThreadSafe<ChainedBlobWriter> {
   virtual ~ChainedBlobWriter() {}
 };
 
-// This holds a BlobEntryKey and the encoded IndexedDBBlobInfo vector stored
-// under that key.
-typedef std::vector<std::pair<BlobEntryKey, std::string>>
-    BlobEntryKeyValuePairVec;
-
 // Reports that the recovery and/or active journals have been processed, and
 // blob files have been deleted.
 using BlobFilesCleanedCallback = base::RepeatingClosure;

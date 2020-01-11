@@ -135,7 +135,7 @@ static_library("test_support") {
     "//chrome/utility",
     "//components/gwp_asan/buildflags",
     "//components/nacl/common:buildflags",
-    "//components/startup_metric_utils/browser:lib",
+    "//components/startup_metric_utils/browser",
     "//content/public/app:both",
     "//content/public/common",
     "//content/public/common:service_names",

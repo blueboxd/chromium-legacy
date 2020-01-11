@@ -18,7 +18,6 @@
 <translation id="1553358976309200471">Chromeని నవీకరించు</translation>
 <translation id="1587223624401073077">Google Chrome మీ కెమెరాను ఉపయోగిస్తోంది.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> హానికరం, కావున Chrome దాన్ని బ్లాక్ చేసింది.</translation>
-<translation id="1590588151039584890">అప్‌డేట్ చేయడానికి, ఈ కంప్యూటర్‌లో Chromeను అమలు చేయకుండా ఆపివేయాలి. దీని వలన ఈ కంప్యూటర్‌లో లాగిన్ చేసిన ఇతర వినియోగదారులు సేవ్ చేయని మార్పులను కోల్పోయే అవకాశం ఉంది.</translation>
 <translation id="1619887657840448962">Chromeని సురక్షితం చేయడానికి, మేము క్రింది పొడిగింపుని నిలిపివేసాము, ఇది <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />లో జాబితా చేయబడలేదు మరియు మీకు తెలియకుండా జోడించబడి ఉండవచ్చు.</translation>
 <translation id="1628000112320670027">Chrome గురించి సహాయం పొందండి</translation>
 <translation id="1635734105302489219">మీరు Chrome నుండి నిష్క్రమించినప్పుడు, కుక్కీలను క్లియర్ చేయండి. సింక్ చేయడం కొనసాగించడానికి, ఈ <ph name="COOKIE_SETTINGS_LINK" />ను మార్చండి.</translation>
@@ -137,7 +136,6 @@
 <translation id="5386244825306882791">ఇది మీరు Chromeను ప్రారంభించేటప్పుడు లేదా ఓమ్నిబాక్స్ నుండి వెతికేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="5394833366792865639">Chrome ట్యాబ్‌ను షేర్ చేయండి</translation>
 <translation id="5430073640787465221">మీ ప్రాధాన్యతల ఫైల్ పాడైంది లేదా చెల్లదు. Google Chrome మీ సెట్టింగ్‌లను తిరిగి పొందలేకపోయింది.</translation>
-<translation id="5543953544073077331">Chrome యొక్క ఇతర కాపీలు అమలు అవుతున్నాయి. అప్‌డేట్ చేయడానికి, వాటిని మూసివేయండి.</translation>
 <translation id="556024056938947818">Google Chrome పాస్‌వర్డ్‌లను చూపడానికి ప్రయత్నిస్తోంది.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">ఏదైనా సెట్టింగ్ ఈ పేజీలో కనపడకపోతే, మీ <ph name="LINK_BEGIN" />
@@ -187,7 +185,6 @@
 <translation id="7408085963519505752">Chrome OS నిబంధనలు</translation>
 <translation id="7419046106786626209">మీ డొమైన్ కోసం సింక్‌ అందుబాటులో లేనందున Chrome OS మీ డేటాను సింక్ చేయ‌లేక‌పోయింది.</translation>
 <translation id="7486227612705979895">చిరునామా బార్‌లో సూచనలను చేయడానికి Chrome మీ డిస్క్‌ను యాక్సెస్ చేస్తుంది</translation>
-<translation id="7531671357096394523">Chrome యొక్క అన్ని కాపీల నుండి నిష్క్రమించండి.</translation>
 <translation id="7535429826459677826">Google Chrome డెవలపర్</translation>
 <translation id="7573289029918943991">మీ పరికరం అప్‌డేట్ చేయబడి ఉందని చూడటానికి <ph name="LINK_BEGIN" />Chrome OS సెట్టింగ్‌లు<ph name="LINK_END" />కు వెళ్లండి</translation>
 <translation id="7589360514048265910">Mac OS X 10.9కు మద్దతు లేనందున ఈ కంప్యూటర్ ఇకపై Google Chrome అప్‌డేట్‌లను స్వీకరించదు.</translation>

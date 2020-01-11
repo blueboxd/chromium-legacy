@@ -140,6 +140,7 @@
 <translation id="2773292004659987824">Inkognitosøk</translation>
 <translation id="277771892408211951">Velg språk</translation>
 <translation id="2780046210906776326">Ingen e-postkontoer</translation>
+<translation id="2781331604911854368">På</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Avslutt fanevelgeren</translation>
 <translation id="2830972654601096923">Administrer adresser</translation>
@@ -175,6 +176,7 @@
 <translation id="3268451620468152448">Åpne faner</translation>
 <translation id="3277021493514034324">Nettstedsadressen er kopiert</translation>
 <translation id="3290875554372353449">Velg konto</translation>
+<translation id="3311748811247479259">Av</translation>
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Kunne ikke koble til tjeneren.</translation>
 <translation id="3335947283844343239">Åpne lukkede faner igjen</translation>
@@ -192,6 +194,7 @@
 <translation id="3482959374254649722">Fanene dine synkroniseres …</translation>
 <translation id="3493531032208478708"><ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /> om foreslått innhold</translation>
 <translation id="3494788280727468875">Bekreft at du vil slette nettleserdataene</translation>
+<translation id="35083190962747987">Åpne ${url}</translation>
 <translation id="3519193562722059437">Åpne en fane for å surfe på nettet.</translation>
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3529024052484145543">Ikke sikker</translation>
@@ -301,6 +304,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5062321486222145940">Installer Google Disk</translation>
 <translation id="5083464117946352670">Kan ikke fastslå filstørrelsen.</translation>
 <translation id="5094827893301452931">Twitter-meldingen er fullført.</translation>
+<translation id="5118764316110575523">Av</translation>
 <translation id="5127805178023152808">Synkronisering er slått av</translation>
 <translation id="5132942445612118989">Synkroniser passordene dine, loggen din med mer på alle enheter</translation>
 <translation id="5140288047769711648">Chrome husker dette passordet for deg. Du trenger ikke å huske det selv.</translation>
@@ -363,6 +367,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="5979837087407522202">Søk etter passord</translation>
 <translation id="5982717868370722439">Legg til eksisterende data i <ph name="USER_EMAIL" />.</translation>
 <translation id="5984222099446776634">Nylig besøkte</translation>
+<translation id="5988851877894965432">Åpne nettadresser i Chrome</translation>
 <translation id="6012140227487808125">Krypterer …</translation>
 <translation id="6021332621416007159">Åpne i...</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
@@ -512,6 +517,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7961015016161918242">Aldri</translation>
 <translation id="7971521879845308059">Blokkér forgrunnsvinduer</translation>
 <translation id="7982789257301363584">Nettverk</translation>
+<translation id="800361585186029508">Åpner de oppgitte nettadressene i Google Chrome.</translation>
 <translation id="8007420562015504427">Inkognitosøk</translation>
 <translation id="8019783059653722575">Dette gjør at du kan lagre og laste opp bilder.</translation>
 <translation id="802154636333426148">Nedlastingen mislyktes</translation>

@@ -124,7 +124,7 @@ bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
   ThreadHeapStatsCollector::BlinkGCInV8Scope nested_scope(
       thread_state_->Heap().stats_collector());
   if (!thread_state_->in_atomic_pause()) {
-    ThreadHeapStatsCollector::Scope advance_tracing_scope(
+    ThreadHeapStatsCollector::EnabledScope advance_tracing_scope(
         thread_state_->Heap().stats_collector(),
         ThreadHeapStatsCollector::kUnifiedMarkingStep);
     // V8 calls into embedder tracing from its own marking to ensure

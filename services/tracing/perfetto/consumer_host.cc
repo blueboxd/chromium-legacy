@@ -84,7 +84,7 @@ class JsonStringOutputWriter
 
 class ConsumerHost::StreamWriter {
  public:
-  using Slices = std::vector<std::string>;
+  using Slice = std::string;
 
   static scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
     return base::CreateSequencedTaskRunner({base::ThreadPool(),
@@ -101,34 +101,32 @@ class ConsumerHost::StreamWriter {
         disconnect_callback_(std::move(disconnect_callback)),
         callback_task_runner_(callback_task_runner) {}
 
-  void WriteToStream(std::unique_ptr<Slices> slices, bool has_more) {
+  void WriteToStream(std::unique_ptr<Slice> slice, bool has_more) {
     DCHECK(stream_.is_valid());
-    for (const auto& slice : *slices) {
-      uint32_t write_position = 0;
 
-      while (write_position < slice.size()) {
-        uint32_t write_bytes = slice.size() - write_position;
+    uint32_t write_position = 0;
+    while (write_position < slice->size()) {
+      uint32_t write_bytes = slice->size() - write_position;
 
-        MojoResult result =
-            stream_->WriteData(slice.data() + write_position, &write_bytes,
-                               MOJO_WRITE_DATA_FLAG_NONE);
+      MojoResult result =
+          stream_->WriteData(slice->data() + write_position, &write_bytes,
+                             MOJO_WRITE_DATA_FLAG_NONE);
 
-        if (result == MOJO_RESULT_OK) {
-          write_position += write_bytes;
-          continue;
+      if (result == MOJO_RESULT_OK) {
+        write_position += write_bytes;
+        continue;
+      }
+
+      if (result == MOJO_RESULT_SHOULD_WAIT) {
+        result = mojo::Wait(stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE);
+      }
+
+      if (result != MOJO_RESULT_OK) {
+        if (!disconnect_callback_.is_null()) {
+          callback_task_runner_->PostTask(FROM_HERE,
+                                          std::move(disconnect_callback_));
         }
-
-        if (result == MOJO_RESULT_SHOULD_WAIT) {
-          result = mojo::Wait(stream_.get(), MOJO_HANDLE_SIGNAL_WRITABLE);
-        }
-
-        if (result != MOJO_RESULT_OK) {
-          if (!disconnect_callback_.is_null()) {
-            callback_task_runner_->PostTask(FROM_HERE,
-                                            std::move(disconnect_callback_));
-          }
-          return;
-        }
+        return;
       }
     }
 
@@ -465,11 +463,10 @@ void ConsumerHost::TracingSession::ExportJson() {
 
 void ConsumerHost::TracingSession::OnJSONTraceData(std::string json,
                                                    bool has_more) {
-  auto slices = std::make_unique<StreamWriter::Slices>();
-  slices->push_back(std::string());
-  slices->back().swap(json);
+  auto slice = std::make_unique<StreamWriter::Slice>();
+  slice->swap(json);
   read_buffers_stream_writer_.Post(FROM_HERE, &StreamWriter::WriteToStream,
-                                   std::move(slices), has_more);
+                                   std::move(slice), has_more);
 
   if (!has_more) {
     read_buffers_stream_writer_.Reset();
@@ -480,14 +477,15 @@ void ConsumerHost::TracingSession::OnTraceData(
     std::vector<perfetto::TracePacket> packets,
     bool has_more) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (trace_processor_) {
-    // Calculate space needed for trace chunk. Each packet has a preamble and
-    // payload size.
-    size_t max_size = packets.size() * perfetto::TracePacket::kMaxPreambleBytes;
-    for (const auto& packet : packets) {
-      max_size += packet.size();
-    }
 
+  // Calculate space needed for trace chunk. Each packet has a preamble and
+  // payload size.
+  size_t max_size = packets.size() * perfetto::TracePacket::kMaxPreambleBytes;
+  for (const auto& packet : packets) {
+    max_size += packet.size();
+  }
+
+  if (trace_processor_) {
     // Copy packets into a trace file chunk.
     size_t position = 0;
     std::unique_ptr<uint8_t[]> data(new uint8_t[max_size]);
@@ -518,19 +516,21 @@ void ConsumerHost::TracingSession::OnTraceData(
     return;
   }
 
-  auto copy = std::make_unique<StreamWriter::Slices>();
+  // Copy packets into a trace slice.
+  auto chunk = std::make_unique<StreamWriter::Slice>();
+  chunk->reserve(max_size);
   for (auto& packet : packets) {
     char* data;
     size_t size;
     std::tie(data, size) = packet.GetProtoPreamble();
-    copy->emplace_back(data, size);
+    chunk->append(data, size);
     auto& slices = packet.slices();
     for (auto& slice : slices) {
-      copy->emplace_back(static_cast<const char*>(slice.start), slice.size);
+      chunk->append(static_cast<const char*>(slice.start), slice.size);
     }
   }
   read_buffers_stream_writer_.Post(FROM_HERE, &StreamWriter::WriteToStream,
-                                   std::move(copy), has_more);
+                                   std::move(chunk), has_more);
   if (!has_more) {
     read_buffers_stream_writer_.Reset();
   }

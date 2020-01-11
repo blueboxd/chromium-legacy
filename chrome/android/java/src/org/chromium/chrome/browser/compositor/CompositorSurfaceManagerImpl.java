@@ -55,7 +55,7 @@ class CompositorSurfaceManagerImpl implements SurfaceHolder.Callback2, Composito
         // Parent ViewGroup, or null.
         private ViewGroup mParent;
 
-        public SurfaceState(Context context, int format, boolean useSurfaceControl,
+        public SurfaceState(Context context, int format, boolean supportMediaOverlay,
                 SurfaceHolder.Callback2 callback) {
             surfaceView = new SurfaceView(context);
 
@@ -66,7 +66,7 @@ class CompositorSurfaceManagerImpl implements SurfaceHolder.Callback2, Composito
             // stacked on top of the translucent one, the framework doesn't draw any content
             // underneath it and shows its background instead when it has no content during the
             // transition.
-            if (format == PixelFormat.TRANSLUCENT && !useSurfaceControl) {
+            if (format == PixelFormat.TRANSLUCENT && supportMediaOverlay) {
                 surfaceView.setZOrderMediaOverlay(true);
             }
             surfaceView.setVisibility(View.INVISIBLE);
@@ -130,15 +130,15 @@ class CompositorSurfaceManagerImpl implements SurfaceHolder.Callback2, Composito
     // View to which we'll attach the SurfaceView.
     private final ViewGroup mParentView;
 
-    public CompositorSurfaceManagerImpl(
-            ViewGroup parentView, SurfaceManagerCallbackTarget client, boolean useSurfaceControl) {
+    public CompositorSurfaceManagerImpl(ViewGroup parentView, SurfaceManagerCallbackTarget client,
+            boolean supportMediaOverlay) {
         mParentView = parentView;
         mClient = client;
 
         mTranslucent = new SurfaceState(
-                parentView.getContext(), PixelFormat.TRANSLUCENT, useSurfaceControl, this);
+                parentView.getContext(), PixelFormat.TRANSLUCENT, supportMediaOverlay, this);
         mOpaque = new SurfaceState(
-                mParentView.getContext(), PixelFormat.OPAQUE, useSurfaceControl, this);
+                mParentView.getContext(), PixelFormat.OPAQUE, supportMediaOverlay, this);
     }
 
     /**
@@ -254,7 +254,7 @@ class CompositorSurfaceManagerImpl implements SurfaceHolder.Callback2, Composito
 
         mTranslucent.surfaceHolder().removeCallback(this);
         mTranslucent =
-                new SurfaceState(mParentView.getContext(), PixelFormat.TRANSLUCENT, true, this);
+                new SurfaceState(mParentView.getContext(), PixelFormat.TRANSLUCENT, false, this);
     }
 
     @Override

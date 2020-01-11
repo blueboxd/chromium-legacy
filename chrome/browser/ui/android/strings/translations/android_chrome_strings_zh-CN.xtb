@@ -366,6 +366,7 @@
 <translation id="381841723434055211">电话号码</translation>
 <translation id="3819178904835489326">已删除 <ph name="NUMBER_OF_DOWNLOADS" /> 项下载内容</translation>
 <translation id="3822502789641063741">要清除网站存储数据吗？</translation>
+<translation id="3853625385350850937">要继续，请在您的设备上开启 NFC 功能</translation>
 <translation id="3859306556332390985">前进</translation>
 <translation id="388596076286380598">畅享您喜爱的网站上的文章、视频和其他内容，即使离线或网络连接状况不佳也不受影响。</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
@@ -1049,6 +1050,7 @@
 <translation id="8912362522468806198">Google 帐号</translation>
 <translation id="8920114477895755567">正在等待获取家长的详细信息。</translation>
 <translation id="8922289737868596582">通过“更多选项”按钮下载网页以供离线查看</translation>
+<translation id="8926666909099850184">此设备的 NFC 功能处于关闭状态。请在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启此功能。</translation>
 <translation id="8937772741022875483">从“数字健康”应用中移除您的 Chrome 活动记录？</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">在其他窗口中打开</translation>

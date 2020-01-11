@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_NEW_TAB_PAGE_NEW_TAB_PAGE_UI_H_
 
 #include "base/macros.h"
+#include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -16,11 +17,13 @@ namespace content {
 class WebUI;
 }
 class GURL;
+class InstantService;
 class NewTabPageHandler;
 class Profile;
 
 class NewTabPageUI : public ui::MojoWebUIController,
-                     public new_tab_page::mojom::PageHandlerFactory {
+                     public new_tab_page::mojom::PageHandlerFactory,
+                     public InstantServiceObserver {
  public:
   explicit NewTabPageUI(content::WebUI* web_ui);
   ~NewTabPageUI() override;
@@ -40,12 +43,20 @@ class NewTabPageUI : public ui::MojoWebUIController,
       mojo::PendingReceiver<new_tab_page::mojom::PageHandler>
           pending_page_handler) override;
 
-  std::unique_ptr<NewTabPageHandler> page_handler_;
+  // InstantServiceObserver:
+  void NtpThemeChanged(const NtpTheme& theme) override;
+  void MostVisitedInfoChanged(const InstantMostVisitedInfo& info) override;
 
+  // Updates the load time data with the current theme's background color. That
+  // way the background color is available as soon as the page loads and we
+  // prevent a potential white flicker.
+  void UpdateBackgroundColor(const NtpTheme& theme);
+
+  std::unique_ptr<NewTabPageHandler> page_handler_;
   mojo::Receiver<new_tab_page::mojom::PageHandlerFactory>
       page_factory_receiver_;
-
   Profile* profile_;
+  InstantService* instant_service_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 

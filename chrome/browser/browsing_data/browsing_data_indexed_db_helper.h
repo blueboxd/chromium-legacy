@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom-forward.h"
-#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
@@ -43,7 +42,7 @@ class BrowsingDataIndexedDBHelper
   // |callback|. This must be called only on the UI thread.
   virtual void StartFetching(FetchCallback callback);
   // Requests a single indexed database to be deleted in the IndexedDB thread.
-  virtual void DeleteIndexedDB(const GURL& origin);
+  virtual void DeleteIndexedDB(const url::Origin& origin);
 
  protected:
   virtual ~BrowsingDataIndexedDBHelper();
@@ -88,7 +87,7 @@ class CannedBrowsingDataIndexedDBHelper
 
   // BrowsingDataIndexedDBHelper methods.
   void StartFetching(FetchCallback callback) override;
-  void DeleteIndexedDB(const GURL& origin) override;
+  void DeleteIndexedDB(const url::Origin& origin) override;
 
  private:
   ~CannedBrowsingDataIndexedDBHelper() override;

@@ -95,7 +95,7 @@ void AssistantCardElementView::AddedToWidget() {
   // vertically. As such, we need to prevent the Assistant card window from
   // receiving events it doesn't need. It needs mouse click events for
   // handling links.
-  window->SetProperty(ash::assistant::ui::kOnlyAllowMouseClickEvents, true);
+  window->SetProperty(assistant::ui::kOnlyAllowMouseClickEvents, true);
 }
 
 void AssistantCardElementView::ChildPreferredSizeChanged(views::View* child) {

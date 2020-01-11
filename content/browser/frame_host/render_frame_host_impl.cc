@@ -130,7 +130,6 @@
 #include "content/common/navigation_params_utils.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
-#include "content/common/swapped_out_messages.h"
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -1676,8 +1675,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                                     OnRunJavaScriptDialog)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_RunBeforeUnloadConfirm,
                                     OnRunBeforeUnloadConfirm)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidAccessInitialDocument,
-                        OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFramePolicy,
                         OnDidChangeFramePolicy)
@@ -2097,7 +2094,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
     params->widget_params->routing_id =
         GetLocalRenderWidgetHost()->GetRoutingID();
     params->widget_params->visual_properties =
-        GetLocalRenderWidgetHost()->GetVisualProperties();
+        GetLocalRenderWidgetHost()->GetInitialVisualProperties();
   }
 
   GetProcess()->GetRendererInterface()->CreateFrame(std::move(params));
@@ -3044,13 +3041,6 @@ void RenderFrameHostImpl::OnUnloaded() {
 
   ClearWebUI();
 
-  // If this is a main frame RFH that's about to be deleted, update its RVH's
-  // swapped-out state here. https://crbug.com/505887.  This should only be
-  // done if the RVH hasn't been already reused and marked as active by another
-  // navigation. See https://crbug.com/823567.
-  if (frame_tree_node_->IsMainFrame() && !render_view_host_->is_active())
-    render_view_host_->set_is_swapped_out(true);
-
   bool deleted =
       frame_tree_node_->render_manager()->DeleteFromPendingList(this);
   CHECK(deleted);
@@ -3362,7 +3352,7 @@ bool RenderFrameHostImpl::HasTransientUserActivation() {
   return frame_tree_node_->HasTransientUserActivation();
 }
 
-void RenderFrameHostImpl::OnDidAccessInitialDocument() {
+void RenderFrameHostImpl::DidAccessInitialDocument() {
   delegate_->DidAccessInitialDocument();
 }
 
@@ -6481,10 +6471,12 @@ void RenderFrameHostImpl::CreateInstalledAppProvider(
 
 void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver) {
+  // When a dedicated worker is created from the frame script, the frame is both
+  // the creator and the ancestor.
   content::CreateDedicatedWorkerHostFactory(
-      process_->GetID(), /*ancestor_render_frame_id=*/routing_id_,
-      /*creator_render_frame_id=*/routing_id_, last_committed_origin_,
-      std::move(receiver));
+      /* creator_frame_routing_id = */ GetGlobalFrameRoutingId(),
+      /* ancestor_frame_routing_id = */ GetGlobalFrameRoutingId(),
+      last_committed_origin_, std::move(receiver));
 }
 
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {

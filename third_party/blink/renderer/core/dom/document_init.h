@@ -145,6 +145,12 @@ class CORE_EXPORT DocumentInit final {
     return frame_policy_;
   }
 
+  DocumentInit& WithDocumentPolicy(
+      const DocumentPolicy::FeatureState& document_policy);
+  const DocumentPolicy::FeatureState& GetDocumentPolicy() const {
+    return document_policy_;
+  }
+
  private:
   DocumentInit(HTMLImportsController*);
 
@@ -215,6 +221,8 @@ class CORE_EXPORT DocumentInit final {
 
   // The frame policy snapshot from the beginning of navigation.
   base::Optional<FramePolicy> frame_policy_ = base::nullopt;
+
+  DocumentPolicy::FeatureState document_policy_;
 };
 
 }  // namespace blink

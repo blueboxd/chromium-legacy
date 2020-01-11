@@ -57,11 +57,10 @@ HintCache::MaybeCreateUpdateDataForComponentHints(
 }
 
 std::unique_ptr<StoreUpdateData> HintCache::CreateUpdateDataForFetchedHints(
-    base::Time update_time,
-    base::Time expiry_time) const {
+    base::Time update_time) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return optimization_guide_store_->CreateUpdateDataForFetchedHints(
-      update_time, expiry_time);
+      update_time);
 }
 
 void HintCache::UpdateComponentHints(
@@ -82,19 +81,19 @@ void HintCache::UpdateFetchedHints(
     std::unique_ptr<proto::GetHintsResponse> get_hints_response,
     base::Time update_time,
     base::OnceClosure callback) {
-  base::Time expiry_time = update_time;
-  if (get_hints_response->has_max_cache_duration()) {
-    expiry_time += base::TimeDelta().FromSeconds(
-        get_hints_response->max_cache_duration().seconds());
-  } else {
-    expiry_time += features::StoredFetchedHintsFreshnessDuration();
-  }
   std::unique_ptr<StoreUpdateData> fetched_hints_update_data =
-      CreateUpdateDataForFetchedHints(update_time, expiry_time);
+      CreateUpdateDataForFetchedHints(update_time);
   ProcessAndCacheHints(get_hints_response.get()->mutable_hints(),
                        fetched_hints_update_data.get());
   optimization_guide_store_->UpdateFetchedHints(
       std::move(fetched_hints_update_data), std::move(callback));
+}
+
+void HintCache::PurgeExpiredFetchedHints() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(optimization_guide_store_);
+
+  optimization_guide_store_->PurgeExpiredFetchedHints();
 }
 
 void HintCache::ClearFetchedHints() {

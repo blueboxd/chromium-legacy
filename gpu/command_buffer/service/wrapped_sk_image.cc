@@ -42,7 +42,8 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
  public:
   ~WrappedSkImage() override {
     promise_texture_.reset();
-    gpu::DeleteSkImage(context_state_, std::move(image_));
+    if (backend_texture_.isValid())
+      DeleteGrBackendTexture(context_state_, &backend_texture_);
 
     DCHECK(context_state_->context_lost() ||
            context_state_->IsCurrent(nullptr));
@@ -84,7 +85,7 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
     DCHECK(context_state_->IsCurrent(nullptr));
 
     return SkSurface::MakeFromBackendTexture(
-        context_state_->gr_context(), image_->getBackendTexture(false),
+        context_state_->gr_context(), backend_texture_,
         kTopLeft_GrSurfaceOrigin, final_msaa_count, GetSkColorType(),
         color_space().ToSkColorSpace(), &surface_props);
   }
@@ -138,23 +139,21 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
 
     if (!data.empty()) {
       if (format() == viz::ResourceFormat::ETC1) {
-        auto sk_data = SkData::MakeWithCopy(data.data(), data.size());
-        image_ = SkImage::MakeFromCompressed(
-            context_state_->gr_context(), sk_data, size().width(),
-            size().height(), SkImage::kETC1_CompressionType);
+        backend_texture_ =
+            context_state_->gr_context()->createCompressedBackendTexture(
+                size().width(), size().height(), SkImage::kETC1_CompressionType,
+                data.data(), data.size(), GrMipMapped::kNo, is_protected);
       } else {
         SkBitmap bitmap;
         if (!bitmap.installPixels(info, const_cast<uint8_t*>(data.data()),
                                   info.minRowBytes())) {
           return false;
         }
-        image_ = SkImage::MakeFromBitmap(bitmap);
-        // Move image to GPU
-        if (image_)
-          image_ = image_->makeTextureImage(context_state_->gr_context());
+        backend_texture_ = context_state_->gr_context()->createBackendTexture(
+            bitmap.pixmap(), GrRenderable::kNo, is_protected);
       }
 
-      if (!image_)
+      if (!backend_texture_.isValid())
         return false;
 
       SetCleared();
@@ -165,42 +164,38 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
       // We don't do this on release builds because there is a slight overhead.
 
 #if DCHECK_IS_ON()
-      auto backend_texture = context_state_->gr_context()->createBackendTexture(
+      backend_texture_ = context_state_->gr_context()->createBackendTexture(
           size().width(), size().height(), GetSkColorType(), SkColors::kBlue,
           GrMipMapped::kNo, GrRenderable::kYes, is_protected);
 #else
-      auto backend_texture = context_state_->gr_context()->createBackendTexture(
+      backend_texture_ = context_state_->gr_context()->createBackendTexture(
           size().width(), size().height(), GetSkColorType(), GrMipMapped::kNo,
           GrRenderable::kYes, is_protected);
 #endif
-      image_ = SkImage::MakeFromAdoptedTexture(
-          context_state_->gr_context(), backend_texture,
-          GrSurfaceOrigin::kTopLeft_GrSurfaceOrigin, info.colorType(),
-          info.alphaType(), color_space().ToSkColorSpace());
     }
 
-    auto backend_texture = image_->getBackendTexture(true);
-    DCHECK(backend_texture.isValid());
+    if (!backend_texture_.isValid())
+      return false;
 
-    promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+    promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);
 
-    switch (backend_texture.backend()) {
+    switch (backend_texture_.backend()) {
       case GrBackendApi::kOpenGL: {
         GrGLTextureInfo tex_info;
-        if (backend_texture.getGLTextureInfo(&tex_info))
+        if (backend_texture_.getGLTextureInfo(&tex_info))
           tracing_id_ = tex_info.fID;
         break;
       }
       case GrBackendApi::kVulkan: {
         GrVkImageInfo image_info;
-        if (backend_texture.getVkImageInfo(&image_info))
+        if (backend_texture_.getVkImageInfo(&image_info))
           tracing_id_ = reinterpret_cast<uint64_t>(image_info.fImage);
         break;
       }
 #if BUILDFLAG(SKIA_USE_DAWN)
       case GrBackendApi::kDawn: {
         GrDawnTextureInfo tex_info;
-        if (backend_texture.getDawnTextureInfo(&tex_info))
+        if (backend_texture_.getDawnTextureInfo(&tex_info))
           tracing_id_ = reinterpret_cast<uint64_t>(tex_info.fTexture.Get());
         break;
       }
@@ -215,9 +210,8 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
 
   SharedContextState* const context_state_;
 
+  GrBackendTexture backend_texture_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
-  // TODO(penghuang): manage texture directly with GrBackendTexture,
-  sk_sp<SkImage> image_;
 
   uint64_t tracing_id_ = 0;
 

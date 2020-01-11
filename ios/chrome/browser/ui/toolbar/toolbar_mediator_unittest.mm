@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -104,6 +105,11 @@ class ToolbarMediatorTest : public PlatformTest {
       : scoped_provider_(
             std::make_unique<TestToolbarMediatorChromeBrowserProvider>()) {
     TestChromeBrowserState::Builder test_cbs_builder;
+
+    bool success = state_dir_.CreateUniqueTempDir();
+    DCHECK(success);
+    test_cbs_builder.SetPath(state_dir_.GetPath());
+
     chrome_browser_state_ = test_cbs_builder.Build();
     chrome_browser_state_->CreateBookmarkModel(false);
     bookmark_model_ = ios::BookmarkModelFactory::GetForBrowserState(
@@ -128,6 +134,11 @@ class ToolbarMediatorTest : public PlatformTest {
   ~ToolbarMediatorTest() override { [mediator_ disconnect]; }
 
  protected:
+  // A state directory that outlives |task_environment_| is needed because
+  // CreateHistoryService/CreateBookmarkModel use the directory to host
+  // databases. See https://crbug.com/546640 for more details.
+  base::ScopedTempDir state_dir_;
+
   web::WebTaskEnvironment task_environment_;
   void SetUpWebStateList() {
     web_state_list_ = std::make_unique<WebStateList>(&web_state_list_delegate_);

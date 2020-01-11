@@ -338,26 +338,58 @@ TEST_F(OmniboxEditModelTest, AlternateNavHasHTTP) {
 }
 
 TEST_F(OmniboxEditModelTest, CurrentMatch) {
-  location_bar_model()->set_url(GURL("http://localhost/"));
-  location_bar_model()->set_url_for_display(base::ASCIIToUTF16("localhost"));
-  model()->ResetDisplayTexts();
-  model()->Revert();
-
-  // Tests that we use the formatted full URL instead of the elided URL to
-  // generate matches.
+  // Test the HTTP case.
   {
+    location_bar_model()->set_url(GURL("http://www.example.com/"));
+    location_bar_model()->set_url_for_display(
+        base::ASCIIToUTF16("example.com"));
+    model()->ResetDisplayTexts();
+    model()->Revert();
+
+    // iOS doesn't do elision in the textfield view.
+#if defined(OS_IOS)
+    EXPECT_EQ(base::ASCIIToUTF16("http://www.example.com/"), view()->GetText());
+#else
+    EXPECT_EQ(base::ASCIIToUTF16("example.com"), view()->GetText());
+#endif
+
     AutocompleteMatch match = model()->CurrentMatch(nullptr);
     EXPECT_EQ(AutocompleteMatchType::URL_WHAT_YOU_TYPED, match.type);
     EXPECT_TRUE(model()->CurrentTextIsURL());
+    EXPECT_EQ("http://www.example.com/", match.destination_url.spec());
+  }
+
+  // Test that generating a match from an elided HTTPS URL doesn't drop the
+  // secure scheme.
+  {
+    location_bar_model()->set_url(GURL("https://www.google.com/"));
+    location_bar_model()->set_url_for_display(base::ASCIIToUTF16("google.com"));
+    model()->ResetDisplayTexts();
+    model()->Revert();
+
+    // iOS doesn't do elision in the textfield view.
+#if defined(OS_IOS)
+    EXPECT_EQ(base::ASCIIToUTF16("https://www.google.com/"), view()->GetText());
+#else
+    EXPECT_EQ(base::ASCIIToUTF16("google.com"), view()->GetText());
+#endif
+
+    AutocompleteMatch match = model()->CurrentMatch(nullptr);
+    EXPECT_EQ(AutocompleteMatchType::URL_WHAT_YOU_TYPED, match.type);
+    EXPECT_TRUE(model()->CurrentTextIsURL());
+
+    // Additionally verify we aren't accidentally dropping the HTTPS scheme.
+    EXPECT_EQ("https://www.google.com/", match.destination_url.spec());
   }
 
   // Tests that when there is a Query in Omnibox, generate matches from the
   // query, instead of the full formatted URL.
-  location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foobar"));
-  model()->ResetDisplayTexts();
-  model()->Revert();
-
   {
+    location_bar_model()->set_display_search_terms(
+        base::ASCIIToUTF16("foobar"));
+    model()->ResetDisplayTexts();
+    model()->Revert();
+
     AutocompleteMatch match = model()->CurrentMatch(nullptr);
     EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, match.type);
     EXPECT_FALSE(model()->CurrentTextIsURL());

@@ -261,10 +261,6 @@ class ChromeContentRendererClient
   void BindWebRTCLoggingAgent(
       mojo::PendingReceiver<chrome::mojom::WebRtcLoggingAgent> receiver);
 
-  // Time at which this object was created. This is very close to the time at
-  // which the RendererMain function was entered.
-  base::TimeTicks main_entry_time_;
-
 #if BUILDFLAG(ENABLE_NACL)
   // Determines if a page/app/extension is allowed to run native (non-PNaCl)
   // NaCl modules.

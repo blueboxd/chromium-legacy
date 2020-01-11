@@ -369,6 +369,11 @@ const char kFocusMode[] = "Focus Mode";
 const char kFocusModeDescription[] =
     "If enabled, allows the user to switch to Focus Mode";
 
+const char kFontAccessAPIName[] = "Font Access APIs";
+const char kFontAccessAPIDescription[] =
+    "Enables the experimental Font Access APIs, giving websites access "
+    "to enumerate local fonts and access their table data.";
+
 const char kFontSrcLocalMatchingName[] =
     "Match @font-face { src: local(<name>) } names by PostScript and full font "
     "name.";

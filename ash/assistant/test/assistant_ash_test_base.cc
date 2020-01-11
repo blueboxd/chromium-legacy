@@ -116,7 +116,7 @@ void AssistantAshTestBase::CloseAssistantUi(AssistantExitPoint exit_point) {
 }
 
 void AssistantAshTestBase::CloseLauncher() {
-  ash::Shell::Get()->app_list_controller()->ViewClosing();
+  Shell::Get()->app_list_controller()->ViewClosing();
 }
 
 void AssistantAshTestBase::SetTabletMode(bool enable) {

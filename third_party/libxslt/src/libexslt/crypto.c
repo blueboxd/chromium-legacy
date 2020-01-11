@@ -755,7 +755,14 @@ exsltCryptoRc4DecryptFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     PLATFORM_RC4_DECRYPT (ctxt, padkey, bin, ret_len, ret, ret_len);
     ret[ret_len] = 0;
 
-    xmlXPathReturnString (ctxt, ret);
+    if (xmlCheckUTF8(ret) == 0) {
+	xsltTransformError(tctxt, NULL, tctxt->inst,
+	    "exsltCryptoRc4DecryptFunction: Invalid UTF-8\n");
+        xmlFree(ret);
+	xmlXPathReturnEmptyString(ctxt);
+    } else {
+        xmlXPathReturnString(ctxt, ret);
+    }
 
 done:
     if (key != NULL)

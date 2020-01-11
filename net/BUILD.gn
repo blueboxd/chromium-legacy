@@ -5860,6 +5860,7 @@ test("net_unittests") {
     "//net/http:transport_security_state_unittest_data",
     "//net/http:transport_security_state_unittest_data_default",
     "//net/tools/huffman_trie:huffman_trie_generator_sources",
+    "//net/trust_tokens:tests",
     "//sql",
     "//testing/gmock",
     "//testing/gtest",

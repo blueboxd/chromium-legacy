@@ -28,7 +28,7 @@ class AssistantController;
 class AssistantScreenContextModelObserver;
 
 class ASH_EXPORT AssistantScreenContextController
-    : public ash::mojom::AssistantScreenContextController,
+    : public mojom::AssistantScreenContextController,
       public AssistantControllerObserver,
       public AssistantUiModelObserver {
  public:

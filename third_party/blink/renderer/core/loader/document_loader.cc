@@ -124,6 +124,7 @@ DocumentLoader::DocumentLoader(
       document_load_timing_(*this),
       service_worker_network_provider_(
           std::move(params_->service_worker_network_provider)),
+      was_blocked_by_document_policy_(false),
       was_blocked_by_csp_(false),
       state_(kNotStarted),
       in_commit_data_(false),
@@ -173,7 +174,12 @@ DocumentLoader::DocumentLoader(
   ip_address_space_ = params_->ip_address_space;
   grant_load_local_resources_ = params_->grant_load_local_resources;
   force_fetch_cache_mode_ = params_->force_fetch_cache_mode;
-  frame_policy_ = params_->frame_policy;
+  response_ = params_->response.ToResourceResponse();
+  frame_policy_ = params_->frame_policy.value_or(FramePolicy());
+  document_policy_ = CreateDocumentPolicy();
+  // Initialize |frame_policy_| in frame after the update to
+  // |frame_policy_.required_document_policy| in CreateDocumentPolicy.
+  frame_->SetFramePolicy(frame_policy_);
 
   WebNavigationTimings& timings = params_->navigation_timings;
   if (!timings.input_start.is_null())
@@ -232,24 +238,19 @@ DocumentLoader::DocumentLoader(
       // information that is consistent with the final request URL.
       // Note: We can't use |url_| for the origin calculation because
       // we need to take into account any redirects that may have occurred.
-      const auto request_url_origin = blink::SecurityOrigin::Create(
-          params_->response.ToResourceResponse().CurrentRequestUrl());
+      const auto request_url_origin =
+          blink::SecurityOrigin::Create(response_.CurrentRequestUrl());
       origin_to_commit_ = request_url_origin->DeriveNewOpaqueOrigin();
 
       was_blocked_by_csp_ = true;
-      KURL blocked_url = SecurityOrigin::UrlWithUniqueOpaqueOrigin();
-      original_url_ = blocked_url;
-      url_ = blocked_url;
-      params_->url = blocked_url;
-      WebNavigationParams::FillStaticResponse(params_.get(), "text/html",
-                                              "UTF-8", "");
     }
   }
 
+  if (was_blocked_by_csp_ || was_blocked_by_document_policy_)
+    ReplaceWithEmptyDocument();
+
   if (!GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     redirect_chain_.push_back(url_);
-
-  response_ = params_->response.ToResourceResponse();
 
   for (auto feature : params_->initiator_origin_trial_features) {
     // Convert from int to OriginTrialFeature. These values are passed between
@@ -625,7 +626,7 @@ void DocumentLoader::BodyLoadingFinished(
       navigation_timing_info_->SetFinalResponse(response_);
       navigation_timing_info_->AddFinalTransferSize(
           total_encoded_data_length == -1 ? 0 : total_encoded_data_length);
-      if (response_.HttpStatusCode() < 400 && report_timing_info_to_parent_) {
+      if (report_timing_info_to_parent_) {
         navigation_timing_info_->SetLoadResponseEnd(completion_time);
         if (state_ >= kCommitted) {
           // Note that we currently lose timing info for empty documents,
@@ -782,6 +783,51 @@ bool DocumentLoader::ShouldReportTimingInfoToParent() {
     return false;
   }
   return true;
+}
+
+void DocumentLoader::ConsoleError(const String& message) {
+  ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
+      mojom::ConsoleMessageSource::kSecurity,
+      mojom::ConsoleMessageLevel::kError, message,
+      response_.CurrentRequestUrl(), this, MainResourceIdentifier());
+  frame_->GetDocument()->AddConsoleMessage(console_message);
+}
+
+void DocumentLoader::ReplaceWithEmptyDocument() {
+  DCHECK(params_);
+  KURL blocked_url = SecurityOrigin::UrlWithUniqueOpaqueOrigin();
+  original_url_ = blocked_url;
+  url_ = blocked_url;
+  params_->url = blocked_url;
+  WebNavigationParams::FillStaticResponse(params_.get(), "text/html", "UTF-8",
+                                          "");
+}
+
+DocumentPolicy::FeatureState DocumentLoader::CreateDocumentPolicy() {
+  if (!RuntimeEnabledFeatures::DocumentPolicyEnabled())
+    return DocumentPolicy::FeatureState{};
+
+  const DocumentPolicy::FeatureState header_policy =
+      DocumentPolicy::Parse(
+          response_.HttpHeaderField(http_names::kDocumentPolicy).Ascii())
+          .value_or(DocumentPolicy::FeatureState{});
+
+  const DocumentPolicy::FeatureState header_required_policy =
+      DocumentPolicy::Parse(
+          response_.HttpHeaderField(http_names::kRequireDocumentPolicy).Ascii())
+          .value_or(DocumentPolicy::FeatureState{});
+
+  frame_policy_.required_document_policy = DocumentPolicy::MergeFeatureState(
+      frame_policy_.required_document_policy, header_required_policy);
+
+  if (!DocumentPolicy::IsPolicyCompatible(
+          frame_policy_.required_document_policy, header_policy)) {
+    was_blocked_by_document_policy_ = true;
+    // When header policy is less strict than required policy, use required
+    // policy to initialize document policy for the document.
+    return frame_policy_.required_document_policy;
+  }
+  return header_policy;
 }
 
 void DocumentLoader::HandleResponse() {
@@ -1431,6 +1477,7 @@ void DocumentLoader::InstallNewDocument(
           .WithFramePolicy(frame_policy_)
           .WithNewRegistrationContext()
           .WithFeaturePolicyHeader(feature_policy.ToString())
+          .WithDocumentPolicy(document_policy_)
           .WithOriginTrialsHeader(
               response_.HttpHeaderField(http_names::kOriginTrial))
           .WithContentSecurityPolicy(content_security_policy_.Get());
@@ -1535,16 +1582,24 @@ void DocumentLoader::InstallNewDocument(
   // Log if the document was blocked by CSP checks now that the new Document has
   // been created and console messages will be properly displayed.
   if (was_blocked_by_csp_) {
-    String message = "Refused to display '" +
-                     response_.CurrentRequestUrl().ElidedString() +
-                     "' because it has not opted-into the following policy "
-                     "required by its embedder: '" +
-                     GetFrameLoader().RequiredCSP() + "'.";
-    ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError, message,
-        response_.CurrentRequestUrl(), this, MainResourceIdentifier());
-    frame_->GetDocument()->AddConsoleMessage(console_message);
+    ConsoleError("Refused to display '" +
+                 response_.CurrentRequestUrl().ElidedString() +
+                 "' because it has not opted into the following policy "
+                 "required by its embedder: '" +
+                 GetFrameLoader().RequiredCSP() + "'.");
+  }
+
+  if (was_blocked_by_document_policy_) {
+    // TODO(chenleihu): Add which document policy violated in error string,
+    // instead of just displaying serialized required document policy.
+    ConsoleError(
+        "Refused to display '" + response_.CurrentRequestUrl().ElidedString() +
+        "' because it violates the following document policy "
+        "required by its embedder: '" +
+        DocumentPolicy::Serialize(frame_policy_.required_document_policy)
+            .value_or("[Serialization Error]")
+            .c_str() +
+        "'.");
   }
 
   // Report the ResourceResponse now that the new Document has been created and

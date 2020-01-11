@@ -124,63 +124,9 @@
         },
       },
       'Mac ASan 64 Tests (1)': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
         'swarming': {
           'shards': 20,
         },
-      },
-      'Mac10.11 Tests': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
-      },
-      'Mac10.12 Tests': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
-      },
-      'Mac10.13 Tests': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
-      },
-      'Mac10.13 Tests (dbg)': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
-      },
-      'ToTMac': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
-      },
-      'ToTMacASan': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
       },
       'ToTWin(dbg)': {
         'swarming': {
@@ -1688,6 +1634,20 @@
       'Win10 FYI x64 Release (Intel UHD 630)',
       'Win10 FYI x64 Exp Release (Intel HD 630)',
     ],
+  },
+  'viz_unittests': {
+    'modifications': {
+      'android-marshmallow-x86-fyi-rel': {
+        'flags': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter',
+        ],
+      },
+      'android-pie-x86-fyi-rel': {
+        'flags': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.viz_unittests.filter',
+        ],
+      },
+    },
   },
   'vr_android_unittests': {
     'remove_from': [

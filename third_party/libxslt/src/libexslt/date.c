@@ -141,9 +141,9 @@ struct _exsltDateDurVal {
 #define IS_LEAP(y)						\
 	(((y & 3) == 0) && ((y % 25 != 0) || ((y & 15) == 0)))
 
-static const unsigned long daysInMonth[12] =
+static const long daysInMonth[12] =
 	{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-static const unsigned long daysInMonthLeap[12] =
+static const long daysInMonthLeap[12] =
 	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 #define MAX_DAYINMONTH(yr,mon)                                  \
@@ -177,15 +177,18 @@ static const unsigned long daysInMonthLeap[12] =
 #define DAYS_PER_EPOCH          (400 * 365 + 100 - 4 + 1)
 #define YEARS_PER_EPOCH         400
 
-static const unsigned long dayInYearByMonth[12] =
+static const long dayInYearByMonth[12] =
 	{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
-static const unsigned long dayInLeapYearByMonth[12] =
+static const long dayInLeapYearByMonth[12] =
 	{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 };
 
 #define DAY_IN_YEAR(day, month, year)				\
         ((IS_LEAP(year) ?					\
                 dayInLeapYearByMonth[month - 1] :		\
                 dayInYearByMonth[month - 1]) + day)
+
+#define YEAR_MAX LONG_MAX
+#define YEAR_MIN (-LONG_MAX + 1)
 
 /**
  * _exsltDateParseGYear:
@@ -221,7 +224,7 @@ _exsltDateParseGYear (exsltDateValPtr dt, const xmlChar **str)
     firstChar = cur;
 
     while ((*cur >= '0') && (*cur <= '9')) {
-        if (dt->year >= LONG_MAX / 10)
+        if (dt->year >= YEAR_MAX / 10) /* Not really exact */
             return -1;
 	dt->year = dt->year * 10 + (*cur - '0');
 	cur++;
@@ -1474,11 +1477,12 @@ _exsltDateDayInWeek(long yday, long yr)
     long ret;
 
     if (yr <= 0) {
-        ret = ((yr-2 + ((yr/4)-(yr/100)+(yr/400)) + yday) % 7);
+        /* Compute modulus twice to avoid integer overflow */
+        ret = ((yr%7-2 + ((yr/4)-(yr/100)+(yr/400)) + yday) % 7);
         if (ret < 0)
             ret += 7;
     } else
-        ret = (((yr-1) + (((yr-1)/4)-((yr-1)/100)+((yr-1)/400)) + yday) % 7);
+        ret = (((yr%7-1) + (((yr-1)/4)-((yr-1)/100)+((yr-1)/400)) + yday) % 7);
 
     return ret;
 }
@@ -1532,8 +1536,8 @@ _exsltDateAdd (exsltDateValPtr dt, exsltDateDurValPtr dur)
      * pathological cases.
      */
     carry += (dur->day / DAYS_PER_EPOCH) * YEARS_PER_EPOCH;
-    if ((carry > 0 && dt->year > LONG_MAX - carry) ||
-        (carry < 0 && dt->year < LONG_MIN - carry)) {
+    if ((carry > 0 && dt->year > YEAR_MAX - carry) ||
+        (carry < 0 && dt->year < YEAR_MIN - carry)) {
         /* Overflow */
         exsltDateFreeDate(ret);
         return NULL;
@@ -1583,7 +1587,7 @@ _exsltDateAdd (exsltDateValPtr dt, exsltDateDurValPtr dur)
                 ret->mon -= 1;
             }
             else {
-                if (ret->year == LONG_MIN) {
+                if (ret->year == YEAR_MIN) {
                     exsltDateFreeDate(ret);
                     return NULL;
                 }
@@ -1597,7 +1601,7 @@ _exsltDateAdd (exsltDateValPtr dt, exsltDateDurValPtr dur)
                 ret->mon += 1;
             }
             else {
-                if (ret->year == LONG_MAX) {
+                if (ret->year == YEAR_MAX) {
                     exsltDateFreeDate(ret);
                     return NULL;
                 }

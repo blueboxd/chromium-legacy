@@ -2280,6 +2280,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "font-access",
+    "owners": [ "cmp", "oyiptong" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "font-src-local-matching",
     "owners": [ "drott", "layout-dev" ],
     "expiry_milestone": 82

@@ -23,9 +23,10 @@ NullExecutionContext::NullExecutionContext(
           MakeGarbageCollected<Agent>(v8::Isolate::GetCurrent(),
                                       base::UnguessableToken::Null()),
           origin_trial_context,
-          nullptr,
+          nullptr /* origin */,
           WebSandboxFlags::kNone,
-          nullptr,
+          nullptr /* feature_policy */,
+          nullptr /* document_policy */,
           SecureContextMode::kSecureContext),
       scheduler_(scheduler::CreateDummyFrameScheduler()) {}
 

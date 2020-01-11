@@ -1021,7 +1021,8 @@ void GraphicsContext::DrawImageRRect(
                                               &image_flags);
 
   bool use_shader = (visible_src == src_rect) &&
-                    (respect_orientation == kDoNotRespectImageOrientation);
+                    (respect_orientation == kDoNotRespectImageOrientation ||
+                     image->HasDefaultOrientation());
   if (use_shader) {
     const SkMatrix local_matrix = SkMatrix::MakeRectToRect(
         visible_src, dest.Rect(), SkMatrix::kFill_ScaleToFit);

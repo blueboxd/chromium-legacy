@@ -55,8 +55,8 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
   const ui::KeyEvent& key_event = static_cast<const ui::KeyEvent&>(event);
   ui::KeyboardCode key_code = key_event.key_code();
 
-  if (!ash::keyboard_util::IsArrowKeyCode(key_code) &&
-      key_code != ui::VKEY_RETURN && key_code != ui::VKEY_F6) {
+  if (!keyboard_util::IsArrowKeyCode(key_code) && key_code != ui::VKEY_RETURN &&
+      key_code != ui::VKEY_F6) {
     return ui::EVENT_REWRITE_CONTINUE;
   }
 
@@ -65,7 +65,7 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
       key_event.code(), key_event.GetDomKey(), key_event.key_code()};
 
   if (arrow_to_tab_rewriting_enabled_) {
-    if (ash::keyboard_util::IsArrowKeyCode(key_code)) {
+    if (keyboard_util::IsArrowKeyCode(key_code)) {
       const ui::KeyEvent tab_event(ui::ET_KEY_PRESSED, ui::VKEY_TAB,
                                    ui::EF_NONE);
       state.code = tab_event.code();

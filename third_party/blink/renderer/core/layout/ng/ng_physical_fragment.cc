@@ -227,7 +227,8 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
       has_floating_descendants_for_paint_(false),
       is_fieldset_container_(false),
       is_legacy_layout_root_(false),
-      is_painted_atomically_(false) {
+      is_painted_atomically_(false),
+      has_baseline_(false) {
   DCHECK(builder->layout_object_);
 }
 
@@ -245,7 +246,8 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
       has_floating_descendants_for_paint_(false),
       is_fieldset_container_(false),
       is_legacy_layout_root_(false),
-      is_painted_atomically_(false) {
+      is_painted_atomically_(false),
+      has_baseline_(false) {
   DCHECK(layout_object);
 }
 

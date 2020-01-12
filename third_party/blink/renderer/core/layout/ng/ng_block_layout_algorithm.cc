@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_child_iterator.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -826,7 +827,8 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
     container_builder_.CheckNoBlockFragmentation();
 #endif
 
-  PropagateBaselinesFromChildren();
+  // Adjust the position of the final baseline if needed.
+  FinalizeBaseline();
 
   // An exclusion space is confined to nodes within the same formatting context.
   if (!ConstraintSpace().IsNewFormattingContext())
@@ -1229,8 +1231,8 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
         /* abort_if_cleared */ false, &child_bfc_offset);
   }
 
-  NGFragment fragment(ConstraintSpace().GetWritingMode(),
-                      layout_result->PhysicalFragment());
+  const auto& physical_fragment = layout_result->PhysicalFragment();
+  NGFragment fragment(ConstraintSpace().GetWritingMode(), physical_fragment);
 
   LogicalOffset logical_offset = LogicalFromBfcOffsets(
       child_bfc_offset, ContainerBfcOffset(), fragment.InlineSize(),
@@ -1257,6 +1259,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
                                      previous_inflow_position))
     return NGLayoutResult::kBfcBlockOffsetResolved;
 
+  PropagateBaselineFromChild(physical_fragment, logical_offset.block_offset);
   container_builder_.AddResult(*layout_result, logical_offset);
 
   // The margins we store will be used by e.g. getComputedStyle().
@@ -1752,6 +1755,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
                                      previous_inflow_position))
     return NGLayoutResult::kBfcBlockOffsetResolved;
 
+  PropagateBaselineFromChild(physical_fragment, logical_offset.block_offset);
   container_builder_.AddResult(*layout_result, logical_offset);
 
   if (auto* block_child = DynamicTo<NGBlockNode>(child)) {
@@ -2318,9 +2322,6 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     builder.SetTableCellChildLayoutMode(mode);
   }
 
-  if (NGBaseline::ShouldPropagateBaselines(child))
-    builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());
-
   bool has_bfc_block_offset = container_builder_.BfcBlockOffset().has_value();
 
   // Propagate the |NGConstraintSpace::ForcedBfcBlockOffset| down to our
@@ -2378,11 +2379,10 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     clearance_offset = std::max(clearance_offset, child_clearance_offset);
     builder.SetTextDirection(child_style.Direction());
 
-    // PositionListMarker() requires a first line baseline.
-    if (container_builder_.UnpositionedListMarker()) {
-      builder.AddBaselineRequest(
-          {NGBaselineAlgorithmType::kFirstLine, style.GetFontBaseline()});
-    }
+    // |PositionListMarker()| requires a baseline.
+    builder.SetNeedsBaseline(ConstraintSpace().NeedsBaseline() ||
+                             container_builder_.UnpositionedListMarker());
+    builder.SetBaselineAlgorithmType(ConstraintSpace().BaselineAlgorithmType());
   } else {
     builder.SetTextDirection(style.Direction());
   }
@@ -2418,101 +2418,50 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   return builder.ToConstraintSpace();
 }
 
-LayoutUnit NGBlockLayoutAlgorithm::ComputeLineBoxBaselineOffset(
-    const NGBaselineRequest& request,
-    const NGPhysicalLineBoxFragment& line_box,
-    LayoutUnit line_box_block_offset) const {
-  NGLineHeightMetrics metrics =
-      line_box.BaselineMetrics(request.BaselineType());
-  DCHECK(!metrics.IsEmpty());
+void NGBlockLayoutAlgorithm::PropagateBaselineFromChild(
+    const NGPhysicalContainerFragment& child,
+    LayoutUnit block_offset) {
+  // Check if we've already found an appropriate baseline.
+  if (container_builder_.Baseline() &&
+      ConstraintSpace().BaselineAlgorithmType() ==
+          NGBaselineAlgorithmType::kFirstLine)
+    return;
 
-  // NGLineHeightMetrics is line-relative, which matches to the flow-relative
-  // unless this box is in flipped-lines writing-mode.
-  if (!Style().IsFlippedLinesWritingMode())
-    return metrics.ascent + line_box_block_offset;
-
-  if (Node().IsInlineLevel()) {
-    // If this box is inline-level, since we're in NGBlockLayoutAlgorithm, this
-    // is an inline-block.
-    DCHECK(Node().IsAtomicInlineLevel());
-    // This box will be flipped when the containing line is flipped. Compute the
-    // baseline offset from the block-end (right in vertical-lr) content edge.
-    line_box_block_offset = container_builder_.Size().block_size -
-                            (line_box_block_offset + line_box.Size().width);
-    return metrics.ascent + line_box_block_offset;
-  }
-
-  // Otherwise, the baseline is offset by the descent from the block-start
-  // content edge.
-  return metrics.descent + line_box_block_offset;
-}
-
-// Add a baseline from a child box fragment.
-// @return false if the specified child is not a box or is OOF.
-bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
-                                         const NGPhysicalFragment& child,
-                                         LayoutUnit child_offset) {
   if (child.IsLineBox()) {
     const auto& line_box = To<NGPhysicalLineBoxFragment>(child);
 
-    // Skip over a line-box which is empty. These don't have any baselines which
-    // should be added.
+    // Skip over a line-box which is empty. These don't have any baselines
+    // which should be added.
     if (line_box.IsEmptyLineBox())
-      return false;
+      return;
 
-    LayoutUnit offset =
-        ComputeLineBoxBaselineOffset(request, line_box, child_offset);
-    container_builder_.AddBaseline(request, offset);
-    return true;
+    NGLineHeightMetrics metrics = line_box.BaselineMetrics();
+    DCHECK(!metrics.IsEmpty());
+    LayoutUnit baseline =
+        Style().IsFlippedLinesWritingMode() ? metrics.descent : metrics.ascent;
+    container_builder_.SetBaseline(baseline + block_offset);
+  } else {
+    if (auto baseline = NGBoxFragment(ConstraintSpace().GetWritingMode(),
+                                      ConstraintSpace().Direction(),
+                                      To<NGPhysicalBoxFragment>(child))
+                            .Baseline())
+      container_builder_.SetBaseline(*baseline + block_offset);
   }
-
-  if (child.IsFloatingOrOutOfFlowPositioned())
-    return false;
-
-  if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(child)) {
-    if (base::Optional<LayoutUnit> baseline = box->Baseline(request)) {
-      container_builder_.AddBaseline(request, *baseline + child_offset);
-      return true;
-    }
-  }
-
-  return false;
 }
 
-// Propagate computed baselines from children.
-// Skip children that do not produce baselines (e.g., empty blocks.)
-void NGBlockLayoutAlgorithm::PropagateBaselinesFromChildren() {
-  const NGBaselineRequestList requests = ConstraintSpace().BaselineRequests();
-  if (requests.IsEmpty())
+void NGBlockLayoutAlgorithm::FinalizeBaseline() {
+  if (ConstraintSpace().BaselineAlgorithmType() !=
+      NGBaselineAlgorithmType::kInlineBlock)
     return;
 
-  for (const auto& request : requests) {
-    switch (request.AlgorithmType()) {
-      case NGBaselineAlgorithmType::kAtomicInline: {
-        if (Node().UseLogicalBottomMarginEdgeForInlineBlockBaseline()) {
-          LayoutUnit block_end = container_builder_.BlockSize();
-          NGBoxStrut margins =
-              ComputeMarginsForSelf(ConstraintSpace(), Style());
-          container_builder_.AddBaseline(request,
-                                         block_end + margins.block_end);
-          break;
-        }
+  if (!Node().UseLogicalBottomMarginEdgeForInlineBlockBaseline())
+    return;
 
-        const auto& children = container_builder_.Children();
-        for (auto it = children.rbegin(); it != children.rend(); ++it) {
-          if (AddBaseline(request, *it->fragment, it->offset.block_offset))
-            break;
-        }
-        break;
-      }
-      case NGBaselineAlgorithmType::kFirstLine:
-        for (const auto& child : container_builder_.Children()) {
-          if (AddBaseline(request, *child.fragment, child.offset.block_offset))
-            break;
-        }
-        break;
-    }
-  }
+  // When overflow is present (within an atomic-inline baseline context) we
+  // should always use the block-end margin edge as the baseline.
+  NGBoxStrut margins = ComputeMarginsForSelf(ConstraintSpace(), Style());
+  container_builder_.SetBaseline(container_builder_.BlockSize() +
+                                 margins.block_end);
 }
 
 bool NGBlockLayoutAlgorithm::ResolveBfcBlockOffset(
@@ -2618,12 +2567,11 @@ bool NGBlockLayoutAlgorithm::PositionOrPropagateListMarker(
     container_builder_.SetUnpositionedListMarker(NGUnpositionedListMarker());
   }
 
-  NGLineHeightMetrics content_metrics;
   const NGConstraintSpace& space = ConstraintSpace();
   const NGPhysicalFragment& content = layout_result.PhysicalFragment();
   FontBaseline baseline_type = Style().GetFontBaseline();
-  if (list_marker.CanAddToBox(space, baseline_type, content,
-                              &content_metrics)) {
+  if (auto content_baseline =
+          list_marker.ContentAlignmentBaseline(space, baseline_type, content)) {
     // TODO: We are reusing the ConstraintSpace for LI here. It works well for
     // now because authors cannot style list-markers currently. If we want to
     // support `::marker` pseudo, we need to create ConstraintSpace for marker
@@ -2644,8 +2592,8 @@ bool NGBlockLayoutAlgorithm::PositionOrPropagateListMarker(
     }
 
     list_marker.AddToBox(space, baseline_type, content,
-                         border_scrollbar_padding_, content_metrics,
-                         *marker_layout_result, content_offset,
+                         border_scrollbar_padding_, *marker_layout_result,
+                         *content_baseline, content_offset,
                          &container_builder_);
     return true;
   }

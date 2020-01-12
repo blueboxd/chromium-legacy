@@ -86,19 +86,18 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     // For the case where we start at a layout-root, the baselines don't
     // particularly matter, so we just request exactly the same as the previous
     // layout.
-    builder.AddBaselineRequests(
-        previous_result->GetConstraintSpaceForCaching().BaselineRequests());
+    const NGConstraintSpace& previous_space =
+        previous_result->GetConstraintSpaceForCaching();
+    builder.SetNeedsBaseline(previous_space.NeedsBaseline());
+    builder.SetBaselineAlgorithmType(previous_space.BaselineAlgorithmType());
   } else if (!block.IsWritingModeRoot() || block.IsGridItem()) {
-    // Add all types because we don't know which baselines will be requested.
-    FontBaseline baseline_type = style.GetFontBaseline();
-    bool synthesize_inline_block_baseline =
-        block.UseLogicalBottomMarginEdgeForInlineBlockBaseline();
-    if (!synthesize_inline_block_baseline) {
-      builder.AddBaselineRequest(
-          {NGBaselineAlgorithmType::kAtomicInline, baseline_type});
-    }
-    builder.AddBaselineRequest(
-        {NGBaselineAlgorithmType::kFirstLine, baseline_type});
+    // We don't know if the parent layout will require our baseline, so always
+    // request it.
+    builder.SetNeedsBaseline(true);
+    builder.SetBaselineAlgorithmType(block.IsInline() &&
+                                             block.IsAtomicInlineLevel()
+                                         ? NGBaselineAlgorithmType::kInlineBlock
+                                         : NGBaselineAlgorithmType::kFirstLine);
   }
 
   if (block.IsTableCell()) {

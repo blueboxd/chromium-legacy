@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_appeal.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -66,6 +65,19 @@ enum NGPercentageStorage {
   kZero,
   kIndefinite,
   kRareDataPercentage
+};
+
+// Some layout algorithms (flow, tables) calculate their alignment baseline
+// differently if they are within an atomic-inline context.
+//
+// Other more modern layout algorithms (flex, grid) however ignore this flag
+// and always calculate the alignment baseline in the same way (returning the
+// "first-line").
+enum class NGBaselineAlgorithmType {
+  // Compute the baseline of the first line box.
+  kFirstLine,
+  // Compute the baseline for when we are within an inline-block context.
+  kInlineBlock
 };
 
 // The NGConstraintSpace represents a set of constraints and available space
@@ -322,6 +334,19 @@ class CORE_EXPORT NGConstraintSpace final {
     return bitfields_.ancestor_has_clearance_past_adjoining_floats;
   }
 
+  // Returns if the parent layout needs the baseline from this layout.
+  //
+  // This bit is only used for skipping querying baseline information from
+  // legacy layout.
+  bool NeedsBaseline() const { return bitfields_.needs_baseline; }
+
+  // How the baseline for the fragment should be calculated, see documentation
+  // for |NGBaselineAlgorithmType|.
+  NGBaselineAlgorithmType BaselineAlgorithmType() const {
+    return static_cast<NGBaselineAlgorithmType>(
+        bitfields_.baseline_algorithm_type);
+  }
+
   // Some layout modes “stretch” their children to a fixed size (e.g. flex,
   // grid). These flags represented whether a layout needs to produce a
   // fragment that satisfies a fixed constraint in the inline and block
@@ -495,10 +520,6 @@ class CORE_EXPORT NGConstraintSpace final {
   }
   LayoutUnit ClearanceOffset() const {
     return HasRareData() ? rare_data_->ClearanceOffset() : LayoutUnit::Min();
-  }
-
-  const NGBaselineRequestList BaselineRequests() const {
-    return NGBaselineRequestList(bitfields_.baseline_requests);
   }
 
   // Return true if the two constraint spaces are similar enough that it *may*
@@ -899,6 +920,9 @@ class CORE_EXPORT NGConstraintSpace final {
           is_fixed_block_size_indefinite(false),
           use_first_line_style(false),
           ancestor_has_clearance_past_adjoining_floats(false),
+          needs_baseline(false),
+          baseline_algorithm_type(
+              static_cast<unsigned>(NGBaselineAlgorithmType::kFirstLine)),
           is_shrink_to_fit(false),
           is_fixed_inline_size(false),
           is_fixed_block_size(false),
@@ -922,7 +946,8 @@ class CORE_EXPORT NGConstraintSpace final {
              use_first_line_style == other.use_first_line_style &&
              ancestor_has_clearance_past_adjoining_floats ==
                  other.ancestor_has_clearance_past_adjoining_floats &&
-             baseline_requests == other.baseline_requests;
+             needs_baseline == other.needs_baseline &&
+             baseline_algorithm_type == other.baseline_algorithm_type;
     }
 
     bool AreSizeConstraintsEqual(const Bitfields& other) const {
@@ -948,7 +973,8 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned use_first_line_style : 1;
     unsigned ancestor_has_clearance_past_adjoining_floats : 1;
 
-    unsigned baseline_requests : NGBaselineRequestList::kSerializedBits;
+    unsigned needs_baseline : 1;
+    unsigned baseline_algorithm_type : 1;
 
     // Size constraints.
     unsigned is_shrink_to_fit : 1;

@@ -248,6 +248,9 @@ crbug.com/591099 external/wpt/css/css-writing-modes/available-size-010.html [ Fa
 crbug.com/591099 external/wpt/css/css-writing-modes/available-size-017.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/baseline-with-orthogonal-flow-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/block-flow-direction-vrl-009.xht [ Failure ]
+crbug.com/492664 external/wpt/css/css-writing-modes/inline-block-alignment-003.xht [ Failure ]
+crbug.com/492664 external/wpt/css/css-writing-modes/inline-block-alignment-005.xht [ Failure ]
+crbug.com/492664 external/wpt/css/css-writing-modes/inline-block-alignment-007.xht [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/inline-box-border-vlr-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/line-box-direction-vrl-009.xht [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/line-box-height-vlr-021.xht [ Failure ]
@@ -271,6 +274,7 @@ crbug.com/591099 external/wpt/css/css-writing-modes/sizing-orthog-vrl-in-htb-004
 crbug.com/591099 external/wpt/css/css-writing-modes/two-levels-of-orthogonal-flows-percentage.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-003.xht [ Failure ]
 crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-009.xht [ Failure ]
+
 
 ### external/wpt/css/cssom-view/
 crbug.com/997705 external/wpt/css/cssom-view/getBoundingClientRect-empty-inline.html [ Failure ]

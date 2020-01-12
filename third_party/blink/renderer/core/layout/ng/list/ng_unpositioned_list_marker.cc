@@ -45,24 +45,21 @@ scoped_refptr<const NGLayoutResult> NGUnpositionedListMarker::Layout(
     FontBaseline baseline_type) const {
   DCHECK(marker_layout_object_);
   NGBlockNode marker_node(marker_layout_object_);
+
+  // We need the first-line baseline from the list-marker, instead of the
+  // typical atomic-inline baseline.
   scoped_refptr<const NGLayoutResult> marker_layout_result =
-      marker_node.LayoutAtomicInline(parent_space, parent_style, baseline_type,
-                                     parent_space.UseFirstLineStyle());
+      marker_node.LayoutAtomicInline(parent_space, parent_style,
+                                     parent_space.UseFirstLineStyle(),
+                                     NGBaselineAlgorithmType::kFirstLine);
   DCHECK(marker_layout_result);
   return marker_layout_result;
 }
 
-bool NGUnpositionedListMarker::CanAddToBox(
+base::Optional<LayoutUnit> NGUnpositionedListMarker::ContentAlignmentBaseline(
     const NGConstraintSpace& space,
     FontBaseline baseline_type,
-    const NGPhysicalFragment& content,
-    NGLineHeightMetrics* content_metrics) const {
-  DCHECK(content_metrics);
-
-  // Baselines from two different writing-mode cannot be aligned.
-  if (UNLIKELY(space.GetWritingMode() != content.Style().GetWritingMode()))
-    return false;
-
+    const NGPhysicalFragment& content) const {
   // Compute the baseline of the child content.
   if (content.IsLineBox()) {
     const auto& line_box = To<NGPhysicalLineBoxFragment>(content);
@@ -71,22 +68,17 @@ bool NGUnpositionedListMarker::CanAddToBox(
     // with the next non-empty line box produced. (This can occur with floats
     // producing empty line-boxes).
     if (line_box.IsEmptyLineBox() && !line_box.BreakToken()->IsFinished())
-      return false;
+      return base::nullopt;
 
-    *content_metrics = line_box.Metrics();
-  } else {
-    NGBoxFragment content_fragment(space.GetWritingMode(), space.Direction(),
-                                   To<NGPhysicalBoxFragment>(content));
-    *content_metrics = content_fragment.BaselineMetricsWithoutSynthesize(
-        {NGBaselineAlgorithmType::kFirstLine, baseline_type});
-
-    // If this child content does not have any line boxes, the list marker
-    // should be aligned to the first line box of next child.
-    // https://github.com/w3c/csswg-drafts/issues/2417
-    if (content_metrics->IsEmpty())
-      return false;
+    return line_box.Metrics().ascent;
   }
-  return true;
+
+  // If this child content does not have any line boxes, the list marker
+  // should be aligned to the first line box of next child.
+  // https://github.com/w3c/csswg-drafts/issues/2417
+  return NGBoxFragment(space.GetWritingMode(), space.Direction(),
+                       To<NGPhysicalBoxFragment>(content))
+      .Baseline();
 }
 
 void NGUnpositionedListMarker::AddToBox(
@@ -94,12 +86,10 @@ void NGUnpositionedListMarker::AddToBox(
     FontBaseline baseline_type,
     const NGPhysicalFragment& content,
     const NGBoxStrut& border_scrollbar_padding,
-    const NGLineHeightMetrics& content_metrics,
     const NGLayoutResult& marker_layout_result,
+    LayoutUnit content_baseline,
     LogicalOffset* content_offset,
     NGBoxFragmentBuilder* container_builder) const {
-  DCHECK(!content_metrics.IsEmpty());
-
   const NGPhysicalBoxFragment& marker_physical_fragment =
       To<NGPhysicalBoxFragment>(marker_layout_result.PhysicalFragment());
 
@@ -111,8 +101,8 @@ void NGUnpositionedListMarker::AddToBox(
 
   // Adjust the block offset to align baselines of the marker and the content.
   NGLineHeightMetrics marker_metrics = marker_fragment.BaselineMetrics(
-      {NGBaselineAlgorithmType::kAtomicInline, baseline_type}, space);
-  LayoutUnit baseline_adjust = content_metrics.ascent - marker_metrics.ascent;
+      /* margins */ NGLineBoxStrut(), baseline_type);
+  LayoutUnit baseline_adjust = content_baseline - marker_metrics.ascent;
   if (baseline_adjust >= 0) {
     marker_offset.block_offset += baseline_adjust;
   } else {

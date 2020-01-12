@@ -1338,7 +1338,6 @@ void NGLineBreaker::HandleAtomicInline(
     item_result->layout_result =
         NGBlockNode(ToLayoutBox(item.GetLayoutObject()))
             .LayoutAtomicInline(constraint_space_, node_.Style(),
-                                line_info->LineStyle().GetFontBaseline(),
                                 line_info->UseFirstLineStyle());
     item_result->inline_size =
         NGFragment(constraint_space_.GetWritingMode(),

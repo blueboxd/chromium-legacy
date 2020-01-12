@@ -24,7 +24,6 @@ enum class NGBreakStatus;
 class NGConstraintSpace;
 class NGEarlyBreak;
 class NGFragment;
-class NGPhysicalLineBoxFragment;
 
 // This struct is used for communicating to a child the position of the previous
 // inflow child. This will be used to calculate the position of the next child.
@@ -240,18 +239,12 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // class B breakpoint), and store it.
   void UpdateEarlyBreakBetweenLines();
 
-  void PropagateBaselinesFromChildren();
-  bool AddBaseline(const NGBaselineRequest&,
-                   const NGPhysicalFragment&,
-                   LayoutUnit child_offset);
+  // Propagates the baseline from the given |child| if needed.
+  void PropagateBaselineFromChild(const NGPhysicalContainerFragment& child,
+                                  LayoutUnit block_offset);
 
-  // Compute the baseline offset of a line box from the content box.
-  // Line boxes are in line-relative coordinates. This function returns the
-  // offset in flow-relative coordinates.
-  LayoutUnit ComputeLineBoxBaselineOffset(
-      const NGBaselineRequest&,
-      const NGPhysicalLineBoxFragment&,
-      LayoutUnit line_box_block_offset) const;
+  // Performs any final baseline adjustments needed.
+  void FinalizeBaseline();
 
   // If still unresolved, resolve the fragment's BFC block offset.
   //

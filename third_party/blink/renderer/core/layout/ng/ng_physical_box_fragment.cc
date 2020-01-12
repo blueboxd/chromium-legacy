@@ -23,7 +23,7 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalBoxFragment : NGPhysicalContainerFragment {
-  NGBaselineList baselines;
+  LayoutUnit baseline;
   NGLink children[];
 };
 
@@ -82,8 +82,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
           (builder->node_ && builder->node_.IsRenderedLegend())
               ? kFragmentRenderedLegend
               : kFragmentBox,
-          builder->BoxType()),
-      baselines_(builder->baselines_) {
+          builder->BoxType()) {
   DCHECK(layout_object_->IsBoxModelObject());
   if (NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
     has_fragment_items_ = true;
@@ -111,6 +110,8 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
   children_inline_ =
       builder->layout_object_ && builder->layout_object_->ChildrenInline();
+  has_baseline_ = builder->baseline_.has_value();
+  baseline_ = builder->baseline_.value_or(LayoutUnit::Min());
 }
 
 scoped_refptr<const NGLayoutResult>
@@ -486,7 +487,7 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
 
   // Legacy layout can (incorrectly) shift baseline position(s) during
   // "simplified" layout.
-  DCHECK(IsLegacyLayoutRoot() || baselines_ == other.baselines_);
+  DCHECK(IsLegacyLayoutRoot() || Baseline() == other.Baseline());
   DCHECK(Borders() == other.Borders());
   DCHECK(Padding() == other.Padding());
 }

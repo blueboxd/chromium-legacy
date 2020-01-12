@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/containers/adapters.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
@@ -480,13 +479,12 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
   DCHECK(item_result->item);
   const NGInlineItem& item = *item_result->item;
   DCHECK(item.Style());
-  NGBoxFragment fragment(ConstraintSpace().GetWritingMode(),
-                         ConstraintSpace().Direction(),
-                         To<NGPhysicalBoxFragment>(
-                             item_result->layout_result->PhysicalFragment()));
-  NGLineHeightMetrics metrics = fragment.BaselineMetrics(
-      {NGBaselineAlgorithmType::kAtomicInline, baseline_type_},
-      ConstraintSpace());
+  NGLineHeightMetrics metrics =
+      NGBoxFragment(ConstraintSpace().GetWritingMode(),
+                    ConstraintSpace().Direction(),
+                    To<NGPhysicalBoxFragment>(
+                        item_result->layout_result->PhysicalFragment()))
+          .BaselineMetrics(item_result->margins, baseline_type_);
   if (box)
     box->metrics.Unite(metrics);
 

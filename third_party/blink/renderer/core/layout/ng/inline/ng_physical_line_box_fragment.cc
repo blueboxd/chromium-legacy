@@ -61,8 +61,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
                                 builder->unpositioned_list_marker_;
 }
 
-NGLineHeightMetrics NGPhysicalLineBoxFragment::BaselineMetrics(
-    FontBaseline) const {
+NGLineHeightMetrics NGPhysicalLineBoxFragment::BaselineMetrics() const {
   // TODO(kojii): Computing other baseline types than the used one is not
   // implemented yet.
   // TODO(kojii): We might need locale/script to look up OpenType BASE table.

@@ -33,8 +33,7 @@ NGConstraintSpace CreateConstraintSpaceForMathChild(
   space_builder.SetTextDirection(child_style.Direction());
 
   // TODO(rbuis): add ink baselines?
-  space_builder.AddBaselineRequest(
-      {NGBaselineAlgorithmType::kFirstLine, kAlphabeticBaseline});
+  space_builder.SetNeedsBaseline(true);
   return space_builder.ToConstraintSpace();
 }
 

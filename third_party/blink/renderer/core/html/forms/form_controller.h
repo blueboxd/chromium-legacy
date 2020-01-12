@@ -117,6 +117,9 @@ class CORE_EXPORT FormController final
   void RestoreControlStateOnUpgrade(ListedElement&);
 
   void ScheduleRestore();
+  // Call RestoreAllControlsInDocumentOrder() if it is not called yet in order
+  // to restore before 'pageshow' event.
+  void RestoreImmediately();
 
   static Vector<String> GetReferencedFilePaths(
       const Vector<String>& state_vector);
@@ -133,6 +136,7 @@ class CORE_EXPORT FormController final
   Member<DocumentState> document_state_;
   SavedFormStateMap saved_form_state_map_;
   Member<FormKeyGenerator> form_key_generator_;
+  bool did_restore_all_ = false;
 };
 
 // Exposed for testing.

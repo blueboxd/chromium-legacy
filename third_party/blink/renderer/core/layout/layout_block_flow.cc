@@ -2484,12 +2484,9 @@ LayoutUnit LayoutBlockFlow::FirstLineBoxBaseline() const {
       NGBoxFragment box_fragment(
           StyleRef().GetWritingMode(), StyleRef().Direction(),
           To<NGPhysicalBoxFragment>(paint_fragment->PhysicalFragment()));
-      NGLineHeightMetrics metrics =
-          box_fragment.BaselineMetricsWithoutSynthesize(
-              {NGBaselineAlgorithmType::kFirstLine,
-               StyleRef().GetFontBaseline()});
-      if (!metrics.IsEmpty())
-        return metrics.ascent;
+      base::Optional<LayoutUnit> baseline = box_fragment.Baseline();
+      if (baseline)
+        return *baseline;
     }
   }
   return LayoutUnit(-1);

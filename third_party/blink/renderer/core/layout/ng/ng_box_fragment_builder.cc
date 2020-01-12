@@ -171,15 +171,6 @@ NGPhysicalFragment::NGBoxType NGBoxFragmentBuilder::BoxType() const {
   return NGPhysicalFragment::NGBoxType::kNormalBox;
 }
 
-void NGBoxFragmentBuilder::AddBaseline(NGBaselineRequest request,
-                                       LayoutUnit offset) {
-#if DCHECK_IS_ON()
-  for (const auto& baseline : baselines_)
-    DCHECK(baseline.request != request);
-#endif
-  baselines_.emplace_back(request, offset);
-}
-
 EBreakBetween NGBoxFragmentBuilder::JoinedBreakBetweenValue(
     EBreakBetween break_before) const {
   return JoinFragmentainerBreakValues(previous_break_after_, break_before);

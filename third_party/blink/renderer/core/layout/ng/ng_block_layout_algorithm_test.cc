@@ -237,10 +237,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageBlockSizeQuirkDescendantsCaching) {
     builder.SetAvailableSize(size);
     builder.SetPercentageResolutionSize(size);
     builder.SetTextDirection(TextDirection::kLtr);
-    builder.AddBaselineRequest({NGBaselineAlgorithmType::kAtomicInline,
-                                FontBaseline::kAlphabeticBaseline});
-    builder.AddBaselineRequest({NGBaselineAlgorithmType::kFirstLine,
-                                FontBaseline::kAlphabeticBaseline});
+    builder.SetNeedsBaseline(true);
     return builder.ToConstraintSpace();
   };
 
@@ -314,10 +311,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, LineOffsetCaching) {
     builder.SetAvailableSize(size);
     builder.SetPercentageResolutionSize(size);
     builder.SetTextDirection(TextDirection::kLtr);
-    builder.AddBaselineRequest({NGBaselineAlgorithmType::kAtomicInline,
-                                FontBaseline::kAlphabeticBaseline});
-    builder.AddBaselineRequest({NGBaselineAlgorithmType::kFirstLine,
-                                FontBaseline::kAlphabeticBaseline});
+    builder.SetNeedsBaseline(true);
     builder.SetBfcOffset(bfc_offset);
     return builder.ToConstraintSpace();
   };

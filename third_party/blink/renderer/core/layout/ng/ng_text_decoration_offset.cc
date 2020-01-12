@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_text_decoration_offset.h"
 
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -19,15 +18,8 @@ int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
   const ComputedStyle& style = text_style_;
   FontBaseline baseline_type = style.GetFontBaseline();
 
-  if (decorating_box_) {
-    NGBaselineRequest baseline_request = {
-        NGBaselineAlgorithmType::kAtomicInline,
-        FontBaseline::kIdeographicBaseline};
-
-    if (base::Optional<LayoutUnit> baseline =
-            decorating_box_->Baseline(baseline_request))
-      offset = *baseline;
-  }
+  if (decorating_box_)
+    offset = decorating_box_->Baseline().value_or(offset);
 
   if (offset == LayoutUnit::Max()) {
     // TODO(layout-dev): How do we compute the baseline offset with a

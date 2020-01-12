@@ -57,8 +57,8 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
     return static_cast<TextDirection>(base_direction_);
   }
 
-  // Compute baseline for the specified baseline type.
-  NGLineHeightMetrics BaselineMetrics(FontBaseline) const;
+  // Compute the baseline metrics for this linebox.
+  NGLineHeightMetrics BaselineMetrics() const;
 
   // Scrollable overflow. including contents, in the local coordinate.
   // |ScrollableOverflow| is not precomputed/cached because it cannot be

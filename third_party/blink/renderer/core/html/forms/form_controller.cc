@@ -627,6 +627,14 @@ void FormController::ScheduleRestore() {
                            WrapPersistent(this)));
 }
 
+void FormController::RestoreImmediately() {
+  if (!kRestoreOnLoad)
+    return;
+  if (did_restore_all_ || !HasControlStates())
+    return;
+  RestoreAllControlsInDocumentOrder();
+}
+
 void FormController::RestoreAllControlsInDocumentOrder() {
   if (!document_->IsActive())
     return;
@@ -639,6 +647,7 @@ void FormController::RestoreAllControlsInDocumentOrder() {
     else if (finished_forms.insert(owner).is_new_entry)
       RestoreControlStateIn(*owner);
   }
+  did_restore_all_ = true;
 }
 
 Vector<String> FormController::GetReferencedFilePaths(

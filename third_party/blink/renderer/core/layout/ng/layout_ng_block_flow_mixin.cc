@@ -131,39 +131,28 @@ bool LayoutNGBlockFlowMixin<
 
 // Retrieve NGBaseline from the current fragment.
 template <typename Base>
-base::Optional<LayoutUnit> LayoutNGBlockFlowMixin<Base>::FragmentBaseline(
-    NGBaselineAlgorithmType type) const {
+base::Optional<LayoutUnit> LayoutNGBlockFlowMixin<Base>::FragmentBaseline()
+    const {
   if (Base::ShouldApplyLayoutContainment())
     return base::nullopt;
 
-  if (const NGPhysicalFragment* physical_fragment = CurrentFragment()) {
-    FontBaseline baseline_type = Base::StyleRef().GetFontBaseline();
-    return To<NGPhysicalBoxFragment>(physical_fragment)
-        ->Baseline({type, baseline_type});
-  }
+  if (const NGPhysicalFragment* physical_fragment = CurrentFragment())
+    return To<NGPhysicalBoxFragment>(physical_fragment)->Baseline();
   return base::nullopt;
 }
 
 template <typename Base>
 LayoutUnit LayoutNGBlockFlowMixin<Base>::FirstLineBoxBaseline() const {
-  if (Base::ChildrenInline()) {
-    if (base::Optional<LayoutUnit> offset =
-            FragmentBaseline(NGBaselineAlgorithmType::kFirstLine)) {
-      return *offset;
-    }
-  }
+  if (base::Optional<LayoutUnit> offset = FragmentBaseline())
+    return *offset;
   return Base::FirstLineBoxBaseline();
 }
 
 template <typename Base>
 LayoutUnit LayoutNGBlockFlowMixin<Base>::InlineBlockBaseline(
     LineDirectionMode line_direction) const {
-  if (Base::ChildrenInline()) {
-    if (base::Optional<LayoutUnit> offset =
-            FragmentBaseline(NGBaselineAlgorithmType::kAtomicInline)) {
-      return *offset;
-    }
-  }
+  if (base::Optional<LayoutUnit> offset = FragmentBaseline())
+    return *offset;
   return Base::InlineBlockBaseline(line_direction);
 }
 

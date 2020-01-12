@@ -201,15 +201,21 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.bitfields_.use_first_line_style = b;
   }
 
-  void SetAncestorHasClearancePastAdjoiningFloats() {
-    space_.bitfields_.ancestor_has_clearance_past_adjoining_floats = true;
-  }
-
   void SetAdjoiningObjectTypes(NGAdjoiningObjectTypes adjoining_object_types) {
     if (!is_new_fc_) {
       space_.bitfields_.adjoining_object_types =
           static_cast<unsigned>(adjoining_object_types);
     }
+  }
+
+  void SetAncestorHasClearancePastAdjoiningFloats() {
+    space_.bitfields_.ancestor_has_clearance_past_adjoining_floats = true;
+  }
+
+  void SetNeedsBaseline(bool b) { space_.bitfields_.needs_baseline = b; }
+
+  void SetBaselineAlgorithmType(NGBaselineAlgorithmType type) {
+    space_.bitfields_.baseline_algorithm_type = static_cast<unsigned>(type);
   }
 
   void SetMarginStrut(const NGMarginStrut& margin_strut) {
@@ -315,14 +321,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     }
   }
 
-  void AddBaselineRequests(const NGBaselineRequestList requests) {
-    DCHECK(baseline_requests_.IsEmpty());
-    baseline_requests_.AppendVector(requests);
-  }
-  void AddBaselineRequest(const NGBaselineRequest request) {
-    baseline_requests_.push_back(request);
-  }
-
   // Creates a new constraint space.
   const NGConstraintSpace ToConstraintSpace() {
 #if DCHECK_IS_ON()
@@ -340,7 +338,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
            "simultaneously. Inferred means the constraints are in parent "
            "writing mode, forced means they are in child writing mode.";
 
-    space_.bitfields_.baseline_requests = baseline_requests_.Serialize();
     return std::move(space_);
   }
 
@@ -372,8 +369,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   bool to_constraint_space_called_ = false;
 #endif
-
-  NGBaselineRequestList baseline_requests_;
 };
 
 }  // namespace blink

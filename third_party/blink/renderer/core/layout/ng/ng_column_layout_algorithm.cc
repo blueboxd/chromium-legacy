@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -897,9 +896,6 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForColumns(
       ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
   space_builder.SetAvailableSize(column_size);
   space_builder.SetPercentageResolutionSize(column_size);
-
-  if (NGBaseline::ShouldPropagateBaselines(Node()))
-    space_builder.AddBaselineRequests(ConstraintSpace().BaselineRequests());
 
   // To ensure progression, we need something larger than 0 here. The spec
   // actually says that fragmentainers have to accept at least 1px of content.

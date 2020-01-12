@@ -73,7 +73,7 @@ class LayoutNGBlockFlowMixin : public LayoutNGMixin<Base> {
 
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final;
 
-  base::Optional<LayoutUnit> FragmentBaseline(NGBaselineAlgorithmType) const;
+  base::Optional<LayoutUnit> FragmentBaseline() const;
 
   void DirtyLinesFromChangedChild(LayoutObject* child,
                                   MarkingBehavior marking_behavior) final;

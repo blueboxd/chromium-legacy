@@ -29,12 +29,10 @@
  */
 
 // Note that length == 0 and overloaded; need other tests for other cases.
-[
-    MeasureAs=TestFeature
-] interface TestInterfaceConstructor {
-    [CallWith=(ScriptState,ExecutionContext,Document), RaisesException]
+interface TestInterfaceConstructor {
+    [CallWith=(ScriptState,ExecutionContext,Document), RaisesException, MeasureAs=TestFeature]
     constructor();
-    [CallWith=(ScriptState,ExecutionContext,Document), RaisesException]
+    [CallWith=(ScriptState,ExecutionContext,Document), RaisesException, MeasureAs=TestFeature]
     constructor(
         double doubleArg,
         DOMString stringArg,
@@ -46,8 +44,8 @@
         optional USVString? optionalUSVStringArg,
         optional Dictionary optionalDictionaryArg,
         [DefaultValue=Undefined] optional TestInterfaceEmpty optionalTestInterfaceEmptyArg);
-    [CallWith=(ScriptState,ExecutionContext,Document), RaisesException]
+    [CallWith=(ScriptState,ExecutionContext,Document), RaisesException, MeasureAs=TestFeature]
     constructor(DOMString arg, optional DOMString optArg);
-    [CallWith=(ScriptState,ExecutionContext,Document), RaisesException]
+    [CallWith=(ScriptState,ExecutionContext,Document), RaisesException, MeasureAs=TestFeature]
     constructor(DOMString arg, DOMString arg2, DOMString arg3);
 };

@@ -290,11 +290,11 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
            << ", cdm_context = " << cdm_context;
 
   if (!config.IsValidConfig()) {
-    media_log_->AddEvent(media_log_->CreateStringEvent(
-        MediaLogEvent::MEDIA_INFO_LOG_ENTRY, "info",
+    media_log_->AddLogRecord(media_log_->CreateStringEvent(
+        MediaLogRecord::MEDIA_INFO_LOG_ENTRY, "info",
         "Video configuration is not valid"));
-    media_log_->AddEvent(
-        media_log_->CreateStringEvent(MediaLogEvent::MEDIA_INFO_LOG_ENTRY,
+    media_log_->AddLogRecord(
+        media_log_->CreateStringEvent(MediaLogRecord::MEDIA_INFO_LOG_ENTRY,
                                       "info", config.AsHumanReadableString()));
     DVLOG(1) << "Invalid configuration.";
     BindToCurrentLoop(std::move(init_cb)).Run(false);
@@ -309,11 +309,11 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
                            : GetSupportedConfigsInternal(device_info_);
   if (!IsVideoDecoderConfigSupported(configs, config)) {
     DVLOG(1) << "Unsupported configuration.";
-    media_log_->AddEvent(media_log_->CreateStringEvent(
-        MediaLogEvent::MEDIA_INFO_LOG_ENTRY, "info",
+    media_log_->AddLogRecord(media_log_->CreateStringEvent(
+        MediaLogRecord::MEDIA_INFO_LOG_ENTRY, "info",
         "Video configuration is not supported"));
-    media_log_->AddEvent(
-        media_log_->CreateStringEvent(MediaLogEvent::MEDIA_INFO_LOG_ENTRY,
+    media_log_->AddLogRecord(
+        media_log_->CreateStringEvent(MediaLogRecord::MEDIA_INFO_LOG_ENTRY,
                                       "info", config.AsHumanReadableString()));
     BindToCurrentLoop(std::move(init_cb)).Run(false);
     return;
@@ -322,14 +322,14 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // Disallow codec changes when reinitializing.
   if (!first_init && decoder_config_.codec() != config.codec()) {
     DVLOG(1) << "Codec changed: cannot reinitialize";
-    media_log_->AddEvent(media_log_->CreateStringEvent(
-        MediaLogEvent::MEDIA_INFO_LOG_ENTRY, "info",
+    media_log_->AddLogRecord(media_log_->CreateStringEvent(
+        MediaLogRecord::MEDIA_INFO_LOG_ENTRY, "info",
         "Cannot change codec during re-init"));
-    media_log_->AddEvent(
-        media_log_->CreateStringEvent(MediaLogEvent::MEDIA_INFO_LOG_ENTRY,
+    media_log_->AddLogRecord(
+        media_log_->CreateStringEvent(MediaLogRecord::MEDIA_INFO_LOG_ENTRY,
                                       "info", config.AsHumanReadableString()));
-    media_log_->AddEvent(media_log_->CreateStringEvent(
-        MediaLogEvent::MEDIA_INFO_LOG_ENTRY, "info",
+    media_log_->AddLogRecord(media_log_->CreateStringEvent(
+        MediaLogRecord::MEDIA_INFO_LOG_ENTRY, "info",
         decoder_config_.AsHumanReadableString()));
     BindToCurrentLoop(std::move(init_cb)).Run(false);
     return;
@@ -358,8 +358,8 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   if (config.is_encrypted() && media_crypto_.is_null()) {
     DVLOG(1) << "No MediaCrypto to handle encrypted config";
-    media_log_->AddEvent(media_log_->CreateStringEvent(
-        MediaLogEvent::MEDIA_INFO_LOG_ENTRY, "info",
+    media_log_->AddLogRecord(media_log_->CreateStringEvent(
+        MediaLogRecord::MEDIA_INFO_LOG_ENTRY, "info",
         "No MediaCrypto to handle encrypted config"));
     BindToCurrentLoop(std::move(init_cb)).Run(false);
     return;
@@ -1073,8 +1073,8 @@ void MediaCodecVideoDecoder::EnterTerminalState(State state,
                                                 const char* reason) {
   DVLOG(2) << __func__ << " " << static_cast<int>(state) << " " << reason;
 
-  media_log_->AddEvent(media_log_->CreateStringEvent(
-      MediaLogEvent::MEDIA_INFO_LOG_ENTRY, "info", reason));
+  media_log_->AddLogRecord(media_log_->CreateStringEvent(
+      MediaLogRecord::MEDIA_INFO_LOG_ENTRY, "info", reason));
 
   state_ = state;
   DCHECK(InTerminalState());

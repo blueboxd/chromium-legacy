@@ -34,9 +34,9 @@ enum ColorSpace;
 [Native]
 enum DecodeStatus;
 
-// See media/base/media_log_event.h for description.
+// See media/base/media_log_record.h for description.
 [Native]
-struct MediaLogEvent;
+struct MediaLogRecord;
 
 // See media/base/output_device_info.h for descriptions.
 [Native]

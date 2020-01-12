@@ -30,14 +30,14 @@ TEST_F(MediaLogTest, DontTruncateShortUrlString) {
   EXPECT_LT(short_url.length(), MediaLogTest::kMaxUrlLength);
 
   // Verify that CreatedEvent does not truncate the short URL.
-  std::unique_ptr<MediaLogEvent> created_event =
+  std::unique_ptr<MediaLogRecord> created_event =
       media_log.CreateCreatedEvent(short_url);
   std::string stored_url;
   created_event->params.GetString("origin_url", &stored_url);
   EXPECT_EQ(stored_url, short_url);
 
   // Verify that LoadEvent does not truncate the short URL.
-  std::unique_ptr<MediaLogEvent> load_event =
+  std::unique_ptr<MediaLogRecord> load_event =
       media_log.CreateLoadEvent(short_url);
   load_event->params.GetString("url", &stored_url);
   EXPECT_EQ(stored_url, short_url);
@@ -54,7 +54,7 @@ TEST_F(MediaLogTest, TruncateLongUrlStrings) {
   EXPECT_GT(long_url.length(), MediaLogTest::kMaxUrlLength);
 
   // Verify that long CreatedEvent URL...
-  std::unique_ptr<MediaLogEvent> created_event =
+  std::unique_ptr<MediaLogRecord> created_event =
       media_log.CreateCreatedEvent(long_url);
   std::string stored_url;
   created_event->params.GetString("origin_url", &stored_url);
@@ -69,7 +69,7 @@ TEST_F(MediaLogTest, TruncateLongUrlStrings) {
             0);
 
   // Verify that long LoadEvent URL...
-  std::unique_ptr<MediaLogEvent> load_event =
+  std::unique_ptr<MediaLogRecord> load_event =
       media_log.CreateCreatedEvent(long_url);
   load_event->params.GetString("url", &stored_url);
   // ... is truncated
@@ -86,7 +86,7 @@ TEST_F(MediaLogTest, EventsAreForwarded) {
   // Make sure that |root_log_| receives events.
   std::unique_ptr<MockMediaLog> root_log(std::make_unique<MockMediaLog>());
   std::unique_ptr<MediaLog> child_media_log(root_log->Clone());
-  EXPECT_CALL(*root_log, DoAddEventLogString(_)).Times(1);
+  EXPECT_CALL(*root_log, DoAddLogRecordLogString(_)).Times(1);
   child_media_log->AddLogEvent(MediaLog::MediaLogLevel::MEDIALOG_ERROR, "test");
 }
 
@@ -95,7 +95,7 @@ TEST_F(MediaLogTest, EventsAreNotForwardedAfterInvalidate) {
   // underlying log.
   std::unique_ptr<MockMediaLog> root_log(std::make_unique<MockMediaLog>());
   std::unique_ptr<MediaLog> child_media_log(root_log->Clone());
-  EXPECT_CALL(*root_log, DoAddEventLogString(_)).Times(0);
+  EXPECT_CALL(*root_log, DoAddLogRecordLogString(_)).Times(0);
   root_log.reset();
   child_media_log->AddLogEvent(MediaLog::MediaLogLevel::MEDIALOG_ERROR, "test");
 }

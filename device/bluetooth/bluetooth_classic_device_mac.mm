@@ -255,13 +255,6 @@ void BluetoothClassicDeviceMac::ConnectToServiceInsecurely(
   error_callback.Run(kApiUnavailable);
 }
 
-void BluetoothClassicDeviceMac::CreateGattConnection(
-    GattConnectionCallback callback,
-    ConnectErrorCallback error_callback) {
-  // TODO(armansito): Implement.
-  std::move(error_callback).Run(ERROR_UNSUPPORTED_DEVICE);
-}
-
 base::Time BluetoothClassicDeviceMac::GetLastUpdateTime() const {
   // getLastInquiryUpdate returns nil unpredictably so just use the
   // cross platform implementation of last update time.

@@ -37,7 +37,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
-#include "media/base/media_log_event.h"
+#include "media/base/media_log_record.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/sandbox/features.h"
@@ -329,7 +329,7 @@ void MediaInternals::Observe(int type,
 
 // Converts the |event| to a |update|. Returns whether the conversion succeeded.
 static bool ConvertEventToUpdate(int render_process_id,
-                                 const media::MediaLogEvent& event,
+                                 const media::MediaLogRecord& event,
                                  base::string16* update) {
   DCHECK(update);
 
@@ -345,7 +345,7 @@ static bool ConvertEventToUpdate(int render_process_id,
   dict.SetDouble("ticksMillis", ticks_millis);
 
   // Convert PipelineStatus to human readable string
-  if (event.type == media::MediaLogEvent::PIPELINE_ERROR) {
+  if (event.type == media::MediaLogRecord::PIPELINE_ERROR) {
     int status;
     if (!event.params.GetInteger("pipeline_error", &status) ||
         status < static_cast<int>(media::PIPELINE_OK) ||
@@ -365,7 +365,7 @@ static bool ConvertEventToUpdate(int render_process_id,
 
 void MediaInternals::OnMediaEvents(
     int render_process_id,
-    const std::vector<media::MediaLogEvent>& events) {
+    const std::vector<media::MediaLogRecord>& events) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Notify observers that |event| has occurred.
   for (const auto& event : events) {
@@ -578,7 +578,7 @@ void MediaInternals::SendUpdate(const base::string16& update) {
 }
 
 void MediaInternals::SaveEvent(int process_id,
-                               const media::MediaLogEvent& event) {
+                               const media::MediaLogRecord& event) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 // Save the event and limit the total number per renderer. At the time of
@@ -596,7 +596,7 @@ void MediaInternals::SaveEvent(int process_id,
     // Remove all events for a given player as soon as we have to remove a
     // single event for that player to avoid showing incomplete players.
     const int id_to_remove = saved_events.front().id;
-    base::EraseIf(saved_events, [&](const media::MediaLogEvent& event) {
+    base::EraseIf(saved_events, [&](const media::MediaLogRecord& event) {
       return event.id == id_to_remove;
     });
   }

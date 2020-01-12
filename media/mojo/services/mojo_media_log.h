@@ -30,7 +30,7 @@ class MojoMediaLog final : public MediaLog {
  protected:
   // MediaLog implementation.  May be called from any thread, but will only
   // use |remote_media_log_| on |task_runner_|.
-  void AddEventLocked(std::unique_ptr<MediaLogEvent> event) override;
+  void AddLogRecordLocked(std::unique_ptr<MediaLogRecord> event) override;
 
  private:
   mojo::AssociatedRemote<mojom::MediaLog> remote_media_log_;

@@ -20,7 +20,7 @@ class MojoMediaLogService : public mojom::MediaLog {
   ~MojoMediaLogService() final;
 
   // mojom::MediaLog implementation
-  void AddEvent(const media::MediaLogEvent& event) final;
+  void AddLogRecord(const media::MediaLogRecord& event) final;
 
  private:
   media::MediaLog* media_log_;

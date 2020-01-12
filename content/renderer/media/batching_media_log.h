@@ -34,7 +34,7 @@ class CONTENT_EXPORT BatchingMediaLog : public media::MediaLog {
   class EventHandler {
    public:
     virtual ~EventHandler() = default;
-    virtual void SendQueuedMediaEvents(std::vector<media::MediaLogEvent>) = 0;
+    virtual void SendQueuedMediaEvents(std::vector<media::MediaLogRecord>) = 0;
     virtual void OnWebMediaPlayerDestroyed() = 0;
   };
 
@@ -48,7 +48,8 @@ class CONTENT_EXPORT BatchingMediaLog : public media::MediaLog {
 
  protected:
   // MediaLog implementation.
-  void AddEventLocked(std::unique_ptr<media::MediaLogEvent> event) override;
+  void AddLogRecordLocked(
+      std::unique_ptr<media::MediaLogRecord> event) override;
   void OnWebMediaPlayerDestroyedLocked() override;
   std::string GetErrorMessageLocked() override;
 
@@ -74,23 +75,23 @@ class CONTENT_EXPORT BatchingMediaLog : public media::MediaLog {
   mutable base::Lock lock_;
   const base::TickClock* tick_clock_;
   base::TimeTicks last_ipc_send_time_;
-  std::vector<media::MediaLogEvent> queued_media_events_;
+  std::vector<media::MediaLogRecord> queued_media_events_;
 
   // For enforcing max 1 pending send.
   bool ipc_send_pending_;
 
   // Limits the number of events we send over IPC to one.
-  std::unique_ptr<media::MediaLogEvent> last_duration_changed_event_;
+  std::unique_ptr<media::MediaLogRecord> last_duration_changed_event_;
 
   // Holds the earliest MEDIA_ERROR_LOG_ENTRY event added to this log. This is
   // most likely to contain the most specific information available describing
   // any eventual fatal error.
   // TODO(wolenetz): Introduce a reset method to clear this in cases like
   // non-fatal error recovery like decoder fallback.
-  std::unique_ptr<media::MediaLogEvent> cached_media_error_for_message_;
+  std::unique_ptr<media::MediaLogRecord> cached_media_error_for_message_;
 
   // Holds a copy of the most recent PIPELINE_ERROR, if any.
-  std::unique_ptr<media::MediaLogEvent> last_pipeline_error_;
+  std::unique_ptr<media::MediaLogRecord> last_pipeline_error_;
 
   base::WeakPtr<BatchingMediaLog> weak_this_;
   base::WeakPtrFactory<BatchingMediaLog> weak_factory_{this};

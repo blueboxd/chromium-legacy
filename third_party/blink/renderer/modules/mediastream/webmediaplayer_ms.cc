@@ -293,8 +293,8 @@ WebMediaPlayerMS::WebMediaPlayerMS(
   weak_this_ = weak_factory_.GetWeakPtr();
   delegate_id_ = delegate_->AddObserver(this);
 
-  media_log_->AddEvent(
-      media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
+  media_log_->AddLogRecord(
+      media_log_->CreateRecord(media::MediaLogRecord::WEBMEDIAPLAYER_CREATED));
 }
 
 WebMediaPlayerMS::~WebMediaPlayerMS() {
@@ -323,8 +323,8 @@ WebMediaPlayerMS::~WebMediaPlayerMS() {
   if (audio_renderer_)
     audio_renderer_->Stop();
 
-  media_log_->AddEvent(
-      media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
+  media_log_->AddLogRecord(media_log_->CreateRecord(
+      media::MediaLogRecord::WEBMEDIAPLAYER_DESTROYED));
 
   delegate_->PlayerGone(delegate_id_);
   delegate_->RemoveObserver(delegate_id_);
@@ -352,7 +352,7 @@ WebMediaPlayer::LoadTiming WebMediaPlayerMS::Load(
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
   std::string stream_id =
       web_stream_.IsNull() ? std::string() : web_stream_.Id().Utf8();
-  media_log_->AddEvent(media_log_->CreateLoadEvent(stream_id));
+  media_log_->AddLogRecord(media_log_->CreateLoadEvent(stream_id));
 
   frame_deliverer_.reset(new WebMediaPlayerMS::FrameDeliverer(
       weak_this_,
@@ -596,7 +596,8 @@ void WebMediaPlayerMS::Play() {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PLAY));
+  media_log_->AddLogRecord(
+      media_log_->CreateRecord(media::MediaLogRecord::PLAY));
   if (!paused_)
     return;
 
@@ -635,7 +636,8 @@ void WebMediaPlayerMS::Pause() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   should_play_upon_shown_ = false;
-  media_log_->AddEvent(media_log_->CreateEvent(media::MediaLogEvent::PAUSE));
+  media_log_->AddLogRecord(
+      media_log_->CreateRecord(media::MediaLogRecord::PAUSE));
   if (paused_)
     return;
 

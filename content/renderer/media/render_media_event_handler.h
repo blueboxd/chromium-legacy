@@ -18,7 +18,7 @@ class CONTENT_EXPORT RenderMediaEventHandler
  public:
   RenderMediaEventHandler() = default;
   ~RenderMediaEventHandler() override = default;
-  void SendQueuedMediaEvents(std::vector<media::MediaLogEvent>) override;
+  void SendQueuedMediaEvents(std::vector<media::MediaLogRecord>) override;
   void OnWebMediaPlayerDestroyed() override;
 };
 

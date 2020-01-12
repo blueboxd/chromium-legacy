@@ -37,29 +37,31 @@ struct TypeAndCodec {
 
 // |log| is expected to evaluate to a MockMediaLog, optionally a NiceMock or
 // StrictMock, in scope of the usage of this macro.
-#define EXPECT_MEDIA_LOG_ON(log, x) EXPECT_CALL((log), DoAddEventLogString((x)))
+#define EXPECT_MEDIA_LOG_ON(log, x) \
+  EXPECT_CALL((log), DoAddLogRecordLogString((x)))
 
 // Requires |media_log_| to be available.
 #define EXPECT_MEDIA_LOG_PROPERTY(property, value)                             \
   EXPECT_CALL(                                                                 \
       media_log_,                                                              \
-      DoAddEventLogString(                                                     \
+      DoAddLogRecordLogString(                                                 \
           MatchesPropertyExactValue(MediaLog::MediaEventToLogString(           \
               *media_log_.CreatePropertyTestEvent<MediaLogProperty::property>( \
                   value)))))
 
-#define EXPECT_MEDIA_LOG_PROPERTY_ANY_VALUE(property) \
-  EXPECT_CALL(                                        \
-      media_log_,                                     \
-      DoAddEventLogString(MatchesPropertyAnyValue(    \
-          "PROPERTY_CHANGE {\"" +                     \
+#define EXPECT_MEDIA_LOG_PROPERTY_ANY_VALUE(property)  \
+  EXPECT_CALL(                                         \
+      media_log_,                                      \
+      DoAddLogRecordLogString(MatchesPropertyAnyValue( \
+          "PROPERTY_CHANGE {\"" +                      \
           MediaLogPropertyKeyToString(MediaLogProperty::property) + "\"")))
 
-#define EXPECT_FOUND_CODEC_NAME(stream_type, codec_name)                       \
-  EXPECT_CALL(media_log_, DoAddEventLogString(TracksHasCodecName(TypeAndCodec( \
-                              MediaLogPropertyKeyToString(                     \
-                                  MediaLogProperty::k##stream_type##Tracks),   \
-                              codec_name))))
+#define EXPECT_FOUND_CODEC_NAME(stream_type, codec_name)                      \
+  EXPECT_CALL(media_log_,                                                     \
+              DoAddLogRecordLogString(TracksHasCodecName(                     \
+                  TypeAndCodec(MediaLogPropertyKeyToString(                   \
+                                   MediaLogProperty::k##stream_type##Tracks), \
+                               codec_name))))
 
 namespace media {
 
@@ -81,15 +83,15 @@ class MockMediaLog : public MediaLog {
   MockMediaLog();
   ~MockMediaLog() override;
 
-  MOCK_METHOD1(DoAddEventLogString, void(const std::string& event));
+  MOCK_METHOD1(DoAddLogRecordLogString, void(const std::string& event));
 
   // Trampoline method to workaround GMOCK problems with std::unique_ptr<>.
   // Also simplifies tests to be able to string match on the log string
   // representation on the added event.
-  void AddEventLocked(std::unique_ptr<MediaLogEvent> event) override;
+  void AddLogRecordLocked(std::unique_ptr<MediaLogRecord> event) override;
 
   template <MediaLogProperty P, typename T>
-  std::unique_ptr<MediaLogEvent> CreatePropertyTestEvent(const T& value) {
+  std::unique_ptr<MediaLogRecord> CreatePropertyTestEvent(const T& value) {
     return CreatePropertyEvent<P, T>(value);
   }
 

@@ -33,72 +33,72 @@ std::string MediaLog::MediaLogLevelToString(MediaLogLevel level) {
   return NULL;
 }
 
-MediaLogEvent::Type MediaLog::MediaLogLevelToEventType(MediaLogLevel level) {
+MediaLogRecord::Type MediaLog::MediaLogLevelToEventType(MediaLogLevel level) {
   switch (level) {
     case MEDIALOG_ERROR:
-      return MediaLogEvent::MEDIA_ERROR_LOG_ENTRY;
+      return MediaLogRecord::MEDIA_ERROR_LOG_ENTRY;
     case MEDIALOG_WARNING:
-      return MediaLogEvent::MEDIA_WARNING_LOG_ENTRY;
+      return MediaLogRecord::MEDIA_WARNING_LOG_ENTRY;
     case MEDIALOG_INFO:
-      return MediaLogEvent::MEDIA_INFO_LOG_ENTRY;
+      return MediaLogRecord::MEDIA_INFO_LOG_ENTRY;
     case MEDIALOG_DEBUG:
-      return MediaLogEvent::MEDIA_DEBUG_LOG_ENTRY;
+      return MediaLogRecord::MEDIA_DEBUG_LOG_ENTRY;
   }
   NOTREACHED();
-  return MediaLogEvent::MEDIA_ERROR_LOG_ENTRY;
+  return MediaLogRecord::MEDIA_ERROR_LOG_ENTRY;
 }
 
-std::string MediaLog::EventTypeToString(MediaLogEvent::Type type) {
+std::string MediaLog::EventTypeToString(MediaLogRecord::Type type) {
   switch (type) {
-    case MediaLogEvent::WEBMEDIAPLAYER_CREATED:
+    case MediaLogRecord::WEBMEDIAPLAYER_CREATED:
       return "WEBMEDIAPLAYER_CREATED";
-    case MediaLogEvent::WEBMEDIAPLAYER_DESTROYED:
+    case MediaLogRecord::WEBMEDIAPLAYER_DESTROYED:
       return "WEBMEDIAPLAYER_DESTROYED";
-    case MediaLogEvent::LOAD:
+    case MediaLogRecord::LOAD:
       return "LOAD";
-    case MediaLogEvent::SEEK:
+    case MediaLogRecord::SEEK:
       return "SEEK";
-    case MediaLogEvent::PLAY:
+    case MediaLogRecord::PLAY:
       return "PLAY";
-    case MediaLogEvent::PAUSE:
+    case MediaLogRecord::PAUSE:
       return "PAUSE";
-    case MediaLogEvent::PIPELINE_STATE_CHANGED:
+    case MediaLogRecord::PIPELINE_STATE_CHANGED:
       return "PIPELINE_STATE_CHANGED";
-    case MediaLogEvent::PIPELINE_ERROR:
+    case MediaLogRecord::PIPELINE_ERROR:
       return "PIPELINE_ERROR";
-    case MediaLogEvent::VIDEO_SIZE_SET:
+    case MediaLogRecord::VIDEO_SIZE_SET:
       return "VIDEO_SIZE_SET";
-    case MediaLogEvent::DURATION_SET:
+    case MediaLogRecord::DURATION_SET:
       return "DURATION_SET";
-    case MediaLogEvent::ENDED:
+    case MediaLogRecord::ENDED:
       return "ENDED";
-    case MediaLogEvent::TEXT_ENDED:
+    case MediaLogRecord::TEXT_ENDED:
       return "TEXT_ENDED";
-    case MediaLogEvent::MEDIA_ERROR_LOG_ENTRY:
+    case MediaLogRecord::MEDIA_ERROR_LOG_ENTRY:
       return "MEDIA_ERROR_LOG_ENTRY";
-    case MediaLogEvent::MEDIA_WARNING_LOG_ENTRY:
+    case MediaLogRecord::MEDIA_WARNING_LOG_ENTRY:
       return "MEDIA_WARNING_LOG_ENTRY";
-    case MediaLogEvent::MEDIA_INFO_LOG_ENTRY:
+    case MediaLogRecord::MEDIA_INFO_LOG_ENTRY:
       return "MEDIA_INFO_LOG_ENTRY";
-    case MediaLogEvent::MEDIA_DEBUG_LOG_ENTRY:
+    case MediaLogRecord::MEDIA_DEBUG_LOG_ENTRY:
       return "MEDIA_DEBUG_LOG_ENTRY";
-    case MediaLogEvent::PROPERTY_CHANGE:
+    case MediaLogRecord::PROPERTY_CHANGE:
       return "PROPERTY_CHANGE";
-    case MediaLogEvent::BUFFERING_STATE_CHANGE:
+    case MediaLogRecord::BUFFERING_STATE_CHANGE:
       return "BUFFERING_STATE_CHANGE";
-    case MediaLogEvent::SUSPENDED:
+    case MediaLogRecord::SUSPENDED:
       return "SUSPENDED";
   }
   NOTREACHED();
   return NULL;
 }
 
-std::string MediaLog::MediaEventToLogString(const MediaLogEvent& event) {
+std::string MediaLog::MediaEventToLogString(const MediaLogRecord& event) {
   // Special case for PIPELINE_ERROR, since that's by far the most useful
   // event for figuring out media pipeline failures, and just reporting
   // pipeline status as numeric code is not very helpful/user-friendly.
   int error_code = 0;
-  if (event.type == MediaLogEvent::PIPELINE_ERROR &&
+  if (event.type == MediaLogRecord::PIPELINE_ERROR &&
       event.params.GetInteger("pipeline_error", &error_code)) {
     PipelineStatus status = static_cast<PipelineStatus>(error_code);
     return EventTypeToString(event.type) + " " + PipelineStatusToString(status);
@@ -109,15 +109,15 @@ std::string MediaLog::MediaEventToLogString(const MediaLogEvent& event) {
   return EventTypeToString(event.type) + " " + params_json;
 }
 
-std::string MediaLog::MediaEventToMessageString(const MediaLogEvent& event) {
+std::string MediaLog::MediaEventToMessageString(const MediaLogRecord& event) {
   switch (event.type) {
-    case MediaLogEvent::PIPELINE_ERROR: {
+    case MediaLogRecord::PIPELINE_ERROR: {
       int error_code = 0;
       event.params.GetInteger("pipeline_error", &error_code);
       DCHECK_NE(error_code, 0);
       return PipelineStatusToString(static_cast<PipelineStatus>(error_code));
     }
-    case MediaLogEvent::MEDIA_ERROR_LOG_ENTRY: {
+    case MediaLogRecord::MEDIA_ERROR_LOG_ENTRY: {
       std::string result = "";
       if (event.params.GetString(MediaLogLevelToString(MEDIALOG_ERROR),
                                  &result))
@@ -176,7 +176,7 @@ MediaLog::~MediaLog() {
 }
 
 void MediaLog::OnWebMediaPlayerDestroyed() {
-  AddEvent(CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
+  AddLogRecord(CreateRecord(MediaLogRecord::WEBMEDIAPLAYER_DESTROYED));
   base::AutoLock auto_lock(parent_log_record_->lock);
   // Forward to the parent log's implementation.
   if (parent_log_record_->media_log)
@@ -185,14 +185,14 @@ void MediaLog::OnWebMediaPlayerDestroyed() {
 
 void MediaLog::OnWebMediaPlayerDestroyedLocked() {}
 
-void MediaLog::AddEvent(std::unique_ptr<MediaLogEvent> event) {
+void MediaLog::AddLogRecord(std::unique_ptr<MediaLogRecord> event) {
   base::AutoLock auto_lock(parent_log_record_->lock);
   // Forward to the parent log's implementation.
   if (parent_log_record_->media_log)
-    parent_log_record_->media_log->AddEventLocked(std::move(event));
+    parent_log_record_->media_log->AddLogRecordLocked(std::move(event));
 }
 
-void MediaLog::AddEventLocked(std::unique_ptr<MediaLogEvent> event) {}
+void MediaLog::AddLogRecordLocked(std::unique_ptr<MediaLogRecord> event) {}
 
 std::string MediaLog::GetErrorMessage() {
   base::AutoLock auto_lock(parent_log_record_->lock);
@@ -207,52 +207,53 @@ std::string MediaLog::GetErrorMessageLocked() {
   return "";
 }
 
-std::unique_ptr<MediaLogEvent> MediaLog::CreateCreatedEvent(
+std::unique_ptr<MediaLogRecord> MediaLog::CreateCreatedEvent(
     const std::string& origin_url) {
-  std::unique_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
+  std::unique_ptr<MediaLogRecord> event(
+      CreateRecord(MediaLogRecord::WEBMEDIAPLAYER_CREATED));
   event->params.SetString("origin_url", TruncateUrlString(origin_url));
   return event;
 }
 
-std::unique_ptr<MediaLogEvent> MediaLog::CreateEvent(MediaLogEvent::Type type) {
-  std::unique_ptr<MediaLogEvent> event(new MediaLogEvent);
+std::unique_ptr<MediaLogRecord> MediaLog::CreateRecord(
+    MediaLogRecord::Type type) {
+  std::unique_ptr<MediaLogRecord> event(new MediaLogRecord);
   event->id = id_;
   event->type = type;
   event->time = base::TimeTicks::Now();
   return event;
 }
 
-std::unique_ptr<MediaLogEvent> MediaLog::CreateBooleanEvent(
-    MediaLogEvent::Type type,
+std::unique_ptr<MediaLogRecord> MediaLog::CreateBooleanEvent(
+    MediaLogRecord::Type type,
     const std::string& property,
     bool value) {
-  std::unique_ptr<MediaLogEvent> event(CreateEvent(type));
+  std::unique_ptr<MediaLogRecord> event(CreateRecord(type));
   event->params.SetBoolean(property, value);
   return event;
 }
 
-std::unique_ptr<MediaLogEvent> MediaLog::CreateStringEvent(
-    MediaLogEvent::Type type,
+std::unique_ptr<MediaLogRecord> MediaLog::CreateStringEvent(
+    MediaLogRecord::Type type,
     const std::string& property,
     const std::string& value) {
-  std::unique_ptr<MediaLogEvent> event(CreateEvent(type));
+  std::unique_ptr<MediaLogRecord> event(CreateRecord(type));
   event->params.SetString(property, value);
   return event;
 }
 
-std::unique_ptr<MediaLogEvent> MediaLog::CreateTimeEvent(
-    MediaLogEvent::Type type,
+std::unique_ptr<MediaLogRecord> MediaLog::CreateTimeEvent(
+    MediaLogRecord::Type type,
     const std::string& property,
     base::TimeDelta value) {
   return CreateTimeEvent(type, property, value.InSecondsF());
 }
 
-std::unique_ptr<MediaLogEvent> MediaLog::CreateTimeEvent(
-    MediaLogEvent::Type type,
+std::unique_ptr<MediaLogRecord> MediaLog::CreateTimeEvent(
+    MediaLogRecord::Type type,
     const std::string& property,
     double value) {
-  std::unique_ptr<MediaLogEvent> event(CreateEvent(type));
+  std::unique_ptr<MediaLogRecord> event(CreateRecord(type));
   if (std::isfinite(value))
     event->params.SetDouble(property, value);
   else
@@ -260,53 +261,53 @@ std::unique_ptr<MediaLogEvent> MediaLog::CreateTimeEvent(
   return event;
 }
 
-std::unique_ptr<MediaLogEvent> MediaLog::CreateLoadEvent(
+std::unique_ptr<MediaLogRecord> MediaLog::CreateLoadEvent(
     const std::string& url) {
-  std::unique_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::LOAD));
+  std::unique_ptr<MediaLogRecord> event(CreateRecord(MediaLogRecord::LOAD));
   event->params.SetString("url", TruncateUrlString(url));
   return event;
 }
 
-std::unique_ptr<MediaLogEvent> MediaLog::CreatePipelineStateChangedEvent(
+std::unique_ptr<MediaLogRecord> MediaLog::CreatePipelineStateChangedEvent(
     PipelineImpl::State state) {
-  std::unique_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::PIPELINE_STATE_CHANGED));
+  std::unique_ptr<MediaLogRecord> event(
+      CreateRecord(MediaLogRecord::PIPELINE_STATE_CHANGED));
   event->params.SetString("pipeline_state",
                           PipelineImpl::GetStateString(state));
   return event;
 }
 
-std::unique_ptr<MediaLogEvent> MediaLog::CreatePipelineErrorEvent(
+std::unique_ptr<MediaLogRecord> MediaLog::CreatePipelineErrorEvent(
     PipelineStatus error) {
-  std::unique_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::PIPELINE_ERROR));
+  std::unique_ptr<MediaLogRecord> event(
+      CreateRecord(MediaLogRecord::PIPELINE_ERROR));
   event->params.SetInteger("pipeline_error", error);
   return event;
 }
 
-std::unique_ptr<MediaLogEvent> MediaLog::CreateVideoSizeSetEvent(
+std::unique_ptr<MediaLogRecord> MediaLog::CreateVideoSizeSetEvent(
     size_t width,
     size_t height) {
-  std::unique_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::VIDEO_SIZE_SET));
+  std::unique_ptr<MediaLogRecord> event(
+      CreateRecord(MediaLogRecord::VIDEO_SIZE_SET));
   event->params.SetInteger("width", width);
   event->params.SetInteger("height", height);
   return event;
 }
 
-std::unique_ptr<MediaLogEvent> MediaLog::CreateBufferingStateChangedEvent(
+std::unique_ptr<MediaLogRecord> MediaLog::CreateBufferingStateChangedEvent(
     const std::string& property,
     BufferingState state,
     BufferingStateChangeReason reason) {
-  return CreateStringEvent(MediaLogEvent::BUFFERING_STATE_CHANGE, property,
+  return CreateStringEvent(MediaLogRecord::BUFFERING_STATE_CHANGE, property,
                            BufferingStateToString(state, reason));
 }
 
 void MediaLog::AddLogEvent(MediaLogLevel level, const std::string& message) {
-  std::unique_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogLevelToEventType(level)));
+  std::unique_ptr<MediaLogRecord> event(
+      CreateRecord(MediaLogLevelToEventType(level)));
   event->params.SetString(MediaLogLevelToString(level), message);
-  AddEvent(std::move(event));
+  AddLogRecord(std::move(event));
 }
 
 std::unique_ptr<MediaLog> MediaLog::Clone() {

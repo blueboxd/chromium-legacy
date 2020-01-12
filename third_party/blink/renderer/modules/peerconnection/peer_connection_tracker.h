@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_TRACKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_TRACKER_H_
 
-#include <map>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -17,6 +15,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_transceiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 
@@ -270,7 +269,7 @@ class MODULES_EXPORT PeerConnectionTracker
   void AddLegacyStats(int lid, base::Value value);
 
   // This map stores the local ID assigned to each RTCPeerConnectionHandler.
-  typedef std::map<RTCPeerConnectionHandler*, int> PeerConnectionLocalIdMap;
+  typedef WTF::HashMap<RTCPeerConnectionHandler*, int> PeerConnectionLocalIdMap;
   PeerConnectionLocalIdMap peer_connection_local_id_map_;
 
   // This keeps track of the next available local ID.

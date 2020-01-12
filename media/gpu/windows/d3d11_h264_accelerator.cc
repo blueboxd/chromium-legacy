@@ -608,8 +608,8 @@ void D3D11H264Accelerator::RecordFailure(const std::string& reason,
     hr_string = ": " + logging::SystemErrorCodeToString(hr);
 
   DLOG(ERROR) << reason << hr_string;
-  media_log_->AddEvent(media_log_->CreateStringEvent(
-      MediaLogEvent::MEDIA_ERROR_LOG_ENTRY, "error", hr_string + reason));
+  media_log_->AddLogRecord(media_log_->CreateStringEvent(
+      MediaLogRecord::MEDIA_ERROR_LOG_ENTRY, "error", hr_string + reason));
 }
 
 }  // namespace media

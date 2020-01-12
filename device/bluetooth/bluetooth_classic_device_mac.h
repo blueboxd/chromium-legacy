@@ -72,8 +72,6 @@ class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
       const BluetoothUUID& uuid,
       const ConnectToServiceCallback& callback,
       const ConnectToServiceErrorCallback& error_callback) override;
-  void CreateGattConnection(GattConnectionCallback callback,
-                            ConnectErrorCallback error_callback) override;
 
   base::Time GetLastUpdateTime() const override;
 

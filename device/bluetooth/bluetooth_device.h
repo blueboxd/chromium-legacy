@@ -680,6 +680,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // connection.
   virtual void DisconnectGatt() = 0;
 
+  // Returns a |BluetoothGattConnection| object that represents a reference to a
+  // GATT connection to this device.
+  virtual std::unique_ptr<BluetoothGattConnection>
+  CreateBluetoothGattConnectionObject();
+
   // Calls any pending callbacks for CreateGattConnection based on result of
   // subclasses actions initiated in CreateGattConnectionImpl or related
   // disconnection events. These may be called at any time, even multiple times,

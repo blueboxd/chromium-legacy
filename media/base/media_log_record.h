@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_MEDIA_LOG_EVENT_H_
-#define MEDIA_BASE_MEDIA_LOG_EVENT_H_
+#ifndef MEDIA_BASE_MEDIA_LOG_RECORD_H_
+#define MEDIA_BASE_MEDIA_LOG_RECORD_H_
 
 #include <stdint.h>
 #include <memory>
@@ -13,12 +13,12 @@
 
 namespace media {
 
-struct MediaLogEvent {
-  MediaLogEvent() {}
+struct MediaLogRecord {
+  MediaLogRecord() {}
 
-  MediaLogEvent(const MediaLogEvent& event) { *this = event; }
+  MediaLogRecord(const MediaLogRecord& event) { *this = event; }
 
-  MediaLogEvent& operator=(const MediaLogEvent& event) {
+  MediaLogRecord& operator=(const MediaLogRecord& event) {
     id = event.id;
     type = event.type;
     std::unique_ptr<base::DictionaryValue> event_copy(event.params.DeepCopy());
@@ -106,4 +106,4 @@ struct MediaLogEvent {
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_MEDIA_LOG_EVENT_H_
+#endif  // MEDIA_BASE_MEDIA_LOG_RECORD_H_

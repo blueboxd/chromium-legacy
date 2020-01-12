@@ -58,8 +58,8 @@ D3D11VP9Accelerator::~D3D11VP9Accelerator() {}
 
 void D3D11VP9Accelerator::RecordFailure(const std::string& fail_type,
                                         const std::string& reason) {
-  media_log_->AddEvent(media_log_->CreateStringEvent(
-      MediaLogEvent::MEDIA_ERROR_LOG_ENTRY, "error",
+  media_log_->AddLogRecord(media_log_->CreateStringEvent(
+      MediaLogRecord::MEDIA_ERROR_LOG_ENTRY, "error",
       std::string("DX11VP9Failure(") + fail_type + ")=" + reason));
 }
 

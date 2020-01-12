@@ -248,8 +248,8 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
                      std::string /* action */)
 
 // Notifies the browser of an event occurring in the media pipeline.
-IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvents,
-                     std::vector<media::MediaLogEvent> /* events */)
+IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogRecords,
+                     std::vector<media::MediaLogRecord> /* events */)
 
 // Adding a new message? Stick to the sort order above: first platform
 // independent ViewMsg, then ifdefs for platform specific ViewMsg, then platform

@@ -400,7 +400,7 @@ void VideoRendererImpl::OnBufferingStateChange(BufferingState buffering_state) {
                                               : DECODER_UNDERFLOW;
   }
 
-  media_log_->AddEvent(media_log_->CreateBufferingStateChangedEvent(
+  media_log_->AddLogRecord(media_log_->CreateBufferingStateChangedEvent(
       "video_buffering_state", buffering_state, reason));
 
   client_->OnBufferingStateChange(buffering_state, reason);

@@ -39,7 +39,7 @@
 class GURL;
 
 namespace media {
-struct MediaLogEvent;
+struct MediaLogRecord;
 }
 
 namespace content {
@@ -99,7 +99,7 @@ class CONTENT_EXPORT RenderMessageFilter
                                      base::ThreadPriority priority);
 #endif
 
-  void OnMediaLogEvents(const std::vector<media::MediaLogEvent>&);
+  void OnMediaLogRecords(const std::vector<media::MediaLogRecord>&);
 
   bool CheckBenchmarkingEnabled() const;
   bool CheckPreparsedJsCachingEnabled() const;

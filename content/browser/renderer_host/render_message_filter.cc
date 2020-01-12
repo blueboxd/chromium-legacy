@@ -50,7 +50,7 @@
 #include "gpu/ipc/common/gpu_memory_buffer_impl.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
-#include "media/base/media_log_event.h"
+#include "media/base/media_log_record.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
@@ -106,7 +106,7 @@ RenderMessageFilter::~RenderMessageFilter() {
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogEvents, OnMediaLogEvents)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogRecords, OnMediaLogRecords)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -120,7 +120,7 @@ void RenderMessageFilter::OnDestruct() const {
 
 void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
                                                    BrowserThread::ID* thread) {
-  if (message.type() == ViewHostMsg_MediaLogEvents::ID)
+  if (message.type() == ViewHostMsg_MediaLogRecords::ID)
     *thread = BrowserThread::UI;
 }
 
@@ -183,9 +183,9 @@ void RenderMessageFilter::SetThreadPriority(int32_t ns_tid,
 }
 #endif
 
-void RenderMessageFilter::OnMediaLogEvents(
-    const std::vector<media::MediaLogEvent>& events) {
-  // OnMediaLogEvents() is always dispatched to the UI thread for handling.
+void RenderMessageFilter::OnMediaLogRecords(
+    const std::vector<media::MediaLogRecord>& events) {
+  // OnMediaLogRecords() is always dispatched to the UI thread for handling.
   // See OverrideThreadForMessage().
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (media_internals_)

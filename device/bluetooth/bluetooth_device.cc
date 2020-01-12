@@ -496,11 +496,15 @@ void BluetoothDevice::SetBatteryPercentage(
 }
 #endif
 
+std::unique_ptr<BluetoothGattConnection>
+BluetoothDevice::CreateBluetoothGattConnectionObject() {
+  return std::make_unique<BluetoothGattConnection>(adapter_, GetAddress());
+}
+
 void BluetoothDevice::DidConnectGatt() {
-  for (auto& callback : create_gatt_connection_success_callbacks_) {
-    std::move(callback).Run(
-        std::make_unique<BluetoothGattConnection>(adapter_, GetAddress()));
-  }
+  for (auto& callback : create_gatt_connection_success_callbacks_)
+    std::move(callback).Run(CreateBluetoothGattConnectionObject());
+
   create_gatt_connection_success_callbacks_.clear();
   create_gatt_connection_error_callbacks_.clear();
   GetAdapter()->NotifyDeviceChanged(this);

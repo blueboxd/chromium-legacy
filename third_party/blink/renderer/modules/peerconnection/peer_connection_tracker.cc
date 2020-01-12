@@ -697,7 +697,7 @@ void PeerConnectionTracker::OnSuspend() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   for (auto it = peer_connection_local_id_map_.begin();
        it != peer_connection_local_id_map_.end(); ++it) {
-    it->first->CloseClientPeerConnection();
+    it->key->CloseClientPeerConnection();
   }
 }
 
@@ -705,8 +705,8 @@ void PeerConnectionTracker::StartEventLog(int peer_connection_local_id,
                                           int output_period_ms) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   for (auto& it : peer_connection_local_id_map_) {
-    if (it.second == peer_connection_local_id) {
-      it.first->StartEventLog(output_period_ms);
+    if (it.value == peer_connection_local_id) {
+      it.key->StartEventLog(output_period_ms);
       return;
     }
   }
@@ -715,8 +715,8 @@ void PeerConnectionTracker::StartEventLog(int peer_connection_local_id,
 void PeerConnectionTracker::StopEventLog(int peer_connection_local_id) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   for (auto& it : peer_connection_local_id_map_) {
-    if (it.second == peer_connection_local_id) {
-      it.first->StopEventLog();
+    if (it.value == peer_connection_local_id) {
+      it.key->StopEventLog();
       return;
     }
   }
@@ -728,10 +728,10 @@ void PeerConnectionTracker::GetStandardStats() {
   for (const auto& pair : peer_connection_local_id_map_) {
     scoped_refptr<InternalStandardStatsObserver> observer(
         new rtc::RefCountedObject<InternalStandardStatsObserver>(
-            pair.second, main_thread_task_runner_,
+            pair.value, main_thread_task_runner_,
             CrossThreadBindOnce(&PeerConnectionTracker::AddStandardStats,
                                 AsWeakPtr())));
-    pair.first->GetStandardStatsForTracker(observer);
+    pair.key->GetStandardStatsForTracker(observer);
   }
 }
 
@@ -741,12 +741,12 @@ void PeerConnectionTracker::GetLegacyStats() {
   for (const auto& pair : peer_connection_local_id_map_) {
     rtc::scoped_refptr<InternalLegacyStatsObserver> observer(
         new rtc::RefCountedObject<InternalLegacyStatsObserver>(
-            pair.second, main_thread_task_runner_,
+            pair.value, main_thread_task_runner_,
             CrossThreadBindOnce(&PeerConnectionTracker::AddLegacyStats,
                                 AsWeakPtr())));
-    pair.first->GetStats(
-        observer, webrtc::PeerConnectionInterface::kStatsOutputLevelDebug,
-        nullptr);
+    pair.key->GetStats(observer,
+                       webrtc::PeerConnectionInterface::kStatsOutputLevelDebug,
+                       nullptr);
   }
 }
 
@@ -773,7 +773,7 @@ void PeerConnectionTracker::RegisterPeerConnection(
   int32_t lid = info->lid;
   peer_connection_tracker_host_->AddPeerConnection(std::move(info));
 
-  peer_connection_local_id_map_.insert(std::make_pair(pc_handler, lid));
+  peer_connection_local_id_map_.insert(pc_handler, lid);
 }
 
 void PeerConnectionTracker::UnregisterPeerConnection(
@@ -789,7 +789,7 @@ void PeerConnectionTracker::UnregisterPeerConnection(
     return;
   }
 
-  peer_connection_tracker_host_->RemovePeerConnection(it->second);
+  peer_connection_tracker_host_->RemovePeerConnection(it->value);
 
   peer_connection_local_id_map_.erase(it);
 }
@@ -1166,8 +1166,8 @@ int PeerConnectionTracker::GetLocalIDForHandler(
   const auto found = peer_connection_local_id_map_.find(handler);
   if (found == peer_connection_local_id_map_.end())
     return -1;
-  DCHECK_NE(found->second, -1);
-  return found->second;
+  DCHECK_NE(found->value, -1);
+  return found->value;
 }
 
 void PeerConnectionTracker::SendPeerConnectionUpdate(

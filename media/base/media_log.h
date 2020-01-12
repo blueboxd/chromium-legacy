@@ -19,8 +19,8 @@
 #include "base/thread_annotations.h"
 #include "media/base/buffering_state.h"
 #include "media/base/media_export.h"
-#include "media/base/media_log_event.h"
 #include "media/base/media_log_properties.h"
+#include "media/base/media_log_record.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/pipeline_status.h"
 #include "url/gurl.h"
@@ -31,9 +31,9 @@ namespace media {
 //
 // To provide a logging implementation, derive from MediaLog instead.
 //
-// Implementations only need to implement AddEventLocked(), which must be thread
-// safe in the sense that it may be called from multiple threads, though it will
-// not be called concurrently.  See below for more details.
+// Implementations only need to implement AddLogRecordLocked(), which must be
+// thread safe in the sense that it may be called from multiple threads, though
+// it will not be called concurrently.  See below for more details.
 //
 // Implementations should also call InvalidateLog during destruction, to signal
 // to any child logs that the underlying log is no longer available.
@@ -59,27 +59,27 @@ class MEDIA_EXPORT MediaLog {
 
   // Convert various enums to strings.
   static std::string MediaLogLevelToString(MediaLogLevel level);
-  static MediaLogEvent::Type MediaLogLevelToEventType(MediaLogLevel level);
-  static std::string EventTypeToString(MediaLogEvent::Type type);
+  static MediaLogRecord::Type MediaLogLevelToEventType(MediaLogLevel level);
+  static std::string EventTypeToString(MediaLogRecord::Type type);
 
   static std::string BufferingStateToString(
       BufferingState state,
       BufferingStateChangeReason reason = BUFFERING_CHANGE_REASON_UNKNOWN);
 
-  static std::string MediaEventToLogString(const MediaLogEvent& event);
+  static std::string MediaEventToLogString(const MediaLogRecord& event);
 
   // Returns a string usable as part of a MediaError.message, for only
   // PIPELINE_ERROR or MEDIA_ERROR_LOG_ENTRY events, with any newlines replaced
   // with whitespace in the latter kind of events.
-  static std::string MediaEventToMessageString(const MediaLogEvent& event);
+  static std::string MediaEventToMessageString(const MediaLogRecord& event);
 
   // Constructor is protected, see below.
 
   virtual ~MediaLog();
 
-  // Add an event to this log.  Inheritors should override AddEventLocked to
+  // Add an event to this log.  Inheritors should override AddLogRecordLocked to
   // do something.
-  void AddEvent(std::unique_ptr<MediaLogEvent> event);
+  void AddLogRecord(std::unique_ptr<MediaLogRecord> event);
 
   // Notify the media log that the player is destroyed. Some implementations
   // will want to change event handling based on this.
@@ -94,28 +94,30 @@ class MEDIA_EXPORT MediaLog {
   std::string GetErrorMessage();
 
   // Helper methods to create events and their parameters.
-  std::unique_ptr<MediaLogEvent> CreateEvent(MediaLogEvent::Type type);
-  std::unique_ptr<MediaLogEvent> CreateBooleanEvent(MediaLogEvent::Type type,
-                                                    const std::string& property,
-                                                    bool value);
-  std::unique_ptr<MediaLogEvent> CreateCreatedEvent(
+  std::unique_ptr<MediaLogRecord> CreateRecord(MediaLogRecord::Type type);
+  std::unique_ptr<MediaLogRecord> CreateBooleanEvent(
+      MediaLogRecord::Type type,
+      const std::string& property,
+      bool value);
+  std::unique_ptr<MediaLogRecord> CreateCreatedEvent(
       const std::string& origin_url);
-  std::unique_ptr<MediaLogEvent> CreateStringEvent(MediaLogEvent::Type type,
-                                                   const std::string& property,
-                                                   const std::string& value);
-  std::unique_ptr<MediaLogEvent> CreateTimeEvent(MediaLogEvent::Type type,
-                                                 const std::string& property,
-                                                 base::TimeDelta value);
-  std::unique_ptr<MediaLogEvent> CreateTimeEvent(MediaLogEvent::Type type,
-                                                 const std::string& property,
-                                                 double value);
-  std::unique_ptr<MediaLogEvent> CreateLoadEvent(const std::string& url);
-  std::unique_ptr<MediaLogEvent> CreatePipelineStateChangedEvent(
+  std::unique_ptr<MediaLogRecord> CreateStringEvent(MediaLogRecord::Type type,
+                                                    const std::string& property,
+                                                    const std::string& value);
+  std::unique_ptr<MediaLogRecord> CreateTimeEvent(MediaLogRecord::Type type,
+                                                  const std::string& property,
+                                                  base::TimeDelta value);
+  std::unique_ptr<MediaLogRecord> CreateTimeEvent(MediaLogRecord::Type type,
+                                                  const std::string& property,
+                                                  double value);
+  std::unique_ptr<MediaLogRecord> CreateLoadEvent(const std::string& url);
+  std::unique_ptr<MediaLogRecord> CreatePipelineStateChangedEvent(
       PipelineImpl::State state);
-  std::unique_ptr<MediaLogEvent> CreatePipelineErrorEvent(PipelineStatus error);
-  std::unique_ptr<MediaLogEvent> CreateVideoSizeSetEvent(size_t width,
-                                                         size_t height);
-  std::unique_ptr<MediaLogEvent> CreateBufferingStateChangedEvent(
+  std::unique_ptr<MediaLogRecord> CreatePipelineErrorEvent(
+      PipelineStatus error);
+  std::unique_ptr<MediaLogRecord> CreateVideoSizeSetEvent(size_t width,
+                                                          size_t height);
+  std::unique_ptr<MediaLogRecord> CreateBufferingStateChangedEvent(
       const std::string& property,
       BufferingState state,
       BufferingStateChangeReason reason);
@@ -123,14 +125,14 @@ class MEDIA_EXPORT MediaLog {
   // Report a log message at the specified log level.
   void AddLogEvent(MediaLogLevel level, const std::string& message);
 
-  // Only way to access the MediaLogEvent::PROPERTY_CHANGE event type,
+  // Only way to access the MediaLogRecord::PROPERTY_CHANGE event type,
   // so that parameter types can be checked from media_log_properties.h.
   template <MediaLogProperty P, typename T>
   void SetProperty(const T& value) {
-    AddEvent(CreatePropertyEvent<P, T>(value));
+    AddLogRecord(CreatePropertyEvent<P, T>(value));
   }
 
-  // Getter for |id_|. Used by MojoMediaLogService to construct MediaLogEvents
+  // Getter for |id_|. Used by MojoMediaLogService to construct MediaLogRecords
   // to log into this MediaLog. Also used in trace events to associate each
   // event with a specific media playback.
   int32_t id() const { return id_; }
@@ -150,21 +152,21 @@ class MEDIA_EXPORT MediaLog {
   // any other thread, and with any parent log invalidation.
   //
   // Please see the documentation for the corresponding public methods.
-  virtual void AddEventLocked(std::unique_ptr<MediaLogEvent> event);
+  virtual void AddLogRecordLocked(std::unique_ptr<MediaLogRecord> event);
   virtual void OnWebMediaPlayerDestroyedLocked();
   virtual std::string GetErrorMessageLocked();
 
   // MockMediaLog also needs to call this method.
   template <MediaLogProperty P, typename T>
-  std::unique_ptr<MediaLogEvent> CreatePropertyEvent(const T& value) {
-    auto event = CreateEvent(MediaLogEvent::PROPERTY_CHANGE);
+  std::unique_ptr<MediaLogRecord> CreatePropertyEvent(const T& value) {
+    auto event = CreateRecord(MediaLogRecord::PROPERTY_CHANGE);
     event->params.SetKey(MediaLogPropertyKeyToString(P),
                          MediaLogPropertyTypeSupport<P, T>::Convert(value));
     return event;
   }
 
   // Notify all child logs that they should stop working.  This should be called
-  // to guarantee that no further calls into AddEvent should be allowed.
+  // to guarantee that no further calls into AddLogRecord should be allowed.
   // Further, since calls into this log may happen on any thread, it's important
   // to call this while the log is still in working order.  For example, calling
   // it immediately during destruction is a good idea.

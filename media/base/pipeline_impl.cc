@@ -581,8 +581,8 @@ void PipelineImpl::RendererWrapper::OnBufferedTimeRangesChanged(
 void PipelineImpl::RendererWrapper::SetDuration(base::TimeDelta duration) {
   // TODO(alokp): Add thread DCHECK after ensuring that all Demuxer
   // implementations call DemuxerHost on the media thread.
-  media_log_->AddEvent(media_log_->CreateTimeEvent(MediaLogEvent::DURATION_SET,
-                                                   "duration", duration));
+  media_log_->AddLogRecord(media_log_->CreateTimeEvent(
+      MediaLogRecord::DURATION_SET, "duration", duration));
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PipelineImpl::OnDurationChange, weak_pipeline_,
                                 duration));
@@ -603,7 +603,7 @@ void PipelineImpl::RendererWrapper::OnError(PipelineStatus error) {
 
 void PipelineImpl::RendererWrapper::OnEnded() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::ENDED));
+  media_log_->AddLogRecord(media_log_->CreateRecord(MediaLogRecord::ENDED));
 
   if (state_ != kPlaying)
     return;
@@ -900,7 +900,8 @@ void PipelineImpl::RendererWrapper::SetState(State next_state) {
            << PipelineImpl::GetStateString(next_state);
 
   state_ = next_state;
-  media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(next_state));
+  media_log_->AddLogRecord(
+      media_log_->CreatePipelineStateChangedEvent(next_state));
 }
 
 void PipelineImpl::RendererWrapper::CompleteSeek(base::TimeDelta seek_time,

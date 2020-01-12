@@ -23,7 +23,7 @@
 #include "media/base/eme_constants.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/hdr_metadata.h"
-#include "media/base/media_log_event.h"
+#include "media/base/media_log_record.h"
 #include "media/base/media_status.h"
 #include "media/base/output_device_info.h"
 #include "media/base/overlay_info.h"
@@ -110,8 +110,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::EncryptionScheme,
 IPC_ENUM_TRAITS_MAX_VALUE(media::HdcpVersion,
                           media::HdcpVersion::kHdcpVersionMax)
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::MediaLogEvent::Type,
-                          media::MediaLogEvent::TYPE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(media::MediaLogRecord::Type,
+                          media::MediaLogRecord::TYPE_LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaStatus::State,
                           media::MediaStatus::State::STATE_MAX)
@@ -177,7 +177,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::CdmConfig)
   IPC_STRUCT_TRAITS_MEMBER(use_hw_secure_codecs)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::MediaLogEvent)
+IPC_STRUCT_TRAITS_BEGIN(media::MediaLogRecord)
   IPC_STRUCT_TRAITS_MEMBER(id)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(params)

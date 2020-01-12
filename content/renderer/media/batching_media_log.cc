@@ -20,12 +20,12 @@
 namespace {
 
 // Print an event to the chromium log.
-void Log(media::MediaLogEvent* event) {
-  if (event->type == media::MediaLogEvent::PIPELINE_ERROR ||
-      event->type == media::MediaLogEvent::MEDIA_ERROR_LOG_ENTRY) {
+void Log(media::MediaLogRecord* event) {
+  if (event->type == media::MediaLogRecord::PIPELINE_ERROR ||
+      event->type == media::MediaLogRecord::MEDIA_ERROR_LOG_ENTRY) {
     LOG(ERROR) << "MediaEvent: "
                << media::MediaLog::MediaEventToLogString(*event);
-  } else if (event->type != media::MediaLogEvent::PROPERTY_CHANGE) {
+  } else if (event->type != media::MediaLogRecord::PROPERTY_CHANGE) {
     DVLOG(1) << "MediaEvent: "
              << media::MediaLog::MediaEventToLogString(*event);
   }
@@ -69,8 +69,8 @@ void BatchingMediaLog::OnWebMediaPlayerDestroyedLocked() {
   event_handler_->OnWebMediaPlayerDestroyed();
 }
 
-void BatchingMediaLog::AddEventLocked(
-    std::unique_ptr<media::MediaLogEvent> event) {
+void BatchingMediaLog::AddLogRecordLocked(
+    std::unique_ptr<media::MediaLogRecord> event) {
   Log(event.get());
 
   // For enforcing delay until it's been a second since the last ipc message was
@@ -80,7 +80,7 @@ void BatchingMediaLog::AddEventLocked(
   {
     base::AutoLock auto_lock(lock_);
     switch (event->type) {
-      case media::MediaLogEvent::DURATION_SET:
+      case media::MediaLogRecord::DURATION_SET:
         // Similar to the extents changed message, this may fire many times for
         // badly muxed media. Suppress within our rate limits here.
         last_duration_changed_event_.swap(event);
@@ -88,11 +88,11 @@ void BatchingMediaLog::AddEventLocked(
 
       // Hold onto the most recent PIPELINE_ERROR and the first, if any,
       // MEDIA_LOG_ERROR_ENTRY for use in GetErrorMessage().
-      case media::MediaLogEvent::PIPELINE_ERROR:
+      case media::MediaLogRecord::PIPELINE_ERROR:
         queued_media_events_.push_back(*event);
         last_pipeline_error_.swap(event);
         break;
-      case media::MediaLogEvent::MEDIA_ERROR_LOG_ENTRY:
+      case media::MediaLogRecord::MEDIA_ERROR_LOG_ENTRY:
         queued_media_events_.push_back(*event);
         if (!cached_media_error_for_message_)
           cached_media_error_for_message_ = std::move(event);
@@ -151,7 +151,7 @@ std::string BatchingMediaLog::GetErrorMessageLocked() {
 void BatchingMediaLog::SendQueuedMediaEvents() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  std::vector<media::MediaLogEvent> events_to_send;
+  std::vector<media::MediaLogRecord> events_to_send;
   {
     base::AutoLock auto_lock(lock_);
     DCHECK(ipc_send_pending_);

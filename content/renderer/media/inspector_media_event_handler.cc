@@ -29,11 +29,11 @@ InspectorMediaEventHandler::InspectorMediaEventHandler(
     : inspector_context_(inspector_context),
       player_id_(inspector_context_->CreatePlayer()) {}
 
-// TODO(tmathmeyer) It would be wonderful if the definition for MediaLogEvent
+// TODO(tmathmeyer) It would be wonderful if the definition for MediaLogRecord
 // and InspectorPlayerEvent / InspectorPlayerProperty could be unified so that
-// this method is no longer needed. Refactor MediaLogEvent at some point.
+// this method is no longer needed. Refactor MediaLogRecord at some point.
 void InspectorMediaEventHandler::SendQueuedMediaEvents(
-    std::vector<media::MediaLogEvent> events_to_send) {
+    std::vector<media::MediaLogRecord> events_to_send) {
   // If the video player is gone, the whole frame
   if (video_player_destroyed_)
     return;
@@ -41,8 +41,8 @@ void InspectorMediaEventHandler::SendQueuedMediaEvents(
   blink::InspectorPlayerEvents events;
   blink::InspectorPlayerProperties properties;
 
-  for (media::MediaLogEvent event : events_to_send) {
-    if (event.type == media::MediaLogEvent::PROPERTY_CHANGE) {
+  for (media::MediaLogRecord event : events_to_send) {
+    if (event.type == media::MediaLogRecord::PROPERTY_CHANGE) {
       for (auto&& itr : event.params.DictItems()) {
         blink::InspectorPlayerProperty prop = {
             blink::WebString::FromUTF8(itr.first), ToString(itr.second)};
@@ -52,10 +52,10 @@ void InspectorMediaEventHandler::SendQueuedMediaEvents(
       blink::InspectorPlayerEvent::InspectorPlayerEventType event_type =
           blink::InspectorPlayerEvent::SYSTEM_EVENT;
 
-      if (event.type == media::MediaLogEvent::MEDIA_ERROR_LOG_ENTRY ||
-          event.type == media::MediaLogEvent::MEDIA_WARNING_LOG_ENTRY ||
-          event.type == media::MediaLogEvent::MEDIA_INFO_LOG_ENTRY ||
-          event.type == media::MediaLogEvent::MEDIA_DEBUG_LOG_ENTRY) {
+      if (event.type == media::MediaLogRecord::MEDIA_ERROR_LOG_ENTRY ||
+          event.type == media::MediaLogRecord::MEDIA_WARNING_LOG_ENTRY ||
+          event.type == media::MediaLogRecord::MEDIA_INFO_LOG_ENTRY ||
+          event.type == media::MediaLogRecord::MEDIA_DEBUG_LOG_ENTRY) {
         event_type = blink::InspectorPlayerEvent::MESSAGE_EVENT;
       }
       if (event.params.size() == 0) {

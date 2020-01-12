@@ -9,8 +9,8 @@
 namespace content {
 
 void RenderMediaEventHandler::SendQueuedMediaEvents(
-    std::vector<media::MediaLogEvent> events_to_send) {
-  RenderThread::Get()->Send(new ViewHostMsg_MediaLogEvents(events_to_send));
+    std::vector<media::MediaLogRecord> events_to_send) {
+  RenderThread::Get()->Send(new ViewHostMsg_MediaLogRecords(events_to_send));
 }
 
 // This media log doesn't care, since the RenderThread outlives us for

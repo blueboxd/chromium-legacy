@@ -223,7 +223,7 @@ void AssistantProactiveSuggestionsController::
   // Clicking on the proactive suggestions view causes the user to enter
   // Assistant UI where a proactive suggestions interaction will be initiated.
   assistant_controller_->ui_controller()->ShowUi(
-      AssistantEntryPoint::kProactiveSuggestions);
+      chromeos::assistant::mojom::AssistantEntryPoint::kProactiveSuggestions);
 }
 
 void AssistantProactiveSuggestionsController::OnWidgetVisibilityChanged(
@@ -306,7 +306,7 @@ void AssistantProactiveSuggestionsController::OnEntryPointClickDeepLinkReceived(
   // point to open the set of proactive suggestions inline in Assistant UI.
   CloseUi(ProactiveSuggestionsShowResult::kClick);
   assistant_controller_->ui_controller()->ShowUi(
-      AssistantEntryPoint::kProactiveSuggestions);
+      chromeos::assistant::mojom::AssistantEntryPoint::kProactiveSuggestions);
 }
 
 void AssistantProactiveSuggestionsController::OnViewImpressionDeepLinkReceived(

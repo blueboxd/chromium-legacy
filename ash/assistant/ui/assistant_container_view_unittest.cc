@@ -72,7 +72,8 @@ TEST_F(AssistantContainerViewTest, InitialAnchoring) {
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
   // Show Assistant UI and grab a reference to our view under test.
-  ui_controller()->ShowUi(AssistantEntryPoint::kUnspecified);
+  ui_controller()->ShowUi(
+      chromeos::assistant::mojom::AssistantEntryPoint::kUnspecified);
   AssistantContainerView* view = ui_controller()->GetViewForTest();
 
   // We expect the view to appear in the work area where new windows will open.

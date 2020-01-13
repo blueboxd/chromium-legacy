@@ -65,6 +65,9 @@
 
 namespace ash {
 
+using chromeos::assistant::mojom::AssistantEntryPoint;
+using chromeos::assistant::mojom::AssistantExitPoint;
+
 namespace {
 
 bool IsTabletMode() {

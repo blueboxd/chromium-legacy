@@ -64,6 +64,7 @@ using storage::kFileSystemTypeTemporary;
 using storage::ObfuscatedFileUtil;
 using storage::SandboxDirectoryDatabase;
 using storage::SandboxIsolatedOriginDatabase;
+using url::Origin;
 
 namespace content {
 
@@ -166,9 +167,9 @@ class ObfuscatedFileUtilTest : public testing::Test,
  public:
   ObfuscatedFileUtilTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
-        origin_(GURL("http://www.example.com")),
+        origin_(Origin::Create(GURL("http://www.example.com"))),
         type_(storage::kFileSystemTypeTemporary),
-        sandbox_file_system_(origin_, type_),
+        sandbox_file_system_(origin_.GetURL(), type_),
         quota_status_(blink::mojom::QuotaStatusCode::kUnknown),
         usage_(-1) {}
 
@@ -258,10 +259,10 @@ class ObfuscatedFileUtilTest : public testing::Test,
   // and obfuscated_file_util_.
   // Use this for tests which need to run in multiple origins; we need a test
   // helper per origin.
-  SandboxFileSystemTestHelper* NewFileSystem(const GURL& origin,
+  SandboxFileSystemTestHelper* NewFileSystem(const Origin& origin,
                                              storage::FileSystemType type) {
     SandboxFileSystemTestHelper* file_system =
-        new SandboxFileSystemTestHelper(origin, type);
+        new SandboxFileSystemTestHelper(origin.GetURL(), type);
 
     file_system->SetUp(file_system_context_.get());
     return file_system;
@@ -282,7 +283,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
 
   const base::FilePath& test_directory() const { return data_dir_.GetPath(); }
 
-  const GURL& origin() const { return origin_; }
+  const Origin& origin() const { return origin_; }
 
   storage::FileSystemType type() const { return type_; }
 
@@ -296,8 +297,8 @@ class ObfuscatedFileUtilTest : public testing::Test,
   void GetUsageFromQuotaManager() {
     int64_t quota = -1;
     quota_status_ = AsyncFileTestHelper::GetUsageAndQuota(
-        quota_manager_.get(), url::Origin::Create(origin()),
-        sandbox_file_system_.type(), &usage_, &quota);
+        quota_manager_.get(), origin(), sandbox_file_system_.type(), &usage_,
+        &quota);
     EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, quota_status_);
   }
 
@@ -713,7 +714,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   void MaybeDropDatabasesAliveCaseTestBody() {
     std::unique_ptr<ObfuscatedFileUtil> file_util =
         CreateObfuscatedFileUtil(nullptr);
-    file_util->InitOriginDatabase(GURL(), true /*create*/);
+    file_util->InitOriginDatabase(Origin(), true /*create*/);
     ASSERT_TRUE(file_util->origin_database_ != nullptr);
 
     // Callback to Drop DB is called while ObfuscatedFileUtilTest is
@@ -731,7 +732,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
     {
       std::unique_ptr<ObfuscatedFileUtil> file_util =
           CreateObfuscatedFileUtil(nullptr);
-      file_util->InitOriginDatabase(GURL(), true /*create*/);
+      file_util->InitOriginDatabase(Origin(), true /*create*/);
       file_util->db_flush_delay_seconds_ = 0;
       file_util->MarkUsed();
     }
@@ -741,12 +742,11 @@ class ObfuscatedFileUtilTest : public testing::Test,
   }
 
   void DestroyDirectoryDatabase_IsolatedTestBody() {
-    storage_policy_->AddIsolated(origin_);
+    storage_policy_->AddIsolated(origin_.GetURL());
     std::unique_ptr<ObfuscatedFileUtil> file_util =
         CreateObfuscatedFileUtil(storage_policy_.get());
     const FileSystemURL url = FileSystemURL::CreateForTest(
-        url::Origin::Create(origin_), kFileSystemTypePersistent,
-        base::FilePath());
+        origin_, kFileSystemTypePersistent, base::FilePath());
 
     // Create DirectoryDatabase for isolated origin.
     SandboxDirectoryDatabase* db =
@@ -754,18 +754,17 @@ class ObfuscatedFileUtilTest : public testing::Test,
     ASSERT_TRUE(db != nullptr);
 
     // Destory it.
-    file_util->DestroyDirectoryDatabase(url.origin().GetURL(),
+    file_util->DestroyDirectoryDatabase(url.origin(),
                                         GetTypeString(url.type()));
     ASSERT_TRUE(file_util->directories_.empty());
   }
 
   void GetDirectoryDatabase_IsolatedTestBody() {
-    storage_policy_->AddIsolated(origin_);
+    storage_policy_->AddIsolated(origin_.GetURL());
     std::unique_ptr<ObfuscatedFileUtil> file_util =
         CreateObfuscatedFileUtil(storage_policy_.get());
     const FileSystemURL url = FileSystemURL::CreateForTest(
-        url::Origin::Create(origin_), kFileSystemTypePersistent,
-        base::FilePath());
+        origin_, kFileSystemTypePersistent, base::FilePath());
 
     // Create DirectoryDatabase for isolated origin.
     SandboxDirectoryDatabase* db =
@@ -808,7 +807,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
   scoped_refptr<FileSystemContext> file_system_context_;
-  GURL origin_;
+  Origin origin_;
   storage::FileSystemType type_;
   SandboxFileSystemTestHelper sandbox_file_system_;
   blink::mojom::QuotaStatusCode quota_status_;
@@ -1576,7 +1575,7 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
       ofu()->CreateOriginEnumerator());
   // The test helper starts out with a single filesystem.
   EXPECT_TRUE(enumerator.get());
-  EXPECT_EQ(origin(), enumerator->Next());
+  EXPECT_EQ(origin().GetURL(), enumerator->Next());
   ASSERT_TRUE(type() == kFileSystemTypeTemporary);
   EXPECT_TRUE(HasFileSystemType(enumerator.get(), kFileSystemTypeTemporary));
   EXPECT_FALSE(HasFileSystemType(enumerator.get(), kFileSystemTypePersistent));
@@ -1584,7 +1583,7 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
   EXPECT_FALSE(HasFileSystemType(enumerator.get(), kFileSystemTypeTemporary));
   EXPECT_FALSE(HasFileSystemType(enumerator.get(), kFileSystemTypePersistent));
 
-  std::set<GURL> origins_expected;
+  std::set<Origin> origins_expected;
   origins_expected.insert(origin());
 
   for (size_t i = 0; i < base::size(kOriginEnumerationTestRecords); ++i) {
@@ -1592,11 +1591,11 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
                  << "Validating kOriginEnumerationTestRecords " << i);
     const OriginEnumerationTestRecord& record =
         kOriginEnumerationTestRecords[i];
-    GURL origin_url(record.origin_url);
-    origins_expected.insert(origin_url);
+    Origin origin = Origin::Create(GURL(record.origin_url));
+    origins_expected.insert(origin);
     if (record.has_temporary) {
       std::unique_ptr<SandboxFileSystemTestHelper> file_system(
-          NewFileSystem(origin_url, kFileSystemTypeTemporary));
+          NewFileSystem(origin, kFileSystemTypeTemporary));
       std::unique_ptr<FileSystemOperationContext> context(
           NewContext(file_system.get()));
       bool created = false;
@@ -1608,7 +1607,7 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
     }
     if (record.has_persistent) {
       std::unique_ptr<SandboxFileSystemTestHelper> file_system(
-          NewFileSystem(origin_url, kFileSystemTypePersistent));
+          NewFileSystem(origin, kFileSystemTypePersistent));
       std::unique_ptr<FileSystemOperationContext> context(
           NewContext(file_system.get()));
       bool created = false;
@@ -1621,10 +1620,10 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
   }
   enumerator = ofu()->CreateOriginEnumerator();
   EXPECT_TRUE(enumerator.get());
-  std::set<GURL> origins_found;
+  std::set<Origin> origins_found;
   GURL origin_url;
   while (!(origin_url = enumerator->Next()).is_empty()) {
-    origins_found.insert(origin_url);
+    origins_found.insert(Origin::Create(origin_url));
     SCOPED_TRACE(testing::Message() << "Handling " << origin_url.spec());
     bool found = false;
     for (const auto& record : kOriginEnumerationTestRecords) {
@@ -1637,7 +1636,7 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
                 HasFileSystemType(enumerator.get(), kFileSystemTypePersistent));
     }
     // Deal with the default filesystem created by the test helper.
-    if (!found && origin_url == origin()) {
+    if (!found && origin_url == origin().GetURL()) {
       ASSERT_TRUE(type() == kFileSystemTypeTemporary);
       EXPECT_TRUE(
           HasFileSystemType(enumerator.get(), kFileSystemTypeTemporary));
@@ -1648,7 +1647,7 @@ TEST_P(ObfuscatedFileUtilTest, TestOriginEnumerator) {
     EXPECT_TRUE(found);
   }
 
-  std::set<GURL> diff;
+  std::set<Origin> diff;
   std::set_symmetric_difference(
       origins_expected.begin(), origins_expected.end(), origins_found.begin(),
       origins_found.end(), inserter(diff, diff.begin()));
@@ -2400,9 +2399,9 @@ TEST_P(ObfuscatedFileUtilTest, CreateDirectory_NotADirectoryInRecursive) {
 }
 
 TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType) {
-  const GURL origin1("http://www.example.com:12");
-  const GURL origin2("http://www.example.com:1234");
-  const GURL origin3("http://nope.example.com");
+  const Origin origin1 = Origin::Create(GURL("http://www.example.com:12"));
+  const Origin origin2 = Origin::Create(GURL("http://www.example.com:1234"));
+  const Origin origin3 = Origin::Create(GURL("http://nope.example.com"));
 
   // Create origin directories.
   std::unique_ptr<SandboxFileSystemTestHelper> fs1(
@@ -2478,8 +2477,8 @@ TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType) {
 }
 
 TEST_P(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType_DeleteAll) {
-  const GURL origin1("http://www.example.com:12");
-  const GURL origin2("http://www.example.com:1234");
+  const Origin origin1 = Origin::Create(GURL("http://www.example.com:12"));
+  const Origin origin2 = Origin::Create(GURL("http://www.example.com:1234"));
 
   // Create origin directories.
   std::unique_ptr<SandboxFileSystemTestHelper> fs1(

@@ -305,7 +305,7 @@ void PluginPrivateDataDeletionHelper::CheckOriginsOnFileTaskRunner(
     // for this origin.
     base::File::Error error;
     base::FilePath path = obfuscated_file_util->GetDirectoryForOriginAndType(
-        origin, "", false, &error);
+        url::Origin::Create(origin), "", false, &error);
     if (error != base::File::FILE_OK) {
       DLOG(ERROR) << "Unable to read directory for " << origin;
       continue;

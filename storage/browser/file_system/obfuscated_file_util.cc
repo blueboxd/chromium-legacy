@@ -849,7 +849,7 @@ bool ObfuscatedFileUtil::IsDirectoryEmpty(FileSystemOperationContext* context,
 }
 
 base::FilePath ObfuscatedFileUtil::GetDirectoryForOriginAndType(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& type_string,
     bool create,
     base::File::Error* error_code) {
@@ -875,7 +875,7 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOriginAndType(
 }
 
 bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& type_string) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DestroyDirectoryDatabase(origin, type_string);
@@ -921,7 +921,7 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
 }
 
 void ObfuscatedFileUtil::CloseFileSystemForOriginAndType(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& type_string) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -942,7 +942,7 @@ ObfuscatedFileUtil::CreateOriginEnumerator() {
 
   std::vector<SandboxOriginDatabase::OriginRecord> origins;
 
-  InitOriginDatabase(GURL(), false);
+  InitOriginDatabase(url::Origin(), false);
   base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> file_util_delegate;
   if (is_incognito()) {
     file_util_delegate =
@@ -954,7 +954,7 @@ ObfuscatedFileUtil::CreateOriginEnumerator() {
 }
 
 void ObfuscatedFileUtil::DestroyDirectoryDatabase(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& type_string) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -990,7 +990,7 @@ void ObfuscatedFileUtil::MaybePrepopulateDatabase(
   std::string origin_string = database.GetPrimaryOrigin();
   if (origin_string.empty() || !database.HasOriginPath(origin_string))
     return;
-  const GURL origin = storage::GetOriginURLFromIdentifier(origin_string);
+  const url::Origin origin = storage::GetOriginFromIdentifier(origin_string);
 
   // Prepopulate the directory database(s) if and only if this instance
   // has primary origin and the directory database is already there.
@@ -1023,7 +1023,7 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForURL(
     base::File::Error* error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetDirectoryForOriginAndType(
-      url.origin().GetURL(), CallGetTypeStringForURL(url), create, error_code);
+      url.origin(), CallGetTypeStringForURL(url), create, error_code);
 }
 
 std::string ObfuscatedFileUtil::CallGetTypeStringForURL(
@@ -1201,7 +1201,7 @@ base::FilePath ObfuscatedFileUtil::DataPathToLocalPath(
 }
 
 std::string ObfuscatedFileUtil::GetDirectoryDatabaseKey(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& type_string) {
   // For isolated origin we just use a type string as a key.
   return storage::GetIdentifierFromOrigin(origin) +
@@ -1217,8 +1217,8 @@ SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
     bool create) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::string key = GetDirectoryDatabaseKey(url.origin().GetURL(),
-                                            CallGetTypeStringForURL(url));
+  std::string key =
+      GetDirectoryDatabaseKey(url.origin(), CallGetTypeStringForURL(url));
   if (key.empty())
     return nullptr;
 
@@ -1242,7 +1242,7 @@ SandboxDirectoryDatabase* ObfuscatedFileUtil::GetDirectoryDatabase(
 }
 
 base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
-    const GURL& origin,
+    const url::Origin& origin,
     bool create,
     base::File::Error* error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1330,7 +1330,7 @@ void ObfuscatedFileUtil::RewriteDatabases() {
     origin_database_->RewriteDatabase();
 }
 
-bool ObfuscatedFileUtil::InitOriginDatabase(const GURL& origin_hint,
+bool ObfuscatedFileUtil::InitOriginDatabase(const url::Origin& origin_hint,
                                             bool create) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1354,7 +1354,7 @@ bool ObfuscatedFileUtil::InitOriginDatabase(const GURL& origin_hint,
                                            env_override_);
   origin_database_.reset(prioritized_origin_database);
 
-  if (origin_hint.is_empty() || !HasIsolatedStorage(origin_hint))
+  if (!origin_hint.opaque() || !HasIsolatedStorage(origin_hint))
     return true;
 
   const std::string isolated_origin_string =
@@ -1478,9 +1478,9 @@ base::File ObfuscatedFileUtil::CreateOrOpenInternal(
   return file;
 }
 
-bool ObfuscatedFileUtil::HasIsolatedStorage(const GURL& origin) {
+bool ObfuscatedFileUtil::HasIsolatedStorage(const url::Origin& origin) {
   return special_storage_policy_.get() &&
-         special_storage_policy_->HasIsolatedStorage(origin);
+         special_storage_policy_->HasIsolatedStorage(origin.GetURL());
 }
 
 }  // namespace storage

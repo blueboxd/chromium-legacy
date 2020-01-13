@@ -78,12 +78,14 @@ void AssistantSetupController::StartOnboarding(bool relaunch, FlowType type) {
   }
 
   // Assistant UI should be hidden while the user onboards.
-  assistant_controller_->ui_controller()->HideUi(AssistantExitPoint::kSetup);
+  assistant_controller_->ui_controller()->HideUi(
+      chromeos::assistant::mojom::AssistantExitPoint::kSetup);
 }
 
 void AssistantSetupController::OnOptInFlowFinished(bool completed) {
   if (completed)
-    assistant_controller_->ui_controller()->ShowUi(AssistantEntryPoint::kSetup);
+    assistant_controller_->ui_controller()->ShowUi(
+        chromeos::assistant::mojom::AssistantEntryPoint::kSetup);
 }
 
 }  // namespace ash

@@ -227,6 +227,7 @@ bool ThemePainterDefault::PaintTextField(const Node* node,
   WebThemeEngine::ExtraParams extra_params;
   extra_params.text_field.is_text_area = part == kTextAreaPart;
   extra_params.text_field.is_listbox = part == kListboxPart;
+  extra_params.text_field.has_border = true;
 
   cc::PaintCanvas* canvas = paint_info.context.Canvas();
 

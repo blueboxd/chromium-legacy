@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/smb_client/smb_errors.h"
 #include "chrome/browser/chromeos/smb_client/smb_share_finder.h"
 #include "chrome/browser/chromeos/smb_client/smb_task_queue.h"
+#include "chrome/browser/chromeos/smb_client/smbfs_share.h"
 #include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/smb_provider_client.h"
@@ -75,6 +76,9 @@ class SmbService : public KeyedService,
              bool should_open_file_manager_after_mount,
              bool save_credentials,
              MountResponse callback);
+
+  // Unmounts the SmbFs share mounted at |mount_path|.
+  void UnmountSmbFs(const base::FilePath& mount_path);
 
   // Completes the mounting of an SMB file system, passing |options| on to
   // file_system_provider::Service::MountFileSystem(). Passes error status to
@@ -134,6 +138,13 @@ class SmbService : public KeyedService,
                  bool should_open_file_manager_after_mount,
                  bool save_credentials,
                  MountResponse callback);
+
+  // Handles the response from mounting an smbfs share. Passes |result| onto
+  // |callback|.
+  void OnSmbfsMountDone(const std::string& smbfs_mount_id,
+                        bool should_open_file_manager_after_mount,
+                        MountResponse callback,
+                        SmbMountResult result);
 
   // Retrieves the mount_id for |file_system_info|.
   int32_t GetMountId(const ProvidedFileSystemInfo& info) const;
@@ -288,6 +299,10 @@ class SmbService : public KeyedService,
   std::map<int32_t, base::OnceClosure> update_credential_replies_;
   // |file_system_id| -> |mount_id|
   std::unordered_map<std::string, int32_t> mount_id_map_;
+  // |smbfs_mount_id| -> SmbFsShare
+  // Note, mount ID for smbfs is a randomly generated string. For smbprovider
+  // shares, it is an integer.
+  std::unordered_map<std::string, std::unique_ptr<SmbFsShare>> smbfs_shares_;
 
   base::OnceClosure setup_complete_callback_;
 

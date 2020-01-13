@@ -144,7 +144,6 @@
 #endif
 
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/mojom/unhandled_tap_notifier/unhandled_tap_notifier.mojom-blink.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)

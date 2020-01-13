@@ -15,7 +15,7 @@
 namespace gpu {
 namespace webgpu {
 
-// A class that helps write GL command buffers.
+// A class that helps write WebGPU command buffers.
 class WEBGPU_EXPORT WebGPUCmdHelper : public CommandBufferHelper {
  public:
   explicit WebGPUCmdHelper(CommandBuffer* command_buffer);

@@ -42,12 +42,18 @@ SmbFsMounter::SmbFsMounter(
   DCHECK(disk_mount_manager_);
 }
 
+SmbFsMounter::SmbFsMounter()
+    : delegate_(nullptr), disk_mount_manager_(nullptr) {}
+
 SmbFsMounter::~SmbFsMounter() {
   if (mojo_fd_pending_) {
     mojo_bootstrap::PendingConnectionManager::Get()
         .CancelExpectedOpenIpcChannel(token_);
   }
-  disk_mount_manager_->RemoveObserver(this);
+  if (disk_mount_manager_) {
+    // Can be nullptr in unit tests.
+    disk_mount_manager_->RemoveObserver(this);
+  }
 }
 
 void SmbFsMounter::Mount(SmbFsMounter::DoneCallback callback) {

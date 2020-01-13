@@ -226,7 +226,7 @@ TEST_P(HomeButtonTest, LongPressGesture) {
                                                ->visibility());
 
   Shell::Get()->assistant_controller()->ui_controller()->CloseUi(
-      AssistantExitPoint::kUnspecified);
+      chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
   // Test long press gesture on secondary display.
   SendGestureEventToSecondaryDisplay(&long_press);
   GetAppListTestHelper()->WaitUntilIdle();

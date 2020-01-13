@@ -8,52 +8,12 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 
 class AssistantUiModelObserver;
-
-// Enumeration of Assistant entry points. These values are persisted to logs.
-// Entries should not be renumbered and  numeric values should never be reused.
-// Only append to this enum is allowed if the possible entry source grows.
-enum class AssistantEntryPoint {
-  kUnspecified = 0,
-  kDeepLink = 1,
-  kHotkey = 2,
-  kHotword = 3,
-  kLauncherSearchBox = 4,
-  kLongPressLauncher = 5,
-  kSetup = 6,
-  kStylus = 7,
-  kLauncherSearchResult = 8,
-  kLauncherSearchBoxMic = 9,
-  kProactiveSuggestions = 10,
-  // Special enumerator value used by histogram macros.
-  kMaxValue = kProactiveSuggestions
-};
-
-// Enumeration of Assistant exit points. These values are persisted to logs.
-// Entries should not be renumbered and numeric values should never be reused.
-// Only append to this enum is allowed if the possible exit source grows.
-enum class AssistantExitPoint {
-  // Includes keyboard interruptions (e.g. launching Chrome OS feedback
-  // using keyboard shortcuts, pressing search button).
-  kUnspecified = 0,
-  kCloseButton = 1,
-  kHotkey = 2,
-  kNewBrowserTabFromServer = 3,
-  kNewBrowserTabFromUser = 4,
-  kOutsidePress = 5,
-  kSetup = 6,
-  kStylus = 7,
-  kBackInLauncher = 8,
-  kLauncherClose = 9,
-  kLauncherOpen = 10,
-  kScreenshot = 11,
-  // Special enumerator value used by histogram macros.
-  kMaxValue = kScreenshot
-};
 
 // Enumeration of Assistant UI modes.
 enum class AssistantUiMode {
@@ -88,6 +48,9 @@ enum class AssistantButtonId {
 // Models the Assistant UI.
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
  public:
+  using AssistantEntryPoint = chromeos::assistant::mojom::AssistantEntryPoint;
+  using AssistantExitPoint = chromeos::assistant::mojom::AssistantExitPoint;
+
   AssistantUiModel();
   ~AssistantUiModel();
 

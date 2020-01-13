@@ -16,8 +16,8 @@
 #include "content/browser/portal/portal.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "third_party/blink/public/mojom/portal/portal.mojom-forward.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-test-utils.h"
-#include "third_party/blink/public/mojom/portal/portal.mojom.h"
 
 namespace content {
 

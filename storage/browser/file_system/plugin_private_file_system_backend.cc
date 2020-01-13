@@ -30,6 +30,7 @@
 #include "storage/browser/file_system/quota/quota_reservation.h"
 #include "storage/browser/file_system/sandbox_file_stream_writer.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "url/origin.h"
 
 namespace storage {
 
@@ -84,8 +85,8 @@ base::File::Error OpenFileSystemOnFileTaskRunner(
     OpenFileSystemMode mode) {
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   const bool create = (mode == OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
-  file_util->GetDirectoryForOriginAndType(origin_url, plugin_id, create,
-                                          &error);
+  file_util->GetDirectoryForOriginAndType(url::Origin::Create(origin_url),
+                                          plugin_id, create, &error);
   if (error == base::File::FILE_OK)
     plugin_map->RegisterFileSystem(filesystem_id, plugin_id);
   return error;
@@ -236,7 +237,7 @@ PluginPrivateFileSystemBackend::DeleteOriginDataOnFileTaskRunner(
   if (!CanHandleType(type))
     return base::File::FILE_ERROR_SECURITY;
   bool result = obfuscated_file_util()->DeleteDirectoryForOriginAndType(
-      origin_url, std::string());
+      url::Origin::Create(origin_url), std::string());
   if (result)
     return base::File::FILE_OK;
   return base::File::FILE_ERROR_FAILED;
@@ -323,7 +324,7 @@ void PluginPrivateFileSystemBackend::GetOriginDetailsOnFileTaskRunner(
   // directories so that data from any CDM used by this origin is counted.
   base::File::Error error;
   base::FilePath path = obfuscated_file_util()->GetDirectoryForOriginAndType(
-      origin_url, "", false, &error);
+      url::Origin::Create(origin_url), "", false, &error);
   if (error != base::File::FILE_OK) {
     DLOG(ERROR) << "Unable to read directory for " << origin_url;
     return;

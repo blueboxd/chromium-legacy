@@ -437,6 +437,23 @@ std::unique_ptr<Volume> Volume::CreateForDocumentsProvider(
 }
 
 // static
+std::unique_ptr<Volume> Volume::CreateForSmb(const base::FilePath& mount_point,
+                                             const std::string display_name) {
+  std::unique_ptr<Volume> volume(new Volume());
+  volume->type_ = VOLUME_TYPE_SMB;
+  volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;
+  // Keep source_path empty.
+  volume->source_ = SOURCE_NETWORK;
+  volume->mount_path_ = mount_point;
+  volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
+  volume->volume_id_ = GenerateVolumeId(*volume);
+  volume->volume_label_ = display_name;
+  volume->watchable_ = false;
+  volume->is_read_only_ = false;
+  return volume;
+}
+
+// static
 std::unique_ptr<Volume> Volume::CreateForTesting(
     const base::FilePath& path,
     VolumeType volume_type,
@@ -1268,6 +1285,19 @@ void VolumeManager::OnDocumentsProviderRootRemoved(
                      std::string(), GURL(), false));
   arc::ArcDocumentsProviderRootMap::GetForArcBrowserContext()->UnregisterRoot(
       authority, document_id);
+}
+
+void VolumeManager::AddSmbFsVolume(const base::FilePath& mount_point,
+                                   const std::string& display_name) {
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+               Volume::CreateForSmb(mount_point, display_name));
+}
+
+void VolumeManager::RemoveSmbFsVolume(const base::FilePath& mount_point) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  DoUnmountEvent(chromeos::MOUNT_ERROR_NONE,
+                 *Volume::CreateForSmb(mount_point, ""));
 }
 
 void VolumeManager::OnDiskMountManagerRefreshed(bool success) {

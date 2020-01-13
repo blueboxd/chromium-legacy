@@ -984,11 +984,14 @@ void NativeThemeBase::PaintTextField(cc::PaintCanvas* canvas,
     }
 
     // Paint the border: 1px solid.
-    cc::PaintFlags stroke_flags;
-    stroke_flags.setColor(ControlsBorderColorForState(state, color_scheme));
-    stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
-    stroke_flags.setStrokeWidth(kBorderWidth);
-    canvas->drawRoundRect(bounds, border_radius, border_radius, stroke_flags);
+    if (text.has_border) {
+      cc::PaintFlags stroke_flags;
+      stroke_flags.setColor(ControlsBorderColorForState(state, color_scheme));
+      stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
+      stroke_flags.setStrokeWidth(kBorderWidth);
+      canvas->drawRoundRect(bounds, border_radius, border_radius, stroke_flags);
+    }
+
     return;
   }
 
@@ -1021,6 +1024,7 @@ void NativeThemeBase::PaintMenuList(cc::PaintCanvas* canvas,
     if (!menu_list.has_border_radius) {
       TextFieldExtraParams text_field = {0};
       text_field.background_color = menu_list.background_color;
+      text_field.has_border = menu_list.has_border;
       PaintTextField(canvas, state, rect, text_field, color_scheme);
     }
 

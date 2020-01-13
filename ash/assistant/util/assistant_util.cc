@@ -20,6 +20,8 @@ namespace ash {
 namespace assistant {
 namespace util {
 
+using chromeos::assistant::mojom::AssistantEntryPoint;
+
 bool IsStartingSession(AssistantVisibility new_visibility,
                        AssistantVisibility old_visibility) {
   return old_visibility == AssistantVisibility::kClosed &&

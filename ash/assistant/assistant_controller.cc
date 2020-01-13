@@ -160,7 +160,8 @@ void AssistantController::OnDeepLinkReceived(
     case DeepLinkType::kScreenshot:
       // We close the UI before taking the screenshot as it's probably not the
       // user's intention to include the Assistant in the picture.
-      assistant_ui_controller_.CloseUi(AssistantExitPoint::kScreenshot);
+      assistant_ui_controller_.CloseUi(
+          chromeos::assistant::mojom::AssistantExitPoint::kScreenshot);
       Shell::Get()->screenshot_controller()->TakeScreenshotForAllRootWindows();
       break;
     case DeepLinkType::kTaskManager:
@@ -301,12 +302,14 @@ void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {
 void AssistantController::OnAssistantStatusChanged(
     mojom::AssistantState state) {
   if (state == mojom::AssistantState::NOT_READY)
-    assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
+    assistant_ui_controller_.CloseUi(
+        chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
 }
 
 void AssistantController::OnLockedFullScreenStateChanged(bool enabled) {
   if (enabled)
-    assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
+    assistant_ui_controller_.CloseUi(
+        chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
 }
 
 void AssistantController::BindController(

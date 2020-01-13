@@ -17,6 +17,8 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/smb_client/smb_service.h"
+#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -180,6 +182,10 @@ ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
     case file_manager::VOLUME_TYPE_CROSTINI:
       file_manager::VolumeManager::Get(chrome_details.GetProfile())
           ->RemoveSshfsCrostiniVolume(volume->mount_path(), base::DoNothing());
+      break;
+    case file_manager::VOLUME_TYPE_SMB:
+      chromeos::smb_client::SmbServiceFactory::Get(chrome_details.GetProfile())
+          ->UnmountSmbFs(volume->mount_path());
       break;
     default:
       // Requested unmounting a device which is not unmountable.

@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "content/common/frame.mojom.h"
+#include "content/common/frame.mojom-forward.h"
 #include "content/common/input/input_handler.mojom.h"
-#include "content/common/navigation_params.mojom.h"
+#include "content/common/navigation_params.mojom-forward.h"
 #include "content/renderer/render_frame_impl.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

@@ -251,6 +251,8 @@ blink_core_sources("html") {
     "forms/spin_button_element.h",
     "forms/step_range.cc",
     "forms/step_range.h",
+    "forms/submit_event.cc",
+    "forms/submit_event.h",
     "forms/submit_input_type.cc",
     "forms/submit_input_type.h",
     "forms/telephone_input_type.cc",

@@ -17,8 +17,6 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/uuid.h"
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
-
 namespace blink {
 namespace {
 class NoopStoragePartitionService

@@ -122,6 +122,8 @@ class Volume : public base::SupportsWeakPtr<Volume> {
       const std::string& summary,
       const GURL& icon_url,
       bool read_only);
+  static std::unique_ptr<Volume> CreateForSmb(const base::FilePath& mount_point,
+                                              const std::string display_name);
   static std::unique_ptr<Volume> CreateForTesting(
       const base::FilePath& path,
       VolumeType volume_type,
@@ -433,6 +435,11 @@ class VolumeManager : public KeyedService,
   void OnDocumentsProviderRootRemoved(const std::string& authority,
                                       const std::string& root_id,
                                       const std::string& document_id) override;
+
+  // For SmbFs.
+  void AddSmbFsVolume(const base::FilePath& mount_point,
+                      const std::string& display_name);
+  void RemoveSmbFsVolume(const base::FilePath& mount_point);
 
   SnapshotManager* snapshot_manager() { return snapshot_manager_.get(); }
 

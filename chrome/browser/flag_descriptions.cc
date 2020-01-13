@@ -3364,6 +3364,11 @@ const char kCrostiniPortForwardingName[] = "Crostini Port Forwarding";
 const char kCrostiniPortForwardingDescription[] =
     "Enable Crostini port forwarding.";
 
+const char kCrostiniDiskResizingName[] = "Allow resizing Crostini disks";
+const char kCrostiniDiskResizingDescription[] =
+    "Use preallocated user-resizeable disks for Crostini instead of sparse "
+    "automatically sized disks.";
+
 const char kCrostiniUseBusterImageName[] = "New Crostini containers use Buster";
 const char kCrostiniUseBusterImageDescription[] =
     "New Crostini containers use Debian Buster images instead of Debian "

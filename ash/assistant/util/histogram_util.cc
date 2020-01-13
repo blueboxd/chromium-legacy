@@ -13,15 +13,17 @@ namespace assistant {
 namespace util {
 
 void IncrementAssistantQueryCountForEntryPoint(
-    AssistantEntryPoint entry_point) {
+    chromeos::assistant::mojom::AssistantEntryPoint entry_point) {
   UMA_HISTOGRAM_ENUMERATION("Assistant.QueryCountPerEntryPoint", entry_point);
 }
 
-void RecordAssistantEntryPoint(AssistantEntryPoint entry_point) {
+void RecordAssistantEntryPoint(
+    chromeos::assistant::mojom::AssistantEntryPoint entry_point) {
   UMA_HISTOGRAM_ENUMERATION("Assistant.EntryPoint", entry_point);
 }
 
-void RecordAssistantExitPoint(AssistantExitPoint exit_point) {
+void RecordAssistantExitPoint(
+    chromeos::assistant::mojom::AssistantExitPoint exit_point) {
   UMA_HISTOGRAM_ENUMERATION("Assistant.ExitPoint", exit_point);
 }
 

@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/smb_client/smb_url.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
@@ -63,6 +64,10 @@ std::unique_ptr<NetBiosClientInterface> GetNetBiosClient(Profile* profile) {
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetNetworkContext();
   return std::make_unique<NetBiosClient>(network_context);
+}
+
+bool IsSmbFsEnabled() {
+  return base::FeatureList::IsEnabled(features::kSmbFs);
 }
 
 // Metric recording functions.
@@ -156,6 +161,19 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
   CallMount(options, share_path, username, password, use_chromad_kerberos,
             should_open_file_manager_after_mount, save_credentials,
             std::move(callback));
+}
+
+void SmbService::UnmountSmbFs(const base::FilePath& mount_path) {
+  DCHECK(!mount_path.empty());
+
+  for (auto it = smbfs_shares_.begin(); it != smbfs_shares_.end(); ++it) {
+    if (it->second->mount_path() == mount_path) {
+      smbfs_shares_.erase(it);
+      return;
+    }
+  }
+
+  LOG(WARNING) << "Smbfs mount path not found: " << mount_path;
 }
 
 void SmbService::GatherSharesInNetwork(HostDiscoveryResponse discovery_callback,
@@ -294,23 +312,70 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
                               : share_finder_->GetResolvedUrl(parsed_url);
   const base::FilePath mount_path(url);
 
-  SmbProviderClient::MountOptions smb_mount_options;
-  smb_mount_options.original_path = parsed_url.ToString();
-  smb_mount_options.username = username;
-  smb_mount_options.workgroup = workgroup;
-  smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
-  smb_mount_options.save_password = save_credentials && !use_chromad_kerberos;
-  smb_mount_options.account_hash = user->username_hash();
-  GetSmbProviderClient()->Mount(
-      mount_path, smb_mount_options,
-      temp_file_manager_->WritePasswordToFile(password),
-      base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
-                     base::Passed(&callback), options, share_path,
-                     use_chromad_kerberos, should_open_file_manager_after_mount,
-                     username, workgroup, save_credentials));
+  if (IsSmbFsEnabled()) {
+    // TODO(amistry): Pass resolved host address to smbfs.
+    // TODO(amistry): Pass kerberos user id for chromad users.
+    SmbFsShare::MountOptions smbfs_options;
+    smbfs_options.username = username;
+    smbfs_options.workgroup = workgroup;
+    smbfs_options.password = password;
+    smbfs_options.allow_ntlm = IsNTLMAuthenticationEnabled();
+
+    std::unique_ptr<SmbFsShare> mount = std::make_unique<SmbFsShare>(
+        profile_, parsed_url.ToString(), options.display_name, smbfs_options);
+    SmbFsShare* raw_mount = mount.get();
+    const std::string mount_id = mount->mount_id();
+    smbfs_shares_[mount_id] = std::move(mount);
+    raw_mount->Mount(base::BindOnce(
+        &SmbService::OnSmbfsMountDone, AsWeakPtr(), mount_id,
+        should_open_file_manager_after_mount, std::move(callback)));
+  } else {
+    SmbProviderClient::MountOptions smb_mount_options;
+    smb_mount_options.original_path = parsed_url.ToString();
+    smb_mount_options.username = username;
+    smb_mount_options.workgroup = workgroup;
+    smb_mount_options.ntlm_enabled = IsNTLMAuthenticationEnabled();
+    smb_mount_options.save_password = save_credentials && !use_chromad_kerberos;
+    smb_mount_options.account_hash = user->username_hash();
+    GetSmbProviderClient()->Mount(
+        mount_path, smb_mount_options,
+        temp_file_manager_->WritePasswordToFile(password),
+        base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
+                       base::Passed(&callback), options, share_path,
+                       use_chromad_kerberos,
+                       should_open_file_manager_after_mount, username,
+                       workgroup, save_credentials));
+  }
 
   profile_->GetPrefs()->SetString(prefs::kMostRecentlyUsedNetworkFileShareURL,
                                   share_path.value());
+}
+
+void SmbService::OnSmbfsMountDone(const std::string& smbfs_mount_id,
+                                  bool should_open_file_manager_after_mount,
+                                  MountResponse callback,
+                                  SmbMountResult result) {
+  RecordMountResult(result);
+
+  if (result != SmbMountResult::SUCCESS) {
+    smbfs_shares_.erase(smbfs_mount_id);
+    std::move(callback).Run(result);
+    return;
+  }
+
+  SmbFsShare* mount = smbfs_shares_[smbfs_mount_id].get();
+  if (!mount) {
+    LOG(ERROR) << "smbfs mount " << smbfs_mount_id << " does not exist";
+    std::move(callback).Run(SmbMountResult::UNKNOWN_FAILURE);
+    return;
+  }
+
+  if (should_open_file_manager_after_mount) {
+    platform_util::ShowItemInFolder(profile_, mount->mount_path());
+  }
+
+  RecordMountCount();
+  std::move(callback).Run(SmbMountResult::SUCCESS);
 }
 
 void SmbService::OnMountResponse(
@@ -770,7 +835,7 @@ void SmbService::RecordMountCount() const {
   const std::vector<ProvidedFileSystemInfo> file_systems =
       GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);
   UMA_HISTOGRAM_COUNTS_100("NativeSmbFileShare.MountCount",
-                           file_systems.size());
+                           file_systems.size() + smbfs_shares_.size());
 }
 
 }  // namespace smb_client

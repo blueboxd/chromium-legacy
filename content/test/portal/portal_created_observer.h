@@ -9,7 +9,7 @@
 #include "content/common/frame.mojom-test-utils.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "third_party/blink/public/mojom/portal/portal.mojom.h"
+#include "third_party/blink/public/mojom/portal/portal.mojom-forward.h"
 
 namespace base {
 class RunLoop;

@@ -11,23 +11,24 @@
 namespace ash {
 
 enum class AssistantButtonId;
-enum class AssistantEntryPoint;
-enum class AssistantExitPoint;
 
 namespace assistant {
 namespace util {
 
 // Increment number of queries fired for each entry point.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
-void IncrementAssistantQueryCountForEntryPoint(AssistantEntryPoint entry_point);
+void IncrementAssistantQueryCountForEntryPoint(
+    chromeos::assistant::mojom::AssistantEntryPoint entry_point);
 
 // Record the entry point where Assistant UI becomes visible.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
-void RecordAssistantEntryPoint(AssistantEntryPoint entry_point);
+void RecordAssistantEntryPoint(
+    chromeos::assistant::mojom::AssistantEntryPoint entry_point);
 
 // Record the exit point where Assistant UI becomes invisible.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
-void RecordAssistantExitPoint(AssistantExitPoint exit_point);
+void RecordAssistantExitPoint(
+    chromeos::assistant::mojom::AssistantExitPoint exit_point);
 
 // Count the number of times buttons are clicked on Assistant UI.
 COMPONENT_EXPORT(ASSISTANT_UTIL)

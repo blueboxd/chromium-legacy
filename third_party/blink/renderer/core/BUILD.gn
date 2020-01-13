@@ -374,6 +374,7 @@ generate_event_interfaces("core_event_interfaces") {
     "events/ui_event.idl",
     "events/wheel_event.idl",
     "html/forms/form_data_event.idl",
+    "html/forms/submit_event.idl",
     "html/track/track_event.idl",
     "invisible_dom/activate_invisible_event.idl",
     "mojo/test/mojo_interface_request_event.idl",

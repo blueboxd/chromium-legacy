@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('cr.ui');
-
 cr.define('cr.ui', () => {
   /** @const */
   const HideType = cr.ui.HideType;
@@ -645,7 +643,5 @@ cr.define('cr.ui', () => {
   MultiMenuButton.prototype.__proto__ = HTMLButtonElement.prototype;
 
   // Export
-  return {
-    MultiMenuButton: MultiMenuButton,
-  };
+  return {MultiMenuButton};
 });

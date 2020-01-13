@@ -53,8 +53,11 @@ class COMPONENT_EXPORT(SMBFS) SmbFsMounter
   ~SmbFsMounter() override;
 
   // Initiate the filesystem mount request, and run |callback| when completed.
-  // Must only be called once.
-  void Mount(DoneCallback callback);
+  // Must only be called once. Virtual for testing.
+  virtual void Mount(DoneCallback callback);
+
+ protected:
+  SmbFsMounter();
 
  private:
   // DiskMountManager::Observer overrides.

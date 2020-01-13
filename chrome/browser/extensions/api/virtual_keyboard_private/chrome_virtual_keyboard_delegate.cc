@@ -382,24 +382,23 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "handwritinggesture",
       base::FeatureList::IsEnabled(features::kHandwritingGesture)));
   features->AppendString(GenerateFeatureFlag(
-      "usemojodecoder", base::FeatureList::IsEnabled(
-                            chromeos::features::kImeDecoderWithSandbox)));
-  features->AppendString(GenerateFeatureFlag(
-      "hmminputlogic",
-      base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicHmm)));
+      "floatingkeyboarddefault",
+      base::FeatureList::IsEnabled(
+          chromeos::features::kVirtualKeyboardFloatingDefault)));
+  // 3 flags below are used to enable IME new APIs on each decoder.
   features->AppendString(GenerateFeatureFlag(
       "fstinputlogic",
       base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicFst)));
   features->AppendString(GenerateFeatureFlag(
-      "fstnonenglish",
-      base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicFst)));
-  features->AppendString(GenerateFeatureFlag(
-      "floatingkeyboarddefault",
-      base::FeatureList::IsEnabled(
-          chromeos::features::kVirtualKeyboardFloatingDefault)));
+      "hmminputlogic",
+      base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicHmm)));
   features->AppendString(GenerateFeatureFlag(
       "mozcinputlogic",
       base::FeatureList::IsEnabled(chromeos::features::kImeInputLogicMozc)));
+  // Flag used to enable decoder Mojo APIs instead of NaCl APIs.
+  features->AppendString(GenerateFeatureFlag(
+      "usemojodecoder", base::FeatureList::IsEnabled(
+                            chromeos::features::kImeDecoderWithSandbox)));
   features->AppendString(GenerateFeatureFlag(
       "borderedkey", base::FeatureList::IsEnabled(
                          chromeos::features::kVirtualKeyboardBorderedKey)));

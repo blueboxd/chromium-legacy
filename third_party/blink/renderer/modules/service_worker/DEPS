@@ -2,7 +2,6 @@ include_rules = [
     "+base/barrier_closure.h",
     "+base/threading/thread_checker.h",
     "+base/trace_event/trace_event.h",
-    "+mojo/public/cpp/bindings/strong_binding.h",
     "+mojo/public/cpp/system/data_pipe.h",
     "-third_party/blink/renderer/modules",
     "+third_party/blink/renderer/modules/event_modules.h",
@@ -30,7 +29,6 @@ specific_include_rules = {
     ],
     "service_worker_installed_scripts_manager_test\.cc": [
         "+base/run_loop.h",
-        "+mojo/public/cpp/bindings/binding.h",
     ],
     "service_worker_event_queue_test\.cc": [
         "+base/test/test_mock_time_task_runner.h",

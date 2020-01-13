@@ -1996,6 +1996,9 @@ extern const char kCrostiniBackupDescription[];
 extern const char kCrostiniPortForwardingName[];
 extern const char kCrostiniPortForwardingDescription[];
 
+extern const char kCrostiniDiskResizingName[];
+extern const char kCrostiniDiskResizingDescription[];
+
 extern const char kCrostiniUseBusterImageName[];
 extern const char kCrostiniUseBusterImageDescription[];
 

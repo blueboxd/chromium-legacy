@@ -55,6 +55,10 @@ const base::Feature kCrostiniBackup{"CrostiniBackup",
 const base::Feature kCrostiniPortForwarding{"CrostiniPortForwarding",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables Crostini Disk Resizing.
+const base::Feature kCrostiniDiskResizing{"CrostiniDiskResizing",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables Crostini using Buster container images.
 const base::Feature kCrostiniUseBusterImage{"CrostiniUseBusterImage",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -164,11 +168,6 @@ const base::Feature kImeInputLogicHmm{"ImeInputLogicHmm",
 // on Chrome OS.
 const base::Feature kImeInputLogicFst{"ImeInputLogicFst",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable or disable Unified Input Logic for FST decoder for non-English in
-// the IME extension on Chrome OS.
-const base::Feature kImeInputLogicFstNonEnglish{
-    "ImeInputLogicFstNonEnglish", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable Unified Input Logic for Mozc decoder in the IME extension
 // on Chrome OS.

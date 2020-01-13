@@ -123,15 +123,14 @@ class QuotaBackendImplTest : public testing::Test,
  protected:
   void InitializeForOriginAndType(const url::Origin& origin,
                                   storage::FileSystemType type) {
-    ASSERT_TRUE(
-        file_util_->InitOriginDatabase(origin.GetURL(), true /* create */));
+    ASSERT_TRUE(file_util_->InitOriginDatabase(origin, true /* create */));
     ASSERT_TRUE(file_util_->origin_database_ != nullptr);
 
     std::string type_string =
         SandboxFileSystemBackendDelegate::GetTypeString(type);
     base::File::Error error = base::File::FILE_ERROR_FAILED;
     base::FilePath path = file_util_->GetDirectoryForOriginAndType(
-        origin.GetURL(), type_string, true /* create */, &error);
+        origin, type_string, true /* create */, &error);
     ASSERT_EQ(base::File::FILE_OK, error);
 
     ASSERT_TRUE(file_system_usage_cache_.UpdateUsage(

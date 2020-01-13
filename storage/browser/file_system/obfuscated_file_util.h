@@ -168,7 +168,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   // there is a file system error (e.g. the directory doesn't exist on disk and
   // |create| is false). Callers should always check |error_code| to make sure
   // the returned path is usable.
-  base::FilePath GetDirectoryForOriginAndType(const GURL& origin,
+  base::FilePath GetDirectoryForOriginAndType(const url::Origin& origin,
                                               const std::string& type_string,
                                               bool create,
                                               base::File::Error* error_code);
@@ -176,11 +176,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   // Deletes the topmost directory specific to this origin and type.  This will
   // delete its directory database.
   // Deletes the topmost origin directory if |type_string| is empty.
-  bool DeleteDirectoryForOriginAndType(const GURL& origin,
+  bool DeleteDirectoryForOriginAndType(const url::Origin& origin,
                                        const std::string& type_string);
 
   // Frees resources used by an origin's filesystem.
-  void CloseFileSystemForOriginAndType(const GURL& origin,
+  void CloseFileSystemForOriginAndType(const url::Origin& origin,
                                        const std::string& type_string);
 
   // This method and all methods of its returned class must be called only on
@@ -190,7 +190,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
 
   // Deletes a directory database from the database list in the ObfuscatedFSFU
   // and destroys the database on the disk.
-  void DestroyDirectoryDatabase(const GURL& origin,
+  void DestroyDirectoryDatabase(const url::Origin& origin,
                                 const std::string& type_string);
 
   // Computes a cost for storing a given file in the obfuscated FSFU.
@@ -279,7 +279,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
   base::FilePath DataPathToLocalPath(const FileSystemURL& url,
                                      const base::FilePath& data_file_path);
 
-  std::string GetDirectoryDatabaseKey(const GURL& origin,
+  std::string GetDirectoryDatabaseKey(const url::Origin& origin,
                                       const std::string& type_string);
 
   // This returns nullptr if |create| flag is false and a filesystem does not
@@ -290,7 +290,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
 
   // Gets the topmost directory specific to this origin.  This will
   // contain both the filesystem type subdirectories.
-  base::FilePath GetDirectoryForOrigin(const GURL& origin,
+  base::FilePath GetDirectoryForOrigin(const url::Origin& origin,
                                        bool create,
                                        base::File::Error* error_code);
 
@@ -303,7 +303,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
 
   // Initializes the origin database. |origin_hint| may be used as a hint
   // for initializing database if it's not empty.
-  bool InitOriginDatabase(const GURL& origin_hint, bool create);
+  bool InitOriginDatabase(const url::Origin& origin_hint, bool create);
 
   base::File::Error GenerateNewLocalPath(SandboxDirectoryDatabase* db,
                                          FileSystemOperationContext* context,
@@ -315,7 +315,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
                                   const FileSystemURL& url,
                                   int file_flags);
 
-  bool HasIsolatedStorage(const GURL& origin);
+  bool HasIsolatedStorage(const url::Origin& origin);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

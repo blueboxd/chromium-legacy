@@ -45,7 +45,7 @@ void AmbientController::OnWidgetDestroying(views::Widget* widget) {
   // If our widget is being destroyed, Assistant UI is no longer visible.
   // If Assistant UI was already closed, this is a no-op.
   assistant_controller_->ui_controller()->CloseUi(
-      AssistantExitPoint::kUnspecified);
+      chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
 
   // We need to update the mode when the widget gets destroyed as this may have
   // caused by AmbientContainerView directly closed the widget without calling
@@ -89,7 +89,7 @@ void AmbientController::Start() {
   // only hidden at that time. This will be a no-op if UI was already closed.
   // TODO(meilinw): Handle embedded UI.
   assistant_controller_->ui_controller()->CloseUi(
-      AssistantExitPoint::kUnspecified);
+      chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
 
   ambient_state_.SetAmbientModeEnabled(true);
 }

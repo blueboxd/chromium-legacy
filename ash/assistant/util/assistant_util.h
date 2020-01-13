@@ -7,9 +7,16 @@
 
 #include "base/component_export.h"
 
+namespace chromeos {
+namespace assistant {
+namespace mojom {
+enum class AssistantEntryPoint;
+}  // namespace mojom
+}  // namespace assistant
+}  // namespace chromeos
+
 namespace ash {
 
-enum class AssistantEntryPoint;
 enum class AssistantVisibility;
 
 namespace assistant {
@@ -29,11 +36,14 @@ bool IsFinishingSession(AssistantVisibility new_visibility);
 // |prefer_voice| is true if user prefers voice input modality or if the device
 // is in tablet mode.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
-bool IsVoiceEntryPoint(AssistantEntryPoint entry_point, bool prefer_voice);
+bool IsVoiceEntryPoint(
+    chromeos::assistant::mojom::AssistantEntryPoint entry_point,
+    bool prefer_voice);
 
 // Returns true if the |entry_point| should attempt warmer welcome.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
-bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point);
+bool ShouldAttemptWarmerWelcome(
+    chromeos::assistant::mojom::AssistantEntryPoint entry_point);
 
 COMPONENT_EXPORT(ASSISTANT_UTIL)
 bool IsGoogleDevice();

@@ -29,6 +29,9 @@ class AssistantTestApi;
 // Helper class to make testing the Assistant Ash UI easier.
 class AssistantAshTestBase : public AshTestBase {
  public:
+  using AssistantEntryPoint = chromeos::assistant::mojom::AssistantEntryPoint;
+  using AssistantExitPoint = chromeos::assistant::mojom::AssistantExitPoint;
+
   AssistantAshTestBase();
   ~AssistantAshTestBase() override;
 

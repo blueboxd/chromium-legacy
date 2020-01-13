@@ -1315,8 +1315,8 @@ void InputMethodManagerImpl::OverrideKeyboardKeyset(
     return;
   std::string overridden_ref = url.ref();
 
-  auto i = overridden_ref.find("id=");
-  if (i == std::string::npos)
+  auto id_start = overridden_ref.find("id=");
+  if (id_start == std::string::npos)
     return;
 
   if (keyset == chromeos::input_method::ImeKeyset::kNone) {
@@ -1332,18 +1332,18 @@ void InputMethodManagerImpl::OverrideKeyboardKeyset(
   // &language=en-US&passwordLayout=us.compact.qwerty&name=keyboard_us
   // For emoji, handwriting and voice input, we append the keyset to the end of
   // id like: id=${keyset}.emoji/hwt/voice.
-  auto j = overridden_ref.find("&", i + 1);
-  std::string id_string = overridden_ref.substr(i, j - i);
+  auto id_end = overridden_ref.find("&", id_start + 1);
+  std::string id_string = overridden_ref.substr(id_start, id_end - id_start);
   // Remove existing keyset string.
   for (const chromeos::input_method::ImeKeyset keyset : kKeysets) {
     std::string keyset_string = KeysetToString(keyset);
-    auto k = id_string.find("." + keyset_string);
-    if (k != std::string::npos) {
-      id_string.replace(k, keyset_string.length() + 1, "");
+    auto keyset_start = id_string.find("." + keyset_string);
+    if (keyset_start != std::string::npos) {
+      id_string.replace(keyset_start, keyset_string.length() + 1, "");
     }
   }
   id_string += "." + KeysetToString(keyset);
-  overridden_ref.replace(i, j - i, id_string);
+  overridden_ref.replace(id_start, id_end - id_start, id_string);
 
   // Always add a timestamp tag to make sure the hash tags are changed, so that
   // the frontend will reload.

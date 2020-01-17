@@ -159,7 +159,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       bool is_client_redirect,
       TriggeringEventInfo,
       HTMLFormElement*,
-      ContentSecurityPolicyDisposition
+      network::mojom::CSPDisposition
           should_check_main_world_content_security_policy,
       mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks input_start_time,

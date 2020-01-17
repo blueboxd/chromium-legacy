@@ -295,7 +295,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       bool,
       TriggeringEventInfo,
       HTMLFormElement*,
-      ContentSecurityPolicyDisposition,
+      network::mojom::CSPDisposition,
       mojo::PendingRemote<mojom::blink::BlobURLToken>,
       base::TimeTicks,
       const String&,

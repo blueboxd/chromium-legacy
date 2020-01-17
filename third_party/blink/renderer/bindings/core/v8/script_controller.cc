@@ -232,7 +232,7 @@ void ScriptController::UpdateDocument() {
 
 void ScriptController::ExecuteJavaScriptURL(
     const KURL& url,
-    ContentSecurityPolicyDisposition check_main_world_csp) {
+    network::mojom::CSPDisposition check_main_world_csp) {
   DCHECK(url.ProtocolIsJavaScript());
 
   const int kJavascriptSchemeLength = sizeof("javascript:") - 1;
@@ -240,7 +240,7 @@ void ScriptController::ExecuteJavaScriptURL(
       url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 
   bool should_bypass_main_world_content_security_policy =
-      check_main_world_csp == kDoNotCheckContentSecurityPolicy ||
+      check_main_world_csp == network::mojom::CSPDisposition::DO_NOT_CHECK ||
       ContentSecurityPolicy::ShouldBypassMainWorld(GetFrame()->GetDocument());
   if (!GetFrame()->GetPage())
     return;

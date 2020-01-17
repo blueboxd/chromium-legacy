@@ -19,7 +19,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_http_body.h"
@@ -112,11 +111,10 @@ struct BLINK_EXPORT WebNavigationInfo {
   // The initiator of this navigation used by DevTools.
   WebString devtools_initiator_info;
 
-  // Whether this navigation should check CSP. See
-  // WebContentSecurityPolicyDisposition.
-  WebContentSecurityPolicyDisposition
+  // Whether this navigation should check CSP.
+  network::mojom::CSPDisposition
       should_check_main_world_content_security_policy =
-          kWebContentSecurityPolicyDispositionCheck;
+          network::mojom::CSPDisposition::CHECK;
 
   // When navigating to a blob url, this token specifies the blob.
   mojo::ScopedMessagePipeHandle blob_url_token;

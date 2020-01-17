@@ -104,7 +104,7 @@ struct CORE_EXPORT FrameLoadRequest {
     href_translate_ = translate;
   }
 
-  ContentSecurityPolicyDisposition ShouldCheckMainWorldContentSecurityPolicy()
+  network::mojom::CSPDisposition ShouldCheckMainWorldContentSecurityPolicy()
       const {
     return should_check_main_world_content_security_policy_;
   }
@@ -160,7 +160,7 @@ struct CORE_EXPORT FrameLoadRequest {
       TriggeringEventInfo::kNotFromEvent;
   Member<HTMLFormElement> form_;
   ShouldSendReferrer should_send_referrer_;
-  ContentSecurityPolicyDisposition
+  network::mojom::CSPDisposition
       should_check_main_world_content_security_policy_;
   scoped_refptr<base::RefCountedData<mojo::Remote<mojom::blink::BlobURLToken>>>
       blob_url_token_;

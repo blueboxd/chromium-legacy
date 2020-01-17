@@ -33,6 +33,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
@@ -43,11 +44,6 @@
 namespace blink {
 
 enum DataBufferingPolicy : uint8_t { kBufferData, kDoNotBufferData };
-
-enum ContentSecurityPolicyDisposition : uint8_t {
-  kCheckContentSecurityPolicy,
-  kDoNotCheckContentSecurityPolicy
-};
 
 enum RequestInitiatorContext : uint8_t {
   kDocumentContext,
@@ -93,7 +89,7 @@ struct PLATFORM_EXPORT ResourceLoaderOptions {
 
   DataBufferingPolicy data_buffering_policy;
 
-  ContentSecurityPolicyDisposition content_security_policy_option;
+  network::mojom::CSPDisposition content_security_policy_option;
   RequestInitiatorContext request_initiator_context;
   SynchronousPolicy synchronous_policy;
 

@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_CSP_DIRECTIVE_LIST_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/media_list_directive.h"
 #include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"

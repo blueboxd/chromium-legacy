@@ -86,7 +86,7 @@ CSSParserContext::CSSParserContext(CSSParserMode mode,
                        false,
                        false,
                        secure_context_mode,
-                       kDoNotCheckContentSecurityPolicy,
+                       network::mojom::CSPDisposition::DO_NOT_CHECK,
                        use_counter_document,
                        ResourceFetchRestriction::kNone) {}
 
@@ -126,8 +126,8 @@ CSSParserContext::CSSParserContext(
               : false,
           document.GetSecureContextMode(),
           ContentSecurityPolicy::ShouldBypassMainWorld(&document)
-              ? kDoNotCheckContentSecurityPolicy
-              : kCheckContentSecurityPolicy,
+              ? network::mojom::CSPDisposition::DO_NOT_CHECK
+              : network::mojom::CSPDisposition::CHECK,
           &document,
           resource_fetch_restriction) {}
 
@@ -144,8 +144,8 @@ CSSParserContext::CSSParserContext(const ExecutionContext& context)
                        false,
                        context.GetSecureContextMode(),
                        ContentSecurityPolicy::ShouldBypassMainWorld(&context)
-                           ? kDoNotCheckContentSecurityPolicy
-                           : kCheckContentSecurityPolicy,
+                           ? network::mojom::CSPDisposition::DO_NOT_CHECK
+                           : network::mojom::CSPDisposition::CHECK,
                        DynamicTo<Document>(context),
                        ResourceFetchRestriction::kNone) {}
 
@@ -160,7 +160,7 @@ CSSParserContext::CSSParserContext(
     bool is_html_document,
     bool use_legacy_background_size_shorthand_behavior,
     SecureContextMode secure_context_mode,
-    ContentSecurityPolicyDisposition policy_disposition,
+    network::mojom::CSPDisposition policy_disposition,
     const Document* use_counter_document,
     enum ResourceFetchRestriction resource_fetch_restriction)
     : base_url_(base_url),

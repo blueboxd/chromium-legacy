@@ -36,7 +36,7 @@ namespace blink {
 
 ResourceLoaderOptions::ResourceLoaderOptions()
     : data_buffering_policy(kBufferData),
-      content_security_policy_option(kCheckContentSecurityPolicy),
+      content_security_policy_option(network::mojom::CSPDisposition::CHECK),
       request_initiator_context(kDocumentContext),
       synchronous_policy(kRequestAsynchronously),
       cors_handling_by_resource_fetcher(kEnableCorsHandlingByResourceFetcher),

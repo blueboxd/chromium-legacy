@@ -44,7 +44,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
       const String& specified_resource,
       const String& absolute_resource,
       const Referrer& referrer,
-      ContentSecurityPolicyDisposition should_check_content_security_policy,
+      network::mojom::CSPDisposition should_check_content_security_policy,
       OriginClean origin_clean) {
     return MakeGarbageCollected<CSSFontFaceSrcValue>(
         specified_resource, absolute_resource, referrer, false,
@@ -52,7 +52,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
   }
   static CSSFontFaceSrcValue* CreateLocal(
       const String& absolute_resource,
-      ContentSecurityPolicyDisposition should_check_content_security_policy,
+      network::mojom::CSPDisposition should_check_content_security_policy,
       OriginClean origin_clean) {
     return MakeGarbageCollected<CSSFontFaceSrcValue>(
         g_empty_string, absolute_resource, Referrer(), true,
@@ -64,7 +64,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
       const String& absolute_resource,
       const Referrer& referrer,
       bool local,
-      ContentSecurityPolicyDisposition should_check_content_security_policy,
+      network::mojom::CSPDisposition should_check_content_security_policy,
       OriginClean origin_clean)
       : CSSValue(kFontFaceSrcClass),
         absolute_resource_(absolute_resource),
@@ -104,7 +104,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
   String format_;
   const Referrer referrer_;
   const bool is_local_;
-  const ContentSecurityPolicyDisposition should_check_content_security_policy_;
+  const network::mojom::CSPDisposition should_check_content_security_policy_;
   const OriginClean origin_clean_;
 
   class FontResourceHelper : public GarbageCollected<FontResourceHelper>,

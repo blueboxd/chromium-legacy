@@ -547,12 +547,6 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
                                      info->source_location.column_number);
   }
 
-  CSPDisposition should_check_main_world_csp =
-      info->should_check_main_world_content_security_policy ==
-              blink::kWebContentSecurityPolicyDispositionCheck
-          ? CSPDisposition::CHECK
-          : CSPDisposition::DO_NOT_CHECK;
-
   const RequestExtraData* extra_data =
       static_cast<RequestExtraData*>(info->url_request.GetExtraData());
   DCHECK(extra_data);
@@ -577,7 +571,7 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
       base::TimeTicks::Now(), info->url_request.HttpMethod().Latin1(),
       GetRequestBodyForWebURLRequest(info->url_request), source_location,
       false /* started_from_context_menu */, info->url_request.HasUserGesture(),
-      InitiatorCSPInfo(should_check_main_world_csp,
+      InitiatorCSPInfo(info->should_check_main_world_content_security_policy,
                        BuildContentSecurityPolicyList(info->initiator_csp),
                        info->initiator_csp.self_source.has_value()
                            ? base::Optional<CSPSource>(BuildCSPSource(

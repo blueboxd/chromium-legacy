@@ -8144,7 +8144,7 @@ void Document::ExecuteJavaScriptUrls() {
 
 void Document::ProcessJavaScriptUrl(
     const KURL& url,
-    ContentSecurityPolicyDisposition disposition) {
+    network::mojom::CSPDisposition disposition) {
   DCHECK(url.ProtocolIsJavaScript());
   if (frame_->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
     load_event_progress_ = kLoadEventNotRun;

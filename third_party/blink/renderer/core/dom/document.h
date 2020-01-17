@@ -79,6 +79,12 @@ namespace ukm {
 class UkmRecorder;
 }  // namespace ukm
 
+namespace network {
+namespace mojom {
+enum class CSPDisposition : int32_t;
+}  // namespace mojom
+}  // namespace network
+
 namespace blink {
 
 class AnimationClock;
@@ -199,7 +205,6 @@ class VisitedLinkState;
 class WebComputedAXTree;
 class WebMouseEvent;
 class WorkletAnimationController;
-enum ContentSecurityPolicyDisposition : uint8_t;
 enum class CSSPropertyID;
 enum class ScrollbarMode;
 struct AnnotatedRegionValue;
@@ -1512,7 +1517,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void IncrementNumberOfCanvases();
 
-  void ProcessJavaScriptUrl(const KURL&, ContentSecurityPolicyDisposition);
+  void ProcessJavaScriptUrl(const KURL&, network::mojom::CSPDisposition);
 
   // Functions to keep count of display locks in this document.
   void IncrementDisplayLockBlockingAllActivation();
@@ -1845,10 +1850,10 @@ class CORE_EXPORT Document : public ContainerNode,
   struct PendingJavascriptUrl {
    public:
     PendingJavascriptUrl(const KURL& input_url,
-                         ContentSecurityPolicyDisposition input_disposition)
+                         network::mojom::CSPDisposition input_disposition)
         : url(input_url), disposition(input_disposition) {}
     KURL url;
-    ContentSecurityPolicyDisposition disposition;
+    network::mojom::CSPDisposition disposition;
   };
   Vector<PendingJavascriptUrl> pending_javascript_urls_;
 

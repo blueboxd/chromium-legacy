@@ -82,7 +82,6 @@ source_set("common") {
     "content_security_policy/csp_context.h",
     "content_security_policy/csp_directive.cc",
     "content_security_policy/csp_directive.h",
-    "content_security_policy/csp_disposition_enum.h",
     "content_security_policy/csp_source.cc",
     "content_security_policy/csp_source.h",
     "content_security_policy/csp_source_list.cc",
@@ -436,9 +435,7 @@ source_set("common") {
 group("for_content_tests") {
   visibility = [ "//content/test/*" ]
   if (!is_component_build) {
-    public_deps = [
-      ":common",
-    ]
+    public_deps = [ ":common" ]
   }
 }
 
@@ -568,8 +565,6 @@ if (is_mac) {
 
     write_file(_file, _lines)
 
-    sources = [
-      _file,
-    ]
+    sources = [ _file ]
   }
 }

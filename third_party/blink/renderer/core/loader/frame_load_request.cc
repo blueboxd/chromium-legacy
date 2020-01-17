@@ -58,8 +58,8 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
   should_check_main_world_content_security_policy_ =
       origin_document &&
               ContentSecurityPolicy::ShouldBypassMainWorld(origin_document)
-          ? kDoNotCheckContentSecurityPolicy
-          : kCheckContentSecurityPolicy;
+          ? network::mojom::CSPDisposition::DO_NOT_CHECK
+          : network::mojom::CSPDisposition::CHECK;
 
   if (origin_document) {
     DCHECK(!resource_request_.RequestorOrigin());

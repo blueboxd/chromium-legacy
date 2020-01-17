@@ -357,8 +357,10 @@ static void ConfigureRequest(
     ImageLoader::BypassMainWorldBehavior bypass_behavior,
     Element& element,
     const ClientHintsPreferences& client_hints_preferences) {
-  if (bypass_behavior == ImageLoader::kBypassMainWorldCSP)
-    params.SetContentSecurityCheck(kDoNotCheckContentSecurityPolicy);
+  if (bypass_behavior == ImageLoader::kBypassMainWorldCSP) {
+    params.SetContentSecurityCheck(
+        network::mojom::CSPDisposition::DO_NOT_CHECK);
+  }
 
   CrossOriginAttributeValue cross_origin = GetCrossOriginAttributeValue(
       element.FastGetAttribute(html_names::kCrossoriginAttr));

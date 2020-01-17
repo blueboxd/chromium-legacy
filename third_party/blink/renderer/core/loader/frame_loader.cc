@@ -525,7 +525,7 @@ bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
     // as per https://html.spec.whatwg.org/C/#javascript-protocol.
     bool javascript_url_is_allowed =
         request.ShouldCheckMainWorldContentSecurityPolicy() ==
-            kDoNotCheckContentSecurityPolicy ||
+            network::mojom::CSPDisposition::DO_NOT_CHECK ||
         origin_document->GetContentSecurityPolicy()->AllowInline(
             ContentSecurityPolicy::InlineType::kNavigation,
             frame_->DeprecatedLocalOwner(), url.GetString(),

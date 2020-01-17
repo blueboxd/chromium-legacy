@@ -143,7 +143,7 @@ class PLATFORM_EXPORT FetchParameters {
   }
 
   void SetContentSecurityCheck(
-      ContentSecurityPolicyDisposition content_security_policy_option) {
+      network::mojom::CSPDisposition content_security_policy_option) {
     options_.content_security_policy_option = content_security_policy_option;
   }
   // Configures the request to use the "cors" mode and the credentials mode

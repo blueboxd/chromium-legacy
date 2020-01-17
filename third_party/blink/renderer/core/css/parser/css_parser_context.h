@@ -73,7 +73,7 @@ class CORE_EXPORT CSSParserContext final
                    bool is_html_document,
                    bool use_legacy_background_size_shorthand_behavior,
                    SecureContextMode,
-                   ContentSecurityPolicyDisposition,
+                   network::mojom::CSPDisposition,
                    const Document* use_counter_document,
                    ResourceFetchRestriction resource_fetch_restriction);
 
@@ -121,7 +121,7 @@ class CORE_EXPORT CSSParserContext final
   bool IsDocumentHandleEqual(const Document* other) const;
   const Document* GetDocument() const;
 
-  ContentSecurityPolicyDisposition ShouldCheckContentSecurityPolicy() const {
+  network::mojom::CSPDisposition ShouldCheckContentSecurityPolicy() const {
     return should_check_content_security_policy_;
   }
 
@@ -141,7 +141,7 @@ class CORE_EXPORT CSSParserContext final
  private:
   KURL base_url_;
 
-  ContentSecurityPolicyDisposition should_check_content_security_policy_;
+  network::mojom::CSPDisposition should_check_content_security_policy_;
 
   // If true, allows reading and modifying of the CSS rules.
   // https://drafts.csswg.org/cssom/#concept-css-style-sheet-origin-clean-flag

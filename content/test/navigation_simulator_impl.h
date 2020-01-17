@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "content/browser/frame_host/navigation_request.h"
-#include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -119,7 +118,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   // Set LoadURLParams and make browser initiated navigations use
   // LoadURLWithParams instead of LoadURL.
   void SetLoadURLParams(NavigationController::LoadURLParams* load_url_params);
-  void set_should_check_main_world_csp(CSPDisposition disposition) {
+  void set_should_check_main_world_csp(
+      network::mojom::CSPDisposition disposition) {
     should_check_main_world_csp_ = disposition;
   }
 
@@ -293,7 +293,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker_receiver_;
   std::string contents_mime_type_;
-  CSPDisposition should_check_main_world_csp_ = CSPDisposition::CHECK;
+  network::mojom::CSPDisposition should_check_main_world_csp_ =
+      network::mojom::CSPDisposition::CHECK;
   net::HttpResponseInfo::ConnectionInfo http_connection_info_ =
       net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN;
   base::Optional<net::SSLInfo> ssl_info_;

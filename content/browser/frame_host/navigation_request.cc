@@ -2628,7 +2628,7 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
     return net::OK;
 
   if (common_params_->initiator_csp_info.should_check_main_world_csp ==
-      CSPDisposition::DO_NOT_CHECK) {
+      network::mojom::CSPDisposition::DO_NOT_CHECK) {
     return net::OK;
   }
 

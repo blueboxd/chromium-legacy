@@ -25,7 +25,7 @@ SourceLocation::~SourceLocation() = default;
 
 InitiatorCSPInfo::InitiatorCSPInfo() = default;
 InitiatorCSPInfo::InitiatorCSPInfo(
-    CSPDisposition should_check_main_world_csp,
+    network::mojom::CSPDisposition should_check_main_world_csp,
     const std::vector<ContentSecurityPolicy>& initiator_csp,
     const base::Optional<CSPSource>& initiator_self_source)
     : should_check_main_world_csp(should_check_main_world_csp),

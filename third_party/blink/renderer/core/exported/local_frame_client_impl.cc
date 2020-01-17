@@ -473,7 +473,7 @@ void LocalFrameClientImpl::BeginNavigation(
     bool is_client_redirect,
     TriggeringEventInfo triggering_event_info,
     HTMLFormElement* form,
-    ContentSecurityPolicyDisposition
+    network::mojom::CSPDisposition
         should_check_main_world_content_security_policy,
     mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
     base::TimeTicks input_start_time,
@@ -495,10 +495,7 @@ void LocalFrameClientImpl::BeginNavigation(
   navigation_info->is_client_redirect = is_client_redirect;
   navigation_info->triggering_event_info = triggering_event_info;
   navigation_info->should_check_main_world_content_security_policy =
-      should_check_main_world_content_security_policy ==
-              kCheckContentSecurityPolicy
-          ? kWebContentSecurityPolicyDispositionCheck
-          : kWebContentSecurityPolicyDispositionDoNotCheck;
+      should_check_main_world_content_security_policy;
   navigation_info->blob_url_token = blob_url_token.PassPipe();
   navigation_info->input_start = input_start_time;
   navigation_info->initiator_csp = std::move(initiator_csp);

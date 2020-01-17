@@ -101,7 +101,7 @@ CSSValue* ConsumeFontFaceSrcLocal(CSSParserTokenRange& range,
                                   const CSSParserContext& context) {
   CSSParserTokenRange args =
       css_property_parser_helpers::ConsumeFunction(range);
-  ContentSecurityPolicyDisposition should_check_content_security_policy =
+  network::mojom::CSPDisposition should_check_content_security_policy =
       context.ShouldCheckContentSecurityPolicy();
   if (args.Peek().GetType() == kStringToken) {
     const CSSParserToken& arg = args.ConsumeIncludingWhitespace();

@@ -35,6 +35,11 @@ struct ContentSecurityPolicyHeader {
   ContentSecurityPolicySource source = kHTTP;
 };
 
+enum CSPDisposition {
+  CHECK,
+  DO_NOT_CHECK,
+};
+
 // A CSPSource represents an expression that matches a set of urls.
 // Examples of CSPSource:
 // - domain.example.com

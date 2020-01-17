@@ -44,9 +44,9 @@ bool HasCorrectLength(const base::string16& number);
 bool PassesLuhnCheck(const base::string16& number);
 
 // Returns true if |code| looks like a valid credit card security code
-// for the given credit card type.
+// for the given credit card network.
 bool IsValidCreditCardSecurityCode(const base::string16& code,
-                                   const base::StringPiece card_type);
+                                   const base::StringPiece card_network);
 
 // Returns true if |text| is a supported card type and a valid credit card
 // number. |error_message| can't be null and will be filled with the appropriate
@@ -82,8 +82,8 @@ bool IsValidForType(const base::string16& value,
                     ServerFieldType type,
                     base::string16* error_message);
 
-// Returns the expected CVC length based on the |card_type|.
-size_t GetCvcLengthForCardType(const base::StringPiece card_type);
+// Returns the expected CVC length based on the |card_network|.
+size_t GetCvcLengthForCardNetwork(const base::StringPiece card_network);
 
 // Returns true if |value| appears to be a UPI Virtual Payment Address.
 // https://upipayments.co.in/virtual-payment-address-vpa/

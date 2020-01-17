@@ -61,7 +61,6 @@ void TestPaymentRequest::ResetParsedPaymentMethodData() {
   url_payment_method_identifiers_.clear();
   supported_card_networks_.clear();
   basic_card_specified_networks_.clear();
-  supported_card_types_set_.clear();
   PaymentRequest::ParsePaymentMethodData();
 }
 

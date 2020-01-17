@@ -99,12 +99,6 @@ enum BasicCardNetwork {
   VISA
 };
 
-enum BasicCardType {
-  CREDIT,
-  DEBIT,
-  PREPAID
-};
-
 struct GooglePaymentMethodData {
   // A JSON string built by the renderer from the same merchant-provided
   // JavaScript object used to build |stringified_data| in the containing
@@ -156,7 +150,6 @@ struct PaymentMethodData {
 
   // Basic card specific method data is parsed in the renderer.
   array<BasicCardNetwork> supported_networks;
-  array<BasicCardType> supported_types;
 };
 
 struct PaymentDetailsModifier {

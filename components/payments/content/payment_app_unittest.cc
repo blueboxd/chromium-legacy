@@ -154,27 +154,18 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST_P(PaymentAppTest, SortApps) {
   std::vector<PaymentApp*> apps;
-  // Add a complete app with mismatching type.
-  autofill::CreditCard complete_dismatching_card = local_credit_card();
-  AutofillPaymentApp complete_dismatching_cc_app(
-      "visa", complete_dismatching_card,
-      /*matches_merchant_card_type_exactly=*/false, billing_profiles(), "en-US",
-      nullptr);
-  apps.push_back(&complete_dismatching_cc_app);
-
   // Add an app with no billing address.
   autofill::CreditCard card_with_no_address = local_credit_card();
   card_with_no_address.set_billing_address_id("");
   AutofillPaymentApp cc_app_with_no_address(
-      "visa", card_with_no_address, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
+      "visa", card_with_no_address, billing_profiles(), "en-US", nullptr);
   apps.push_back(&cc_app_with_no_address);
 
   // Add an expired app.
   autofill::CreditCard expired_card = local_credit_card();
   expired_card.SetExpirationYear(2016);
   AutofillPaymentApp expired_cc_app("visa", expired_card,
-                                    /*matches_merchant_card_type_exactly=*/true,
+
                                     billing_profiles(), "en-US", nullptr);
   apps.push_back(&expired_cc_app);
 
@@ -199,32 +190,27 @@ TEST_P(PaymentAppTest, SortApps) {
   card_with_no_name.SetInfo(
       autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
       base::ASCIIToUTF16(""), "en-US");
-  AutofillPaymentApp cc_app_with_no_name(
-      "visa", card_with_no_name, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
+  AutofillPaymentApp cc_app_with_no_name("visa", card_with_no_name,
+                                         billing_profiles(), "en-US", nullptr);
   apps.push_back(&cc_app_with_no_name);
 
-  // Add a complete matching app.
-  autofill::CreditCard complete_matching_card = local_credit_card();
-  AutofillPaymentApp complete_matching_cc_app(
-      "visa", complete_matching_card,
-      /*matches_merchant_card_type_exactly=*/true, billing_profiles(), "en-US",
-      nullptr);
-  apps.push_back(&complete_matching_cc_app);
+  // Add a complete card.
+  autofill::CreditCard complete_card = local_credit_card();
+  AutofillPaymentApp complete_cc_app("visa", complete_card, billing_profiles(),
+                                     "en-US", nullptr);
+  apps.push_back(&complete_cc_app);
 
   // Add an app with no number.
   autofill::CreditCard card_with_no_number = local_credit_card();
   card_with_no_number.SetNumber(base::ASCIIToUTF16(""));
   AutofillPaymentApp cc_app_with_no_number(
-      "visa", card_with_no_number, /*matches_merchant_card_type_exactly=*/true,
-      billing_profiles(), "en-US", nullptr);
+      "visa", card_with_no_number, billing_profiles(), "en-US", nullptr);
   apps.push_back(&cc_app_with_no_number);
 
   // Add a complete matching app that is most frequently used.
   autofill::CreditCard complete_frequently_used_card = local_credit_card();
   AutofillPaymentApp complete_frequently_used_cc_app(
-      "visa", complete_frequently_used_card,
-      /*matches_merchant_card_type_exactly=*/true, billing_profiles(), "en-US",
+      "visa", complete_frequently_used_card, billing_profiles(), "en-US",
       nullptr);
   apps.push_back(&complete_frequently_used_cc_app);
   // Record use of this app.
@@ -238,8 +224,7 @@ TEST_P(PaymentAppTest, SortApps) {
 
   // Autfill apps (credit cards) come after sw apps.
   EXPECT_EQ(apps[i++], &complete_frequently_used_cc_app);
-  EXPECT_EQ(apps[i++], &complete_matching_cc_app);
-  EXPECT_EQ(apps[i++], &complete_dismatching_cc_app);
+  EXPECT_EQ(apps[i++], &complete_cc_app);
   EXPECT_EQ(apps[i++], &expired_cc_app);
   EXPECT_EQ(apps[i++], &cc_app_with_no_name);
   EXPECT_EQ(apps[i++], &cc_app_with_no_address);

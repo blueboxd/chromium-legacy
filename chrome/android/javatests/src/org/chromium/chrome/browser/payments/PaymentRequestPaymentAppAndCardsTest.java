@@ -22,7 +22,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
@@ -55,11 +54,11 @@ public class PaymentRequestPaymentAppAndCardsTest implements MainActivityStartCa
         // Mastercard card without a billing address.
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "5454545454545454", "", "12", "2050", "mastercard", R.drawable.mc_card,
-                CardType.UNKNOWN, "" /* billingAddressId */, "" /* serverId */));
+                "" /* billingAddressId */, "" /* serverId */));
         // Visa card with complete set of information.
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, billingAddressId, "" /* serverId */));
+                billingAddressId, "" /* serverId */));
     }
 
     /**

@@ -144,10 +144,6 @@ class PaymentRequestSpec : public PaymentOptionsProvider,
       const {
     return stringified_method_data_;
   }
-  const std::set<autofill::CreditCard::CardType>& supported_card_types_set()
-      const {
-    return supported_card_types_set_;
-  }
   const std::vector<GURL>& url_payment_method_identifiers() const {
     return url_payment_method_identifiers_;
   }
@@ -246,8 +242,6 @@ class PaymentRequestSpec : public PaymentOptionsProvider,
   // fast lookup of supported methods.
   std::vector<std::string> supported_card_networks_;
   std::set<std::string> supported_card_networks_set_;
-
-  std::set<autofill::CreditCard::CardType> supported_card_types_set_;
 
   // Only the set of basic-card specified networks. NOTE: callers should use
   // |supported_card_networks_set_| to check merchant support.

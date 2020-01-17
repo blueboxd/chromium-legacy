@@ -33,7 +33,6 @@ namespace payments {
 AutofillPaymentApp::AutofillPaymentApp(
     const std::string& method_name,
     const autofill::CreditCard& card,
-    bool matches_merchant_card_type_exactly,
     const std::vector<autofill::AutofillProfile*>& billing_profiles,
     const std::string& app_locale,
     PaymentRequestBaseDelegate* payment_request_delegate)
@@ -42,7 +41,6 @@ AutofillPaymentApp::AutofillPaymentApp(
                  PaymentApp::Type::AUTOFILL),
       method_name_(method_name),
       credit_card_(card),
-      matches_merchant_card_type_exactly_(matches_merchant_card_type_exactly),
       billing_profiles_(billing_profiles),
       app_locale_(app_locale),
       delegate_(nullptr),
@@ -95,11 +93,7 @@ uint32_t AutofillPaymentApp::GetCompletenessScore() const {
 }
 
 bool AutofillPaymentApp::CanPreselect() const {
-  return IsCompleteForPayment() && matches_merchant_card_type_exactly_;
-}
-
-bool AutofillPaymentApp::IsExactlyMatchingMerchantRequest() const {
-  return matches_merchant_card_type_exactly_;
+  return IsCompleteForPayment();
 }
 
 base::string16 AutofillPaymentApp::GetMissingInfoLabel() const {
@@ -140,30 +134,11 @@ base::string16 AutofillPaymentApp::GetSublabel() const {
 bool AutofillPaymentApp::IsValidForModifier(
     const std::string& method,
     bool supported_networks_specified,
-    const std::set<std::string>& supported_networks,
-    bool supported_types_specified,
-    const std::set<autofill::CreditCard::CardType>& supported_types) const {
+    const std::set<std::string>& supported_networks) const {
   bool is_valid = false;
   IsValidForPaymentMethodIdentifier(method, &is_valid);
   if (!is_valid)
     return false;
-
-  // If supported_types is not specified and this instrument matches the method,
-  // the modifier is applicable. If supported_types is populated, it must
-  // contain this card's type to be applicable. The same is true for
-  // supported_networks.
-  if (supported_types_specified) {
-    // supported_types may contain CARD_TYPE_UNKNOWN because of the parsing
-    // function so the local card only matches if it's because the website
-    // didn't specify types (meaning they don't care).
-    if (credit_card_.card_type() ==
-        autofill::CreditCard::CardType::CARD_TYPE_UNKNOWN) {
-      return false;
-    }
-
-    if (supported_types.find(credit_card_.card_type()) == supported_types.end())
-      return false;
-  }
 
   if (supported_networks_specified) {
     std::string basic_card_network =
@@ -219,18 +194,12 @@ void AutofillPaymentApp::OnFullCardRequestFailed() {
 void AutofillPaymentApp::RecordMissingFieldsForApp() const {
   CreditCardCompletionStatus completion_status =
       GetCompletionStatusForCard(credit_card_, app_locale_, billing_profiles_);
-  if (completion_status == CREDIT_CARD_COMPLETE &&
-      matches_merchant_card_type_exactly_) {
+  if (completion_status == CREDIT_CARD_COMPLETE)
     return;
-  }
 
-  // Record cases that the card type does not match the requested type(s) in
-  // addititon to missing fields from card completion status.
-  base::UmaHistogramSparse(
-      "PaymentRequest.MissingPaymentFields",
-      completion_status |
-          (matches_merchant_card_type_exactly_ ? 0
-                                               : CREDIT_CARD_TYPE_MISMATCH));
+  // Record the missing fields from card completion status.
+  base::UmaHistogramSparse("PaymentRequest.MissingPaymentFields",
+                           completion_status);
 }
 
 void AutofillPaymentApp::GenerateBasicCardResponse() {

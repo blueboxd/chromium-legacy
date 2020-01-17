@@ -1540,10 +1540,6 @@ if (is_android) {
         [ "../components/content_settings/core/browser/cookie_settings.h" ]
   }
 
-  java_cpp_enum("credit_card_javagen") {
-    sources = [ "../components/autofill/core/browser/data_model/credit_card.h" ]
-  }
-
   java_cpp_enum("assist_ranker_prediction_enum_javagen") {
     sources = [
       "browser/android/contextualsearch/contextual_search_ranker_logger_impl.h",

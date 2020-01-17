@@ -244,11 +244,6 @@ class PaymentRequest : public PaymentOptionsProvider,
     return stringified_method_data_;
   }
 
-  const std::set<autofill::CreditCard::CardType>& supported_card_types_set()
-      const {
-    return supported_card_types_set_;
-  }
-
   // Creates and adds an AutofillPaymentApp to the list of payment
   // instruments by making a copy of |credit_card|.
   virtual AutofillPaymentApp* CreateAndAddAutofillPaymentInstrument(
@@ -441,9 +436,6 @@ class PaymentRequest : public PaymentOptionsProvider,
   // A mapping of the payment method names to the corresponding JSON-stringified
   // payment method specific data.
   std::map<std::string, std::set<std::string>> stringified_method_data_;
-
-  // The set of supported card types (e.g., credit, debit, prepaid).
-  std::set<autofill::CreditCard::CardType> supported_card_types_set_;
 
   // A vector of pointers to the shipping options in |web_payment_request_|.
   std::vector<PaymentShippingOption*> shipping_options_;

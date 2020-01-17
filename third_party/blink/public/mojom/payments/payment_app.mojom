@@ -50,9 +50,8 @@ struct PaymentInstrument {
   string stringified_capabilities;
 
   // Parsed basic-card specific capabilities.
-  // Below arrays are non-empty only if enabled_methods contains "basic-card".
+  // Non-empty only if |method| is "basic-card".
   array<BasicCardNetwork> supported_networks;
-  array<BasicCardType> supported_types;
 };
 
 enum PaymentDelegation {

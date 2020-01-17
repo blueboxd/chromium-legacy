@@ -487,6 +487,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 81:
       *update_compatible_version = true;
       return MigrateToVersion81CleanUpWrongModelTypeData();
+    case 83:
+      *update_compatible_version = true;
+      return MigrateToVersion83RemoveServerCardTypeColumn();
   }
   return true;
 }
@@ -1214,13 +1217,12 @@ bool AutofillTable::GetServerCreditCards(
       "metadata.use_count,"           // 3
       "metadata.use_date,"            // 4
       "network,"                      // 5
-      "type,"                         // 6
-      "status,"                       // 7
-      "name_on_card,"                 // 8
-      "exp_month,"                    // 9
-      "exp_year,"                     // 10
-      "metadata.billing_address_id,"  // 11
-      "bank_name "                    // 12
+      "status,"                       // 6
+      "name_on_card,"                 // 7
+      "exp_month,"                    // 8
+      "exp_year,"                     // 9
+      "metadata.billing_address_id,"  // 10
+      "bank_name "                    // 11
       "FROM masked_credit_cards masked "
       "LEFT OUTER JOIN unmasked_credit_cards USING (id) "
       "LEFT OUTER JOIN server_card_metadata metadata USING (id)"));
@@ -1255,12 +1257,6 @@ bool AutofillTable::GetServerCreditCards(
       card->SetNetworkForMaskedCard(card_network.c_str());
     } else {
       DCHECK_EQ(CreditCard::GetCardNetwork(full_card_number), card_network);
-    }
-
-    int card_type = s.ColumnInt(index++);
-    if (card_type >= CreditCard::CARD_TYPE_UNKNOWN &&
-        card_type <= CreditCard::CARD_TYPE_PREPAID) {
-      card->set_card_type(static_cast<CreditCard::CardType>(card_type));
     }
 
     card->SetServerStatus(ServerStatusStringToEnum(s.ColumnString(index++)));
@@ -1521,27 +1517,27 @@ void AutofillTable::SetServerCardsData(
       db_->GetUniqueStatement("INSERT INTO masked_credit_cards("
                               "id,"            // 0
                               "network,"       // 1
-                              "type,"          // 2
-                              "status,"        // 3
-                              "name_on_card,"  // 4
-                              "last_four,"     // 5
-                              "exp_month,"     // 6
-                              "exp_year,"      // 7
-                              "bank_name)"     // 8
-                              "VALUES (?,?,?,?,?,?,?,?,?)"));
+                              "status,"        // 2
+                              "name_on_card,"  // 3
+                              "last_four,"     // 4
+                              "exp_month,"     // 5
+                              "exp_year,"      // 6
+                              "bank_name)"     // 7
+                              "VALUES (?,?,?,?,?,?,?,?)"));
+  int index;
   for (const CreditCard& card : credit_cards) {
     DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
-    masked_insert.BindString(0, card.server_id());
-    masked_insert.BindString(1, card.network());
-    masked_insert.BindInt(2, card.card_type());
-    masked_insert.BindString(3,
+    index = 0;
+    masked_insert.BindString(index++, card.server_id());
+    masked_insert.BindString(index++, card.network());
+    masked_insert.BindString(index++,
                              ServerStatusEnumToString(card.GetServerStatus()));
-    masked_insert.BindString16(4, card.GetRawInfo(CREDIT_CARD_NAME_FULL));
-    masked_insert.BindString16(5, card.LastFourDigits());
-    masked_insert.BindString16(6, card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
-    masked_insert.BindString16(7,
+    masked_insert.BindString16(index++, card.GetRawInfo(CREDIT_CARD_NAME_FULL));
+    masked_insert.BindString16(index++, card.LastFourDigits());
+    masked_insert.BindString16(index++, card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+    masked_insert.BindString16(index++,
                                card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-    masked_insert.BindString(8, card.bank_name());
+    masked_insert.BindString(index++, card.bank_name());
     masked_insert.Run();
     masked_insert.Reset(true);
   }
@@ -2735,6 +2731,33 @@ bool AutofillTable::MigrateToVersion81CleanUpWrongModelTypeData() {
          transaction.Commit();
 }
 
+bool AutofillTable::MigrateToVersion83RemoveServerCardTypeColumn() {
+  // Sqlite does not support "alter table drop column" syntax, so it has be done
+  // manually.
+  sql::Transaction transaction(db_);
+  return transaction.Begin() &&
+         db_->Execute(
+             "CREATE TABLE masked_credit_cards_temp ("
+             "id VARCHAR,"
+             "status VARCHAR,"
+             "name_on_card VARCHAR,"
+             "network VARCHAR,"
+             "last_four VARCHAR,"
+             "exp_month INTEGER DEFAULT 0,"
+             "exp_year INTEGER DEFAULT 0, "
+             "bank_name VARCHAR)") &&
+         db_->Execute(
+             "INSERT INTO masked_credit_cards_temp "
+             "SELECT id, status, name_on_card, network, last_four, exp_month,"
+             "exp_year, bank_name "
+             "FROM masked_credit_cards") &&
+         db_->Execute("DROP TABLE masked_credit_cards") &&
+         db_->Execute(
+             "ALTER TABLE masked_credit_cards_temp "
+             "RENAME TO masked_credit_cards") &&
+         transaction.Commit();
+}
+
 bool AutofillTable::AddFormFieldValuesTime(
     const std::vector<FormFieldData>& elements,
     std::vector<AutofillChange>* changes,
@@ -2895,27 +2918,27 @@ void AutofillTable::AddMaskedCreditCards(
       db_->GetUniqueStatement("INSERT INTO masked_credit_cards("
                               "id,"            // 0
                               "network,"       // 1
-                              "type,"          // 2
-                              "status,"        // 3
-                              "name_on_card,"  // 4
-                              "last_four,"     // 5
-                              "exp_month,"     // 6
-                              "exp_year,"      // 7
-                              "bank_name)"     // 8
-                              "VALUES (?,?,?,?,?,?,?,?,?)"));
+                              "status,"        // 2
+                              "name_on_card,"  // 3
+                              "last_four,"     // 4
+                              "exp_month,"     // 5
+                              "exp_year,"      // 6
+                              "bank_name)"     // 7
+                              "VALUES (?,?,?,?,?,?,?,?)"));
+  int index;
   for (const CreditCard& card : credit_cards) {
     DCHECK_EQ(CreditCard::MASKED_SERVER_CARD, card.record_type());
-    masked_insert.BindString(0, card.server_id());
-    masked_insert.BindString(1, card.network());
-    masked_insert.BindInt(2, card.card_type());
-    masked_insert.BindString(3,
+    index = 0;
+    masked_insert.BindString(index++, card.server_id());
+    masked_insert.BindString(index++, card.network());
+    masked_insert.BindString(index++,
                              ServerStatusEnumToString(card.GetServerStatus()));
-    masked_insert.BindString16(4, card.GetRawInfo(CREDIT_CARD_NAME_FULL));
-    masked_insert.BindString16(5, card.LastFourDigits());
-    masked_insert.BindString16(6, card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
-    masked_insert.BindString16(7,
+    masked_insert.BindString16(index++, card.GetRawInfo(CREDIT_CARD_NAME_FULL));
+    masked_insert.BindString16(index++, card.LastFourDigits());
+    masked_insert.BindString16(index++, card.GetRawInfo(CREDIT_CARD_EXP_MONTH));
+    masked_insert.BindString16(index++,
                                card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR));
-    masked_insert.BindString(8, card.bank_name());
+    masked_insert.BindString(index++, card.bank_name());
     masked_insert.Run();
     masked_insert.Reset(true);
 
@@ -3087,8 +3110,7 @@ bool AutofillTable::InitMaskedCreditCardsTable() {
                       "last_four VARCHAR,"
                       "exp_month INTEGER DEFAULT 0,"
                       "exp_year INTEGER DEFAULT 0, "
-                      "bank_name VARCHAR, "
-                      "type INTEGER DEFAULT 0)")) {
+                      "bank_name VARCHAR)")) {
       NOTREACHED();
       return false;
     }

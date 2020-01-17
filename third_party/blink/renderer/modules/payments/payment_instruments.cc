@@ -364,10 +364,9 @@ void PaymentInstruments::OnRequestPermission(
       ExceptionState exception_state(resolver->GetScriptState()->GetIsolate(),
                                      ExceptionState::kSetterContext,
                                      "PaymentInstruments", "set");
-      BasicCardHelper::ParseBasiccardData(
-          details->capabilities(), instrument->supported_networks,
-          instrument->supported_types, /*has_supported_card_types=*/nullptr,
-          exception_state);
+      BasicCardHelper::ParseBasiccardData(details->capabilities(),
+                                          instrument->supported_networks,
+                                          exception_state);
       if (exception_state.HadException()) {
         resolver->Reject(exception_state);
         return;

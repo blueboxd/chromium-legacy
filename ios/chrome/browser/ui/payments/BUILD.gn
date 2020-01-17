@@ -251,7 +251,6 @@ source_set("eg_tests") {
     "payment_request_can_make_payment_egtest.mm",
     "payment_request_cancel_pay_abort_egtest.mm",
     "payment_request_data_url_egtest.mm",
-    "payment_request_debit_egtest.mm",
     "payment_request_egtest_base.h",
     "payment_request_egtest_base.mm",
     "payment_request_journey_logger_egtest.mm",

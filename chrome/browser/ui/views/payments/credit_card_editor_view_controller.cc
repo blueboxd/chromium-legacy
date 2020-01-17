@@ -201,9 +201,9 @@ CreditCardEditorViewController::CreateHeaderView() {
       views::BoxLayout::CrossAxisAlignment::kStart);
   view->SetLayoutManager(std::move(layout));
 
-  // "Cards accepted" label is "hint" grey.
-  view->AddChildView(CreateHintLabel(GetAcceptedCardTypesText(
-                                         spec()->supported_card_types_set()))
+  // "Accepted cards" label is "hint" grey.
+  view->AddChildView(CreateHintLabel(l10n_util::GetStringUTF16(
+                                         IDS_PAYMENTS_ACCEPTED_CARDS_LABEL))
                          .release());
 
   // 8dp padding is required between icons.
@@ -221,7 +221,7 @@ CreditCardEditorViewController::CreateHeaderView() {
   constexpr gfx::Size kCardIconSize = gfx::Size(30, 18);
   for (const std::string& supported_network :
        spec()->supported_card_networks()) {
-    const std::string autofill_card_type =
+    const std::string autofill_card_network =
         autofill::data_util::GetIssuerNetworkForBasicCardIssuerNetwork(
             supported_network);
     // Icon is fully opaque if no network is selected, or if it is the selected
@@ -231,7 +231,7 @@ CreditCardEditorViewController::CreateHeaderView() {
             ? 1.0f
             : kDimmedCardIconOpacity;
     std::unique_ptr<views::ImageView> card_icon_view = CreateAppIconView(
-        autofill::data_util::GetPaymentRequestData(autofill_card_type)
+        autofill::data_util::GetPaymentRequestData(autofill_card_network)
             .icon_resource_id,
         gfx::ImageSkia(), base::UTF8ToUTF16(supported_network), opacity);
     card_icon_view->SetImageSize(kCardIconSize);

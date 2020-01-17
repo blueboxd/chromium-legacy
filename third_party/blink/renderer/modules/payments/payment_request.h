@@ -178,7 +178,6 @@ class MODULES_EXPORT PaymentRequest final
   TaskRunnerTimer<PaymentRequest> complete_timer_;
   TaskRunnerTimer<PaymentRequest> update_payment_details_timer_;
   bool is_waiting_for_show_promise_to_resolve_;
-  bool basic_card_has_supported_card_types_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequest);
 };

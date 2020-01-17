@@ -500,8 +500,8 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         if (card == null) {
             return null;
         }
-        return new AutofillPaymentInstrument(webContents, card, billingProfile,
-                MethodStrings.BASIC_CARD, /* matchesMerchantCardTypeExactly= */ true);
+        return new AutofillPaymentInstrument(
+                webContents, card, billingProfile, MethodStrings.BASIC_CARD);
     }
 
     @CalledByNative

@@ -392,7 +392,6 @@ android_library("chrome_java") {
     "//chrome:content_setting_javagen",
     "//chrome:content_settings_type_javagen",
     "//chrome:cookie_controls_mode_javagen",
-    "//chrome:credit_card_javagen",
     "//chrome:download_enum_javagen",
     "//chrome:instant_apps_reasons_enum_javagen",
     "//chrome:offline_pages_enum_javagen",

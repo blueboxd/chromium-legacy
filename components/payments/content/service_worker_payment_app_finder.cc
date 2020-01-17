@@ -54,14 +54,11 @@ bool BasicCardCapabilitiesMatch(
     const mojom::PaymentMethodDataPtr& request) {
   for (const auto& capability : capabilities) {
     if (CapabilityMatches(request->supported_networks,
-                          capability.supported_card_networks) &&
-        CapabilityMatches(request->supported_types,
-                          capability.supported_card_types)) {
+                          capability.supported_card_networks)) {
       return true;
     }
   }
-  return capabilities.empty() && request->supported_networks.empty() &&
-         request->supported_types.empty();
+  return capabilities.empty() && request->supported_networks.empty();
 }
 
 // Returns true if |app| supports at least one of the |requests|.

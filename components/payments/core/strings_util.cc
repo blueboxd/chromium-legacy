@@ -14,27 +14,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace payments {
-namespace {
-
-constexpr size_t kNone = 0;
-constexpr size_t kCredit = 1;
-constexpr size_t kDebit = 2;
-constexpr size_t kPrepaid = 4;
-
-size_t getCardTypeBitmask(
-    const std::set<autofill::CreditCard::CardType>& types) {
-  return (types.find(autofill::CreditCard::CARD_TYPE_CREDIT) != types.end()
-              ? kCredit
-              : kNone) |
-         (types.find(autofill::CreditCard::CARD_TYPE_DEBIT) != types.end()
-              ? kDebit
-              : kNone) |
-         (types.find(autofill::CreditCard::CARD_TYPE_PREPAID) != types.end()
-              ? kPrepaid
-              : kNone);
-}
-
-}  // namespace
 
 base::string16 GetShippingAddressLabelFormAutofillProfile(
     const autofill::AutofillProfile& profile,
@@ -171,49 +150,6 @@ base::string16 GetShippingOptionSectionString(
       NOTREACHED();
       return base::string16();
   }
-}
-
-base::string16 GetAcceptedCardTypesText(
-    const std::set<autofill::CreditCard::CardType>& types) {
-  int string_ids[8];
-
-  string_ids[kNone] = IDS_PAYMENTS_ACCEPTED_CARDS_LABEL;
-  string_ids[kCredit | kDebit | kPrepaid] = IDS_PAYMENTS_ACCEPTED_CARDS_LABEL;
-
-  string_ids[kCredit] = IDS_PAYMENTS_ACCEPTED_CREDIT_CARDS_LABEL;
-  string_ids[kDebit] = IDS_PAYMENTS_ACCEPTED_DEBIT_CARDS_LABEL;
-  string_ids[kPrepaid] = IDS_PAYMENTS_ACCEPTED_PREPAID_CARDS_LABEL;
-
-  string_ids[kCredit | kDebit] = IDS_PAYMENTS_ACCEPTED_CREDIT_DEBIT_CARDS_LABEL;
-  string_ids[kCredit | kPrepaid] =
-      IDS_PAYMENTS_ACCEPTED_CREDIT_PREPAID_CARDS_LABEL;
-  string_ids[kDebit | kPrepaid] =
-      IDS_PAYMENTS_ACCEPTED_DEBIT_PREPAID_CARDS_LABEL;
-
-  return l10n_util::GetStringUTF16(string_ids[getCardTypeBitmask(types)]);
-}
-
-base::string16 GetCardTypesAreAcceptedText(
-    const std::set<autofill::CreditCard::CardType>& types) {
-  int string_ids[8];
-
-  string_ids[kNone] = 0;
-  string_ids[kCredit | kDebit | kPrepaid] = 0;
-
-  string_ids[kCredit] = IDS_PAYMENTS_CREDIT_CARDS_ARE_ACCEPTED_LABEL;
-  string_ids[kDebit] = IDS_PAYMENTS_DEBIT_CARDS_ARE_ACCEPTED_LABEL;
-  string_ids[kPrepaid] = IDS_PAYMENTS_PREPAID_CARDS_ARE_ACCEPTED_LABEL;
-
-  string_ids[kCredit | kDebit] =
-      IDS_PAYMENTS_CREDIT_DEBIT_CARDS_ARE_ACCEPTED_LABEL;
-  string_ids[kCredit | kPrepaid] =
-      IDS_PAYMENTS_CREDIT_PREPAID_CARDS_ARE_ACCEPTED_LABEL;
-  string_ids[kDebit | kPrepaid] =
-      IDS_PAYMENTS_DEBIT_PREPAID_CARDS_ARE_ACCEPTED_LABEL;
-
-  int string_id = string_ids[getCardTypeBitmask(types)];
-  return string_id == 0 ? base::string16()
-                        : l10n_util::GetStringUTF16(string_id);
 }
 
 }  // namespace payments

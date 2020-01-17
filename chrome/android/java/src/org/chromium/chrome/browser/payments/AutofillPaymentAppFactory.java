@@ -9,8 +9,6 @@ import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
@@ -42,7 +40,6 @@ public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
     private static final class Creator implements AutofillPaymentAppCreator {
         private final PaymentAppFactoryDelegate mDelegate;
         private boolean mCanMakePayment;
-        private Set<Integer> mTypes;
         private Set<String> mNetworks;
 
         private Creator(PaymentAppFactoryDelegate delegate) {
@@ -60,9 +57,6 @@ public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
             mNetworks = BasicCardUtils.convertBasicCardToNetworks(data);
             if (mNetworks.isEmpty()) return false;
 
-            mTypes = BasicCardUtils.convertBasicCardToTypes(data);
-            if (mTypes.isEmpty()) return false;
-
             mCanMakePayment = true;
             List<CreditCard> cards = PersonalDataManager.getInstance().getCreditCardsToSuggest(
                     /*includeServerCards=*/ChromeFeatureList.isEnabled(
@@ -70,14 +64,9 @@ public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
             int numberOfCards = cards.size();
             for (int i = 0; i < numberOfCards; i++) {
                 // createPaymentAppForCard(card) returns null if the card network or type does not
-                // match mNetworks or mTypes.
+                // match mNetworks.
                 PaymentInstrument app = createPaymentAppForCard(cards.get(i));
                 if (app != null) mDelegate.onPaymentAppCreated(app);
-            }
-
-            int additionalAppTextResourceId = getAdditionalAppTextResourceId();
-            if (additionalAppTextResourceId != 0) {
-                mDelegate.onAdditionalTextResourceId(additionalAppTextResourceId);
             }
 
             mDelegate.onAutofillPaymentAppCreatorAvailable(this);
@@ -91,10 +80,7 @@ public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
             if (!mCanMakePayment) return null;
 
             String methodName = null;
-            if (!mNetworks.contains(card.getBasicCardIssuerNetwork())
-                    || !mTypes.contains(card.getCardType())) {
-                return null;
-            }
+            if (!mNetworks.contains(card.getBasicCardIssuerNetwork())) return null;
 
             AutofillProfile billingAddress = TextUtils.isEmpty(card.getBillingAddressId())
                     ? null
@@ -109,39 +95,8 @@ public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
 
             if (billingAddress == null) card.setBillingAddressId(null);
 
-            // Whether this card matches the card type (credit, debit, prepaid) exactly. If the
-            // merchant requests all card types, then this is always true. If the merchant requests
-            // only a subset of card types, then this is false for "unknown" card types. The
-            // "unknown" card types is where Chrome is unable to determine the type of card. Cards
-            // that don't match the card type exactly cannot be pre-selected in the UI.
-            boolean matchesMerchantCardTypeExactly = card.getCardType() != CardType.UNKNOWN
-                    || mTypes.size() == BasicCardUtils.TOTAL_NUMBER_OF_CARD_TYPES;
-
             return new AutofillPaymentInstrument(mDelegate.getParams().getWebContents(), card,
-                    billingAddress, MethodStrings.BASIC_CARD, matchesMerchantCardTypeExactly);
-        }
-
-        private int getAdditionalAppTextResourceId() {
-            // If the merchant has restricted the accepted card types (credit, debit, prepaid), then
-            // the list of payment instruments should include a message describing the accepted card
-            // types, e.g., "Debit cards are accepted" or "Debit and prepaid cards are accepted."
-            if (mTypes == null || mTypes.size() == BasicCardUtils.TOTAL_NUMBER_OF_CARD_TYPES) {
-                return 0;
-            }
-
-            int credit = mTypes.contains(CardType.CREDIT) ? 1 : 0;
-            int debit = mTypes.contains(CardType.DEBIT) ? 1 : 0;
-            int prepaid = mTypes.contains(CardType.PREPAID) ? 1 : 0;
-            int[][][] resourceIds = new int[2][2][2];
-            resourceIds[0][0][0] = 0;
-            resourceIds[0][0][1] = R.string.payments_prepaid_cards_are_accepted_label;
-            resourceIds[0][1][0] = R.string.payments_debit_cards_are_accepted_label;
-            resourceIds[0][1][1] = R.string.payments_debit_prepaid_cards_are_accepted_label;
-            resourceIds[1][0][0] = R.string.payments_credit_cards_are_accepted_label;
-            resourceIds[1][0][1] = R.string.payments_credit_prepaid_cards_are_accepted_label;
-            resourceIds[1][1][0] = R.string.payments_credit_debit_cards_are_accepted_label;
-            resourceIds[1][1][1] = 0;
-            return resourceIds[credit][debit][prepaid];
+                    billingAddress, MethodStrings.BASIC_CARD);
         }
     }
 

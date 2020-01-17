@@ -146,35 +146,6 @@ void ParseSupportedMethods(
   }
 }
 
-void ParseSupportedCardTypes(
-    const std::vector<PaymentMethodData>& method_data,
-    std::set<autofill::CreditCard::CardType>* out_supported_card_types_set) {
-  DCHECK(out_supported_card_types_set->empty());
-
-  for (const PaymentMethodData& method_data_entry : method_data) {
-    // Ignore |supported_types| if |supported_method| is not "basic-card".
-    if (method_data_entry.supported_method != methods::kBasicCard)
-      continue;
-
-    for (const autofill::CreditCard::CardType& card_type :
-         method_data_entry.supported_types) {
-      out_supported_card_types_set->insert(card_type);
-    }
-  }
-
-  // Omitting the card types means all 3 card types are supported.
-  if (out_supported_card_types_set->empty()) {
-    out_supported_card_types_set->insert(
-        autofill::CreditCard::CARD_TYPE_CREDIT);
-    out_supported_card_types_set->insert(autofill::CreditCard::CARD_TYPE_DEBIT);
-    out_supported_card_types_set->insert(
-        autofill::CreditCard::CARD_TYPE_PREPAID);
-  }
-
-  // Let the user decide whether an unknown card type should be used.
-  out_supported_card_types_set->insert(autofill::CreditCard::CARD_TYPE_UNKNOWN);
-}
-
 base::string16 FormatCardNumberForDisplay(const base::string16& card_number) {
   base::string16 number = autofill::CreditCard::StripSeparators(card_number);
   if (number.empty() || !base::IsAsciiDigit(number[0]))

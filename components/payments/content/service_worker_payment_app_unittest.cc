@@ -76,7 +76,6 @@ class ServiceWorkerPaymentAppTest : public testing::Test,
     entry_1->supported_networks.push_back(mojom::BasicCardNetwork::UNIONPAY);
     entry_1->supported_networks.push_back(mojom::BasicCardNetwork::JCB);
     entry_1->supported_networks.push_back(mojom::BasicCardNetwork::VISA);
-    entry_1->supported_types.push_back(mojom::BasicCardType::DEBIT);
     method_data.push_back(std::move(entry_1));
 
     mojom::PaymentMethodDataPtr entry_2 = mojom::PaymentMethodData::New();
@@ -109,8 +108,6 @@ class ServiceWorkerPaymentAppTest : public testing::Test,
         static_cast<int32_t>(mojom::BasicCardNetwork::UNIONPAY));
     stored_app->capabilities.back().supported_card_networks.emplace_back(
         static_cast<int32_t>(mojom::BasicCardNetwork::JCB));
-    stored_app->capabilities.back().supported_card_types.emplace_back(
-        static_cast<int32_t>(mojom::BasicCardType::DEBIT));
     stored_app->user_hint = "Visa 4012 ... 1881";
     stored_app->prefer_related_applications = false;
 
@@ -151,7 +148,6 @@ TEST_F(ServiceWorkerPaymentAppTest, AppInfo) {
   CreateServiceWorkerPaymentApp(true);
 
   EXPECT_TRUE(GetApp()->IsCompleteForPayment());
-  EXPECT_TRUE(GetApp()->IsExactlyMatchingMerchantRequest());
 
   EXPECT_EQ(base::UTF16ToUTF8(GetApp()->GetLabel()), "bobpay");
   EXPECT_EQ(base::UTF16ToUTF8(GetApp()->GetSublabel()), "bobpay.com");
@@ -176,7 +172,6 @@ TEST_F(ServiceWorkerPaymentAppTest, CreatePaymentRequestEventData) {
   EXPECT_EQ(event_data->method_data.size(), 2U);
   EXPECT_EQ(event_data->method_data[0]->supported_method, "basic-card");
   EXPECT_EQ(event_data->method_data[0]->supported_networks.size(), 3U);
-  EXPECT_EQ(event_data->method_data[0]->supported_types.size(), 1U);
   EXPECT_EQ(event_data->method_data[1]->supported_method, "https://bobpay.com");
 
   EXPECT_EQ(event_data->total->currency, "USD");
@@ -235,25 +230,21 @@ TEST_F(ServiceWorkerPaymentAppTest, ValidateCanMakePayment) {
 TEST_F(ServiceWorkerPaymentAppTest, IsValidForModifier) {
   CreateServiceWorkerPaymentApp(true);
 
-  EXPECT_TRUE(GetApp()->IsValidForModifier("basic-card", false, {}, false, {}));
-
-  EXPECT_TRUE(
-      GetApp()->IsValidForModifier("https://bobpay.com", true, {}, true, {}));
-
-  EXPECT_FALSE(GetApp()->IsValidForModifier("basic-card", true, {"mastercard"},
-                                            false, {}));
-
-  EXPECT_TRUE(GetApp()->IsValidForModifier("basic-card", true, {"unionpay"},
-                                           false, {}));
+  EXPECT_TRUE(GetApp()->IsValidForModifier(
+      /*method=*/"basic-card", /*supported_networks_specified=*/false,
+      /*supported_networks=*/{}));
 
   EXPECT_TRUE(GetApp()->IsValidForModifier(
-      "basic-card", true, {"unionpay"}, true,
-      {autofill::CreditCard::CardType::CARD_TYPE_DEBIT,
-       autofill::CreditCard::CardType::CARD_TYPE_CREDIT}));
+      /*method=*/"https://bobpay.com", /*supported_networks_specified=*/true,
+      /*supported_networks=*/{}));
 
   EXPECT_FALSE(GetApp()->IsValidForModifier(
-      "basic-card", true, {"unionpay"}, true,
-      {autofill::CreditCard::CardType::CARD_TYPE_CREDIT}));
+      /*method=*/"basic-card", /*supported_networks_specified=*/true,
+      /*supported_networks=*/{"mastercard"}));
+
+  EXPECT_TRUE(GetApp()->IsValidForModifier(
+      /*method=*/"basic-card", /*supported_networks_specified=*/true,
+      /*supported_networks=*/{"unionpay"}));
 }
 
 }  // namespace payments

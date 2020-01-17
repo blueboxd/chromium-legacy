@@ -328,11 +328,6 @@ public class PaymentRequestImpl
         int completeness = compareCompletablesByCompleteness(b, a);
         if (completeness != 0) return completeness;
 
-        // Cards with matching type before unknown type cards.
-        int typeMatch = (b.isExactlyMatchingMerchantRequest() ? 1 : 0)
-                - (a.isExactlyMatchingMerchantRequest() ? 1 : 0);
-        if (typeMatch != 0) return typeMatch;
-
         // Payment apps which handle shipping address before others.
         if (mRequestShipping) {
             int canHandleShipping =
@@ -362,8 +357,8 @@ public class PaymentRequestImpl
         // Preselectable instruments before non-preselectable instruments.
         // Note that this only affects service worker payment apps' instruments for now
         // since autofill payment instruments have already been sorted by preselect
-        // after sorting by completeness and typeMatch. And the other payment apps'
-        // instruments can always be preselected.
+        // after sorting by completeness. And the other payment apps' instruments can always be
+        // preselected.
         int canPreselect = (b.canPreselect() ? 1 : 0) - (a.canPreselect() ? 1 : 0);
         if (canPreselect != 0) return canPreselect;
 
@@ -479,7 +474,6 @@ public class PaymentRequestImpl
     private boolean mIsFinishedQueryingPaymentApps;
     private AutofillPaymentAppCreator mAutofillPaymentAppCreator;
     private List<PaymentInstrument> mPendingInstruments = new ArrayList<>();
-    private int mPaymentMethodsSectionAdditionalTextResourceId;
     private SectionInformation mPaymentMethodsSection;
     private PaymentRequestUI mUI;
     private MicrotransactionCoordinator mMicrotransactionUi;
@@ -2553,14 +2547,6 @@ public class PaymentRequestImpl
 
     // PaymentAppFactoryDelegate implementation.
     @Override
-    public void onAdditionalTextResourceId(int additionalTextResourceId) {
-        assert additionalTextResourceId != 0;
-        assert mPaymentMethodsSectionAdditionalTextResourceId == 0;
-        mPaymentMethodsSectionAdditionalTextResourceId = additionalTextResourceId;
-    }
-
-    // PaymentAppFactoryDelegate implementation.
-    @Override
     public void onAutofillPaymentAppCreatorAvailable(AutofillPaymentAppCreator creator) {
         mAutofillPaymentAppCreator = creator;
     }
@@ -2652,10 +2638,6 @@ public class PaymentRequestImpl
         // The list of payment instruments is ready to display.
         mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.DataType.PAYMENT_METHODS,
                 selection, new ArrayList<>(mPendingInstruments));
-        if (mPaymentMethodsSectionAdditionalTextResourceId != 0) {
-            mPaymentMethodsSection.setAdditionalText(
-                    chromeActivity.getString(mPaymentMethodsSectionAdditionalTextResourceId));
-        }
 
         // Record the number suggested payment methods and whether at least one of them was
         // complete.

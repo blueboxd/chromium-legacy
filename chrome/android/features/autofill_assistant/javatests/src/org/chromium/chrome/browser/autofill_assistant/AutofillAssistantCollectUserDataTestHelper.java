@@ -14,7 +14,6 @@ import android.widget.LinearLayout;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantChoiceList;
@@ -249,8 +248,8 @@ public class AutofillAssistantCollectUserDataTestHelper {
 
         return new PersonalDataManager.CreditCard("", "https://example.com", true, true,
                 profileName, "4111111111111111", "1111", "12", "2050", "visa",
-                org.chromium.chrome.autofill_assistant.R.drawable.visa_card, CardType.UNKNOWN,
-                billingAddressId, "" /* serverId */);
+                org.chromium.chrome.autofill_assistant.R.drawable.visa_card, billingAddressId,
+                "" /* serverId */);
     }
 
     private void registerDataObserver() throws TimeoutException {

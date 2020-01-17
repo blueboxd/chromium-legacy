@@ -354,30 +354,6 @@ var SerializedPaymentResponse;
           }
         }
       }
-      // Validate basic-card supportedTypes.
-      if (data.supportedTypes) {
-        if (!(data.supportedTypes instanceof Array)) {
-          throw new TypeError('basic-card supportedTypes must be an array');
-        }
-        if (data.supportedTypes.length >
-            __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE) {
-          throw new TypeError(
-              'basic-card supportedTypes cannot be longer than ' +
-              __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE + ' elements');
-        }
-        for (var i = 0; i < data.supportedTypes.length; i++) {
-          if (typeof data.supportedTypes[i] !== 'string') {
-            throw new TypeError('A basic-card supported type must be a string');
-          }
-          if (data.supportedTypes[i].length >
-              __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH) {
-            throw new TypeError(
-                'A basic-card supported type cannot be longer than ' +
-                __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH +
-                ' characters');
-          }
-        }
-      }
     }
   };
 
@@ -1310,8 +1286,7 @@ PaymentRequest.prototype.canMakePayment = function() {
 
 /**
  * @typedef {{
- *   supportedNetworks: !Array<string>,
- *   supportedTypes: !Array<string>
+ *   supportedNetworks: !Array<string>
  * }}
  */
 window.BasicCardData;

@@ -67,7 +67,6 @@ void PopulateValidatedMethodData(
     std::vector<std::string>* supported_card_networks,
     std::set<std::string>* basic_card_specified_networks,
     std::set<std::string>* supported_card_networks_set,
-    std::set<autofill::CreditCard::CardType>* supported_card_types,
     std::vector<GURL>* url_payment_method_identifiers,
     std::set<std::string>* payment_method_identifiers) {
   data_util::ParseSupportedMethods(
@@ -75,8 +74,6 @@ void PopulateValidatedMethodData(
       url_payment_method_identifiers, payment_method_identifiers);
   supported_card_networks_set->insert(supported_card_networks->begin(),
                                       supported_card_networks->end());
-
-  data_util::ParseSupportedCardTypes(method_data, supported_card_types);
 }
 
 }  // namespace
@@ -302,7 +299,6 @@ const PaymentDetailsModifier* PaymentRequest::GetApplicableModifier(
 
   for (const auto& modifier : web_payment_request_.details.modifiers) {
     std::set<std::string> supported_card_networks_set;
-    std::set<autofill::CreditCard::CardType> supported_card_types_set;
     // The following 4 variables are unused.
     std::set<std::string> unused_basic_card_specified_networks;
     std::vector<std::string> unused_supported_card_networks;
@@ -311,15 +307,13 @@ const PaymentDetailsModifier* PaymentRequest::GetApplicableModifier(
     PopulateValidatedMethodData(
         {modifier.method_data}, &unused_supported_card_networks,
         &unused_basic_card_specified_networks, &supported_card_networks_set,
-        &supported_card_types_set, &unused_url_payment_method_identifiers,
+        &unused_url_payment_method_identifiers,
         &unused_payment_method_identifiers);
 
     if (selected_instrument->IsValidForModifier(
             modifier.method_data.supported_method,
             !modifier.method_data.supported_networks.empty(),
-            supported_card_networks_set,
-            !modifier.method_data.supported_types.empty(),
-            supported_card_types_set)) {
+            supported_card_networks_set)) {
       return &modifier;
     }
   }
@@ -375,10 +369,8 @@ AutofillPaymentApp* PaymentRequest::CreateAndAddAutofillPaymentInstrument(
       autofill::data_util::GetPaymentRequestData(credit_card.network())
           .basic_card_issuer_network;
 
-  if (!supported_card_networks_set_.count(basic_card_issuer_network) ||
-      !supported_card_types_set_.count(credit_card.card_type())) {
+  if (!supported_card_networks_set_.count(basic_card_issuer_network))
     return nullptr;
-  }
 
   // If the merchant specified the card network as part of the "basic-card"
   // payment method, use "basic-card" as the method_name. Otherwise, use
@@ -388,21 +380,11 @@ AutofillPaymentApp* PaymentRequest::CreateAndAddAutofillPaymentInstrument(
     method_name = methods::kBasicCard;
   }
 
-  // The total number of card types: credit, debit, prepaid, unknown.
-  constexpr size_t kTotalNumberOfCardTypes = 4U;
-
-  // Whether the card type (credit, debit, prepaid) matches the type that the
-  // merchant has requested exactly. This should be false for unknown card
-  // types, if the merchant cannot accept some card types.
-  bool matches_merchant_card_type_exactly =
-      credit_card.card_type() != autofill::CreditCard::CARD_TYPE_UNKNOWN ||
-      supported_card_types_set_.size() == kTotalNumberOfCardTypes;
-
   // AutofillPaymentApp makes a copy of |credit_card| so it is
   // effectively owned by this object.
   payment_method_cache_.push_back(std::make_unique<AutofillPaymentApp>(
-      method_name, credit_card, matches_merchant_card_type_exactly,
-      billing_profiles(), GetApplicationLocale(), this));
+      method_name, credit_card, billing_profiles(), GetApplicationLocale(),
+      this));
 
   payment_methods_.push_back(payment_method_cache_.back().get());
 
@@ -494,8 +476,7 @@ void PaymentRequest::ParsePaymentMethodData() {
   PopulateValidatedMethodData(
       web_payment_request_.method_data, &supported_card_networks_,
       &basic_card_specified_networks_, &supported_card_networks_set_,
-      &supported_card_types_set_, &url_payment_method_identifiers_,
-      &unused_payment_method_identifiers);
+      &url_payment_method_identifiers_, &unused_payment_method_identifiers);
 }
 
 void PaymentRequest::CreateNativeAppPaymentMethods() {
@@ -548,8 +529,7 @@ void PaymentRequest::PopulatePaymentMethodCache(
   const auto first_complete_payment_method =
       std::find_if(payment_methods_.begin(), payment_methods_.end(),
                    [](PaymentApp* payment_method) {
-                     return payment_method->IsCompleteForPayment() &&
-                            payment_method->IsExactlyMatchingMerchantRequest();
+                     return payment_method->IsCompleteForPayment();
                    });
   if (first_complete_payment_method != payment_methods_.end())
     selected_payment_method_ = *first_complete_payment_method;

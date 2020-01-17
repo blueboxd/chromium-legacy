@@ -69,11 +69,6 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
         }
 
         @Override
-        public void onAdditionalTextResourceId(int additionalTextResourceId) {
-            mDelegate.onAdditionalTextResourceId(additionalTextResourceId);
-        }
-
-        @Override
         public void onAutofillPaymentAppCreatorAvailable(AutofillPaymentAppCreator creator) {
             mDelegate.onAutofillPaymentAppCreatorAvailable(creator);
         }

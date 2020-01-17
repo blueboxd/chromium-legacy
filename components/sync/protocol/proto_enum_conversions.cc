@@ -483,20 +483,6 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
-    sync_pb::WalletMaskedCreditCard::WalletCardClass wallet_card_class) {
-  ASSERT_ENUM_BOUNDS(sync_pb::WalletMaskedCreditCard, WalletCardClass,
-                     UNKNOWN_CARD_CLASS, PREPAID);
-  switch (wallet_card_class) {
-    ENUM_CASE(sync_pb::WalletMaskedCreditCard, UNKNOWN_CARD_CLASS);
-    ENUM_CASE(sync_pb::WalletMaskedCreditCard, CREDIT);
-    ENUM_CASE(sync_pb::WalletMaskedCreditCard, DEBIT);
-    ENUM_CASE(sync_pb::WalletMaskedCreditCard, PREPAID);
-  }
-  NOTREACHED();
-  return "";
-}
-
-const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus wallet_card_status) {
   ASSERT_ENUM_BOUNDS(sync_pb::WalletMaskedCreditCard, WalletCardStatus, VALID,
                      EXPIRED);

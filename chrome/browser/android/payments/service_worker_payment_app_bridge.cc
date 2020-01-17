@@ -43,7 +43,6 @@ using ::base::android::ScopedJavaLocalRef;
 using ::base::android::ToJavaArrayOfStrings;
 using ::base::android::ToJavaIntArray;
 using ::payments::mojom::BasicCardNetwork;
-using ::payments::mojom::BasicCardType;
 using ::payments::mojom::CanMakePaymentEventData;
 using ::payments::mojom::CanMakePaymentEventDataPtr;
 using ::payments::mojom::PaymentCurrencyAmount;
@@ -95,9 +94,7 @@ void OnGotAllPaymentApps(
       Java_ServiceWorkerPaymentAppBridge_addCapabilities(
           env, jcapabilities, base::checked_cast<int>(i),
           ToJavaIntArray(
-              env, app_info.second->capabilities[i].supported_card_networks),
-          ToJavaIntArray(
-              env, app_info.second->capabilities[i].supported_card_types));
+              env, app_info.second->capabilities[i].supported_card_networks));
     }
 
     base::android::ScopedJavaLocalRef<jobject> jsupported_delegations =
@@ -275,15 +272,6 @@ std::vector<PaymentMethodDataPtr> ConvertPaymentMethodDataFromJavaToNative(
         &supported_network_ints);
     ConvertIntsToEnums<BasicCardNetwork>(supported_network_ints,
                                          &method_data_item->supported_networks);
-
-    std::vector<int> supported_type_ints;
-    base::android::JavaIntArrayToIntVector(
-        env,
-        Java_ServiceWorkerPaymentAppBridge_getSupportedTypesFromMethodData(
-            env, element),
-        &supported_type_ints);
-    ConvertIntsToEnums<BasicCardType>(supported_type_ints,
-                                      &method_data_item->supported_types);
 
     method_data_item->stringified_data = ConvertJavaStringToUTF8(
         env,

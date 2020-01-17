@@ -25,26 +25,12 @@ AutofillPaymentAppFactory::ConvertCardToPaymentAppIfSupportedNetwork(
       autofill::data_util::GetPaymentRequestData(card.network())
           .basic_card_issuer_network;
   if (!delegate->GetSpec()->supported_card_networks_set().count(
-          basic_card_network) ||
-      !delegate->GetSpec()->supported_card_types_set().count(
-          card.card_type())) {
+          basic_card_network)) {
     return nullptr;
   }
 
-  // The total number of card types: credit, debit, prepaid, unknown.
-  constexpr size_t kTotalNumberOfCardTypes = 4U;
-
-  // Whether the card type (credit, debit, prepaid) matches the type that the
-  // merchant has requested exactly. This should be false for unknown card
-  // types, if the merchant cannot accept some card types.
-  bool matches_merchant_card_type_exactly =
-      card.card_type() != autofill::CreditCard::CARD_TYPE_UNKNOWN ||
-      delegate->GetSpec()->supported_card_types_set().size() ==
-          kTotalNumberOfCardTypes;
-
   auto app = std::make_unique<AutofillPaymentApp>(
-      basic_card_network, card, matches_merchant_card_type_exactly,
-      delegate->GetBillingProfiles(),
+      basic_card_network, card, delegate->GetBillingProfiles(),
       delegate->GetPaymentRequestDelegate()->GetApplicationLocale(),
       delegate->GetPaymentRequestDelegate());
 

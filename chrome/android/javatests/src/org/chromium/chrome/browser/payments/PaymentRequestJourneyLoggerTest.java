@@ -27,7 +27,6 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
@@ -62,14 +61,14 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "US", "650-253-0000", "jondoe@email.com", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                mBillingAddressId, "" /* serverId */));
         // The user also has an incomplete address and an incomplete card saved.
         String mIncompleteAddressId = mHelper.setProfile(new AutofillProfile("",
                 "https://example.com", true, "In Complete", "Google", "344 Main St", "CA", "", "",
                 "90291", "", "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "",
                 "4111111111111111", "1111", "18", "2075", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mIncompleteAddressId, "" /* serverId */));
+                mIncompleteAddressId, "" /* serverId */));
     }
 
     /**
@@ -613,7 +612,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "", "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                mBillingAddressId, "" /* serverId */));
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -650,7 +649,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true,
                 /*cardholderName=*/"", "4111111111111111", "1111", "10", "2021", "visa",
-                R.drawable.visa_card, CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                R.drawable.visa_card, mBillingAddressId, "" /* serverId */));
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -686,7 +685,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "5187654321098765", "8765", "10", "2021", "mastercard", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                mBillingAddressId, "" /* serverId */));
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -821,7 +820,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "", "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                mBillingAddressId, "" /* serverId */));
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -858,7 +857,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                mBillingAddressId, "" /* serverId */));
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "cardsAndBobPayBuy", mPaymentRequestTestRule.getReadyToPay());
@@ -930,7 +929,7 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
                 "US", "650-253-0000", "", "en-US"));
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+                mBillingAddressId, "" /* serverId */));
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
 
         mPaymentRequestTestRule.triggerUIAndWait(

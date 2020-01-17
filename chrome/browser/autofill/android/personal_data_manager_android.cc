@@ -213,7 +213,7 @@ PersonalDataManagerAndroid::CreateJavaCreditCardFromNative(
       ConvertUTF8ToJavaString(env,
                               payment_request_data.basic_card_issuer_network),
       ResourceMapper::MapFromChromiumId(payment_request_data.icon_resource_id),
-      card.card_type(), ConvertUTF8ToJavaString(env, card.billing_address_id()),
+      ConvertUTF8ToJavaString(env, card.billing_address_id()),
       ConvertUTF8ToJavaString(env, card.server_id()));
 }
 
@@ -240,11 +240,6 @@ void PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
       ConvertJavaStringToUTF8(Java_CreditCard_getBillingAddressId(env, jcard)));
   card->set_server_id(
       ConvertJavaStringToUTF8(Java_CreditCard_getServerId(env, jcard)));
-
-  jint card_type = Java_CreditCard_getCardType(env, jcard);
-  DCHECK_GE(CreditCard::CARD_TYPE_PREPAID, card_type);
-  DCHECK_LE(CreditCard::CARD_TYPE_UNKNOWN, card_type);
-  card->set_card_type(static_cast<CreditCard::CardType>(card_type));
 
   // Only set the guid if it is an existing card (java guid not empty).
   // Otherwise, keep the generated one.

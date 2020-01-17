@@ -333,11 +333,6 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @CalledByNative
-    private static int[] getSupportedTypesFromMethodData(PaymentMethodData data) {
-        return data.supportedTypes;
-    }
-
-    @CalledByNative
     private static PaymentMethodData getMethodDataFromModifier(PaymentDetailsModifier modifier) {
         return modifier.methodData;
     }
@@ -430,11 +425,10 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @CalledByNative
-    private static void addCapabilities(Object[] capabilities, int index,
-            int[] supportedCardNetworks, int[] supportedCardTypes) {
+    private static void addCapabilities(
+            Object[] capabilities, int index, int[] supportedCardNetworks) {
         assert index < capabilities.length;
-        capabilities[index] =
-                new ServiceWorkerPaymentApp.Capabilities(supportedCardNetworks, supportedCardTypes);
+        capabilities[index] = new ServiceWorkerPaymentApp.Capabilities(supportedCardNetworks);
     }
 
     @CalledByNative

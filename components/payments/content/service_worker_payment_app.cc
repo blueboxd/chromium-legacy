@@ -389,10 +389,6 @@ bool ServiceWorkerPaymentApp::CanPreselect() const {
   return !GetLabel().empty() && !icon_image_.size().IsEmpty();
 }
 
-bool ServiceWorkerPaymentApp::IsExactlyMatchingMerchantRequest() const {
-  return true;
-}
-
 base::string16 ServiceWorkerPaymentApp::GetMissingInfoLabel() const {
   NOTREACHED();
   return base::string16();
@@ -428,9 +424,7 @@ base::string16 ServiceWorkerPaymentApp::GetSublabel() const {
 bool ServiceWorkerPaymentApp::IsValidForModifier(
     const std::string& method,
     bool supported_networks_specified,
-    const std::set<std::string>& supported_networks,
-    bool supported_types_specified,
-    const std::set<autofill::CreditCard::CardType>& supported_types) const {
+    const std::set<std::string>& supported_networks) const {
   // Payment app that needs installation only supports url based payment
   // methods.
   if (needs_installation_)
@@ -447,9 +441,8 @@ bool ServiceWorkerPaymentApp::IsValidForModifier(
     return true;
 
   // Checking the capabilities of this app against the modifier.
-  // Return true if both card networks and types are not specified in the
-  // modifier.
-  if (!supported_networks_specified && !supported_types_specified)
+  // Return true if card networks are not specified in the  modifier.
+  if (!supported_networks_specified)
     return true;
 
   // Return false if no capabilities for this app.
@@ -468,21 +461,6 @@ bool ServiceWorkerPaymentApp::IsValidForModifier(
 
       if (base::STLSetIntersection<std::set<std::string>>(
               app_supported_networks, supported_networks)
-              .empty()) {
-        continue;
-      }
-    }
-
-    if (supported_types_specified) {
-      std::set<autofill::CreditCard::CardType> app_supported_types;
-      for (const auto& type :
-           stored_payment_app_info_->capabilities[i].supported_card_types) {
-        app_supported_types.insert(
-            GetBasicCardType(static_cast<mojom::BasicCardType>(type)));
-      }
-
-      if (base::STLSetIntersection<std::set<autofill::CreditCard::CardType>>(
-              app_supported_types, supported_types)
               .empty()) {
         continue;
       }

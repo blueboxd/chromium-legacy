@@ -37,8 +37,8 @@ class PaymentResponseHelperTest : public testing::Test,
     visa_card.set_billing_address_id(address_.guid());
     visa_card.set_use_count(5u);
     autofill_app_ = std::make_unique<AutofillPaymentApp>(
-        "visa", visa_card, /*matches_merchant_card_type_exactly=*/true,
-        billing_addresses_, "en-US", &test_payment_request_delegate_);
+        "visa", visa_card, billing_addresses_, "en-US",
+        &test_payment_request_delegate_);
   }
   ~PaymentResponseHelperTest() override {}
 

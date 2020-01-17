@@ -21,7 +21,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -48,10 +47,9 @@ public class PaymentRequestCanMakePaymentQueryNoCardTest implements MainActivity
     public void onMainActivityStarted() throws TimeoutException {
         // The user has an incomplete credit card on file. This is not sufficient for
         // canMakePayment() to return true.
-        new AutofillTestHelper().setCreditCard(
-                new CreditCard("", "https://example.com", true, true, "" /* nameOnCard */,
-                        "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                        CardType.UNKNOWN, "" /* billingAddressId */, "" /* serverId */));
+        new AutofillTestHelper().setCreditCard(new CreditCard("", "https://example.com", true, true,
+                "" /* nameOnCard */, "4111111111111111", "1111", "12", "2050", "visa",
+                R.drawable.visa_card, "" /* billingAddressId */, "" /* serverId */));
     }
 
     @Test

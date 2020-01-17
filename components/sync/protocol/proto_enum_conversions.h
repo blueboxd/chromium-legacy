@@ -99,9 +99,6 @@ const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::GaiaPasswordCaptured::EventTrigger trigger);
 
 const char* ProtoEnumToString(
-    sync_pb::WalletMaskedCreditCard::WalletCardClass wallet_card_class);
-
-const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus wallet_card_status);
 
 const char* ProtoEnumToString(

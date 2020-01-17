@@ -44,7 +44,6 @@ class PaymentMethodData {
   // When the methods include "basic-card", a list of networks and types that
   // are supported.
   std::vector<std::string> supported_networks;
-  std::set<autofill::CreditCard::CardType> supported_types;
 };
 
 }  // namespace payments

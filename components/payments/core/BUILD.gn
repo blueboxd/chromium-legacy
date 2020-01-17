@@ -171,7 +171,6 @@ jumbo_source_set("unit_tests") {
       "payment_request_data_util_unittest.cc",
       "payment_response_unittest.cc",
       "payments_profile_comparator_unittest.cc",
-      "strings_util_unittest.cc",
       "web_payment_request_unittest.cc",
     ]
   }
@@ -218,7 +217,6 @@ if (is_ios) {
       "//components/test/data/payments/can_make_payment_query_cc.js",
       "//components/test/data/payments/contact_details.js",
       "//components/test/data/payments/contact_details_and_free_shipping.js",
-      "//components/test/data/payments/debit.js",
       "//components/test/data/payments/dynamic_shipping.js",
       "//components/test/data/payments/email.js",
       "//components/test/data/payments/email_and_free_shipping.js",
@@ -253,7 +251,6 @@ if (is_ios) {
       "//components/test/data/payments/payment_request_can_make_payment_query_test.html",
       "//components/test/data/payments/payment_request_contact_details_and_free_shipping_test.html",
       "//components/test/data/payments/payment_request_contact_details_test.html",
-      "//components/test/data/payments/payment_request_debit_test.html",
       "//components/test/data/payments/payment_request_dynamic_shipping_test.html",
       "//components/test/data/payments/payment_request_email_and_free_shipping_test.html",
       "//components/test/data/payments/payment_request_email_and_phone_test.html",
@@ -287,9 +284,7 @@ if (is_ios) {
       "//components/test/data/payments/style.css",
       "//components/test/data/payments/util.js",
     ]
-    outputs = [
-      "{{bundle_resources_dir}}/" +
-          "{{source_root_relative_dir}}/{{source_file_part}}",
-    ]
+    outputs = [ "{{bundle_resources_dir}}/" +
+                "{{source_root_relative_dir}}/{{source_file_part}}" ]
   }
 }

@@ -1461,25 +1461,6 @@ TEST_F(PersonalDataManagerTest, UpdateServerCreditCards) {
     EXPECT_EQ(0, server_cards[i].Compare(*personal_data_->GetCreditCards()[i]));
 }
 
-TEST_F(PersonalDataManagerTest, SavesServerCardType) {
-  EnableWalletCardImport();
-  std::vector<CreditCard> server_cards;
-  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
-  test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
-                          "3456" /* Visa */, "01", "2999", "1");
-  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
-
-  server_cards.back().set_card_type(CreditCard::CARD_TYPE_DEBIT);
-
-  SetServerCards(server_cards);
-  personal_data_->Refresh();
-  WaitForOnPersonalDataChanged();
-  auto cards = personal_data_->GetCreditCards();
-  ASSERT_EQ(1U, cards.size());
-
-  EXPECT_EQ(CreditCard::CARD_TYPE_DEBIT, cards.front()->card_type());
-}
-
 TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
   AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);
   test::SetProfileInfo(&profile0, "Marion", "Mitchell", "Morrison",

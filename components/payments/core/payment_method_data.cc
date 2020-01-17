@@ -13,32 +13,10 @@ namespace payments {
 namespace {
 
 // These are defined as part of the spec at:
-// https://w3c.github.io/browser-payment-api/#paymentmethoddata-dictionary
+// https://w3c.github.io/payment-method-basic-card/
 static const char kMethodDataData[] = "data";
 static const char kSupportedMethods[] = "supportedMethods";
 static const char kSupportedNetworks[] = "supportedNetworks";
-static const char kSupportedTypes[] = "supportedTypes";
-
-// Converts |supported_type| to |card_type| and returns true on success.
-bool ConvertCardTypeStringToEnum(const std::string& supported_type,
-                                 autofill::CreditCard::CardType* card_type) {
-  if (supported_type == "credit") {
-    *card_type = autofill::CreditCard::CARD_TYPE_CREDIT;
-    return true;
-  }
-
-  if (supported_type == "debit") {
-    *card_type = autofill::CreditCard::CARD_TYPE_DEBIT;
-    return true;
-  }
-
-  if (supported_type == "prepaid") {
-    *card_type = autofill::CreditCard::CARD_TYPE_PREPAID;
-    return true;
-  }
-
-  return false;
-}
 
 }  // namespace
 
@@ -48,8 +26,7 @@ PaymentMethodData::~PaymentMethodData() = default;
 
 bool PaymentMethodData::operator==(const PaymentMethodData& other) const {
   return supported_method == other.supported_method && data == other.data &&
-         supported_networks == other.supported_networks &&
-         supported_types == other.supported_types;
+         supported_networks == other.supported_networks;
 }
 
 bool PaymentMethodData::operator!=(const PaymentMethodData& other) const {
@@ -59,7 +36,6 @@ bool PaymentMethodData::operator!=(const PaymentMethodData& other) const {
 bool PaymentMethodData::FromDictionaryValue(
     const base::DictionaryValue& value) {
   supported_networks.clear();
-  supported_types.clear();
 
   // The value of supportedMethods should be a string.
   if (!value.GetString(kSupportedMethods, &supported_method) ||
@@ -68,7 +44,7 @@ bool PaymentMethodData::FromDictionaryValue(
   }
 
   // Data is optional, but if a dictionary is present, save a stringified
-  // version and attempt to parse supportedNetworks/supportedTypes.
+  // version and attempt to parse supportedNetworks.
   const base::DictionaryValue* data_dict = nullptr;
   if (value.GetDictionary(kMethodDataData, &data_dict)) {
     std::string json_data;
@@ -83,20 +59,6 @@ bool PaymentMethodData::FromDictionaryValue(
           return false;
         }
         supported_networks.push_back(supported_network);
-      }
-    }
-    const base::ListValue* supported_types_list = nullptr;
-    if (data_dict->GetList(kSupportedTypes, &supported_types_list)) {
-      for (size_t i = 0; i < supported_types_list->GetSize(); ++i) {
-        std::string supported_type;
-        if (!supported_types_list->GetString(i, &supported_type) ||
-            !base::IsStringASCII(supported_type)) {
-          return false;
-        }
-        autofill::CreditCard::CardType card_type =
-            autofill::CreditCard::CARD_TYPE_UNKNOWN;
-        if (ConvertCardTypeStringToEnum(supported_type, &card_type))
-          supported_types.insert(card_type);
       }
     }
   }

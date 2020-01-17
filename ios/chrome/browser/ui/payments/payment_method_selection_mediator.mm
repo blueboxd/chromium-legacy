@@ -75,14 +75,7 @@ using ::payment_request_util::
 }
 
 - (CollectionViewItem*)headerItem {
-  base::string16 headerText = payments::GetCardTypesAreAcceptedText(
-      _paymentRequest->supported_card_types_set());
-  if (headerText.empty())
-    return nil;
-
-  PaymentsTextItem* headerItem = [[PaymentsTextItem alloc] init];
-  headerItem.text = base::SysUTF16ToNSString(headerText);
-  return headerItem;
+  return nil;
 }
 
 - (NSArray<CollectionViewItem*>*)selectableItems {

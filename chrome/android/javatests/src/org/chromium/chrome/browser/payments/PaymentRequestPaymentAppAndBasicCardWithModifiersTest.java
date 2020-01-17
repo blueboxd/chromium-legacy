@@ -31,13 +31,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.payments.mojom.BasicCardNetwork;
-import org.chromium.payments.mojom.BasicCardType;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.util.concurrent.TimeoutException;
@@ -69,7 +67,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
                 "US", "310-310-6000", "john.smith@gmail.com", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, billingAddressId, "" /* serverId */));
+                billingAddressId, "" /* serverId */));
     }
 
     private AutofillTestHelper mHelper;
@@ -93,8 +91,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
         // Mastercard card with complete set of information and unknown type.
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true /* isLocal */,
                 true /* isCached */, "Jon Doe", "5555555555554444", "" /* obfuscatedNumber */, "12",
-                "2050", "mastercard", R.drawable.mc_card, CardType.UNKNOWN, mBillingAddressId,
-                "" /* serverId */));
+                "2050", "mastercard", R.drawable.mc_card, mBillingAddressId, "" /* serverId */));
         mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_bobpay_discount", mPaymentRequestTestRule.getReadyToPay());
@@ -112,91 +109,23 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     }
 
     /**
-     * Verify modifier for credit card is only applied for credit card.
+     * Verify modifier for visa card is only applied for visa card.
      */
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testUpdateTotalAndInstrumentLabelWithCreditModifiers() throws TimeoutException {
-        // Credit mastercard card with complete set of information.
-        mHelper.addServerCreditCard(new CreditCard("guid_1", "https://example.com",
-                false /* isLocal */, true /* isCached */, "Jon Doe", "5454545454545454",
-                "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
-                CardType.CREDIT, mBillingAddressId, "server-id-1"));
-        mHelper.setCreditCardUseStatsForTesting("guid_1", 100, 5000);
-        // Mastercard card with complete set of information and unknown type.
-        mHelper.addServerCreditCard(new CreditCard("guid_2", "https://example.com",
-                false /* isLocal */, true /* isCached */, "Jon Doe", "5555555555554444",
-                "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
-                CardType.UNKNOWN, mBillingAddressId, "server-id-2"));
-        mHelper.setCreditCardUseStatsForTesting("guid_2", 1, 5000);
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "credit_supported_type", mPaymentRequestTestRule.getReadyToPay());
-
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
-                "Mastercard"));
-        assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        // select the master card with unknown type and verify modifier is not applied.
-        mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
-                1, mPaymentRequestTestRule.getReadyForInput());
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
-                "Mastercard"));
-        assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-    }
-
-    /**
-     * Verify modifier for debit card is only applied for debit card.
-     */
-    @Test
-    @MediumTest
-    @Feature({"Payments"})
-    public void testUpdateTotalAndInstrumentLabelWithDebitModifiers() throws TimeoutException {
-        // Debit mastercard card with complete set of information.
-        mHelper.addServerCreditCard(new CreditCard("guid_1", "https://example.com",
-                false /* isLocal */, true /* isCached */, "Jon Doe", "5200828282828210",
-                "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
-                CardType.DEBIT, mBillingAddressId, "server-id-1"));
-        mHelper.setCreditCardUseStatsForTesting("guid_1", 100, 5000);
-        // Credit mastercard card with complete set of information.
-        mHelper.addServerCreditCard(new CreditCard("guid_2", "https://example.com",
-                false /* isLocal */, true /* isCached */, "Jon Doe", "5454545454545454",
-                "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
-                CardType.CREDIT, mBillingAddressId, "server-id-2"));
-        mHelper.setCreditCardUseStatsForTesting("guid_2", 1, 5000);
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "debit_supported_type", mPaymentRequestTestRule.getReadyToPay());
-
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
-                "Mastercard"));
-        assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        // select the credit mastercard and verify modifier is not applied.
-        mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
-                1, mPaymentRequestTestRule.getReadyForInput());
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
-                "Mastercard"));
-        assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-    }
-
-    /**
-     * Verify modifier for credit visa card is only applied for credit visa card.
-     */
-    @Test
-    @MediumTest
-    @Feature({"Payments"})
-    public void testUpdateTotalAndInstrumentLabelWithCreditVisaModifiers() throws TimeoutException {
+    public void testUpdateTotalAndInstrumentLabelWithVisaModifiers() throws TimeoutException {
         // Credit visa card with complete set of information.
         mHelper.addServerCreditCard(new CreditCard("guid_1", "https://example.com",
                 false /* isLocal */, true /* isCached */, "Jon Doe", "4111111111111111",
-                "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
-                CardType.CREDIT, mBillingAddressId, "server-id-1"));
+                "" /* obfuscatedNumber */, "12", "2050", "visa", R.drawable.visa_card,
+                mBillingAddressId, "server-id-1"));
         mHelper.setCreditCardUseStatsForTesting("guid_1", 100, 5000);
         // Credit mastercard with complete set of information.
         mHelper.addServerCreditCard(new CreditCard("guid_2", "https://example.com",
                 false /* isLocal */, true /* isCached */, "Jon Doe", "5200828282828210",
                 "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
-                CardType.CREDIT, mBillingAddressId, "server-id-2"));
+                mBillingAddressId, "server-id-2"));
         mHelper.setCreditCardUseStatsForTesting("guid_2", 1, 5000);
         mPaymentRequestTestRule.triggerUIAndWait(
                 "visa_supported_network", mPaymentRequestTestRule.getReadyToPay());
@@ -213,65 +142,31 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     }
 
     /**
-     * Verify modifier for credit mastercard is only applied for credit mastercard.
-     */
-    @Test
-    @MediumTest
-    @Feature({"Payments"})
-    public void testUpdateTotalAndInstrumentLabelWithMasterCreditModifiers()
-            throws TimeoutException {
-        // Credit mastercard with complete set of information.
-        mHelper.addServerCreditCard(new CreditCard("guid_1", "https://example.com",
-                false /* isLocal */, true /* isCached */, "Jon Doe", "5200828282828210",
-                "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
-                CardType.CREDIT, mBillingAddressId, "server-id-1"));
-        mHelper.setCreditCardUseStatsForTesting("guid_1", 100, 5000);
-        // Visa card with complete set of information and unknown type.
-        mHelper.addServerCreditCard(new CreditCard("guid_2", "https://example.com",
-                false /* isLocal */, true /* isCached */, "Jon Doe", "4111111111111111",
-                "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
-                CardType.UNKNOWN, mBillingAddressId, "server-id-2"));
-        mHelper.setCreditCardUseStatsForTesting("guid_2", 1, 5000);
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "mastercard_supported_network", mPaymentRequestTestRule.getReadyToPay());
-
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
-                "Mastercard"));
-        assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        // select the other visa card with unknown type and verify modifier is not applied.
-        mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
-                1, mPaymentRequestTestRule.getReadyForInput());
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith("Visa"));
-        assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-    }
-
-    /**
-     * Verify modifier for mastercard (any card type) is applied for mastercard.
+     * Verify modifier for mastercard is applied for mastercard.
      */
     @Test
     @MediumTest
     @Feature({"Payments"})
     public void testUpdateTotalAndInstrumentLabelWithMastercardModifiers() throws TimeoutException {
         // Mastercard card with complete set of information and unknown type.
-        String guid = mHelper.setCreditCard(new CreditCard("", "https://example.com",
-                true /* isLocal */, true /* isCached */, "Jon Doe", "5555555555554444",
-                "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
-                CardType.UNKNOWN, mBillingAddressId, "" /* serverId */));
+        String guid = mHelper.setCreditCard(
+                new CreditCard("", "https://example.com", true /* isLocal */, true /* isCached */,
+                        "Jon Doe", "5555555555554444", "" /* obfuscatedNumber */, "12", "2050",
+                        "mastercard", R.drawable.mc_card, mBillingAddressId, "" /* serverId */));
         mHelper.setCreditCardUseStatsForTesting(guid, 1000, 5000);
 
         // Credit mastercard with complete set of information.
         mHelper.addServerCreditCard(new CreditCard("guid_1", "https://example.com",
                 false /* isLocal */, true /* isCached */, "Jon Doe", "5200828282828210",
                 "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
-                CardType.CREDIT, mBillingAddressId, "server-id-1"));
+                mBillingAddressId, "server-id-1"));
         mHelper.setCreditCardUseStatsForTesting("guid_1", 100, 5000);
 
         // Visa card with complete set of information and unknown type.
         mHelper.addServerCreditCard(new CreditCard("guid_2", "https://example.com",
                 false /* isLocal */, true /* isCached */, "Jon Doe", "4111111111111111",
-                "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
-                CardType.UNKNOWN, mBillingAddressId, "server-id-2"));
+                "" /* obfuscatedNumber */, "12", "2050", "visa", R.drawable.visa_card,
+                mBillingAddressId, "server-id-2"));
         mHelper.setCreditCardUseStatsForTesting("guid_2", 1, 5000);
 
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -319,8 +214,8 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
     }
 
     /**
-     * Verify modifier for credit visa card is only applied for service worker payment app with
-     * credit visa card capabilities.
+     * Verify modifier for visa card is only applied for service worker payment app with
+     * visa card capabilities.
      */
     @Test
     @MediumTest
@@ -329,15 +224,13 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
             throws TimeoutException {
         String[] bobpayMethodNames = {"https://bobpay.com", "basic-card"};
         int[] bobpayNetworks = {BasicCardNetwork.VISA};
-        int[] bobPayTypes = {BasicCardType.CREDIT};
         ServiceWorkerPaymentApp.Capabilities[] bobpayCapabilities = {
-                new ServiceWorkerPaymentApp.Capabilities(bobpayNetworks, bobPayTypes)};
+                new ServiceWorkerPaymentApp.Capabilities(bobpayNetworks)};
 
         String[] alicepayMethodNames = {"https://alicepay.com", "basic-card"};
         int[] alicepayNetworks = {BasicCardNetwork.MASTERCARD};
-        int[] alicepayTypes = {BasicCardType.CREDIT};
         ServiceWorkerPaymentApp.Capabilities[] alicepayCapabilities = {
-                new ServiceWorkerPaymentApp.Capabilities(alicepayNetworks, alicepayTypes)};
+                new ServiceWorkerPaymentApp.Capabilities(alicepayNetworks)};
 
         PaymentAppFactory.getInstance().addAdditionalFactory((webContents, methodNames,
                                                                      mayCrawlUnused, callback) -> {

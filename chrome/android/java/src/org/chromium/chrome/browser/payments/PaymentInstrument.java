@@ -126,15 +126,6 @@ public abstract class PaymentInstrument extends EditableOption {
     }
 
     /**
-     * @return Whether the instrument is exactly matching all filters provided by the merchant. For
-     *         example, this can return false for unknown card types, if the merchant requested only
-     *         debit cards.
-     */
-    public boolean isExactlyMatchingMerchantRequest() {
-        return true;
-    }
-
-    /**
      * @return Whether the instrument supports the payment method with the method data. For example,
      *         supported card types and networks in the data should be verified for 'basic-card'
      *         payment method.

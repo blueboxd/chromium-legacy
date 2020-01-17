@@ -1049,7 +1049,6 @@ VISIT_PROTO_FIELDS(const sync_pb::WalletMaskedCreditCard& proto) {
   VISIT(exp_month);
   VISIT(exp_year);
   VISIT(billing_address_id);
-  VISIT_ENUM(card_class);
   VISIT(bank_name);
 }
 

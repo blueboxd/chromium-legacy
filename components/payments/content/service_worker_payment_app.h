@@ -81,18 +81,15 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   bool IsCompleteForPayment() const override;
   uint32_t GetCompletenessScore() const override;
   bool CanPreselect() const override;
-  bool IsExactlyMatchingMerchantRequest() const override;
   base::string16 GetMissingInfoLabel() const override;
   bool IsValidForCanMakePayment() const override;
   void RecordUse() override;
   base::string16 GetLabel() const override;
   base::string16 GetSublabel() const override;
-  bool IsValidForModifier(const std::string& method,
-                          bool supported_networks_specified,
-                          const std::set<std::string>& supported_networks,
-                          bool supported_types_specified,
-                          const std::set<autofill::CreditCard::CardType>&
-                              supported_types) const override;
+  bool IsValidForModifier(
+      const std::string& method,
+      bool supported_networks_specified,
+      const std::set<std::string>& supported_networks) const override;
   base::WeakPtr<PaymentApp> AsWeakPtr() override;
   gfx::ImageSkia icon_image_skia() const override;
   bool HandlesShippingAddress() const override;

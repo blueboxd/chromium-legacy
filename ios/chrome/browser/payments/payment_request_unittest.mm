@@ -256,7 +256,6 @@ TEST_F(PaymentRequestTest, GooglePayCardsInBasicCard_Allowed) {
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   test_personal_data_manager_.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetMaskedServerCard();
-  credit_card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
   credit_card.set_billing_address_id(address.guid());
   test_personal_data_manager_.AddServerCreditCard(credit_card);
 
@@ -285,7 +284,6 @@ TEST_F(PaymentRequestTest, GooglePayCardsInBasicCard_NotAllowed) {
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   test_personal_data_manager_.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetMaskedServerCard();
-  credit_card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
   credit_card.set_billing_address_id(address.guid());
   test_personal_data_manager_.AddServerCreditCard(credit_card);
 
@@ -1088,8 +1086,6 @@ TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_TypeMismatch) {
   PaymentDetailsModifier modifier;
   modifier.method_data.supported_method = "basic-card";
   modifier.method_data.supported_networks.push_back("amex");
-  modifier.method_data.supported_types.insert(
-      autofill::CreditCard::CARD_TYPE_CREDIT);
   modifier.total = std::make_unique<payments::PaymentItem>();
   modifier.total->label = "Discounted Total";
   modifier.total->amount->value = "0.99";
@@ -1125,7 +1121,6 @@ TEST_F(PaymentRequestTest,
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   test_personal_data_manager_.AddProfile(address);
   autofill::CreditCard credit_card = autofill::test::GetMaskedServerCardAmex();
-  credit_card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
   credit_card.set_billing_address_id(address.guid());
   test_personal_data_manager_.AddServerCreditCard(credit_card);
 
@@ -1134,8 +1129,6 @@ TEST_F(PaymentRequestTest,
   PaymentDetailsModifier modifier;
   modifier.method_data.supported_method = "basic-card";
   modifier.method_data.supported_networks.push_back("amex");
-  modifier.method_data.supported_types.insert(
-      autofill::CreditCard::CARD_TYPE_CREDIT);
   modifier.total = std::make_unique<payments::PaymentItem>();
   modifier.total->label = "Discounted Total";
   modifier.total->amount->value = "0.99";

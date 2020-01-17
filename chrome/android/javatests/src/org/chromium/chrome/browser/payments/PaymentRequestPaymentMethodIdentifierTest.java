@@ -21,7 +21,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
@@ -59,7 +58,7 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
                 "US", "555-555-5555", "", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, billingAddressId, "" /* serverId */));
+                billingAddressId, "" /* serverId */));
     }
 
     @Test
@@ -72,18 +71,6 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
 
         mPaymentRequestTestRule.clickNodeAndWait(
                 "buyBasicCard", mPaymentRequestTestRule.getReadyForInput());
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Payments"})
-    public void testIgnoreCardType() throws TimeoutException {
-        mPaymentRequestTestRule.openPageAndClickNodeAndWait(
-                "checkBasicDebit", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
-
-        mPaymentRequestTestRule.clickNodeAndWait(
-                "buyBasicDebit", mPaymentRequestTestRule.getReadyForInput());
     }
 
     @Test
@@ -109,23 +96,6 @@ public class PaymentRequestPaymentMethodIdentifierTest implements MainActivitySt
 
         mPaymentRequestTestRule.clickNodeAndWait(
                 "checkBasicMasterCard", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
-
-        mPaymentRequestTestRule.clickNodeAndWait(
-                "checkBasicVisa", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Payments"})
-    public void testSupportedTypesMustMatchForCanMakePayment() throws TimeoutException {
-        mPaymentRequestTestRule.openPageAndClickNodeAndWait(
-                "checkBasicVisa", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
-        mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
-
-        mPaymentRequestTestRule.clickNodeAndWait(
-                "checkBasicDebit", mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
         mPaymentRequestTestRule.expectResultContains(new String[] {"true"});
 
         mPaymentRequestTestRule.clickNodeAndWait(

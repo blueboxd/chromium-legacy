@@ -4,9 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.payments.mojom.BasicCardNetwork;
-import org.chromium.payments.mojom.BasicCardType;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.HashMap;
@@ -16,9 +14,6 @@ import java.util.Set;
 
 /** Basic-card utils */
 public class BasicCardUtils {
-    /** The total number of all possible card types (i.e., credit, debit, prepaid, unknown). */
-    public static final int TOTAL_NUMBER_OF_CARD_TYPES = 4;
-
     /**
      * @return A set of card networks (e.g., "visa", "amex") accepted by the "basic-card" payment
      *         method data.
@@ -39,40 +34,6 @@ public class BasicCardUtils {
             if (network != null) result.add(network);
         }
         return result;
-    }
-
-    /**
-     * @return A set of card types (e.g., CardType.DEBIT, CardType.PREPAID)
-     *         accepted by the "basic-card" payment method data.
-     */
-    public static Set<Integer> convertBasicCardToTypes(PaymentMethodData data) {
-        assert data != null;
-
-        Set<Integer> result = new HashSet<>();
-        result.add(CardType.UNKNOWN);
-
-        Map<Integer, Integer> cardTypes = getCardTypes();
-        if (!isBasicCardTypeSpecified(data)) {
-            // Not specified indicates support of all card types.
-            result.addAll(cardTypes.values());
-        } else {
-            // Supports some card types.
-            for (int i = 0; i < data.supportedTypes.length; i++) {
-                Integer cardType = cardTypes.get(data.supportedTypes[i]);
-                if (cardType != null) result.add(cardType);
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * @return True if supported card type is specified for the "basic-card" payment method data.
-     */
-    public static boolean isBasicCardTypeSpecified(PaymentMethodData data) {
-        assert data != null;
-
-        return data.supportedTypes != null && data.supportedTypes.length != 0;
     }
 
     /**
@@ -110,17 +71,6 @@ public class BasicCardUtils {
             networksByString.put(entry.getValue(), entry.getKey());
         }
         return networksByString;
-    }
-
-    /**
-     * @return a complete map of BasicCardType to CardType.
-     */
-    public static Map<Integer, Integer> getCardTypes() {
-        Map<Integer, Integer> cardTypes = new HashMap<>();
-        cardTypes.put(BasicCardType.CREDIT, CardType.CREDIT);
-        cardTypes.put(BasicCardType.DEBIT, CardType.DEBIT);
-        cardTypes.put(BasicCardType.PREPAID, CardType.PREPAID);
-        return cardTypes;
     }
 
     private BasicCardUtils() {}

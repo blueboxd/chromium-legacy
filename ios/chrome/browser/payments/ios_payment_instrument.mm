@@ -74,12 +74,6 @@ bool IOSPaymentInstrument::CanPreselect() const {
          icon_image_.size.width != 0;
 }
 
-bool IOSPaymentInstrument::IsExactlyMatchingMerchantRequest() const {
-  // TODO(crbug.com/602666): Determine if the native payment app supports
-  // 'basic-card' if the merchant only accepts payment through credit cards.
-  return true;
-}
-
 base::string16 IOSPaymentInstrument::GetMissingInfoLabel() const {
   // This will always be an empty string because a native app cannot
   // have incomplete information that can then be edited by the user.
@@ -108,9 +102,7 @@ base::string16 IOSPaymentInstrument::GetSublabel() const {
 bool IOSPaymentInstrument::IsValidForModifier(
     const std::string& method,
     bool supported_networks_specified,
-    const std::set<std::string>& supported_networks,
-    bool supported_types_specified,
-    const std::set<autofill::CreditCard::CardType>& supported_types) const {
+    const std::set<std::string>& supported_networks) const {
   return method_name_ == method;
 }
 

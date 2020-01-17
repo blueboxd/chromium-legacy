@@ -61,19 +61,6 @@ base::string16 GetChooseShippingOptionButtonLabel(
 base::string16 GetShippingOptionSectionString(
     PaymentShippingType shipping_type);
 
-// Returns the label "Accepted cards" that is customized based on the
-// accepted card |types|. For example, "Accepted debit cards". If |types| is
-// empty or contains all possible values, then returns the generic "Accepted
-// cards" string.
-base::string16 GetAcceptedCardTypesText(
-    const std::set<autofill::CreditCard::CardType>& types);
-
-// Returns the label "Cards are accepted" that is customized based on the
-// accepted card |types|. For example, "Debit cards are accepted". If |types| is
-// empty or contains all possible values, then returns an empty string.
-base::string16 GetCardTypesAreAcceptedText(
-    const std::set<autofill::CreditCard::CardType>& types);
-
 }  // namespace payments
 
 #endif  // COMPONENTS_PAYMENTS_CORE_STRINGS_UTIL_H_

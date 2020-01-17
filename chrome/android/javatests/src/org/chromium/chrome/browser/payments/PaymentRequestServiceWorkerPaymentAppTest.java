@@ -21,13 +21,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.payments.mojom.BasicCardNetwork;
-import org.chromium.payments.mojom.BasicCardType;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.util.concurrent.TimeoutException;
@@ -126,7 +124,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                 "US", "310-310-6000", "john.smith@gmail.com", "en-US"));
         helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
-                CardType.UNKNOWN, billingAddressId, "" /* serverId */));
+                billingAddressId, "" /* serverId */));
     }
 
     @Test
@@ -185,23 +183,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_visa_credit_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
-        // The modifier should not apply.
-        Assert.assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        mPaymentRequestTestRule.clickAndWait(
-                R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_visa_debit_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
-        // The modifier should not apply.
-        Assert.assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        mPaymentRequestTestRule.clickAndWait(
-                R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_credit_modifier", mPaymentRequestTestRule.getReadyForInput());
+                "buy_with_visa_modifier", mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
         // The modifier should not apply.
         Assert.assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
@@ -218,12 +200,11 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testHasVisaCreditCapabilities() throws TimeoutException {
+    public void testHasVisaCapabilities() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
         int[] networks = {BasicCardNetwork.VISA};
-        int[] types = {BasicCardType.CREDIT};
         ServiceWorkerPaymentApp.Capabilities[] capabilities = {
-                new ServiceWorkerPaymentApp.Capabilities(networks, types)};
+                new ServiceWorkerPaymentApp.Capabilities(networks)};
         installMockServiceWorkerPaymentApp(supportedMethodNames, capabilities, true, true);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
@@ -236,23 +217,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_visa_credit_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
-        // The modifier should apply.
-        Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        mPaymentRequestTestRule.clickAndWait(
-                R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_visa_debit_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
-        // The modifier should not apply.
-        Assert.assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        mPaymentRequestTestRule.clickAndWait(
-                R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_credit_modifier", mPaymentRequestTestRule.getReadyForInput());
+                "buy_with_visa_modifier", mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
         // The modifier should apply.
         Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
@@ -269,12 +234,11 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testHasMastercardCreditCapabilities() throws TimeoutException {
+    public void testHasMastercardCapabilities() throws TimeoutException {
         String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
         int[] networks = {BasicCardNetwork.MASTERCARD};
-        int[] types = {BasicCardType.CREDIT};
         ServiceWorkerPaymentApp.Capabilities[] capabilities = {
-                new ServiceWorkerPaymentApp.Capabilities(networks, types)};
+                new ServiceWorkerPaymentApp.Capabilities(networks)};
         installMockServiceWorkerPaymentApp(supportedMethodNames, capabilities, true, true);
 
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
@@ -288,26 +252,10 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_visa_credit_modifier", mPaymentRequestTestRule.getReadyForInput());
+                "buy_with_visa_modifier", mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
         // The modifier should not apply.
         Assert.assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        mPaymentRequestTestRule.clickAndWait(
-                R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_visa_debit_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
-        // The modifier should not apply.
-        Assert.assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        mPaymentRequestTestRule.clickAndWait(
-                R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_credit_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
-        // The modifier should apply.
-        Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
@@ -316,58 +264,6 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
         Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
         // The modifier should not apply.
         Assert.assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"Payments"})
-    public void testHasVisaCreditAndDebitCapabilities() throws TimeoutException {
-        String[] supportedMethodNames = {"https://bobpay.com", "basic-card"};
-        int[] networks = {BasicCardNetwork.VISA};
-        int[] types = {BasicCardType.CREDIT, BasicCardType.DEBIT};
-        ServiceWorkerPaymentApp.Capabilities[] capabilities = {
-                new ServiceWorkerPaymentApp.Capabilities(networks, types)};
-        installMockServiceWorkerPaymentApp(supportedMethodNames, capabilities, true, true);
-
-        ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
-
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_all_cards_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
-        // The modifier should apply.
-        Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        mPaymentRequestTestRule.clickAndWait(
-                R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_visa_credit_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
-        // The modifier should apply.
-        Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        mPaymentRequestTestRule.clickAndWait(
-                R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_visa_debit_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
-        // The modifier should apply.
-        Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        mPaymentRequestTestRule.clickAndWait(
-                R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_credit_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
-        // The modifier should apply.
-        Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
-
-        mPaymentRequestTestRule.clickAndWait(
-                R.id.close_button, mPaymentRequestTestRule.getDismissed());
-        mPaymentRequestTestRule.triggerUIAndWait(
-                "buy_with_visa_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
-        // The modifier should apply.
-        Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
     }
 
     @Test

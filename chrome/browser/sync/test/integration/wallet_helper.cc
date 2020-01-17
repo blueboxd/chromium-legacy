@@ -410,7 +410,6 @@ autofill::CreditCard GetCreditCard(const std::string& name,
                   base::UTF8ToUTF16(kDefaultCardName));
   card.SetServerStatus(CreditCard::OK);
   card.SetNetworkForMaskedCard(autofill::kAmericanExpressCard);
-  card.set_card_type(CreditCard::CARD_TYPE_CREDIT);
   card.set_billing_address_id(kDefaultBillingAddressID);
   return card;
 }

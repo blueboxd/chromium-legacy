@@ -32,7 +32,6 @@ class AutofillPaymentApp
   AutofillPaymentApp(
       const std::string& method_name,
       const autofill::CreditCard& card,
-      bool matches_merchant_card_type_exactly,
       const std::vector<autofill::AutofillProfile*>& billing_profiles,
       const std::string& app_locale,
       PaymentRequestBaseDelegate* payment_request_delegate);
@@ -43,18 +42,15 @@ class AutofillPaymentApp
   bool IsCompleteForPayment() const override;
   uint32_t GetCompletenessScore() const override;
   bool CanPreselect() const override;
-  bool IsExactlyMatchingMerchantRequest() const override;
   base::string16 GetMissingInfoLabel() const override;
   bool IsValidForCanMakePayment() const override;
   void RecordUse() override;
   base::string16 GetLabel() const override;
   base::string16 GetSublabel() const override;
-  bool IsValidForModifier(const std::string& method,
-                          bool supported_networks_specified,
-                          const std::set<std::string>& supported_networks,
-                          bool supported_types_specified,
-                          const std::set<autofill::CreditCard::CardType>&
-                              supported_types) const override;
+  bool IsValidForModifier(
+      const std::string& method,
+      bool supported_networks_specified,
+      const std::set<std::string>& supported_networks) const override;
   base::WeakPtr<PaymentApp> AsWeakPtr() override;
   bool HandlesShippingAddress() const override;
   bool HandlesPayerName() const override;
@@ -92,12 +88,6 @@ class AutofillPaymentApp
 
   // A copy of the card is owned by this object.
   autofill::CreditCard credit_card_;
-
-  // Whether the card type (credit, debit, prepaid) matches the merchant's
-  // requested card type exactly. If the merchant accepts all card types, then
-  // this variable is always "true". If the merchant accepts only a subset of
-  // the card types, then this variable is "false" for unknown card types.
-  const bool matches_merchant_card_type_exactly_;
 
   // Not owned by this object, should outlive this.
   const std::vector<autofill::AutofillProfile*>& billing_profiles_;

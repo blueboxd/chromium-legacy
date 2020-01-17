@@ -171,8 +171,6 @@ struct PaymentsCustomerData;
 //   name_on_card
 //   network            Issuer network of the card. For example, "VISA". Renamed
 //                      from "type" in version 72.
-//   type               Card type. One of CreditCard::CardType enum values.
-//                      Added in version 74.
 //   last_four          Last four digits of the card number. For de-duping
 //                      with locally stored cards and generating descriptions.
 //   exp_month          Expiration month: 1-12
@@ -552,6 +550,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion78AddModelTypeColumns();
   bool MigrateToVersion80AddIsClientValidityStatesUpdatedColumn();
   bool MigrateToVersion81CleanUpWrongModelTypeData();
+  bool MigrateToVersion83RemoveServerCardTypeColumn();
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
   // Copied to components/autofill/ios/browser/resources/autofill_controller.js.

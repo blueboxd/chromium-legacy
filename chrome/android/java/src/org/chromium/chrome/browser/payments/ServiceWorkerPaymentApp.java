@@ -68,20 +68,14 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         // Stores mojom::BasicCardNetwork.
         private int[] mSupportedCardNetworks;
 
-        // Stores mojom::BasicCardType.
-        private int[] mSupportedCardTypes;
-
         /**
          * Build capabilities for a payment instrument.
          *
          * @param supportedCardNetworks The supported card networks of a 'basic-card' payment
          *                              instrument.
-         * @param supportedCardTypes    The supported card types of a 'basic-card' payment
-         *                              instrument.
          */
-        /* package */ Capabilities(int[] supportedCardNetworks, int[] supportedCardTypes) {
+        /* package */ Capabilities(int[] supportedCardNetworks) {
             mSupportedCardNetworks = supportedCardNetworks;
-            mSupportedCardTypes = supportedCardTypes;
         }
 
         /**
@@ -91,15 +85,6 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
          */
         /* package */ int[] getSupportedCardNetworks() {
             return mSupportedCardNetworks;
-        }
-
-        /**
-         * Gets supported card types.
-         *
-         * @return a set of mojom::BasicCardType.
-         */
-        /* package */ int[] getSupportedCardTypes() {
-            return mSupportedCardTypes;
         }
     }
 
@@ -267,48 +252,29 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         return requestMethods.size() == 1 && requestMethods.contains(MethodStrings.BASIC_CARD);
     }
 
-    // Matches |requestMethodData|.supportedTypes and |requestMethodData|.supportedNetwokrs for
-    // 'basic-card' payment method with the Capabilities in this payment app to determine whether
-    // this payment app supports |requestMethodData|.
+    // Matches ||requestMethodData|.supportedNetwokrs for 'basic-card' payment method with the
+    // Capabilities in this payment app to determine whether this payment app supports
+    // |requestMethodData|.
     private boolean matchBasiccardCapabilities(PaymentMethodData requestMethodData) {
         assert requestMethodData != null;
-        // Empty supported card types and networks in payment request method data indicates it
-        // supports all card types and networks.
-        if (requestMethodData.supportedTypes.length == 0
-                && requestMethodData.supportedNetworks.length == 0) {
-            return true;
-        }
+        // Empty supported card networks in payment request method data indicates it supports all
+        // card types and networks.
+        if (requestMethodData.supportedNetworks.length == 0) return true;
+
         // Payment app with emtpy capabilities can only match payment request method data with empty
         // supported card types and networks.
         if (mCapabilities.length == 0) return false;
 
-        Set<Integer> requestSupportedTypes = new HashSet<>();
-        for (int i = 0; i < requestMethodData.supportedTypes.length; i++) {
-            requestSupportedTypes.add(requestMethodData.supportedTypes[i]);
-        }
         Set<Integer> requestSupportedNetworks = new HashSet<>();
         for (int i = 0; i < requestMethodData.supportedNetworks.length; i++) {
             requestSupportedNetworks.add(requestMethodData.supportedNetworks[i]);
         }
 
-        // If requestSupportedTypes and requestSupportedNetworks are not empty, match them with the
-        // capabilities. Break out of the for loop if a matched capability has been found. So 'j
-        // < mCapabilities.length' indicates that there is a matched capability in this payment
-        // app.
+        // If requestSupportedNetworks are not empty, match them with the capabilities. Break out of
+        // the for loop if a matched capability has been found. So 'j < mCapabilities.length'
+        // indicates that there is a matched capability in this payment app.
         int j = 0;
         for (; j < mCapabilities.length; j++) {
-            if (!requestSupportedTypes.isEmpty()) {
-                int[] supportedTypes = mCapabilities[j].getSupportedCardTypes();
-
-                Set<Integer> capabilitiesSupportedCardTypes = new HashSet<>();
-                for (int i = 0; i < supportedTypes.length; i++) {
-                    capabilitiesSupportedCardTypes.add(supportedTypes[i]);
-                }
-
-                capabilitiesSupportedCardTypes.retainAll(requestSupportedTypes);
-                if (capabilitiesSupportedCardTypes.isEmpty()) continue;
-            }
-
             if (!requestSupportedNetworks.isEmpty()) {
                 int[] supportedNetworks = mCapabilities[j].getSupportedCardNetworks();
 

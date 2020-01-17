@@ -21,15 +21,6 @@ public interface PaymentAppFactoryDelegate {
     default void onCanMakePaymentCalculated(boolean canMakePayment) {}
 
     /**
-     * Called when a payment app factory has a resource identifier for text to be displayed to the
-     * user. Only autofill has this.
-     *
-     * @param additionalTextResourceId The resource identifier for text to be displayed to the user.
-     * Never 0, which is invalid.
-     */
-    default void onAdditionalTextResourceId(int additionalTextResourceId) {}
-
-    /**
      * Called when the autofill payment app creator is available.
      *
      * @param creator The object that can create payment apps from Autofill cards.

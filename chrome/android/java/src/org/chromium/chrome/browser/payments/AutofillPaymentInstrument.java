@@ -14,7 +14,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
@@ -62,7 +61,6 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     }
 
     private final WebContents mWebContents;
-    private final boolean mIsMatchingMerchantsRequestedCardType;
     private CreditCard mCard;
     private String mSecurityCode;
     @Nullable private AutofillProfile mBillingAddress;
@@ -80,21 +78,15 @@ public class AutofillPaymentInstrument extends PaymentInstrument
      * @param billingAddress                 The billing address for the card.
      * @param methodName                     The payment method name, e.g., "basic-card", "visa",
      *                                       amex", or null.
-     * @param matchesMerchantCardTypeExactly Whether the card type (credit, debit, prepaid) matches
-     *                                       the type that the merchant has requested exactly. This
-     *                                       should be false for unknown card types, if the merchant
-     *                                       cannot accept some card types.
      */
     public AutofillPaymentInstrument(WebContents webContents, CreditCard card,
-            @Nullable AutofillProfile billingAddress, @Nullable String methodName,
-            boolean matchesMerchantCardTypeExactly) {
+            @Nullable AutofillProfile billingAddress, @Nullable String methodName) {
         super(card.getGUID(), card.getObfuscatedNumber(), card.getName(), null);
         mWebContents = webContents;
         mCard = card;
         mBillingAddress = billingAddress;
         mIsEditable = true;
         mMethodName = methodName;
-        mIsMatchingMerchantsRequestedCardType = matchesMerchantCardTypeExactly;
 
         Context context = ChromeActivity.fromWebContents(mWebContents);
         if (context == null) return;
@@ -125,28 +117,14 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     }
 
     @Override
-    public boolean isExactlyMatchingMerchantRequest() {
-        return mIsMatchingMerchantsRequestedCardType;
-    }
-
-    @Override
     public boolean isValidForPaymentMethodData(String method, PaymentMethodData data) {
         boolean isSupportedMethod = super.isValidForPaymentMethodData(method, data);
         if (!isSupportedMethod) return false;
 
-        int cardType = getCard().getCardType();
-        String cardIssuerNetwork = getCard().getBasicCardIssuerNetwork();
-        if (BasicCardUtils.isBasicCardTypeSpecified(data)) {
-            Set<Integer> targetCardTypes = BasicCardUtils.convertBasicCardToTypes(data);
-            targetCardTypes.remove(CardType.UNKNOWN);
-            assert targetCardTypes.size() > 0;
-            if (!targetCardTypes.contains(cardType)) return false;
-        }
-
         if (BasicCardUtils.isBasicCardNetworkSpecified(data)) {
             Set<String> targetCardNetworks = BasicCardUtils.convertBasicCardToNetworks(data);
             assert targetCardNetworks.size() > 0;
-            if (!targetCardNetworks.contains(cardIssuerNetwork)) return false;
+            if (!targetCardNetworks.contains(getCard().getBasicCardIssuerNetwork())) return false;
         }
         return true;
     }
@@ -171,7 +149,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
 
     @Override
     public boolean canPreselect() {
-        return mIsComplete && mIsMatchingMerchantsRequestedCardType;
+        return mIsComplete;
     }
 
     @Override
@@ -472,10 +450,6 @@ public class AutofillPaymentInstrument extends PaymentInstrument
                     == null) {
                 missingFields |= CompletionStatus.CREDIT_CARD_NO_NUMBER;
             }
-        }
-
-        if (!mIsMatchingMerchantsRequestedCardType) {
-            missingFields |= CompletionStatus.CREDIT_CARD_TYPE_MISMATCH;
         }
 
         return missingFields;

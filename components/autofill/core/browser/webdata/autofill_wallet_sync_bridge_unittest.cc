@@ -102,7 +102,6 @@ std::string WalletMaskedCreditCardSpecificsAsDebugString(
          << ", exp_year: " << specifics.masked_card().exp_year()
          << ", billing_address_id: "
          << specifics.masked_card().billing_address_id()
-         << ", card_class: " << specifics.masked_card().card_class()
          << ", bank_name: " << specifics.masked_card().bank_name() << "]";
   return output.str();
 }
@@ -853,7 +852,6 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   EXPECT_EQ(card.expiration_month(), cards[0]->expiration_month());
   EXPECT_EQ(card.expiration_year(), cards[0]->expiration_year());
   EXPECT_EQ(card.billing_address_id(), cards[0]->billing_address_id());
-  EXPECT_EQ(card.card_type(), cards[0]->card_type());
 
   // Also make sure that those types are not empty, to exercice all the code
   // paths.
@@ -861,7 +859,6 @@ TEST_F(AutofillWalletSyncBridgeTest, MergeSyncData_SetsAllWalletCardData) {
   EXPECT_FALSE(card.LastFourDigits().empty());
   EXPECT_NE(0, card.expiration_month());
   EXPECT_NE(0, card.expiration_year());
-  EXPECT_NE(CreditCard::CARD_TYPE_UNKNOWN, card.card_type());
 }
 
 // Test that all field values for a cloud token data sent from the server are

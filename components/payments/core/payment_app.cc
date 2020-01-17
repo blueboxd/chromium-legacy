@@ -59,13 +59,6 @@ bool PaymentApp::operator<(const PaymentApp& other) const {
   if (completeness != 0)
     return completeness > 0;
 
-  // Among equally complete cards, those with matching type come before unknown
-  // type cards.
-  if (IsExactlyMatchingMerchantRequest() !=
-      other.IsExactlyMatchingMerchantRequest()) {
-    return IsExactlyMatchingMerchantRequest();
-  }
-
   // Sort autofill cards using their frecency scores as tie breaker.
   if (type_ == Type::AUTOFILL) {
     DCHECK_EQ(other.type(), Type::AUTOFILL);

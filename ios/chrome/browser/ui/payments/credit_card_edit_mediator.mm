@@ -173,9 +173,8 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
 
   AcceptedPaymentMethodsItem* acceptedMethodsItem =
       [[AcceptedPaymentMethodsItem alloc] init];
-  acceptedMethodsItem.message =
-      base::SysUTF16ToNSString(payments::GetAcceptedCardTypesText(
-          _paymentRequest->supported_card_types_set()));
+  acceptedMethodsItem.message = base::SysUTF16ToNSString(
+      l10n_util::GetStringUTF16(IDS_PAYMENTS_ACCEPTED_CARDS_LABEL));
   acceptedMethodsItem.methodTypeIcons = issuerNetworkIcons;
   return acceptedMethodsItem;
 }

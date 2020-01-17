@@ -33,10 +33,11 @@ struct IntExpirationDate {
 
 struct SecurityCodeCardTypePair {
   const char* security_code;
-  const char* card_type;
+  const char* card_network;
 };
 
-// From https://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
+// From
+// https://www.paypalobjects.com/en_US/vhelp/paypalmanager_help/credit_card_numbers.htm
 const char* const kValidNumbers[] = {
     "378282246310005",     "3714 4963 5398 431",  "3787-3449-3671-000",
     "5610591081018250",    "3056 9309 0259 04",   "3852-0000-0232-37",
@@ -51,22 +52,22 @@ const char* const kValidNumbers[] = {
     "6362970000457013",     // Elo
 };
 const char* const kInvalidNumbers[] = {
-  "4111 1111 112", /* too short */
-  "41111111111111111115", /* too long */
-  "4111-1111-1111-1110", /* wrong Luhn checksum */
-  "3056 9309 0259 04aa", /* non-digit characters */
+    "4111 1111 112",        /* too short */
+    "41111111111111111115", /* too long */
+    "4111-1111-1111-1110",  /* wrong Luhn checksum */
+    "3056 9309 0259 04aa",  /* non-digit characters */
 };
-const char kCurrentDate[]="1 May 2013";
+const char kCurrentDate[] = "1 May 2013";
 const IntExpirationDate kValidCreditCardIntExpirationDate[] = {
-  { 2013, 5 },  // Valid month in current year.
-  { 2014, 1 },  // Any month in next year.
-  { 2014, 12 },  // Edge condition.
+    {2013, 5},   // Valid month in current year.
+    {2014, 1},   // Any month in next year.
+    {2014, 12},  // Edge condition.
 };
 const IntExpirationDate kInvalidCreditCardIntExpirationDate[] = {
-  { 2013, 4 },  // Previous month in current year.
-  { 2012, 12 },  // Any month in previous year.
-  { 2015, 13 },  // Not a real month.
-  { 2015, 0 },  // Zero is legal in the CC class but is not a valid date.
+    {2013, 4},   // Previous month in current year.
+    {2012, 12},  // Any month in previous year.
+    {2015, 13},  // Not a real month.
+    {2015, 0},   // Zero is legal in the CC class but is not a valid date.
 };
 const SecurityCodeCardTypePair kValidSecurityCodeCardTypePairs[] = {
     {"323", kGenericCard},           // 3-digit CSC.
@@ -80,17 +81,13 @@ const SecurityCodeCardTypePair kInvalidSecurityCodeCardTypePairs[] = {
     {"asd", kGenericCard},            // non-numeric CSC.
 };
 const char* const kValidEmailAddress[] = {
-  "user@example",
-  "user@example.com",
-  "user@subdomain.example.com",
-  "user+postfix@example.com",
+    "user@example",
+    "user@example.com",
+    "user@subdomain.example.com",
+    "user+postfix@example.com",
 };
-const char* const kInvalidEmailAddress[] = {
-  "user",
-  "foo.com",
-  "user@",
-  "user@=example.com"
-};
+const char* const kInvalidEmailAddress[] = {"user", "foo.com", "user@",
+                                            "user@=example.com"};
 const char* const kUnplausibleCreditCardExpirationYears[] = {
     "2009", "2134", "1111", "abcd", "2101"};
 const char* const kPlausibleCreditCardExpirationYears[] = {"2018", "2099",
@@ -161,15 +158,15 @@ TEST(AutofillValidation, IsValidCreditCardIntExpirationDate) {
 TEST(AutofillValidation, IsValidCreditCardSecurityCode) {
   for (const auto data : kValidSecurityCodeCardTypePairs) {
     SCOPED_TRACE(data.security_code);
-    SCOPED_TRACE(data.card_type);
+    SCOPED_TRACE(data.card_network);
     EXPECT_TRUE(IsValidCreditCardSecurityCode(ASCIIToUTF16(data.security_code),
-                                              data.card_type));
+                                              data.card_network));
   }
   for (const auto data : kInvalidSecurityCodeCardTypePairs) {
     SCOPED_TRACE(data.security_code);
-    SCOPED_TRACE(data.card_type);
+    SCOPED_TRACE(data.card_network);
     EXPECT_FALSE(IsValidCreditCardSecurityCode(ASCIIToUTF16(data.security_code),
-                                               data.card_type));
+                                               data.card_network));
   }
 }
 
@@ -446,20 +443,20 @@ INSTANTIATE_TEST_SUITE_P(
                      IDS_PAYMENTS_VALIDATION_UNSUPPORTED_CREDIT_CARD_TYPE)));
 
 struct GetCvcLengthForCardTypeCase {
-  GetCvcLengthForCardTypeCase(const char* card_type, size_t expected_length)
-      : card_type(card_type), expected_length(expected_length) {}
+  GetCvcLengthForCardTypeCase(const char* card_network, size_t expected_length)
+      : card_network(card_network), expected_length(expected_length) {}
   ~GetCvcLengthForCardTypeCase() {}
 
-  const char* const card_type;
+  const char* const card_network;
   const size_t expected_length;
 };
 
 class AutofillGetCvcLengthForCardType
     : public testing::TestWithParam<GetCvcLengthForCardTypeCase> {};
 
-TEST_P(AutofillGetCvcLengthForCardType, GetCvcLengthForCardType) {
+TEST_P(AutofillGetCvcLengthForCardType, GetCvcLengthForCardNetwork) {
   EXPECT_EQ(GetParam().expected_length,
-            GetCvcLengthForCardType(GetParam().card_type));
+            GetCvcLengthForCardNetwork(GetParam().card_network));
 }
 
 INSTANTIATE_TEST_SUITE_P(

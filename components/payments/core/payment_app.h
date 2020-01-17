@@ -57,10 +57,6 @@ class PaymentApp {
   // the apps can be preselected, the user must explicitly select an app from a
   // list.
   virtual bool CanPreselect() const = 0;
-  // Returns whether the app is exactly matching all filters provided by the
-  // merchant. For example, this can return "false" for unknown autofill card
-  // types, if the merchant requested only debit cards from "basic-card".
-  virtual bool IsExactlyMatchingMerchantRequest() const = 0;
   // Returns a message to indicate to the user what's missing for the app to be
   // complete for payment.
   virtual base::string16 GetMissingInfoLabel() const = 0;
@@ -77,16 +73,13 @@ class PaymentApp {
 
   // Returns true if this payment app can be used to fulfill a request
   // specifying |method| as supported method of payment. The parsed basic-card
-  // specific data (supported_networks, supported_types, etc) is relevant only
-  // for the AutofillPaymentApp, which runs inside of the browser process and
-  // thus should not be parsing untrusted JSON strings from the renderer.
+  // specific data (supported_networks) is relevant only for the
+  // AutofillPaymentApp, which runs inside of the browser process and thus
+  // should not be parsing untrusted JSON strings from the renderer.
   virtual bool IsValidForModifier(
       const std::string& method,
       bool supported_networks_specified,
-      const std::set<std::string>& supported_networks,
-      bool supported_types_specified,
-      const std::set<autofill::CreditCard::CardType>& supported_types)
-      const = 0;
+      const std::set<std::string>& supported_networks) const = 0;
 
   // Sets |is_valid| to true if this payment app can handle payments for the
   // given |payment_method_identifier|. The |is_valid| is an out-param instead

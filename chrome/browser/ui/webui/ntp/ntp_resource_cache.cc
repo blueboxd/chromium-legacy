@@ -306,9 +306,9 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       CookieControlsHandler::ShouldHideCookieControlsUI(profile_) ? "hidden"
                                                                   : "";
   replacements["cookieControlsTitle"] =
-      l10n_util::GetStringUTF8(IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE);
-  replacements["cookieControlsDescription"] = l10n_util::GetStringUTF8(
-      IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_SUBLABEL);
+      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE);
+  replacements["cookieControlsDescription"] =
+      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE_SUBLABEL);
   // Ensure passing off-the-record profile; |profile_| might not be incognito.
   DCHECK(profile_->HasOffTheRecordProfile());
   replacements["cookieControlsToggleChecked"] =
@@ -323,7 +323,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       CookieControlsHandler::GetEnforcementIcon(profile_);
   replacements["cookieControlsTooltipText"] = l10n_util::GetStringFUTF8(
       IDS_NEW_TAB_OTR_COOKIE_CONTROLS_CONTROLLED_TOOLTIP_TEXT,
-      l10n_util::GetStringUTF16(IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE),
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE),
       l10n_util::GetStringUTF16(IDS_SETTINGS_SITE_SETTINGS_COOKIES));
 
   const ui::ThemeProvider& tp =

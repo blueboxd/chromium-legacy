@@ -1350,7 +1350,6 @@ TEST_F(ContentSecurityPolicyTest, IsValidCSPAttrTest) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesNoDirective) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("", ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kHTTP);
@@ -1359,7 +1358,6 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesNoDirective) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesSimpleDirective) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one two three",
                         ContentSecurityPolicyType::kEnforce,
@@ -1367,7 +1365,6 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesSimpleDirective) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesWhitespace) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one\ntwo\rthree",
                         ContentSecurityPolicyType::kEnforce,
@@ -1381,7 +1378,6 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesWhitespace) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesEmpty) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types", ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kHTTP);
@@ -1390,7 +1386,6 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesEmpty) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesStar) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types *", ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kHTTP);
@@ -1399,7 +1394,6 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesStar) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypeDupeStar) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types * 'allow-duplicates'",
                         ContentSecurityPolicyType::kEnforce,
@@ -1409,7 +1403,6 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypeDupeStar) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesReserved) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one \"two\" 'three'",
                         ContentSecurityPolicyType::kEnforce,
@@ -1429,7 +1422,6 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesReserved) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypesReportingStar) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types *", ContentSecurityPolicyType::kReport,
                         ContentSecurityPolicySource::kHTTP);
@@ -1438,7 +1430,6 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypesReportingStar) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypeReportingSimple) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types a b c",
                         ContentSecurityPolicyType::kReport,
@@ -1448,50 +1439,68 @@ TEST_F(ContentSecurityPolicyTest, TrustedTypeReportingSimple) {
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypeEnforce) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one\ntwo\rthree",
                         ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kHTTP);
-  EXPECT_TRUE(csp->IsRequireTrustedTypes());
-  EXPECT_FALSE(csp->AllowTrustedTypeAssignmentFailure("blabla"));
+  EXPECT_FALSE(csp->IsRequireTrustedTypes());
+  EXPECT_TRUE(csp->AllowTrustedTypeAssignmentFailure("blabla"));
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypeReport) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one\ntwo\rthree",
                         ContentSecurityPolicyType::kReport,
                         ContentSecurityPolicySource::kHTTP);
-  EXPECT_TRUE(csp->IsRequireTrustedTypes());
+  EXPECT_FALSE(csp->IsRequireTrustedTypes());
   EXPECT_TRUE(csp->AllowTrustedTypeAssignmentFailure("blabla"));
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypeReportAndEnforce) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one", ContentSecurityPolicyType::kReport,
                         ContentSecurityPolicySource::kHTTP);
   csp->DidReceiveHeader("trusted-types two",
                         ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kHTTP);
-  EXPECT_TRUE(csp->IsRequireTrustedTypes());
-  EXPECT_FALSE(csp->AllowTrustedTypeAssignmentFailure("blabla"));
+  EXPECT_FALSE(csp->IsRequireTrustedTypes());
+  EXPECT_TRUE(csp->AllowTrustedTypeAssignmentFailure("blabla"));
 }
 
 TEST_F(ContentSecurityPolicyTest, TrustedTypeReportAndNonTTEnforce) {
-  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types one", ContentSecurityPolicyType::kReport,
                         ContentSecurityPolicySource::kHTTP);
   csp->DidReceiveHeader("script-src none", ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kHTTP);
-  EXPECT_TRUE(csp->IsRequireTrustedTypes());
+  EXPECT_FALSE(csp->IsRequireTrustedTypes());
   EXPECT_TRUE(csp->AllowTrustedTypeAssignmentFailure("blabla"));
 }
 
-TEST_F(ContentSecurityPolicyTest, DefaultPolicy) {
+TEST_F(ContentSecurityPolicyTest, RequireTrustedTypeForEnforce) {
   execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  csp->DidReceiveHeader("require-trusted-types-for ''",
+                        ContentSecurityPolicyType::kEnforce,
+                        ContentSecurityPolicySource::kHTTP);
+  EXPECT_FALSE(csp->IsRequireTrustedTypes());
+
+  csp->DidReceiveHeader("require-trusted-types-for 'script'",
+                        ContentSecurityPolicyType::kEnforce,
+                        ContentSecurityPolicySource::kHTTP);
+  EXPECT_TRUE(csp->IsRequireTrustedTypes());
+}
+
+TEST_F(ContentSecurityPolicyTest, RequireTrustedTypeForReport) {
+  execution_context->GetSecurityContext().SetRequireTrustedTypesForTesting();
+  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
+  csp->DidReceiveHeader("require-trusted-types-for 'script'",
+                        ContentSecurityPolicyType::kReport,
+                        ContentSecurityPolicySource::kHTTP);
+  EXPECT_TRUE(csp->IsRequireTrustedTypes());
+}
+
+TEST_F(ContentSecurityPolicyTest, DefaultPolicy) {
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
   csp->DidReceiveHeader("trusted-types *", ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kHTTP);

@@ -760,11 +760,6 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kChromeOsReleaseChannel, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                     std::make_unique<base::Value>(channel), nullptr);
-      // TODO(dubroy): Once http://crosbug.com/17015 is implemented, we won't
-      // have to pass the channel in here, only ping the update engine to tell
-      // it to fetch the channel from the policy.
-      chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->SetChannel(
-          channel, false);
     }
     if (container.has_release_channel_delegated()) {
       policies->Set(

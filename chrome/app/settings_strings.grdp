@@ -3889,12 +3889,6 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_SEARCH" desc="A placeholder label shown inside the Cookie Data filter textbox as a hint that the user can enter a substring to search for.">
     Search cookies
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE" desc="Label for the Block 3rd-party cookie checkbox on the Cookies category.">
-    Block third-party cookies
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_SUBLABEL" desc="A sub-label below the Block 3rd-party cookie checkbox.">
-    When on, sites can’t use your browsing activity across different sites to personalize ads. Some sites may not work properly.
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ADOBE_FLASH_SETTINGS" desc="The text for the link that points the user to the Adobe Flash Player Storage settings on the web">
     Adobe Flash Player Storage settings
   </message>
@@ -4399,21 +4393,6 @@
   </message>
   <message name="IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL" desc="Label for the checkbox which causes all properties to be synced.">
     Sync everything
-  </message>
-   <message name="IDS_SETTINGS_SYNC_EVERYTHING" desc="Label for the radio button which causes all properties to be synced.">
-    Sync everything
-  </message>
-  <message name="IDS_SETTINGS_SYNC_EVERYTHING_HINT" desc="Hint for the radio button which causes all properties to be synced.">
-    Sync all data types including ones that might be added in the future
-  </message>
-   <message name="IDS_SETTINGS_CUSTOMIZE_SYNC" desc="Label for the radio button to customize sync data types.">
-    Customize sync
-  </message>
-  <message name="IDS_SETTINGS_CUSTOMIZE_SYNC_HINT" desc="Hint or the radio button to customize sync data types.">
-    Sync only selected data types
-  </message>
-  <message name="IDS_SETTINGS_SYNC_DATA" desc="Title for sync data types list.">
-    Sync data
   </message>
   <message name="IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT" desc="Label for the button that takes the user to the Google Account website.">
     Manage your Google Account

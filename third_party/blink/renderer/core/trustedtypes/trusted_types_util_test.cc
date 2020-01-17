@@ -34,6 +34,15 @@ void GetStringFromTrustedTypeThrows(
   ASSERT_FALSE(exception_state.HadException());
   String s = GetStringFromTrustedType(string_or_trusted_type, document,
                                       exception_state);
+  EXPECT_FALSE(exception_state.HadException());
+
+  document->GetContentSecurityPolicy()->DidReceiveHeader(
+      "require-trusted-types-for 'script'",
+      network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kMeta);
+  ASSERT_FALSE(exception_state.HadException());
+  String s1 = GetStringFromTrustedType(string_or_trusted_type, document,
+                                       exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
   exception_state.ClearException();
@@ -51,6 +60,15 @@ void GetStringFromTrustedHTMLThrows(
   ASSERT_FALSE(exception_state.HadException());
   String s = GetStringFromTrustedHTML(string_or_trusted_html, &document,
                                       exception_state);
+  EXPECT_FALSE(exception_state.HadException());
+
+  document.GetContentSecurityPolicy()->DidReceiveHeader(
+      "require-trusted-types-for 'script'",
+      network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kMeta);
+  ASSERT_FALSE(exception_state.HadException());
+  String s1 = GetStringFromTrustedHTML(string_or_trusted_html, &document,
+                                       exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
   exception_state.ClearException();
@@ -68,6 +86,15 @@ void GetStringFromTrustedScriptThrows(
   ASSERT_FALSE(exception_state.HadException());
   String s = GetStringFromTrustedScript(string_or_trusted_script, &document,
                                         exception_state);
+  EXPECT_FALSE(exception_state.HadException());
+
+  document.GetContentSecurityPolicy()->DidReceiveHeader(
+      "require-trusted-types-for 'script'",
+      network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kMeta);
+  ASSERT_FALSE(exception_state.HadException());
+  String s1 = GetStringFromTrustedScript(string_or_trusted_script, &document,
+                                         exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
   exception_state.ClearException();
@@ -85,6 +112,15 @@ void GetStringFromTrustedScriptURLThrows(
   ASSERT_FALSE(exception_state.HadException());
   String s = GetStringFromTrustedScriptURL(string_or_trusted_script_url,
                                            &document, exception_state);
+  EXPECT_FALSE(exception_state.HadException());
+
+  document.GetContentSecurityPolicy()->DidReceiveHeader(
+      "require-trusted-types-for 'script'",
+      network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kMeta);
+  ASSERT_FALSE(exception_state.HadException());
+  String s1 = GetStringFromTrustedScriptURL(string_or_trusted_script_url,
+                                            &document, exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
   exception_state.ClearException();

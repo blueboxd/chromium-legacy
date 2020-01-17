@@ -19,6 +19,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature_channel.h"
@@ -334,6 +335,18 @@ TEST_F(LoginScreenExtensionUiHandlerUnittest, WindowClosedOnUninstall) {
   extension_registry_->RemoveEnabled(extension_->id());
   extension_registry_->TriggerOnUninstalled(
       extension_.get(), extensions::UNINSTALL_REASON_FOR_TESTING);
+  EXPECT_FALSE(ui_handler_->HasOpenWindow(extension_->id()));
+}
+
+TEST_F(LoginScreenExtensionUiHandlerUnittest, WindowClosedOnUnloaded) {
+  // Open window.
+  CheckCanOpenWindow(extension_.get());
+  EXPECT_TRUE(ui_handler_->HasOpenWindow(extension_->id()));
+
+  // Simulate extension unload.
+  extension_registry_->RemoveEnabled(extension_->id());
+  extension_registry_->TriggerOnUnloaded(
+      extension_.get(), extensions::UnloadedExtensionReason::BLACKLIST);
   EXPECT_FALSE(ui_handler_->HasOpenWindow(extension_->id()));
 }
 

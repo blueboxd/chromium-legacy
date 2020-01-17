@@ -27,6 +27,8 @@ blink_core_sources("frame") {
     "csp/media_list_directive.h",
     "csp/navigation_initiator_impl.cc",
     "csp/navigation_initiator_impl.h",
+    "csp/require_trusted_types_for_directive.cc",
+    "csp/require_trusted_types_for_directive.h",
     "csp/source_list_directive.cc",
     "csp/source_list_directive.h",
     "csp/string_list_directive.cc",

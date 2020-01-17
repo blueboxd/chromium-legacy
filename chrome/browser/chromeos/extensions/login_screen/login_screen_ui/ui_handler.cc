@@ -181,6 +181,18 @@ void UiHandler::OnSessionStateChanged() {
 void UiHandler::OnExtensionUninstalled(content::BrowserContext* browser_context,
                                        const extensions::Extension* extension,
                                        extensions::UninstallReason reason) {
+  HandleExtensionUnloadOrUinstall(extension);
+}
+
+void UiHandler::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionReason reason) {
+  HandleExtensionUnloadOrUinstall(extension);
+}
+
+void UiHandler::HandleExtensionUnloadOrUinstall(
+    const extensions::Extension* extension) {
   RemoveWindowForExtension(extension->id());
 }
 

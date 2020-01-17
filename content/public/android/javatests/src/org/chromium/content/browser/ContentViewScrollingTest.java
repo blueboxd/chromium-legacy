@@ -233,7 +233,7 @@ public class ContentViewScrollingTest {
         int velocity = (int) (1000 * deviceScaleFactor);
         // Expected total fling distance calculated by FlingCurve with initial
         // velocity 1000.
-        int expected_dist = (int) (180 * deviceScaleFactor);
+        int expected_dist = (int) (194 * deviceScaleFactor);
 
         // Vertical fling to lower-left.
         fling(0, -velocity);

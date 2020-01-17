@@ -1048,7 +1048,8 @@ void ContentSecurityPolicy::ReportViolation(
     DCHECK(effective_type == DirectiveType::kChildSrc ||
            effective_type == DirectiveType::kFrameSrc ||
            effective_type == DirectiveType::kPluginTypes ||
-           effective_type == DirectiveType::kTrustedTypes);
+           effective_type == DirectiveType::kTrustedTypes ||
+           effective_type == DirectiveType::kRequireTrustedTypesFor);
     return;
   }
 
@@ -1471,6 +1472,8 @@ const char* ContentSecurityPolicy::GetDirectiveName(const DirectiveType& type) {
       return "report-to";
     case DirectiveType::kNavigateTo:
       return "navigate-to";
+    case DirectiveType::kRequireTrustedTypesFor:
+      return "require-trusted-types-for";
     case DirectiveType::kUndefined:
       NOTREACHED();
       return "";
@@ -1516,6 +1519,8 @@ ContentSecurityPolicy::DirectiveType ContentSecurityPolicy::GetDirectiveType(
     return DirectiveType::kReportURI;
   if (name == "require-sri-for")
     return DirectiveType::kRequireSRIFor;
+  if (name == "require-trusted-types-for")
+    return DirectiveType::kRequireTrustedTypesFor;
   if (name == "trusted-types")
     return DirectiveType::kTrustedTypes;
   if (name == "sandbox")

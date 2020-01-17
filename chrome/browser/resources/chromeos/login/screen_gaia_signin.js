@@ -104,12 +104,22 @@ Polymer({
     },
 
     /**
+     * Whether the screen contents are currently being loaded.
+     * @private
+     */
+    loadingFrameContents_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether the loading UI is shown.
      * @private
      */
     isLoadingUiShown_: {
       type: Boolean,
-      value: false,
+      computed: 'computeIsLoadingUiShown_(loadingFrameContents_, ' +
+          'isWhitelistErrorShown_, authCompleted_)',
     },
 
     /**
@@ -487,7 +497,7 @@ Polymer({
    * @private
    */
   loadAuthenticator_(doSamlRedirect) {
-    this.isLoadingUiShown_ = true;
+    this.loadingFrameContents_ = true;
     this.startLoadingTimer_();
 
     this.authenticatorParams_.doSamlRedirect = doSamlRedirect;
@@ -703,7 +713,7 @@ Polymer({
     });
 
     this.screenMode_ = AuthMode.DEFAULT;
-    this.isLoadingUiShown_ = true;
+    this.loadingFrameContents_ = true;
     chrome.send('loginUIStateChanged', ['gaia-signin', true]);
     Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.GAIA_SIGNIN);
 
@@ -829,7 +839,7 @@ Polymer({
 
       case AuthMode.SAML_INTERSTITIAL:
         this.samlInterstitialDomain_ = data.enterpriseDisplayDomain;
-        this.isLoadingUiShown_ = false;
+        this.loadingFrameContents_ = false;
         break;
     }
     this.updateGuestButtonVisibility_();
@@ -935,7 +945,7 @@ Polymer({
     this.showViewProcessed_ = false;
     this.startLoadAnimationGuardTimer_();
     this.clearLoadingTimer_();
-    this.isLoadingUiShown_ = false;
+    this.loadingFrameContents_ = false;
 
     if (!this.$['offline-gaia'].hidden)
       this.$['offline-gaia'].focus();
@@ -1074,8 +1084,6 @@ Polymer({
    * @private
    */
   onAuthConfirmPassword_(email, passwordCount) {
-    this.isLoadingUiShown_ = true;
-
     if (this.samlPasswordConfirmAttempt_ == 0)
       chrome.send('scrapedPasswordCount', [passwordCount]);
 
@@ -1212,8 +1220,6 @@ Polymer({
       ]);
     }
 
-    this.isLoadingUiShown_ = true;
-
     // Hide the back button and the border line as they are not useful when
     // the loading screen is shown.
     this.setBackNavigationVisibility_(false);
@@ -1284,7 +1290,7 @@ Polymer({
     if (this.screenMode_ != AuthMode.DEFAULT)
       return;
     this.authenticator_.reload();
-    this.isLoadingUiShown_ = true;
+    this.loadingFrameContents_ = true;
     this.startLoadingTimer_();
     this.lastBackMessageValue_ = false;
     this.authCompleted_ = false;
@@ -1361,7 +1367,7 @@ Polymer({
    * @private
    */
   loadOffline_(params) {
-    this.isLoadingUiShown_ = true;
+    this.loadingFrameContents_ = true;
     this.startLoadingTimer_();
     const offlineLogin = this.$['offline-gaia'];
     if ('enterpriseDisplayDomain' in params)
@@ -1374,7 +1380,7 @@ Polymer({
 
   /** @private */
   loadAdAuth_(params) {
-    this.isLoadingUiShown_ = true;
+    this.loadingFrameContents_ = true;
     this.startLoadingTimer_();
     const adAuthUI = this.getActiveFrame_();
     adAuthUI.realm = params['realm'];
@@ -1406,7 +1412,6 @@ Polymer({
     }
 
     this.isWhitelistErrorShown_ = show;
-    this.isLoadingUiShown_ = !show;
 
     if (show)
       this.$['gaia-whitelist-error'].submitButton.focus();
@@ -1442,7 +1447,7 @@ Polymer({
     adAuthUI.userName = username;
     adAuthUI.errorState = errorState;
     this.authCompleted_ = false;
-    this.isLoadingUiShown_ = false;
+    this.loadingFrameContents_ = false;
   },
 
   /**
@@ -1598,6 +1603,19 @@ Polymer({
    */
   calculateSamlMessage_(locale, domain) {
     return loadTimeData.getStringF('samlInterstitialMessage', domain);
+  },
+
+  /**
+   * Computes the value of the isLoadingUiShown_ property.
+   * @param {boolean} loadingFrameContents
+   * @param {boolean} isWhitelistErrorShown
+   * @param {boolean} authCompleted
+   * @return {boolean}
+   * @private
+   */
+  computeIsLoadingUiShown_: function(
+      loadingFrameContents, isWhitelistErrorShown, authCompleted) {
+    return (loadingFrameContents || authCompleted) && !isWhitelistErrorShown;
   },
 
   /**

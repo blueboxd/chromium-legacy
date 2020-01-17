@@ -102,7 +102,11 @@ bool ContentBrowserClient::IsExplicitNavigation(ui::PageTransition transition) {
 }
 
 bool ContentBrowserClient::ShouldUseMobileFlingCurve() {
+#if defined(OS_ANDROID)
+  return true;
+#else
   return false;
+#endif
 }
 
 bool ContentBrowserClient::ShouldUseProcessPerSite(

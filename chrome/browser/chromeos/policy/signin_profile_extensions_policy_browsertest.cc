@@ -147,22 +147,24 @@ class ExtensionBackgroundPageReadyObserver final {
 
 // Observer that allows waiting until the specified version of the given
 // extension/app gets installed.
-class ExtensionInstallObserver final
+class ExtensionVersionInstallObserver final
     : public extensions::ExtensionRegistryObserver {
  public:
-  ExtensionInstallObserver(Profile* profile,
-                           const std::string& extension_id,
-                           const base::Version& awaited_version)
+  ExtensionVersionInstallObserver(Profile* profile,
+                                  const std::string& extension_id,
+                                  const base::Version& awaited_version)
       : profile_(profile),
         extension_id_(extension_id),
         awaited_version_(awaited_version) {
     extensions::ExtensionRegistry::Get(profile)->AddObserver(this);
   }
 
-  ExtensionInstallObserver(const ExtensionInstallObserver&) = delete;
-  ExtensionInstallObserver& operator=(const ExtensionInstallObserver&) = delete;
+  ExtensionVersionInstallObserver(const ExtensionVersionInstallObserver&) =
+      delete;
+  ExtensionVersionInstallObserver& operator=(
+      const ExtensionVersionInstallObserver&) = delete;
 
-  ~ExtensionInstallObserver() override {
+  ~ExtensionVersionInstallObserver() override {
     extensions::ExtensionRegistry::Get(profile_)->RemoveObserver(this);
   }
 
@@ -479,7 +481,7 @@ class SigninProfileExtensionsAutoUpdatePolicyTest
             extensions::ExtensionRegistry::Get(GetInitialProfile()),
             kWhitelistedAppId);
     test_extension_latest_version_install_observer_ =
-        std::make_unique<ExtensionInstallObserver>(
+        std::make_unique<ExtensionVersionInstallObserver>(
             GetInitialProfile(), kWhitelistedAppId,
             base::Version(kWhitelistedAppLatestVersion));
 
@@ -553,7 +555,7 @@ class SigninProfileExtensionsAutoUpdatePolicyTest
 
   std::unique_ptr<extensions::TestExtensionRegistryObserver>
       test_extension_registry_observer_;
-  std::unique_ptr<ExtensionInstallObserver>
+  std::unique_ptr<ExtensionVersionInstallObserver>
       test_extension_latest_version_install_observer_;
 };
 
@@ -571,14 +573,17 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsAutoUpdatePolicyTest,
 // This is the second preparation step for the actual test. Here the new version
 // of the app is served, and it gets fetched and installed.
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsAutoUpdatePolicyTest, PRE_Test) {
-  // Let the extensions system to load the previously fetched version before
+  // Let the extensions system load the previously fetched version before
   // starting to serve the newer version, to avoid hitting flaky DCHECKs in the
   // extensions system internals (see https://crbug.com/810799).
   WaitForTestExtensionLoaded();
   EXPECT_EQ(GetTestExtensionVersion(),
             base::Version(kWhitelistedAppOlderVersion));
 
-  // Start serving the newer version and verify that it gets installed.
+  // Start serving the newer version. The extensions system should eventually
+  // fetch this version due to the retry mechanism when the fetch request to the
+  // update servers was failing. We verify that the new version eventually gets
+  // installed.
   StartServingTestExtension(kWhitelistedAppLatestVersion);
   WaitForTestExtensionLatestVersionInstalled();
 }

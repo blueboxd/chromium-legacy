@@ -14,6 +14,7 @@
 #include "components/session_manager/core/session_manager_observer.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 
 namespace extensions {
 class Extension;
@@ -81,6 +82,13 @@ class UiHandler : public session_manager::SessionManagerObserver,
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const extensions::Extension* extension,
                               extensions::UninstallReason reason) override;
+
+  // extensions::ExtensionRegistryObserver
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const extensions::Extension* extension,
+                           extensions::UnloadedExtensionReason reason) override;
+
+  void HandleExtensionUnloadOrUinstall(const extensions::Extension* extension);
 
   std::unique_ptr<WindowFactory> window_factory_;
 

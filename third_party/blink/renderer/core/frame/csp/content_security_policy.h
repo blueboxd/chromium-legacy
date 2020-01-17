@@ -193,6 +193,7 @@ class CORE_EXPORT ContentSecurityPolicy final
     kUndefined,
     kUpgradeInsecureRequests,
     kWorkerSrc,
+    kRequireTrustedTypesFor,
   };
 
   // CheckHeaderType can be passed to Allow*FromSource methods to control which

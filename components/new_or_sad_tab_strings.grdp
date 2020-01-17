@@ -169,5 +169,11 @@
                desc="Text displayed in the settings tooltip when third-party cookie blocking is managed or turned on by the user.">
         This setting is enforced by &quot;<ph name="ENFORCING_SETTING">$1<ex>Block third-party cookies</ex></ph>&quot; in &quot;<ph name="SETTINGS_PAGE">$2<ex>Cookies and site data</ex></ph>&quot;
       </message>
+      <message name="IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE" desc="Label for the Block 3rd-party cookie checkbox on the Cookies category." formatter_data="android_java">
+        Block third-party cookies
+      </message>
+      <message name="IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE_SUBLABEL" desc="A sub-label below the Block 3rd-party cookie checkbox." formatter_data="android_java">
+        When on, sites can’t use your browsing activity across different sites to personalize ads. Some sites may not work properly.
+      </message>
 
 </grit-part>

@@ -333,14 +333,15 @@ void CSPDirectiveList::ReportMixedContent(
 bool CSPDirectiveList::AllowTrustedTypeAssignmentFailure(
     const String& message,
     const String& sample) const {
-  if (!trusted_types_)
+  if (!require_trusted_types_for_ || !require_trusted_types_for_->require())
     return true;
 
-  ReportViolation(ContentSecurityPolicy::GetDirectiveName(
-                      ContentSecurityPolicy::DirectiveType::kTrustedTypes),
-                  ContentSecurityPolicy::DirectiveType::kTrustedTypes, message,
-                  KURL(), RedirectStatus::kFollowedRedirect,
-                  ContentSecurityPolicy::kTrustedTypesSinkViolation, sample);
+  ReportViolation(
+      ContentSecurityPolicy::GetDirectiveName(
+          ContentSecurityPolicy::DirectiveType::kRequireTrustedTypesFor),
+      ContentSecurityPolicy::DirectiveType::kRequireTrustedTypesFor, message,
+      KURL(), RedirectStatus::kFollowedRedirect,
+      ContentSecurityPolicy::kTrustedTypesSinkViolation, sample);
   return IsReportOnly();
 }
 
@@ -1236,15 +1237,27 @@ void CSPDirectiveList::ApplySandboxPolicy(const String& name,
     policy_->ReportInvalidSandboxFlags(invalid_tokens);
 }
 
-void CSPDirectiveList::RequireTrustedTypes(const String& name,
-                                           const String& value) {
+void CSPDirectiveList::AddTrustedTypes(const String& name,
+                                       const String& value) {
   if (trusted_types_) {
     policy_->ReportDuplicateDirective(name);
     return;
   }
-  policy_->RequireTrustedTypes();
   trusted_types_ =
       MakeGarbageCollected<StringListDirective>(name, value, policy_);
+}
+
+void CSPDirectiveList::RequireTrustedTypesFor(const String& name,
+                                              const String& value) {
+  if (require_trusted_types_for_) {
+    policy_->ReportDuplicateDirective(name);
+    return;
+  }
+  require_trusted_types_for_ =
+      MakeGarbageCollected<RequireTrustedTypesForDirective>(name, value,
+                                                            policy_);
+  if (require_trusted_types_for_->require())
+    policy_->RequireTrustedTypes();
 }
 
 void CSPDirectiveList::EnforceStrictMixedContentChecking(const String& name,
@@ -1350,13 +1363,16 @@ void CSPDirectiveList::AddDirective(const String& name, const String& value) {
   } else if (type == ContentSecurityPolicy::DirectiveType::kReportTo &&
              base::FeatureList::IsEnabled(network::features::kReporting)) {
     ParseReportTo(name, value);
-  } else if (type == ContentSecurityPolicy::DirectiveType::kTrustedTypes) {
-    RequireTrustedTypes(name, value);
   } else if (policy_->ExperimentalFeaturesEnabled()) {
     if (type == ContentSecurityPolicy::DirectiveType::kRequireSRIFor) {
       ParseRequireSRIFor(name, value);
     } else if (type == ContentSecurityPolicy::DirectiveType::kPrefetchSrc) {
       SetCSPDirective<SourceListDirective>(name, value, prefetch_src_);
+    } else if (type == ContentSecurityPolicy::DirectiveType::kTrustedTypes) {
+      AddTrustedTypes(name, value);
+    } else if (type ==
+               ContentSecurityPolicy::DirectiveType::kRequireTrustedTypesFor) {
+      RequireTrustedTypesFor(name, value);
     } else {
       policy_->ReportUnsupportedDirective(name);
     }
@@ -1626,6 +1642,7 @@ void CSPDirectiveList::Trace(blink::Visitor* visitor) {
   visitor->Trace(worker_src_);
   visitor->Trace(navigate_to_);
   visitor->Trace(trusted_types_);
+  visitor->Trace(require_trusted_types_for_);
 }
 
 }  // namespace blink

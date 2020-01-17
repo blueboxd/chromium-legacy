@@ -405,10 +405,6 @@ bool AwContentBrowserClient::IsExplicitNavigation(
   return ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED);
 }
 
-bool AwContentBrowserClient::ShouldUseMobileFlingCurve() {
-  return true;
-}
-
 bool AwContentBrowserClient::IsHandledURL(const GURL& url) {
   if (!url.is_valid()) {
     // We handle error cases.

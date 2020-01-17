@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/media_list_directive.h"
+#include "third_party/blink/renderer/core/frame/csp/require_trusted_types_for_directive.h"
 #include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
 #include "third_party/blink/renderer/core/frame/csp/string_list_directive.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -187,7 +188,8 @@ class CORE_EXPORT CSPDirectiveList final
   void EnforceStrictMixedContentChecking(const String& name,
                                          const String& value);
   void EnableInsecureRequestsUpgrade(const String& name, const String& value);
-  void RequireTrustedTypes(const String& name, const String& value);
+  void AddTrustedTypes(const String& name, const String& value);
+  void RequireTrustedTypesFor(const String& name, const String& value);
 
   template <class CSPDirectiveType>
   void SetCSPDirective(const String& name,
@@ -332,6 +334,7 @@ class CORE_EXPORT CSPDirectiveList final
   Member<SourceListDirective> worker_src_;
   Member<SourceListDirective> navigate_to_;
   Member<StringListDirective> trusted_types_;
+  Member<RequireTrustedTypesForDirective> require_trusted_types_for_;
 
   uint8_t require_sri_for_;
 
